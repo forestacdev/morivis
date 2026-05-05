@@ -29,7 +29,6 @@
 	}
 
 	let { panelData, layerEntries, showSelectionMarker = $bindable(), onClose }: Props = $props();
-	let selectedTab = $state<'summary' | 'attributes'>('summary');
 
 	type PanelContentData =
 		| {
@@ -77,7 +76,7 @@
 		);
 	});
 
-	let selectedTabResetKey = $derived.by(() => {
+	let panelContentResetKey = $derived.by(() => {
 		if (!panelData) return null;
 		if (panelData.kind === 'layer-feature') {
 			return `${panelData.layerId}:${panelData.featureId}`;
@@ -116,9 +115,14 @@
 						}
 					]
 				: undefined,
-			description: wiki?.extract,
-			sourceUrl: wiki?.url,
-			sourceLabel: 'Wikipediaを見る'
+			description: wiki?.extract
+				? {
+						text: wiki.extract,
+						source: 'wikipedia',
+						linkUrl: wiki.url ?? undefined,
+						linkLabel: wiki.url ? 'Wikipediaを見る' : undefined
+					}
+				: undefined
 		};
 	};
 
@@ -155,29 +159,6 @@
 	};
 
 	let panelContentPromise = $derived(getPanelContentData(panelData, layerEntries));
-	let resolvedContentData = $state<PanelContentData | null>(null);
-
-	$effect(() => {
-		const currentPromise = panelContentPromise;
-		resolvedContentData = null;
-
-		let cancelled = false;
-
-		void currentPromise.then((contentData) => {
-			if (!cancelled) {
-				resolvedContentData = contentData;
-			}
-		});
-
-		return () => {
-			cancelled = true;
-		};
-	});
-
-	$effect(() => {
-		void selectedTabResetKey;
-		selectedTab = 'summary';
-	});
 </script>
 
 <!-- PC -->
@@ -186,39 +167,6 @@
 	transition={panelData?.kind === 'search-address' ? 'fly' : 'scale'}
 	{onClose}
 >
-	{#snippet headerActions()}
-		{#if panelData?.kind === 'layer-feature' && hasAttributeTab && resolvedContentData?.hasSummaryTab}
-			<div class="bg-sub inline-flex rounded-full">
-				<button
-					type="button"
-					class={[
-						'min-w-20 cursor-pointer rounded-full px-4 py-2 text-base text-sm transition-colors',
-						selectedTab === 'summary' ? 'bg-main-accent' : ''
-					]}
-					aria-pressed={selectedTab === 'summary'}
-					onclick={() => {
-						selectedTab = 'summary';
-					}}
-				>
-					概要
-				</button>
-				<button
-					type="button"
-					class={[
-						'min-w-20 cursor-pointer rounded-full px-4 py-2 text-base text-sm transition-colors',
-						selectedTab === 'attributes' ? 'bg-main-accent' : ''
-					]}
-					aria-pressed={selectedTab === 'attributes'}
-					onclick={() => {
-						selectedTab = 'attributes';
-					}}
-				>
-					情報
-				</button>
-			</div>
-		{/if}
-	{/snippet}
-
 	{#await panelContentPromise}
 		<FeaturePanelLoading />
 	{:then contentData}
@@ -228,7 +176,8 @@
 				{layerEntries}
 				bind:showSelectionMarker
 				showSummaryTab={contentData.hasSummaryTab}
-				{selectedTab}
+				{hasAttributeTab}
+				resetKey={panelContentResetKey ?? 'empty'}
 				summary={contentData.summary}
 			/>
 		{:else if contentData?.kind === 'search-address'}

@@ -500,14 +500,6 @@
 			const id = feature.id;
 			const normalizedLayerId = getLogicalLayerIdFromLayer(feature.layer);
 
-			if (import.meta.env.DEV) {
-				console.warn('debug:Clicked feature:', {
-					id,
-					layerId: normalizedLayerId,
-					properties: feature.properties
-				});
-			}
-
 			// markerLngLat = clickLngLat ? new maplibregl.LngLat(...clickLngLat) : null;
 			// showMarker = true;
 

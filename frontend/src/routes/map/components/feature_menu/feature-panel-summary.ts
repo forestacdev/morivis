@@ -27,8 +27,8 @@ export const hasFeaturePanelSummaryContent = (summary: FeaturePanelSummaryData):
 	return Boolean(
 		summary.media?.length ||
 			summary.point ||
-			summary.sourceUrl ||
-			summary.description?.trim() ||
+			summary.description?.linkUrl ||
+			summary.description?.text.trim() ||
 			summary.timberSpecies ||
 			summary.taxonomy?.length ||
 			summary.protectionForestDescription?.trim()
@@ -276,14 +276,25 @@ export const getLayerFeaturePanelSummary = async (
 	// 説明文は 属性 descriptionKey -> _prop_data.ts -> Wikipedia の順で補完する。
 	const description =
 		typeof attributeDescription === 'string' && attributeDescription !== ''
-			? attributeDescription
-			: (data?.description ?? wikipediaArticle?.extract);
-	const sourceUrl = data?.url ?? wikipediaArticle?.url ?? undefined;
-	const sourceLabel = data?.url
-		? '詳細を見る'
-		: wikipediaArticle?.url
-			? 'Wikipediaを見る'
-			: undefined;
+			? {
+					text: attributeDescription,
+					source: 'attribute' as const
+				}
+			: data?.description
+				? {
+						text: data.description,
+						source: 'static' as const,
+						linkUrl: data.url ?? undefined,
+						linkLabel: data.url ? '詳細を見る' : undefined
+					}
+				: wikipediaArticle?.extract
+					? {
+							text: wikipediaArticle.extract,
+							source: 'wikipedia' as const,
+							linkUrl: wikipediaArticle.url ?? undefined,
+							linkLabel: wikipediaArticle.url ? 'Wikipediaを見る' : undefined
+						}
+					: undefined;
 
 	if (propId && featureMenuData.properties) {
 		return {
@@ -297,9 +308,7 @@ export const getLayerFeaturePanelSummary = async (
 			protectionForestDescription: protectionForestSummary?.description,
 			taxonomy,
 			timberSpecies,
-			description,
-			sourceUrl,
-			sourceLabel
+			description
 		};
 	}
 
@@ -319,8 +328,6 @@ export const getLayerFeaturePanelSummary = async (
 		protectionForestDescription: protectionForestSummary?.description,
 		taxonomy,
 		timberSpecies,
-		description,
-		sourceUrl,
-		sourceLabel
+		description
 	};
 };

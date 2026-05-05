@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
-
-	import FeaturePanelAttributeItem from '$routes/map/components/feature_menu/FeaturePanelAttributeItem.svelte';
-	import FeaturePanelSummary from '$routes/map/components/feature_menu/FeaturePanelSummary.svelte';
+	import FeaturePanelHeader from '$routes/map/components/feature_menu/FeaturePanelHeader.svelte';
+	import FeaturePanelAttributes from '$routes/map/components/feature_menu/FeaturePanelAttributes.svelte';
+	import FeaturePanelTabs from '$routes/map/components/feature_menu/FeaturePanelTabs.svelte';
+	import FeaturePanelSummaryBody from '$routes/map/components/feature_menu/FeaturePanelSummaryBody.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import type {
@@ -17,7 +17,8 @@
 		showSelectionMarker: boolean;
 		summary: FeaturePanelSummaryData | null;
 		showSummaryTab: boolean;
-		selectedTab: 'summary' | 'attributes';
+		hasAttributeTab: boolean;
+		resetKey: string;
 	}
 
 	let {
@@ -26,7 +27,8 @@
 		showSelectionMarker = $bindable(),
 		summary,
 		showSummaryTab,
-		selectedTab
+		hasAttributeTab,
+		resetKey
 	}: Props = $props();
 
 	let targetLayer = $derived.by(() => {
@@ -105,26 +107,13 @@
 </script>
 
 {#if featureMenuData && summary}
-	{#if showSummaryTab && selectedTab === 'summary'}
-		<FeaturePanelSummary {summary} />
-	{/if}
+	<FeaturePanelHeader {summary} />
 
-	{#if !propId && (selectedTab === 'attributes' || !showSummaryTab)}
-		<div in:fade={{ duration: 100 }} class="lg:pl-2">
-			<div class="pb-6">
-				<div class="flex w-full flex-col gap-1 text-base max-lg:hidden">
-					<span class="text-[22px] font-bold break-all">{summary.title}</span>
-					{#if summary.subtitle}
-						<span class="text-[14px] break-all text-gray-300">{summary.subtitle}</span>
-					{/if}
-				</div>
-			</div>
-			<div class="mb-56 flex h-full w-full flex-col gap-3">
-				{#each attributeItems as [key, value] (key)}
-					{@const field = fields.find((f) => f.key === key)}
-					<FeaturePanelAttributeItem {key} {value} {field} />
-				{/each}
-			</div>
-		</div>
+	{#if showSummaryTab && hasAttributeTab}
+		<FeaturePanelTabs {summary} {attributeItems} {fields} resetKey={resetKey} />
+	{:else if showSummaryTab}
+		<FeaturePanelSummaryBody {summary} />
+	{:else if !propId}
+		<FeaturePanelAttributes {summary} {attributeItems} {fields} />
 	{/if}
 {/if}

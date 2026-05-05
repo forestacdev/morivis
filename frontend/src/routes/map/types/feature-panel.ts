@@ -82,6 +82,16 @@ export interface TimberSpecies {
 	distribution?: string;
 }
 
+export interface FeaturePanelTextContent {
+	text: string;
+	source?: 'attribute' | 'static' | 'wikipedia' | 'external';
+	credit?: string;
+	licenseName?: string;
+	licenseUrl?: string;
+	linkUrl?: string;
+	linkLabel?: string;
+}
+
 export interface FeaturePanelSummary {
 	title: string;
 	subtitle?: string;
@@ -94,9 +104,7 @@ export interface FeaturePanelSummary {
 		value: string;
 	}>;
 	timberSpecies?: TimberSpecies;
-	description?: string;
-	sourceUrl?: string;
-	sourceLabel?: string;
+	description?: FeaturePanelTextContent;
 }
 
 export const createLayerFeaturePanelData = (data: FeatureMenuData): LayerFeaturePanelData => ({
