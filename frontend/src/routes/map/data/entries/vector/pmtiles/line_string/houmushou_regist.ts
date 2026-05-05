@@ -1,5 +1,6 @@
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector';
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 const entry: PolygonEntry<TileMetaData> = {
 	id: 'houmushou_regist',
@@ -21,7 +22,8 @@ const entry: PolygonEntry<TileMetaData> = {
 		promoteId: '地番',
 		sourceLayer: 'fude',
 		xyzImageTile: { x: 58262, y: 25712, z: 16 },
-		downloadUrl: 'https://github.com/amx-project/a-spec?tab=readme-ov-file'
+		downloadUrl: 'https://github.com/amx-project/a-spec?tab=readme-ov-file',
+		mapImage: `${MAP_IMAGE_BASE_PATH}/houmushou_regist.webp`
 	},
 	properties: {
 		attributeView: {
