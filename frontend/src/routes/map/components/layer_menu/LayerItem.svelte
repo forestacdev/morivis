@@ -656,17 +656,6 @@
 </div>
 
 <style>
-	/* エフェクト要素 */
-	.c-ripple-effect {
-		opacity: 0;
-		animation: ripple 1.5s linear infinite;
-	}
-
-	.c-ripple-effect2 {
-		opacity: 0;
-		animation: ripple 1.5s 0.75s linear infinite;
-	}
-
 	/* アニメーションの定義 */
 	@keyframes ripple {
 		0% {

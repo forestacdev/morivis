@@ -1,5 +1,6 @@
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
 import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+import type { FieldDef } from '$routes/map/data/types/vector/properties';
 
 import {
 	createPointIconLayer,
@@ -119,6 +120,7 @@ export interface LayerItem {
 export const createVectorLayer = (
 	layer: LayerItem,
 	style: VectorStyle,
+	fields: FieldDef[],
 	pointImageIcon?: IconImageSource
 ):
 	| FillLayerSpecification
@@ -138,7 +140,7 @@ export const createVectorLayer = (
 			return createLineLayer(layer, style);
 		case 'circle': {
 			if (style.imageIcon?.show && pointImageIcon) {
-				return createPointImageIconLayer(layer, style, pointImageIcon);
+				return createPointImageIconLayer(layer, style, pointImageIcon, fields);
 			} else {
 				return createCircleLayer(layer, style);
 			}
@@ -248,7 +250,15 @@ export const createLayersItems = (
 					}
 					applyVectorSourceLayer(layer, entry);
 
-					const vectorLayer = createVectorLayer(layer, style, entry.properties.images?.icon);
+					// TODO: fieldsを渡す必要があるレイヤーとそうでないレイヤーがある。
+					const fields = entry.properties.fields;
+
+					const vectorLayer = createVectorLayer(
+						layer,
+						style,
+						fields,
+						entry.properties.images?.icon
+					);
 					if (!vectorLayer) return;
 
 					// ポリゴン
@@ -314,11 +324,21 @@ export const createLayersItems = (
 					}
 
 					// ラベル
-					if (style.labels.show) {
-						// ラベルを追加
-						const fields = entry.properties.fields;
-						const symbolLayer = createSymbolLayer(layer, style, fields);
-						symbolLayerItems.push(symbolLayer);
+					if (style.type === 'circle') {
+						// ポイントの時は写真アイコンがない場合のみラベルレイヤーを表示。写真アイコンがある時は写真アイコンレイヤーにラベルのスタイルを組み込む。
+						if (style.labels.show && !style.imageIcon?.show) {
+							// ラベルを追加
+							const fields = entry.properties.fields;
+							const symbolLayer = createSymbolLayer(layer, style, fields);
+							symbolLayerItems.push(symbolLayer);
+						}
+					} else {
+						if (style.labels.show) {
+							// ラベルを追加
+							const fields = entry.properties.fields;
+							const symbolLayer = createSymbolLayer(layer, style, fields);
+							symbolLayerItems.push(symbolLayer);
+						}
 					}
 
 					// 補助レイヤーの追加
