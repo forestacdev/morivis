@@ -348,12 +348,18 @@
 		<div
 			class="relative grid h-[30px] w-[30px] place-items-center overflow-hidden rounded-full {value ===
 			'transparent'
-				? 'border-1 border-white'
-				: ''}"
+				? 'border border-white'
+				: ''}}"
 			style="background-color: {value}"
 		>
 			{#if imageSrc}
-				<img src={imageSrc} alt="pattern" class="absolute h-full" />
+				<img
+					src={imageSrc}
+					alt="pattern"
+					class="c-no-drag-icon absolute object-contain {layerType !== 'fill'
+						? 'h-[90%]'
+						: 'h-full'}"
+				/>
 			{/if}
 			<!-- <input type="color" class="invisible" bind:value /> -->
 			<input type="checkbox" class="invisible" bind:checked={showColorPallet} />
@@ -385,7 +391,7 @@
 				<img
 					src={createTiledPatternImage(mapStore.getImage(_pattern) as StyleImage)}
 					alt="pattern"
-					class="absolute h-full"
+					class="c-no-drag-icon absolute h-full"
 				/>
 			{/if}
 		</button>
