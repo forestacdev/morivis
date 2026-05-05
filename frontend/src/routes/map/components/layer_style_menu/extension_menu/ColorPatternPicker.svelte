@@ -491,7 +491,11 @@
 											}}
 										>
 											{#if img}
-												<img src={createIconImage(img)} alt={_pattern} class="h-5 w-5" />
+												<img
+													src={createIconImage(img)}
+													alt={_pattern}
+													class="c-no-drag-icon h-5 w-5"
+												/>
 											{/if}
 										</button>
 									{/each}

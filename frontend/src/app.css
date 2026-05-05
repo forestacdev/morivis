@@ -229,6 +229,8 @@ html.is-map-moving .bg-side-menu {
 	user-drag: none;
 	-webkit-user-drag: none;
 	-moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* 背景地図画像用のスタイル */
