@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
 	import DemStyleModePulldownBoxImage from './DemStyleModePulldownBoxImage.svelte';
@@ -83,47 +84,71 @@
 			promise = Promise.resolve(undefined);
 		}
 	});
+	let hoveredName = $state<string>(
+		allDemStyleModes.find((mode) => mode.key === isMode)?.name || ''
+	);
+
+	$effect(() => {
+		if (showPullDown) {
+			const currentOption = availableDemStyleModes.find((mode) => mode.key === isMode);
+			hoveredName = currentOption ? currentOption.name : '';
+		} else {
+			hoveredName = '';
+		}
+	});
 </script>
 
 {#if hasMultipleModes}
-	<h2 class="text-base">描画モード</h2>
 	<div class="relative py-2" bind:this={containerRef}>
 		<button
 			onclick={() => {
 				showPullDown = !showPullDown;
 			}}
-			class="c-select flex h-28 w-full cursor-pointer justify-between"
+			class="bg-main-accent flex w-full cursor-pointer items-center justify-between gap-2 rounded-full p-1 text-base transition-colors duration-150 lg:hover:bg-white lg:hover:text-black"
 		>
 			<div class="flex items-center gap-2">
+				{#await promise then imageResult}
+					{#if imageResult}
+						<img
+							src={imageResult.url}
+							alt={availableDemStyleModes.find((mode) => mode.key === isMode)?.name}
+							class="c-no-drag-icon aspect-square h-16 rounded-full bg-black object-cover"
+						/>
+					{/if}
+				{:catch}
+					<div>画像の取得に失敗</div>
+				{/await}
+
 				<span>{availableDemStyleModes.find((mode) => mode.key === isMode)?.name}</span>
 			</div>
-			{#await promise then imageResult}
-				{#if imageResult}
-					<img
-						src={imageResult.url}
-						alt={availableDemStyleModes.find((mode) => mode.key === isMode)?.name}
-						class="c-no-drag-icon aspect-square h-24 rounded bg-black object-cover"
-					/>
-				{/if}
-			{:catch}
-				<div>画像の取得に失敗</div>
-			{/await}
+			<Icon icon="iconamoon:arrow-down-2-duotone" class="mr-2 h-8 w-8 shrink-0" />
 		</button>
 
 		{#if showPullDown}
 			<div
 				transition:fly={{ duration: 200, y: -20 }}
-				class="bg-sub absolute top-[130px] left-0 z-10 grid w-full grid-cols-3 gap-1 overflow-hidden rounded-lg shadow-md"
+				class="pointer-events-none absolute top-[90px] left-0 z-10 flex flex-col gap-2"
 			>
-				{#each availableDemStyleModes as { key, name } (key)}
-					<DemStyleModePulldownBoxImage
-						bind:isMode
-						mode={key}
-						{name}
-						bind:showPullDown
-						{layerEntry}
-					/>
-				{/each}
+				<div
+					class="bg-sub pointer-events-auto grid w-full grid-cols-5 gap-1 overflow-hidden rounded-[35px] p-1 shadow-md"
+				>
+					{#each availableDemStyleModes as { key, name } (key)}
+						<DemStyleModePulldownBoxImage
+							bind:isMode
+							mode={key}
+							{name}
+							bind:hoveredName
+							bind:showPullDown
+							{layerEntry}
+						/>
+					{/each}
+				</div>
+				<div transition:fly={{ duration: 300, y: -20 }} class="flex items-center justify-center">
+					<span
+						class="bg-sub w-full max-w-[200px] rounded-full p-1 text-center text-base select-none"
+						>{hoveredName}</span
+					>
+				</div>
 			</div>
 		{/if}
 	</div>

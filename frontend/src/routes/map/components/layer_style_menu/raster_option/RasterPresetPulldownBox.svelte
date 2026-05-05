@@ -50,16 +50,16 @@
 		};
 	});
 
-	let hoverdName = $state<string>(
+	let hoveredName = $state<string>(
 		presetOptions.find((option) => option.key === preset)?.name || ''
 	);
 
 	$effect(() => {
 		if (showPullDown) {
 			const currentOption = presetOptions.find((option) => option.key === preset);
-			hoverdName = currentOption ? currentOption.name : '';
+			hoveredName = currentOption ? currentOption.name : '';
 		} else {
-			hoverdName = '';
+			hoveredName = '';
 		}
 	});
 </script>
@@ -98,7 +98,7 @@
 						key
 							? ''
 							: ''}"
-						onmouseenter={() => (hoverdName = name)}
+						onmouseenter={() => (hoveredName = name)}
 					>
 						<input
 							type="radio"
@@ -127,7 +127,7 @@
 			</div>
 			<div class="flex items-center justify-center">
 				<span class="bg-sub w-full max-w-[200px] rounded-full p-1 text-center text-base select-none"
-					>{hoverdName}</span
+					>{hoveredName}</span
 				>
 			</div>
 		</div>

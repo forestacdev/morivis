@@ -22,7 +22,7 @@
 	const rangeMin = $state.raw(layerEntry.style.visualization.uniformsData['relief'].min);
 </script>
 
-<Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
+<Accordion label={'描画の調整'} icon={'material-symbols:image'} bind:value={showColorOption}>
 	<DemStyleModePulldownBox bind:isMode={layerEntry.style.visualization.mode} {layerEntry} />
 	{#if layerEntry.style.visualization.mode === 'relief'}
 		<ColorMapSelect
