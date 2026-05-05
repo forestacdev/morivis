@@ -794,7 +794,7 @@
 	>
 		<div
 			bind:this={mapContainer}
-			class="h-full w-full overflow-hidden bg-black transition-opacity lg:rounded-lg {!showMapCanvas &&
+			class="h-full w-full overflow-hidden bg-black transition-opacity lg:rounded-lg lg:rounded-br-[35px] {!showMapCanvas &&
 			$mapMode === 'view'
 				? 'opacity-0'
 				: $isStreetView && $mapMode === 'small'
@@ -807,14 +807,14 @@
 		</div>
 		<!-- 地図コンテナオーバーレイ -->
 		<div
-			class="c-test border-sub pointer-events-none absolute h-full w-full overflow-hidden rounded-[0.5rem] border transition-colors {isDragover
+			class="border-sub pointer-events-none absolute h-full w-full overflow-hidden rounded-[0.5rem] border transition-colors {isDragover
 				? ' bg-accent opacity-50'
 				: ' opacity-0'}"
 		></div>
 
 		{#if !$isStreetView && !showDataEntry && !showZoneForm && !showGeoRefForm && !$showDataMenu}
 			<!-- PC用地図コントロール -->
-			<div class="absolute right-5 bottom-5 max-lg:hidden">
+			<div class="absolute right-0 bottom-0 max-lg:hidden">
 				<Compass />
 			</div>
 		{/if}

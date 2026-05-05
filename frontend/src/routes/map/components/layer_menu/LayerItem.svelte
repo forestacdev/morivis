@@ -462,14 +462,14 @@
 		tabindex="0"
 	>
 		<!-- 選択中リップルエフェクト -->
-		{#if $selectedLayerId === layerEntry.id && $isStyleEdit}
+		<!-- {#if $selectedLayerId === layerEntry.id && $isStyleEdit}
 			<div
 				class="c-ripple-effect absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
 			></div>
 			<div
 				class="c-ripple-effect2 absolute top-0 h-full w-full rounded-full border-2 border-amber-50"
 			></div>
-		{/if}
+		{/if} -->
 
 		<!-- 背景アイコン -->
 		{#if !isHovered && !$isStyleEdit && !$showDataMenu && !showMobileLegend}
