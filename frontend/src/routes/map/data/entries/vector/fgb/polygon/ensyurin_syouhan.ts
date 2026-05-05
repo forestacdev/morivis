@@ -1,16 +1,20 @@
-import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import {
+	COVER_IMAGE_BASE_PATH,
+	ENTRY_PMTILES_VECTOR_PATH,
+	MAP_IMAGE_BASE_PATH
+} from '$routes/constants';
 
-import type { PolygonEntry, GeoJsonMetaData } from '$routes/map/data/types/vector/index';
 import { DEFAULT_POLYGON_STYLE } from '$routes/map/data/entries/vector/_style';
 import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
+import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
-const entry: PolygonEntry<GeoJsonMetaData> = {
+const entry: PolygonEntry<TileMetaData> = {
 	id: 'ensyurin_syouhan',
 	type: 'vector',
 	format: {
-		type: 'fgb',
+		type: 'pmtiles',
 		geometryType: 'Polygon',
-		url: `${ENTRY_FGB_PATH}/ensyurin_syouhan.fgb`
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/ensyurin_syouhan.pmtiles`
 	},
 	metaData: {
 		name: '演習林 小班区画',
@@ -18,8 +22,9 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
 		tags: ['小班', '森林'],
-		maxZoom: 17,
+		maxZoom: 14,
 		minZoom: 10,
+		sourceLayer: 'ensyurin_syouhan',
 		bounds: [136.91917, 35.54692, 136.926817, 35.555122],
 		mapImage: `${MAP_IMAGE_BASE_PATH}/ensyurin_syouhan.webp`,
 		coverImage: `${COVER_IMAGE_BASE_PATH}/ensyurin_syouhan.webp`,

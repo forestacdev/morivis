@@ -1,5 +1,5 @@
 import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import {
 	FOREST_MESH_PROPERTIES,
 	FOREST_MESH_POPUP_KEYS
@@ -11,7 +11,7 @@ import {
 	createMatchColorMapping
 } from '$routes/map/data/entries/vector/_style';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: PolygonEntry<TileMetaData> = {
 	id: 'hyogo_fr_mesh20m',
 	type: 'vector',
 	format: {

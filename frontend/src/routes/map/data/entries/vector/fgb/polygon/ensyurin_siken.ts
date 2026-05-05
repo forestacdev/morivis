@@ -15,7 +15,7 @@ const entry: PolygonEntry<GeoJsonMetaData> = {
 		description: '森林文化アカデミー演習林の試験地。',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
-		maxZoom: 17,
+		maxZoom: 14,
 		minZoom: 8,
 		tags: ['森林'],
 		bounds: [136.920084, 35.549852, 136.925498, 35.554401],
