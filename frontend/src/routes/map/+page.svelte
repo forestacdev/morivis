@@ -133,6 +133,7 @@
 	let remoteRasterUrl = $state<string | null>(null);
 	let remoteVectorUrl = $state<string | null>(null);
 	let remoteTiles3dUrl = $state<string | null>(null);
+	let remoteWmtsUrl = $state<string | null>(null);
 	let pendingTileUrl = $state<string | null>(null);
 
 	let isStyleEditEntry = $derived.by(() => {
@@ -826,6 +827,7 @@
 					bind:remoteRasterUrl
 					bind:remoteVectorUrl
 					bind:remoteTiles3dUrl
+					bind:remoteWmtsUrl
 					bind:pendingTileUrl
 				/>
 			{/if}
@@ -863,6 +865,7 @@
 		bind:remoteRasterUrl
 		bind:remoteVectorUrl
 		bind:remoteTiles3dUrl
+		bind:remoteWmtsUrl
 		bind:pendingTileUrl
 		bind:showZoneForm
 		bind:focusBbox

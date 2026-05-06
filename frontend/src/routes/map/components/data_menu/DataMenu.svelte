@@ -24,6 +24,7 @@
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
+		remoteWmtsUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -35,6 +36,7 @@
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
 		remoteTiles3dUrl = $bindable(),
+		remoteWmtsUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -336,6 +338,7 @@
 				bind:remoteRasterUrl
 				bind:remoteVectorUrl
 				bind:remoteTiles3dUrl
+				bind:remoteWmtsUrl
 				bind:pendingTileUrl
 			/>
 		{/if}

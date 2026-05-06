@@ -51,6 +51,7 @@
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
+		remoteWmtsUrl: string | null;
 		pendingTileUrl: string | null;
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
@@ -70,6 +71,7 @@
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
 		remoteTiles3dUrl = $bindable(),
+		remoteWmtsUrl = $bindable(),
 		pendingTileUrl = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
@@ -95,7 +97,7 @@
 				: 'max-h-[700px]'}"
 		>
 			{#if showDialogType === 'wmts'}
-				<WmtsForm bind:showDataEntry bind:showDialogType />
+				<WmtsForm bind:showDataEntry bind:showDialogType bind:remoteWmtsUrl />
 			{/if}
 			{#if showDialogType === 'wcs'}
 				<WcsForm bind:showDataEntry bind:showDialogType bind:dropFile />

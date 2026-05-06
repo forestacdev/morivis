@@ -6,6 +6,8 @@
 		SUPPORTED_FILE_GROUPS,
 		type DialogType
 	} from '$routes/map/types';
+	import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
+	import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 	import { slide } from 'svelte/transition';
@@ -18,6 +20,7 @@
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
+		remoteWmtsUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -29,6 +32,7 @@
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
 		remoteTiles3dUrl = $bindable(),
+		remoteWmtsUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -120,6 +124,22 @@
 		}
 	};
 
+	const isWmsOrWmtsUrl = async (urlValue: string): Promise<boolean> => {
+		let wmtsResult = await parseWmtsCapabilities(urlValue);
+
+		if ((!wmtsResult || wmtsResult.length === 0) && /epsg4326/i.test(urlValue)) {
+			const mercatorUrl = urlValue.replace(/epsg4326/gi, 'epsg3857');
+			wmtsResult = await parseWmtsCapabilities(mercatorUrl);
+		}
+
+		if (wmtsResult && wmtsResult.length > 0) {
+			return true;
+		}
+
+		const wmsResult = await parseWmsCapabilities(urlValue);
+		return !!(wmsResult && wmsResult.length > 0);
+	};
+
 	const RASTER_TILE_EXTENSIONS = new Set([
 		'.png',
 		'.jpg',
@@ -186,6 +206,14 @@
 		isProcessing.set(true);
 
 		try {
+			if (await isWmsOrWmtsUrl(trimmedUrl)) {
+				remoteWmtsUrl = trimmedUrl;
+				showDialogType = 'wmts';
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
+
 			const response = await fetch(trimmedUrl);
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}`);
