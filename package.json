@@ -23,6 +23,7 @@
     },
     "pnpm": {
         "overrides": {
+            "sharp": "0.34.5",
             "@sveltejs/enhanced-img>sharp": "0.34.5"
         }
     }

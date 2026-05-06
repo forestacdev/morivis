@@ -38,17 +38,17 @@ export default defineConfig({
 				description: '森林文化アカデミー演習林Webマップ',
 				screenshots: [
 					{
-						src: './static/images/pwa/android/screen_1.webp',
+						src: './images/pwa/android/screen_1.webp',
 						sizes: '720x1478',
 						type: 'image/webp'
 					},
 					{
-						src: './static/images/pwa/android/screen_2.webp',
+						src: './images/pwa/android/screen_2.webp',
 						sizes: '720x1478',
 						type: 'image/webp'
 					},
 					{
-						src: './static/images/pwa/android/screen_3.webp',
+						src: './images/pwa/android/screen_3.webp',
 						sizes: '720x1478',
 						type: 'image/webp'
 					}
