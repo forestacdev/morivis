@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { slide } from 'svelte/transition';
+	import { fade, fly, slide } from 'svelte/transition';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import {
@@ -514,7 +514,10 @@
 </div>
 
 {#if showFormListDialog}
-	<div class="absolute inset-0 z-20 flex items-center justify-center bg-black/60 p-4">
+	<div
+		transition:fade={{ duration: 200 }}
+		class="absolute inset-0 z-20 flex items-center justify-center bg-black/60 p-4"
+	>
 		<div class="bg-main flex max-h-[80dvh] w-full max-w-[880px] flex-col gap-4 rounded-xl p-5">
 			<div class="flex items-center justify-between gap-4">
 				<div class="flex flex-col gap-1">
@@ -527,13 +530,13 @@
 					onclick={() => {
 						showFormListDialog = false;
 					}}
-					class="bg-base hover:bg-accent rounded-full px-4 py-2 text-black transition-colors hover:text-white"
+					class="bg-base hover:bg-accent cursor-pointer rounded-full px-4 py-2 text-black transition-colors select-none hover:text-white"
 				>
 					閉じる
 				</button>
 			</div>
 
-			<div class="flex flex-col gap-5 overflow-y-auto pr-1">
+			<div class="c-scroll flex flex-col gap-5 overflow-y-auto pr-1">
 				{#each urlDialogGroups as group}
 					<div class="flex flex-col gap-3">
 						<span class="text-sm font-bold text-gray-300">{group.title}</span>
@@ -541,7 +544,7 @@
 							{#each group.dialogs as dialog}
 								<button
 									onclick={() => showUploadDialog(dialog.type)}
-									class="bg-base hover:bg-accent rounded-lg px-4 py-3 text-left text-sm text-black transition-colors hover:text-white"
+									class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
 								>
 									{dialog.label}
 								</button>
@@ -559,7 +562,7 @@
 										showFormListDialog = false;
 										await openFilteredFilePicker(fileGroup.accept);
 									}}
-									class="bg-base hover:bg-accent rounded-lg px-4 py-3 text-left text-sm text-black transition-colors hover:text-white"
+									class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
 								>
 									{fileGroup.label}
 								</button>

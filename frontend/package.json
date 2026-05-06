@@ -151,6 +151,7 @@
 		"moji": "^0.5.1",
 		"netcdfjs": "^4.0.0",
 		"ol": "^10.5.0",
+		"osmtogeojson": "3.0.0-beta.5",
 		"papaparse": "^5.5.2",
 		"pbf": "^4.0.1",
 		"pdf-lib": "^1.17.1",
