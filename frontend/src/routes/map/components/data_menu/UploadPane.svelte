@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { tick } from 'svelte';
+
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import {
 		SUPPORTED_FILE_ACCEPT,
@@ -39,6 +41,9 @@
 	let inputUrl = $state('');
 	let isLoadingUrl = $state(false);
 	let hasTouchedUrlInput = $state(false);
+	let showFormListDialog = $state(false);
+	let formListFileAccept = $state(SUPPORTED_FILE_ACCEPT);
+	let formListFileInput = $state<HTMLInputElement | null>(null);
 
 	const trimmedInputUrl = $derived(inputUrl.trim());
 	const urlInputError = $derived.by(() => {
@@ -268,20 +273,41 @@
 	};
 
 	const showUploadDialog = (type: DialogType) => {
+		showFormListDialog = false;
 		showDialogType = type;
 	};
 
-	const urlDialogs: { type: DialogType; label: string }[] = [
-		{ type: 'raster', label: 'XYZタイル' },
-		{ type: 'vector', label: 'ベクタータイル' },
-		{ type: 'wmts', label: 'WMS/WMTS' },
-		{ type: 'arcgis', label: 'ArcGIS' },
-		// { type: 'wcs', label: 'WCS' },
-		{ type: 'pmtiles', label: 'PMTiles' },
-		{ type: '3dtiles', label: '3D Tiles' },
-		{ type: 'demxml', label: '基盤地図DEM' },
-		{ type: 'stac', label: 'STAC / COG' }
+	const urlDialogGroups: { title: string; dialogs: { type: DialogType; label: string }[] }[] = [
+		{
+			title: 'URL・サービス',
+			dialogs: [
+				{ type: 'raster', label: 'XYZタイル' },
+				{ type: 'vector', label: 'ベクタータイル' },
+				{ type: 'wmts', label: 'WMS/WMTS' },
+				{ type: 'wcs', label: 'WCS' },
+				{ type: 'arcgis', label: 'ArcGIS' },
+				{ type: 'pmtiles', label: 'PMTiles' },
+				{ type: '3dtiles', label: '3D Tiles' },
+				{ type: 'stac', label: 'STAC / COG' }
+			]
+		}
 	];
+
+	const fileDialogGroups: { title: string; groups: { label: string; accept: string }[] }[] = [
+		{
+			title: 'ファイル選択',
+			groups: SUPPORTED_FILE_GROUPS.map((group) => ({
+				label: group.label,
+				accept: group.extensions.join(',')
+			}))
+		}
+	];
+
+	const openFilteredFilePicker = async (accept: string) => {
+		formListFileAccept = accept;
+		await tick();
+		formListFileInput?.click();
+	};
 	let isDragover = $state(false);
 
 	// ドラッグ中のイベント
@@ -419,6 +445,14 @@
 					onchange={(e) => inputFile(e)}
 				/>
 			</label>
+			<input
+				bind:this={formListFileInput}
+				type="file"
+				multiple
+				accept={formListFileAccept}
+				class="hidden"
+				onchange={(e) => inputFile(e)}
+			/>
 			<div class="flex w-full max-w-[720px] flex-col gap-3 px-4">
 				<div class="flex flex-col gap-2 text-center">
 					<span class="text-sm text-gray-300">URLから読み込む</span>
@@ -462,17 +496,76 @@
 			</div>
 		</div>
 		<div class="flex flex-wrap items-center justify-center gap-4 px-4">
-			{#each urlDialogs as dialog}
-				<button
-					onclick={() => showUploadDialog(dialog.type)}
-					class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 px-6 text-black transition-colors hover:text-white"
-				>
-					{dialog.label}
-				</button>
-			{/each}
+			<button
+				onclick={() => {
+					showFormListDialog = true;
+				}}
+				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 px-6 text-black transition-colors hover:text-white"
+			>
+				フォーム一覧
+			</button>
 		</div>
 	</div>
 </div>
+
+{#if showFormListDialog}
+	<div class="absolute inset-0 z-20 flex items-center justify-center bg-black/60 p-4">
+		<div class="bg-main flex max-h-[80dvh] w-full max-w-[880px] flex-col gap-4 rounded-xl p-5">
+			<div class="flex items-center justify-between gap-4">
+				<div class="flex flex-col gap-1">
+					<span class="text-xl font-bold text-white">フォーム一覧</span>
+					<span class="text-sm text-gray-400">
+						URL指定系とファイル系のフォームをここから直接開けます
+					</span>
+				</div>
+				<button
+					onclick={() => {
+						showFormListDialog = false;
+					}}
+					class="bg-base hover:bg-accent rounded-full px-4 py-2 text-black transition-colors hover:text-white"
+				>
+					閉じる
+				</button>
+			</div>
+
+				<div class="flex flex-col gap-5 overflow-y-auto pr-1">
+					{#each urlDialogGroups as group}
+						<div class="flex flex-col gap-3">
+							<span class="text-sm font-bold text-gray-300">{group.title}</span>
+							<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+							{#each group.dialogs as dialog}
+								<button
+									onclick={() => showUploadDialog(dialog.type)}
+									class="bg-base hover:bg-accent rounded-lg px-4 py-3 text-left text-sm text-black transition-colors hover:text-white"
+								>
+									{dialog.label}
+								</button>
+							{/each}
+							</div>
+						</div>
+					{/each}
+					{#each fileDialogGroups as group}
+						<div class="flex flex-col gap-3">
+							<span class="text-sm font-bold text-gray-300">{group.title}</span>
+							<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+								{#each group.groups as fileGroup}
+									<button
+										onclick={async () => {
+											showFormListDialog = false;
+											await openFilteredFilePicker(fileGroup.accept);
+										}}
+										class="bg-base hover:bg-accent rounded-lg px-4 py-3 text-left text-sm text-black transition-colors hover:text-white"
+									>
+										{fileGroup.label}
+									</button>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</div>
+			</div>
+		</div>
+{/if}
 
 <style>
 	.marquee-container {
