@@ -42,14 +42,17 @@
 			name: string;
 		}[] = [];
 
+		if (isGpx.track_points) {
+			list.push({ key: 'track_points', name: 'トラックポイント' });
+		}
+		if (isGpx.waypoints) {
+			list.push({ key: 'waypoints', name: 'ウェイポイント' });
+		}
 		if (isGpx.tracks) {
 			list.push({ key: 'tracks', name: 'トラック' });
 		}
 		if (isGpx.routes) {
 			list.push({ key: 'routes', name: 'ルート' });
-		}
-		if (isGpx.waypoints) {
-			list.push({ key: 'waypoints', name: 'ウェイポイント' });
 		}
 
 		if (list.length === 1) {
@@ -59,6 +62,7 @@
 		}
 
 		dataTypesOptions = list;
+		dataType = list[0].key;
 	};
 	$effect(() => {
 		if (dropFile) {
