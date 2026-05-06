@@ -20,12 +20,24 @@
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
+		remotePmtilesUrl: string | null;
+		remoteRasterUrl: string | null;
+		remoteVectorUrl: string | null;
+		remoteTiles3dUrl: string | null;
+		remoteWmtsUrl: string | null;
+		pendingTileUrl: string | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		dropFile = $bindable(),
-		showDialogType = $bindable()
+		showDialogType = $bindable(),
+		remotePmtilesUrl = $bindable(),
+		remoteRasterUrl = $bindable(),
+		remoteVectorUrl = $bindable(),
+		remoteTiles3dUrl = $bindable(),
+		remoteWmtsUrl = $bindable(),
+		pendingTileUrl = $bindable()
 	}: Props = $props();
 
 	// export let mapBearing: number;
@@ -318,7 +330,17 @@
 			{/if}
 		{/if}
 		{#if selected === 'user'}
-			<UploadPane bind:showDataEntry bind:dropFile bind:showDialogType />
+			<UploadPane
+				bind:showDataEntry
+				bind:dropFile
+				bind:showDialogType
+				bind:remotePmtilesUrl
+				bind:remoteRasterUrl
+				bind:remoteVectorUrl
+				bind:remoteTiles3dUrl
+				bind:remoteWmtsUrl
+				bind:pendingTileUrl
+			/>
 		{/if}
 	</div>
 {/if}

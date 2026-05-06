@@ -17,14 +17,17 @@
 - [RasterBaseMapStyle](interfaces/RasterBaseMapStyle.md)
 - [RasterCadStyle](interfaces/RasterCadStyle.md)
 - [RasterCategoricalStyle](interfaces/RasterCategoricalStyle.md)
+- [RasterCogEntry](interfaces/RasterCogEntry.md)
 - [RasterDemStyle](interfaces/RasterDemStyle.md)
 - [RasterImageEntry](interfaces/RasterImageEntry.md)
 - [RasterImageGroupEntry](interfaces/RasterImageGroupEntry.md)
 - [RasterInteraction](interfaces/RasterInteraction.md)
+- [RasterMBTilesEntry](interfaces/RasterMBTilesEntry.md)
 - [RasterPMTilesEntry](interfaces/RasterPMTilesEntry.md)
 - [RasterTiffStyle](interfaces/RasterTiffStyle.md)
 - [ShingleBandData](interfaces/ShingleBandData.md)
 - [TileXYZ](interfaces/TileXYZ.md)
+- [WmsTimeDimension](interfaces/WmsTimeDimension.md)
 
 ## Type Aliases
 

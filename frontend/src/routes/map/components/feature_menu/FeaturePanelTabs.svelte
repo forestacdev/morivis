@@ -1,9 +1,8 @@
 <script lang="ts">
-	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
-
 	import FeaturePanelAttributes from './FeaturePanelAttributes.svelte';
 	import FeaturePanelSummaryBody from './FeaturePanelSummaryBody.svelte';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import type { FieldDef } from '$routes/map/data/types/vector/properties';
 	import type { FeaturePanelSummary as FeaturePanelSummaryData } from '$routes/map/types';
 

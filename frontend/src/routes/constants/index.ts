@@ -123,4 +123,4 @@ export const MAPLIBRE_POPUP_OPTIONS: PopupOptions = {
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
 
 /** 初期表示のレイヤーid */
-export const INT_ADD_LAYER_IDS = ['ensyurin_syouhan', 'national_forest_stand'];
+export const INT_ADD_LAYER_IDS = ['fac_poi_search', 'ensyurin_syouhan', 'national_forest_stand'];

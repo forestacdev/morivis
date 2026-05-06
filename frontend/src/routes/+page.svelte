@@ -33,7 +33,7 @@
 		const isLocalhost = window.location.hostname === 'localhost';
 
 		showButton = false;
-		if (import.meta.env.MODE === 'production' && !isLocalhost) {
+		if (import.meta.env.MODE === 'production') {
 			goto('/morivis/map');
 		} else {
 			goto('/map');

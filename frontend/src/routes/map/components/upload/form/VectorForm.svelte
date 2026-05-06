@@ -12,9 +12,14 @@
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		showDialogType: DialogType;
+		remoteVectorUrl: string | null;
 	}
 
-	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		showDialogType = $bindable(),
+		remoteVectorUrl = $bindable()
+	}: Props = $props();
 
 	let tileFormat = $state<'pbf' | 'geojson'>('pbf');
 
@@ -60,6 +65,38 @@
 	let isDisabled = $state<boolean>(true);
 	let errors = $state<Record<string, string>>({});
 
+	const getNameFromUrl = (url: string): string => {
+		try {
+			const pathname = new URL(url).pathname;
+			const segments = pathname
+				.split('/')
+				.map((segment) => decodeURIComponent(segment))
+				.filter(Boolean);
+			const namedSegment = [...segments]
+				.reverse()
+				.find((segment) => !/[{}]/.test(segment) && !/^\.[^.]+$/.test(segment));
+			return namedSegment?.replace(/\.[^.]+$/, '') || 'ベクタータイル';
+		} catch {
+			return 'ベクタータイル';
+		}
+	};
+
+	$effect(() => {
+		if (remoteVectorUrl) {
+			forms.tileUrl = remoteVectorUrl;
+			if (!forms.name) {
+				forms.name = getNameFromUrl(remoteVectorUrl);
+			}
+			const lowerUrl = remoteVectorUrl.toLowerCase();
+			if (lowerUrl.includes('.geojson')) {
+				tileFormat = 'geojson';
+			} else if (lowerUrl.includes('.pbf') || lowerUrl.includes('.mvt')) {
+				tileFormat = 'pbf';
+			}
+			remoteVectorUrl = null;
+		}
+	});
+
 	$effect(() => {
 		const validation = tileFormat === 'pbf' ? pbfValidation : geojsonValidation;
 		validation
@@ -90,6 +127,7 @@
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
+				remoteVectorUrl = null;
 			}
 		} else {
 			const source = forms.source.trim();
@@ -97,12 +135,14 @@
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
+				remoteVectorUrl = null;
 			}
 		}
 	};
 
 	const cancel = () => {
 		showDialogType = null;
+		remoteVectorUrl = null;
 	};
 </script>
 

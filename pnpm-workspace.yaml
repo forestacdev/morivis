@@ -9,4 +9,3 @@ ignoredBuiltDependencies:
   - better-sqlite3
   - core-js
   - esbuild
-  - sharp

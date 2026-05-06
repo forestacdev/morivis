@@ -11,7 +11,7 @@
 		previewSrc?: string;
 	}
 
-	let { layerEntry, previewSrc }: Props = $props();
+	let { layerEntry = $bindable(), previewSrc }: Props = $props();
 
 	interface OpacityButton {
 		label: string;

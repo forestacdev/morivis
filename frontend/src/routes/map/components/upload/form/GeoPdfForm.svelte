@@ -66,24 +66,103 @@
 	let cachedAttributes: Map<number, Record<string, string | number | boolean>> = new Map();
 	let analyzing = false;
 
-	const pdfFile = $derived.by(() => {
+	const sourceFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.pdf$/i.test(f.name)) ?? null;
+			return dropFile[0] ?? null;
 		}
 		return dropFile;
 	});
 
+	const isPdfFile = $derived.by(() => {
+		if (!sourceFile) return false;
+		return /\.pdf$/i.test(sourceFile.name);
+	});
+
 	// ファイルドロップ時: 解析
 	$effect(() => {
-		const file = pdfFile;
+		const file = sourceFile;
 		if (file && !analyzing) {
 			untrack(() => {
 				entryName = file.name.replace(/\.[^.]+$/, '');
-				analyzePdf(file);
+				if (isPdfFile) {
+					analyzePdf(file);
+				} else {
+					redirectImageToGeoRef(file);
+				}
 			});
 		}
 	});
+
+	const redirectImageToGeoRef = async (file: File) => {
+		if (analyzing) return;
+		analyzing = true;
+		isProcessing.set(true);
+		let objectUrl: string | null = null;
+
+		try {
+			objectUrl = URL.createObjectURL(file);
+			const imageUrl = objectUrl;
+			const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+				const img = new Image();
+				img.onload = () => resolve(img);
+				img.onerror = () => reject(new Error('画像の読み込みに失敗しました'));
+				img.src = imageUrl;
+			});
+
+			const width = image.naturalWidth;
+			const height = image.naturalHeight;
+			const canvas = document.createElement('canvas');
+			canvas.width = width;
+			canvas.height = height;
+			const ctx = canvas.getContext('2d');
+			if (!ctx) throw new Error('Canvas context取得失敗');
+
+			ctx.drawImage(image, 0, 0);
+			const imgData = ctx.getImageData(0, 0, width, height);
+			const rgba = imgData.data;
+			const pixelCount = width * height;
+
+			const rBand = new Uint8Array(pixelCount);
+			const gBand = new Uint8Array(pixelCount);
+			const bBand = new Uint8Array(pixelCount);
+			for (let i = 0; i < pixelCount; i++) {
+				rBand[i] = rgba[i * 4];
+				gBand[i] = rgba[i * 4 + 1];
+				bBand[i] = rgba[i * 4 + 2];
+			}
+
+			const bands: RasterBands = [rBand, gBand, bBand];
+			const id = `geotiff_${crypto.randomUUID()}`;
+			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, null));
+
+			GeoTiffCache.setSize(id, width, height);
+			GeoTiffCache.setNumBands(id, 3);
+
+			geoRefData = {
+				entryId: id,
+				entryName,
+				parsedBands: bands,
+				parsedNodata: null,
+				dataRanges: ranges,
+				numBands: 3,
+				imageWidth: width,
+				imageHeight: height,
+				bandMinMax: ranges[0],
+				multiBandMinMax: { r: ranges[0], g: ranges[1], b: ranges[2] },
+				imageFile: file
+			};
+			showGeoRefForm = true;
+			showDialogType = null;
+		} catch (e) {
+			showNotification(e instanceof Error ? e.message : '画像の解析に失敗しました', 'error');
+			console.error(e);
+		} finally {
+			if (objectUrl) URL.revokeObjectURL(objectUrl);
+			isProcessing.set(false);
+			analyzing = false;
+		}
+	};
 
 	const analyzePdf = async (file: File) => {
 		if (analyzing) return;
@@ -493,9 +572,9 @@
 >
 	<TextForm bind:value={entryName} label="データ名" />
 
-	{#if pdfFile}
+	{#if sourceFile}
 		<div class="w-full px-2 text-sm text-gray-300">
-			ファイル: {pdfFile.name}
+			ファイル: {sourceFile.name}
 		</div>
 	{/if}
 

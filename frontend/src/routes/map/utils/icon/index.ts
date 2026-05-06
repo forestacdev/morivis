@@ -25,8 +25,9 @@ const imageBitmapCache = new Map<string, Promise<ImageBitmap>>();
 const inflightGeneratedPoiIcons = new Map<string, Promise<void>>();
 let renderedDummyIconPromise: Promise<ImageBitmap> | null = null;
 
+//NOTE: 現状は1スレッドに抑えておく
 const ICON_WORKER_POOL_MIN_SIZE = 1;
-const ICON_WORKER_POOL_MAX_SIZE = 4;
+const ICON_WORKER_POOL_MAX_SIZE = 1;
 const ICON_WORKER_IDLE_TIMEOUT_MS = 3000;
 
 export const GENERATED_POI_ICON_PREFIX = 'prop_icon';

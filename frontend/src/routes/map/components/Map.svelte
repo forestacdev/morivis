@@ -663,9 +663,9 @@
 		selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}),
-		showPoiLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
-		}),
+		// showPoiLayer.subscribe(() => {
+		// 	setStyleDebounce(layerEntries as GeoDataEntry[]);
+		// }),
 		showBoundaryLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as GeoDataEntry[]);
 		}),

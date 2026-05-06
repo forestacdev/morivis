@@ -1,21 +1,115 @@
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
-import type { AnyGeometry } from '$routes/map/types/geometry';
+import type { AnyGeometry, Geometry, GeometryCollection } from '$routes/map/types/geometry';
+import type { FeatureProp } from '$routes/map/types/properties';
 import { geojson as fgb } from 'flatgeobuf';
 
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { FeatureMenuData } from '$routes/map/types';
 import type { DrawGeojsonData } from '$routes/map/types/draw';
 
+export class GeoJsonParseError extends Error {
+	constructor(message: string) {
+		super(message);
+		this.name = 'GeoJsonParseError';
+	}
+}
+
 /** GeoJSONを取得する */
 export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 	try {
 		const response = await fetch(url);
-
-		return response.json();
+		const geojson = await response.json();
+		return normalizeGeometryCollections(geojson);
 	} catch (error) {
 		console.error(error);
 		throw new Error('Failed to fetch GeoJSON');
 	}
+};
+
+type FeatureWithGeometryCollection = Omit<Feature<AnyGeometry>, 'geometry'> & {
+	geometry: Geometry;
+};
+
+type FeatureCollectionWithGeometryCollection = {
+	type: 'FeatureCollection';
+	features: FeatureWithGeometryCollection[];
+};
+
+type SingleFeatureWithGeometryCollection = {
+	type: 'Feature';
+	id?: string | number;
+	geometry: Geometry;
+	properties?: FeatureProp | null;
+};
+
+type RootGeoJsonWithGeometryCollection =
+	| FeatureCollectionWithGeometryCollection
+	| SingleFeatureWithGeometryCollection
+	| Geometry;
+
+const isGeometryCollection = (
+	geometry: Geometry | null | undefined
+): geometry is GeometryCollection => {
+	return geometry?.type === 'GeometryCollection';
+};
+
+const toFeatureCollection = (
+	geojson: RootGeoJsonWithGeometryCollection
+): FeatureCollectionWithGeometryCollection => {
+	if (geojson.type === 'FeatureCollection') {
+		return geojson;
+	}
+
+	if (geojson.type === 'Feature') {
+		return {
+			type: 'FeatureCollection',
+			features: [
+				{
+					type: 'Feature',
+					id: geojson.id,
+					geometry: geojson.geometry,
+					properties: geojson.properties ?? {}
+				}
+			]
+		};
+	}
+
+	return {
+		type: 'FeatureCollection',
+		features: [
+			{
+				type: 'Feature',
+				geometry: geojson,
+				properties: {}
+			}
+		]
+	};
+};
+
+const normalizeGeometryCollections = (
+	geojson: RootGeoJsonWithGeometryCollection
+): FeatureCollection => {
+	const featureCollection = toFeatureCollection(geojson);
+
+	return {
+		type: 'FeatureCollection',
+		features: featureCollection.features.flatMap((feature): Feature[] => {
+			if (!isGeometryCollection(feature.geometry)) {
+				return [feature as Feature];
+			}
+
+			return feature.geometry.geometries.map(
+				(geometry, index): Feature => ({
+					...feature,
+					id:
+						feature.id != null
+							? `${String(feature.id)}_${index}`
+							: `${crypto.randomUUID()}_${index}`,
+					geometry: geometry as AnyGeometry
+				})
+			);
+		})
+	};
 };
 
 /** fgbを取得してGeoJSONで返す */
@@ -128,16 +222,21 @@ export const downloadGeojson = (
 export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
 	try {
 		const text = await file.text();
-		const geojson = JSON.parse(text);
+		const geojson = JSON.parse(text) as RootGeoJsonWithGeometryCollection;
 
-		// 型安全のため、FeatureCollectionかどうかを最低限チェック
-		if (geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
-			throw new Error('Invalid GeoJSON structure');
+		if (!geojson || typeof geojson !== 'object' || typeof geojson.type !== 'string') {
+			throw new GeoJsonParseError('GeoJSONの構造が不正です');
 		}
 
-		return geojson;
+		return normalizeGeometryCollections(geojson);
 	} catch (error) {
 		console.error('GeoJSON parsing error:', error);
-		throw new Error('Failed to parse GeoJSON file');
+		if (error instanceof GeoJsonParseError) {
+			throw error;
+		}
+		if (error instanceof SyntaxError) {
+			throw new GeoJsonParseError('GeoJSONのJSON構文が壊れています');
+		}
+		throw new GeoJsonParseError('GeoJSONファイルの読み込みに失敗しました');
 	}
 };

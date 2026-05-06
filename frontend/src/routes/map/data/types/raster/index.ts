@@ -249,6 +249,7 @@ interface RasterMetaData extends BaseMetaData {
 export interface WmsTimeDimension {
 	values: string[];
 	currentIndex: number;
+	labels?: string[];
 }
 
 export interface RasterInteraction {

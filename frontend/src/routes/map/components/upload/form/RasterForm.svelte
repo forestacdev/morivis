@@ -12,9 +12,14 @@
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		showDialogType: DialogType;
+		remoteRasterUrl: string | null;
 	}
 
-	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		showDialogType = $bindable(),
+		remoteRasterUrl = $bindable()
+	}: Props = $props();
 
 	const rasterValidation = yup.object().shape({
 		name: yup.string().required('データ名を入力してください。'),
@@ -34,6 +39,32 @@
 
 	let isDisabled = $state<boolean>(true);
 	let errors = $state<Partial<Record<keyof RasterFormSchema, string>>>({});
+
+	const getNameFromUrl = (url: string): string => {
+		try {
+			const pathname = new URL(url).pathname;
+			const segments = pathname
+				.split('/')
+				.map((segment) => decodeURIComponent(segment))
+				.filter(Boolean);
+			const namedSegment = [...segments]
+				.reverse()
+				.find((segment) => !/[{}]/.test(segment) && !/^\.[^.]+$/.test(segment));
+			return namedSegment?.replace(/\.[^.]+$/, '') || 'XYZタイル';
+		} catch {
+			return 'XYZタイル';
+		}
+	};
+
+	$effect(() => {
+		if (remoteRasterUrl) {
+			forms.tileUrl = remoteRasterUrl;
+			if (!forms.name) {
+				forms.name = getNameFromUrl(remoteRasterUrl);
+			}
+			remoteRasterUrl = null;
+		}
+	});
 
 	$effect(() => {
 		rasterValidation
@@ -68,11 +99,13 @@
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;
+			remoteRasterUrl = null;
 		}
 	};
 
 	const cancel = () => {
 		showDialogType = null;
+		remoteRasterUrl = null;
 	};
 
 	const DEM_TYPE_OPTIONS: { key: DemDataTypeKey; name: string }[] = [

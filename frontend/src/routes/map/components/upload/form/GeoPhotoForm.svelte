@@ -72,7 +72,10 @@
 				`写真 (${result.features.length}枚)`,
 				bbox as [number, number, number, number],
 				undefined,
-				{ attribution: '位置情報付き写真' }
+				{
+					attribution: '位置情報付き写真',
+					coverImage: result.features[0]?.properties.coverImageUrl
+				}
 			);
 
 			if (entry) {
@@ -90,8 +93,8 @@
 					},
 					icon: {
 						type: 'absolute',
-						imageIdKey: 'imageUrl',
-						urlKey: 'imageUrl'
+						imageIdKey: 'iconImageUrl',
+						urlKey: 'iconImageUrl'
 					}
 				};
 				pointEntry.style.imageIcon = {

@@ -146,7 +146,12 @@
 		const map = mapStore.getMap();
 		if (!map || !highlightedGeneratedPoiLayerId) return;
 		if (!mapStore.getLayer(highlightedGeneratedPoiLayerId)) return;
-		map.setPaintProperty(highlightedGeneratedPoiLayerId, 'icon-opacity', 1);
+		const pointLayerEntry = getPointLayerEntry(highlightedGeneratedPoiLayerId);
+		map.setPaintProperty(
+			highlightedGeneratedPoiLayerId,
+			'icon-opacity',
+			pointLayerEntry?.style.opacity ?? 1
+		);
 		highlightedGeneratedPoiLayerId = null;
 	};
 
@@ -154,7 +159,14 @@
 		const map = mapStore.getMap();
 		if (!map || !mapStore.getLayer(layerId)) return;
 		highlightedGeneratedPoiLayerId = layerId;
-		map.setPaintProperty(layerId, 'icon-opacity', ['case', ['==', ['id'], featureId], 0, 1]);
+		const pointLayerEntry = getPointLayerEntry(layerId);
+		const baseOpacity = pointLayerEntry?.style.opacity ?? 1;
+		map.setPaintProperty(layerId, 'icon-opacity', [
+			'case',
+			['==', ['id'], featureId],
+			0,
+			baseOpacity
+		]);
 	};
 
 	const isGeneratedPoiIconFeature = (layerId: string) => {
@@ -220,13 +232,17 @@
 		selected: SelectedHighlightData,
 		feature: MapGeoJSONFeature,
 		point: [number, number]
-	) => {
+	): boolean => {
 		selectedHighlightData.set(selected);
 		resetDefaultHighlight();
 		highlightedGeneratedPoiLayerId = selected.layerId;
 		const resolvedProperties = resolvePoiHighlightProperties(selected.layerId, feature);
 		const iconImage =
 			typeof resolvedProperties.iconImage === 'string' ? resolvedProperties.iconImage : null;
+		if (!iconImage) {
+			resetGeneratedPoiHighlight();
+			return false;
+		}
 
 		featureMenuData = {
 			layerId: selected.layerId,
@@ -243,6 +259,22 @@
 		};
 
 		mapStore.panToPoi(new maplibregl.LngLat(point[0], point[1]));
+		return true;
+	};
+
+	const clearHighlightOnly = () => {
+		selectedHighlightData.set(null);
+		resetGeneratedPoiHighlight();
+		if (highlightMarkerState?.type === 'poi') {
+			highlightMarkerState = null;
+		}
+		applyDefaultHighlight(null);
+	};
+
+	const showSelectionMarkerFallback = (point: [number, number]) => {
+		clearHighlightOnly();
+		markerLngLat = new maplibregl.LngLat(point[0], point[1]);
+		showMarker = true;
 	};
 
 	const setSelectedHighlight = (
@@ -269,7 +301,10 @@
 
 		if (options?.feature && options.point && isGeneratedPoiIconFeature(selected.layerId)) {
 			// 生成アイコンPOIは通常ハイライトではなく、アイコン差し替えと専用マーカーで強調する。
-			applyGeneratedPoiHighlight(selected, options.feature, options.point);
+			const didHighlight = applyGeneratedPoiHighlight(selected, options.feature, options.point);
+			if (!didHighlight) {
+				showSelectionMarkerFallback(options.point);
+			}
 			return;
 		}
 
@@ -517,6 +552,11 @@
 							point: clickLngLat
 						}
 					: undefined;
+
+			if (!selectedHighlight && clickLngLat) {
+				showSelectionMarkerFallback(clickLngLat);
+				return;
+			}
 
 			setSelectedHighlight(selectedHighlight, highlightOptions);
 		} catch (error) {

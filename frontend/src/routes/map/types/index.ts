@@ -72,8 +72,10 @@ export type CSSCursor =
 export type DialogType =
 	| 'raster'
 	| 'vector'
+	| 'tileurltype'
 	| 'shp'
 	| 'gpx'
+	| 'osm'
 	| 'geojson'
 	| 'geotiff'
 	| 'wmts'
@@ -106,12 +108,13 @@ export type DialogType =
 
 /** ファイル拡張子のグループ分け（UI表示用） */
 export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = [
-	{ label: 'GeoJSON', extensions: ['.geojson'] },
+	{ label: 'GeoJSON', extensions: ['.geojson', '.json'] },
 	{ label: 'TopoJSON', extensions: ['.topojson'] },
 	{ label: 'FlatGeobuf', extensions: ['.fgb'] },
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
 	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg'] },
 	{ label: 'GPX', extensions: ['.gpx'] },
+	{ label: 'OpenStreetMap XML', extensions: ['.osm'] },
 	{ label: 'GML', extensions: ['.gml', '.xml'] },
 	{ label: 'KML / KMZ', extensions: ['.kml', '.kmz'] },
 	{ label: 'CSV', extensions: ['.csv'] },

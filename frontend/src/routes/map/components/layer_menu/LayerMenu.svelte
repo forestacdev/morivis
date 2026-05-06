@@ -551,9 +551,9 @@
 					<!-- 余白 -->
 					<div class="h-[300px] w-full shrink-0"></div>
 				{:else if selectedTab === 'map-display'}
-					<MapSettingItem>
+					<!-- <MapSettingItem>
 						<Switch label="アカデミー施設等" bind:value={$showPoiLayer} />
-					</MapSettingItem>
+					</MapSettingItem> -->
 					<MapSettingItem>
 						<Switch label="境界線" bind:value={$showBoundaryLayer} />
 					</MapSettingItem>

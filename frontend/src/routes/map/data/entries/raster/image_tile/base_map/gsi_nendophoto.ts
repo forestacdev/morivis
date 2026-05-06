@@ -12,10 +12,10 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/nendophoto{time}/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '年度別航空写真',
+		name: '年度別空中写真（2007年以降）',
 		sourceDataName: '年度別空中写真（2007年以降）',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html#seamlessphoto',
-		attribution: '国土地理院',
+		attribution: '国土地理院,GRUS画像（© Axelspace）',
 		location: '全国',
 		tags: ['写真'],
 		minZoom: 14, // 1

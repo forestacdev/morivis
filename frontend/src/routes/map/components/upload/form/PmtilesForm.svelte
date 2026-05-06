@@ -5,7 +5,7 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
-	import { createPmtilesEntry } from '$routes/map/data/entries/raster';
+	import { createPmtilesRasterEntry } from '$routes/map/data/entries/raster';
 	import { createVectorPmtilesEntry } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
@@ -17,12 +17,14 @@
 		showDataEntry: GeoDataEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
+		remotePmtilesUrl: string | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		dropFile = $bindable()
+		dropFile = $bindable(),
+		remotePmtilesUrl = $bindable()
 	}: Props = $props();
 
 	const urlValidation = yup.object().shape({
@@ -81,6 +83,16 @@
 		return dropFile instanceof FileList ? dropFile[0] : dropFile;
 	});
 
+	const getNameFromUrl = (url: string): string => {
+		try {
+			const pathname = new URL(url).pathname;
+			const fileName = decodeURIComponent(pathname.split('/').pop() ?? 'pmtiles');
+			return fileName.replace(/\.[^.]+$/, '') || 'pmtiles';
+		} catch {
+			return 'pmtiles';
+		}
+	};
+
 	// ドロップファイルからBlobURLを生成
 	$effect(() => {
 		if (pmtilesFile) {
@@ -89,6 +101,16 @@
 			forms.name = pmtilesFile.name.replace(/\.[^.]+$/, '');
 			isFromFile = true;
 			analyzePmtiles(blobUrl);
+		}
+	});
+
+	$effect(() => {
+		if (remotePmtilesUrl) {
+			forms.url = remotePmtilesUrl;
+			forms.name = getNameFromUrl(remotePmtilesUrl);
+			isFromFile = false;
+			analyzePmtiles(remotePmtilesUrl);
+			remotePmtilesUrl = null;
 		}
 	});
 
@@ -242,13 +264,15 @@
 				showDataEntry = entry;
 				showDialogType = null;
 				dropFile = null;
+				remotePmtilesUrl = null;
 			}
 		} else {
-			const entry = createPmtilesEntry(forms.name, forms.url.trim(), opts);
+			const entry = createPmtilesRasterEntry(forms.name, forms.url.trim(), opts);
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
 				dropFile = null;
+				remotePmtilesUrl = null;
 			}
 		}
 	};
@@ -256,6 +280,7 @@
 	const cancel = () => {
 		showDialogType = null;
 		dropFile = null;
+		remotePmtilesUrl = null;
 	};
 </script>
 

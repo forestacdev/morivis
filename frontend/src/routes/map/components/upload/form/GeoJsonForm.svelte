@@ -13,7 +13,7 @@
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { fgbFileToGeojson } from '$routes/map/utils/formats/fgb';
-	import { geoJsonFileToGeoJson } from '$routes/map/utils/formats/geojson';
+	import { GeoJsonParseError, geoJsonFileToGeoJson } from '$routes/map/utils/formats/geojson';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -84,7 +84,10 @@
 					}
 				})
 				.catch((e) => {
-					showNotification('GeoJSONファイルの読み込みに失敗しました', 'error');
+					showNotification(
+						e instanceof GeoJsonParseError ? e.message : 'GeoJSONファイルの読み込みに失敗しました',
+						'error'
+					);
 					console.error(e);
 				})
 				.finally(() => {

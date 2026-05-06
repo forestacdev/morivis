@@ -129,6 +129,12 @@
 	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<File | FileList | null>(null); // ドロップしたファイル
+	let remotePmtilesUrl = $state<string | null>(null);
+	let remoteRasterUrl = $state<string | null>(null);
+	let remoteVectorUrl = $state<string | null>(null);
+	let remoteTiles3dUrl = $state<string | null>(null);
+	let remoteWmtsUrl = $state<string | null>(null);
+	let pendingTileUrl = $state<string | null>(null);
 
 	let isStyleEditEntry = $derived.by(() => {
 		const targetEntry = layerEntries.find((entry) => entry.id === $selectedLayerId);
@@ -233,8 +239,9 @@
 	});
 
 	let mobileTargetLayer = $derived.by(() => {
-		if (!featureMenuData) return null;
-		return layerEntries.find((entry) => entry.id === featureMenuData.layerId) ?? null;
+		const currentFeatureMenuData = featureMenuData;
+		if (!currentFeatureMenuData) return null;
+		return layerEntries.find((entry) => entry.id === currentFeatureMenuData.layerId) ?? null;
 	});
 
 	let mobileHasAttributeTab = $derived.by(() => {
@@ -812,7 +819,17 @@
 			<PreviewMenu bind:showDataEntry />
 
 			{#if !showDataEntry && !showZoneForm}
-				<DataMenu bind:showDataEntry bind:dropFile bind:showDialogType />
+				<DataMenu
+					bind:showDataEntry
+					bind:dropFile
+					bind:showDialogType
+					bind:remotePmtilesUrl
+					bind:remoteRasterUrl
+					bind:remoteVectorUrl
+					bind:remoteTiles3dUrl
+					bind:remoteWmtsUrl
+					bind:pendingTileUrl
+				/>
 			{/if}
 			{#if showDataEntry}
 				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
@@ -844,6 +861,12 @@
 		bind:showDataEntry
 		bind:tempLayerEntries
 		bind:dropFile
+		bind:remotePmtilesUrl
+		bind:remoteRasterUrl
+		bind:remoteVectorUrl
+		bind:remoteTiles3dUrl
+		bind:remoteWmtsUrl
+		bind:pendingTileUrl
 		bind:showZoneForm
 		bind:focusBbox
 		bind:isDragover

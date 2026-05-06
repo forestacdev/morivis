@@ -99,7 +99,7 @@ export const createDemRasterEntry = (
 	}
 });
 
-export const createPmtilesEntry = (
+export const createPmtilesRasterEntry = (
 	name: string,
 	url: string,
 	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number }
@@ -117,6 +117,7 @@ export const createPmtilesEntry = (
 		minZoom: options?.minZoom ?? 0,
 		maxZoom: options?.maxZoom ?? 24,
 		bounds: options?.bounds ?? WEB_MERCATOR_WORLD_BBOX,
+		attribution: 'PMTiles',
 		xyzImageTile: options?.bounds ? findCenterTile(options.bounds) : { x: 0, y: 0, z: 0 }
 	},
 	interaction: {

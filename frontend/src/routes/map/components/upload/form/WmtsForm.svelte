@@ -21,9 +21,14 @@
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		showDialogType: DialogType;
+		remoteWmtsUrl: string | null;
 	}
 
-	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		showDialogType = $bindable(),
+		remoteWmtsUrl = $bindable()
+	}: Props = $props();
 
 	const urlValidation = yup.object().shape({
 		url: yup
@@ -112,6 +117,14 @@
 			});
 	});
 
+	$effect(() => {
+		if (remoteWmtsUrl) {
+			forms.url = remoteWmtsUrl;
+			remoteWmtsUrl = null;
+			fetchLayers();
+		}
+	});
+
 	const wmtsToLayerItem = (info: MapLibreRasterSourceInfo): LayerItem => ({
 		id: info.id,
 		title: info.title,
@@ -195,11 +208,13 @@
 
 		showDataEntry = entry;
 		showDialogType = null;
+		remoteWmtsUrl = null;
 		showNotification('レイヤーを登録しました', 'success');
 	};
 
 	const cancel = () => {
 		showDialogType = null;
+		remoteWmtsUrl = null;
 	};
 </script>
 

@@ -38,20 +38,28 @@ export default defineConfig({
 				description: '森林文化アカデミー演習林Webマップ',
 				screenshots: [
 					{
-						src: './static/images/pwa/android/screen_1.webp',
-						sizes: '720x1478',
-						type: 'image/webp'
+						src: './images/pwa/screen_wide_1.png',
+						sizes: '1280x714',
+						type: 'image/png',
+						form_factor: 'wide'
 					},
 					{
-						src: './static/images/pwa/android/screen_2.webp',
-						sizes: '720x1478',
-						type: 'image/webp'
+						src: './images/pwa/android/screen_1.jpg',
+						sizes: '720x1600',
+						type: 'image/jpeg',
+						form_factor: 'narrow'
 					},
 					{
-						src: './static/images/pwa/android/screen_3.webp',
-						sizes: '720x1478',
-						type: 'image/webp'
+						src: './images/pwa/android/screen_2.jpg',
+						sizes: '720x1600',
+						type: 'image/jpeg',
+						form_factor: 'narrow'
 					}
+					// {
+					// 	src: './images/pwa/android/screen_3.webp',
+					// 	sizes: '720x1478',
+					// 	type: 'image/webp'
+					// }
 				],
 				theme_color: '#0C221D',
 				orientation: 'natural',

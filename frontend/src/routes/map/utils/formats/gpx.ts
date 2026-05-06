@@ -4,10 +4,33 @@ import type { Waypoint, Track, Route } from 'gpxparser';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { LineStringGeometry, PointGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
-export type DataType = 'tracks' | 'routes' | 'waypoints';
+
+const formatGpxTime = (value: unknown): string | undefined => {
+	const date = value instanceof Date ? value : typeof value === 'string' ? new Date(value) : null;
+
+	if (!date || Number.isNaN(date.getTime())) {
+		return typeof value === 'string' ? value : undefined;
+	}
+
+	const jstTime = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+	const year = jstTime.getUTCFullYear();
+	const month = String(jstTime.getUTCMonth() + 1).padStart(2, '0');
+	const day = String(jstTime.getUTCDate()).padStart(2, '0');
+	const hours = String(jstTime.getUTCHours()).padStart(2, '0');
+	const minutes = String(jstTime.getUTCMinutes()).padStart(2, '0');
+	const seconds = String(jstTime.getUTCSeconds()).padStart(2, '0');
+
+	return `${year}/${month}/${day} ${hours}:${minutes}:${seconds} (UTC+09:00)`;
+};
+
+const getTrackTime = (track: Track): string | undefined => {
+	return formatGpxTime(track.points[0]?.time);
+};
+
+export type DataType = 'tracks' | 'track_points' | 'routes' | 'waypoints';
 export const checkGpxFile = async (
 	file: File
-): Promise<{ tracks: boolean; routes: boolean; waypoints: boolean }> => {
+): Promise<{ tracks: boolean; track_points: boolean; routes: boolean; waypoints: boolean }> => {
 	try {
 		const gpxData = await file.text();
 		const parser = new GPXParser();
@@ -15,6 +38,7 @@ export const checkGpxFile = async (
 
 		return {
 			tracks: parser.tracks.length > 0,
+			track_points: parser.tracks.some((track) => track.points.length > 0),
 			routes: parser.routes.length > 0,
 			waypoints: parser.waypoints.length > 0
 		};
@@ -45,7 +69,7 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 					properties: {
 						name: track.name,
 						desc: track.cmt, // 説明
-						time: track.desc, // 時間
+						time: getTrackTime(track), // 時間
 						src: track.src, // ソース
 						number: track.number, // 番号
 						link: track.link, // リンク
@@ -56,13 +80,37 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 						elevation_pos: track.elevation.pos, // 上昇量
 						elevation_neg: track.elevation.neg, // 下降量
 						elevation_avg: track.elevation.avg, // 平均標高
-						distance_cumul: track.distance.cumul, // 累積距離
 						slopes: track.slopes // スロープ
 						// 必要に応じてトラックのプロパティを追加
 					} as unknown as FeatureProp
 				}))
 			};
 			geojson = trackGeojson;
+		}
+
+		if (type === 'track_points') {
+			const trackPointsGeojson: FeatureCollection<PointGeometry> = {
+				type: 'FeatureCollection',
+				features: parser.tracks.flatMap((track: Track, trackIndex: number) =>
+					track.points.map((point, pointIndex) => ({
+						type: 'Feature' as const,
+						geometry: {
+							type: 'Point' as const,
+							coordinates: [point.lon, point.lat] as [number, number]
+						},
+						properties: {
+							track_name: track.name,
+							track_index: trackIndex,
+							point_index: pointIndex,
+							lat: point.lat,
+							lon: point.lon,
+							ele: point.ele,
+							time: formatGpxTime(point.time)
+						} as unknown as FeatureProp
+					}))
+				)
+			};
+			geojson = trackPointsGeojson;
 		}
 
 		if (type === 'waypoints') {
@@ -82,7 +130,7 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 						lat: waypoint.lat,
 						lon: waypoint.lon,
 						ele: waypoint.ele,
-						time: waypoint.time
+						time: formatGpxTime(waypoint.time)
 					} as unknown as FeatureProp
 				}))
 			};
