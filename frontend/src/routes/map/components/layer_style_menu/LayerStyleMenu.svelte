@@ -101,7 +101,7 @@
 				<div class="c-scroll-hidden relative flex h-full flex-col overflow-x-hidden">
 					<!-- スクロールコンテンツ -->
 					<div class="c-scroll-hidden h-full grow overflow-x-hidden rounded-lg pr-4 pb-[400px]">
-						<OpacityControl {layerEntry} previewSrc={src} />
+						<OpacityControl bind:layerEntry previewSrc={src} />
 
 						{#if layerEntry.type === 'vector'}
 							<VectorOptionMenu bind:layerEntry bind:showColorOption />
