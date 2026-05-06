@@ -39,9 +39,11 @@
 	<span class="text-2xl font-bold">タイル種別の選択</span>
 </div>
 
-<div class="flex h-full w-full grow flex-col justify-center gap-4 overflow-x-hidden overflow-y-auto">
+<div
+	class="flex h-full w-full grow flex-col justify-center gap-4 overflow-x-hidden overflow-y-auto"
+>
 	<p class="text-sm text-gray-300">
-		URLの拡張子からタイル種別を判定できませんでした。画像タイルかベクタータイルかを選択してください。
+		URLの拡張子からタイル種別を判定できませんでした。ラスタータイルかベクタータイルかを選択してください。
 	</p>
 	<div class="bg-sub rounded-lg p-3 text-xs break-all text-gray-400">
 		{pendingTileUrl}
@@ -51,9 +53,9 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
 	<button onclick={openRasterForm} class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg">
-		XYZラスターフォーム
+		ラスタータイル
 	</button>
 	<button onclick={openVectorForm} class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg">
-		ベクタータイルフォーム
+		ベクタータイル
 	</button>
 </div>
