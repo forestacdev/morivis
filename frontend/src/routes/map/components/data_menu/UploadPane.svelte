@@ -1,18 +1,178 @@
 <script lang="ts">
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { SUPPORTED_FILE_ACCEPT, SUPPORTED_FILE_GROUPS, type DialogType } from '$routes/map/types';
+	import {
+		SUPPORTED_FILE_ACCEPT,
+		SUPPORTED_FILE_EXTENSIONS,
+		SUPPORTED_FILE_GROUPS,
+		type DialogType
+	} from '$routes/map/types';
+	import { showNotification } from '$routes/stores/notification';
+	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
+		remotePmtilesUrl: string | null;
+		remoteRasterUrl: string | null;
+		remoteVectorUrl: string | null;
+		pendingTileUrl: string | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		dropFile = $bindable(),
-		showDialogType = $bindable()
+		showDialogType = $bindable(),
+		remotePmtilesUrl = $bindable(),
+		remoteRasterUrl = $bindable(),
+		remoteVectorUrl = $bindable(),
+		pendingTileUrl = $bindable()
 	}: Props = $props();
+
+	let inputUrl = $state('');
+	let isLoadingUrl = $state(false);
+
+	const getFileNameFromContentDisposition = (headerValue: string | null): string | null => {
+		if (!headerValue) return null;
+
+		const utf8Match = headerValue.match(/filename\*=UTF-8''([^;]+)/i);
+		if (utf8Match?.[1]) {
+			try {
+				return decodeURIComponent(utf8Match[1]);
+			} catch {
+				return utf8Match[1];
+			}
+		}
+
+		const plainMatch = headerValue.match(/filename="?([^";]+)"?/i);
+		return plainMatch?.[1] ?? null;
+	};
+
+	const getMatchedExtension = (fileName: string): string | null => {
+		const lowerFileName = fileName.toLowerCase();
+		const sortedExtensions = [...SUPPORTED_FILE_EXTENSIONS].sort((a, b) => b.length - a.length);
+		return sortedExtensions.find((ext) => lowerFileName.endsWith(ext)) ?? null;
+	};
+
+	const getRemoteFileName = (urlValue: string, response: Response): string | null => {
+		const contentDispositionName = getFileNameFromContentDisposition(
+			response.headers.get('content-disposition')
+		);
+		if (contentDispositionName && getMatchedExtension(contentDispositionName)) {
+			return contentDispositionName;
+		}
+
+		try {
+			const pathname = new URL(urlValue).pathname;
+			const pathName = pathname.split('/').pop();
+			if (pathName) {
+				const decodedPathName = decodeURIComponent(pathName);
+				if (getMatchedExtension(decodedPathName)) {
+					return decodedPathName;
+				}
+			}
+		} catch {
+			return null;
+		}
+
+		return null;
+	};
+
+	const getRemoteFileNameFromUrl = (urlValue: string): string | null => {
+		try {
+			const pathname = new URL(urlValue).pathname;
+			const pathName = pathname.split('/').pop();
+			return pathName ? decodeURIComponent(pathName) : null;
+		} catch {
+			return null;
+		}
+	};
+
+	const isXyzTileUrl = (urlValue: string): boolean => {
+		const lowerUrl = urlValue.toLowerCase();
+		return lowerUrl.includes('{x}') && lowerUrl.includes('{y}') && lowerUrl.includes('{z}');
+	};
+
+	const RASTER_TILE_EXTENSIONS = new Set([
+		'.png',
+		'.jpg',
+		'.jpeg',
+		'.webp',
+		'.avif',
+		'.tif',
+		'.tiff'
+	]);
+	const VECTOR_TILE_EXTENSIONS = new Set(['.pbf', '.mvt', '.geojson']);
+
+	const inputRemoteFile = async () => {
+		const trimmedUrl = inputUrl.trim();
+		if (!trimmedUrl) {
+			showNotification('URLを入力してください', 'error');
+			return;
+		}
+
+		if (!/^https?:\/\//i.test(trimmedUrl)) {
+			showNotification('http(s) で始まるURLを入力してください', 'error');
+			return;
+		}
+
+		if (isXyzTileUrl(trimmedUrl)) {
+			const remoteFileNameFromUrl = getRemoteFileNameFromUrl(trimmedUrl);
+			const matchedExtension = remoteFileNameFromUrl
+				? getMatchedExtension(remoteFileNameFromUrl)
+				: null;
+
+			if (matchedExtension && RASTER_TILE_EXTENSIONS.has(matchedExtension)) {
+				remoteRasterUrl = trimmedUrl;
+				showDialogType = 'raster';
+			} else if (matchedExtension && VECTOR_TILE_EXTENSIONS.has(matchedExtension)) {
+				remoteVectorUrl = trimmedUrl;
+				showDialogType = 'vector';
+			} else {
+				pendingTileUrl = trimmedUrl;
+				showDialogType = 'tileurltype';
+			}
+			inputUrl = '';
+			return;
+		}
+
+		const remoteFileNameFromUrl = getRemoteFileNameFromUrl(trimmedUrl);
+		if (remoteFileNameFromUrl && getMatchedExtension(remoteFileNameFromUrl) === '.pmtiles') {
+			remotePmtilesUrl = trimmedUrl;
+			showDialogType = 'pmtiles';
+			inputUrl = '';
+			return;
+		}
+
+		isLoadingUrl = true;
+		isProcessing.set(true);
+
+		try {
+			const response = await fetch(trimmedUrl);
+			if (!response.ok) {
+				throw new Error(`HTTP ${response.status}`);
+			}
+
+			const remoteFileName = getRemoteFileName(trimmedUrl, response);
+			if (!remoteFileName) {
+				showNotification('URLから対応拡張子を判定できません', 'error');
+				return;
+			}
+
+			const blob = await response.blob();
+			dropFile = new File([blob], remoteFileName, { type: blob.type });
+			inputUrl = '';
+		} catch (error) {
+			console.error('Failed to load remote file:', error);
+			showNotification(
+				'URLの読み込みに失敗しました。配信元がCORSを許可しているか確認してください',
+				'error'
+			);
+		} finally {
+			isLoadingUrl = false;
+			isProcessing.set(false);
+		}
+	};
 
 	const inputFile = async (e: Event) => {
 		const files = (e.target as HTMLInputElement).files;
@@ -192,6 +352,34 @@
 					onchange={(e) => inputFile(e)}
 				/>
 			</label>
+			<div class="flex w-full max-w-[720px] flex-col gap-3 px-4">
+				<div class="flex flex-col gap-2 text-center">
+					<span class="text-sm text-gray-300">URLから読み込む</span>
+					<span class="text-xs text-gray-500">
+						配信元がCORSを許可しているファイルURLを入力してください
+					</span>
+				</div>
+				<div class="flex w-full flex-col gap-3 sm:flex-row">
+					<input
+						type="url"
+						bind:value={inputUrl}
+						placeholder="https://example.com/data.geojson"
+						class="bg-base text-main placeholder:text-main/60 focus:ring-accent/40 w-full rounded-full px-5 py-3 focus:outline-none focus:ring-2"
+						onkeydown={async (e) => {
+							if (e.key === 'Enter' && !isLoadingUrl) {
+								await inputRemoteFile();
+							}
+						}}
+					/>
+					<button
+						onclick={inputRemoteFile}
+						disabled={isLoadingUrl}
+						class="bg-base hover:bg-accent min-w-[140px] rounded-full px-6 py-3 text-black transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+					>
+						{isLoadingUrl ? '読込中...' : 'URLを開く'}
+					</button>
+				</div>
+			</div>
 		</div>
 		<div class="flex flex-wrap items-center justify-center gap-4 px-4">
 			{#each urlDialogs as dialog}

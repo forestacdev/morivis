@@ -526,6 +526,7 @@ export const createVectorPmtilesEntry = (
 			bounds: options?.bounds ?? entry.metaData.bounds,
 			minZoom: options?.minZoom ?? entry.metaData.minZoom,
 			maxZoom: options?.maxZoom ?? entry.metaData.maxZoom,
+			attribution: 'PMTiles',
 			xyzImageTile: options?.bounds ? findCenterTile(options.bounds) : entry.metaData.xyzImageTile
 		}
 	} as VectorEntry<TileMetaData>;

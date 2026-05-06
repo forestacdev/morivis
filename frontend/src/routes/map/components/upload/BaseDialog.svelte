@@ -29,6 +29,7 @@
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 	import StacForm from '$routes/map/components/upload/form/StacForm.svelte';
+	import TileUrlTypeForm from '$routes/map/components/upload/form/TileUrlTypeForm.svelte';
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import TopoJsonForm from '$routes/map/components/upload/form/TopoJsonForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
@@ -46,6 +47,10 @@
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;
+		remotePmtilesUrl: string | null;
+		remoteRasterUrl: string | null;
+		remoteVectorUrl: string | null;
+		pendingTileUrl: string | null;
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
 		zoneConfirmedEpsg: EpsgCode | null;
@@ -60,6 +65,10 @@
 		showZoneForm = $bindable(),
 		selectedEpsgCode,
 		dropFile = $bindable(),
+		remotePmtilesUrl = $bindable(),
+		remoteRasterUrl = $bindable(),
+		remoteVectorUrl = $bindable(),
+		pendingTileUrl = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
@@ -107,7 +116,15 @@
 				/>
 			{/if}
 			{#if showDialogType === 'raster'}
-				<RasterForm bind:showDataEntry bind:showDialogType />
+				<RasterForm bind:showDataEntry bind:showDialogType bind:remoteRasterUrl />
+			{/if}
+			{#if showDialogType === 'tileurltype'}
+				<TileUrlTypeForm
+					bind:showDialogType
+					bind:pendingTileUrl
+					bind:remoteRasterUrl
+					bind:remoteVectorUrl
+				/>
 			{/if}
 			{#if showDialogType === '3dtiles'}
 				<Tiles3DForm bind:showDataEntry bind:showDialogType />
@@ -136,7 +153,12 @@
 				<DemXmlForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'pmtiles'}
-				<PmtilesForm bind:showDataEntry bind:showDialogType bind:dropFile />
+				<PmtilesForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:remotePmtilesUrl
+				/>
 			{/if}
 			{#if showDialogType === 'glb'}
 				<MeshModelForm bind:showDataEntry bind:showDialogType bind:dropFile />
@@ -167,7 +189,7 @@
 				/>
 			{/if}
 			{#if showDialogType === 'vector'}
-				<VectorForm bind:showDataEntry bind:showDialogType />
+				<VectorForm bind:showDataEntry bind:showDialogType bind:remoteVectorUrl />
 			{/if}
 			{#if showDialogType === 'geojson'}
 				<GeoJsonForm

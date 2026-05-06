@@ -72,6 +72,7 @@ export type CSSCursor =
 export type DialogType =
 	| 'raster'
 	| 'vector'
+	| 'tileurltype'
 	| 'shp'
 	| 'gpx'
 	| 'geojson'
@@ -106,7 +107,7 @@ export type DialogType =
 
 /** ファイル拡張子のグループ分け（UI表示用） */
 export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = [
-	{ label: 'GeoJSON', extensions: ['.geojson'] },
+	{ label: 'GeoJSON', extensions: ['.geojson', '.json'] },
 	{ label: 'TopoJSON', extensions: ['.topojson'] },
 	{ label: 'FlatGeobuf', extensions: ['.fgb'] },
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
