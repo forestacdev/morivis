@@ -5,6 +5,7 @@
  * GeoJSON FeatureCollectionに変換する。
  */
 import * as exifr from 'exifr';
+import { heicTo, isHeic } from 'heic-to';
 
 export interface GeoPhotoFeature {
 	type: 'Feature';
@@ -25,6 +26,28 @@ export interface GeoPhotoResult {
 	features: GeoPhotoFeature[];
 	skippedCount: number;
 }
+
+const createDisplayImageUrl = async (file: File): Promise<string> => {
+	const originalUrl = URL.createObjectURL(file);
+	const isHeicFile = await isHeic(file);
+
+	if (!isHeicFile) {
+		return originalUrl;
+	}
+
+	try {
+		const pngBlob = await heicTo({
+			blob: file,
+			type: 'image/png',
+			quality: 0.92
+		});
+
+		URL.revokeObjectURL(originalUrl);
+		return URL.createObjectURL(pngBlob);
+	} catch {
+		return originalUrl;
+	}
+};
 
 /** 単一ファイルからEXIF GPS情報を抽出 */
 const parseExifGps = async (
@@ -95,7 +118,7 @@ export const parseGeoPhotos = async (files: File[]): Promise<GeoPhotoResult> => 
 			continue;
 		}
 
-		const imageUrl = URL.createObjectURL(file);
+		const imageUrl = await createDisplayImageUrl(file);
 
 		features.push({
 			type: 'Feature',

@@ -308,6 +308,7 @@ export const createGeoJsonEntry = (
 		attribution?: string;
 		extraColorExpressions?: ColorMatchExpression[];
 		defaultColor?: string;
+		coverImage?: string;
 	}
 ): VectorEntry<GeoJsonMetaData> | undefined => {
 	const metaData: GeoJsonMetaData = {
@@ -315,6 +316,7 @@ export const createGeoJsonEntry = (
 		name,
 		bounds: bbox,
 		...(options?.attribution && { attribution: options.attribution }),
+		...(options?.coverImage && { coverImage: options.coverImage }),
 		xyzImageTile: findCenterTile(bbox)
 	};
 

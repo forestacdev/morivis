@@ -141,6 +141,7 @@
 		"gl-matrix": "^3.4.3",
 		"gpxparser": "^3.0.8",
 		"gsap": "^3.12.5",
+		"heic-to": "^1.4.2",
 		"html2canvas": "^1.4.1",
 		"jsfive": "^0.4.0",
 		"jspdf": "^4.2.1",
