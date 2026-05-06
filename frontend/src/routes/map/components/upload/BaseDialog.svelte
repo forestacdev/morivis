@@ -50,6 +50,7 @@
 		remotePmtilesUrl: string | null;
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
+		remoteTiles3dUrl: string | null;
 		pendingTileUrl: string | null;
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
@@ -68,6 +69,7 @@
 		remotePmtilesUrl = $bindable(),
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
+		remoteTiles3dUrl = $bindable(),
 		pendingTileUrl = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
@@ -127,7 +129,7 @@
 				/>
 			{/if}
 			{#if showDialogType === '3dtiles'}
-				<Tiles3DForm bind:showDataEntry bind:showDialogType />
+				<Tiles3DForm bind:showDataEntry bind:showDialogType bind:remoteTiles3dUrl />
 			{/if}
 			{#if showDialogType === 'pointcloud'}
 				<PointCloudForm

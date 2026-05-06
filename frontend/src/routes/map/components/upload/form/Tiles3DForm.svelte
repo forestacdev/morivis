@@ -11,9 +11,14 @@
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
 		showDialogType: DialogType;
+		remoteTiles3dUrl: string | null;
 	}
 
-	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		showDialogType = $bindable(),
+		remoteTiles3dUrl = $bindable()
+	}: Props = $props();
 
 	const validation = yup.object().shape({
 		name: yup.string().required('データ名を入力してください。'),
@@ -35,6 +40,32 @@
 
 	let isDisabled = $state<boolean>(true);
 	let errors = $state<Partial<Record<keyof FormSchema, string>>>({});
+
+	const getNameFromUrl = (url: string): string => {
+		try {
+			const pathname = new URL(url).pathname;
+			const segments = pathname
+				.split('/')
+				.map((segment) => decodeURIComponent(segment))
+				.filter(Boolean);
+			const namedSegment = [...segments]
+				.reverse()
+				.find((segment) => !/[{}]/.test(segment) && segment.toLowerCase() !== 'tileset.json');
+			return namedSegment?.replace(/\.[^.]+$/, '') || '3D Tiles';
+		} catch {
+			return '3D Tiles';
+		}
+	};
+
+	$effect(() => {
+		if (remoteTiles3dUrl) {
+			forms.tileUrl = remoteTiles3dUrl;
+			if (!forms.name) {
+				forms.name = getNameFromUrl(remoteTiles3dUrl);
+			}
+			remoteTiles3dUrl = null;
+		}
+	});
 
 	$effect(() => {
 		validation
@@ -67,6 +98,7 @@
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
+				remoteTiles3dUrl = null;
 			}
 		} finally {
 			isProcessing.set(false);
@@ -75,6 +107,7 @@
 
 	const cancel = () => {
 		showDialogType = null;
+		remoteTiles3dUrl = null;
 	};
 </script>
 

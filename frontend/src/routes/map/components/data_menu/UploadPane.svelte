@@ -8,6 +8,7 @@
 	} from '$routes/map/types';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
+	import { slide } from 'svelte/transition';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -16,6 +17,7 @@
 		remotePmtilesUrl: string | null;
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
+		remoteTiles3dUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -26,11 +28,22 @@
 		remotePmtilesUrl = $bindable(),
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
+		remoteTiles3dUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
 	let inputUrl = $state('');
 	let isLoadingUrl = $state(false);
+	let hasTouchedUrlInput = $state(false);
+
+	const trimmedInputUrl = $derived(inputUrl.trim());
+	const urlInputError = $derived.by(() => {
+		if (!hasTouchedUrlInput) return '';
+		if (!trimmedInputUrl) return 'URLを入力してください';
+		if (!/^https?:\/\//i.test(trimmedInputUrl)) return 'http(s) で始まるURLを入力してください';
+		return '';
+	});
+	const isUrlInputValid = $derived(trimmedInputUrl.length > 0 && !urlInputError);
 
 	const getFileNameFromContentDisposition = (headerValue: string | null): string | null => {
 		if (!headerValue) return null;
@@ -99,6 +112,14 @@
 		return lowerUrl.includes('{x}') && lowerUrl.includes('{y}') && lowerUrl.includes('{z}');
 	};
 
+	const isTilesetJsonUrl = (urlValue: string): boolean => {
+		try {
+			return new URL(urlValue).pathname.toLowerCase().endsWith('/tileset.json');
+		} catch {
+			return false;
+		}
+	};
+
 	const RASTER_TILE_EXTENSIONS = new Set([
 		'.png',
 		'.jpg',
@@ -111,7 +132,8 @@
 	const VECTOR_TILE_EXTENSIONS = new Set(['.pbf', '.mvt', '.geojson']);
 
 	const inputRemoteFile = async () => {
-		const trimmedUrl = inputUrl.trim();
+		hasTouchedUrlInput = true;
+		const trimmedUrl = trimmedInputUrl;
 		if (!trimmedUrl) {
 			showNotification('URLを入力してください', 'error');
 			return;
@@ -119,6 +141,14 @@
 
 		if (!/^https?:\/\//i.test(trimmedUrl)) {
 			showNotification('http(s) で始まるURLを入力してください', 'error');
+			return;
+		}
+
+		if (isTilesetJsonUrl(trimmedUrl)) {
+			remoteTiles3dUrl = trimmedUrl;
+			showDialogType = '3dtiles';
+			inputUrl = '';
+			hasTouchedUrlInput = false;
 			return;
 		}
 
@@ -139,6 +169,7 @@
 				showDialogType = 'tileurltype';
 			}
 			inputUrl = '';
+			hasTouchedUrlInput = false;
 			return;
 		}
 
@@ -147,6 +178,7 @@
 			remotePmtilesUrl = trimmedUrl;
 			showDialogType = 'pmtiles';
 			inputUrl = '';
+			hasTouchedUrlInput = false;
 			return;
 		}
 
@@ -168,6 +200,7 @@
 			const blob = await response.blob();
 			dropFile = new File([blob], remoteFileName, { type: blob.type });
 			inputUrl = '';
+			hasTouchedUrlInput = false;
 		} catch (error) {
 			console.error('Failed to load remote file:', error);
 			showNotification(
@@ -366,25 +399,38 @@
 					</span>
 				</div>
 				<div class="flex w-full flex-col gap-3 sm:flex-row">
-					<input
-						type="url"
-						bind:value={inputUrl}
-						placeholder="https://example.com/data.geojson"
-						class="bg-base text-main placeholder:text-main/60 focus:ring-accent/40 w-full rounded-full px-5 py-3 focus:outline-none focus:ring-2"
-						onkeydown={async (e) => {
-							if (e.key === 'Enter' && !isLoadingUrl) {
-								await inputRemoteFile();
-							}
-						}}
-					/>
+					<div class="flex w-full flex-col gap-2">
+						<input
+							type="url"
+							bind:value={inputUrl}
+							placeholder="https://example.com/data.geojson"
+							class="bg-base text-main placeholder:text-main/60 focus:ring-accent/40 w-full rounded-full px-5 py-3 focus:ring-2 focus:outline-none {urlInputError
+								? 'ring-2 ring-red-500/70'
+								: ''}"
+							oninput={() => {
+								hasTouchedUrlInput = true;
+							}}
+							onblur={() => {
+								hasTouchedUrlInput = true;
+							}}
+							onkeydown={async (e) => {
+								if (e.key === 'Enter' && !isLoadingUrl && isUrlInputValid) {
+									await inputRemoteFile();
+								}
+							}}
+						/>
+					</div>
 					<button
 						onclick={inputRemoteFile}
-						disabled={isLoadingUrl}
+						disabled={isLoadingUrl || !isUrlInputValid}
 						class="bg-base hover:bg-accent min-w-[140px] rounded-full px-6 py-3 text-black transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
 					>
 						{isLoadingUrl ? '読込中...' : 'URLを開く'}
 					</button>
 				</div>
+				{#if urlInputError}
+					<span transition:slide class="text-xs text-red-400">{urlInputError}</span>
+				{/if}
 			</div>
 		</div>
 		<div class="flex flex-wrap items-center justify-center gap-4 px-4">
