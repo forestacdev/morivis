@@ -1,338 +1,224 @@
 # データパイプライン
 
-morivisのデータ入力からレンダリングまでの全体フローを記載する。
+morivis では、アップロードや URL 入力で受け取ったデータを `GeoDataEntry` に正規化し、`Map.svelte` がその内容から MapLibre の `sources` と `layers` を再生成して描画する。  
+この文書は、現行実装の入力判定、パーサー、座標変換、protocol、worker の流れをまとめたもの。
 
-## アーキテクチャ概要
+## 全体フロー
 
 ```mermaid
 graph LR
-    subgraph Input["入力"]
-        F_GJ[".geojson / .fgb"]
-        F_SHP[".shp + .dbf + .shx"]
-        F_CSV[".csv"]
-        F_GPX[".gpx"]
-        F_GML[".gml / .xml (GML)"]
-        F_KML[".kml / .kmz"]
-        F_TOPO[".topojson"]
-        F_DXF[".dxf"]
-        F_DM[".dm"]
-        F_SIMA[".sim"]
-        F_GPKG[".gpkg"]
-        F_MOJ[".xml (法務局地図)"]
-        F_TIF[".tif / .png / .jpg"]
-        F_PMT[".pmtiles"]
-        F_MBT[".mbtiles"]
-        F_GLB[".glb / .obj"]
-        F_PC[".las / .laz / .ply / .pcd / .xyz"]
-        F_H5[".h5"]
-        F_NC[".nc / .nc4"]
-        F_DEM[".xml (基盤地図DEM)"]
-        F_GRB[".bin / .grib2 / .grb2"]
-        F_LX[".xml / .landxml (LandXML)"]
-        F_PHOTO[".jpg (EXIF GPS)"]
-        F_ZIP[".zip / フォルダ"]
-        U_XYZ["XYZタイルURL"]
-        U_WMS["WMTS/WMS URL"]
-        U_ARC["ArcGIS URL"]
-        U_3DT["3D Tiles URL"]
-        U_VEC["ベクタータイルURL"]
-        U_STAC["STAC/COG URL"]
-    end
-
-    subgraph Parsers["パーサー"]
-        P_GJ["geojson.ts"]
-        P_SHP["shp.ts"]
-        P_CSV["csv.ts"]
-        P_GPX["gpx.ts"]
-        P_GML["gml.ts"]
-        P_KML["kml.ts"]
-        P_TOPO["topojson.ts"]
-        P_DXF["dxf.ts"]
-        P_DM["dm/"]
-        P_SIMA["sima.ts"]
-        P_GPKG["gpkg.ts (sql.js)"]
-        P_MOJ["mojxml.ts (proj4内蔵)"]
-        P_TIF["geotiff/ (geotiff.js)"]
-        P_NC["netcdfjs"]
-        P_DEM["dem-xml/ (Worker x4)"]
-        P_GRB["grib2.ts"]
-        P_H5["jsfive + スワスリサンプリング"]
-        P_LX["landxml.ts (TIN→Workerラスタライズ)"]
-        P_STAC["stac.ts → cog-proxy → geotiff.js"]
-        P_COG["CogTileManager (Range request)"]
-        P_PC["点群パーサー (loaders.gl / xyz.ts)"]
-        P_EXIF["exif.ts (exifr)"]
-        P_PBF["arcgis-pbf-parser"]
-    end
-
-    subgraph ProjTransform["座標変換"]
-        PRJ["proj4 Worker並列\n(transformGeoJSONParallel)\n不明→ZoneForm"]
-    end
-
-    subgraph TerrariumPipeline["Terrariumパイプライン"]
-        TER["Terrarium\nエンコード Worker"]
-        CACHE["GeoTiffCache\n(markAs4326)"]
-        WEBGL["WebGLシェーダー\n再投影 4326→WebMercator\nカラーマップ適用"]
-    end
-
-    subgraph CogPipeline["COGタイルパイプライン"]
-        COG_TRI["Triangulation\n(適応的三角形分割)"]
-        COG_WGL["WebGL Worker\n(カラーマップ/RGB合成)"]
-    end
-
-    subgraph PcTransform["点群座標変換"]
-        PCS["proj4 Worker"]
-    end
-
-    subgraph Entries["エントリ"]
-        VE["VectorEntry"]
-        RE["RasterEntry"]
-        ME["ModelEntry"]
-    end
-
-    subgraph Protocol["カスタムプロトコル"]
-        PR1["geojson://"]
-        PR2["pmtiles://"]
-        PR3["mbtiles://"]
-        PR4["esri-feature://"]
-        PR5["webgl://"]
-        PR6["cog://"]
-    end
-
-    subgraph Sources["MapLibreソース"]
-        GJS["GeoJSONSource"]
-        VTS["VectorSource"]
-        RTS["RasterSource"]
-        IMS["ImageSource"]
-    end
-
-    subgraph Render["レンダリング"]
-        ML["MapLibre GL JS"]
-        DK["deck.gl"]
-        TH["three.js"]
-    end
-
-    CV["Map Canvas"]
-
-    %% ベクターパーサー
-    F_GJ --> P_GJ
-    F_SHP --> P_SHP
-    F_CSV --> P_CSV
-    F_GPX --> P_GPX
-    F_GML --> P_GML
-    F_KML --> P_KML
-    F_TOPO --> P_TOPO
-    F_DXF --> P_DXF
-    F_DM --> P_DM
-    F_SIMA --> P_SIMA
-    F_GPKG --> P_GPKG
-    F_MOJ --> P_MOJ
-    F_PHOTO --> P_EXIF
-
-    %% ベクター → 座標変換 → エントリ
-    P_GJ & P_SHP & P_CSV & P_GPX & P_GML & P_KML & P_TOPO & P_DXF & P_DM & P_SIMA & P_GPKG & P_MOJ & P_EXIF --> PRJ
-    PRJ --> VE
-
-    %% ラスターパーサー
-    F_TIF --> P_TIF
-    F_NC --> P_NC
-    F_DEM --> P_DEM
-    F_GRB --> P_GRB
-    F_H5 --> P_H5
-    F_LX --> P_LX
-    U_STAC --> P_STAC
-    U_STAC --> P_COG
-
-    %% ラスター → Terrarium → エントリ
-    P_TIF & P_NC & P_DEM & P_GRB & P_H5 & P_LX & P_STAC --> TER
-    TER --> CACHE --> WEBGL --> RE
-
-    %% COGタイル → エントリ
-    P_COG --> COG_TRI --> COG_WGL --> RE
-
-    %% タイル系 → エントリ
-    F_PMT --> RE
-    F_MBT --> RE
-    U_XYZ & U_WMS --> RE
-    U_ARC --> P_PBF --> RE
-    U_VEC --> VE
-
-    %% 3D/点群 → エントリ
-    F_GLB --> ME
-    U_3DT --> ME
-    F_PC --> P_PC --> PCS --> ME
-
-    %% エントリ → プロトコル → ソース
-    VE -->|geojson/fgb| GJS
-    VE -->|geojsontile| PR1 --> VTS
-    VE -->|pmtiles| PR2 --> VTS
-    VE -->|mbtiles| PR3 --> VTS
-    VE -->|esri-feature| PR4 --> VTS
-    RE -->|image/tiff| IMS
-    RE -->|pmtiles| PR2 --> RTS
-    RE -->|mbtiles| PR3 --> RTS
-    RE -->|dem| PR5 --> RTS
-    RE -->|cog| PR6 --> RTS
-
-    %% ソース → レンダラー → キャンバス
-    GJS & VTS --> ML
-    RTS & IMS --> ML
-    ME -->|3d-tiles / point-cloud| DK
-    ME -->|gltf / obj| TH
-    ML & DK & TH --> CV
+    A[ファイル / URL入力] --> B[UploadPane]
+    B --> C[FileManager]
+    C --> D[各 Form]
+    D --> E[パーサー / メタデータ解析]
+    E --> F{座標系が確定しているか}
+    F -- yes --> G[Entry作成]
+    F -- no --> H[ZoneForm / GeoRefForm]
+    H --> G
+    G --> I[layerEntries]
+    I --> J[Map.svelte createMapStyle]
+    J --> K[createSourcesItems / createLayersItems]
+    K --> L[mapStore.setStyle]
+    L --> M[MapLibre GL JS]
+    I --> N[deck.gl / three.js]
 ```
 
-## 対応データ形式一覧
+## 入力判定
 
-### ベクター（ファイル）
+`frontend/src/routes/map/components/upload/FileManager.svelte` がファイル種別を振り分ける。単純な拡張子判定だけでなく、いくつかの形式は中身も見ている。
 
-| 形式 | 拡張子 | フォーム | 変換 | format type | ソース | レンダラー |
-|---|---|---|---|---|---|---|
-| GeoJSON | .geojson | GeoJsonForm | proj4 | geojson | GeoJSONSource | MapLibre |
-| FlatGeobuf | .fgb | GeoJsonForm | proj4 | fgb | GeoJSONSource | MapLibre |
-| Shapefile | .shp+.dbf+.prj+.shx | ShapeFileForm | proj4 Worker並列 | geojson | GeoJSONSource | MapLibre |
-| GeoPackage | .gpkg | GpkgForm | proj4 | geojson | GeoJSONSource | MapLibre |
-| GPX | .gpx | GpxForm | - | geojson | GeoJSONSource | MapLibre |
-| GML | .gml / .xml | GmlForm | proj4 | geojson | GeoJSONSource | MapLibre |
-| KML/KMZ | .kml / .kmz | KmlForm | proj4 | geojson | GeoJSONSource | MapLibre |
-| TopoJSON | .topojson | TopoJsonForm | proj4 | geojson | GeoJSONSource | MapLibre |
-| CSV | .csv | CsvForm | 緯度経度→Point | geojson | GeoJSONSource | MapLibre |
-| DXF | .dxf | DxfForm | proj4 | geojson | GeoJSONSource | MapLibre |
-| DM | .dm | DmForm | - | geojson | GeoJSONSource | MapLibre |
-| SIMA | .sim | SimaForm | - | geojson | GeoJSONSource | MapLibre |
-| 法務局地図XML | .xml | MojXmlForm | proj4 (内蔵) | geojson | GeoJSONSource | MapLibre |
-| 位置情報付き写真 | .jpg/.heic | GeoPhotoForm | EXIF GPS (exifr) | geojson | GeoJSONSource | MapLibre |
+### 単一ファイル
 
-### ベクター（タイルサービス）
+| 判定 | 遷移先 |
+|---|---|
+| `.geojson` `.json` `.fgb` | `GeoJsonForm` |
+| `.topojson` | `TopoJsonForm` |
+| `.gpx` | `GpxForm` |
+| `.osm` | `OsmForm` |
+| `.gml` | `GmlForm` |
+| `.kml` `.kmz` | `KmlForm` |
+| `.csv` | `CsvForm` |
+| `.gpkg` | `GpkgForm` |
+| `.pmtiles` | `PmtilesForm` |
+| `.mbtiles` | `MBTilesForm` |
+| `.las` `.laz` `.ply` `.pcd` `.xyz` | `PointCloudForm` |
+| `.glb` `.obj` | `MeshModelForm` |
+| `.nc` `.nc4` | `NetCDFForm` |
+| `.grib2` `.grb2` `.grb` `.bin` | `Grib2Form` |
+| `.landxml` | `LandXmlForm` |
+| `.dm` `.dxf` `.sim` | 専用 Form |
+| `.pdf` | `GeoPdfForm` |
+| `.tif` `.tiff` `.png` `.webp` | `GeoPdfForm` |
+| `.jpg` `.jpeg` `.heic` `.heif` | EXIF GPS があれば `GeoPhotoForm`、なければ `GeoPdfForm` |
 
-| 形式 | 入力 | フォーム | プロトコル | format type | ソース | レンダラー |
-|---|---|---|---|---|---|---|
-| PBF (MVT) | URL | VectorForm | - | mvt | VectorSource/tiles | MapLibre |
-| GeoJSONタイル | URL | VectorForm | geojson:// | geojsontile | VectorSource/tiles | MapLibre |
-| PMTiles (vector) | URL/ファイル | PmtilesForm | pmtiles:// | pmtiles | VectorSource/url | MapLibre |
-| MBTiles (vector) | ファイル | MBTilesForm | mbtiles:// | mbtiles | VectorSource/tiles | MapLibre |
-| ArcGIS FeatureServer | URL | ArcGisForm | esri-feature:// | esri-feature | VectorSource/tiles | MapLibre |
+### 特殊判定
 
-### ラスター（ファイル）
+| 判定 | 内容 |
+|---|---|
+| `.zip` | 先に GTFS ZIP を判定し、該当すれば `GtfsForm`。違う場合は展開して中のファイルを再判定する |
+| `.xml` | 先頭を読んで `DEM XML` → `GML` → `LandXML` → `法務局地図XML` の順で判定する |
+| 複数ファイル | Shapefile 一式、GeoTIFF + ワールドファイル、OBJ + MTL + テクスチャのまとまりとして扱う |
 
-| 形式 | 拡張子 | フォーム | 変換 | format type | ソース | レンダラー |
-|---|---|---|---|---|---|---|
-| GeoTIFF | .tif/.tiff | GeoTiffForm | Terrarium Worker | tiff | ImageSource | MapLibre |
-| PNG/JPEG + aux.xml | .png/.jpg + .aux.xml | GeoTiffForm | Terrarium Worker | tiff | ImageSource | MapLibre |
-| PNG/JPEG + ワールドファイル | .png/.jpg + .pgw/.jgw | GeoTiffForm | Terrarium Worker | tiff | ImageSource | MapLibre |
-| NetCDF | .nc/.nc4 | NetCDFForm | netcdfjs + Terrarium Worker | tiff | ImageSource | MapLibre |
-| 基盤地図情報 DEM XML | .xml/.zip | DemXmlForm | XML Worker x4 + Terrarium Worker | tiff | ImageSource | MapLibre |
-| GRIB2 (GPV) | .bin/.grib2/.grb2 | Grib2Form | GRIB2パーサー + Terrarium Worker | tiff | ImageSource | MapLibre |
-| HDF5 | .h5 | Hdf5Form | jsfive + スワスリサンプリング + Terrarium Worker | tiff | ImageSource | MapLibre |
-| LandXML | .xml/.landxml | LandXmlForm | TIN→Workerラスタライズ + Terrarium Worker | tiff | ImageSource | MapLibre |
+## 形式別パイプライン
 
-### ラスター（リモート）
+### ベクター系ファイル
 
-| 形式 | 入力 | フォーム | 変換 | format type | ソース | レンダラー |
-|---|---|---|---|---|---|---|
-| STAC API / COG (小) | URL | StacForm | geotiff.js + Terrarium Worker | tiff | ImageSource | MapLibre |
-| STAC API / COG (大) | URL | StacForm | CogTileManager + Triangulation + WebGL Worker | cog | RasterSource (cog://) | MapLibre |
-| COG直URL (小) | .tif URL | StacForm | geotiff.js + Terrarium Worker | tiff | ImageSource | MapLibre |
-| COG直URL (大) | .tif URL | StacForm | CogTileManager + Triangulation + WebGL Worker | cog | RasterSource (cog://) | MapLibre |
-
-### ラスター（タイルサービス）
-
-| 形式 | 入力 | フォーム | プロトコル | format type | ソース | レンダラー |
-|---|---|---|---|---|---|---|
-| XYZ画像タイル | URL | RasterForm | - | image | RasterSource/tiles | MapLibre |
-| XYZ DEMタイル | URL | RasterForm | webgl:// | image (dem) | RasterSource/tiles | MapLibre |
-| WMS/WMTS | URL | WmtsForm | - | image | RasterSource/tiles | MapLibre |
-| PMTiles (raster) | URL/ファイル | PmtilesForm | pmtiles:// | pmtiles | RasterSource/url | MapLibre |
-| MBTiles (raster) | ファイル | MBTilesForm | mbtiles:// | mbtiles | RasterSource/tiles | MapLibre |
-| ArcGIS MapServer | URL | ArcGisForm | - | image | RasterSource/tiles | MapLibre |
-
-### 3Dモデル・点群
-
-| 形式 | 拡張子/入力 | フォーム | 変換 | format type | レンダラー |
-|---|---|---|---|---|---|
-| GLB/glTF | .glb | MeshModelForm | - | gltf | three.js |
-| OBJ (+MTL+テクスチャ) | .obj+.mtl+画像 | MeshModelForm | OBJLoader+MTLLoader | obj | three.js |
-| 3D Tiles | URL (tileset.json) | Tiles3DForm | - | 3d-tiles | deck.gl (Tile3DLayer) |
-| LAS/LAZ | .las/.laz | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
-| PLY | .ply | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
-| PCD | .pcd | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
-| XYZ点群 | .xyz | PointCloudForm | proj4 Worker | point-cloud | deck.gl (PointCloudLayer) |
-
-## カスタムプロトコル
-
-MapLibreの`addProtocol`を使って、独自のタイル配信プロトコルを実装している。
-
-| プロトコル | 用途 | Worker | ライフサイクル |
+| 入力 | Form | 主な処理 | 結果 |
 |---|---|---|---|
-| `geojson://` | GeoJSONタイル化 | protocol_geojson.worker | 動的登録/解除 |
-| `pmtiles://` | PMTilesアーカイブ読み込み | - (pmtilesライブラリ) | 常時起動 |
-| `mbtiles://` | MBTilesファイル読み込み (sql.js) | - (Wasm) | 動的登録/解除 |
-| `esri-feature://` | ArcGIS FeatureServer bbox PBFクエリ | protocol_esri_feature.worker | 動的登録/解除 |
-| `webgl://` | DEM標高シェーダー処理 | protocol_dem.worker | 常時起動 |
-| `cog://` | COGタイルレンダリング | protocol_cog.worker (x2) | 動的登録/解除 |
+| GeoJSON / JSON | `GeoJsonForm` | JSON 解析 | `VectorEntry` `format.type: 'geojson'` |
+| FlatGeobuf | `GeoJsonForm` | FlatGeobuf 読み込み | `VectorEntry` `format.type: 'fgb'` |
+| TopoJSON | `TopoJsonForm` | TopoJSON を GeoJSON に変換 | `VectorEntry` `format.type: 'geojson'` |
+| Shapefile | `ShapeFileForm` | `.shp` `.dbf` `.shx` を結合して GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| GeoPackage | `GpkgForm` | SQLite を worker で解析 | `VectorEntry` `format.type: 'geojson'` |
+| GPX | `GpxForm` | track / route / waypoint を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| GML | `GmlForm` | 基盤地図情報系は自前処理、汎用 GML は OpenLayers ベースで変換 | `VectorEntry` `format.type: 'geojson'` |
+| KML / KMZ | `KmlForm` | KML 解析、KMZ は展開後に処理 | `VectorEntry` `format.type: 'geojson'` |
+| OSM XML | `OsmForm` | `osmtogeojson` で GeoJSON 化し、ジオメトリ種別ごとに登録 | `VectorEntry` `format.type: 'geojson'` |
+| CSV | `CsvForm` | 指定列から座標を作って Point 化 | `VectorEntry` `format.type: 'geojson'` |
+| DXF | `DxfForm` | CAD 図面を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| DM | `DmForm` | 国土地理院 DM を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| SIMA | `SimaForm` | SIMA を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| 法務局地図 XML | `MojXmlForm` | XML と内蔵座標系定義から GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| GeoPhoto | `GeoPhotoForm` | EXIF GPS を Point に変換 | `VectorEntry` `format.type: 'geojson'` |
+| GTFS ZIP | `GtfsForm` | ZIP を解析し、停留所または路線を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| GeoPDF 内蔵ベクター | `GeoPdfForm` | worker でベクター抽出 | `VectorEntry` `format.type: 'geojson'` |
 
-## エントリ型システム
+### ラスター系ファイル
 
-```
-GeoDataEntry (Union)
-├── VectorEntry<MetaData>
-│   ├── format.type: geojson | fgb | mvt | pmtiles | mbtiles | geojsontile | esri-feature
-│   ├── format.geometryType: Point | LineString | Polygon | Label
-│   └── style: PointStyle | LineStyle | PolygonStyle
-│       ├── colors: ColorsStyle (single | match | step | linear)
-│       ├── numbers: NumbersStyle
-│       ├── labels: LabelsStyle
-│       └── extrusion / heatmap / pattern
-│
-├── RasterEntry<Style>
-│   ├── format.type: image | pmtiles | mbtiles | cog | tiff
-│   └── style: RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
-│       ├── opacity, visible, minZoom, maxZoom
-│       └── visualization (DEM: relief/slope/aspect/curvature, Tiff: single/multi band)
-│
-└── ModelEntry
-    ├── ModelMeshEntry<MeshStyle>     → three.js (GLB/OBJ)
-    │   └── transform: { lng, lat, altitude, heightOffset, scale, rotationX/Y/Z }
-    ├── ModelTiles3DEntry<Style>      → deck.gl (3D Tiles)
-    └── ModelPointCloudEntry          → deck.gl (LAS/LAZ/PLY/PCD/XYZ)
-```
+| 入力 | Form | 主な処理 | 結果 |
+|---|---|---|---|
+| GeoTIFF | `GeoTiffForm` | geotiff.js で読んで Terrarium へエンコード | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` |
+| PNG / JPEG / WebP + ワールドファイル | `GeoTiffForm` | ジオリファレンス情報を使って画像登録 | `RasterEntry` `format.type: 'image'` |
+| GeoPDF 画像 | `GeoPdfForm` | 画像化し、必要なら手動ジオリファレンス | `RasterEntry` `format.type: 'image'` |
+| NetCDF | `NetCDFForm` | バンドを読み、Terrarium 化 | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` |
+| DEM XML | `DemXmlForm` | XML を worker 並列解析して標高配列を作る | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` |
+| GRIB2 | `Grib2Form` | 気象格子を読み、Terrarium 化 | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` |
+| HDF5 | `Hdf5Form` | HDF5 を読み、バンドを Terrarium 化 | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` |
+| LandXML | `LandXmlForm` | TIN を worker でラスタライズして Terrarium 化 | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` |
+
+### タイル・リモート配信
+
+| 入力 | Form | 主な処理 | 結果 |
+|---|---|---|---|
+| XYZ ラスター URL | `RasterForm` | URL と tileSize を設定 | `RasterEntry` `format.type: 'image'` |
+| XYZ DEM URL | `RasterForm` | `createDemRasterEntry` で登録 | `RasterEntry` `format.type: 'image'` + `style.type: 'dem'` |
+| WMTS / WMS URL | `WmtsForm` | capabilities を読んでタイル URL を組み立てる | `RasterEntry` `format.type: 'image'` |
+| PMTiles | `PmtilesForm` | メタデータを読んで vector / raster を判定 | `VectorEntry` or `RasterEntry` `format.type: 'pmtiles'` |
+| MBTiles | `MBTilesForm` | ファイル解析後、vector / raster を判定 | `VectorEntry` or `RasterEntry` `format.type: 'mbtiles'` |
+| ベクタータイル URL | `VectorForm` | MVT か GeoJSON Tile かを選んで登録 | `VectorEntry` `format.type: 'mvt'` or `geojsontile` |
+| ArcGIS FeatureServer | `ArcGisForm` | レイヤー情報を取得し、bbox クエリ用 entry を作る | `VectorEntry` `format.type: 'esri-feature'` |
+| ArcGIS MapServer | `ArcGisForm` | タイル URL を組み立てる | `RasterEntry` `format.type: 'image'` |
+| STAC / COG URL | `StacForm` | 小さい画像は全体読込、大きい画像は COG タイル配信 | `RasterEntry` `format.type: 'image'` or `'cog'` |
+
+### 3D・点群
+
+| 入力 | Form | 主な処理 | 結果 |
+|---|---|---|---|
+| GLB / OBJ | `MeshModelForm` | メッシュとして登録 | `ModelEntry` |
+| 3D Tiles URL | `Tiles3DForm` | `tileset.json` を登録 | `ModelEntry` |
+| LAS / LAZ / PLY / PCD / XYZ | `PointCloudForm` | 点群を読み、必要なら座標変換 | `ModelEntry` |
+
+## 座標変換と補助フォーム
+
+### ZoneForm
+
+ベクターや点群でバウンディングボックスが不正な場合は、自動登録せず `ZoneForm` に遷移する。  
+確定後は `transformGeoJSONParallel()` または点群用 transformer worker で WGS84 に変換してから entry を作る。
+
+### GeoRefForm
+
+GeoPDF や画像系で空間参照が足りない場合は `GeoRefForm` を使う。  
+ここで確定したコーナー座標や bbox が `metaData.imageCorners` や bounds に入る。
+
+## Entry とソース生成
+
+`Map.svelte` は `layerEntries` と preview 対象から `createMapStyle()` を実行し、`createSourcesItems()` と `createLayersItems()` に委譲する。
+
+### VectorEntry
+
+| format.type | MapLibre source |
+|---|---|
+| `geojson` `fgb` | `GeoJSONSource` |
+| `mvt` | `VectorSource` |
+| `pmtiles` | `VectorSource` |
+| `mbtiles` | `VectorSource` |
+| `geojsontile` | `VectorSource` |
+| `esri-feature` | `VectorSource` |
+
+### RasterEntry
+
+| format.type | style.type | MapLibre source |
+|---|---|---|
+| `image` | `tiff` | `ImageSource` |
+| `image` | `dem` | `RasterSource` |
+| `image` | その他 | `RasterSource` |
+| `pmtiles` | `dem` 以外 | `RasterSource` |
+| `pmtiles` | `dem` | `RasterSource` |
+| `mbtiles` | raster | `RasterSource` |
+| `cog` | `tiff` | `RasterSource` |
+
+### ModelEntry
+
+- 3D Tiles と点群は deck.gl overlay で描画する
+- GLB / OBJ は three.js のカスタムレイヤーで描画する
+
+## カスタム protocol
+
+`frontend/src/routes/stores/map.ts` で `MapLibre.addProtocol()` を管理している。
+
+| protocol | 用途 | 実装 | 登録タイミング |
+|---|---|---|---|
+| `pmtiles://` | PMTiles の読み出し | `pmtiles` ライブラリ | 起動時に常時登録 |
+| `webgl://` | DEM タイルの陰影・傾斜・方位・曲率レンダリング | `protocol/raster` | DEM 利用時に登録 |
+| `cog://` | COG のタイルレンダリング | `protocol/cog` | COG 利用時に登録 |
+| `mbtiles://` | MBTiles ファイルのタイル配信 | `protocol/mbtiles` | MBTiles 利用時に登録 |
+| `geojson://` | GeoJSON タイル化 | `protocol/vector/geojson` | GeoJSON タイル利用時に登録 |
+| `esri-feature://` | ArcGIS FeatureServer を bbox 単位でタイル化 | `protocol/vector/esri-feature` | ArcGIS vector 利用時に登録 |
+| `tile_index://` | XYZ タイル境界の可視化 | `protocol/vector/tileindex` | タイル索引表示時に登録 |
+
+`terrain` protocol はソースコードに残っているが、現在は停止している。
+
+## Worker 一覧
+
+| Worker | パス | 用途 |
+|---|---|---|
+| `transformer` | `frontend/src/routes/map/utils/proj/transformer.worker.ts` | GeoJSON 座標変換 |
+| `pointcloud_transformer` | `frontend/src/routes/map/utils/proj/pointcloud_transformer.worker.ts` | 点群座標変換 |
+| `gpkg` | `frontend/src/routes/map/utils/formats/gpkg/gpkg.worker.ts` | GeoPackage 解析 |
+| `xml-parser` | `frontend/src/routes/map/utils/formats/dem-xml/xml-parser.worker.ts` | DEM XML 解析 |
+| `terrarium_encode` | `frontend/src/routes/map/utils/formats/geotiff/terrarium_encode.worker.ts` | バンド値から Terrarium PNG を生成 |
+| `terrarium_render` | `frontend/src/routes/map/utils/formats/geotiff/terrarium_render.worker.ts` | Terrarium PNG の描画と再投影 |
+| `landxml rasterize` | `frontend/src/routes/map/utils/formats/landxml/rasterize.worker.ts` | TIN のラスタライズ |
+| `geopdf vector-parse` | `frontend/src/routes/map/utils/formats/geopdf/vector-parse.worker.ts` | GeoPDF 内蔵ベクター抽出 |
+| `protocol_geojson` | `frontend/src/routes/map/protocol/vector/geojson/protocol_geojson.worker.ts` | GeoJSON のベクタータイル化 |
+| `protocol_esri_feature` | `frontend/src/routes/map/protocol/vector/esri-feature/protocol_esri_feature.worker.ts` | ArcGIS PBF のデコードとタイル化 |
+| `tile_index` | `frontend/src/routes/map/protocol/vector/tileindex/tile_index.worker.ts` | タイル index 表示用 GeoJSON 生成 |
+| `protocol_dem` | `frontend/src/routes/map/protocol/raster/protocol_dem.worker.ts` | DEM タイルの WebGL レンダリング |
+| `protocol_cog` | `frontend/src/routes/map/protocol/cog/protocol_cog.worker.ts` | COG タイルの描画 |
+| `generation_icon` | `frontend/src/routes/map/utils/icon/generation_icon.worker.ts` | POI アイコン生成 |
 
 ## スタイル更新フロー
 
+このプロジェクトでは、MapLibre のレイヤーを直接つまむより `mapStore.setStyle()` でスタイルを作り直す流れを基本にしている。
+
+```text
+入力データや表示設定の変更
+  ↓
+Map.svelte のリアクティブ処理
+  ↓
+createMapStyle()
+  ↓
+createSourcesItems() / createLayersItems()
+  ↓
+setStyleDebounce()
+  ↓
+mapStore.setStyle()
+  ↓
+MapLibre が差分適用
 ```
-リアクティブな値の変更
-    ↓
-Map.svelte: createMapStyle() でスタイル定義(sources, layers)を再生成
-    ↓
-setStyleDebounce → mapStore.setStyle()
-    ↓
-MapLibre GL JS がスタイルを適用・差分更新
-```
 
-- `mapStore.setStyle()`を通じてスタイルを変更するのが基本
-- `mapStore.setData()`や`mapStore.setFilter()`による命令的な直接操作は避ける
-- deck.glレイヤーは`mapStore.setDeckOverlay()`で別途管理
-- three.jsレイヤーは`mapStore.setThreeLayer()`で別途管理
+補足:
 
-## Worker一覧
-
-| Worker | パス | 用途 | ライフサイクル |
-|---|---|---|---|
-| terrarium_encode | geotiff/terrarium_encode.worker.ts | バンドデータ→Terrarium PNGエンコード | 遅延初期化、エンコード完了後terminate |
-| terrarium_render | geotiff/terrarium_render.worker.ts | Terrarium PNG→最終画像レンダリング(WebGL) | 遅延初期化、全TIFFエントリ解放後terminate |
-| transformer | proj/transformer.worker.ts | GeoJSON座標変換(並列) | 変換時に起動、完了後terminate |
-| pointcloud_transformer | proj/pointcloud_transformer.worker.ts | 点群座標変換 | 変換時に起動、完了後terminate |
-| xml-parser | file/dem-xml/xml-parser.worker.ts | 基盤地図DEM XMLパース(4並列) | 解析時に起動、完了後terminate |
-| protocol_geojson | protocol/vector/geojson/protocol_geojson.worker.ts | GeoJSON→ベクタータイル化 | 動的登録/解除 |
-| protocol_esri_feature | protocol/vector/esri-feature/protocol_esri_feature.worker.ts | ArcGIS PBF→ベクタータイル化 | 動的登録/解除 |
-| protocol_dem | protocol/raster/protocol_dem.worker.ts | DEM標高→シェーダー画像 | オンデマンド |
-| protocol_cog | protocol/cog/protocol_cog.worker.ts | COGタイル→カラーマップ/RGB合成(WebGL) | 動的登録/解除 (x2 Worker Pool) |
-| generation_icon | utils/icon/generation_icon.worker.ts | アイコン画像生成 | 常時起動 |
-
-## レンダラー
-
-| レンダラー | 用途 | 統合方法 |
-|---|---|---|
-| **MapLibre GL JS** | ラスター・ベクター地図の描画 | メインの地図エンジン |
-| **deck.gl** | 3D Tiles・点群の描画 | `MapboxOverlay`としてMapLibreに追加 |
-| **three.js** | GLB/OBJメッシュモデルの描画 | カスタムレイヤーとしてMapLibreに追加 |
+- preview 中は `showDataEntry` 用の source/layer だけを別系統で生成する
+- deck.gl overlay と three.js レイヤーは MapLibre の style とは別に管理する
+- `showXYZTileLayer` が有効なときだけ `tile_index://` source を追加する
