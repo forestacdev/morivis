@@ -1,5 +1,5 @@
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
-import type { AnyGeometry } from '$routes/map/types/geometry';
+import type { AnyGeometry, Geometry, GeometryCollection } from '$routes/map/types/geometry';
 import { geojson as fgb } from 'flatgeobuf';
 
 import type { MapGeoJSONFeature } from 'maplibre-gl';
@@ -10,12 +10,47 @@ import type { DrawGeojsonData } from '$routes/map/types/draw';
 export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 	try {
 		const response = await fetch(url);
-
-		return response.json();
+		const geojson = await response.json();
+		return normalizeGeometryCollections(geojson);
 	} catch (error) {
 		console.error(error);
 		throw new Error('Failed to fetch GeoJSON');
 	}
+};
+
+type FeatureWithGeometryCollection = Omit<Feature<AnyGeometry>, 'geometry'> & {
+	geometry: Geometry;
+};
+
+type FeatureCollectionWithGeometryCollection = {
+	type: 'FeatureCollection';
+	features: FeatureWithGeometryCollection[];
+};
+
+const isGeometryCollection = (geometry: Geometry | null | undefined): geometry is GeometryCollection => {
+	return geometry?.type === 'GeometryCollection';
+};
+
+const normalizeGeometryCollections = (
+	geojson: FeatureCollectionWithGeometryCollection
+): FeatureCollection => {
+	return {
+		type: 'FeatureCollection',
+		features: geojson.features.flatMap((feature): Feature[] => {
+			if (!isGeometryCollection(feature.geometry)) {
+				return [feature as Feature];
+			}
+
+			return feature.geometry.geometries.map((geometry, index): Feature => ({
+				...feature,
+				id:
+					feature.id != null
+						? `${String(feature.id)}_${index}`
+						: `${crypto.randomUUID()}_${index}`,
+				geometry: geometry as AnyGeometry
+			}));
+		})
+	};
 };
 
 /** fgbを取得してGeoJSONで返す */
@@ -128,14 +163,14 @@ export const downloadGeojson = (
 export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
 	try {
 		const text = await file.text();
-		const geojson = JSON.parse(text);
+		const geojson = JSON.parse(text) as FeatureCollectionWithGeometryCollection;
 
 		// 型安全のため、FeatureCollectionかどうかを最低限チェック
 		if (geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
 			throw new Error('Invalid GeoJSON structure');
 		}
 
-		return geojson;
+		return normalizeGeometryCollections(geojson);
 	} catch (error) {
 		console.error('GeoJSON parsing error:', error);
 		throw new Error('Failed to parse GeoJSON file');

@@ -32,17 +32,57 @@ import type {
 	PointStyle
 } from '../../types/vector/style';
 import { findCenterTile } from '$routes/map/utils/map/tile';
+import type { AnyGeometry, GeometryCollection } from '$routes/map/types/geometry';
 
 // --- ジオメトリタイプ判定 ---
+
+const collectGeometryTypes = (
+	geometry: AnyGeometry | GeometryCollection | null | undefined,
+	types: Set<VectorEntryGeometryType>
+) => {
+	if (!geometry) return;
+
+	const t = geometry.type;
+	if (t === 'Point' || t === 'MultiPoint') {
+		types.add('Point');
+		return;
+	}
+	if (t === 'LineString' || t === 'MultiLineString') {
+		types.add('LineString');
+		return;
+	}
+	if (t === 'Polygon' || t === 'MultiPolygon') {
+		types.add('Polygon');
+		return;
+	}
+	if (t === 'GeometryCollection') {
+		for (const child of geometry.geometries) {
+			collectGeometryTypes(child, types);
+		}
+	}
+};
+
+const matchesGeometryType = (
+	geometry: AnyGeometry | GeometryCollection | null | undefined,
+	geometryType: VectorEntryGeometryType
+): boolean => {
+	if (!geometry) return false;
+
+	if (geometry.type === geometryType) return true;
+	if (geometryType === 'Point' && geometry.type === 'MultiPoint') return true;
+	if (geometryType === 'LineString' && geometry.type === 'MultiLineString') return true;
+	if (geometryType === 'Polygon' && geometry.type === 'MultiPolygon') return true;
+	if (geometry.type === 'GeometryCollection') {
+		return geometry.geometries.some((child) => matchesGeometryType(child, geometryType));
+	}
+
+	return false;
+};
 
 export const getGeometryTypes = (geojson: FeatureCollection): VectorEntryGeometryType[] => {
 	const types = new Set<VectorEntryGeometryType>();
 	for (const feature of geojson.features) {
-		if (!feature.geometry) continue;
-		const t = feature.geometry.type;
-		if (t === 'Point' || t === 'MultiPoint') types.add('Point');
-		else if (t === 'LineString' || t === 'MultiLineString') types.add('LineString');
-		else if (t === 'Polygon' || t === 'MultiPolygon') types.add('Polygon');
+		collectGeometryTypes(feature.geometry, types);
 	}
 	return Array.from(types);
 };
@@ -58,17 +98,9 @@ export const filterByGeometryType = (
 	geojson: FeatureCollection,
 	geometryType: VectorEntryGeometryType
 ): FeatureCollection => {
-	const multiPrefix =
-		geometryType === 'Point'
-			? 'MultiPoint'
-			: geometryType === 'LineString'
-				? 'MultiLineString'
-				: 'MultiPolygon';
 	return {
 		type: 'FeatureCollection',
-		features: geojson.features.filter(
-			(f) => f.geometry && (f.geometry.type === geometryType || f.geometry.type === multiPrefix)
-		)
+		features: geojson.features.filter((f) => matchesGeometryType(f.geometry, geometryType))
 	};
 };
 
@@ -87,10 +119,9 @@ export const groupPropertyByGeometryType = (
 		if (!feature.geometry) continue;
 		const key = getKey(feature.properties as Record<string, unknown>);
 		if (key == null) continue;
-		const t = feature.geometry.type;
-		if (t === 'Point' || t === 'MultiPoint') result.Point.add(key);
-		else if (t === 'LineString' || t === 'MultiLineString') result.LineString.add(key);
-		else if (t === 'Polygon' || t === 'MultiPolygon') result.Polygon.add(key);
+		if (matchesGeometryType(feature.geometry, 'Point')) result.Point.add(key);
+		if (matchesGeometryType(feature.geometry, 'LineString')) result.LineString.add(key);
+		if (matchesGeometryType(feature.geometry, 'Polygon')) result.Polygon.add(key);
 	}
 	return {
 		Point: Array.from(result.Point),

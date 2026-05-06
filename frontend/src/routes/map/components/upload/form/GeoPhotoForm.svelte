@@ -74,7 +74,7 @@
 				undefined,
 				{
 					attribution: '位置情報付き写真',
-					coverImage: result.features[0]?.properties.imageUrl
+					coverImage: result.features[0]?.properties.coverImageUrl
 				}
 			);
 
@@ -93,8 +93,8 @@
 					},
 					icon: {
 						type: 'absolute',
-						imageIdKey: 'imageUrl',
-						urlKey: 'imageUrl'
+						imageIdKey: 'iconImageUrl',
+						urlKey: 'iconImageUrl'
 					}
 				};
 				pointEntry.style.imageIcon = {
