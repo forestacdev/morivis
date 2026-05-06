@@ -68,8 +68,14 @@
 	const getNameFromUrl = (url: string): string => {
 		try {
 			const pathname = new URL(url).pathname;
-			const fileName = decodeURIComponent(pathname.split('/').pop() ?? 'ベクタータイル');
-			return fileName.replace(/\.[^.]+$/, '') || 'ベクタータイル';
+			const segments = pathname
+				.split('/')
+				.map((segment) => decodeURIComponent(segment))
+				.filter(Boolean);
+			const namedSegment = [...segments]
+				.reverse()
+				.find((segment) => !/[{}]/.test(segment) && !/^\.[^.]+$/.test(segment));
+			return namedSegment?.replace(/\.[^.]+$/, '') || 'ベクタータイル';
 		} catch {
 			return 'ベクタータイル';
 		}

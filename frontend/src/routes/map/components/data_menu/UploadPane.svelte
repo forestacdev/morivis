@@ -54,6 +54,12 @@
 		return sortedExtensions.find((ext) => lowerFileName.endsWith(ext)) ?? null;
 	};
 
+	const getTileUrlExtension = (fileName: string): string | null => {
+		const lowerFileName = fileName.toLowerCase();
+		const tileExtensions = ['.geojson', '.pbf', '.mvt', '.png', '.jpg', '.jpeg', '.webp', '.avif'];
+		return tileExtensions.find((ext) => lowerFileName.endsWith(ext)) ?? null;
+	};
+
 	const getRemoteFileName = (urlValue: string, response: Response): string | null => {
 		const contentDispositionName = getFileNameFromContentDisposition(
 			response.headers.get('content-disposition')
@@ -119,7 +125,7 @@
 		if (isXyzTileUrl(trimmedUrl)) {
 			const remoteFileNameFromUrl = getRemoteFileNameFromUrl(trimmedUrl);
 			const matchedExtension = remoteFileNameFromUrl
-				? getMatchedExtension(remoteFileNameFromUrl)
+				? getTileUrlExtension(remoteFileNameFromUrl)
 				: null;
 
 			if (matchedExtension && RASTER_TILE_EXTENSIONS.has(matchedExtension)) {
