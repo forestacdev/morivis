@@ -232,13 +232,17 @@
 		selected: SelectedHighlightData,
 		feature: MapGeoJSONFeature,
 		point: [number, number]
-	) => {
+	): boolean => {
 		selectedHighlightData.set(selected);
 		resetDefaultHighlight();
 		highlightedGeneratedPoiLayerId = selected.layerId;
 		const resolvedProperties = resolvePoiHighlightProperties(selected.layerId, feature);
 		const iconImage =
 			typeof resolvedProperties.iconImage === 'string' ? resolvedProperties.iconImage : null;
+		if (!iconImage) {
+			resetGeneratedPoiHighlight();
+			return false;
+		}
 
 		featureMenuData = {
 			layerId: selected.layerId,
@@ -255,6 +259,22 @@
 		};
 
 		mapStore.panToPoi(new maplibregl.LngLat(point[0], point[1]));
+		return true;
+	};
+
+	const clearHighlightOnly = () => {
+		selectedHighlightData.set(null);
+		resetGeneratedPoiHighlight();
+		if (highlightMarkerState?.type === 'poi') {
+			highlightMarkerState = null;
+		}
+		applyDefaultHighlight(null);
+	};
+
+	const showSelectionMarkerFallback = (point: [number, number]) => {
+		clearHighlightOnly();
+		markerLngLat = new maplibregl.LngLat(point[0], point[1]);
+		showMarker = true;
 	};
 
 	const setSelectedHighlight = (
@@ -281,7 +301,10 @@
 
 		if (options?.feature && options.point && isGeneratedPoiIconFeature(selected.layerId)) {
 			// 生成アイコンPOIは通常ハイライトではなく、アイコン差し替えと専用マーカーで強調する。
-			applyGeneratedPoiHighlight(selected, options.feature, options.point);
+			const didHighlight = applyGeneratedPoiHighlight(selected, options.feature, options.point);
+			if (!didHighlight) {
+				showSelectionMarkerFallback(options.point);
+			}
 			return;
 		}
 
@@ -529,6 +552,11 @@
 							point: clickLngLat
 						}
 					: undefined;
+
+			if (!selectedHighlight && clickLngLat) {
+				showSelectionMarkerFallback(clickLngLat);
+				return;
+			}
 
 			setSelectedHighlight(selectedHighlight, highlightOptions);
 		} catch (error) {
