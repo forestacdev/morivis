@@ -1,8 +1,8 @@
 <script lang="ts">
-	import FeaturePanelHeader from '$routes/map/components/feature_menu/FeaturePanelHeader.svelte';
 	import FeaturePanelAttributes from '$routes/map/components/feature_menu/FeaturePanelAttributes.svelte';
-	import FeaturePanelTabs from '$routes/map/components/feature_menu/FeaturePanelTabs.svelte';
+	import FeaturePanelHeader from '$routes/map/components/feature_menu/FeaturePanelHeader.svelte';
 	import FeaturePanelSummaryBody from '$routes/map/components/feature_menu/FeaturePanelSummaryBody.svelte';
+	import FeaturePanelTabs from '$routes/map/components/feature_menu/FeaturePanelTabs.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import type {
@@ -110,7 +110,7 @@
 	<FeaturePanelHeader {summary} />
 
 	{#if showSummaryTab && hasAttributeTab}
-		<FeaturePanelTabs {summary} {attributeItems} {fields} resetKey={resetKey} />
+		<FeaturePanelTabs {summary} {attributeItems} {fields} {resetKey} />
 	{:else if showSummaryTab}
 		<FeaturePanelSummaryBody {summary} />
 	{:else if !propId}

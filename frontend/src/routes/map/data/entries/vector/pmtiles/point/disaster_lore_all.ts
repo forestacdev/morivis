@@ -124,7 +124,7 @@ const entry: PointEntry<TileMetaData> = {
 			]
 		},
 		imageIcon: {
-			show: true
+			show: false
 		},
 		radius: {
 			key: '単一',
