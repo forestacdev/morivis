@@ -177,18 +177,9 @@
 </script>
 
 {#if layerEntry.style.timeDimension}
-	<Accordion label={'日時'} icon={'mdi:clock-outline'} bind:value={showTimeOption}>
+	<Accordion label={'時間'} icon={'mdi:clock-outline'} bind:value={showTimeOption}>
 		<div class="flex flex-col gap-4 p-2">
 			<div class="flex items-center gap-1">
-				<button
-					onclick={onClickPrev}
-					class="flex shrink-0 cursor-pointer items-center justify-center rounded p-1 text-white hover:bg-white/10"
-					aria-label="前へ"
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-					</svg>
-				</button>
 				<div
 					use:emblaCarouselSvelte={{
 						plugins: emblaMainCarouselPlugins,
@@ -208,17 +199,17 @@
 						{/each}
 					</div>
 				</div>
+			</div>
+			<div class="flex items-center justify-center gap-2">
 				<button
-					onclick={onClickNext}
-					class="flex shrink-0 cursor-pointer items-center justify-center rounded p-1 text-white hover:bg-white/10"
-					aria-label="次へ"
+					onclick={onClickPrev}
+					class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-white hover:bg-white/10"
+					aria-label="前へ"
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+						<path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
 					</svg>
 				</button>
-			</div>
-			<div class="flex justify-center">
 				<button
 					onclick={toggleAutoplay}
 					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white hover:bg-white/10"
@@ -235,6 +226,15 @@
 						</svg>
 						再生
 					{/if}
+				</button>
+				<button
+					onclick={onClickNext}
+					class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-white hover:bg-white/10"
+					aria-label="次へ"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+						<path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+					</svg>
 				</button>
 			</div>
 		</div>
