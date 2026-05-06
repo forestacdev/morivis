@@ -146,7 +146,12 @@
 		const map = mapStore.getMap();
 		if (!map || !highlightedGeneratedPoiLayerId) return;
 		if (!mapStore.getLayer(highlightedGeneratedPoiLayerId)) return;
-		map.setPaintProperty(highlightedGeneratedPoiLayerId, 'icon-opacity', 1);
+		const pointLayerEntry = getPointLayerEntry(highlightedGeneratedPoiLayerId);
+		map.setPaintProperty(
+			highlightedGeneratedPoiLayerId,
+			'icon-opacity',
+			pointLayerEntry?.style.opacity ?? 1
+		);
 		highlightedGeneratedPoiLayerId = null;
 	};
 
@@ -154,7 +159,14 @@
 		const map = mapStore.getMap();
 		if (!map || !mapStore.getLayer(layerId)) return;
 		highlightedGeneratedPoiLayerId = layerId;
-		map.setPaintProperty(layerId, 'icon-opacity', ['case', ['==', ['id'], featureId], 0, 1]);
+		const pointLayerEntry = getPointLayerEntry(layerId);
+		const baseOpacity = pointLayerEntry?.style.opacity ?? 1;
+		map.setPaintProperty(layerId, 'icon-opacity', [
+			'case',
+			['==', ['id'], featureId],
+			0,
+			baseOpacity
+		]);
 	};
 
 	const isGeneratedPoiIconFeature = (layerId: string) => {
