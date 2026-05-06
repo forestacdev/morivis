@@ -1,4 +1,4 @@
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { MAP_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
 
@@ -8,7 +8,7 @@ const entry: VectorEntry<TileMetaData> = {
 	format: {
 		type: 'pmtiles',
 		geometryType: 'LineString',
-		url: 'https://forestacdev.github.io/tiles-national-forest-road/national_forest_road.pmtiles'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/national_forest_road.pmtiles`
 	},
 	metaData: {
 		name: '国有林 林道',

@@ -107,7 +107,7 @@ const entry: PointEntry<TileMetaData> = {
 	},
 	style: {
 		type: 'circle',
-		opacity: 0.7,
+		opacity: 1,
 		colors: {
 			show: true,
 			key: '単色',

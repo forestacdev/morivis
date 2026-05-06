@@ -125,7 +125,7 @@ export const createPointImageIconLayer = (
 		),
 		type: 'symbol',
 		paint: {
-			'icon-opacity': 1,
+			'icon-opacity': style.opacity,
 			// ラベルのスタイルはアイコンレイヤーに統合
 			...(showLabel
 				? {

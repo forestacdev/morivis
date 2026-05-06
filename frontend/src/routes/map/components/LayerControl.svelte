@@ -76,7 +76,7 @@
 					</div>
 
 					<div class="ml-6 grid w-full grid-cols-2 items-center justify-center gap-y-4">
-						<Checkbox label="アカデミー施設等" bind:value={$showPoiLayer} />
+						<!-- <Checkbox label="アカデミー施設等" bind:value={$showPoiLayer} /> -->
 						<Checkbox label="境界線" bind:value={$showBoundaryLayer} disabled={isOsm} />
 						<Checkbox label="地名等" bind:value={$showLabelLayer} disabled={isOsm} />
 						<Checkbox label="道路・線路" bind:value={$showRoadLayer} disabled={isOsm} />
