@@ -13,3 +13,4 @@
 ## Functions
 
 - [createLayersItems](functions/createLayersItems.md)
+- [createVectorLayer](functions/createVectorLayer.md)

@@ -8,4 +8,4 @@
 
 > **AnyRasterEntry** = [`RasterEntry`](../raster/type-aliases/RasterEntry.md)\<[`RasterCategoricalStyle`](../raster/interfaces/RasterCategoricalStyle.md) \| [`RasterBaseMapStyle`](../raster/interfaces/RasterBaseMapStyle.md) \| [`RasterDemStyle`](../raster/interfaces/RasterDemStyle.md) \| [`RasterTiffStyle`](../raster/interfaces/RasterTiffStyle.md) \| [`RasterCadStyle`](../raster/interfaces/RasterCadStyle.md)\>
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:36](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/index.ts#L36)
+Defined in: [frontend/src/routes/map/data/types/index.ts:39](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/index.ts#L39)

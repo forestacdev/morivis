@@ -8,4 +8,4 @@
 
 > **GeoJsonMetaData** = [`BaseMetaData`](../../interfaces/BaseMetaData.md)
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:30](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/vector/index.ts#L30)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:37](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L37)

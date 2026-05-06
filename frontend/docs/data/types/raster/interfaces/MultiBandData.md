@@ -6,7 +6,7 @@
 
 # Interface: MultiBandData
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:222](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/raster/index.ts#L222)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:223](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L223)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:222](https://git
 
 > **b**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:225](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/raster/index.ts#L225)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:226](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L226)
 
 #### index
 
@@ -34,7 +34,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:225](https://git
 
 > **g**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:224](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/raster/index.ts#L224)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:225](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L225)
 
 #### index
 
@@ -54,7 +54,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:224](https://git
 
 > **r**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:223](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/data/types/raster/index.ts#L223)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:224](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L224)
 
 #### index
 

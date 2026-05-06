@@ -6,9 +6,9 @@
 
 # Function: getLayerIcon()
 
-> **getLayerIcon**(`layerType`): `string`
+> **getLayerIcon**(`layerType`): `IconData`
 
-Defined in: [frontend/src/routes/map/utils/entries/index.ts:29](https://github.com/forestacdev/morivis/blob/cc07142120a2d9d2cc2b58138f57a8201cfd4796/frontend/src/routes/map/utils/entries/index.ts#L29)
+Defined in: [frontend/src/routes/map/utils/entries/index.ts:30](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/utils/entries/index.ts#L30)
 
 ## Parameters
 
@@ -18,4 +18,4 @@ Defined in: [frontend/src/routes/map/utils/entries/index.ts:29](https://github.c
 
 ## Returns
 
-`string`
+`IconData`

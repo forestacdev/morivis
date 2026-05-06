@@ -10,6 +10,7 @@
 
 - [MeshStyle](interfaces/MeshStyle.md)
 - [ModelMeshEntry](interfaces/ModelMeshEntry.md)
+- [ModelPointCloudEntry](interfaces/ModelPointCloudEntry.md)
 - [ModelTiles3DEntry](interfaces/ModelTiles3DEntry.md)
 - [PointCloudStyle](interfaces/PointCloudStyle.md)
 
