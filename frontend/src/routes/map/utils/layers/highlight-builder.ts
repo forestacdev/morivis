@@ -88,24 +88,6 @@ export const createBaseLayerItem = (entry: GeoDataEntry): LayerItem => {
 	};
 };
 
-export const applyVectorSourceLayer = (layer: LayerItem, entry: GeoDataEntry) => {
-	const { format, metaData } = entry;
-
-	if (
-		format.type === 'mvt' ||
-		format.type === 'pmtiles' ||
-		format.type === 'mbtiles' ||
-		format.type === 'geojsontile' ||
-		format.type === 'esri-feature'
-	) {
-		if ('sourceLayer' in metaData) {
-			layer['source-layer'] = metaData.sourceLayer as string;
-		}
-	}
-
-	return layer;
-};
-
 const createHighlightLayer = (
 	layer: LayerSpecification,
 	style: VectorStyle,
@@ -281,12 +263,22 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 				style: VectorStyle;
 				properties: VectorProperties & { fields: FieldDef[] };
 			};
-			const layer = applyVectorSourceLayer(createBaseLayerItem(vectorEntry), vectorEntry);
+			const layer = createBaseLayerItem(vectorEntry);
+
+			if ('sourceLayer' in vectorEntry.metaData) {
+				layer['source-layer'] = vectorEntry.metaData.sourceLayer as string;
+			}
+
 			const { style } = vectorEntry;
 			const layerId = `${vectorEntry.id}`;
 			const selectionKey =
 				'sourceLayer' in vectorEntry.metaData ? vectorEntry.metaData.promoteId : undefined;
-			const vectorLayer = createVectorLayer(layer, style, vectorEntry.properties.images?.icon);
+			const vectorLayer = createVectorLayer(
+				layer,
+				style,
+				vectorEntry.properties.fields,
+				vectorEntry.properties.images?.icon
+			);
 
 			if (!vectorLayer) return;
 			registerLayerFilterState({

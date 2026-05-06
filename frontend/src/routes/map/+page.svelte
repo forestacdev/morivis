@@ -233,8 +233,9 @@
 	});
 
 	let mobileTargetLayer = $derived.by(() => {
-		if (!featureMenuData) return null;
-		return layerEntries.find((entry) => entry.id === featureMenuData.layerId) ?? null;
+		const currentFeatureMenuData = featureMenuData;
+		if (!currentFeatureMenuData) return null;
+		return layerEntries.find((entry) => entry.id === currentFeatureMenuData.layerId) ?? null;
 	});
 
 	let mobileHasAttributeTab = $derived.by(() => {

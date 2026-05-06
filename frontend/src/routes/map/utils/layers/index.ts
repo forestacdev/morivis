@@ -26,10 +26,7 @@ import type { VectorStyle } from '$routes/map/data/types/vector/style';
 import type { IconImageSource } from '$routes/map/data/types/vector/properties';
 
 import { labelLayers } from '$routes/map/utils/layers/label';
-import {
-	applyVectorSourceLayer,
-	createBaseLayerItem
-} from '$routes/map/utils/layers/highlight-builder';
+import { createBaseLayerItem } from '$routes/map/utils/layers/highlight-builder';
 import { roadLineLayers, roadLabelLayers } from '$routes/map/utils/layers/road';
 import { railLineLayers } from '$routes/map/utils/layers/rail';
 import { boundaryLayers } from '$routes/map/utils/layers/boundary';
@@ -248,7 +245,10 @@ export const createLayersItems = (
 					if (interaction.clickable) {
 						clickableVecter.push(layerId);
 					}
-					applyVectorSourceLayer(layer, entry);
+
+					if ('sourceLayer' in metaData) {
+						layer['source-layer'] = metaData.sourceLayer;
+					}
 
 					// TODO: fieldsを渡す必要があるレイヤーとそうでないレイヤーがある。
 					const fields = entry.properties.fields;
