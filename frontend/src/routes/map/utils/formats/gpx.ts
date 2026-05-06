@@ -85,7 +85,6 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 						elevation_pos: track.elevation.pos, // 上昇量
 						elevation_neg: track.elevation.neg, // 下降量
 						elevation_avg: track.elevation.avg, // 平均標高
-						distance_cumul: track.distance.cumul, // 累積距離
 						slopes: track.slopes // スロープ
 						// 必要に応じてトラックのプロパティを追加
 					} as unknown as FeatureProp
