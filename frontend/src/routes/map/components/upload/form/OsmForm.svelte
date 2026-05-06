@@ -12,8 +12,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { fgbFileToGeojson } from '$routes/map/utils/formats/fgb';
-	import { GeoJsonParseError, geoJsonFileToGeoJson } from '$routes/map/utils/formats/geojson';
+	import { osmFileToGeoJson, OsmParseError } from '$routes/map/utils/formats/osm';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -50,45 +49,39 @@
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 
-	const geojsonFile = $derived.by(() => {
+	const osmFile = $derived.by(() => {
 		if (!dropFile) return null;
 		return dropFile instanceof FileList ? dropFile[0] : dropFile;
 	});
 
-	const fileExt = $derived(geojsonFile?.name.split('.').pop()?.toLowerCase() ?? '');
-	const isFgb = $derived(fileExt === 'fgb');
-	const entryName = $derived(geojsonFile?.name.replace(/\.[^.]+$/, '') ?? 'GeoJSONデータ');
+	const entryName = $derived(osmFile?.name.replace(/\.[^.]+$/, '') ?? 'OSMデータ');
 
-	const readFile = (file: File): Promise<FeatureCollection> =>
-		isFgb ? fgbFileToGeojson(file) : (geoJsonFileToGeoJson(file) as Promise<FeatureCollection>);
-
-	// ファイルドロップ時: GeoJSON/FGB → ジオメトリタイプ確認
 	$effect(() => {
-		if (geojsonFile) {
+		if (osmFile) {
 			isProcessing.set(true);
-			readFile(geojsonFile)
+			osmFileToGeoJson(osmFile)
 				.then((geojson) => {
 					rawGeojson = geojson as unknown as FeatureCollection;
-					const types = getGeometryTypes(rawGeojson!);
+					const types = getGeometryTypes(rawGeojson);
 
 					if (types.length === 1) {
 						selectedGeometryType = types[0];
 						geometryTypeOptions = [];
 						processGeojson();
 					} else {
-						geometryTypeOptions = types.map((t) => ({
-							key: t,
-							name: GEOMETRY_TYPE_LABELS[t] ?? t
+						geometryTypeOptions = types.map((type) => ({
+							key: type,
+							name: GEOMETRY_TYPE_LABELS[type] ?? type
 						}));
 						selectedGeometryType = types[0];
 					}
 				})
-				.catch((e) => {
+				.catch((error) => {
 					showNotification(
-						e instanceof GeoJsonParseError ? e.message : 'GeoJSONファイルの読み込みに失敗しました',
+						error instanceof OsmParseError ? error.message : 'OSMファイルの読み込みに失敗しました',
 						'error'
 					);
-					console.error(e);
+					console.error(error);
 				})
 				.finally(() => {
 					isProcessing.set(false);
@@ -112,29 +105,30 @@
 		if (!bbox || !isBboxValid(bbox)) {
 			showZoneForm = true;
 			focusBbox = bbox as [number, number, number, number];
-		} else {
-			const entry = createGeoJsonEntry(
-				filtered,
-				selectedGeometryType as VectorEntryGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				undefined,
-				{ attribution: 'GeoJSON' }
-			);
-
-			if (entry) {
-				showDataEntry = entry;
-				showDialogType = null;
-				showNotification('ファイルを読み込みました', 'success');
-			} else {
-				showNotification('データが不正です', 'error');
-			}
+			return;
 		}
+
+		const entry = createGeoJsonEntry(
+			filtered,
+			selectedGeometryType as VectorEntryGeometryType,
+			entryName,
+			bbox as [number, number, number, number],
+			undefined,
+			{ attribution: 'OpenStreetMap' }
+		);
+
+		if (entry) {
+			showDataEntry = entry;
+			showDialogType = null;
+			showNotification('ファイルを読み込みました', 'success');
+			return;
+		}
+
+		showNotification('データが不正です', 'error');
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
-		if (!geojsonFile || !rawGeojson || !selectedGeometryType) return;
+		if (!osmFile || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);
 
 		try {
@@ -144,30 +138,29 @@
 				prjContent
 			)) as FeatureCollection;
 
-			// ジオメトリタイプとレイヤーでフィルター
-			let geojsonData = filterByGeometryType(
+			const filtered = filterByGeometryType(
 				transformedGeojson,
 				selectedGeometryType as VectorEntryGeometryType
 			);
 
-			if (!geojsonData || geojsonData.features.length === 0) {
-				showNotification('GeoJSONファイルの変換に失敗しました', 'error');
+			if (!filtered || filtered.features.length === 0) {
+				showNotification('OSMファイルの変換に失敗しました', 'error');
 				return;
 			}
 
-			const bbox = turfBbox(geojsonData);
+			const bbox = turfBbox(filtered);
 			if (!bbox || !isBboxValid(bbox)) {
 				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
 				return;
 			}
 
 			const entry = createGeoJsonEntry(
-				geojsonData,
+				filtered,
 				selectedGeometryType,
 				entryName,
 				bbox as [number, number, number, number],
 				undefined,
-				{ attribution: 'GeoJSON' }
+				{ attribution: 'OpenStreetMap' }
 			);
 
 			if (entry) {
@@ -175,9 +168,9 @@
 				showDialogType = null;
 				showNotification('ファイルを読み込みました', 'success');
 			}
-		} catch (e) {
-			showNotification('GeoJSONファイルの変換中にエラーが発生しました', 'error');
-			console.error(e);
+		} catch (error) {
+			showNotification('OSMファイルの変換中にエラーが発生しました', 'error');
+			console.error(error);
 		} finally {
 			isProcessing.set(false);
 		}
@@ -189,7 +182,7 @@
 	};
 
 	$effect(() => {
-		if (zoneConfirmedEpsg && showDialogType === 'geojson') {
+		if (zoneConfirmedEpsg && showDialogType === 'osm') {
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
@@ -200,7 +193,7 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">{isFgb ? 'FlatGeobuf' : 'GeoJSON'}ファイルの登録</span>
+	<span class="text-2xl font-bold">OSMファイルの登録</span>
 </div>
 
 <div

@@ -23,14 +23,15 @@
 	import MeshModelForm from '$routes/map/components/upload/form/MeshModelForm.svelte';
 	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
+	import OsmForm from '$routes/map/components/upload/form/OsmForm.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 	import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 	import StacForm from '$routes/map/components/upload/form/StacForm.svelte';
-	import TileUrlTypeForm from '$routes/map/components/upload/form/TileUrlTypeForm.svelte';
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
+	import TileUrlTypeForm from '$routes/map/components/upload/form/TileUrlTypeForm.svelte';
 	import TopoJsonForm from '$routes/map/components/upload/form/TopoJsonForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';
@@ -157,12 +158,7 @@
 				<DemXmlForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'pmtiles'}
-				<PmtilesForm
-					bind:showDataEntry
-					bind:showDialogType
-					bind:dropFile
-					bind:remotePmtilesUrl
-				/>
+				<PmtilesForm bind:showDataEntry bind:showDialogType bind:dropFile bind:remotePmtilesUrl />
 			{/if}
 			{#if showDialogType === 'glb'}
 				<MeshModelForm bind:showDataEntry bind:showDialogType bind:dropFile />
@@ -252,6 +248,17 @@
 			{/if}
 			{#if showDialogType === 'gpx'}
 				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'osm'}
+				<OsmForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
 			{/if}
 			{#if showDialogType === 'gtfs'}
 				<GtfsForm bind:showDataEntry bind:showDialogType bind:dropFile />

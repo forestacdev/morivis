@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { tick } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import {
@@ -12,7 +13,6 @@
 	import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
-	import { slide } from 'svelte/transition';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

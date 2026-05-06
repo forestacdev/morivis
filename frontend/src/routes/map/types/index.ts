@@ -75,6 +75,7 @@ export type DialogType =
 	| 'tileurltype'
 	| 'shp'
 	| 'gpx'
+	| 'osm'
 	| 'geojson'
 	| 'geotiff'
 	| 'wmts'
@@ -113,6 +114,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
 	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg'] },
 	{ label: 'GPX', extensions: ['.gpx'] },
+	{ label: 'OpenStreetMap XML', extensions: ['.osm'] },
 	{ label: 'GML', extensions: ['.gml', '.xml'] },
 	{ label: 'KML / KMZ', extensions: ['.kml', '.kmz'] },
 	{ label: 'CSV', extensions: ['.csv'] },

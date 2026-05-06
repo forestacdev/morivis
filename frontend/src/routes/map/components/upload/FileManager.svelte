@@ -158,6 +158,9 @@
 				case 'gpx':
 					showDialogType = 'gpx';
 					return;
+				case 'osm':
+					showDialogType = 'osm';
+					return;
 				case 'gml':
 					showDialogType = 'gml';
 					return;

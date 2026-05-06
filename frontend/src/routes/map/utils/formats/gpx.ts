@@ -6,12 +6,7 @@ import type { LineStringGeometry, PointGeometry } from '$routes/map/types/geomet
 import type { FeatureProp } from '$routes/map/types/properties';
 
 const formatGpxTime = (value: unknown): string | undefined => {
-	const date =
-		value instanceof Date
-			? value
-			: typeof value === 'string'
-				? new Date(value)
-				: null;
+	const date = value instanceof Date ? value : typeof value === 'string' ? new Date(value) : null;
 
 	if (!date || Number.isNaN(date.getTime())) {
 		return typeof value === 'string' ? value : undefined;

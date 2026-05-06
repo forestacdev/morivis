@@ -47,11 +47,15 @@ type RootGeoJsonWithGeometryCollection =
 	| SingleFeatureWithGeometryCollection
 	| Geometry;
 
-const isGeometryCollection = (geometry: Geometry | null | undefined): geometry is GeometryCollection => {
+const isGeometryCollection = (
+	geometry: Geometry | null | undefined
+): geometry is GeometryCollection => {
 	return geometry?.type === 'GeometryCollection';
 };
 
-const toFeatureCollection = (geojson: RootGeoJsonWithGeometryCollection): FeatureCollectionWithGeometryCollection => {
+const toFeatureCollection = (
+	geojson: RootGeoJsonWithGeometryCollection
+): FeatureCollectionWithGeometryCollection => {
 	if (geojson.type === 'FeatureCollection') {
 		return geojson;
 	}
@@ -94,14 +98,16 @@ const normalizeGeometryCollections = (
 				return [feature as Feature];
 			}
 
-			return feature.geometry.geometries.map((geometry, index): Feature => ({
-				...feature,
-				id:
-					feature.id != null
-						? `${String(feature.id)}_${index}`
-						: `${crypto.randomUUID()}_${index}`,
-				geometry: geometry as AnyGeometry
-			}));
+			return feature.geometry.geometries.map(
+				(geometry, index): Feature => ({
+					...feature,
+					id:
+						feature.id != null
+							? `${String(feature.id)}_${index}`
+							: `${crypto.randomUUID()}_${index}`,
+					geometry: geometry as AnyGeometry
+				})
+			);
 		})
 	};
 };
