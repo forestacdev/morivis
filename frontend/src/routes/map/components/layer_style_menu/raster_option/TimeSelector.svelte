@@ -174,6 +174,11 @@
 		}
 		return `${y}年${m}月${d}日 ${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
 	};
+
+	const getTimeLabel = (value: string, index: number): string => {
+		const labels = layerEntry.style.timeDimension?.labels;
+		return labels?.[index] ?? formatTimeValue(value);
+	};
 </script>
 
 {#if layerEntry.style.timeDimension}
@@ -194,7 +199,7 @@
 							<div
 								class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
 							>
-								{formatTimeValue(timeValue)}
+								{getTimeLabel(timeValue, i)}
 							</div>
 						{/each}
 					</div>

@@ -17,6 +17,13 @@ const NDVI_TIME_VALUES = (() => {
 	return values;
 })();
 
+const NDVI_TIME_LABELS = NDVI_TIME_VALUES.map((value) => {
+	const match = value.match(/^_(\d{4})_(\d{2})$/);
+	if (!match) return value;
+
+	return `${Number(match[1])}年${Number(match[2])}月`;
+});
+
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'gsi_ndvi_250m',
 	type: 'raster',
@@ -50,6 +57,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
 		timeDimension: {
 			values: NDVI_TIME_VALUES,
+			labels: NDVI_TIME_LABELS,
 			currentIndex: NDVI_TIME_VALUES.length - 1
 		}
 	}
