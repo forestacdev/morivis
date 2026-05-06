@@ -421,17 +421,6 @@
 	>
 		<div class="grid place-items-center gap-6">
 			<span class="text-3xl">ここにファイルをドロップしてください </span>
-			<div class="marquee-container overflow-hidden">
-				<div class="marquee-track flex w-max gap-2">
-					{#each { length: 2 } as _}
-						{#each SUPPORTED_FILE_GROUPS as group}
-							<span class="bg-sub rounded-full p-1 px-3 text-xs whitespace-nowrap text-gray-300">
-								{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
-							</span>
-						{/each}
-					{/each}
-				</div>
-			</div>
 
 			<label
 				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
@@ -453,19 +442,13 @@
 				class="hidden"
 				onchange={(e) => inputFile(e)}
 			/>
-			<div class="flex w-full max-w-[720px] flex-col gap-3 px-4">
-				<div class="flex flex-col gap-2 text-center">
-					<span class="text-sm text-gray-300">URLから読み込む</span>
-					<span class="text-xs text-gray-500">
-						配信元がCORSを許可しているファイルURLを入力してください
-					</span>
-				</div>
+			<div class="flex w-full max-w-[720px] flex-col gap-1 px-4">
 				<div class="flex w-full flex-col gap-3 sm:flex-row">
 					<div class="flex w-full flex-col gap-2">
 						<input
 							type="url"
 							bind:value={inputUrl}
-							placeholder="https://example.com/data.geojson"
+							placeholder="URLから読み込む"
 							class="bg-base text-main placeholder:text-main/60 focus:ring-accent/40 w-full rounded-full px-5 py-3 focus:ring-2 focus:outline-none {urlInputError
 								? 'ring-2 ring-red-500/70'
 								: ''}"
@@ -482,16 +465,27 @@
 							}}
 						/>
 					</div>
-					<button
-						onclick={inputRemoteFile}
-						disabled={isLoadingUrl || !isUrlInputValid}
-						class="bg-base hover:bg-accent min-w-[140px] rounded-full px-6 py-3 text-black transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
-					>
-						{isLoadingUrl ? '読込中...' : 'URLを開く'}
-					</button>
 				</div>
-				{#if urlInputError}
-					<span transition:slide class="text-xs text-red-400">{urlInputError}</span>
+				<div>
+					{#if urlInputError}
+						<span transition:slide class="text-xs text-red-400">{urlInputError}</span>
+					{:else}
+						<span class="text-xs text-gray-500">
+							※配信元がCORSを許可しているファイルURLを入力してください
+						</span>
+					{/if}
+				</div>
+				{#if !(isLoadingUrl || !isUrlInputValid)}
+					<div class="flex w-full justify-center">
+						<button
+							transition:slide={{ axis: 'y' }}
+							onclick={inputRemoteFile}
+							disabled={isLoadingUrl || !isUrlInputValid}
+							class="bg-base hover:bg-accent w-[100px] min-w-[140px] rounded-full px-6 py-3 text-wrap text-black transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+						>
+							{isLoadingUrl ? '読込中...' : 'URLを開く'}
+						</button>
+					</div>
 				{/if}
 			</div>
 		</div>
@@ -504,6 +498,17 @@
 			>
 				フォーム一覧
 			</button>
+		</div>
+		<div class="marquee-container overflow-hidden">
+			<div class="marquee-track flex w-max gap-2">
+				{#each { length: 2 } as _}
+					{#each SUPPORTED_FILE_GROUPS as group}
+						<span class="bg-sub rounded-full p-1 px-3 text-xs whitespace-nowrap text-gray-300">
+							{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
+						</span>
+					{/each}
+				{/each}
+			</div>
 		</div>
 	</div>
 </div>
@@ -528,11 +533,11 @@
 				</button>
 			</div>
 
-				<div class="flex flex-col gap-5 overflow-y-auto pr-1">
-					{#each urlDialogGroups as group}
-						<div class="flex flex-col gap-3">
-							<span class="text-sm font-bold text-gray-300">{group.title}</span>
-							<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+			<div class="flex flex-col gap-5 overflow-y-auto pr-1">
+				{#each urlDialogGroups as group}
+					<div class="flex flex-col gap-3">
+						<span class="text-sm font-bold text-gray-300">{group.title}</span>
+						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
 							{#each group.dialogs as dialog}
 								<button
 									onclick={() => showUploadDialog(dialog.type)}
@@ -541,30 +546,30 @@
 									{dialog.label}
 								</button>
 							{/each}
-							</div>
 						</div>
-					{/each}
-					{#each fileDialogGroups as group}
-						<div class="flex flex-col gap-3">
-							<span class="text-sm font-bold text-gray-300">{group.title}</span>
-							<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
-								{#each group.groups as fileGroup}
-									<button
-										onclick={async () => {
-											showFormListDialog = false;
-											await openFilteredFilePicker(fileGroup.accept);
-										}}
-										class="bg-base hover:bg-accent rounded-lg px-4 py-3 text-left text-sm text-black transition-colors hover:text-white"
-									>
-										{fileGroup.label}
-									</button>
-								{/each}
-							</div>
+					</div>
+				{/each}
+				{#each fileDialogGroups as group}
+					<div class="flex flex-col gap-3">
+						<span class="text-sm font-bold text-gray-300">{group.title}</span>
+						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+							{#each group.groups as fileGroup}
+								<button
+									onclick={async () => {
+										showFormListDialog = false;
+										await openFilteredFilePicker(fileGroup.accept);
+									}}
+									class="bg-base hover:bg-accent rounded-lg px-4 py-3 text-left text-sm text-black transition-colors hover:text-white"
+								>
+									{fileGroup.label}
+								</button>
+							{/each}
 						</div>
-					{/each}
-				</div>
+					</div>
+				{/each}
 			</div>
 		</div>
+	</div>
 {/if}
 
 <style>
