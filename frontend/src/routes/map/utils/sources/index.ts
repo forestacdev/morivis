@@ -142,7 +142,7 @@ export const createSourcesItems = async (
 							if (style.dimension) {
 								const timeValue = style.dimension.values[style.dimension.currentIndex];
 								if (timeValue) {
-									tileUrl = tileUrl.replace('{time}', timeValue);
+									tileUrl = tileUrl.replace('{dimension}', timeValue);
 								}
 							}
 							items[sourceId] = {

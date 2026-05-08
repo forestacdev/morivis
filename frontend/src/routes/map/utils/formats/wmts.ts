@@ -106,7 +106,7 @@ export const parseWmtsCapabilities = async (
 						return;
 					}
 
-					// Dimensionの処理: 時間ディメンションは{time}プレースホルダーに統一、それ以外はデフォルト値で置換
+					// Dimensionの処理: 時間ディメンションは{dimension}プレースホルダーに統一、それ以外はデフォルト値で置換
 					let timeDimension: WmsTimeDimensionInfo | undefined;
 					if (layer.Dimension) {
 						for (const dim of layer.Dimension) {
@@ -119,8 +119,8 @@ export const parseWmtsCapabilities = async (
 									timeDimension = {
 										values
 									};
-									// {Time} → {time} に統一（ソース生成時にcurrent値で置換）
-									templateUrl = templateUrl.replace(`{${dimId}}`, '{time}');
+									// {Time} → {dimension} に統一（ソース生成時にcurrent値で置換）
+									templateUrl = templateUrl.replace(`{${dimId}}`, '{dimension}');
 								}
 							} else if (dimId && dimDefault) {
 								templateUrl = templateUrl.replace(`{${dimId}}`, dimDefault);
