@@ -20,6 +20,11 @@ interface ProxyRule {
 export const PROXY_RULES: ProxyRule[] = [
 	{ match: 'mapdata.qchizu.xyz', target: 'https://mapdata.qchizu.xyz', proxyPath: '/api/qchizu' },
 	{
+		match: 'www2.ffpri.go.jp',
+		target: 'https://www2.ffpri.go.jp',
+		proxyPath: '/api/ffpri'
+	},
+	{
 		match: 'rinya-hyogo.geospatial.jp',
 		target: 'https://rinya-hyogo.geospatial.jp',
 		proxyPath: '/api/rinya-hyogo',

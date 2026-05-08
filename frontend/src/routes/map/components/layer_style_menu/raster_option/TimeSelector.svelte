@@ -25,10 +25,10 @@
 			| RasterTiffStyle
 			| RasterCadStyle
 		>;
-		showTimeOption: boolean;
+		showDimensionOption: boolean;
 	}
 
-	let { layerEntry = $bindable(), showTimeOption = $bindable() }: Props = $props();
+	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -182,7 +182,7 @@
 </script>
 
 {#if layerEntry.style.dimension}
-	<Accordion label={'時間'} icon={'mdi:clock-outline'} bind:value={showTimeOption}>
+	<Accordion label={'時間'} icon={'mdi:clock-outline'} bind:value={showDimensionOption}>
 		<div class="flex flex-col gap-4 p-2">
 			<div class="flex items-center gap-1">
 				<div

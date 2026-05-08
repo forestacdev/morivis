@@ -6,6 +6,7 @@
 	import TiffOption from './raster_option/TiffOption.svelte';
 	import TimeSelector from './raster_option/TimeSelector.svelte';
 	import Accordion from '../atoms/Accordion.svelte';
+	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
 
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 	import type {
@@ -40,7 +41,16 @@
 
 	let showOption = $state<boolean>(false);
 
-	let showTimeOption = $state(true);
+	let showDimensionOption = $state(true);
+	let selectedDimensionKey = $state('');
+	let variantDimensionItems = $derived.by(() => {
+		if (!style.dimension || style.dimension.type !== 'variant') return [];
+
+		return style.dimension.values.map((value, index) => ({
+			key: value,
+			name: style.dimension?.labels?.[index] ?? value
+		}));
+	});
 
 	let preset = $derived.by(() => {
 		if (style.type === 'basemap') {
@@ -69,6 +79,24 @@
 				};
 			}
 			previousPreset = preset;
+		}
+	});
+
+	$effect(() => {
+		if (!style.dimension || style.dimension.type !== 'variant') return;
+
+		const nextKey = style.dimension.values[style.dimension.currentIndex] ?? '';
+		if (selectedDimensionKey !== nextKey) {
+			selectedDimensionKey = nextKey;
+		}
+	});
+
+	$effect(() => {
+		if (!style.dimension || style.dimension.type !== 'variant') return;
+
+		const nextIndex = style.dimension.values.indexOf(selectedDimensionKey);
+		if (nextIndex >= 0 && nextIndex !== style.dimension.currentIndex) {
+			style.dimension.currentIndex = nextIndex;
 		}
 	});
 
@@ -109,10 +137,6 @@
 				</Accordion>
 			{/if}
 		{/await}
-
-		{#if style.dimension}
-			<TimeSelector bind:layerEntry bind:showTimeOption />
-		{/if}
 
 		<!-- <Accordion label={'詳細設定'} bind:value={showOption}>
 			<div class="flex w-full flex-col gap-2">
@@ -206,12 +230,22 @@
 		<TiffOption
 			bind:layerEntry={layerEntry as RasterEntry<RasterTiffStyle>}
 			bind:showColorOption
-			bind:showTimeOption
+			bind:showDimensionOption
 		/>
 	{:else if style.type === 'cad'}
 		<div class="mt-8">
 			<ColorPicker bind:value={style.color} label={'ラインの色'} />
 		</div>
+	{/if}
+{/if}
+{#if style.dimension}
+	{#if style.dimension.type === 'time'}
+		<TimeSelector bind:layerEntry bind:showDimensionOption />
+	{:else if style.dimension.type === 'variant'}
+		<BaseSelectMenu
+			items={variantDimensionItems}
+			bind:selectedKey={selectedDimensionKey}
+		/>
 	{/if}
 {/if}
 

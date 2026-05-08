@@ -17,13 +17,13 @@
 	interface Props {
 		layerEntry: RasterEntry<RasterTiffStyle>;
 		showColorOption: boolean;
-		showTimeOption: boolean;
+		showDimensionOption: boolean;
 	}
 
 	let {
 		layerEntry = $bindable(),
 		showColorOption = $bindable(),
-		showTimeOption = $bindable()
+		showDimensionOption = $bindable()
 	}: Props = $props();
 
 	const dataRanges = $derived(GeoTiffCache.getDataRanges(layerEntry.id));
@@ -154,7 +154,7 @@
 </Accordion>
 
 {#if layerEntry.style.dimension}
-	<TimeSelector bind:layerEntry bind:showTimeOption />
+	<TimeSelector bind:layerEntry bind:showDimensionOption />
 {/if}
 
 <style>

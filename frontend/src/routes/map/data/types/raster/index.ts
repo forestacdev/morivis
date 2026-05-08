@@ -247,6 +247,7 @@ interface RasterMetaData extends BaseMetaData {
 }
 
 export interface RasterDiscreteDimension {
+	type: 'time' | 'variant';
 	values: string[];
 	currentIndex: number;
 	labels?: string[];
