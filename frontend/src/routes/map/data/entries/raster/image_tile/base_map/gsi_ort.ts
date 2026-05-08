@@ -9,7 +9,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://cyberjapandata.gsi.go.jp/xyz/{dimension}/{z}/{x}/{y}.png'
+		url: 'https://cyberjapandata.gsi.go.jp/xyz/{morivis:dimension}/{z}/{x}/{y}.png'
 	},
 	metaData: {
 		name: '年度別空中写真（1928年〜1961年）',

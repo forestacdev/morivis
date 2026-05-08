@@ -5,7 +5,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MERRA2_2m_Air_Temperature_Monthly/default/{dimension}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png'
+		url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MERRA2_2m_Air_Temperature_Monthly/default/{morivis:dimension}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png'
 	},
 	metaData: {
 		name: '2-meter Air Temperature, (Monthly, MERRA2)',

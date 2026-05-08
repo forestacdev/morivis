@@ -61,7 +61,7 @@
 	// 	const sourceId = `${layerEntry.id}_source`;
 	// 	const timeValue = layerEntry.style.dimension.values[currentIndex];
 	// 	if (timeValue) {
-	// 		const tileUrl = layerEntry.format.url.replace('{dimension}', timeValue);
+	// 		const tileUrl = layerEntry.format.url.replace('{morivis:dimension}', timeValue);
 	// 		mapStore.setTiles(sourceId, [tileUrl]);
 	// 	}
 	// };

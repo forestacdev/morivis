@@ -142,7 +142,7 @@ export const createSourcesItems = async (
 							if (style.dimension) {
 								const timeValue = style.dimension.values[style.dimension.currentIndex];
 								if (timeValue) {
-									tileUrl = tileUrl.replace('{dimension}', timeValue);
+									tileUrl = tileUrl.replace('{morivis:dimension}', timeValue);
 								}
 							}
 							items[sourceId] = {

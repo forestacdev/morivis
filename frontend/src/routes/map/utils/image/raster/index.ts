@@ -68,11 +68,11 @@ export const getRasterImageUrl = async (
 		tile = xyzToWMSXYZ(tile);
 	}
 
-	// {dimension}プレースホルダーを現在の選択値で置換
+	// {morivis:dimension}プレースホルダーを現在の選択値で置換
 	const resolveTime = (u: string): string => {
 		const td = _layerEntry.style.dimension;
-		if (td && u.includes('{dimension}')) {
-			return u.replace('{dimension}', td.values[td.currentIndex] ?? '');
+		if (td && u.includes('{morivis:dimension}')) {
+			return u.replace('{morivis:dimension}', td.values[td.currentIndex] ?? '');
 		}
 		return u;
 	};

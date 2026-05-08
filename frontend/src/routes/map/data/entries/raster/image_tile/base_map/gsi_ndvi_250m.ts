@@ -29,7 +29,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://cyberjapandata.gsi.go.jp/xyz/ndvi_250m{dimension}/{z}/{x}/{y}.png'
+		url: 'https://cyberjapandata.gsi.go.jp/xyz/ndvi_250m{morivis:dimension}/{z}/{x}/{y}.png'
 	},
 	metaData: {
 		name: '植生指標データ 250m',
