@@ -24,7 +24,7 @@ const entry: PointEntry<TileMetaData> = {
 		minZoom: 11,
 		maxZoom: 14,
 		tags: ['建物'],
-		bounds: [-180, -85.051129, 180, 85.051129],
+		bounds: [136.9158014095595, 35.547274216918595, 136.92711166333783, 35.55727434225648],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/fac_poi.webp`,
 		mapImage: `${COVER_IMAGE_BASE_PATH}/fac_poi.webp`,
 		xyzImageTile: { x: 14423, y: 6458, z: 14 }

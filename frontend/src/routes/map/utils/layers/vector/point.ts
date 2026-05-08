@@ -132,8 +132,8 @@ export const createPointImageIconLayer = (
 						'text-opacity': 1,
 						'text-color': '#000000',
 						'text-halo-color': '#e8e8e8',
-						'text-halo-width': 2,
-						...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
+						'text-halo-width': 2
+						// ...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
 					}
 				: {})
 		},
@@ -154,8 +154,8 @@ export const createPointImageIconLayer = (
 						'text-max-width': 12,
 						'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 						'text-anchor': 'top',
-						'text-offset': [0, 0.5],
-						...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
+						'text-offset': [0, 0.5]
+						// ...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
 					}
 				: {})
 		},
