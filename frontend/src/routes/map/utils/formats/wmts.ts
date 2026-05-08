@@ -120,10 +120,7 @@ export const parseWmtsCapabilities = async (
 										values
 									};
 									// {Time} → {morivis:dimension} に統一（ソース生成時にcurrent値で置換）
-									templateUrl = templateUrl.replace(
-										`{${dimId}}`,
-										'{morivis:dimension}'
-									);
+									templateUrl = templateUrl.replace(`{${dimId}}`, '{morivis:dimension}');
 								}
 							} else if (dimId && dimDefault) {
 								templateUrl = templateUrl.replace(`{${dimId}}`, dimDefault);

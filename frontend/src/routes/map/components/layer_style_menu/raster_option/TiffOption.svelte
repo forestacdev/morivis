@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TimeSelector from './TimeSelector.svelte';
+	import DimensionSelector from './DimensionSelector.svelte';
 	import Accordion from '../../atoms/Accordion.svelte';
 	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
 
@@ -154,7 +154,7 @@
 </Accordion>
 
 {#if layerEntry.style.dimension}
-	<TimeSelector bind:layerEntry bind:showDimensionOption />
+	<DimensionSelector bind:layerEntry bind:showDimensionOption />
 {/if}
 
 <style>

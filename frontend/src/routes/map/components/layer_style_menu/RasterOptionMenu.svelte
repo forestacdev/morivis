@@ -2,9 +2,9 @@
 	import Icon from '@iconify/svelte';
 
 	import DemOption from './raster_option/DemOption.svelte';
+	import DimensionSelector from './raster_option/DimensionSelector.svelte';
 	import RasterPresetPulldownBox from './raster_option/RasterPresetPulldownBox.svelte';
 	import TiffOption from './raster_option/TiffOption.svelte';
-	import TimeSelector from './raster_option/TimeSelector.svelte';
 	import Accordion from '../atoms/Accordion.svelte';
 
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
@@ -211,7 +211,7 @@
 	{/if}
 {/if}
 {#if style.dimension}
-	<TimeSelector bind:layerEntry bind:showDimensionOption />
+	<DimensionSelector bind:layerEntry bind:showDimensionOption />
 {/if}
 
 <style>

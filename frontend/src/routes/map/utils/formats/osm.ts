@@ -35,7 +35,7 @@ const normalizeFeatureCollection = (
 			type: 'Feature',
 			id: feature.id != null ? String(feature.id) : undefined,
 			geometry: feature.geometry as AnyGeometry,
-			properties: ((feature.properties ?? {}) as Record<string, unknown>) as FeatureProp
+			properties: (feature.properties ?? {}) as Record<string, unknown> as FeatureProp
 		}))
 });
 
