@@ -30,6 +30,8 @@
 
 	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
 
+	let dimension = $derived(layerEntry.style.dimension);
+
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
 		loop: true,
@@ -50,9 +52,9 @@
 	];
 
 	const onSelect = () => {
-		if (!emblaMainCarousel || !layerEntry.style.dimension) return;
+		if (!emblaMainCarousel || !dimension) return;
 		const currentIndex = emblaMainCarousel.selectedScrollSnap();
-		layerEntry.style.dimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
+		dimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
 	};
 
 	// const onSelect = () => {
@@ -176,13 +178,17 @@
 	};
 
 	const getTimeLabel = (value: string, index: number): string => {
-		const labels = layerEntry.style.dimension?.labels;
+		const labels = dimension?.labels;
 		return labels?.[index] ?? formatTimeValue(value);
 	};
 </script>
 
-{#if layerEntry.style.dimension}
-	<Accordion label={'時間'} icon={'mdi:clock-outline'} bind:value={showDimensionOption}>
+{#if dimension}
+	<Accordion
+		label={dimension.placeholder ?? '時間'}
+		icon={dimension.type === 'time' ? 'mdi:clock-outline' : 'carbon:category'}
+		bind:value={showDimensionOption}
+	>
 		<div class="flex flex-col gap-4 p-2">
 			<div class="flex items-center gap-1">
 				<div
@@ -195,7 +201,7 @@
 					onemblaInit={onInitEmblaMainCarousel}
 				>
 					<div class="flex gap-2 px-2">
-						{#each layerEntry.style.dimension.values as timeValue, i}
+						{#each dimension.values as timeValue, i}
 							<div
 								class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
 							>
@@ -205,43 +211,45 @@
 					</div>
 				</div>
 			</div>
-			<div class="flex items-center justify-center gap-2">
-				<button
-					onclick={onClickPrev}
-					class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-white hover:bg-white/10"
-					aria-label="前へ"
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-					</svg>
-				</button>
-				<button
-					onclick={toggleAutoplay}
-					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white hover:bg-white/10"
-					aria-label={isPlaying ? '停止' : '再生'}
-				>
-					{#if isPlaying}
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-							<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+			{#if dimension.type === 'time'}
+				<div class="flex items-center justify-center gap-2">
+					<button
+						onclick={onClickPrev}
+						class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-white hover:bg-white/10"
+						aria-label="前へ"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
 						</svg>
-						停止
-					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-							<path fill="currentColor" d="M8 5v14l11-7z" />
+					</button>
+					<button
+						onclick={toggleAutoplay}
+						class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white hover:bg-white/10"
+						aria-label={isPlaying ? '停止' : '再生'}
+					>
+						{#if isPlaying}
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+								<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+							</svg>
+							停止
+						{:else}
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+								<path fill="currentColor" d="M8 5v14l11-7z" />
+							</svg>
+							再生
+						{/if}
+					</button>
+					<button
+						onclick={onClickNext}
+						class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-white hover:bg-white/10"
+						aria-label="次へ"
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+							<path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
 						</svg>
-						再生
-					{/if}
-				</button>
-				<button
-					onclick={onClickNext}
-					class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-white hover:bg-white/10"
-					aria-label="次へ"
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-					</svg>
-				</button>
-			</div>
+					</button>
+				</div>
+			{/if}
 		</div>
 	</Accordion>
 {/if}
