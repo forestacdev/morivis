@@ -36,7 +36,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		brightnessMax: 1,
 		saturation: 0,
 		contrast: 0,
-		timeDimension: {
+		dimension: {
 			values: [
 				'2026-01-01T00:00:00Z',
 				'2025-12-01T00:00:00Z',

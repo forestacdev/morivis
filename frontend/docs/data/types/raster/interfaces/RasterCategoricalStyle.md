@@ -66,15 +66,15 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:114](https://git
 
 ***
 
-### timeDimension?
+### dimension?
 
-> `optional` **timeDimension**: [`WmsTimeDimension`](WmsTimeDimension.md)
+> `optional` **dimension**: [`RasterDiscreteDimension`](RasterDiscreteDimension.md)
 
 Defined in: [frontend/src/routes/map/data/types/raster/index.ts:81](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L81)
 
 #### Inherited from
 
-[`BaseRasterStyle`](BaseRasterStyle.md).[`timeDimension`](BaseRasterStyle.md#timedimension)
+[`BaseRasterStyle`](BaseRasterStyle.md).[`dimension`](BaseRasterStyle.md#dimension)
 
 ***
 

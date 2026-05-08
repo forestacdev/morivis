@@ -55,7 +55,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	style: {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
-		timeDimension: {
+		dimension: {
 			values: NDVI_TIME_VALUES,
 			labels: NDVI_TIME_LABELS,
 			currentIndex: NDVI_TIME_VALUES.length - 1

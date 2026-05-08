@@ -30,7 +30,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	style: {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
-		timeDimension: {
+		dimension: {
 			values: ['ort_old10', 'ort_USA10', 'ort_riku10', 'ort_1928'],
 			labels: ['1961年～1969年', '1945年～1950年', '1936年～1942年頃', '1928年頃'],
 			currentIndex: 0

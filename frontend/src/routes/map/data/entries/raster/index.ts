@@ -10,7 +10,7 @@ import type {
 	RasterDemStyle,
 	RasterPMTilesEntry,
 	DemDataTypeKey,
-	WmsTimeDimension
+	RasterDiscreteDimension
 } from '$routes/map/data/types/raster';
 
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
@@ -28,7 +28,7 @@ export const createRasterEntry = (
 		wmsTimeDimension?: { values: string[] };
 	}
 ): RasterEntry<RasterBaseMapStyle> => {
-	const wmsTimeDimension: WmsTimeDimension | undefined = options?.wmsTimeDimension
+	const wmsTimeDimension: RasterDiscreteDimension | undefined = options?.wmsTimeDimension
 		? {
 				values: options.wmsTimeDimension.values,
 				currentIndex: 0
@@ -55,7 +55,7 @@ export const createRasterEntry = (
 		},
 		style: {
 			...DEFAULT_RASTER_BASEMAP_STYLE,
-			...(wmsTimeDimension && { timeDimension: wmsTimeDimension })
+			...(wmsTimeDimension && { dimension: wmsTimeDimension })
 		}
 	};
 

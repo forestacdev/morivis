@@ -29,7 +29,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	style: {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
-		timeDimension: {
+		dimension: {
 			values: [
 				'2024',
 				'2023',

@@ -70,7 +70,7 @@ export const getRasterImageUrl = async (
 
 	// {time}プレースホルダーを現在の時間値で置換
 	const resolveTime = (u: string): string => {
-		const td = _layerEntry.style.timeDimension;
+		const td = _layerEntry.style.dimension;
 		if (td && u.includes('{time}')) {
 			return u.replace('{time}', td.values[td.currentIndex] ?? '');
 		}

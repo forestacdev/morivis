@@ -153,7 +153,7 @@
 	{/if}
 </Accordion>
 
-{#if layerEntry.style.timeDimension}
+{#if layerEntry.style.dimension}
 	<TimeSelector bind:layerEntry bind:showTimeOption />
 {/if}
 

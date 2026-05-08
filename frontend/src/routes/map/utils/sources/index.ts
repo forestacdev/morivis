@@ -73,7 +73,7 @@ export const createSourcesItems = async (
 						if (style.type === 'tiff') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
-							const timeIdx = style.timeDimension?.currentIndex ?? -1;
+							const timeIdx = style.dimension?.currentIndex ?? -1;
 
 							let styleID;
 							if (mode === 'single') {
@@ -139,8 +139,8 @@ export const createSourcesItems = async (
 							}
 						} else {
 							let tileUrl = convertTmsToXyz(format.url);
-							if (style.timeDimension) {
-								const timeValue = style.timeDimension.values[style.timeDimension.currentIndex];
+							if (style.dimension) {
+								const timeValue = style.dimension.values[style.dimension.currentIndex];
 								if (timeValue) {
 									tileUrl = tileUrl.replace('{time}', timeValue);
 								}

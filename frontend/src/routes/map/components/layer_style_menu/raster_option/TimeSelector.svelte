@@ -50,16 +50,16 @@
 	];
 
 	const onSelect = () => {
-		if (!emblaMainCarousel || !layerEntry.style.timeDimension) return;
+		if (!emblaMainCarousel || !layerEntry.style.dimension) return;
 		const currentIndex = emblaMainCarousel.selectedScrollSnap();
-		layerEntry.style.timeDimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
+		layerEntry.style.dimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
 	};
 
 	// const onSelect = () => {
-	// 	if (!emblaMainCarousel || !layerEntry.style.timeDimension) return;
+	// 	if (!emblaMainCarousel || !layerEntry.style.dimension) return;
 	// 	const currentIndex = emblaMainCarousel.selectedScrollSnap();
 	// 	const sourceId = `${layerEntry.id}_source`;
-	// 	const timeValue = layerEntry.style.timeDimension.values[currentIndex];
+	// 	const timeValue = layerEntry.style.dimension.values[currentIndex];
 	// 	if (timeValue) {
 	// 		const tileUrl = layerEntry.format.url.replace('{time}', timeValue);
 	// 		mapStore.setTiles(sourceId, [tileUrl]);
@@ -176,12 +176,12 @@
 	};
 
 	const getTimeLabel = (value: string, index: number): string => {
-		const labels = layerEntry.style.timeDimension?.labels;
+		const labels = layerEntry.style.dimension?.labels;
 		return labels?.[index] ?? formatTimeValue(value);
 	};
 </script>
 
-{#if layerEntry.style.timeDimension}
+{#if layerEntry.style.dimension}
 	<Accordion label={'時間'} icon={'mdi:clock-outline'} bind:value={showTimeOption}>
 		<div class="flex flex-col gap-4 p-2">
 			<div class="flex items-center gap-1">
@@ -195,7 +195,7 @@
 					onemblaInit={onInitEmblaMainCarousel}
 				>
 					<div class="flex gap-2 px-2">
-						{#each layerEntry.style.timeDimension.values as timeValue, i}
+						{#each layerEntry.style.dimension.values as timeValue, i}
 							<div
 								class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
 							>

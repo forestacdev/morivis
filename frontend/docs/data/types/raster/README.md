@@ -27,7 +27,7 @@
 - [RasterTiffStyle](interfaces/RasterTiffStyle.md)
 - [ShingleBandData](interfaces/ShingleBandData.md)
 - [TileXYZ](interfaces/TileXYZ.md)
-- [WmsTimeDimension](interfaces/WmsTimeDimension.md)
+- [RasterDiscreteDimension](interfaces/RasterDiscreteDimension.md)
 
 ## Type Aliases
 

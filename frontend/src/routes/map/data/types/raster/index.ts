@@ -78,7 +78,7 @@ export interface BaseRasterStyle {
 	visible?: boolean; // NOTE: 動的追加
 	minZoom?: number;
 	maxZoom?: number;
-	timeDimension?: WmsTimeDimension;
+	dimension?: RasterDiscreteDimension;
 }
 
 export interface RasterBaseMapStyle extends BaseRasterStyle {
@@ -246,10 +246,11 @@ interface RasterMetaData extends BaseMetaData {
 	imageCorners?: [[number, number], [number, number], [number, number], [number, number]];
 }
 
-export interface WmsTimeDimension {
+export interface RasterDiscreteDimension {
 	values: string[];
 	currentIndex: number;
 	labels?: string[];
+	placeholder?: string;
 }
 
 export interface RasterInteraction {

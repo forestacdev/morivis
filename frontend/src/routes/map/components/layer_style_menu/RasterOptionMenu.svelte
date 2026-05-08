@@ -110,7 +110,7 @@
 			{/if}
 		{/await}
 
-		{#if style.timeDimension}
+		{#if style.dimension}
 			<TimeSelector bind:layerEntry bind:showTimeOption />
 		{/if}
 
