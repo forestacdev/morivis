@@ -220,6 +220,7 @@
 						: Array.from({ length: timeDim.size }, (_, i) => String(i));
 
 					dimension = {
+						type: 'time',
 						values: timeValues,
 						currentIndex: sliceIndices[timeDim.name] ?? 0
 					};

@@ -30,6 +30,7 @@ export const createRasterEntry = (
 ): RasterEntry<RasterBaseMapStyle> => {
 	const wmsTimeDimension: RasterDiscreteDimension | undefined = options?.wmsTimeDimension
 		? {
+				type: 'time',
 				values: options.wmsTimeDimension.values,
 				currentIndex: 0
 			}
