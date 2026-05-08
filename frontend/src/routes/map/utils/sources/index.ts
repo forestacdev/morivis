@@ -19,7 +19,6 @@ import {
 	showCloudLayer
 } from '$routes/stores/layers';
 
-import { poiSources } from '$routes/map/utils/layers/poi';
 import { labelSources } from '$routes/map/utils/layers/label';
 import { roadSources } from '$routes/map/utils/layers/road';
 import { boundarySources } from '$routes/map/utils/layers/boundary';
@@ -375,7 +374,6 @@ export const createSourcesItems = async (
 		baseSourcesItem = {};
 	}
 
-	const poiSourcesItem = get(showPoiLayer) ? poiSources : {};
 	const labelSourcesItem = get(showLabelLayer) ? labelSources : {};
 	const roadSourcesItem = get(showRoadLayer) ? roadSources : {};
 	const boundarySourcesItem = get(showBoundaryLayer) ? boundarySources : {};
@@ -384,7 +382,6 @@ export const createSourcesItems = async (
 	return {
 		...sourceItems,
 		...baseSourcesItem,
-		...poiSourcesItem,
 		...labelSourcesItem,
 		...roadSourcesItem,
 		...boundarySourcesItem,

@@ -72,7 +72,7 @@
 		contextMenuState = $bindable()
 	}: Props = $props();
 
-	const ADDITIONAL_CLICKABLE_LAYER_IDS = ['@fac_poi', '@poi_top', '@search_result'] as const;
+	const ADDITIONAL_CLICKABLE_LAYER_IDS = ['@poi_top', '@search_result'] as const;
 	let highlightedGeneratedPoiLayerId: string | null = $state(null);
 
 	const clearSearchHighlight = () => {
@@ -197,15 +197,6 @@
 		layerId: string,
 		feature: MapGeoJSONFeature
 	): { [key: string]: any } => {
-		// POIトップアイコンは、プロパティに_fac_idがあればそれをもとにアイコンURLを解決する
-		if (layerId === '@fac_poi') {
-			return {
-				...feature.properties,
-				iconImage: `${ICON_IMAGE_BASE_PATH}/${feature.properties._prop_id}.webp`
-			};
-		}
-
-		// カスタムレイヤーのポイントアイコンは、レイヤー定義からアイコンURLを解決する
 		const pointLayerEntry = getPointLayerEntry(layerId);
 		const generatedIconImage = pointLayerEntry
 			? resolveGeneratedPoiIconUrl(

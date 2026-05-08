@@ -31,7 +31,6 @@ import { roadLineLayers, roadLabelLayers } from '$routes/map/utils/layers/road';
 import { railLineLayers } from '$routes/map/utils/layers/rail';
 import { boundaryLayers } from '$routes/map/utils/layers/boundary';
 import { cloudLayers } from '$routes/map/utils/layers/cloud';
-import { poiLayers } from '$routes/map/utils/layers/poi';
 import { hillshadeLayers } from '$routes/map/utils/layers/hillshade';
 import {
 	baseMapSatelliteLayers,
@@ -441,7 +440,6 @@ export const createLayersItems = (
 		get(selectedBaseMap) !== 'aspect';
 	// const isNotRelief = get(selectedBaseMap) !== 'relief';
 
-	const poiLayerItems = get(showPoiLayer) && _type === 'main' ? poiLayers : [];
 	const labelLayerItems = get(showLabelLayer) && _type === 'main' ? labelLayers : [];
 	const roadLabelLayerItems = get(showRoadLayer) && _type === 'main' ? roadLabelLayers : [];
 	const roadLineLayerItems = get(showRoadLayer) && _type === 'main' ? roadLineLayers : [];
@@ -467,7 +465,6 @@ export const createLayersItems = (
 		...labelLayerItems,
 		...roadLabelLayerItems,
 		...symbolLayerItems,
-		...poiLayerItems,
 		...circleIconLayerItems
 	];
 };
