@@ -637,8 +637,6 @@ const createMapStore = () => {
 				};
 			}
 		});
-		// スタイル変更後にカスタムレイヤーを追加
-		initThreeLayer();
 	};
 
 	// deck.gl レイヤーを設定
@@ -675,8 +673,8 @@ const createMapStore = () => {
 		});
 	};
 
-	// Three.js レイヤーを初期化（マップに追加）
-	const initThreeLayer = () => {
+	// Three.js レイヤーを必要時に追加
+	const ensureThreeLayer = () => {
 		if (!map || !isMapValid(map)) return;
 		const layerId = '3d-model-layer';
 		if (map.getLayer(layerId)) {
@@ -688,6 +686,16 @@ const createMapStore = () => {
 		map.addLayer(layer);
 	};
 
+	const releaseThreeLayer = () => {
+		if (!map || !isMapValid(map)) return;
+		const layerId = '3d-model-layer';
+		if (map.getLayer(layerId)) {
+			map.removeLayer(layerId);
+		}
+		threeJsManager.dispose();
+		currentThreeModelIds = new Set();
+	};
+
 	// 現在のエントリIDを追跡
 	let currentThreeModelIds: Set<string> = new Set();
 
@@ -697,9 +705,11 @@ const createMapStore = () => {
 		_type: 'main' | 'preview' = 'main'
 	): Promise<void> => {
 		if (_type === 'preview' && newEntries.length > 0) {
-			threeJsManager.addModel(newEntries[0], 'preview'); // プレビュー用に最初のモデルを追加
+			ensureThreeLayer();
+			await threeJsManager.addModel(newEntries[0], 'preview'); // プレビュー用に最初のモデルを追加
 			return;
 		}
+
 		const newIds = new Set(newEntries.map((e) => e.id));
 		const currentIds = currentThreeModelIds;
 
@@ -712,6 +722,9 @@ const createMapStore = () => {
 
 		// 追加: 新しいリストにあるが現在ないもの
 		const entriesToAdd = newEntries.filter((e) => !currentIds.has(e.id));
+		if (entriesToAdd.length > 0) {
+			ensureThreeLayer();
+		}
 		for (const entry of entriesToAdd) {
 			await threeJsManager.addModel(entry);
 		}
@@ -732,6 +745,10 @@ const createMapStore = () => {
 
 		if (_type === 'main') {
 			threeJsManager.clearPreview();
+		}
+
+		if (threeJsManager.modelIds.length === 0) {
+			releaseThreeLayer();
 		}
 	};
 
@@ -1204,8 +1221,7 @@ const createMapStore = () => {
 			deckOverlay.finalize();
 			deckOverlay = null;
 		}
-		// Three.js マネージャーを破棄
-		threeJsManager.dispose();
+		releaseThreeLayer();
 
 		map.remove();
 		map = null;
@@ -1294,7 +1310,7 @@ const createMapStore = () => {
 		setStyle,
 		setDeckOverlay,
 		// Three.js 関連
-		initThreeLayer,
+		ensureThreeLayer,
 		setThreeLayer,
 		setHighlightLayers,
 		clearHighlightLayers,
