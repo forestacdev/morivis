@@ -119,7 +119,7 @@
 			</div>
 		</Accordion> -->
 	{:else if style.type === 'categorical'}
-		<CategoricalLegend style={style} />
+		<CategoricalLegend {style} />
 	{:else if style.type === 'dem'}
 		<DemOption bind:layerEntry={layerEntry as RasterDemEntry} bind:showColorOption />
 	{:else if style.type === 'tiff'}

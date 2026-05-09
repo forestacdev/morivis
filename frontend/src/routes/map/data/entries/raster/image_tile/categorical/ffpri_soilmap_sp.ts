@@ -28,6 +28,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	},
 	style: {
 		type: 'categorical',
+		resampling: 'nearest',
 		opacity: 0.7,
 		dimension: {
 			type: 'variant',
@@ -40,15 +41,15 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 			type: 'gradient',
 			name: '炭素蓄積量',
 			colors: [
-				'#d53e4f',
-				'#f46d43',
-				'#fdae61',
-				'#fee08b',
-				'#ffffbf',
-				'#e6f598',
-				'#abdda4',
+				'#3288bd',
 				'#66c2a5',
-				'#3288bd'
+				'#abdda4',
+				'#e6f598',
+				'#ffffbf',
+				'#fee08b',
+				'#fdae61',
+				'#f46d43',
+				'#d53e4f'
 			],
 			ranges: [20, 140],
 			unit: 'tC/ha'

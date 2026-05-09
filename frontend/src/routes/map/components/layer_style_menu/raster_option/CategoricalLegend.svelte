@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+
 	import type { RasterCategoricalStyle } from '$routes/map/data/types/raster';
 
 	interface Props {
