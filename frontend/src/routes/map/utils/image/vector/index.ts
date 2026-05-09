@@ -9,6 +9,7 @@ import { createSourcesItems } from '$routes/map/utils/sources';
 import { CoverImageManager } from '../index';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
+import { esriFeatureProtocol } from '$routes/map/protocol/vector/esri-feature';
 
 export interface MapImageOptions {
 	name: string;
@@ -32,6 +33,7 @@ export interface MapImageResult {
 const previewPmtilesProtocol = new Protocol();
 const previewMbtilesProtocol = mbtilesProtocol();
 const previewGeojsonProtocol = geojsonProtocol('geojson');
+const previewEsriFeatureProtocol = esriFeatureProtocol('esri-feature');
 let previewProtocolsRegistered = false;
 
 const ensurePreviewProtocols = () => {
@@ -39,6 +41,7 @@ const ensurePreviewProtocols = () => {
 	maplibregl.addProtocol('pmtiles', previewPmtilesProtocol.tile);
 	maplibregl.addProtocol(previewMbtilesProtocol.protocolName, previewMbtilesProtocol.request);
 	maplibregl.addProtocol(previewGeojsonProtocol.protocolName, previewGeojsonProtocol.request);
+	maplibregl.addProtocol(previewEsriFeatureProtocol.protocolName, previewEsriFeatureProtocol.request);
 	previewProtocolsRegistered = true;
 };
 
