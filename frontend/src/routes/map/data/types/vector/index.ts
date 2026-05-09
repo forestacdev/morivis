@@ -5,12 +5,12 @@ import type {
 } from '$routes/map/data/types/vector/style';
 
 import type { BaseMetaData } from '$routes/map/data/types';
-import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
 import type {
 	PointFeatureCollection,
 	LineStringFeatureCollection,
 	PolygonFeatureCollection
 } from '$routes/map/types/geojson';
+import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 
 import type { VectorProperties } from '$routes/map/data/types/vector/properties';
 
@@ -35,15 +35,6 @@ export interface TileMetaData extends BaseMetaData {
 }
 
 export type GeoJsonMetaData = BaseMetaData;
-
-export interface AuxiliaryLayersData {
-	// MapLibreのソース定義をそのまま使用
-	sources?: {
-		[key: string]: SourceSpecification; // MapLibre SourceSpecification
-	};
-	// MapLibreのレイヤー定義をそのまま使用
-	layers: LayerSpecification[];
-}
 
 interface BaseVectorEntry {
 	id: string;

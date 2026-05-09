@@ -72,6 +72,7 @@ import {
 } from '$routes/map/data/entries/_meta_data/_attribution';
 import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
+import { resolveDimensionPlaceholders } from '$routes/map/utils/dimension';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -79,6 +80,11 @@ const validateId = (id: string) => {
 	if (!validIds.includes(id)) {
 		throw new Error(`Invalid ID: ${id}`);
 	}
+};
+
+const getDimensionValue = (entry: GeoDataEntry) => {
+	if (!('dimension' in entry.style) || !entry.style.dimension) return undefined;
+	return entry.style.dimension.values[entry.style.dimension.currentIndex];
 };
 INT_ADD_LAYER_IDS.forEach((id) => {
 	try {
@@ -340,53 +346,75 @@ export const createLayersItems = (
 						}
 					}
 
-					// 補助レイヤーの追加
-					if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
-						entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
-							const type = auxiliaryLayer.type;
-							if (type === 'fill') {
-								fillLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'fill-opacity': style.opacity }
-								});
-							} else if (type === 'fill-extrusion') {
-								fillLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'fill-extrusion-opacity': style.opacity }
-								});
-							} else if (type === 'line') {
-								lineLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'line-opacity': style.opacity }
-								});
-							} else if (type === 'circle') {
-								circleLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'circle-opacity': style.opacity }
-								});
-							} else if (type === 'heatmap') {
-								circleLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'heatmap-opacity': style.opacity }
-								});
-							} else if (type === 'symbol') {
-								symbolLayerItems.push({
-									...auxiliaryLayer,
-									paint: {
-										...auxiliaryLayer.paint,
-										'icon-opacity': style.opacity,
-										'text-opacity': style.opacity
-									}
-								});
-							}
-						});
-					}
 					break;
 				}
 
 				default:
 					console.warn(`対応してないtypeのデータ: ${layerId}`);
 					break;
+			}
+
+			if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
+				entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
+					const dimensionValue = getDimensionValue(entry);
+					const resolvedAuxiliaryLayer = resolveDimensionPlaceholders(
+						auxiliaryLayer,
+						dimensionValue
+					);
+					const type = resolvedAuxiliaryLayer.type;
+					if (type === 'fill') {
+						fillLayerItems.push({
+							...resolvedAuxiliaryLayer,
+							paint: {
+								...resolvedAuxiliaryLayer.paint,
+								'fill-opacity': resolvedAuxiliaryLayer.paint?.['fill-opacity'] ?? style.opacity
+							}
+						});
+					} else if (type === 'fill-extrusion') {
+						fillLayerItems.push({
+							...resolvedAuxiliaryLayer,
+							paint: {
+								...resolvedAuxiliaryLayer.paint,
+								'fill-extrusion-opacity':
+									resolvedAuxiliaryLayer.paint?.['fill-extrusion-opacity'] ?? style.opacity
+							}
+						});
+					} else if (type === 'line') {
+						lineLayerItems.push({
+							...resolvedAuxiliaryLayer,
+							paint: {
+								...resolvedAuxiliaryLayer.paint,
+								'line-opacity': resolvedAuxiliaryLayer.paint?.['line-opacity'] ?? style.opacity
+							}
+						});
+					} else if (type === 'circle') {
+						circleLayerItems.push({
+							...resolvedAuxiliaryLayer,
+							paint: {
+								...resolvedAuxiliaryLayer.paint,
+								'circle-opacity': resolvedAuxiliaryLayer.paint?.['circle-opacity'] ?? style.opacity
+							}
+						});
+					} else if (type === 'heatmap') {
+						circleLayerItems.push({
+							...resolvedAuxiliaryLayer,
+							paint: {
+								...resolvedAuxiliaryLayer.paint,
+								'heatmap-opacity':
+									resolvedAuxiliaryLayer.paint?.['heatmap-opacity'] ?? style.opacity
+							}
+						});
+					} else if (type === 'symbol') {
+						symbolLayerItems.push({
+							...resolvedAuxiliaryLayer,
+							paint: {
+								...resolvedAuxiliaryLayer.paint,
+								'icon-opacity': resolvedAuxiliaryLayer.paint?.['icon-opacity'] ?? style.opacity,
+								'text-opacity': resolvedAuxiliaryLayer.paint?.['text-opacity'] ?? style.opacity
+							}
+						});
+					}
+				});
 			}
 		});
 

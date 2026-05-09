@@ -46,9 +46,15 @@ import { loadRasterData } from '$routes/map/utils/formats/geotiff';
 import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';
+import { replaceDimensionPlaceholder, resolveDimensionPlaceholders } from '$routes/map/utils/dimension';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
+};
+
+const getDimensionValue = (entry: GeoDataEntry) => {
+	if (!('dimension' in entry.style) || !entry.style.dimension) return undefined;
+	return entry.style.dimension.values[entry.style.dimension.currentIndex];
 };
 
 export const convertTmsToXyz = (url: string): string => {
@@ -141,7 +147,7 @@ export const createSourcesItems = async (
 							if (style.dimension) {
 								const timeValue = style.dimension.values[style.dimension.currentIndex];
 								if (timeValue) {
-									tileUrl = tileUrl.replace('{morivis:dimension}', timeValue);
+									tileUrl = replaceDimensionPlaceholder(tileUrl, timeValue);
 								}
 							}
 							items[sourceId] = {
@@ -334,10 +340,14 @@ export const createSourcesItems = async (
 
 			if ('auxiliaryLayers' in entry && entry.auxiliaryLayers && entry.auxiliaryLayers.sources) {
 				const { sources } = entry.auxiliaryLayers;
+				const dimensionValue = getDimensionValue(entry);
 
 				Object.entries(sources).forEach(([auxiliarySourceId, auxiliarySource]) => {
 					const sourceKey = `${auxiliarySourceId}`;
-					items[sourceKey] = auxiliarySource as SourceSpecification;
+					items[sourceKey] = resolveDimensionPlaceholders(
+						auxiliarySource,
+						dimensionValue
+					) as SourceSpecification;
 				});
 			}
 			return { index, items }; // インデックスを含めて返す

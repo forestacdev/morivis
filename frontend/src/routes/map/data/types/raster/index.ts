@@ -1,5 +1,6 @@
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
 import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
+import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 
 export const DEM_DATA_TYPE = {
 	mapbox: 0.0,
@@ -264,6 +265,7 @@ interface BaseRasterEntry {
 	type: 'raster';
 	metaData: RasterMetaData;
 	interaction: RasterInteraction;
+	auxiliaryLayers?: AuxiliaryLayersData;
 }
 
 export interface RasterImageEntry<T> extends BaseRasterEntry {
