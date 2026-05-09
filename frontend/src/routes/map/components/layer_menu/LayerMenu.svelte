@@ -5,6 +5,7 @@
 	import { onDestroy } from 'svelte';
 	import { slide, fly, fade } from 'svelte/transition';
 
+	import { getResetLayerEntries } from './context';
 	import RecommendedData from './RecommendedData.svelte';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
@@ -45,7 +46,6 @@
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		featureMenuData: FeatureMenuData | null;
-		resetlayerEntries: () => void; // レイヤーのリセット関数
 	}
 
 	type LayerMenuTab = 'added-data' | 'map-display';
@@ -54,9 +54,9 @@
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
-		featureMenuData = $bindable(),
-		resetlayerEntries
+		featureMenuData = $bindable()
 	}: Props = $props();
+	const resetlayerEntries = getResetLayerEntries();
 	let enableFlip = $state(true); // アニメーションの状態
 	let selectedTab = $state<LayerMenuTab>('added-data');
 

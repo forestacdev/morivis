@@ -61,6 +61,11 @@ export const PROXY_RULES: ProxyRule[] = [
 		excludeExt: ['.pbf']
 	},
 	{
+		match: 'map.ecoris.info',
+		target: 'https://map.ecoris.info',
+		proxyPath: '/api/ecoris'
+	},
+	{
 		match: 'localhost:9000',
 		target: 'http://localhost:9000',
 		proxyPath: '/api/font-server'

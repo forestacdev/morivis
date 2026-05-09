@@ -4,6 +4,7 @@
 	import { type LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
+	import { getResetLayerEntries } from './layer_menu/context';
 	import StreetViewControl from './map_control/StreetViewControl.svelte';
 	import SearchSuggest from './search_menu/SearchSuggest.svelte';
 
@@ -33,7 +34,6 @@
 		selectionMarkerLngLat: LngLat | null;
 		searchResults: ResultData[] | null;
 		showDataEntry: GeoDataEntry | null;
-		resetlayerEntries: () => void; // レイヤーのリセット関数
 		focusFeature: (result: ResultData) => void;
 	}
 
@@ -45,10 +45,10 @@
 		selectionMarkerLngLat = $bindable(),
 		searchResults = $bindable(),
 		selectedSearchResultData = $bindable(),
-		resetlayerEntries,
 		focusFeature,
 		showDataEntry = $bindable()
 	}: Props = $props();
+	const resetlayerEntries = getResetLayerEntries();
 
 	interface SearchData {
 		layer_id: string;

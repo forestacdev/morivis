@@ -36,6 +36,7 @@
 	import FeaturePanelLoading from '$routes/map/components/feature_menu/FeaturePanelLoading.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
+	import { setResetLayerEntries } from '$routes/map/components/layer_menu/context';
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
@@ -422,6 +423,8 @@
 		mapStore.jumpToFac();
 	};
 
+	setResetLayerEntries(resetlayerEntries);
+
 	const closeFeaturePanel = () => {
 		if (!featurePanelData) return;
 
@@ -702,7 +705,6 @@
 					bind:tempLayerEntries
 					bind:showDataEntry
 					bind:featureMenuData
-					{resetlayerEntries}
 				/>
 
 				<!-- 左側余白 -->
@@ -732,7 +734,6 @@
 						bind:showSelectionMarker
 						bind:selectionMarkerLngLat
 						bind:showDataEntry
-						{resetlayerEntries}
 						{focusFeature}
 					/>
 
