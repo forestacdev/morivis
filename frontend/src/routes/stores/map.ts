@@ -249,6 +249,7 @@ const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
 	let deckOverlay: MapboxOverlay | null = null;
+	let isDeckOverlayAdded = false;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 
@@ -284,13 +285,8 @@ const createMapStore = () => {
 		const mapPosition = getMapParams();
 
 		await warmupGeneratedPoiIconWorker();
-
-		// deckOverlay を再作成（ページ遷移後に再初期化するため）
-		deckOverlay = new MapboxOverlay({
-			id: 'deckgl-overlay',
-			interleaved: true,
-			layers: []
-		});
+		deckOverlay = null;
+		isDeckOverlayAdded = false;
 
 		map = new maplibregl.Map({
 			...mapPosition,
@@ -386,13 +382,8 @@ const createMapStore = () => {
 
 		// マップに追加
 
-		let isDeckOverlayAdded = false;
 		map.on('style.load', () => {
 			if (!map) return;
-			if (!isDeckOverlayAdded) {
-				map.addControl(deckOverlay as maplibregl.IControl);
-				isDeckOverlayAdded = true;
-			}
 
 			isStyleLoadEvent.set(map);
 		});
@@ -652,7 +643,33 @@ const createMapStore = () => {
 
 	// deck.gl レイヤーを設定
 	const setDeckOverlay = (layers: LayersList) => {
-		if (!map || !isMapValid(map) || !deckOverlay) return;
+		if (!map || !isMapValid(map)) return;
+
+		if (layers.length === 0) {
+			if (deckOverlay) {
+				if (isDeckOverlayAdded) {
+					map.removeControl(deckOverlay as maplibregl.IControl);
+					isDeckOverlayAdded = false;
+				}
+				deckOverlay.finalize();
+				deckOverlay = null;
+			}
+			return;
+		}
+
+		if (!deckOverlay) {
+			deckOverlay = new MapboxOverlay({
+				id: 'deckgl-overlay',
+				interleaved: true,
+				layers: []
+			});
+		}
+
+		if (!isDeckOverlayAdded) {
+			map.addControl(deckOverlay as maplibregl.IControl);
+			isDeckOverlayAdded = true;
+		}
+
 		deckOverlay.setProps({
 			layers: layers
 		});
