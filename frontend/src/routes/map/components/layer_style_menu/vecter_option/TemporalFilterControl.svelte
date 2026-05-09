@@ -168,13 +168,26 @@
 
 		if (feature.geometry.type === 'Point') {
 			const coordinates = feature.geometry.coordinates;
-			mapStore.panToOrJumpTo(new LngLat(coordinates[0], coordinates[1]));
+			const bearing = Number(
+				(feature.properties as Record<string, unknown> | null | undefined)?.angle
+			);
+			mapStore.panTo(new LngLat(coordinates[0], coordinates[1]), {
+				duration: 500,
+				bearing: !Number.isNaN(bearing) ? bearing : mapStore.getBearing()
+			});
+
 			return;
 		}
 
 		if (feature.geometry.type === 'MultiPoint' && feature.geometry.coordinates.length > 0) {
 			const [lng, lat] = feature.geometry.coordinates[0];
-			mapStore.panToOrJumpTo(new LngLat(lng, lat));
+			const bearing = Number(
+				(feature.properties as Record<string, unknown> | null | undefined)?.angle
+			);
+			mapStore.panTo(new LngLat(lng, lat), {
+				duration: 500,
+				bearing: !Number.isNaN(bearing) ? bearing : mapStore.getBearing()
+			});
 			return;
 		}
 

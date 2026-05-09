@@ -902,7 +902,7 @@ const createMapStore = () => {
 					lng: number;
 					lat: number;
 			  },
-		option?: AnimationOptions
+		option?: EaseToOptions
 	) => {
 		if (!map || !isMapValid(map)) return;
 		map.panTo(lngLat, option);

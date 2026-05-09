@@ -27,6 +27,45 @@ const getTrackTime = (track: Track): string | undefined => {
 	return formatGpxTime(track.points[0]?.time);
 };
 
+const getBearing = (
+	from: { lat: number; lon: number },
+	to: { lat: number; lon: number }
+): number => {
+	const toRadians = (value: number) => (value * Math.PI) / 180;
+	const toDegrees = (value: number) => (value * 180) / Math.PI;
+
+	const fromLat = toRadians(from.lat);
+	const toLat = toRadians(to.lat);
+	const deltaLon = toRadians(to.lon - from.lon);
+
+	const y = Math.sin(deltaLon) * Math.cos(toLat);
+	const x =
+		Math.cos(fromLat) * Math.sin(toLat) -
+		Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLon);
+	const bearing = toDegrees(Math.atan2(y, x));
+
+	return (bearing + 360) % 360;
+};
+
+const getTrackPointAngle = (
+	points: Array<{ lat: number; lon: number }>,
+	pointIndex: number
+): number | undefined => {
+	const currentPoint = points[pointIndex];
+	const nextPoint = points[pointIndex + 1];
+	const previousPoint = points[pointIndex - 1];
+
+	if (currentPoint && nextPoint) {
+		return getBearing(currentPoint, nextPoint);
+	}
+
+	if (previousPoint && currentPoint) {
+		return getBearing(previousPoint, currentPoint);
+	}
+
+	return undefined;
+};
+
 export type DataType = 'tracks' | 'track_points' | 'routes' | 'waypoints';
 export const checkGpxFile = async (
 	file: File
@@ -105,7 +144,8 @@ export const gpxFileToGeojson = async (file: File, type: DataType): Promise<Feat
 							lat: point.lat,
 							lon: point.lon,
 							ele: point.ele,
-							time: formatGpxTime(point.time)
+							time: formatGpxTime(point.time),
+							angle: getTrackPointAngle(track.points, pointIndex)
 						} as unknown as FeatureProp
 					}))
 				)
