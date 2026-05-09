@@ -17,13 +17,17 @@ import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
 export type GeoDataType = 'raster' | 'vector' | 'model';
 export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 
+export type AuxiliaryLayerSpecification = LayerSpecification & {
+	clickable?: boolean;
+};
+
 export interface AuxiliaryLayersData {
 	// MapLibreのソース定義をそのまま使用
 	sources?: {
 		[key: string]: SourceSpecification; // MapLibre SourceSpecification
 	};
 	// MapLibreのレイヤー定義をそのまま使用
-	layers: LayerSpecification[];
+	layers: AuxiliaryLayerSpecification[];
 }
 
 export interface BaseMetaData {

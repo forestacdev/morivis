@@ -73,6 +73,7 @@ import {
 import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
 import { resolveDimensionPlaceholders } from '$routes/map/utils/dimension';
+import { createMorivisLayerMetadata } from '$routes/map/utils/layers/id';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -361,58 +362,78 @@ export const createLayersItems = (
 						auxiliaryLayer,
 						dimensionValue
 					);
-					const type = resolvedAuxiliaryLayer.type;
+					const { clickable, ...layerWithoutClickable } = resolvedAuxiliaryLayer;
+					const metadata = createMorivisLayerMetadata(entry.id, 'auxiliary', resolvedAuxiliaryLayer.metadata);
+					const type = layerWithoutClickable.type;
 					if (type === 'fill') {
-						fillLayerItems.push({
-							...resolvedAuxiliaryLayer,
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
 							paint: {
-								...resolvedAuxiliaryLayer.paint,
-								'fill-opacity': resolvedAuxiliaryLayer.paint?.['fill-opacity'] ?? style.opacity
+								...layerWithoutClickable.paint,
+								'fill-opacity': layerWithoutClickable.paint?.['fill-opacity'] ?? style.opacity
 							}
-						});
+						};
+						fillLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
 					} else if (type === 'fill-extrusion') {
-						fillLayerItems.push({
-							...resolvedAuxiliaryLayer,
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
 							paint: {
-								...resolvedAuxiliaryLayer.paint,
+								...layerWithoutClickable.paint,
 								'fill-extrusion-opacity':
-									resolvedAuxiliaryLayer.paint?.['fill-extrusion-opacity'] ?? style.opacity
+									layerWithoutClickable.paint?.['fill-extrusion-opacity'] ?? style.opacity
 							}
-						});
+						};
+						fillLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
 					} else if (type === 'line') {
-						lineLayerItems.push({
-							...resolvedAuxiliaryLayer,
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
 							paint: {
-								...resolvedAuxiliaryLayer.paint,
-								'line-opacity': resolvedAuxiliaryLayer.paint?.['line-opacity'] ?? style.opacity
+								...layerWithoutClickable.paint,
+								'line-opacity': layerWithoutClickable.paint?.['line-opacity'] ?? style.opacity
 							}
-						});
+						};
+						lineLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
 					} else if (type === 'circle') {
-						circleLayerItems.push({
-							...resolvedAuxiliaryLayer,
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
 							paint: {
-								...resolvedAuxiliaryLayer.paint,
-								'circle-opacity': resolvedAuxiliaryLayer.paint?.['circle-opacity'] ?? style.opacity
+								...layerWithoutClickable.paint,
+								'circle-opacity': layerWithoutClickable.paint?.['circle-opacity'] ?? style.opacity
 							}
-						});
+						};
+						circleLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
 					} else if (type === 'heatmap') {
-						circleLayerItems.push({
-							...resolvedAuxiliaryLayer,
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
 							paint: {
-								...resolvedAuxiliaryLayer.paint,
+								...layerWithoutClickable.paint,
 								'heatmap-opacity':
-									resolvedAuxiliaryLayer.paint?.['heatmap-opacity'] ?? style.opacity
+									layerWithoutClickable.paint?.['heatmap-opacity'] ?? style.opacity
 							}
-						});
+						};
+						circleLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
 					} else if (type === 'symbol') {
-						symbolLayerItems.push({
-							...resolvedAuxiliaryLayer,
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
 							paint: {
-								...resolvedAuxiliaryLayer.paint,
-								'icon-opacity': resolvedAuxiliaryLayer.paint?.['icon-opacity'] ?? style.opacity,
-								'text-opacity': resolvedAuxiliaryLayer.paint?.['text-opacity'] ?? style.opacity
+								...layerWithoutClickable.paint,
+								'icon-opacity': layerWithoutClickable.paint?.['icon-opacity'] ?? style.opacity,
+								'text-opacity': layerWithoutClickable.paint?.['text-opacity'] ?? style.opacity
 							}
-						});
+						};
+						symbolLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
 					}
 				});
 			}

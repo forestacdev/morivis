@@ -22,6 +22,7 @@
 		getLogicalLayerIdFromLayer,
 		HighlightLayerRegistry
 	} from '$routes/map/utils/layers/highlight';
+	import { getMorivisLayerRole } from '$routes/map/utils/layers/id';
 	import { isPointInBbox } from '$routes/map/utils/map/bbox';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
@@ -442,6 +443,29 @@
 		return true;
 	};
 
+	// 補助レイヤーの地物をクリックしたときの処理。、そのレイヤーに対応するエントリーを探し、必要に応じてズームインする。
+	const handleAuxiliaryLayerClick = (feature: MapGeoJSONFeature, lngLat: LngLat) => {
+		if (getMorivisLayerRole(feature.layer.metadata) !== 'auxiliary') return false;
+
+		const logicalLayerId = getLogicalLayerIdFromLayer(feature.layer);
+		const targetEntry = layerEntries.find((entry) => entry.id === logicalLayerId);
+		if (!targetEntry) return false;
+
+		const targetZoom = targetEntry.metaData.minZoom + 0.5;
+		const currentZoom = mapStore.getMap()?.getZoom();
+
+		setSelectedHighlight(null);
+		featureMenuData = null;
+		clearSearchHighlight();
+		clickedLayerIds = [logicalLayerId];
+
+		if (currentZoom === undefined || currentZoom < targetZoom) {
+			mapStore.flyTo(lngLat, { zoom: targetZoom, duration: 1000 });
+		}
+
+		return true;
+	};
+
 	mapStore.onClick(async (e: MapMouseEvent) => {
 		showMarker = false;
 		// プレブュー中はクリック処理を行わない
@@ -490,6 +514,10 @@
 
 			// 検索結果の地物クリック処理
 			if (handleSearchResultClick(e)) {
+				return;
+			}
+
+			if (handleAuxiliaryLayerClick(features[0], e.lngLat)) {
 				return;
 			}
 

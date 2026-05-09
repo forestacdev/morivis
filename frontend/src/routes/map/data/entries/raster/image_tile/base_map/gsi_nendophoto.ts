@@ -5,7 +5,7 @@ import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/type
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
-	id: '!gsi_nendophoto',
+	id: 'gsi_nendophoto',
 	type: 'raster',
 	format: {
 		type: 'image',
@@ -56,7 +56,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	auxiliaryLayers: {
 		sources: {
-			gsi_nendophoto_spec_source: {
+			'gsi_nendophoto:::spec_source': {
 				type: 'geojson',
 				data: 'https://maps.gsi.go.jp/xyz/nendophoto{morivis:dimension}/2/3/1.geojson',
 				attribution: '国土地理院'
@@ -64,10 +64,10 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		},
 		layers: [
 			{
-				id: 'gsi_nendophoto_spec_fill',
+				id: 'gsi_nendophoto:::spec_fill',
 				type: 'fill',
-				source: 'gsi_nendophoto_spec_source',
-				maxzoom: 14,
+				source: 'gsi_nendophoto:::spec_source',
+				maxzoom: 14.1,
 				minzoom: 2,
 				paint: {
 					'fill-color': '#f50bde',
@@ -75,10 +75,10 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 				}
 			},
 			{
-				id: 'gsi_nendophoto_spec_label',
+				id: 'gsi_nendophoto:::spec_label',
 				type: 'symbol',
-				source: 'gsi_nendophoto_spec_source',
-				maxzoom: 14,
+				source: 'gsi_nendophoto:::spec_source',
+				maxzoom: 14.1,
 				minzoom: 2,
 				layout: {
 					'text-field': '{撮影年月}撮影',
