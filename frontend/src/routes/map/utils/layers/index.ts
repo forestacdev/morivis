@@ -363,7 +363,11 @@ export const createLayersItems = (
 						dimensionValue
 					);
 					const { clickable, ...layerWithoutClickable } = resolvedAuxiliaryLayer;
-					const metadata = createMorivisLayerMetadata(entry.id, 'auxiliary', resolvedAuxiliaryLayer.metadata);
+					const metadata = createMorivisLayerMetadata(
+						entry.id,
+						'auxiliary',
+						resolvedAuxiliaryLayer.metadata
+					);
 					const type = layerWithoutClickable.type;
 					if (type === 'fill') {
 						const layerItem = {
@@ -416,8 +420,7 @@ export const createLayersItems = (
 							metadata,
 							paint: {
 								...layerWithoutClickable.paint,
-								'heatmap-opacity':
-									layerWithoutClickable.paint?.['heatmap-opacity'] ?? style.opacity
+								'heatmap-opacity': layerWithoutClickable.paint?.['heatmap-opacity'] ?? style.opacity
 							}
 						};
 						circleLayerItems.push(layerItem);

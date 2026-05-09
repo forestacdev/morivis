@@ -58,8 +58,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		sources: {
 			'gsi_nendophoto:::spec_source': {
 				type: 'geojson',
-				data: 'https://maps.gsi.go.jp/xyz/nendophoto{morivis:dimension}/2/3/1.geojson',
-				attribution: '国土地理院'
+				data: 'https://maps.gsi.go.jp/xyz/nendophoto{morivis:dimension}/2/3/1.geojson'
+				// 参考: https://github.com/gsi-cyberjapan/gsimaps
 			}
 		},
 		layers: [

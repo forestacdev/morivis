@@ -46,7 +46,10 @@ import { loadRasterData } from '$routes/map/utils/formats/geotiff';
 import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';
-import { replaceDimensionPlaceholder, resolveDimensionPlaceholders } from '$routes/map/utils/dimension';
+import {
+	replaceDimensionPlaceholder,
+	resolveDimensionPlaceholders
+} from '$routes/map/utils/dimension';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';

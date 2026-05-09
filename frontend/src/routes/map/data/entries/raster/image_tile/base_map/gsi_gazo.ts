@@ -1,6 +1,5 @@
 import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
 import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
-import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 
@@ -19,7 +18,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		attribution: '国土地理院',
 		location: '全国',
 		tags: ['写真'],
-		minZoom: 10,
+		minZoom: 7,
 		maxZoom: 17,
 		tileSize: 256,
 		xyzImageTile: { x: 58274, y: 25716, z: 16 },
