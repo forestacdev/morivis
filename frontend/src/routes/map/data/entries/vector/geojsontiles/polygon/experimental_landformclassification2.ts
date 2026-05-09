@@ -1,6 +1,6 @@
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import { TABLE_JOIN_DATA_PATH } from '$routes/constants/index';
+import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
@@ -23,11 +23,7 @@ const entry: PolygonEntry<TileMetaData> = {
 		promoteId: 'code',
 		tags: ['地形分類'],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: {
-			x: 14561,
-			y: 6451,
-			z: 14
-		},
+		xyzImageTile: { x: 28841, y: 12920, z: 15 },
 		sourceDataName: '国土地理院ベクトルタイル提供実験（地形分類）',
 		downloadUrl: 'https://github.com/gsi-cyberjapan/experimental_landformclassification',
 		mapImage: `${MAP_IMAGE_BASE_PATH}/experimental_landformclassification2.webp`
@@ -114,6 +110,28 @@ const entry: PolygonEntry<TileMetaData> = {
 				}
 			]
 		}
+	},
+	auxiliaryLayers: {
+		sources: {
+			'experimental_landformclassification2:::national_forest_compartment': {
+				type: 'vector',
+				url: `pmtiles://${ENTRY_PMTILES_VECTOR_PATH}/experimental_landformclassification2_spec.pmtiles`,
+				maxzoom: 10
+			}
+		},
+		layers: [
+			{
+				id: 'experimental_landformclassification2:::experimental_landformclassification2_spec',
+				type: 'fill',
+				maxzoom: 14.1,
+				source: 'experimental_landformclassification2:::national_forest_compartment',
+				'source-layer': 'experimental_landformclassification2_spec',
+				paint: {
+					'fill-color': '#ff00e1'
+				},
+				clickable: true
+			}
+		]
 	}
 };
 

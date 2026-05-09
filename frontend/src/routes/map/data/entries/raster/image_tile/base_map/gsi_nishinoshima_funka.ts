@@ -16,8 +16,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	metaData: {
 		name: '西之島付近噴火活動 正射画像',
 		sourceDataName: '西之島付近噴火活動 正射画像',
-		description:
-			'西之島付近の噴火活動に伴う地表の状況を記録した正射画像。撮影時期ごとの島の形状や地形変化を確認する際に利用できる。',
+		description: '西之島付近の噴火活動に伴う地表の状況を記録した正射画像。',
 		attribution: '国土地理院',
 		downloadUrl: 'https://maps.gsi.go.jp/development/ichiran.html',
 		location: '東京都',
