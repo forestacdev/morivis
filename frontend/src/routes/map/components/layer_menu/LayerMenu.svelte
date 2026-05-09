@@ -5,7 +5,6 @@
 	import { onDestroy } from 'svelte';
 	import { slide, fly, fade } from 'svelte/transition';
 
-	import { getResetLayerEntries } from './context';
 	import RecommendedData from './RecommendedData.svelte';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
@@ -24,7 +23,6 @@
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import { isBBoxOverlapping } from '$routes/map/utils/map/bbox';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import {
 		selectedBaseMap,
@@ -56,18 +54,10 @@
 		showDataEntry = $bindable(), // データメニューの表示状態
 		featureMenuData = $bindable()
 	}: Props = $props();
-	const resetlayerEntries = getResetLayerEntries();
+
 	let enableFlip = $state(true); // アニメーションの状態
 	let selectedTab = $state<LayerMenuTab>('added-data');
 
-	// レイヤーのリセット処理
-	const resetLayers = async () => {
-		const result = await resetLayersConfirm();
-
-		if (result) {
-			resetlayerEntries();
-		}
-	};
 	let modelEntries = $derived.by(() => {
 		return layerEntries.filter((layer) => getLayerType(layer) === 'model');
 	});
