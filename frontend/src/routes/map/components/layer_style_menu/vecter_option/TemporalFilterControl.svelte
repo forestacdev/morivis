@@ -1,6 +1,7 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
 	import { LngLat, type ExpressionSpecification, type FilterSpecification } from 'maplibre-gl';
+	import { onDestroy } from 'svelte';
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
@@ -35,8 +36,12 @@
 
 	let temporalFilterState = $state<VectorTemporalFilterState>(createDefaultTemporalFilterState());
 	let cameraTracking = $state(false);
+	let isPlaying = $state(false);
+	let playbackIntervalMs = $state(800);
 	let restoredLayerId = $state<string | null>(null);
 	let lastTrackedTarget = $state<string | null>(null);
+	let playbackFrameId: number | null = null;
+	let playbackLastTimestamp: number | null = null;
 
 	// 時間軸の定義は properties.temporal を正とし、
 	// 既存データのために attributeView.timeKey も後方互換で見る。
@@ -229,6 +234,7 @@
 
 	// UI と追跡状態を初期値へ戻す。
 	const resetTemporalFilter = () => {
+		stopPlayback();
 		cameraTracking = false;
 		lastTrackedTarget = null;
 		temporalFilterState = {
@@ -251,10 +257,68 @@
 		}
 	};
 
+	const stopPlayback = () => {
+		if (playbackFrameId !== null) {
+			cancelAnimationFrame(playbackFrameId);
+			playbackFrameId = null;
+		}
+		playbackLastTimestamp = null;
+		isPlaying = false;
+	};
+
+	const startPlayback = () => {
+		if (temporalItems.length === 0) return;
+		stopPlayback();
+
+		if (!temporalFilterState.enabled) {
+			temporalFilterState.enabled = true;
+		}
+
+		if (temporalFilterState.endIndex >= temporalItems.length - 1) {
+			temporalFilterState.endIndex = temporalFilterState.startIndex;
+		}
+
+		const stepPlayback = (timestamp: number) => {
+			if (playbackLastTimestamp === null) {
+				playbackLastTimestamp = timestamp;
+			}
+
+			const elapsed = timestamp - playbackLastTimestamp;
+			if (elapsed >= playbackIntervalMs) {
+				playbackLastTimestamp = timestamp;
+				if (temporalFilterState.endIndex >= temporalItems.length - 1) {
+					stopPlayback();
+					return;
+				}
+				temporalFilterState.endIndex += 1;
+			}
+
+			if (temporalFilterState.endIndex >= temporalItems.length - 1) {
+				stopPlayback();
+				return;
+			}
+			playbackFrameId = requestAnimationFrame(stepPlayback);
+		};
+
+		playbackLastTimestamp = null;
+		playbackFrameId = requestAnimationFrame(stepPlayback);
+
+		isPlaying = true;
+	};
+
+	const togglePlayback = () => {
+		if (isPlaying) {
+			stopPlayback();
+			return;
+		}
+		startPlayback();
+	};
+
 	// レイヤーIDまたは時刻候補数が変わったときだけ、保存済み状態の復元を試みる。
 	$effect(() => {
 		layerEntry.id;
 		temporalItems.length;
+		stopPlayback();
 		restoreTemporalFilterState();
 	});
 
@@ -286,7 +350,12 @@
 	// カメラ追跡は、同じレイヤー・同じ時刻に対しては再実行しない。
 	// 追跡対象が変わったときだけ移動する。
 	$effect(() => {
-		if (!canTrackCamera || !cameraTracking || !temporalFilterState.enabled || temporalItems.length === 0) {
+		if (
+			!canTrackCamera ||
+			!cameraTracking ||
+			!temporalFilterState.enabled ||
+			temporalItems.length === 0
+		) {
 			lastTrackedTarget = null;
 			return;
 		}
@@ -299,6 +368,18 @@
 		if (!feature) return;
 		lastTrackedTarget = nextTrackedTarget;
 		trackCameraToFeature(feature as Feature<AnyGeometry>);
+	});
+
+	$effect(() => {
+		temporalItems.length;
+		temporalFilterState.endIndex;
+		if (temporalItems.length === 0 || temporalFilterState.endIndex >= temporalItems.length - 1) {
+			stopPlayback();
+		}
+	});
+
+	onDestroy(() => {
+		stopPlayback();
 	});
 </script>
 
@@ -346,6 +427,42 @@
 						oninput={handleEndInput}
 						class="mt-2 w-full cursor-pointer"
 						disabled={!temporalFilterState.enabled}
+					/>
+				</div>
+
+				<div class="flex items-center justify-center gap-2">
+					<button
+						onclick={togglePlayback}
+						class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white hover:bg-white/10"
+						aria-label={isPlaying ? '停止' : '再生'}
+						disabled={temporalItems.length === 0}
+					>
+						{#if isPlaying}
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+								<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+							</svg>
+							停止
+						{:else}
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+								<path fill="currentColor" d="M8 5v14l11-7z" />
+							</svg>
+							再生
+						{/if}
+					</button>
+				</div>
+
+				<div class="rounded-lg bg-black/20 p-3">
+					<div class="flex items-center justify-between gap-3">
+						<div class="text-base/80 text-sm">再生間隔</div>
+						<div class="text-sm text-white">{playbackIntervalMs} ms</div>
+					</div>
+					<input
+						type="range"
+						min="1"
+						max="2000"
+						step="1"
+						bind:value={playbackIntervalMs}
+						class="mt-2 w-full cursor-pointer"
 					/>
 				</div>
 
