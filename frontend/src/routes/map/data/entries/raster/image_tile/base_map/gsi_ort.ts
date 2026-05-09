@@ -12,13 +12,13 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/{morivis:dimension}/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '年度別空中写真（1928年〜1961年）',
+		name: '年度別空中写真（1928年〜1969年）',
 		sourceDataName: '年代別の写真（1961年～1969年, 1945年～1950年, 1936年～1942年頃, 1928年頃）',
 		downloadUrl: 'https://maps.gsi.go.jp/help/intro/looklist/2-nendai.html',
 		attribution: '国土地理院',
 		location: '全国',
 		tags: ['写真'],
-		minZoom: 13,
+		minZoom: 2,
 		maxZoom: 18,
 		tileSize: 256,
 		xyzImageTile: { x: 57435, y: 26028, z: 16 },
@@ -32,9 +32,9 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
 		dimension: {
 			type: 'time',
-			values: ['ort_old10', 'ort_USA10', 'ort_riku10', 'ort_1928'],
-			labels: ['1961年～1969年', '1945年～1950年', '1936年～1942年頃', '1928年頃'],
-			currentIndex: 0
+			values: ['ort_1928', 'ort_riku10', 'ort_USA10', 'ort_old10'],
+			labels: ['1928年頃', '1936年～1942年頃', '1945年～1950年', '1961年～1969年'],
+			currentIndex: 3
 		}
 	}
 };

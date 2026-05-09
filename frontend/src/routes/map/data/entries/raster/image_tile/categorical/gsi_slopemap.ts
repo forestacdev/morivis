@@ -32,7 +32,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		legend: {
 			type: 'gradient',
 			name: '傾斜',
-			colors: ['#000000', '#FFFFFF'],
+			colors: ['#FFFFFF', '#000000'],
 			ranges: [0, 90],
 			unit: '度'
 		}
