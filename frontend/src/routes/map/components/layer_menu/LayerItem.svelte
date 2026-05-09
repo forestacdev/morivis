@@ -509,9 +509,10 @@
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
-				class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150 {$isStyleEdit
-					? ''
-					: ''} {($selectedLayerId === layerEntry.id && $isStyleEdit) || isHovered
+				class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150 {($selectedLayerId ===
+					layerEntry.id &&
+					$isStyleEdit) ||
+				isHovered
 					? 'scale-115'
 					: ''}"
 			>
