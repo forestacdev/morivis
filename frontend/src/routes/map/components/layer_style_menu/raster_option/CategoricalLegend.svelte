@@ -8,17 +8,14 @@
 
 	let { style }: Props = $props();
 
-	const createGradientStops = (colors: string[], ranges: number[]): string => {
-		const max = Math.max(...ranges);
-		const min = Math.min(...ranges);
+	const createGradientStops = (colors: string[]): string => {
+		if (colors.length <= 1) {
+			return colors[0] ?? '';
+		}
 
-		const sortedData = ranges
-			.map((range, index) => ({ range, color: colors[index] }))
-			.sort((a, b) => a.range - b.range);
-
-		return sortedData
-			.map(({ range, color }) => {
-				const position = ((range - min) / (max - min)) * 100;
+		return colors
+			.map((color, index) => {
+				const position = (index / (colors.length - 1)) * 100;
 				return `${color} ${position.toFixed(1)}%`;
 			})
 			.join(', ');
@@ -50,15 +47,12 @@
 			<div class="w-full py-[10px]">
 				<div
 					class="h-[30px] w-full rounded-lg border border-black"
-					style="background: linear-gradient(90deg, {createGradientStops(
-						style.legend.colors,
-						style.legend.ranges
-					)});"
+					style="background: linear-gradient(90deg, {createGradientStops(style.legend.colors)});"
 				></div>
 			</div>
 
 			<div class="flex justify-between text-base">
-				{#each style.legend.ranges.slice().reverse() as value, i (`${value}-${i}`)}
+				{#each style.legend.ranges as value, i (`${value}-${i}`)}
 					{#if i === 0 || i === style.legend.ranges.length - 1}
 						<span>{value} {style.legend.unit}</span>
 					{/if}
