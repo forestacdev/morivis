@@ -306,7 +306,7 @@ const createMapStore = () => {
 				sources: {},
 				layers: []
 			},
-			// fadeDuration: 0, // フェードアニメーションの時間 シンボル
+			fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85, // 最大ピッチ角度
@@ -315,7 +315,7 @@ const createMapStore = () => {
 			boxZoom: false, // Shift+ドラッグのボックスズームを無効化
 			doubleClickZoom: false, // ダブルクリックズームを無効化
 			keyboard: false, // キーボード操作を無効化
-			// maplibreLogo: true // MapLibreのロゴを表示
+			// maplibreLogo: true, // MapLibreのロゴを表示
 			// logoPosition: 'bottom-right' // ロゴの位置を指定
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
