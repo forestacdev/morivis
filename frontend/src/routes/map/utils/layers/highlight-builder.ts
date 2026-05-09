@@ -11,6 +11,7 @@ import {
 } from '$routes/map/utils/layers/vector/polygon';
 import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
 import { createPointIconLayer } from '$routes/map/utils/layers/vector/point';
+import { getTemporalFilter } from '$routes/map/utils/layers/vector/filter';
 import { clickableVectorIds } from '$routes/stores';
 import type {
 	LayerSpecification,
@@ -263,7 +264,11 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 				style: VectorStyle;
 				properties: VectorProperties & { fields: FieldDef[] };
 			};
-			const layer = createBaseLayerItem(vectorEntry);
+			const temporalFilter = getTemporalFilter(vectorEntry);
+			const layer: LayerItem = {
+				...createBaseLayerItem(vectorEntry),
+				...(temporalFilter ? { filter: temporalFilter } : {})
+			};
 
 			if ('sourceLayer' in vectorEntry.metaData) {
 				layer['source-layer'] = vectorEntry.metaData.sourceLayer as string;

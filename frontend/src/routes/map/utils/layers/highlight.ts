@@ -171,6 +171,7 @@ interface HighlightLayerRegistryItem {
 	actualLayerId: string;
 	role: HighlightLayerRole;
 	defaultFilter?: FilterSpecification;
+	runtimeFilter?: FilterSpecification;
 	selectionKey?: string;
 	patternKind?: HighlightPatternKind;
 	baseCircleRadius?: number;
@@ -222,6 +223,16 @@ class HighlightLayerRegistry {
 		this.items.push(item);
 	};
 
+	static setRuntimeFilter = (logicalLayerId: string, filter: FilterSpecification | null) => {
+		this.items = this.items.map((item) => {
+			if (item.logicalLayerId !== logicalLayerId) return item;
+			return {
+				...item,
+				runtimeFilter: filter ?? undefined
+			};
+		});
+	};
+
 	static syncPatternAnimation = (
 		map: MapLibreMap | null,
 		selected: SelectedHighlightData | null
@@ -232,17 +243,18 @@ class HighlightLayerRegistry {
 
 	static getFilterUpdates = (selected: SelectedHighlightData | null) => {
 		return this.items.map((item) => {
+			const baseFilter = mergeFilter(item.defaultFilter, item.runtimeFilter);
 			const isSelectedLayer = selected?.layerId === item.logicalLayerId;
 			const filter =
 				item.role === 'highlight'
 					? mergeFilter(
-							item.defaultFilter,
+							baseFilter ?? undefined,
 							isSelectedLayer
 								? createSelectedOnlyFilter(selected.featureId, item.selectionKey)
 								: HIDDEN_FILTER
 						)
 					: mergeFilter(
-							item.defaultFilter,
+							baseFilter ?? undefined,
 							isSelectedLayer
 								? createSelectedExcludeFilter(selected.featureId, item.selectionKey)
 								: undefined

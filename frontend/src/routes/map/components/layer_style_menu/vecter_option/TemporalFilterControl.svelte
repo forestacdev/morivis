@@ -14,6 +14,7 @@
 	import type { Feature } from '$routes/map/types/geojson';
 	import type { AnyGeometry } from '$routes/map/types/geometry';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
+	import { HighlightLayerRegistry } from '$routes/map/utils/layers/highlight';
 	import { createSublayerId } from '$routes/map/utils/layers/id';
 	import { mapStore } from '$routes/stores/map';
 
@@ -194,6 +195,10 @@
 				['<=', temporalExpression, endValue]
 			] as unknown as FilterSpecification;
 		}
+
+		// 地物クリック時のハイライト更新でも同じ時間条件を維持できるよう、
+		// registry に保持している実行時 filter も同期する。
+		HighlightLayerRegistry.setRuntimeFilter(layerEntry.id, filter);
 
 		for (const layerId of targetLayerIds) {
 			if (!mapStore.getLayer(layerId)) continue;
