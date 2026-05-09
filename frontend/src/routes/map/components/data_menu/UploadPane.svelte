@@ -118,7 +118,38 @@
 
 	const isXyzTileUrl = (urlValue: string): boolean => {
 		const lowerUrl = urlValue.toLowerCase();
-		return lowerUrl.includes('{x}') && lowerUrl.includes('{y}') && lowerUrl.includes('{z}');
+		return (
+			lowerUrl.includes('{x}') &&
+			lowerUrl.includes('{z}') &&
+			(lowerUrl.includes('{y}') || lowerUrl.includes('{-y}'))
+		);
+	};
+
+	const isWmsRequestTemplateUrl = (urlValue: string): boolean => {
+		try {
+			const url = new URL(urlValue);
+			const getQueryParam = (name: string): string | null => {
+				for (const [key, value] of url.searchParams.entries()) {
+					if (key.toLowerCase() === name) return value;
+				}
+				return null;
+			};
+			const hasQueryParam = (name: string): boolean => {
+				return Array.from(url.searchParams.keys()).some((key) => key.toLowerCase() === name);
+			};
+			const service = getQueryParam('service')?.toLowerCase();
+			const request = getQueryParam('request')?.toLowerCase();
+			const lowerUrl = urlValue.toLowerCase();
+			const hasBboxTemplate =
+				lowerUrl.includes('{bbox-epsg-3857}') ||
+				lowerUrl.includes('{bbox-epsg-4326}') ||
+				lowerUrl.includes('{bbox}');
+			const hasSize = hasQueryParam('width') && hasQueryParam('height');
+
+			return service === 'wms' && request === 'getmap' && hasBboxTemplate && hasSize;
+		} catch {
+			return false;
+		}
 	};
 
 	const isTilesetJsonUrl = (urlValue: string): boolean => {
@@ -198,6 +229,14 @@
 			return;
 		}
 
+		if (isWmsRequestTemplateUrl(trimmedUrl)) {
+			remoteRasterUrl = trimmedUrl;
+			showDialogType = 'raster';
+			inputUrl = '';
+			hasTouchedUrlInput = false;
+			return;
+		}
+
 		const remoteFileNameFromUrl = getRemoteFileNameFromUrl(trimmedUrl);
 		if (remoteFileNameFromUrl && getMatchedExtension(remoteFileNameFromUrl) === '.pmtiles') {
 			remotePmtilesUrl = trimmedUrl;
@@ -237,7 +276,7 @@
 		} catch (error) {
 			console.error('Failed to load remote file:', error);
 			showNotification(
-				'URLの読み込みに失敗しました。配信元がCORSを許可しているか確認してください',
+				'URLの読み込みに失敗しました。URLが正しいか、配信元がCORSを許可しているか確認してください',
 				'error'
 			);
 		} finally {
