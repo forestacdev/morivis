@@ -491,15 +491,6 @@
 			);
 			const selectedRasterLayersId = getSelectedRasterLayerIds(e.lngLat);
 
-			// POIのトップアイコンをクリックした場合は森林文化アカデミーへジャンプ
-			if (selectedVecterLayersId.includes('@poi_top')) {
-				setSelectedHighlight(null);
-
-				mapStore.jumpToFac();
-				contextMenuState = null;
-				return;
-			}
-
 			// ストリートビューに切り返る
 			if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
 				handleStreetViewCircleClick(e);

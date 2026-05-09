@@ -584,6 +584,7 @@ export const NAME_NORMALIZE_CONFIG = {
 export const NAME_ALIAS_MAP: Record<string, string> = {
 	// 針葉樹
 	シラベ: 'シラビソ',
+	アオモリトドマツ: 'オオシラビソ',
 	オオシラベ: 'オオシラビソ',
 	トドマツ: 'トドマツ',
 	ネズコ: 'クロベ',

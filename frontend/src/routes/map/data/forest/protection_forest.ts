@@ -75,6 +75,8 @@ export const ProtectionForestCategory = {
 export type ProtectionForestCategoryType =
 	(typeof ProtectionForestCategory)[keyof typeof ProtectionForestCategory];
 
+export type ProtectionForestDesignationAuthority = 'minister' | 'prefecture';
+
 // =============================================================================
 // 保安林データ型定義
 // =============================================================================
@@ -101,10 +103,10 @@ export interface ProtectionForestType {
 	description: string;
 	/** 主な保全対象 */
 	protectionTargets: string[];
-	/** 治山事業の対象可否（1〜7号のみ対象） */
-	eligibleForErosionControl: boolean;
-	/** 重要流域における農林水産大臣指定対象（1〜3号のみ） */
-	ministerDesignation: boolean;
+	/** 治山・防災に関わる機能を持つ保安林かどうか */
+	supportsErosionAndDisasterControl: boolean;
+	/** 原則的な指定権者 */
+	designationAuthority: ProtectionForestDesignationAuthority;
 }
 
 // =============================================================================
@@ -129,8 +131,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'流域保全上重要な地域にある森林の河川への流量調節機能を高度に保ち、洪水を緩和したり、各種用水を確保したりする。別名「緑のダム」とも呼ばれ、降った雨を地中に蓄えゆっくりと川に流すことで、安定した水の確保と洪水・渇水の防止に効果を発揮する。',
 		protectionTargets: ['河川流域', '水道水源', '農業用水', '工業用水'],
-		eligibleForErosionControl: true,
-		ministerDesignation: true
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'minister'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -147,8 +149,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'下流に重要な保全対象がある地域で土砂流出の著しい地域や崩壊・流出のおそれがある区域において、林木及び地表植生その他の地被物の直接間接の作用によって、林地の表面侵食及び崩壊による土砂の流出を防止する。',
 		protectionTargets: ['下流集落', '農地', '道路', '河川'],
-		eligibleForErosionControl: true,
-		ministerDesignation: true
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'minister'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -165,8 +167,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'崩落土砂による被害を受けやすい道路、鉄道その他の公共施設等の上方において、主として林木の根系の緊縛その他の物理的作用によって林地の崩壊の発生を防止する。樹木の根が山地をしっかりと固定し、山崩れから住宅や道路、鉄道などを守る。',
 		protectionTargets: ['住宅', '道路', '鉄道', '公共施設'],
-		eligibleForErosionControl: true,
-		ministerDesignation: true
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'minister'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -183,8 +185,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'海岸の砂地を森林で被覆することにより飛砂の発生を防止し、飛砂が海岸から内陸に進入するのを遮断防止することにより、内陸部における土地の高度利用、住民の生活環境の保護を図る。',
 		protectionTargets: ['海岸集落', '農地', '住宅地'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -201,8 +203,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'森林が壁の役割を果たし、強風による農作物、建物等への被害を防止する。風の強い地域で田畑や住宅を守る防風林として機能する。',
 		protectionTargets: ['農地', '住宅', '果樹園', '畜産施設'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -219,8 +221,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'河川の洪水時における氾濫に当たって、主として樹幹による水制作用及びろ過作用並びに樹根による侵食防止作用によって水害の防止・軽減をはかる。',
 		protectionTargets: ['河川沿い集落', '農地', '堤防'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -235,10 +237,10 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		category: 'disaster_prevention',
 		purpose: '潮害の防備',
 		description:
-			'津波や高潮の勢いを弱め、住宅などへの被害を防ぐ。また、海岸からの塩分を含んだ風を弱め、田畑への塩害などを防止する。',
+			'津波や高潮の勢いを弱めて被害を軽減する。また、海岸からの塩分を含んだ風を弱め、田畑への塩害などを防止する。',
 		protectionTargets: ['海岸集落', '農地', '住宅'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -253,10 +255,10 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		category: 'water_conservation',
 		purpose: '干害の防備',
 		description:
-			'洪水を緩和し、又は各種用水を確保する森林の水源涵養機能により、局所的な用水源を保護する。簡易水道など特定の水源を保全し、水が涸れるのを防ぎ、良質な水源を確保する。',
+			'簡易水道や農業用水など、地域の小規模な水源を保全し、水枯れや渇水被害を防止する。局所的な用水源を守り、安定した水の確保につなげる。',
 		protectionTargets: ['簡易水道', '農業用水', '生活用水'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -273,8 +275,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'飛砂防備保安林や防風保安林と同様の機能によって吹雪（気象用語では「飛雪」という。）を防止する。',
 		protectionTargets: ['道路', '鉄道', '集落'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -291,8 +293,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'森林によって空気の乱流を発生させて霧の移動を阻止したり、霧粒を捕捉したりすることで霧の害を防止する。農作物の被害を抑え、見通しをよくすることにより交通事故の発生を防ぐ。',
 		protectionTargets: ['農地', '道路', '空港'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -309,8 +311,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'森林によって雪庇の発生や雪が滑り出すのを防いだり、雪の滑りの勢いを弱めたり、方向を変えたりすること等により雪崩を防止する。',
 		protectionTargets: ['山間集落', '道路', '鉄道', 'スキー場'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -325,10 +327,10 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		category: 'disaster_prevention',
 		purpose: '落石の危険の防止',
 		description:
-			'林木の根系によって岩石を緊結固定して崩壊、転落を防止したり、転落する石塊を山腹で阻止したりすることで、落石による危険を防止する。',
+			'林木の根系によって岩石を緊結固定して崩壊、転落を防止したり、転落する石塊を途中で受け止めたりすることで、落石による危険を防止する。',
 		protectionTargets: ['道路', '鉄道', '住宅', '集落'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -345,8 +347,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'耐火樹又は防火樹からなる防火樹帯により火炎に対して障壁を作り、火災の延焼を防止する。燃えにくい種類の木を配置して火災から集落を守る。',
 		protectionTargets: ['住宅地', '集落', '工場'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -363,8 +365,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'水面に対する森林の陰影の投影、魚類等に対する養分の供給、水質汚濁の防止等の作用により魚類の生息と繁殖を助ける。',
 		protectionTargets: ['漁場', '河川', '湖沼', '沿岸海域'],
-		eligibleForErosionControl: true,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: true,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -381,8 +383,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'海岸又は湖岸の付近にある森林で地理的目標に好適なものを、主として付近を航行する漁船等の目標とすることで、航行の安全を図る。',
 		protectionTargets: ['漁船', '船舶'],
-		eligibleForErosionControl: false,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: false,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -397,10 +399,10 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		category: 'health_scenic',
 		purpose: '公衆の保健',
 		description:
-			'森林の持つレクリエーション等の保健、休養の場としての機能や、局所的な気象条件の緩和機能、じん埃、ばい煙等のろ過機能を発揮することにより、公衆の保健、衛生に貢献する。森林浴やハイキングなど森林レクリエーション活動の場として、生活にゆとりを提供する。',
+			'森林の持つレクリエーション等の保健、休養の場としての機能や、局所的な気象条件の緩和機能、粉じん、ばい煙等のろ過機能を発揮することにより、公衆の保健、衛生に貢献する。森林浴やハイキングなど森林レクリエーション活動の場として、生活にゆとりを提供する。',
 		protectionTargets: ['都市近郊', 'レクリエーション施設', '住宅地'],
-		eligibleForErosionControl: false,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: false,
+		designationAuthority: 'prefecture'
 	},
 
 	// ---------------------------------------------------------------------------
@@ -417,8 +419,8 @@ export const ProtectionForestTypes: Record<ProtectionForestCodeType, ProtectionF
 		description:
 			'名所や旧跡等の趣のある景色が森林によって価値づけられている場合に、これを保存する。歴史的・文化的に重要な景観を守る。',
 		protectionTargets: ['名所', '旧跡', '景勝地', '文化財周辺'],
-		eligibleForErosionControl: false,
-		ministerDesignation: false
+		supportsErosionAndDisasterControl: false,
+		designationAuthority: 'prefecture'
 	}
 };
 
@@ -456,17 +458,21 @@ export function getProtectionForestsByCategory(
 }
 
 /**
- * 治山事業対象の保安林を取得（1〜7号）
+ * 治山・防災に関わる保安林を取得
  */
-export function getErosionControlEligibleForests(): ProtectionForestType[] {
-	return Object.values(ProtectionForestTypes).filter((type) => type.eligibleForErosionControl);
+export function getErosionAndDisasterControlForests(): ProtectionForestType[] {
+	return Object.values(ProtectionForestTypes).filter(
+		(type) => type.supportsErosionAndDisasterControl
+	);
 }
 
 /**
- * 農林水産大臣指定対象の保安林を取得（重要流域の1〜3号）
+ * 原則として農林水産大臣が指定する保安林を取得
  */
-export function getMinisterDesignationForests(): ProtectionForestType[] {
-	return Object.values(ProtectionForestTypes).filter((type) => type.ministerDesignation);
+export function getMinisterDesignatedProtectionForests(): ProtectionForestType[] {
+	return Object.values(ProtectionForestTypes).filter(
+		(type) => type.designationAuthority === 'minister'
+	);
 }
 
 /**

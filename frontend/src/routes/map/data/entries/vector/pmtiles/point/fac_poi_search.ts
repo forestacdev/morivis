@@ -132,7 +132,7 @@ const entry: PointEntry<TileMetaData> = {
 	},
 	auxiliaryLayers: {
 		sources: {
-			fac_top: {
+			'fac_poi_search:::fac_top': {
 				type: 'geojson',
 				data: {
 					type: 'FeatureCollection',
@@ -155,15 +155,16 @@ const entry: PointEntry<TileMetaData> = {
 		},
 		layers: [
 			{
-				id: '@poi_top',
+				id: 'fac_poi_search:::poi_top',
 				type: 'symbol',
-				source: 'fac_top',
+				source: 'fac_poi_search:::fac_top',
 				maxzoom: 12,
 				minzoom: 4,
 				layout: {
 					'icon-image': 'poi_top',
 					'icon-size': 0.8
-				}
+				},
+				clickable: true
 			}
 		]
 	}
