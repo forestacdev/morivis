@@ -98,7 +98,7 @@
 
 		const bbox = turfBbox(geojsonData);
 
-		const entry = createGeoJsonEntry(
+		const entry = await createGeoJsonEntry(
 			geojsonData,
 			entryGeometryType,
 			setFileName,

@@ -186,7 +186,7 @@
 			const entryName = dxfFile.name.replace(/\.[^.]+$/, '');
 			const propKeys = Object.keys(geojsonData.features[0]?.properties ?? {});
 			const style = buildDxfStyle(geojsonData, selectedGeometryType, propKeys);
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
 				entryName,

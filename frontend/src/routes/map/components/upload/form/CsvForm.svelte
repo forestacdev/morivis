@@ -98,7 +98,7 @@
 		isProcessing.set(true);
 
 		csvTextToGeojson(csvText, latColumn, lonColumn)
-			.then((geojson) => {
+			.then(async (geojson) => {
 				rawGeojson = geojson;
 				const bbox = turfBbox(geojson);
 
@@ -108,7 +108,7 @@
 					return;
 				}
 
-				const entry = createGeoJsonEntry(
+				const entry = await createGeoJsonEntry(
 					geojson,
 					'Point',
 					entryName,
@@ -156,7 +156,7 @@
 				return;
 			}
 
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				transformedGeojson,
 				'Point',
 				entryName,

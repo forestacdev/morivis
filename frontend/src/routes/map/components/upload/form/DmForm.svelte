@@ -263,7 +263,7 @@
 			const entryName = zoneInfo?.drawingName || dmFile.name;
 			const propKeys = Object.keys(geojsonData.features[0]?.properties ?? {});
 			const style = buildDmStyle(geojsonData, selectedGeometryType, propKeys);
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
 				entryName,

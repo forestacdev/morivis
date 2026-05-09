@@ -116,7 +116,7 @@
 		}
 	};
 
-	const processGeojson = () => {
+	const processGeojson = async () => {
 		let filtered = rawGeojson;
 		if (rawGeojson && selectedGeometryType) {
 			filtered = filterByGeometryType(rawGeojson, selectedGeometryType as VectorEntryGeometryType);
@@ -133,7 +133,7 @@
 			showZoneForm = true;
 			focusBbox = bbox as [number, number, number, number];
 		} else {
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				filtered,
 				selectedGeometryType as VectorEntryGeometryType,
 				entryName,
@@ -179,7 +179,7 @@
 				return;
 			}
 
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
 				entryName,

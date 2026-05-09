@@ -89,7 +89,7 @@
 		}
 	});
 
-	const processGeojson = () => {
+	const processGeojson = async () => {
 		let filtered = rawGeojson;
 		if (rawGeojson && selectedGeometryType) {
 			filtered = filterByGeometryType(rawGeojson, selectedGeometryType as VectorEntryGeometryType);
@@ -108,7 +108,7 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(
+		const entry = await createGeoJsonEntry(
 			filtered,
 			selectedGeometryType as VectorEntryGeometryType,
 			entryName,
@@ -154,7 +154,7 @@
 				return;
 			}
 
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				filtered,
 				selectedGeometryType,
 				entryName,

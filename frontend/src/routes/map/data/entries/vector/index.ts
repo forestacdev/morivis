@@ -1,3 +1,5 @@
+import turfBbox from '@turf/bbox';
+
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type {
 	VectorEntry,
@@ -21,6 +23,7 @@ import {
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style';
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+import { showNotification } from '$routes/stores/notification';
 
 import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import type {
@@ -79,6 +82,126 @@ const matchesGeometryType = (
 	return false;
 };
 
+const isPointOnSegment = (
+	px: number,
+	py: number,
+	ax: number,
+	ay: number,
+	bx: number,
+	by: number
+) => {
+	const epsilon = 1e-10;
+
+	return (
+		px <= Math.max(ax, bx) + epsilon &&
+		px >= Math.min(ax, bx) - epsilon &&
+		py <= Math.max(ay, by) + epsilon &&
+		py >= Math.min(ay, by) - epsilon
+	);
+};
+
+const orientation = (ax: number, ay: number, bx: number, by: number, cx: number, cy: number) => {
+	const value = (by - ay) * (cx - bx) - (bx - ax) * (cy - by);
+	if (Math.abs(value) < 1e-10) return 0;
+	return value > 0 ? 1 : 2;
+};
+
+const segmentsIntersect = (
+	a1: [number, number],
+	a2: [number, number],
+	b1: [number, number],
+	b2: [number, number]
+) => {
+	const o1 = orientation(a1[0], a1[1], a2[0], a2[1], b1[0], b1[1]);
+	const o2 = orientation(a1[0], a1[1], a2[0], a2[1], b2[0], b2[1]);
+	const o3 = orientation(b1[0], b1[1], b2[0], b2[1], a1[0], a1[1]);
+	const o4 = orientation(b1[0], b1[1], b2[0], b2[1], a2[0], a2[1]);
+
+	if (o1 !== o2 && o3 !== o4) return true;
+	if (o1 === 0 && isPointOnSegment(b1[0], b1[1], a1[0], a1[1], a2[0], a2[1])) return true;
+	if (o2 === 0 && isPointOnSegment(b2[0], b2[1], a1[0], a1[1], a2[0], a2[1])) return true;
+	if (o3 === 0 && isPointOnSegment(a1[0], a1[1], b1[0], b1[1], b2[0], b2[1])) return true;
+	if (o4 === 0 && isPointOnSegment(a2[0], a2[1], b1[0], b1[1], b2[0], b2[1])) return true;
+
+	return false;
+};
+
+const ringHasSelfIntersection = (ring: [number, number][]) => {
+	if (ring.length < 4) return false;
+
+	for (let i = 0; i < ring.length - 1; i += 1) {
+		for (let j = i + 1; j < ring.length - 1; j += 1) {
+			if (Math.abs(i - j) <= 1) continue;
+			if (i === 0 && j === ring.length - 2) continue;
+
+			if (segmentsIntersect(ring[i], ring[i + 1], ring[j], ring[j + 1])) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+};
+
+const geometryHasSelfIntersection = (
+	geometry: AnyGeometry | GeometryCollection | null | undefined
+): boolean => {
+	if (!geometry) return false;
+
+	if (geometry.type === 'Polygon') {
+		return geometry.coordinates.some((ring) => ringHasSelfIntersection(ring));
+	}
+
+	if (geometry.type === 'MultiPolygon') {
+		return geometry.coordinates.some((polygon) =>
+			polygon.some((ring) => ringHasSelfIntersection(ring))
+		);
+	}
+
+	if (geometry.type === 'GeometryCollection') {
+		return geometry.geometries.some((child) => geometryHasSelfIntersection(child));
+	}
+
+	return false;
+};
+
+const filterGeometry = (
+	geometry: AnyGeometry | GeometryCollection | null | undefined,
+	geometryType: VectorEntryGeometryType
+): AnyGeometry | GeometryCollection | null => {
+	if (!geometry) return null;
+
+	if (geometry.type === 'GeometryCollection') {
+		const geometries = geometry.geometries
+			.map((child) => filterGeometry(child, geometryType))
+			.filter((child): child is AnyGeometry | GeometryCollection => child !== null);
+
+		if (geometries.length === 0) return null;
+		if (geometries.length === 1) return geometries[0];
+
+		return {
+			type: 'GeometryCollection',
+			geometries
+		} as GeometryCollection;
+	}
+
+	return matchesGeometryType(geometry, geometryType) ? geometry : null;
+};
+
+const notifySelfIntersectingPolygons = async (
+	data: FeatureCollection
+): Promise<FeatureCollection> => {
+	const invalidFeatureCount = data.features.reduce((count, feature) => {
+		return count + (geometryHasSelfIntersection(feature.geometry) ? 1 : 0);
+	}, 0);
+
+	if (invalidFeatureCount === 0) return data;
+
+	showNotification(`${invalidFeatureCount}件の自己交差ポリゴンが含まれています。`, 'warning');
+
+	return data;
+};
+
 export const getGeometryTypes = (geojson: FeatureCollection): VectorEntryGeometryType[] => {
 	const types = new Set<VectorEntryGeometryType>();
 	for (const feature of geojson.features) {
@@ -100,7 +223,17 @@ export const filterByGeometryType = (
 ): FeatureCollection => {
 	return {
 		type: 'FeatureCollection',
-		features: geojson.features.filter((f) => matchesGeometryType(f.geometry, geometryType))
+		features: geojson.features
+			.map((feature) => {
+				const geometry = filterGeometry(feature.geometry, geometryType);
+				if (!geometry) return null;
+
+				return {
+					...feature,
+					geometry
+				};
+			})
+			.filter((feature): feature is FeatureCollection['features'][number] => feature !== null)
 	};
 };
 
@@ -329,7 +462,7 @@ const buildAutoMatchExpressions = (
 
 // --- メインのエントリ作成関数 ---
 
-export const createGeoJsonEntry = (
+export const createGeoJsonEntry = async (
 	data: FeatureCollection,
 	entryGeometryType: VectorEntryGeometryType,
 	name: string,
@@ -341,19 +474,22 @@ export const createGeoJsonEntry = (
 		defaultColor?: string;
 		coverImage?: string;
 	}
-): VectorEntry<GeoJsonMetaData> | undefined => {
+): Promise<VectorEntry<GeoJsonMetaData> | undefined> => {
+	const normalizedData = await notifySelfIntersectingPolygons(data);
+	const repairedBbox = turfBbox(normalizedData) as [number, number, number, number];
+
 	const metaData: GeoJsonMetaData = {
 		...DEFAULT_CUSTOM_META_DATA,
 		name,
-		bounds: bbox,
+		bounds: repairedBbox,
 		...(options?.attribution && { attribution: options.attribution }),
 		...(options?.coverImage && { coverImage: options.coverImage }),
-		xyzImageTile: findCenterTile(bbox)
+		xyzImageTile: findCenterTile(repairedBbox)
 	};
 
 	const extraColorExpressions = options?.extraColorExpressions;
 
-	const propKeys = getUniquePropertyKeys(data as any);
+	const propKeys = getUniquePropertyKeys(normalizedData as any);
 
 	// スタイル構築
 	let resolvedStyle: VectorStyle;
@@ -376,7 +512,7 @@ export const createGeoJsonEntry = (
 		);
 
 		// 属性から自動match分類を生成
-		const autoMatchExpressions = buildAutoMatchExpressions(data, entryGeometryType);
+		const autoMatchExpressions = buildAutoMatchExpressions(normalizedData, entryGeometryType);
 		for (const expr of autoMatchExpressions) {
 			colorsConfig.expressions.push(expr);
 		}
@@ -397,7 +533,7 @@ export const createGeoJsonEntry = (
 	}
 
 	const id = 'geojson_' + crypto.randomUUID();
-	GeojsonCache.set(id, data as any);
+	GeojsonCache.set(id, normalizedData as any);
 
 	const baseEntry = {
 		id,

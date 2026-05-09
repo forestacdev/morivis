@@ -66,7 +66,7 @@
 			} as unknown as FeatureCollection;
 
 			const bbox = turfBbox(geojson);
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				geojson,
 				'Point',
 				`写真 (${result.features.length}枚)`,

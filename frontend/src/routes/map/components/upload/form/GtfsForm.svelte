@@ -77,7 +77,7 @@
 				const entryType = geometryTypeToEntryType(stopsGeoJson);
 				if (entryType) {
 					const bbox = turfBbox(stopsGeoJson);
-					const entry = createGeoJsonEntry(
+					const entry = await createGeoJsonEntry(
 						stopsGeoJson,
 						entryType,
 						setFileName,
@@ -103,7 +103,7 @@
 				const entryType = geometryTypeToEntryType(routesGeoJson);
 				if (entryType) {
 					const bbox = turfBbox(routesGeoJson);
-					const entry = createGeoJsonEntry(
+					const entry = await createGeoJsonEntry(
 						routesGeoJson,
 						entryType,
 						setFileName,

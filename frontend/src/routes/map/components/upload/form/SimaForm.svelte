@@ -196,7 +196,7 @@
 
 			const propKeys = Object.keys(filtered.features[0]?.properties ?? {});
 			const style = buildCadStyle(filtered, entryGeometryType, propKeys);
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				filtered,
 				entryGeometryType,
 				simaFile.name,
