@@ -10,7 +10,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		url: 'https://www2.ffpri.go.jp/soilmap/tile/sp/{morivis:dimension}/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '森林土壌 炭素蓄積量',
+		name: '土壌特性値 炭素蓄積量',
 		description: '全国の森林域における土壌有機炭素蓄積量の推定値',
 		sourceDataName: '炭素蓄積量',
 		attribution: '森林総研・森林土壌デジタルマップ',
