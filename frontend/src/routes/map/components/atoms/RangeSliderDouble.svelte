@@ -66,12 +66,11 @@
 		const target = event.target as HTMLInputElement;
 		const newValue = Number(target.value);
 
-		// 上限値を超えないようにチェック
-		if (newValue >= upperValue) {
-			lowerValue = upperValue - step;
-			target.value = String(lowerValue);
-		} else {
-			lowerValue = newValue;
+		lowerValue = newValue;
+
+		// 上限値を超えたら、上限側を押し出す
+		if (lowerValue > upperValue) {
+			upperValue = lowerValue;
 		}
 
 		// コールバック関数があれば呼び出し
@@ -83,12 +82,11 @@
 		const target = event.target as HTMLInputElement;
 		const newValue = Number(target.value);
 
-		// 下限値を下回らないようにチェック
-		if (newValue <= lowerValue) {
-			upperValue = lowerValue + step;
-			target.value = String(upperValue);
-		} else {
-			upperValue = newValue;
+		upperValue = newValue;
+
+		// 下限値を下回ったら、下限側を押し出す
+		if (upperValue < lowerValue) {
+			lowerValue = upperValue;
 		}
 
 		// コールバック関数があれば呼び出し
@@ -99,8 +97,8 @@
 	onMount(() => {
 		if (lowerSliderElement && upperSliderElement) {
 			// 初期値の妥当性チェック
-			if (lowerValue >= upperValue) {
-				lowerValue = Math.max(min, upperValue - step);
+			if (lowerValue > upperValue) {
+				upperValue = lowerValue;
 			}
 
 			isInitialized = true;
