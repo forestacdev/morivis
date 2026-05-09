@@ -28,7 +28,7 @@ const entry: PolygonEntry<TileMetaData> = {
 	},
 	properties: {
 		fields: [
-			{ key: 'ID', type: 'number' },
+			{ key: 'ID', type: 'string' },
 			{ key: '森林管理局', type: 'string' },
 			{ key: '森林管理署', type: 'string' },
 			{ key: '林班主番', type: 'string' },
