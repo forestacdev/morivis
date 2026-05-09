@@ -455,15 +455,17 @@ export const createLayersItems = (
 		...boundaryLayerItems,
 		...railLayerItems,
 		...roadLineLayerItems,
+		...hillshadeLayerItems,
+		...roadLabelLayerItems,
+		...labelLayerItems,
 		...rasterLayerItems,
 		...fillLayerItems,
 		...lineLayerItems,
 		...fillExtrusionLayerItems,
-		...hillshadeLayerItems,
+
 		...circleLayerItems,
 		...streetViewLayers,
-		...labelLayerItems,
-		...roadLabelLayerItems,
+
 		...symbolLayerItems,
 		...circleIconLayerItems
 	];
