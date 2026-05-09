@@ -15,9 +15,9 @@
 	} from '$routes/map/utils/platform/pwa';
 	import { checkPc } from '$routes/map/utils/platform/viewport';
 	import { mapMode, isDebugMode, isStreetView } from '$routes/stores';
+	import { showXYZTileLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
-	import { showXYZTileLayer } from '$routes/stores/layers';
 	import {
 		showOtherMenu,
 		showDataMenu,

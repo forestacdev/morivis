@@ -16,6 +16,7 @@ import {
 	getColorExpression
 } from '$routes/map/utils/layers/vector/expression/color';
 import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
+import { combineFilters } from '$routes/map/utils/layers/vector/filter';
 
 // ポリゴンのパターンレイヤーの作成
 export const createFillPatternLayer = (
@@ -42,13 +43,9 @@ export const createFillPatternLayer = (
 			'fill-opacity': style.opacity
 		},
 		layout: {},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.fill?.filter) {
-				return { filter: defaultStyle.fill.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.fill?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.fill?.filter) }
+			: {})
 	};
 
 	return fillPatternLayer;
@@ -86,13 +83,9 @@ export const createOutLineLayer = (layer: LayerItem, style: PolygonStyle) => {
 			'line-opacity': style.opacity,
 			...(style.outline.lineStyle === 'dashed' && { 'line-dasharray': [2, 2] })
 		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.line?.filter) {
-				return { filter: defaultStyle.line.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.line?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.line?.filter) }
+			: {})
 	};
 	return outlineLayer;
 };
@@ -127,13 +120,9 @@ export const createFillExtrusionLayer = (
 		layout: {
 			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.layout : {})
 		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.fillExtrusion?.filter) {
-				return { filter: defaultStyle.fillExtrusion.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.fillExtrusion?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.fillExtrusion?.filter) }
+			: {})
 	};
 
 	return fillExtrusionLayer;
@@ -168,13 +157,9 @@ export const createFillExtrusionPatternLayer = (
 		layout: {
 			...(defaultStyle && defaultStyle.fillExtrusion ? defaultStyle.fillExtrusion.layout : {})
 		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.fillExtrusion?.filter) {
-				return { filter: defaultStyle.fillExtrusion.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.fillExtrusion?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.fillExtrusion?.filter) }
+			: {})
 	};
 
 	return fillExtrusionLayer;
@@ -196,13 +181,9 @@ export const createFillLayer = (layer: LayerItem, style: PolygonStyle): FillLaye
 		layout: {
 			...(defaultStyle && defaultStyle.fill ? defaultStyle.fill.layout : {})
 		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.fill?.filter) {
-				return { filter: defaultStyle.fill.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.fill?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.fill?.filter) }
+			: {})
 	};
 
 	return fillLayer;

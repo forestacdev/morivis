@@ -5,7 +5,13 @@
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import {
+		formatDate,
+		type FieldDef,
+		type VectorTemporalItem
+	} from '$routes/map/data/types/vector/properties';
 	import type { DialogType } from '$routes/map/types';
+	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/map/utils/formats/gpx';
 	import { showNotification } from '$routes/stores/notification';
 
@@ -77,6 +83,72 @@
 		}
 	});
 
+	const getUpdatedTimeField = (field: FieldDef): FieldDef => ({
+		...field,
+		label: '時刻',
+		type: 'datetime',
+		format: {
+			...field.format,
+			date: {
+				...(field.format?.date ?? {}),
+				inputPatterns: ['YYYY-MM-DDTHH:mm:ss+HH:mm'],
+				displayPattern: 'YYYY年M月D日 HH:mm:ss',
+				invalidText: ''
+			}
+		}
+	});
+
+	const getTemporalItemsFromEntry = (entry: GeoDataEntry): VectorTemporalItem[] => {
+		if (entry.type !== 'vector') return [];
+		if (entry.format.type !== 'geojson') return [];
+
+		const values = new Map<string, VectorTemporalItem>();
+		const geojson = GeojsonCache.get(entry.id);
+
+		for (const feature of geojson?.features ?? []) {
+			const properties = feature.properties as Record<string, unknown> | null | undefined;
+			const value = properties?.time;
+			if (value == null || String(value) === '') continue;
+
+			const raw = String(value);
+			const timestamp = Date.parse(raw);
+			if (Number.isNaN(timestamp) || values.has(raw)) continue;
+
+			values.set(raw, {
+				raw,
+				timestamp,
+				label: formatDate(raw, {
+					inputPatterns: ['YYYY-MM-DDTHH:mm:ss+HH:mm'],
+					displayPattern: 'YYYY年M月D日 HH:mm:ss',
+					invalidText: raw
+				})
+			});
+		}
+
+		return Array.from(values.values()).sort((a, b) => a.timestamp - b.timestamp);
+	};
+
+	const applyGpxTemporalProperties = (entry: GeoDataEntry, currentDataType: DataType) => {
+		if (entry.type !== 'vector') return;
+
+		entry.properties.fields = entry.properties.fields.map((field) =>
+			field.key === 'time' ? getUpdatedTimeField(field) : field
+		);
+
+		const hasTemporalAxis =
+			currentDataType === 'tracks' ||
+			currentDataType === 'track_points' ||
+			currentDataType === 'waypoints';
+
+		if (!hasTemporalAxis) return;
+
+		entry.properties.temporal = {
+			key: 'time',
+			items: getTemporalItemsFromEntry(entry)
+		};
+		entry.properties.attributeView.timeKey = 'time';
+	};
+
 	const registration = async () => {
 		if (!dropFile) {
 			return;
@@ -108,6 +180,7 @@
 		);
 		// const entry = createGeoJsonEntry(geojsonData, entryGeometryType, setFileName);
 		if (entry) {
+			applyGpxTemporalProperties(entry, dataType);
 			showDataEntry = entry;
 			showDialogType = null;
 		}

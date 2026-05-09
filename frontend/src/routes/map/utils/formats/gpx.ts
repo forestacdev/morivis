@@ -20,7 +20,7 @@ const formatGpxTime = (value: unknown): string | undefined => {
 	const minutes = String(jstTime.getUTCMinutes()).padStart(2, '0');
 	const seconds = String(jstTime.getUTCSeconds()).padStart(2, '0');
 
-	return `${year}/${month}/${day} ${hours}:${minutes}:${seconds} (UTC+09:00)`;
+	return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}+09:00`;
 };
 
 const getTrackTime = (track: Track): string | undefined => {

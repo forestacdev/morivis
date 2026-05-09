@@ -559,19 +559,31 @@ export const createGeoJsonEntry = async (
 	if (entryGeometryType === 'Point') {
 		return {
 			...baseEntry,
-			format: { type: 'geojson' as const, geometryType: 'Point' as const, url: '' },
+			format: {
+				type: 'geojson' as const,
+				geometryType: 'Point' as const,
+				url: ''
+			},
 			style: resolvedStyle as PointStyle
 		};
 	} else if (entryGeometryType === 'LineString') {
 		return {
 			...baseEntry,
-			format: { type: 'geojson' as const, geometryType: 'LineString' as const, url: '' },
+			format: {
+				type: 'geojson' as const,
+				geometryType: 'LineString' as const,
+				url: ''
+			},
 			style: resolvedStyle as LineStringStyle
 		};
 	} else if (entryGeometryType === 'Polygon') {
 		return {
 			...baseEntry,
-			format: { type: 'geojson' as const, geometryType: 'Polygon' as const, url: '' },
+			format: {
+				type: 'geojson' as const,
+				geometryType: 'Polygon' as const,
+				url: ''
+			},
 			style: resolvedStyle as PolygonStyle
 		};
 	}

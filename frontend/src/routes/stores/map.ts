@@ -1206,11 +1206,7 @@ const createMapStore = () => {
 
 	const panToOrJumpTo = (lngLat: LngLat) => {
 		if (!map || !isMapValid(map)) return;
-		if (isPointInBbox(lngLat, getMapBounds())) {
-			map.panTo(lngLat, { duration: 500 });
-		} else {
-			map.flyTo({ center: lngLat, zoom: 17, duration: 1000 });
-		}
+		map.panTo(lngLat, { duration: 100 });
 	};
 
 	// インスタンス削除
