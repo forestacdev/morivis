@@ -17,6 +17,7 @@
 	import { mapMode, isDebugMode, isStreetView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
+	import { showXYZTileLayer } from '$routes/stores/layers';
 	import {
 		showOtherMenu,
 		showDataMenu,
@@ -225,6 +226,7 @@
 				</button>
 
 				<Switch label="デバッグモード" bind:value={$isDebugMode} />
+				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
 			{/if}
 		</ui>
 		<!-- <ui class="mt-auto text-end"> Ver. 0.1.0 beta </ui> -->

@@ -73,8 +73,9 @@
 	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
 		emblaMainCarousel = event.detail;
 		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
-
-		emblaMainCarousel = event.detail;
+		if (dimension) {
+			emblaMainCarousel.scrollTo(dimension.currentIndex, true);
+		}
 
 		// ホイールイベントリスナーを追加
 		if (carouselElement) {
