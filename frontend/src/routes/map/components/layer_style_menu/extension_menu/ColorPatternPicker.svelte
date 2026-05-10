@@ -340,13 +340,15 @@
 
 <div bind:this={containerRef} class="relative">
 	<label
-		class="group flex cursor-pointer items-center justify-between pr-2 transition-colors duration-100"
+		class="group flex cursor-pointer items-center justify-between gap-2 pr-2 transition-colors duration-100"
 	>
 		{#if label}
-			<span class="group-hover:text-accent text-base select-none">{label}</span>
+			<span class="group-hover:text-accent min-w-0 grow truncate text-base select-none">
+				{label}
+			</span>
 		{/if}
 		<div
-			class="relative grid h-[30px] w-[30px] place-items-center overflow-hidden rounded-full {value ===
+			class="relative grid h-[30px] w-[30px] shrink-0 place-items-center overflow-hidden rounded-full {value ===
 			'transparent'
 				? 'border border-white'
 				: ''}}"
