@@ -49,6 +49,11 @@ export const PROXY_RULES: ProxyRule[] = [
 		excludeExt: ['.pbf']
 	},
 	{
+		match: 'rinya-tiles.geospatial.jp',
+		target: 'https://rinya-tiles.geospatial.jp',
+		proxyPath: '/api/rinya-tiles'
+	},
+	{
 		match: 'rinya-tochigi.geospatial.jp',
 		target: 'https://rinya-tochigi.geospatial.jp',
 		proxyPath: '/api/rinya-tochigi',

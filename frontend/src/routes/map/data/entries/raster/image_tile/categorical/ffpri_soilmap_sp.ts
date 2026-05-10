@@ -21,7 +21,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		downloadUrl: 'https://www2.ffpri.go.jp/soilmap/data-src3.html',
-		xyzImageTile: IMAGE_TILE_XYZ_SETS.zoom_9
+		xyzImageTile: { x: 450, y: 200, z: 9 }
 	},
 	interaction: {
 		clickable: true
