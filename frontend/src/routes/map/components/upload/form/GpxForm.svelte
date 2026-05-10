@@ -142,9 +142,15 @@
 
 		if (!hasTemporalAxis) return;
 
+		const temporalItems = getTemporalItemsFromEntry(entry);
+		if (temporalItems.length === 0) {
+			showNotification('「time」フィールドが見つかりませんでした', 'warning');
+			return;
+		}
+
 		entry.properties.temporal = {
 			key: 'time',
-			items: getTemporalItemsFromEntry(entry)
+			items: temporalItems
 		};
 		entry.properties.attributeView.timeKey = 'time';
 	};
