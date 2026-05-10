@@ -414,7 +414,7 @@ export const formatDate = (value: unknown, spec?: DateFormatSpec): string => {
 };
 
 /** 追加: 属性(フィールド)の意味を1箇所に集約 */
-type FieldType = 'string' | 'number' | 'integer' | 'date' | 'datetime';
+type FieldType = 'string' | 'number' | 'integer' | 'date' | 'datetime' | 'boolean';
 
 /**
  * フィーチャの属性（フィールド）定義。

@@ -1,251 +1,513 @@
 import type { FeatureCollection } from '$routes/map/types/geojson';
-import type { PointGeometry } from '$routes/map/types/geometry';
+import type { LineStringGeometry, PointGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 
 const GARMIN_SEMICIRCLE_SCALE = 180 / 2147483648;
-// 参考:
-// GDAL GPSBabel driver は gdb を直接パースせず、gpsbabel CLI と GPX を中継に使う。
-// https://gdal.org/en/stable/drivers/vector/gpsbabel.html
-// 実際の gdb 構造の手掛かりは GPSBabel の gdb.cc。
-// そこでは "MsRc" + primary file format 0x66 をヘッダとして書き出している。
-// https://sources.debian.org/src/gpsbabel/1.10.0%2Bds-1/gdb.cc
-const GARMIN_GDB_SIGNATURE = 'MsRc';
-const GARMIN_GDB_PRIMARY_FORMAT = 0x0066;
-const MAX_RECORD_LENGTH = 4096;
-const MIN_COORDINATE_SEARCH_OFFSET = 16;
-const MAX_COORDINATE_SEARCH_OFFSET = 96;
+const GARMIN_GDB_SIGNATURE = 'MsRcf';
+const TRACK_COLOR_OFFSET = 0;
+const WAYPOINT_SUBCLASS_BYTES = 22;
+const DEFINITION_RECORD_PREFIX = 'D';
+const METADATA_RECORD_TYPE = 'A';
 
-const readInt32LE = (view: DataView, offset: number) => {
-	return view.getInt32(offset, true);
-};
+export type GarminGdbVersion = 1 | 2 | 3;
+export type GarminGdbApplication = 'MapSource' | 'BaseCamp';
+export type GarminGdbDataType = 'waypoints' | 'routes' | 'tracks';
+type GarminGdbRecordType = 'W' | 'R' | 'T' | 'V';
 
-const toDegreesFromSemicircle = (value: number) => {
-	return value * GARMIN_SEMICIRCLE_SCALE;
-};
+interface GarminWaypoint {
+	name: string;
+	coordinates: [number, number];
+	altitude: number | null;
+	waypointClass: number;
+	countryCode: string;
+}
 
-const decodeNullTerminatedString = (
-	decoder: TextDecoder,
-	bytes: Uint8Array,
-	offset: number,
-	maxLength: number
-) => {
-	const end = Math.min(offset + maxLength, bytes.length);
-	let cursor = offset;
+interface GarminRoute {
+	name: string;
+	pointNames: string[];
+	coordinates: [number, number][];
+}
 
-	while (cursor < end && bytes[cursor] !== 0) {
-		cursor += 1;
+interface GarminTrackPoint {
+	coordinates: [number, number];
+	altitude: number | null;
+	time: number | null;
+	depth: number | null;
+	temperature: number | null;
+}
+
+interface GarminTrack {
+	name: string;
+	colorIndex: number;
+	points: GarminTrackPoint[];
+}
+
+export interface GarminGdbParseResult {
+	version: GarminGdbVersion;
+	application: GarminGdbApplication;
+	waypoints: GarminWaypoint[];
+	routes: GarminRoute[];
+	tracks: GarminTrack[];
+}
+
+interface GarminGdbHeader {
+	version: GarminGdbVersion;
+	application: GarminGdbApplication;
+}
+
+class BinaryReader {
+	private readonly view: DataView;
+	private readonly bytes: Uint8Array;
+	private cursor = 0;
+
+	constructor(bytes: Uint8Array) {
+		this.bytes = bytes;
+		this.view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 	}
 
-	if (cursor <= offset) return '';
-
-	return decoder.decode(bytes.subarray(offset, cursor)).trim();
-};
-
-const isPlausibleCoordinate = (lat: number, lon: number) => {
-	return (
-		Number.isFinite(lat) &&
-		Number.isFinite(lon) &&
-		Math.abs(lat) > 0.01 &&
-		Math.abs(lon) > 0.01 &&
-		lat >= -90 &&
-		lat <= 90 &&
-		lon >= -180 &&
-		lon <= 180
-	);
-};
-
-const findMapSourceHeaderEnd = (bytes: Uint8Array) => {
-	const signatures = ['MapSource\0', 'BaseCamp\0'];
-
-	for (const signature of signatures) {
-		const encoded = new TextEncoder().encode(signature);
-
-		for (let index = 0; index <= bytes.length - encoded.length; index += 1) {
-			let matches = true;
-
-			for (let offset = 0; offset < encoded.length; offset += 1) {
-				if (bytes[index + offset] !== encoded[offset]) {
-					matches = false;
-					break;
-				}
-			}
-
-			if (matches) {
-				return index + encoded.length;
-			}
-		}
+	get remaining() {
+		return this.bytes.length - this.cursor;
 	}
 
-	return -1;
-};
+	get position() {
+		return this.cursor;
+	}
 
-const collectRecordCandidates = (bytes: Uint8Array) => {
-	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-	const decoder = new TextDecoder('utf-8', { fatal: false });
-	const headerEnd = findMapSourceHeaderEnd(bytes);
-	if (headerEnd === -1) return [];
-
-	const records: {
-		name: string;
-		candidates: Array<{ lat: number; lon: number }>;
-		recordLength: number;
-	}[] = [];
-
-	let cursor = headerEnd;
-
-	while (cursor + 4 <= bytes.length) {
-		while (cursor < bytes.length && bytes[cursor] === 0) {
-			cursor += 1;
+	seek(offset: number) {
+		if (offset < 0 || offset > this.bytes.length) {
+			throw new Error('Garmin GDB reader seek out of bounds');
 		}
+		this.cursor = offset;
+	}
 
-		if (cursor + 4 > bytes.length) break;
+	skip(length: number) {
+		this.seek(this.cursor + length);
+	}
 
-		const recordLength = view.getUint32(cursor, true);
-		if (
-			recordLength === 0 ||
-			recordLength > MAX_RECORD_LENGTH ||
-			cursor + 4 + recordLength > bytes.length
-		) {
-			cursor += 1;
-			continue;
+	readUint8() {
+		this.ensureAvailable(1);
+		const value = this.view.getUint8(this.cursor);
+		this.cursor += 1;
+		return value;
+	}
+
+	readUint16LE() {
+		this.ensureAvailable(2);
+		const value = this.view.getUint16(this.cursor, true);
+		this.cursor += 2;
+		return value;
+	}
+
+	readUint32LE() {
+		this.ensureAvailable(4);
+		const value = this.view.getUint32(this.cursor, true);
+		this.cursor += 4;
+		return value;
+	}
+
+	readInt32LE() {
+		this.ensureAvailable(4);
+		const value = this.view.getInt32(this.cursor, true);
+		this.cursor += 4;
+		return value;
+	}
+
+	readFloat64LE() {
+		this.ensureAvailable(8);
+		const value = this.view.getFloat64(this.cursor, true);
+		this.cursor += 8;
+		return value;
+	}
+
+	readBytes(length: number) {
+		this.ensureAvailable(length);
+		const value = this.bytes.subarray(this.cursor, this.cursor + length);
+		this.cursor += length;
+		return value;
+	}
+
+	readFixedAscii(length: number) {
+		return new TextDecoder('ascii', { fatal: false }).decode(this.readBytes(length));
+	}
+
+	readCString() {
+		const start = this.cursor;
+		while (this.cursor < this.bytes.length && this.bytes[this.cursor] !== 0) {
+			this.cursor += 1;
 		}
-
-		const name = decodeNullTerminatedString(
-			decoder,
-			bytes,
-			cursor + 4,
-			Math.min(recordLength, 64)
+		const text = new TextDecoder('utf-8', { fatal: false }).decode(
+			this.bytes.subarray(start, this.cursor)
 		);
-		const candidates: Array<{ lat: number; lon: number }> = [];
-
-		for (
-			let relativeOffset = MIN_COORDINATE_SEARCH_OFFSET;
-			relativeOffset <= Math.min(recordLength - 8, MAX_COORDINATE_SEARCH_OFFSET);
-			relativeOffset += 1
-		) {
-			const lat = toDegreesFromSemicircle(readInt32LE(view, cursor + 4 + relativeOffset));
-			const lon = toDegreesFromSemicircle(readInt32LE(view, cursor + 4 + relativeOffset + 4));
-
-			if (!isPlausibleCoordinate(lat, lon)) continue;
-			candidates.push({ lat, lon });
+		if (this.cursor < this.bytes.length && this.bytes[this.cursor] === 0) {
+			this.cursor += 1;
 		}
-
-		if (name !== '' && candidates.length > 0) {
-			records.push({ name, candidates, recordLength });
-		}
-
-		cursor += 4 + recordLength;
+		return text;
 	}
 
-	return records;
-};
+	readLatLon() {
+		return this.readInt32LE() * GARMIN_SEMICIRCLE_SCALE;
+	}
 
-const findDominantCoordinateCluster = (
-	records: Array<{ candidates: Array<{ lat: number; lon: number }> }>
-) => {
-	const clusterCounts = new Map<string, number>();
+	readOptionalFloat64() {
+		if (this.remaining < 1) return null;
+		const hasValue = this.readUint8();
+		if (hasValue !== 1) return null;
+		return this.readFloat64LE();
+	}
 
-	for (const record of records) {
-		for (const candidate of record.candidates) {
-			const key = `${Math.round(candidate.lat)}:${Math.round(candidate.lon)}`;
-			clusterCounts.set(key, (clusterCounts.get(key) ?? 0) + 1);
+	readOptionalTime() {
+		if (this.remaining < 1) return null;
+		const hasValue = this.readUint8();
+		if (hasValue !== 1) return null;
+		return this.readInt32LE();
+	}
+
+	private ensureAvailable(length: number) {
+		if (this.cursor + length > this.bytes.length) {
+			throw new Error('Garmin GDB reader ran past record boundary');
 		}
 	}
+}
 
-	let dominantKey: string | null = null;
-	let dominantCount = -1;
-	for (const [key, count] of clusterCounts) {
-		if (count <= dominantCount) continue;
-		dominantKey = key;
-		dominantCount = count;
-	}
-
-	if (!dominantKey) return null;
-
-	const [lat, lon] = dominantKey.split(':').map(Number);
-	if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-
-	return { lat, lon };
+const isRecognizedApplication = (value: string): value is GarminGdbApplication => {
+	return value === 'MapSource' || value === 'BaseCamp';
 };
 
-const pickBestCandidate = (
-	dominantCluster: { lat: number; lon: number },
-	candidates: Array<{ lat: number; lon: number }>
-) => {
-	return candidates.reduce((best, candidate) => {
-		const bestDistance =
-			(best.lat - dominantCluster.lat) ** 2 + (best.lon - dominantCluster.lon) ** 2;
-		const candidateDistance =
-			(candidate.lat - dominantCluster.lat) ** 2 + (candidate.lon - dominantCluster.lon) ** 2;
-
-		return candidateDistance < bestDistance ? candidate : best;
-	});
-};
-
-export const isGarminGdbFile = async (file: File) => {
-	const header = new Uint8Array(await file.slice(0, 128).arrayBuffer());
-	if (header.length < 6) return false;
-
-	const signature = new TextDecoder('ascii', { fatal: false }).decode(header.subarray(0, 4));
-	const primaryFormat = new DataView(
-		header.buffer,
-		header.byteOffset,
-		header.byteLength
-	).getUint16(4, true);
-
-	return signature === GARMIN_GDB_SIGNATURE && primaryFormat === GARMIN_GDB_PRIMARY_FORMAT;
-};
-
-export const garminGdbFileToGeojson = async (
-	file: File
-): Promise<FeatureCollection<PointGeometry>> => {
-	const bytes = new Uint8Array(await file.arrayBuffer());
-	if (bytes.length < 6) {
-		throw new Error('Garmin GDB としては短すぎます');
-	}
-
-	const signature = new TextDecoder('ascii', { fatal: false }).decode(bytes.subarray(0, 4));
-	const primaryFormat = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint16(
-		4,
-		true
-	);
-
-	if (
-		signature !== GARMIN_GDB_SIGNATURE ||
-		primaryFormat !== GARMIN_GDB_PRIMARY_FORMAT
-	) {
+const readGarminGdbHeader = (reader: BinaryReader): GarminGdbHeader => {
+	const signatureBytes = reader.readBytes(6);
+	const signature = new TextDecoder('ascii', { fatal: false }).decode(signatureBytes);
+	if (signature !== `${GARMIN_GDB_SIGNATURE}\0`) {
 		throw new Error('Garmin GDB 形式ではありません');
 	}
 
-	const records = collectRecordCandidates(bytes);
-	if (records.length === 0) {
-		throw new Error('Garmin GDB から waypoint を抽出できませんでした');
+	const definitionRecordLength = reader.readUint32LE();
+	const definitionRecord = reader.readFixedAscii(definitionRecordLength);
+	if (definitionRecord.length < 2 || definitionRecord[0] !== DEFINITION_RECORD_PREFIX) {
+		throw new Error('Garmin GDB の定義レコードが不正です');
 	}
 
-	const dominantCluster = findDominantCoordinateCluster(records);
-	if (!dominantCluster) {
-		throw new Error('Garmin GDB の座標クラスタを特定できませんでした');
+	const version = (definitionRecord.charCodeAt(1) - 'k'.charCodeAt(0) + 1) as GarminGdbVersion;
+	if (version !== 1 && version !== 2 && version !== 3) {
+		throw new Error(`Garmin GDB version ${version} は未対応です`);
 	}
 
-	const features: FeatureCollection<PointGeometry>['features'] = records.map((record) => {
-		const coordinate = pickBestCandidate(dominantCluster, record.candidates);
+	// GPSBabel の gdb.cc と同じく、定義レコードの直後に 1 byte の区切りが入る。
+	reader.skip(1);
 
+	const metadataRecordLength = reader.readUint32LE();
+	const metadataRecordType = String.fromCharCode(reader.readUint8());
+	if (metadataRecordType !== METADATA_RECORD_TYPE) {
+		throw new Error('Garmin GDB の metadata レコードが不正です');
+	}
+	reader.skip(metadataRecordLength);
+
+	const application = reader.readCString();
+	if (!isRecognizedApplication(application)) {
+		throw new Error('Garmin GDB の application header を認識できません');
+	}
+
+	return {
+		version,
+		application
+	};
+};
+
+const readRouteBounds = (reader: BinaryReader) => {
+	const isMissingBounds = reader.readUint8();
+	if (isMissingBounds !== 0) return;
+
+	reader.readLatLon();
+	reader.readLatLon();
+	reader.readOptionalFloat64();
+	reader.readLatLon();
+	reader.readLatLon();
+	reader.readOptionalFloat64();
+};
+
+const readWaypointCommon = (reader: BinaryReader) => {
+	const name = reader.readCString();
+	const waypointClass = reader.readInt32LE();
+	const countryCode = reader.readCString();
+	reader.skip(Math.min(WAYPOINT_SUBCLASS_BYTES, reader.remaining));
+	const latitude = reader.readLatLon();
+	const longitude = reader.readLatLon();
+	const altitude = reader.readOptionalFloat64();
+
+	return {
+		name,
+		coordinates: [longitude, latitude] as [number, number],
+		altitude,
+		waypointClass,
+		countryCode
+	} satisfies GarminWaypoint;
+};
+
+const readWaypointV1 = (reader: BinaryReader) => readWaypointCommon(reader);
+const readWaypointV2 = (reader: BinaryReader) => readWaypointCommon(reader);
+const readWaypointV3 = (reader: BinaryReader) => readWaypointCommon(reader);
+
+const readTrackCommon = (reader: BinaryReader) => {
+	const name = reader.readCString();
+	reader.readUint8();
+	const colorIndex = reader.readInt32LE();
+	const pointCount = reader.readInt32LE();
+
+	const points: GarminTrackPoint[] = [];
+	for (let index = 0; index < pointCount; index += 1) {
+		const latitude = reader.readLatLon();
+		const longitude = reader.readLatLon();
+		const altitude = reader.readOptionalFloat64();
+		const time = reader.readOptionalTime();
+		const depth = reader.readOptionalFloat64();
+		const temperature = reader.readOptionalFloat64();
+
+		points.push({
+			coordinates: [longitude, latitude],
+			altitude,
+			time,
+			depth,
+			temperature
+		});
+	}
+
+	return {
+		name,
+		colorIndex: colorIndex + TRACK_COLOR_OFFSET,
+		points
+	} satisfies GarminTrack;
+};
+
+const readTrackV1 = (reader: BinaryReader) => readTrackCommon(reader);
+const readTrackV2 = (reader: BinaryReader) => readTrackCommon(reader);
+const readTrackV3 = (reader: BinaryReader) => readTrackCommon(reader);
+
+const extractReferencedWaypointNames = (
+	payload: Uint8Array,
+	waypointIndex: Map<string, [number, number]>,
+	limit: number
+) => {
+	const names: string[] = [];
+	let cursor = 0;
+
+	while (cursor < payload.length && names.length < limit) {
+		const start = cursor;
+		while (cursor < payload.length && payload[cursor] !== 0) {
+			cursor += 1;
+		}
+
+		if (cursor > start) {
+			const candidate = new TextDecoder('utf-8', { fatal: false }).decode(
+				payload.subarray(start, cursor)
+			);
+			if (waypointIndex.has(candidate)) {
+				if (names.length === 0 || names[names.length - 1] !== candidate) {
+					names.push(candidate);
+				}
+			}
+		}
+
+		cursor += 1;
+	}
+
+	return names;
+};
+
+const readRouteCommon = (
+	reader: BinaryReader,
+	waypointIndex: Map<string, [number, number]>
+) => {
+	const name = reader.readCString();
+	reader.readUint8();
+	readRouteBounds(reader);
+	const pointCount = reader.readInt32LE();
+	const payload = reader.readBytes(reader.remaining);
+	const pointNames = extractReferencedWaypointNames(payload, waypointIndex, pointCount);
+	const coordinates = pointNames
+		.map((pointName) => waypointIndex.get(pointName))
+		.filter((coordinate): coordinate is [number, number] => coordinate != null);
+
+	return {
+		name,
+		pointNames,
+		coordinates
+	} satisfies GarminRoute;
+};
+
+const readRouteV1 = (reader: BinaryReader, waypointIndex: Map<string, [number, number]>) =>
+	readRouteCommon(reader, waypointIndex);
+const readRouteV2 = (reader: BinaryReader, waypointIndex: Map<string, [number, number]>) =>
+	readRouteCommon(reader, waypointIndex);
+const readRouteV3 = (reader: BinaryReader, waypointIndex: Map<string, [number, number]>) =>
+	readRouteCommon(reader, waypointIndex);
+
+const readWaypointByVersion = (version: GarminGdbVersion, reader: BinaryReader) => {
+	switch (version) {
+		case 1:
+			return readWaypointV1(reader);
+		case 2:
+			return readWaypointV2(reader);
+		case 3:
+			return readWaypointV3(reader);
+	}
+};
+
+const readRouteByVersion = (
+	version: GarminGdbVersion,
+	reader: BinaryReader,
+	waypointIndex: Map<string, [number, number]>
+) => {
+	switch (version) {
+		case 1:
+			return readRouteV1(reader, waypointIndex);
+		case 2:
+			return readRouteV2(reader, waypointIndex);
+		case 3:
+			return readRouteV3(reader, waypointIndex);
+	}
+};
+
+const readTrackByVersion = (version: GarminGdbVersion, reader: BinaryReader) => {
+	switch (version) {
+		case 1:
+			return readTrackV1(reader);
+		case 2:
+			return readTrackV2(reader);
+		case 3:
+			return readTrackV3(reader);
+	}
+};
+
+const readRecordPayload = (
+	type: GarminGdbRecordType,
+	version: GarminGdbVersion,
+	payload: Uint8Array,
+	waypointIndex: Map<string, [number, number]>,
+	result: GarminGdbParseResult
+) => {
+	const recordReader = new BinaryReader(payload);
+
+	switch (type) {
+		case 'W': {
+			const waypoint = readWaypointByVersion(version, recordReader);
+			result.waypoints.push(waypoint);
+			waypointIndex.set(waypoint.name, waypoint.coordinates);
+			return;
+		}
+		case 'R': {
+			const route = readRouteByVersion(version, recordReader, waypointIndex);
+			result.routes.push(route);
+			return;
+		}
+		case 'T': {
+			result.tracks.push(readTrackByVersion(version, recordReader));
+			return;
+		}
+		default:
+			return;
+	}
+};
+
+export const isGarminGdbFile = async (file: File) => {
+	const header = new Uint8Array(await file.slice(0, 6).arrayBuffer());
+	if (header.length < 6) return false;
+	return new TextDecoder('ascii', { fatal: false }).decode(header) === `${GARMIN_GDB_SIGNATURE}\0`;
+};
+
+export const readGarminGdbFile = async (file: File): Promise<GarminGdbParseResult> => {
+	const bytes = new Uint8Array(await file.arrayBuffer());
+	const reader = new BinaryReader(bytes);
+	const header = readGarminGdbHeader(reader);
+	const waypointIndex = new Map<string, [number, number]>();
+
+	const result: GarminGdbParseResult = {
+		version: header.version,
+		application: header.application,
+		waypoints: [],
+		routes: [],
+		tracks: []
+	};
+
+	while (reader.remaining > 0) {
+		const recordLength = reader.readUint32LE();
+		const recordType = String.fromCharCode(reader.readUint8()) as GarminGdbRecordType;
+
+		if (recordType === 'V') {
+			break;
+		}
+
+		const payload = reader.readBytes(recordLength);
+		readRecordPayload(recordType, header.version, payload, waypointIndex, result);
+	}
+
+	return result;
+};
+
+export const garminGdbFileToGeojson = async (
+	file: File,
+	dataType: GarminGdbDataType
+): Promise<FeatureCollection<PointGeometry | LineStringGeometry>> => {
+	const parsed = await readGarminGdbFile(file);
+
+	if (dataType === 'waypoints') {
 		return {
-			type: 'Feature',
-			geometry: {
-				type: 'Point',
-				coordinates: [coordinate.lon, coordinate.lat]
-			},
-			properties: {
-				name: record.name,
-				record_length: record.recordLength,
-				source_format: 'garmin-gdb'
-			} as unknown as FeatureProp
+			type: 'FeatureCollection',
+			features: parsed.waypoints.map((waypoint) => ({
+				type: 'Feature',
+				geometry: {
+					type: 'Point',
+					coordinates: waypoint.coordinates
+				},
+				properties: {
+					name: waypoint.name,
+					altitude: waypoint.altitude,
+					waypoint_class: waypoint.waypointClass,
+					country_code: waypoint.countryCode,
+					source_format: 'garmin-gdb',
+					gdb_version: parsed.version
+				} as unknown as FeatureProp
+			}))
 		};
-	});
+	}
+
+	if (dataType === 'tracks') {
+		return {
+			type: 'FeatureCollection',
+			features: parsed.tracks
+				.filter((track) => track.points.length >= 2)
+				.map((track) => ({
+					type: 'Feature',
+					geometry: {
+						type: 'LineString',
+						coordinates: track.points.map((point) => point.coordinates)
+					},
+					properties: {
+						name: track.name,
+						point_count: track.points.length,
+						color_index: track.colorIndex,
+						source_format: 'garmin-gdb',
+						gdb_version: parsed.version
+					} as unknown as FeatureProp
+				}))
+		};
+	}
 
 	return {
 		type: 'FeatureCollection',
-		features
+		features: parsed.routes
+			.filter((route) => route.coordinates.length >= 2)
+			.map((route) => ({
+				type: 'Feature',
+				geometry: {
+					type: 'LineString',
+					coordinates: route.coordinates
+				},
+				properties: {
+					name: route.name,
+					point_count: route.pointNames.length,
+					point_names: route.pointNames.join(', '),
+					source_format: 'garmin-gdb',
+					gdb_version: parsed.version
+				} as unknown as FeatureProp
+			}))
 	};
 };

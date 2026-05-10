@@ -1,10 +1,17 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { garminGdbFileToGeojson, isGarminGdbFile } from '$routes/map/utils/formats/garmin-gdb';
+	import {
+		garminGdbFileToGeojson,
+		isGarminGdbFile,
+		readGarminGdbFile,
+		type GarminGdbDataType,
+		type GarminGdbParseResult
+	} from '$routes/map/utils/formats/garmin-gdb';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -21,8 +28,10 @@
 	}: Props = $props();
 
 	let setFileName = $state<string>('');
-	let waypointCount = $state(0);
 	let isValidGarminGdb = $state(false);
+	let parsed = $state<GarminGdbParseResult | null>(null);
+	let dataType = $state<GarminGdbDataType>('waypoints');
+	let dataTypeOptions = $state<{ key: GarminGdbDataType; name: string }[]>([]);
 
 	const gdbFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -41,8 +50,21 @@
 				return;
 			}
 
-			const geojson = await garminGdbFileToGeojson(file);
-			waypointCount = geojson.features.length;
+			parsed = await readGarminGdbFile(file);
+			const options: { key: GarminGdbDataType; name: string }[] = [];
+			if (parsed.waypoints.length > 0) {
+				options.push({ key: 'waypoints', name: `ウェイポイント (${parsed.waypoints.length})` });
+			}
+			if (parsed.routes.some((route) => route.coordinates.length >= 2)) {
+				options.push({ key: 'routes', name: `ルート (${parsed.routes.length})` });
+			}
+			if (parsed.tracks.some((track) => track.points.length >= 2)) {
+				options.push({ key: 'tracks', name: `トラック (${parsed.tracks.length})` });
+			}
+			dataTypeOptions = options;
+			if (options.length > 0) {
+				dataType = options[0].key;
+			}
 		} catch (error) {
 			showNotification(
 				error instanceof Error ? error.message : 'Garmin GDB の読み込みに失敗しました',
@@ -65,10 +87,10 @@
 		isProcessing.set(true);
 
 		try {
-			const geojsonData = await garminGdbFileToGeojson(gdbFile);
+			const geojsonData = await garminGdbFileToGeojson(gdbFile, dataType);
 			const entryType = geometryTypeToEntryType(geojsonData);
 			if (!entryType) {
-				showNotification('Garmin GDB からポイントを作成できませんでした', 'error');
+				showNotification('Garmin GDB からレイヤーを作成できませんでした', 'error');
 				return;
 			}
 
@@ -94,7 +116,7 @@
 				}
 			];
 
-			showNotification('Garmin GDB を waypoint として読み込みました', 'success');
+			showNotification('Garmin GDB を読み込みました', 'success');
 			showDataEntry = entry;
 			showDialogType = null;
 		} catch (error) {
@@ -111,7 +133,8 @@
 		dropFile = null;
 		showDialogType = null;
 		isValidGarminGdb = false;
-		waypointCount = 0;
+		parsed = null;
+		dataTypeOptions = [];
 	};
 </script>
 
@@ -123,9 +146,22 @@
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
 	<div class="w-full space-y-4 p-2 text-sm">
-		<p>現在は waypoint の読み込みに対応しています。</p>
-		{#if waypointCount > 0}
-			<p>抽出した waypoint 数: {waypointCount}</p>
+		{#if parsed}
+			<p>アプリケーション: {parsed.application}</p>
+			<p>GDB バージョン: {parsed.version}.0</p>
+			<p>
+				ウェイポイント: {parsed.waypoints.length} / ルート: {parsed.routes.length} / トラック:
+				{parsed.tracks.length}
+			</p>
+		{/if}
+		{#if dataTypeOptions.length > 1}
+			<HorizontalSelectBox
+				label="読み込むデータタイプを選択"
+				bind:group={dataType}
+				bind:options={dataTypeOptions}
+			/>
+		{:else if dataTypeOptions.length === 1}
+			<p>読み込みタイプ: {dataTypeOptions[0].name}</p>
 		{/if}
 	</div>
 </div>
@@ -134,7 +170,7 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={registration}
-		disabled={!isValidGarminGdb || waypointCount === 0}
+		disabled={!isValidGarminGdb || dataTypeOptions.length === 0}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg"
 	>
 		決定
