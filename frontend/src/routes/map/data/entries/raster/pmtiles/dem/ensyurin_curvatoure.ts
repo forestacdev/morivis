@@ -15,7 +15,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 		description: '森林文化アカデミー演習林の地形の曲率を数値化したもの',
 		attribution: '森林文化アカデミー',
 		location: '森林文化アカデミー',
-		tags: ['微地形図', '地形'],
+		tags: ['微地形図', '地形', '曲率'],
 		minZoom: 14,
 		maxZoom: 16,
 		tileSize: 256,

@@ -72,6 +72,9 @@
 	});
 </script>
 
+{#if style.dimension}
+	<DimensionSelector bind:layerEntry bind:showDimensionOption />
+{/if}
 {#if layerEntry && layerEntry.type === 'raster' && style}
 	<!-- レイヤータイプの選択 -->
 	{#if style.type === 'basemap'}
@@ -133,9 +136,6 @@
 			<ColorPicker bind:value={style.color} label={'ラインの色'} />
 		</div>
 	{/if}
-{/if}
-{#if style.dimension}
-	<DimensionSelector bind:layerEntry bind:showDimensionOption />
 {/if}
 
 <style>

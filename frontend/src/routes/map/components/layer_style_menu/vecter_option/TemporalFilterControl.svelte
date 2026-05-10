@@ -45,13 +45,18 @@
 	let temporalFilterState = $state<VectorTemporalFilterState>(createDefaultTemporalFilterState());
 	let cameraTracking = $state(false);
 	let isPlaying = $state(false);
-	let playbackIntervalMs = $state(800);
+	let playbackSpeed = $state(1201);
 	let restoredLayerId = $state<string | null>(null);
 	let lastTrackedTarget = $state<string | null>(null);
 	let playbackFrameId: number | null = null;
 	let playbackLastTimestamp: number | null = null;
 	let smoothedCameraCenter: LngLat | null = null;
 	let smoothedCameraBearing: number | null = null;
+	let cachedTrackPointsLayerId: string | null = null;
+	let cachedTrackPointsGeojson: unknown = null;
+	let cachedTrackPointsItems: VectorTemporalItem[] | null = null;
+	let cachedTrackPointsKeySignature = '';
+	let cachedTrackPoints: TemporalTrackPoint[] = [];
 
 	// 時間軸の定義は properties.temporal を正とし、
 	// 既存データのために attributeView.timeKey も後方互換で見る。
@@ -76,6 +81,7 @@
 	});
 
 	const canTrackCamera = $derived(layerEntry.format.type === 'geojson');
+	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 
 	const clamp = (value: number, min: number, max: number) => {
 		return Math.min(Math.max(value, min), max);
@@ -238,27 +244,61 @@
 		return null;
 	};
 
-	const temporalTrackPoints = $derived.by(() => {
+	const invalidateTrackPointCache = () => {
+		cachedTrackPointsLayerId = null;
+		cachedTrackPointsGeojson = null;
+		cachedTrackPointsItems = null;
+		cachedTrackPointsKeySignature = '';
+		cachedTrackPoints = [];
+	};
+
+	const getTemporalTrackPoints = () => {
 		if (!canTrackCamera || temporalItems.length === 0) return [] as TemporalTrackPoint[];
 
 		const geojson = GeojsonCache.get(layerEntry.id);
 		if (!geojson) return [] as TemporalTrackPoint[];
 
-		const pointsByRaw = new Map<string, TemporalTrackPoint>();
-		for (const feature of geojson.features) {
-			const trackPoint = getFeatureTrackingPoint(feature as Feature<AnyGeometry>);
-			if (!trackPoint || trackPoint.raw === '' || pointsByRaw.has(trackPoint.raw)) continue;
-			pointsByRaw.set(trackPoint.raw, trackPoint);
+		const keySignature = temporalKeys.join('|');
+		if (
+			cachedTrackPointsLayerId === layerEntry.id &&
+			cachedTrackPointsGeojson === geojson &&
+			cachedTrackPointsItems === temporalItems &&
+			cachedTrackPointsKeySignature === keySignature
+		) {
+			return cachedTrackPoints;
 		}
 
-		return temporalItems
-			.map((item) => pointsByRaw.get(item.raw))
+		const pointsByRaw: Record<string, TemporalTrackPoint> = {};
+		for (const feature of geojson.features) {
+			const trackPoint = getFeatureTrackingPoint(feature as Feature<AnyGeometry>);
+			if (!trackPoint || trackPoint.raw === '' || pointsByRaw[trackPoint.raw]) continue;
+			pointsByRaw[trackPoint.raw] = trackPoint;
+		}
+
+		cachedTrackPoints = temporalItems
+			.map((item) => pointsByRaw[item.raw])
 			.filter((point): point is TemporalTrackPoint => point != null);
-	});
+		cachedTrackPointsLayerId = layerEntry.id;
+		cachedTrackPointsGeojson = geojson;
+		cachedTrackPointsItems = temporalItems;
+		cachedTrackPointsKeySignature = keySignature;
+
+		return cachedTrackPoints;
+	};
 
 	const resetCameraTrackingState = () => {
 		smoothedCameraCenter = null;
 		smoothedCameraBearing = null;
+	};
+
+	const syncTerrainCamera = (lngLat: LngLat) => {
+		if (!mapStore.getTerrain()) return;
+		mapStore.setCamera(lngLat);
+	};
+
+	const resetTerrainCamera = () => {
+		if (!mapStore.getTerrain()) return;
+		mapStore.resetCamera();
 	};
 
 	const updateCameraTracking = (targetPoint: { lng: number; lat: number }, targetBearing: number) => {
@@ -279,9 +319,11 @@
 			center: smoothedCameraCenter,
 			bearing: smoothedCameraBearing
 		});
+		syncTerrainCamera(smoothedCameraCenter);
 	};
 
 	const trackCameraAlongRoute = (index: number, segmentProgress = 0) => {
+		const temporalTrackPoints = getTemporalTrackPoints();
 		if (temporalTrackPoints.length === 0) return false;
 
 		const currentIndex = clamp(index, 0, temporalTrackPoints.length - 1);
@@ -292,6 +334,7 @@
 		const lookAheadPoint =
 			temporalTrackPoints[Math.min(currentIndex + 2, temporalTrackPoints.length - 1)] ?? nextPoint;
 		const progress = clamp(segmentProgress, 0, 1);
+		const fallbackBearing = mapStore.getBearing() ?? 0;
 
 		const interpolatedPoint = {
 			lng: nextPoint ? lerp(currentPoint.lng, nextPoint.lng, progress) : currentPoint.lng,
@@ -302,9 +345,9 @@
 			currentPoint.bearing ??
 			(nextPoint && lookAheadPoint
 				? getBearingBetweenPoints(interpolatedPoint, progress > 0.6 ? lookAheadPoint : nextPoint)
-				: mapStore.getBearing());
+				: fallbackBearing);
 
-		updateCameraTracking(interpolatedPoint, computedBearing ?? mapStore.getBearing());
+		updateCameraTracking(interpolatedPoint, computedBearing ?? fallbackBearing);
 		return true;
 	};
 
@@ -314,26 +357,30 @@
 
 		if (feature.geometry.type === 'Point') {
 			const coordinates = feature.geometry.coordinates;
+			const lngLat = new LngLat(coordinates[0], coordinates[1]);
 			const bearing = Number(
 				(feature.properties as Record<string, unknown> | null | undefined)?.angle
 			);
-			mapStore.panTo(new LngLat(coordinates[0], coordinates[1]), {
+			mapStore.panTo(lngLat, {
 				duration: 500,
 				bearing: !Number.isNaN(bearing) ? bearing : mapStore.getBearing()
 			});
+			syncTerrainCamera(lngLat);
 
 			return;
 		}
 
 		if (feature.geometry.type === 'MultiPoint' && feature.geometry.coordinates.length > 0) {
 			const [lng, lat] = feature.geometry.coordinates[0];
+			const lngLat = new LngLat(lng, lat);
 			const bearing = Number(
 				(feature.properties as Record<string, unknown> | null | undefined)?.angle
 			);
-			mapStore.panTo(new LngLat(lng, lat), {
+			mapStore.panTo(lngLat, {
 				duration: 500,
 				bearing: !Number.isNaN(bearing) ? bearing : mapStore.getBearing()
 			});
+			syncTerrainCamera(lngLat);
 			return;
 		}
 
@@ -425,6 +472,7 @@
 		playbackLastTimestamp = null;
 		isPlaying = false;
 		resetCameraTrackingState();
+		resetTerrainCamera();
 	};
 
 	const startPlayback = () => {
@@ -453,7 +501,7 @@
 				temporalFilterState.endIndex += 1;
 			}
 
-			if (cameraTracking && temporalTrackPoints.length > 0) {
+			if (cameraTracking) {
 				const segmentProgress = clamp(
 					(timestamp - playbackLastTimestamp) / Math.max(playbackIntervalMs, 1),
 					0,
@@ -487,7 +535,9 @@
 	$effect(() => {
 		layerEntry.id;
 		temporalItems.length;
+		temporalKeys.length;
 		stopPlayback();
+		invalidateTrackPointCache();
 		restoreTemporalFilterState();
 	});
 
@@ -527,17 +577,16 @@
 		) {
 			lastTrackedTarget = null;
 			resetCameraTrackingState();
+			resetTerrainCamera();
 			return;
 		}
 		temporalFilterState.endIndex;
-		temporalTrackPoints.length;
 		const currentValue = temporalItems[temporalFilterState.endIndex]?.raw;
 		if (!currentValue) return;
 		const nextTrackedTarget = `${layerEntry.id}:${currentValue}`;
 		if (lastTrackedTarget === nextTrackedTarget) return;
 		lastTrackedTarget = nextTrackedTarget;
-		if (isPlaying && temporalTrackPoints.length > 0) return;
-		if (trackCameraAlongRoute(temporalFilterState.endIndex, 0)) return;
+		if (isPlaying) return;
 		const feature = getCurrentTemporalFeature();
 		if (!feature) return;
 		trackCameraToFeature(feature as Feature<AnyGeometry>);
@@ -625,12 +674,12 @@
 				</div>
 
 				<RangeSlider
-					label="再生間隔"
+					label="再生速度"
 					min={1}
 					max={2000}
 					step={1}
 					isInt={true}
-					bind:value={playbackIntervalMs}
+					bind:value={playbackSpeed}
 				/>
 
 				<button onclick={resetTemporalFilter} class="c-btn-sub cursor-pointer p-3 text-sm">
