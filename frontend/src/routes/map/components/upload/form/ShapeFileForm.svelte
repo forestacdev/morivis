@@ -227,7 +227,7 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(
+		const entry = await createGeoJsonEntry(
 			geojsonData,
 			entryGeometryType,
 			forms.shpName,

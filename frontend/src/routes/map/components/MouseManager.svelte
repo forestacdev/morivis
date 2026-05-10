@@ -22,6 +22,7 @@
 		getLogicalLayerIdFromLayer,
 		HighlightLayerRegistry
 	} from '$routes/map/utils/layers/highlight';
+	import { getMorivisLayerRole } from '$routes/map/utils/layers/id';
 	import { isPointInBbox } from '$routes/map/utils/map/bbox';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
@@ -72,7 +73,7 @@
 		contextMenuState = $bindable()
 	}: Props = $props();
 
-	const ADDITIONAL_CLICKABLE_LAYER_IDS = ['@fac_poi', '@poi_top', '@search_result'] as const;
+	const ADDITIONAL_CLICKABLE_LAYER_IDS = ['@poi_top', '@search_result'] as const;
 	let highlightedGeneratedPoiLayerId: string | null = $state(null);
 
 	const clearSearchHighlight = () => {
@@ -197,15 +198,6 @@
 		layerId: string,
 		feature: MapGeoJSONFeature
 	): { [key: string]: any } => {
-		// POIトップアイコンは、プロパティに_fac_idがあればそれをもとにアイコンURLを解決する
-		if (layerId === '@fac_poi') {
-			return {
-				...feature.properties,
-				iconImage: `${ICON_IMAGE_BASE_PATH}/${feature.properties._prop_id}.webp`
-			};
-		}
-
-		// カスタムレイヤーのポイントアイコンは、レイヤー定義からアイコンURLを解決する
 		const pointLayerEntry = getPointLayerEntry(layerId);
 		const generatedIconImage = pointLayerEntry
 			? resolveGeneratedPoiIconUrl(
@@ -451,6 +443,29 @@
 		return true;
 	};
 
+	// 補助レイヤーの地物をクリックしたときの処理。、そのレイヤーに対応するエントリーを探し、必要に応じてズームインする。
+	const handleAuxiliaryLayerClick = (feature: MapGeoJSONFeature, lngLat: LngLat) => {
+		if (getMorivisLayerRole(feature.layer.metadata) !== 'auxiliary') return false;
+
+		const logicalLayerId = getLogicalLayerIdFromLayer(feature.layer);
+		const targetEntry = layerEntries.find((entry) => entry.id === logicalLayerId);
+		if (!targetEntry) return false;
+
+		const targetZoom = targetEntry.metaData.minZoom + 0.5;
+		const currentZoom = mapStore.getMap()?.getZoom();
+
+		setSelectedHighlight(null);
+		featureMenuData = null;
+		clearSearchHighlight();
+		clickedLayerIds = [logicalLayerId];
+
+		if (currentZoom === undefined || currentZoom < targetZoom) {
+			mapStore.flyTo(lngLat, { zoom: targetZoom, duration: 1000 });
+		}
+
+		return true;
+	};
+
 	mapStore.onClick(async (e: MapMouseEvent) => {
 		showMarker = false;
 		// プレブュー中はクリック処理を行わない
@@ -476,15 +491,6 @@
 			);
 			const selectedRasterLayersId = getSelectedRasterLayerIds(e.lngLat);
 
-			// POIのトップアイコンをクリックした場合は森林文化アカデミーへジャンプ
-			if (selectedVecterLayersId.includes('@poi_top')) {
-				setSelectedHighlight(null);
-
-				mapStore.jumpToFac();
-				contextMenuState = null;
-				return;
-			}
-
 			// ストリートビューに切り返る
 			if (selectedVecterLayersId.includes('@street_view_circle_layer')) {
 				handleStreetViewCircleClick(e);
@@ -499,6 +505,10 @@
 
 			// 検索結果の地物クリック処理
 			if (handleSearchResultClick(e)) {
+				return;
+			}
+
+			if (handleAuxiliaryLayerClick(features[0], e.lngLat)) {
 				return;
 			}
 

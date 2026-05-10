@@ -227,9 +227,9 @@ export class ThreeJsLayerManager {
 	/** モデルを削除 */
 	removeModel(entryId: string): void {
 		const loaded = this.loadedModels.get(entryId);
-		if (!loaded || !this.modelGroup) return;
+		if (!loaded) return;
 
-		this.modelGroup.remove(loaded.object);
+		loaded.object.parent?.remove(loaded.object);
 		loaded.object.traverse((child) => {
 			if ((child as THREE.Mesh).isMesh) {
 				const mesh = child as THREE.Mesh;
@@ -371,6 +371,9 @@ export class ThreeJsLayerManager {
 			this.renderer.dispose();
 			this.renderer = null;
 		}
+		this.modelGroup = null;
+		this.previewModelGroup = null;
+		this.loadedModels.clear();
 		this.scene = null;
 		this.camera = null;
 		this.isInitialized = false;

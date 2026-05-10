@@ -160,6 +160,11 @@ const attributionData = {
 		name: '愛媛県林業政策課（林野庁加工）',
 		url: 'https://www.geospatial.jp/ckan/organization/rinya',
 		sources: [baseAttributions.愛媛県森林資源データ, baseAttributions.林野庁]
+	},
+	森林総研・森林土壌デジタルマップ: {
+		name: '森林総研・森林土壌デジタルマップ',
+		url: 'https://www2.ffpri.go.jp/soilmap/index.html',
+		sources: [baseAttributions.森林総合研究所]
 	}
 } as const;
 

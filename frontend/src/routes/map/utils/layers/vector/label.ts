@@ -18,6 +18,7 @@ import {
 	createSublayerId,
 	getMorivisLogicalLayerId
 } from '$routes/map/utils/layers/id';
+import { combineFilters } from '$routes/map/utils/layers/vector/filter';
 
 type Expr = DataDrivenPropertyValueSpecification<FormattedSpecification>;
 
@@ -195,13 +196,9 @@ export const createSymbolLayer = (
 			// 'text-radial-offset': 0.5,
 			// 'text-justify': 'auto'
 		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.symbol?.filter) {
-				return { filter: defaultStyle.symbol.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.symbol?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.symbol?.filter) }
+			: {})
 	};
 
 	// TODO: text-halo-color text-halo-width text-size

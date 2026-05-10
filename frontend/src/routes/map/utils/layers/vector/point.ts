@@ -18,6 +18,7 @@ import {
 	createSublayerId,
 	getMorivisLogicalLayerId
 } from '$routes/map/utils/layers/id';
+import { combineFilters } from '$routes/map/utils/layers/vector/filter';
 
 // pointレイヤーの作成
 export const createCircleLayer = (
@@ -45,13 +46,9 @@ export const createCircleLayer = (
 		layout: {
 			...(defaultStyle && defaultStyle.circle ? defaultStyle.circle.layout : {})
 		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.circle?.filter) {
-				return { filter: defaultStyle.circle.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.circle?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.circle?.filter) }
+			: {})
 	};
 	return circleLayer;
 };
@@ -90,13 +87,9 @@ export const createPointIconLayer = (
 			'icon-allow-overlap': true,
 			'icon-ignore-placement': true
 		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.symbol?.filter) {
-				return { filter: defaultStyle.symbol.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.symbol?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.symbol?.filter) }
+			: {})
 	};
 
 	return symbolLayer;
@@ -132,8 +125,8 @@ export const createPointImageIconLayer = (
 						'text-opacity': 1,
 						'text-color': '#000000',
 						'text-halo-color': '#e8e8e8',
-						'text-halo-width': 2,
-						...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
+						'text-halo-width': 2
+						// ...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
 					}
 				: {})
 		},
@@ -154,18 +147,14 @@ export const createPointImageIconLayer = (
 						'text-max-width': 12,
 						'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 						'text-anchor': 'top',
-						'text-offset': [0, 0.5],
-						...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
+						'text-offset': [0, 0.5]
+						// ...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
 					}
 				: {})
 		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.symbol?.filter) {
-				return { filter: defaultStyle.symbol.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.symbol?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.symbol?.filter) }
+			: {})
 	};
 
 	return symbolImageIconLayer;

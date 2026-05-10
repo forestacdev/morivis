@@ -6,6 +6,7 @@
 	import { onDestroy, tick } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
+	import { getResetLayerEntries } from './context';
 	import RecommendedDataImage from './RecommendedDataImage.svelte';
 
 	import { ICONS } from '$lib/icons';
@@ -14,6 +15,7 @@
 	import type { Region } from '$routes/map/data/types/location';
 	import { isBBoxOverlapping } from '$routes/map/utils/map/bbox';
 	import { checkMobileWidth } from '$routes/map/utils/platform/viewport';
+	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 	import { showDataMenu } from '$routes/stores/ui';
@@ -31,7 +33,15 @@
 		isDeleteOverlayActive = $bindable(),
 		setRecommendedDataDragging
 	}: Props = $props();
+	const resetlayerEntries = getResetLayerEntries();
+	// レイヤーのリセット処理
+	const resetLayers = async () => {
+		const result = await resetLayersConfirm();
 
+		if (result) {
+			resetlayerEntries();
+		}
+	};
 	let hoveredIndex = $state<number | null>(null);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
@@ -236,7 +246,10 @@
 		transition:fade={{ duration: 150 }}
 		class="relative flex w-full flex-col gap-2 rounded-lg select-none"
 	>
-		<div class="flex w-full items-center justify-end pl-2">
+		<div class="flex w-full items-center justify-between pl-2">
+			<button onclick={resetLayers} class="c-btn-sub cursor-pointer rounded-full px-3 py-1 text-xs"
+				>リセット</button
+			>
 			<button
 				onclick={() => showDataMenu.set(true)}
 				class="group relative grid cursor-pointer place-items-center px-4 py-1 text-sm"

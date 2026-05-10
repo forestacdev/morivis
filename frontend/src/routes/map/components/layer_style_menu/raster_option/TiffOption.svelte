@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TimeSelector from './TimeSelector.svelte';
+	import DimensionSelector from './DimensionSelector.svelte';
 	import Accordion from '../../atoms/Accordion.svelte';
 	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
 
@@ -17,13 +17,13 @@
 	interface Props {
 		layerEntry: RasterEntry<RasterTiffStyle>;
 		showColorOption: boolean;
-		showTimeOption: boolean;
+		showDimensionOption: boolean;
 	}
 
 	let {
 		layerEntry = $bindable(),
 		showColorOption = $bindable(),
-		showTimeOption = $bindable()
+		showDimensionOption = $bindable()
 	}: Props = $props();
 
 	const dataRanges = $derived(GeoTiffCache.getDataRanges(layerEntry.id));
@@ -153,8 +153,8 @@
 	{/if}
 </Accordion>
 
-{#if layerEntry.style.timeDimension}
-	<TimeSelector bind:layerEntry bind:showTimeOption />
+{#if layerEntry.style.dimension}
+	<DimensionSelector bind:layerEntry bind:showDimensionOption />
 {/if}
 
 <style>

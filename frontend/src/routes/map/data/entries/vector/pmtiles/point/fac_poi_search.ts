@@ -24,7 +24,7 @@ const entry: PointEntry<TileMetaData> = {
 		minZoom: 11,
 		maxZoom: 14,
 		tags: ['建物'],
-		bounds: [-180, -85.051129, 180, 85.051129],
+		bounds: [136.9158014095595, 35.547274216918595, 136.92711166333783, 35.55727434225648],
 		coverImage: `${COVER_IMAGE_BASE_PATH}/fac_poi.webp`,
 		mapImage: `${COVER_IMAGE_BASE_PATH}/fac_poi.webp`,
 		xyzImageTile: { x: 14423, y: 6458, z: 14 }
@@ -132,7 +132,7 @@ const entry: PointEntry<TileMetaData> = {
 	},
 	auxiliaryLayers: {
 		sources: {
-			fac_top: {
+			'fac_poi_search:::fac_top': {
 				type: 'geojson',
 				data: {
 					type: 'FeatureCollection',
@@ -155,15 +155,16 @@ const entry: PointEntry<TileMetaData> = {
 		},
 		layers: [
 			{
-				id: '@poi_top',
+				id: 'fac_poi_search:::poi_top',
 				type: 'symbol',
-				source: 'fac_top',
+				source: 'fac_poi_search:::fac_top',
 				maxzoom: 12,
 				minzoom: 4,
 				layout: {
 					'icon-image': 'poi_top',
 					'icon-size': 0.8
-				}
+				},
+				clickable: true
 			}
 		]
 	}

@@ -416,7 +416,7 @@
 				];
 			}
 
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				filtered,
 				geometryType,
 				entryName || 'GeoPDF',

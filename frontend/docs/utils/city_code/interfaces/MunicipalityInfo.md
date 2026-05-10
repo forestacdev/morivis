@@ -6,7 +6,7 @@
 
 # Interface: MunicipalityInfo
 
-Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:8](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/utils/city_code/index.ts#L8)
+Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:8](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/city_code/index.ts#L8)
 
 団体コードに対応する自治体情報
 
@@ -16,7 +16,7 @@ Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:8](https://github
 
 > **city**: `string`
 
-Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:12](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/utils/city_code/index.ts#L12)
+Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:12](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/city_code/index.ts#L12)
 
 市区町村名（漢字）
 
@@ -26,7 +26,7 @@ Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:12](https://githu
 
 > **city\_kana**: `string`
 
-Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:16](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/utils/city_code/index.ts#L16)
+Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:16](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/city_code/index.ts#L16)
 
 市区町村名（カナ）
 
@@ -36,7 +36,7 @@ Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:16](https://githu
 
 > **full\_name**: `string`
 
-Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:18](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/utils/city_code/index.ts#L18)
+Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:18](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/city_code/index.ts#L18)
 
 完全名（都道府県+市区町村）
 
@@ -46,7 +46,7 @@ Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:18](https://githu
 
 > **full\_name\_kana**: `string`
 
-Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:20](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/utils/city_code/index.ts#L20)
+Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:20](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/city_code/index.ts#L20)
 
 完全名（カナ）
 
@@ -56,7 +56,7 @@ Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:20](https://githu
 
 > **prefecture**: `string`
 
-Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:10](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/utils/city_code/index.ts#L10)
+Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:10](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/city_code/index.ts#L10)
 
 都道府県名（漢字）
 
@@ -66,6 +66,6 @@ Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:10](https://githu
 
 > **prefecture\_kana**: `string`
 
-Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:14](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/utils/city_code/index.ts#L14)
+Defined in: [frontend/src/routes/map/utils/city\_code/index.ts:14](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/city_code/index.ts#L14)
 
 都道府県名（カナ）

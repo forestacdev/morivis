@@ -9,7 +9,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://cyberjapandata.gsi.go.jp/xyz/nendophoto{time}/{z}/{x}/{y}.png'
+		url: 'https://cyberjapandata.gsi.go.jp/xyz/nendophoto{morivis:dimension}/{z}/{x}/{y}.png'
 	},
 	metaData: {
 		name: '年度別空中写真（2007年以降）',
@@ -29,29 +29,68 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	style: {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
-		timeDimension: {
+		dimension: {
+			type: 'time',
 			values: [
-				'2024',
-				'2023',
-				'2022',
-				'2021',
-				'2020',
-				'2019',
-				'2018',
-				'2017',
-				'2016',
-				'2015',
-				'2014',
-				'2013',
-				'2012',
-				'2011',
-				'2010',
-				'2009',
+				'2007',
 				'2008',
-				'2007'
+				'2009',
+				'2010',
+				'2011',
+				'2012',
+				'2013',
+				'2014',
+				'2015',
+				'2016',
+				'2017',
+				'2018',
+				'2019',
+				'2020',
+				'2021',
+				'2022',
+				'2023',
+				'2024'
 			],
 			currentIndex: 11
 		}
+	},
+	auxiliaryLayers: {
+		sources: {
+			'gsi_nendophoto:::spec_source': {
+				type: 'geojson',
+				data: 'https://maps.gsi.go.jp/xyz/nendophoto{morivis:dimension}/2/3/1.geojson'
+				// 参考: https://github.com/gsi-cyberjapan/gsimaps
+			}
+		},
+		layers: [
+			{
+				id: 'gsi_nendophoto:::spec_fill',
+				type: 'fill',
+				source: 'gsi_nendophoto:::spec_source',
+				maxzoom: 14.1,
+				minzoom: 2,
+				paint: {
+					'fill-color': '#f50bde',
+					'fill-opacity': 0.5
+				}
+			},
+			{
+				id: 'gsi_nendophoto:::spec_label',
+				type: 'symbol',
+				source: 'gsi_nendophoto:::spec_source',
+				maxzoom: 14.1,
+				minzoom: 2,
+				layout: {
+					'text-field': '{撮影年月}撮影',
+					'text-size': 10
+				},
+				paint: {
+					'text-color': '#000000',
+					'text-halo-color': '#ffffff',
+					'text-halo-width': 1
+				}
+			}
+		]
 	}
 };
 

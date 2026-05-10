@@ -20,6 +20,11 @@ interface ProxyRule {
 export const PROXY_RULES: ProxyRule[] = [
 	{ match: 'mapdata.qchizu.xyz', target: 'https://mapdata.qchizu.xyz', proxyPath: '/api/qchizu' },
 	{
+		match: 'www2.ffpri.go.jp',
+		target: 'https://www2.ffpri.go.jp',
+		proxyPath: '/api/ffpri'
+	},
+	{
 		match: 'rinya-hyogo.geospatial.jp',
 		target: 'https://rinya-hyogo.geospatial.jp',
 		proxyPath: '/api/rinya-hyogo',
@@ -44,6 +49,11 @@ export const PROXY_RULES: ProxyRule[] = [
 		excludeExt: ['.pbf']
 	},
 	{
+		match: 'rinya-tiles.geospatial.jp',
+		target: 'https://rinya-tiles.geospatial.jp',
+		proxyPath: '/api/rinya-tiles'
+	},
+	{
 		match: 'rinya-tochigi.geospatial.jp',
 		target: 'https://rinya-tochigi.geospatial.jp',
 		proxyPath: '/api/rinya-tochigi',
@@ -54,6 +64,11 @@ export const PROXY_RULES: ProxyRule[] = [
 		target: 'https://tile.geospatial.jp',
 		proxyPath: '/api/tile-geospatial',
 		excludeExt: ['.pbf']
+	},
+	{
+		match: 'map.ecoris.info',
+		target: 'https://map.ecoris.info',
+		proxyPath: '/api/ecoris'
 	},
 	{
 		match: 'localhost:9000',

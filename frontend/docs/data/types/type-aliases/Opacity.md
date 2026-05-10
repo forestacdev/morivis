@@ -8,4 +8,4 @@
 
 > **Opacity** = `1` \| `0.7` \| `0.5` \| `0.3`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:17](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/index.ts#L17)
+Defined in: [frontend/src/routes/map/data/types/index.ts:18](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/index.ts#L18)

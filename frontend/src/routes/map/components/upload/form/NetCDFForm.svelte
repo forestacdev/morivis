@@ -13,7 +13,7 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
-	import type { WmsTimeDimension } from '$routes/map/data/types/raster';
+	import type { RasterDiscreteDimension } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
@@ -210,7 +210,7 @@
 			const longName = variable?.attributes['long_name'] ?? selectedVariable;
 
 			// 時間次元の検出
-			let timeDimension: WmsTimeDimension | undefined;
+			let dimension: RasterDiscreteDimension | undefined;
 			if (variable && extraDimensions.length > 0) {
 				// time/Time/TIME等の名前を持つ次元を探す
 				const timeDim = extraDimensions.find((d) => /^(time|t|date|datetime)$/i.test(d.name));
@@ -219,7 +219,8 @@
 						? resolveTimeValues(timeDim.values, ncInfo, timeDim.name)
 						: Array.from({ length: timeDim.size }, (_, i) => String(i));
 
-					timeDimension = {
+					dimension = {
+						type: 'time',
 						values: timeValues,
 						currentIndex: sliceIndices[timeDim.name] ?? 0
 					};
@@ -265,7 +266,7 @@
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
-					timeDimension,
+					dimension,
 					visualization: {
 						numBands: 1,
 						mode: 'single',

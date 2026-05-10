@@ -220,6 +220,31 @@
 
 	let dragOffsetX = 0;
 	let dragOffsetY = 0;
+	let desktopDragClone: HTMLElement | null = null;
+
+	const removeDesktopDragClone = () => {
+		if (!desktopDragClone) return;
+		desktopDragClone.remove();
+		desktopDragClone = null;
+	};
+
+	const createDesktopDragClone = (source: HTMLElement): HTMLElement => {
+		removeDesktopDragClone();
+
+		const clone = source.cloneNode(true) as HTMLElement;
+		clone.style.position = 'fixed';
+		clone.style.left = '-9999px';
+		clone.style.top = '-9999px';
+		clone.style.width = `${source.offsetWidth}px`;
+		clone.style.zIndex = '9999';
+		clone.style.opacity = '0.8';
+		clone.style.pointerEvents = 'none';
+		clone.style.transition = 'none';
+		document.body.appendChild(clone);
+		desktopDragClone = clone;
+
+		return clone;
+	};
 
 	const handleMouseDown = (e: MouseEvent, layerId: string) => {
 		const target = document.getElementById(layerId);
@@ -233,8 +258,11 @@
 		if (!e.dataTransfer) return;
 		e.dataTransfer.effectAllowed = 'move';
 		e.dataTransfer.setData('application/x-entry-id', layerId);
-		const dragElement = document.getElementById(layerId) as HTMLElement;
-		e.dataTransfer.setDragImage(dragElement, dragOffsetX, dragOffsetY);
+		const dragElement = document.getElementById(layerId) as HTMLElement | null;
+		if (!dragElement) return;
+
+		const dragPreview = createDesktopDragClone(dragElement);
+		e.dataTransfer.setDragImage(dragPreview, dragOffsetX, dragOffsetY);
 
 		isDragging = true;
 		enableFlip = false;
@@ -255,6 +283,7 @@
 
 	// ドラッグ終了時にアニメーションを有効にする
 	const dragEnd = () => {
+		removeDesktopDragClone();
 		isDragging = false;
 		enableFlip = true;
 		isDraggingLayerType = null; // ドラッグ中のレイヤータイプをリセット
@@ -392,6 +421,7 @@
 		layerItemElement?.addEventListener('touchmove', handleTouchMove, { passive: false });
 
 		return () => {
+			removeDesktopDragClone();
 			layerItemElement?.removeEventListener('touchmove', handleTouchMove);
 		};
 	});
@@ -404,7 +434,7 @@
 <div
 	bind:this={layerItemElement}
 	class="relative flex h-[80px] w-full items-center
-		transition-colors {isDragging ? 'c-dragging-style' : ''}"
+		transition-colors {isDragging ? 'c-dragging-style' : ''} {$isStyleEdit ? '' : ''}"
 	data-layer-id={layerEntry.id}
 	draggable={draggingEnabled}
 	ondragstart={(e) => dragStart(e, layerEntry.id)}
@@ -442,14 +472,14 @@
 	<!-- レイヤーアイテム本体 -->
 	<div
 		id={layerEntry.id}
-		class="transform-[width, transform, translate, scale, rotate, height border-color] relative flex translate-z-0 cursor-move justify-center rounded-full border p-2 text-left text-nowrap text-clip duration-300 select-none
+		class="transform-[width, transform, translate, scale, rotate, height border-color] relative flex translate-z-0 cursor-move justify-center rounded-full border p-2 text-left text-nowrap text-clip duration-200 select-none
 			{$selectedLayerId !== layerEntry.id && $isStyleEdit ? 'bg-black' : ''} {$selectedLayerId ===
 			layerEntry.id && $isStyleEdit
 			? 'bg-base'
 			: ''} {$showDataMenu || $isStyleEdit
 			? 'w-[68.48px]'
 			: 'overflow-hidden max-lg:w-[calc(100%_-_55px)] lg:w-[330px]'} {$isStyleEdit
-			? 'translate-x-[310px]'
+			? ''
 			: 'bg-black'}
             {isDeleteOverlayActive && isHovered && isDragging
 			? 'border-[#ff4f66] drop-shadow-[0_0_3px_#ff4f66]'
@@ -509,9 +539,10 @@
 			<!-- アイコン -->
 			<button
 				onclick={selectedLayer}
-				class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150 {$isStyleEdit
-					? ''
-					: ''} {($selectedLayerId === layerEntry.id && $isStyleEdit) || isHovered
+				class="relative isolate grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-black text-base transition-transform duration-150 {($selectedLayerId ===
+					layerEntry.id &&
+					$isStyleEdit) ||
+				isHovered
 					? 'scale-115'
 					: ''}"
 			>

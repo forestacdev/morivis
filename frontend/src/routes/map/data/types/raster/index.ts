@@ -1,5 +1,6 @@
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
 import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
+import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 
 export const DEM_DATA_TYPE = {
 	mapbox: 0.0,
@@ -78,7 +79,7 @@ export interface BaseRasterStyle {
 	visible?: boolean; // NOTE: 動的追加
 	minZoom?: number;
 	maxZoom?: number;
-	timeDimension?: WmsTimeDimension;
+	dimension?: RasterDiscreteDimension;
 }
 
 export interface RasterBaseMapStyle extends BaseRasterStyle {
@@ -246,10 +247,12 @@ interface RasterMetaData extends BaseMetaData {
 	imageCorners?: [[number, number], [number, number], [number, number], [number, number]];
 }
 
-export interface WmsTimeDimension {
+export interface RasterDiscreteDimension {
+	type: 'time' | 'variant';
 	values: string[];
 	currentIndex: number;
 	labels?: string[];
+	placeholder?: string;
 }
 
 export interface RasterInteraction {
@@ -262,6 +265,7 @@ interface BaseRasterEntry {
 	type: 'raster';
 	metaData: RasterMetaData;
 	interaction: RasterInteraction;
+	auxiliaryLayers?: AuxiliaryLayersData;
 }
 
 export interface RasterImageEntry<T> extends BaseRasterEntry {

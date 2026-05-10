@@ -171,7 +171,7 @@
 				selectedGeometryType = types[0];
 				geometryTypeOptions = [];
 				if (autoProcess) {
-					keepProcessing = processGeojson();
+					keepProcessing = await processGeojson();
 				}
 			} else if (types.length > 1) {
 				geometryTypeOptions = types.map((t) => ({
@@ -366,7 +366,7 @@
 	/**
 	 * @returns true if async processing continues (isProcessing managed by callee)
 	 */
-	const processGeojson = (): boolean => {
+	const processGeojson = async (): Promise<boolean> => {
 		let filtered = rawGeojson;
 		if (rawGeojson && selectedGeometryType) {
 			filtered = filterByGeometryType(rawGeojson, selectedGeometryType as VectorEntryGeometryType);
@@ -385,7 +385,7 @@
 			if (tableEpsg && tableEpsg !== 4326) {
 				closeGpkg();
 				gpkgBuffer = null;
-				convertAndCreateEntry(String(tableEpsg) as EpsgCode);
+				void convertAndCreateEntry(String(tableEpsg) as EpsgCode);
 				return true; // async processing continues
 			}
 			closeGpkg();
@@ -393,7 +393,7 @@
 			showZoneForm = true;
 			focusBbox = bbox as [number, number, number, number];
 		} else {
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				filtered,
 				selectedGeometryType as VectorEntryGeometryType,
 				entryName,
@@ -452,7 +452,7 @@
 				return;
 			}
 
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
 				entryName,

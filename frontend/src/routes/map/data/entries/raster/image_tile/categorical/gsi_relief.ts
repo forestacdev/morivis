@@ -32,8 +32,8 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		legend: {
 			type: 'gradient',
 			name: '標高値',
-			colors: ['#B43D09', '#B4491C', '#B4562D', '#B5A42D', '#46BABA'],
-			ranges: [4000, 2000, 1000, 300, 0],
+			colors: ['#46BABA', '#B5A42D', '#B4562D', '#B4491C', '#B43D09'],
+			ranges: [0, 300, 400, 1000, 2000],
 			unit: 'm'
 		}
 	}

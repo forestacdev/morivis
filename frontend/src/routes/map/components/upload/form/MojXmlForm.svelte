@@ -134,7 +134,7 @@
 			return;
 		}
 
-		const entry = createGeoJsonEntry(
+		const entry = await createGeoJsonEntry(
 			filtered,
 			geometryType,
 			entryName,
@@ -183,7 +183,7 @@
 				return;
 			}
 
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				filtered,
 				geometryType,
 				entryName,

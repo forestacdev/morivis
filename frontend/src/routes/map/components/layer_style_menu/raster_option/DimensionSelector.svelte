@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import Autoplay from 'embla-carousel-autoplay';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
@@ -6,6 +7,7 @@
 
 	import Accordion from '../../atoms/Accordion.svelte';
 
+	import { ICONS } from '$lib/icons';
 	import type {
 		RasterEntry,
 		RasterCategoricalStyle,
@@ -15,6 +17,7 @@
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
+	import { getRasterDimensionRuntimeUpdates } from '$routes/map/utils/raster/dimension-runtime';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -25,10 +28,12 @@
 			| RasterTiffStyle
 			| RasterCadStyle
 		>;
-		showTimeOption: boolean;
+		showDimensionOption: boolean;
 	}
 
-	let { layerEntry = $bindable(), showTimeOption = $bindable() }: Props = $props();
+	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
+
+	let dimension = $derived(layerEntry.style.dimension);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -48,29 +53,48 @@
 			playOnInit: false // 初期化時に自動再生開始
 		})
 	];
+	let isSyncingInitialScroll = $state(false);
 
 	const onSelect = () => {
-		if (!emblaMainCarousel || !layerEntry.style.timeDimension) return;
+		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
 		const currentIndex = emblaMainCarousel.selectedScrollSnap();
-		layerEntry.style.timeDimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
+		dimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
+
+		// style 全更新は重いので、差し替え可能な raster source だけを直接更新する。
+		const runtimeUpdates = getRasterDimensionRuntimeUpdates(layerEntry);
+		runtimeUpdates.forEach((update) => {
+			if (update.type === 'tiles') {
+				mapStore.setTiles(update.sourceId, update.tiles);
+				return;
+			}
+
+			mapStore.setData(update.sourceId, update.data);
+		});
 	};
 
 	// const onSelect = () => {
-	// 	if (!emblaMainCarousel || !layerEntry.style.timeDimension) return;
+	// 	if (!emblaMainCarousel || !layerEntry.style.dimension) return;
 	// 	const currentIndex = emblaMainCarousel.selectedScrollSnap();
 	// 	const sourceId = `${layerEntry.id}_source`;
-	// 	const timeValue = layerEntry.style.timeDimension.values[currentIndex];
+	// 	const timeValue = layerEntry.style.dimension.values[currentIndex];
 	// 	if (timeValue) {
-	// 		const tileUrl = layerEntry.format.url.replace('{time}', timeValue);
+	// 		const tileUrl = layerEntry.format.url.replace('{morivis:dimension}', timeValue);
 	// 		mapStore.setTiles(sourceId, [tileUrl]);
 	// 	}
 	// };
 
 	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
 		emblaMainCarousel = event.detail;
+		if (dimension) {
+			// Embla 初期化直後は 0 番の select が走りやすいので、
+			// 先に currentIndex へ合わせる間だけ runtime update を止める。
+			isSyncingInitialScroll = true;
+			emblaMainCarousel.scrollTo(dimension.currentIndex, true);
+			queueMicrotask(() => {
+				isSyncingInitialScroll = false;
+			});
+		}
 		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
-
-		emblaMainCarousel = event.detail;
 
 		// ホイールイベントリスナーを追加
 		if (carouselElement) {
@@ -176,14 +200,18 @@
 	};
 
 	const getTimeLabel = (value: string, index: number): string => {
-		const labels = layerEntry.style.timeDimension?.labels;
+		const labels = dimension?.labels;
 		return labels?.[index] ?? formatTimeValue(value);
 	};
 </script>
 
-{#if layerEntry.style.timeDimension}
-	<Accordion label={'時間'} icon={'mdi:clock-outline'} bind:value={showTimeOption}>
-		<div class="flex flex-col gap-4 p-2">
+{#if dimension}
+	<Accordion
+		label={dimension.placeholder ?? '時間'}
+		icon={dimension.type === 'time' ? 'mdi:clock-outline' : 'carbon:category'}
+		bind:value={showDimensionOption}
+	>
+		<div class="relative flex flex-col gap-4">
 			<div class="flex items-center gap-1">
 				<div
 					use:emblaCarouselSvelte={{
@@ -195,7 +223,7 @@
 					onemblaInit={onInitEmblaMainCarousel}
 				>
 					<div class="flex gap-2 px-2">
-						{#each layerEntry.style.timeDimension.values as timeValue, i}
+						{#each dimension.values as timeValue, i (timeValue)}
 							<div
 								class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
 							>
@@ -205,16 +233,28 @@
 					</div>
 				</div>
 			</div>
-			<div class="flex items-center justify-center gap-2">
+			<div
+				class="group pointer-events-none absolute flex h-full w-full items-center justify-between px-1"
+			>
 				<button
 					onclick={onClickPrev}
-					class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-white hover:bg-white/10"
+					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150"
 					aria-label="前へ"
 				>
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-					</svg>
+					<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
 				</button>
+
+				<button
+					onclick={onClickNext}
+					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150"
+					aria-label="次へ"
+				>
+					<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
+				</button>
+			</div>
+		</div>
+		{#if dimension.type === 'time'}
+			<div class="flex items-center justify-center gap-2 pt-3">
 				<button
 					onclick={toggleAutoplay}
 					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white hover:bg-white/10"
@@ -232,16 +272,7 @@
 						再生
 					{/if}
 				</button>
-				<button
-					onclick={onClickNext}
-					class="flex shrink-0 cursor-pointer items-center justify-center rounded-full p-1 text-white hover:bg-white/10"
-					aria-label="次へ"
-				>
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-					</svg>
-				</button>
 			</div>
-		</div>
+		{/if}
 	</Accordion>
 {/if}

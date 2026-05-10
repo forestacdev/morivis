@@ -243,7 +243,7 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 				`&transparent=true`;
 
 			if (layer.timeDimension) {
-				tileUrl += '&TIME={time}';
+				tileUrl += '&TIME={morivis:dimension}';
 			}
 
 			return {

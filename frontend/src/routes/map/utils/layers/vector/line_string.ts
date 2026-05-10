@@ -13,6 +13,7 @@ import {
 	createSublayerId,
 	getMorivisLogicalLayerId
 } from '$routes/map/utils/layers/id';
+import { combineFilters } from '$routes/map/utils/layers/vector/filter';
 
 // ラインレイヤーの作成
 export const createLineLayer = (
@@ -35,13 +36,9 @@ export const createLineLayer = (
 		layout: {
 			...(defaultStyle && defaultStyle.line ? defaultStyle.line.layout : {})
 		},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.line?.filter) {
-				return { filter: defaultStyle.line.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.line?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.line?.filter) }
+			: {})
 	};
 
 	// TODO width line-gradient
@@ -74,13 +71,9 @@ export const createLinePatternLayer = (
 			'line-width': getNumberExpression(style.width)
 		},
 		layout: {},
-		// フィルター設定
-		...(() => {
-			if (defaultStyle?.line?.filter) {
-				return { filter: defaultStyle.line.filter };
-			}
-			return {};
-		})()
+		...(combineFilters(layer.filter, defaultStyle?.line?.filter)
+			? { filter: combineFilters(layer.filter, defaultStyle?.line?.filter) }
+			: {})
 	};
 
 	return linePatternLayer;

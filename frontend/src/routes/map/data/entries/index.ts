@@ -25,25 +25,24 @@ const isDev = !import.meta.env.PROD;
 
 type EntryModule = { default: GeoDataEntry };
 
-// デバッグ用ファイル（!プレフィックス）があるかチェック
-const debugModules = import.meta.glob<EntryModule>('$routes/map/data/entries/**/!*.ts', {
-	eager: true
-});
-const hasDebugFiles = Object.keys(debugModules).length > 0;
+const allModules = import.meta.glob<EntryModule>(
+	['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts', '!**/_*/**'],
+	{ eager: true }
+);
 
-const entryModules =
-	isDev && hasDebugFiles
-		? debugModules
-		: import.meta.glob<EntryModule>(
-				['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts', '!**/_*/**'],
-				{
-					eager: true
-				}
-			);
+const allEntries = Object.values(allModules).map((mod) => mod.default);
+const debugEntries = isDev ? allEntries.filter((entry) => entry.id.startsWith('!')) : [];
+const hasDebugEntries = debugEntries.length > 0;
 
-if (hasDebugFiles) {
+const entryModules = hasDebugEntries
+	? Object.fromEntries(
+			Object.entries(allModules).filter(([, mod]) => mod.default.id.startsWith('!'))
+		)
+	: allModules;
+
+if (hasDebugEntries) {
 	console.warn('デバッグ用データエントリが読み込まれました。');
-	activeLayerIdsStore.setLayers(Object.values(entryModules).map((mod) => mod.default.id));
+	activeLayerIdsStore.setLayers(debugEntries.map((entry) => entry.id));
 }
 export const entries: GeoDataEntry[] = Object.values(entryModules)
 	.map((mod) => mod.default)

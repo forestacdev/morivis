@@ -5,7 +5,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MERRA2_2m_Air_Temperature_Monthly/default/{time}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png'
+		url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MERRA2_2m_Air_Temperature_Monthly/default/{morivis:dimension}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png'
 	},
 	metaData: {
 		name: '2-meter Air Temperature, (Monthly, MERRA2)',
@@ -36,7 +36,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		brightnessMax: 1,
 		saturation: 0,
 		contrast: 0,
-		timeDimension: {
+		dimension: {
+			type: 'time',
 			values: [
 				'2026-01-01T00:00:00Z',
 				'2025-12-01T00:00:00Z',

@@ -2,6 +2,7 @@
 	import LineStringOption from './vecter_option/LineStringOption.svelte';
 	import PointOption from './vecter_option/PointOption.svelte';
 	import PolygonOption from './vecter_option/PolygonOption.svelte';
+	import TemporalFilterControl from './vecter_option/TemporalFilterControl.svelte';
 
 	import type {
 		VectorEntry,
@@ -18,9 +19,12 @@
 	}
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
+	let showTemporalOption = $state(false);
 </script>
 
 {#if layerEntry && layerEntry.type === 'vector'}
+	<TemporalFilterControl bind:layerEntry bind:showTemporalOption />
+
 	{#if layerEntry.format.geometryType === 'Point'}
 		<PointOption
 			bind:layerEntry={layerEntry as PointEntry<GeoJsonMetaData | TileMetaData>}

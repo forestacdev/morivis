@@ -1,7 +1,5 @@
-import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
-import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
+import type { RasterImageEntry, RasterCategoricalStyle } from '$routes/map/data/types/raster';
 
 const NDVI_TIME_VALUES = (() => {
 	const values: string[] = [];
@@ -24,12 +22,12 @@ const NDVI_TIME_LABELS = NDVI_TIME_VALUES.map((value) => {
 	return `${Number(match[1])}年${Number(match[2])}月`;
 });
 
-const entry: RasterImageEntry<RasterBaseMapStyle> = {
+const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'gsi_ndvi_250m',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://cyberjapandata.gsi.go.jp/xyz/ndvi_250m{time}/{z}/{x}/{y}.png'
+		url: 'https://cyberjapandata.gsi.go.jp/xyz/ndvi_250m{morivis:dimension}/{z}/{x}/{y}.png'
 	},
 	metaData: {
 		name: '植生指標データ 250m',
@@ -37,7 +35,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		downloadUrl: 'https://www.gsi.go.jp/kankyochiri/ndvi-Modis_download.html',
 		attribution: '国土地理院',
 		location: '全国',
-		tags: ['植生図', '森林'],
+		tags: ['植生図'],
 		minZoom: 2,
 		maxZoom: 10,
 		tileSize: 256,
@@ -51,14 +49,24 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 			'250m植生指標データを色分けして表現した地図。植生の量や季節変化を月ごとに確認する際に利用できる。'
 	},
 	interaction: {
-		...DEFAULT_RASTER_BASEMAP_INTERACTION
+		clickable: true
 	},
 	style: {
-		...DEFAULT_RASTER_BASEMAP_STYLE,
-		timeDimension: {
+		type: 'categorical',
+		resampling: 'nearest',
+		opacity: 0.7,
+		dimension: {
+			type: 'time',
 			values: NDVI_TIME_VALUES,
 			labels: NDVI_TIME_LABELS,
 			currentIndex: NDVI_TIME_VALUES.length - 1
+		},
+		legend: {
+			type: 'gradient',
+			name: '植生指標',
+			colors: ['#FF0000', '#DD2611', '#FFFF00', '#007F00'],
+			ranges: [1, 200],
+			unit: ''
 		}
 	}
 };

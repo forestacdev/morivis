@@ -8,6 +8,7 @@
 		step: number;
 		icon?: string;
 		isInt?: boolean;
+		showValue?: boolean;
 	}
 	let {
 		label,
@@ -16,7 +17,8 @@
 		max = 1,
 		step = 0.01,
 		icon,
-		isInt = false
+		isInt = false,
+		showValue = true
 	}: Props = $props();
 
 	let progressPercent = $derived.by(() => {
@@ -32,9 +34,9 @@
 			<Icon {icon} width={20} />
 		{/if}
 		<div class="flex w-full justify-between pr-2 select-none">
-			<span>{label ? `${label}: ` : ''}</span><span class={isInt ? 'pr-2' : ''}
-				>{isInt ? value.toFixed(0) : value.toFixed(2)}</span
-			>
+			<span>{label ? `${label}: ` : ''}</span>{#if showValue}<span class={isInt ? 'pr-2' : ''}
+					>{isInt ? value.toFixed(0) : value.toFixed(2)}</span
+				>{/if}
 		</div>
 	</div>
 

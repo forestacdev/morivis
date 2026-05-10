@@ -286,7 +286,7 @@
 						{:else}
 							{#if dataEntry.metaData.xyzImageTile && !dataEntry.metaData.coverImage && !isImageError && dataEntry.type === 'vector'}
 								<!-- 背景地図画像 -->
-								<!-- <img
+								<img
 									src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
 									class="c-basemap-img absolute h-full w-full object-cover transition-transform duration-150"
 									alt="背景地図画像"
@@ -295,7 +295,7 @@
 										console.error('Image loading failed: BaseMap Image');
 										isImageError = true;
 									}}
-								/> -->
+								/>
 							{/if}
 							<img
 								src={imageResult.url}

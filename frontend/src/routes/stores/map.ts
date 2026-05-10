@@ -249,6 +249,7 @@ const createMapStore = () => {
 	let lockOnMarker: Marker | null = null;
 	let map: maplibregl.Map | null = null;
 	let deckOverlay: MapboxOverlay | null = null;
+	let isDeckOverlayAdded = false;
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 
@@ -284,13 +285,8 @@ const createMapStore = () => {
 		const mapPosition = getMapParams();
 
 		await warmupGeneratedPoiIconWorker();
-
-		// deckOverlay を再作成（ページ遷移後に再初期化するため）
-		deckOverlay = new MapboxOverlay({
-			id: 'deckgl-overlay',
-			interleaved: true,
-			layers: []
-		});
+		deckOverlay = null;
+		isDeckOverlayAdded = false;
 
 		map = new maplibregl.Map({
 			...mapPosition,
@@ -310,7 +306,7 @@ const createMapStore = () => {
 				sources: {},
 				layers: []
 			},
-			// fadeDuration: 0, // フェードアニメーションの時間 シンボル
+			fadeDuration: 0, // フェードアニメーションの時間 シンボル
 			attributionControl: false, // デフォルトの出典を非表示
 			localIdeographFontFamily: false, // ローカルのフォントを使う
 			maxPitch: 85, // 最大ピッチ角度
@@ -319,7 +315,7 @@ const createMapStore = () => {
 			boxZoom: false, // Shift+ドラッグのボックスズームを無効化
 			doubleClickZoom: false, // ダブルクリックズームを無効化
 			keyboard: false, // キーボード操作を無効化
-			// maplibreLogo: true // MapLibreのロゴを表示
+			// maplibreLogo: true, // MapLibreのロゴを表示
 			// logoPosition: 'bottom-right' // ロゴの位置を指定
 			// renderWorldCopies: false // 世界地図を繰り返し表示しない
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
@@ -386,13 +382,8 @@ const createMapStore = () => {
 
 		// マップに追加
 
-		let isDeckOverlayAdded = false;
 		map.on('style.load', () => {
 			if (!map) return;
-			if (!isDeckOverlayAdded) {
-				map.addControl(deckOverlay as maplibregl.IControl);
-				isDeckOverlayAdded = true;
-			}
 
 			isStyleLoadEvent.set(map);
 		});
@@ -646,20 +637,44 @@ const createMapStore = () => {
 				};
 			}
 		});
-		// スタイル変更後にカスタムレイヤーを追加
-		initThreeLayer();
 	};
 
 	// deck.gl レイヤーを設定
 	const setDeckOverlay = (layers: LayersList) => {
-		if (!map || !isMapValid(map) || !deckOverlay) return;
+		if (!map || !isMapValid(map)) return;
+
+		if (layers.length === 0) {
+			if (deckOverlay) {
+				if (isDeckOverlayAdded) {
+					map.removeControl(deckOverlay as maplibregl.IControl);
+					isDeckOverlayAdded = false;
+				}
+				deckOverlay.finalize();
+				deckOverlay = null;
+			}
+			return;
+		}
+
+		if (!deckOverlay) {
+			deckOverlay = new MapboxOverlay({
+				id: 'deckgl-overlay',
+				interleaved: true,
+				layers: []
+			});
+		}
+
+		if (!isDeckOverlayAdded) {
+			map.addControl(deckOverlay as maplibregl.IControl);
+			isDeckOverlayAdded = true;
+		}
+
 		deckOverlay.setProps({
 			layers: layers
 		});
 	};
 
-	// Three.js レイヤーを初期化（マップに追加）
-	const initThreeLayer = () => {
+	// Three.js レイヤーを必要時に追加
+	const ensureThreeLayer = () => {
 		if (!map || !isMapValid(map)) return;
 		const layerId = '3d-model-layer';
 		if (map.getLayer(layerId)) {
@@ -671,6 +686,16 @@ const createMapStore = () => {
 		map.addLayer(layer);
 	};
 
+	const releaseThreeLayer = () => {
+		if (!map || !isMapValid(map)) return;
+		const layerId = '3d-model-layer';
+		if (map.getLayer(layerId)) {
+			map.removeLayer(layerId);
+		}
+		threeJsManager.dispose();
+		currentThreeModelIds = new Set();
+	};
+
 	// 現在のエントリIDを追跡
 	let currentThreeModelIds: Set<string> = new Set();
 
@@ -680,9 +705,11 @@ const createMapStore = () => {
 		_type: 'main' | 'preview' = 'main'
 	): Promise<void> => {
 		if (_type === 'preview' && newEntries.length > 0) {
-			threeJsManager.addModel(newEntries[0], 'preview'); // プレビュー用に最初のモデルを追加
+			ensureThreeLayer();
+			await threeJsManager.addModel(newEntries[0], 'preview'); // プレビュー用に最初のモデルを追加
 			return;
 		}
+
 		const newIds = new Set(newEntries.map((e) => e.id));
 		const currentIds = currentThreeModelIds;
 
@@ -695,6 +722,9 @@ const createMapStore = () => {
 
 		// 追加: 新しいリストにあるが現在ないもの
 		const entriesToAdd = newEntries.filter((e) => !currentIds.has(e.id));
+		if (entriesToAdd.length > 0) {
+			ensureThreeLayer();
+		}
 		for (const entry of entriesToAdd) {
 			await threeJsManager.addModel(entry);
 		}
@@ -715,6 +745,10 @@ const createMapStore = () => {
 
 		if (_type === 'main') {
 			threeJsManager.clearPreview();
+		}
+
+		if (threeJsManager.modelIds.length === 0) {
+			releaseThreeLayer();
 		}
 	};
 
@@ -868,7 +902,7 @@ const createMapStore = () => {
 					lng: number;
 					lat: number;
 			  },
-		option?: AnimationOptions
+		option?: EaseToOptions
 	) => {
 		if (!map || !isMapValid(map)) return;
 		map.panTo(lngLat, option);
@@ -1148,13 +1182,14 @@ const createMapStore = () => {
 	const setData = (
 		sourceId: string,
 		geojsonData:
+			| string
 			| Feature<Geometry, GeoJsonProperties>
 			| FeatureCollection<Geometry, GeoJsonProperties>
 	) => {
 		if (!map || !isMapValid(map)) return;
 		const source = map.getSource(sourceId) as GeoJSONSource;
 		if (source) {
-			source.setData(geojsonData);
+			source.setData(geojsonData as Parameters<GeoJSONSource['setData']>[0]);
 		} else {
 			console.warn(`Source with ID ${sourceId} does not exist.`);
 		}
@@ -1172,11 +1207,7 @@ const createMapStore = () => {
 
 	const panToOrJumpTo = (lngLat: LngLat) => {
 		if (!map || !isMapValid(map)) return;
-		if (isPointInBbox(lngLat, getMapBounds())) {
-			map.panTo(lngLat, { duration: 500 });
-		} else {
-			map.flyTo({ center: lngLat, zoom: 17, duration: 1000 });
-		}
+		map.panTo(lngLat, { duration: 100 });
 	};
 
 	// インスタンス削除
@@ -1187,8 +1218,7 @@ const createMapStore = () => {
 			deckOverlay.finalize();
 			deckOverlay = null;
 		}
-		// Three.js マネージャーを破棄
-		threeJsManager.dispose();
+		releaseThreeLayer();
 
 		map.remove();
 		map = null;
@@ -1277,7 +1307,7 @@ const createMapStore = () => {
 		setStyle,
 		setDeckOverlay,
 		// Three.js 関連
-		initThreeLayer,
+		ensureThreeLayer,
 		setThreeLayer,
 		setHighlightLayers,
 		clearHighlightLayers,

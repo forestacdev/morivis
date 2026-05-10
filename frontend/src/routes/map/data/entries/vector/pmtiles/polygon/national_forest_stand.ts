@@ -19,7 +19,7 @@ const entry: PolygonEntry<TileMetaData> = {
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/a45',
 		location: '全国',
 		tags: ['林班', '国有林'],
-		minZoom: 6,
+		minZoom: 10,
 		maxZoom: 14,
 		sourceLayer: 'national_forest_stand',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
@@ -28,7 +28,7 @@ const entry: PolygonEntry<TileMetaData> = {
 	},
 	properties: {
 		fields: [
-			{ key: 'ID', type: 'number' },
+			{ key: 'ID', type: 'string' },
 			{ key: '森林管理局', type: 'string' },
 			{ key: '森林管理署', type: 'string' },
 			{ key: '林班主番', type: 'string' },
@@ -639,7 +639,7 @@ const entry: PolygonEntry<TileMetaData> = {
 	},
 	auxiliaryLayers: {
 		sources: {
-			national_forest_compartment: {
+			'national_forest_stand:::national_forest_compartment': {
 				type: 'vector',
 				url: `pmtiles://${ENTRY_PMTILES_VECTOR_PATH}/national_forest_compartment.pmtiles`,
 				maxzoom: 10
@@ -647,23 +647,22 @@ const entry: PolygonEntry<TileMetaData> = {
 		},
 		layers: [
 			{
-				id: 'national_forest_compartment_fill_layer',
+				id: 'national_forest_stand:::national_forest_compartment_fill_layer',
 				type: 'fill',
 				maxzoom: 10.1,
-				source: 'national_forest_compartment',
+				source: 'national_forest_stand:::national_forest_compartment',
 				'source-layer': 'national_forest_compartment',
 				paint: {
-					'fill-color': '#b2df8a',
-					'fill-outline-color': 'transparent'
-				}
+					'fill-color': '#b2df8a'
+				},
+				clickable: true
 			}
-
 			// {
-			// 	id: 'national_forest_compartment_label_layer',
+			// 	id: 'national_forest_stand:::national_forest_compartment_label_layer',
 			// 	type: 'symbol',
 			// 	maxzoom: 12.1,
 			// 	minzoom: 10,
-			// 	source: 'national_forest_compartment',
+			// 	source: 'national_forest_stand:::national_forest_compartment',
 			// 	'source-layer': 'national_forest_compartment',
 			// 	layout: {
 			// 		'text-field': '{林班主番}-{林班枝番}',

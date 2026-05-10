@@ -93,7 +93,7 @@
 		}
 	});
 
-	const processGeojson = () => {
+	const processGeojson = async () => {
 		let filtered = rawGeojson;
 		if (rawGeojson && selectedGeometryType) {
 			filtered = filterByGeometryType(rawGeojson, selectedGeometryType as VectorEntryGeometryType);
@@ -113,7 +113,7 @@
 			const defaultColor = kmlResult
 				? (getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined)
 				: undefined;
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				filtered,
 				selectedGeometryType as VectorEntryGeometryType,
 				entryName,
@@ -163,7 +163,7 @@
 			const defaultColor = kmlResult
 				? (getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined)
 				: undefined;
-			const entry = createGeoJsonEntry(
+			const entry = await createGeoJsonEntry(
 				geojsonData,
 				selectedGeometryType,
 				entryName,

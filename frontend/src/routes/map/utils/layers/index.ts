@@ -31,7 +31,6 @@ import { roadLineLayers, roadLabelLayers } from '$routes/map/utils/layers/road';
 import { railLineLayers } from '$routes/map/utils/layers/rail';
 import { boundaryLayers } from '$routes/map/utils/layers/boundary';
 import { cloudLayers } from '$routes/map/utils/layers/cloud';
-import { poiLayers } from '$routes/map/utils/layers/poi';
 import { hillshadeLayers } from '$routes/map/utils/layers/hillshade';
 import {
 	baseMapSatelliteLayers,
@@ -64,6 +63,7 @@ import {
 	createLinePatternLayer
 } from '$routes/map/utils/layers/vector/line_string';
 import { createCircleLayer } from '$routes/map/utils/layers/vector/point';
+import { getTemporalFilter } from '$routes/map/utils/layers/vector/filter';
 
 import { get } from 'svelte/store';
 
@@ -73,6 +73,8 @@ import {
 } from '$routes/map/data/entries/_meta_data/_attribution';
 import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
+import { resolveDimensionPlaceholders } from '$routes/map/utils/dimension';
+import { createMorivisLayerMetadata } from '$routes/map/utils/layers/id';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -80,6 +82,11 @@ const validateId = (id: string) => {
 	if (!validIds.includes(id)) {
 		throw new Error(`Invalid ID: ${id}`);
 	}
+};
+
+const getDimensionValue = (entry: GeoDataEntry) => {
+	if (!('dimension' in entry.style) || !entry.style.dimension) return undefined;
+	return entry.style.dimension.values[entry.style.dimension.currentIndex];
 };
 INT_ADD_LAYER_IDS.forEach((id) => {
 	try {
@@ -173,8 +180,11 @@ export const createLayersItems = (
 		.forEach((entry) => {
 			const layerId = `${entry.id}`;
 			const { format, style, metaData, interaction, type } = entry;
-
-			const layer = createBaseLayerItem(entry);
+			const temporalFilter = getTemporalFilter(entry);
+			const layer: LayerItem = {
+				...createBaseLayerItem(entry),
+				...(temporalFilter ? { filter: temporalFilter } : {})
+			};
 
 			const attributionItem = getAttribution(metaData.attribution);
 
@@ -341,53 +351,98 @@ export const createLayersItems = (
 						}
 					}
 
-					// 補助レイヤーの追加
-					if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
-						entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
-							const type = auxiliaryLayer.type;
-							if (type === 'fill') {
-								fillLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'fill-opacity': style.opacity }
-								});
-							} else if (type === 'fill-extrusion') {
-								fillLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'fill-extrusion-opacity': style.opacity }
-								});
-							} else if (type === 'line') {
-								lineLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'line-opacity': style.opacity }
-								});
-							} else if (type === 'circle') {
-								circleLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'circle-opacity': style.opacity }
-								});
-							} else if (type === 'heatmap') {
-								circleLayerItems.push({
-									...auxiliaryLayer,
-									paint: { ...auxiliaryLayer.paint, 'heatmap-opacity': style.opacity }
-								});
-							} else if (type === 'symbol') {
-								symbolLayerItems.push({
-									...auxiliaryLayer,
-									paint: {
-										...auxiliaryLayer.paint,
-										'icon-opacity': style.opacity,
-										'text-opacity': style.opacity
-									}
-								});
-							}
-						});
-					}
 					break;
 				}
 
 				default:
 					console.warn(`対応してないtypeのデータ: ${layerId}`);
 					break;
+			}
+
+			if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
+				entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
+					const dimensionValue = getDimensionValue(entry);
+					const resolvedAuxiliaryLayer = resolveDimensionPlaceholders(
+						auxiliaryLayer,
+						dimensionValue
+					);
+					const { clickable, ...layerWithoutClickable } = resolvedAuxiliaryLayer;
+					const metadata = createMorivisLayerMetadata(
+						entry.id,
+						'auxiliary',
+						resolvedAuxiliaryLayer.metadata
+					);
+					const type = layerWithoutClickable.type;
+					if (type === 'fill') {
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
+							paint: {
+								...layerWithoutClickable.paint,
+								'fill-opacity': layerWithoutClickable.paint?.['fill-opacity'] ?? style.opacity
+							}
+						};
+						fillLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
+					} else if (type === 'fill-extrusion') {
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
+							paint: {
+								...layerWithoutClickable.paint,
+								'fill-extrusion-opacity':
+									layerWithoutClickable.paint?.['fill-extrusion-opacity'] ?? style.opacity
+							}
+						};
+						fillLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
+					} else if (type === 'line') {
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
+							paint: {
+								...layerWithoutClickable.paint,
+								'line-opacity': layerWithoutClickable.paint?.['line-opacity'] ?? style.opacity
+							}
+						};
+						lineLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
+					} else if (type === 'circle') {
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
+							paint: {
+								...layerWithoutClickable.paint,
+								'circle-opacity': layerWithoutClickable.paint?.['circle-opacity'] ?? style.opacity
+							}
+						};
+						circleLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
+					} else if (type === 'heatmap') {
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
+							paint: {
+								...layerWithoutClickable.paint,
+								'heatmap-opacity': layerWithoutClickable.paint?.['heatmap-opacity'] ?? style.opacity
+							}
+						};
+						circleLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
+					} else if (type === 'symbol') {
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
+							paint: {
+								...layerWithoutClickable.paint,
+								'icon-opacity': layerWithoutClickable.paint?.['icon-opacity'] ?? style.opacity,
+								'text-opacity': layerWithoutClickable.paint?.['text-opacity'] ?? style.opacity
+							}
+						};
+						symbolLayerItems.push(layerItem);
+						if (clickable) clickableVecter.push(layerItem.id);
+					}
+				});
 			}
 		});
 
@@ -441,7 +496,6 @@ export const createLayersItems = (
 		get(selectedBaseMap) !== 'aspect';
 	// const isNotRelief = get(selectedBaseMap) !== 'relief';
 
-	const poiLayerItems = get(showPoiLayer) && _type === 'main' ? poiLayers : [];
 	const labelLayerItems = get(showLabelLayer) && _type === 'main' ? labelLayers : [];
 	const roadLabelLayerItems = get(showRoadLayer) && _type === 'main' ? roadLabelLayers : [];
 	const roadLineLayerItems = get(showRoadLayer) && _type === 'main' ? roadLineLayers : [];
@@ -457,17 +511,19 @@ export const createLayersItems = (
 		...boundaryLayerItems,
 		...railLayerItems,
 		...roadLineLayerItems,
+		...hillshadeLayerItems,
+
 		...rasterLayerItems,
 		...fillLayerItems,
 		...lineLayerItems,
 		...fillExtrusionLayerItems,
-		...hillshadeLayerItems,
+
 		...circleLayerItems,
 		...streetViewLayers,
-		...labelLayerItems,
 		...roadLabelLayerItems,
+		...labelLayerItems,
+
 		...symbolLayerItems,
-		...poiLayerItems,
 		...circleIconLayerItems
 	];
 };

@@ -58,9 +58,15 @@ export interface AttributeView {
 	dateKey?: string;
 
 	/**
-	 * 画像表示用の属性キー 時間軸データなどで使用
+	 * 画像表示用の属性キー
 	 */
 	imageKey?: string;
+
+	/**
+	 * 時間情報の属性キー
+	 * 後方互換用。新規実装では properties.temporal を優先する。
+	 */
+	timeKey?: string;
 
 	/** 詳細表示用の属性キー */
 	descriptionKey?: string;
@@ -91,6 +97,41 @@ export type IconImageSource = ImageSource & {
 export interface VectorImages {
 	popup?: PopupImageSource;
 	icon?: IconImageSource;
+}
+
+export interface VectorTemporalItem {
+	raw: string;
+	timestamp: number;
+	label: string;
+}
+
+export interface VectorTemporal {
+	/**
+	 * 時間軸として優先的に使用する属性キー。
+	 * 例: GPX の `time`
+	 */
+	key?: string;
+
+	/**
+	 * データごとに時間属性キーが異なる場合の代替候補。
+	 * key が未設定、または値が空のときに順に参照する。
+	 */
+	alternateKeys?: string[];
+
+	/**
+	 * 期間データの開始時刻キー。
+	 */
+	startKey?: string;
+
+	/**
+	 * 期間データの終了時刻キー。
+	 */
+	endKey?: string;
+
+	/**
+	 * 時間スライダー用の時刻一覧。
+	 */
+	items?: VectorTemporalItem[];
 }
 
 /**
@@ -373,7 +414,7 @@ export const formatDate = (value: unknown, spec?: DateFormatSpec): string => {
 };
 
 /** 追加: 属性(フィールド)の意味を1箇所に集約 */
-type FieldType = 'string' | 'number' | 'integer' | 'date';
+type FieldType = 'string' | 'number' | 'integer' | 'date' | 'datetime' | 'boolean';
 
 /**
  * フィーチャの属性（フィールド）定義。
@@ -462,6 +503,7 @@ export interface VectorProperties {
 	fields: FieldDef[];
 	attributeView: AttributeView;
 	images?: VectorImages;
+	temporal?: VectorTemporal;
 	/**
 	 * 属性を結合するための外部データのURL(JSON)。 TODO: 将来的に汎用化
 	 */
@@ -528,8 +570,8 @@ export const formatFieldValue = (rawValue: unknown, field?: FieldDef): string =>
 
 	let formatted: string;
 
-	// 3. 日付フォーマット（type='date' または format.date が指定されている場合）
-	if (field.type === 'date' || field.format?.date) {
+	// 3. 日付フォーマット（type='date' / 'datetime' または format.date が指定されている場合）
+	if (field.type === 'date' || field.type === 'datetime' || field.format?.date) {
 		return formatDate(normalizedValue, field.format?.date);
 	}
 

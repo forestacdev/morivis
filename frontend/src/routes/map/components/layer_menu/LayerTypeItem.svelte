@@ -46,7 +46,7 @@
 	let iconEl = $state<HTMLElement | undefined>(undefined);
 	let iconScale = $state(1);
 	let iconOpacity = $state(1);
-	const STICKY_TOP = 50; // top-[50px] と合わせる
+	const STICKY_TOP = 0; // top-[50px] と合わせる
 	const SQUEEZE_RANGE = 20; // この px 分押し上げられると完全に消える
 
 	$effect(() => {
@@ -75,7 +75,7 @@
 	<div
 		transition:fly={{ duration: 200, delay: $showDataMenu ? 0 : 200 }}
 		bind:this={iconEl}
-		class="sticky top-[25px] z-10 flex w-[50px] shrink-0 translate-y-[25px] justify-center"
+		class="sticky top-[0px] z-10 flex w-[50px] shrink-0 translate-y-[25px] justify-center"
 		style="transform: scale({iconScale}); opacity: {iconOpacity};"
 	>
 		<div

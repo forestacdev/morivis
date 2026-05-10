@@ -23,7 +23,6 @@
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import { isBBoxOverlapping } from '$routes/map/utils/map/bbox';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import {
 		selectedBaseMap,
@@ -45,7 +44,6 @@
 		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
 		tempLayerEntries: GeoDataEntry[];
 		featureMenuData: FeatureMenuData | null;
-		resetlayerEntries: () => void; // レイヤーのリセット関数
 	}
 
 	type LayerMenuTab = 'added-data' | 'map-display';
@@ -54,20 +52,12 @@
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(), // データメニューの表示状態
-		featureMenuData = $bindable(),
-		resetlayerEntries
+		featureMenuData = $bindable()
 	}: Props = $props();
+
 	let enableFlip = $state(true); // アニメーションの状態
 	let selectedTab = $state<LayerMenuTab>('added-data');
 
-	// レイヤーのリセット処理
-	const resetLayers = async () => {
-		const result = await resetLayersConfirm();
-
-		if (result) {
-			resetlayerEntries();
-		}
-	};
 	let modelEntries = $derived.by(() => {
 		return layerEntries.filter((layer) => getLayerType(layer) === 'model');
 	});
@@ -290,10 +280,8 @@
 				showLayerAddedNotification(entry);
 			}
 		}}
-		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$showLayerMenu
-			? 'translate-x-0'
-			: '-translate-x-[400px]'} {$isStyleEdit
-			? 'delay-150 max-lg:translate-x-full lg:translate-x-[85px]'
+		class="transition-[width, transform, translate, scale] absolute z-10 flex h-full flex-col overflow-hidden duration-200 {$isStyleEdit
+			? 'pointer-events-none delay-150 max-lg:translate-x-full lg:translate-x-[400px]'
 			: ''} {$isMobile ? 'bg-main' : 'bg-transparent'}
              {$showDataMenu ? 'max-lg:w-[0px] lg:w-[80px]' : 'lg:w-side-menu max-lg:w-full'}"
 		style="padding-top: env(safe-area-inset-top);"
@@ -346,7 +334,7 @@
 				: ''}"
 		>
 			{#if !$isStyleEdit && !$showDataMenu}
-				<div
+				<!-- <div
 					in:fly={{ delay: 300, duration: 300, y: -20, opacity: 0 }}
 					out:fade={{ delay: 0, duration: 1 }}
 					class="bg-main absolute top-0 left-[50px] z-10 flex w-full items-center pb-2 max-lg:hidden"
@@ -383,44 +371,15 @@
 							<span>地図表示</span>
 						</label>
 					</div>
-
-					<!-- <button
-								class="bg-base ml-auto cursor-pointer rounded-lg p-1 px-2 text-xs text-black"
-								onclick={resetLayers}
-								>リセット
-							</button> -->
-				</div>
+				</div> -->
 			{/if}
 			<!-- スクロールコンテンツ -->
 			<div
 				bind:this={scrollContainer}
-				class="flex h-full flex-col overflow-x-hidden pl-2 {$showDataMenu || $isStyleEdit
-					? 'c-scroll-hidden'
-					: 'c-scroll-hidden'} {isTouchDragging
-					? 'touch-none overflow-hidden'
-					: 'touch-auto overflow-y-auto'}"
+				class="c-scroll-hidden flex h-full flex-col overflow-x-hidden pl-2 {$isStyleEdit
+					? 'pointer-events-auto w-[90px] rounded-tl-[35px] bg-black/50'
+					: ''} {isTouchDragging ? 'touch-none overflow-hidden' : 'touch-auto overflow-y-auto'}"
 			>
-				<!-- PC表示スペース -->
-				<div class="relative flex h-[30px] w-full shrink-0 items-center max-lg:hidden">
-					{#if !$isStyleEdit && !$showDataMenu}
-						<!-- 縦棒 -->
-						<div
-							transition:slide={{ duration: 200, axis: 'x' }}
-							class="relative grid h-full w-[50px] shrink-0 place-items-center"
-						>
-							<div class="bg-base/60 h-full w-[2px]"></div>
-						</div>
-					{/if}
-
-					{#if !$isStyleEdit && !$showDataMenu}
-						<!-- 右側 -->
-						<div
-							transition:slide={{ duration: 200, axis: 'x' }}
-							class="flex w-full flex-1 flex-col justify-center py-0 text-base select-none max-lg:hidden"
-						></div>
-					{/if}
-				</div>
-
 				<!-- 3Dモデル -->
 				{#if selectedTab === 'added-data'}
 					{#if modelEntries.length > 0}

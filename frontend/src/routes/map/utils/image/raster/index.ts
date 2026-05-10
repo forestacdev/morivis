@@ -40,6 +40,72 @@ const createObjectURLFromWorkerResult = async (data: {
 	throw new Error('No blob or imageBitmap in worker response');
 };
 
+const shouldInspectRasterPreview = (imageUrl: string): boolean => {
+	if (imageUrl.startsWith('blob:')) return true;
+
+	try {
+		const resolvedUrl = new URL(imageUrl, window.location.href);
+		return resolvedUrl.origin === window.location.origin;
+	} catch {
+		return false;
+	}
+};
+
+const isRasterPreviewReadable = async (imageUrl: string): Promise<boolean> => {
+	try {
+		const response = await fetch(TileProxy.toProxyUrl(imageUrl));
+		if (!response.ok) return false;
+
+		const blob = await response.blob();
+		const bitmap = await createImageBitmap(blob);
+		const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+		const ctx = canvas.getContext('2d');
+		if (!ctx) {
+			bitmap.close();
+			return false;
+		}
+
+		ctx.drawImage(bitmap, 0, 0);
+		bitmap.close();
+
+		const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+		const stepX = Math.max(1, Math.floor(width / 32));
+		const stepY = Math.max(1, Math.floor(height / 32));
+
+		let hasVisiblePixel = false;
+		let hasNonBlackPixel = false;
+
+		for (let y = 0; y < height; y += stepY) {
+			for (let x = 0; x < width; x += stepX) {
+				const index = (y * width + x) * 4;
+				const alpha = data[index + 3];
+				if (alpha === 0) continue;
+
+				hasVisiblePixel = true;
+				const r = data[index];
+				const g = data[index + 1];
+				const b = data[index + 2];
+
+				if (r > 10 || g > 10 || b > 10) {
+					hasNonBlackPixel = true;
+					return true;
+				}
+			}
+		}
+
+		return hasVisiblePixel && hasNonBlackPixel;
+	} catch (error) {
+		console.warn('Failed to inspect raster preview image:', error);
+		return false;
+	}
+};
+
+const validateRasterPreviewUrl = async (imageUrl?: string): Promise<string | undefined> => {
+	if (!imageUrl) return undefined;
+	if (!shouldInspectRasterPreview(imageUrl)) return imageUrl;
+	return (await isRasterPreviewReadable(imageUrl)) ? imageUrl : undefined;
+};
+
 /**
  * XYZタイル座標からEPSG:3857のbboxを計算する
  */
@@ -68,11 +134,11 @@ export const getRasterImageUrl = async (
 		tile = xyzToWMSXYZ(tile);
 	}
 
-	// {time}プレースホルダーを現在の時間値で置換
+	// {morivis:dimension}プレースホルダーを現在の選択値で置換
 	const resolveTime = (u: string): string => {
-		const td = _layerEntry.style.timeDimension;
-		if (td && u.includes('{time}')) {
-			return u.replace('{time}', td.values[td.currentIndex] ?? '');
+		const td = _layerEntry.style.dimension;
+		if (td && u.includes('{morivis:dimension}')) {
+			return u.replace('{morivis:dimension}', td.values[td.currentIndex] ?? '');
 		}
 		return u;
 	};
@@ -100,10 +166,10 @@ export const getRasterImageUrl = async (
 			const convertUrl = await getOrCreateRasterCoverImage(cacheKey, async () => {
 				return await generateDemCoverImage(url, _layerEntry as RasterDemEntry);
 			});
-			return convertUrl;
+			return await validateRasterPreviewUrl(convertUrl);
 		}
 	} else {
-		return url;
+		return await validateRasterPreviewUrl(url);
 	}
 };
 
@@ -216,7 +282,7 @@ export const generatePmtilesImageUrl = async (
 			convertUrl = await getImagePmtiles(_layerEntry.format.url, tile);
 		}
 
-		return convertUrl;
+		return await validateRasterPreviewUrl(convertUrl);
 	});
 };
 
