@@ -39,6 +39,7 @@ export const getTemporalFilter = (entry: GeoDataEntry): FilterSpecification | un
 	const startValue = temporalValues[startIndex];
 	const endValue = temporalValues[endIndex];
 	if (!startValue || !endValue) return undefined;
+	const isSingleStartMode = temporalFilterState.mode === 'single_start';
 
 	const temporalExpression =
 		temporalKeys.length === 1
@@ -48,6 +49,10 @@ export const getTemporalFilter = (entry: GeoDataEntry): FilterSpecification | un
 					...temporalKeys.map((key) => ['get', key]),
 					''
 				] as unknown as ExpressionSpecification);
+
+	if (isSingleStartMode) {
+		return ['==', temporalExpression, startValue] as unknown as FilterSpecification;
+	}
 
 	return [
 		'all',

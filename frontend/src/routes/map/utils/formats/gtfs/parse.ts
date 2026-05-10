@@ -7,6 +7,9 @@ interface StopProperties {
 	stop_id: string;
 	stop_name: string;
 	route_ids: string[];
+	route_names: string[];
+	route_name: string;
+	route_color: string | null;
 }
 
 interface TimedStopProperties {
@@ -56,6 +59,13 @@ export const readStops = (
 	for (const trip of gtfs.trips) {
 		tripRouteMap.set(trip.trip_id, trip.route_id);
 	}
+	const routeMap = new Map(gtfs.routes.map((route) => [route.route_id, route]));
+	const routeNameMap = new Map(
+		gtfs.routes.map((route) => [
+			route.route_id,
+			`${route.route_long_name ?? ''}${route.route_short_name ?? ''}`
+		])
+	);
 
 	// stop_id → route_id[] のマッピング
 	const stopRouteMap = new Map<string, Set<string>>();
@@ -73,6 +83,16 @@ export const readStops = (
 	for (const stop of gtfs.stops) {
 		const routeIds = stopRouteMap.get(stop.stop_id);
 		if (options.ignoreNoRoute && !routeIds) continue;
+		const orderedRouteIds = routeIds ? Array.from(routeIds).sort() : [];
+		const routeNames = orderedRouteIds
+			.map((routeId) => routeNameMap.get(routeId) ?? '')
+			.filter((routeName) => routeName !== '');
+		const representativeRouteName =
+			routeNames.length === 0 ? '' : routeNames.length === 1 ? routeNames[0] : '複数路線';
+		const representativeRouteColor =
+			orderedRouteIds.length === 1
+				? normalizeGtfsColor(routeMap.get(orderedRouteIds[0])?.route_color)
+				: null;
 
 		features.push({
 			type: 'Feature',
@@ -83,7 +103,10 @@ export const readStops = (
 			properties: {
 				stop_id: stop.stop_id,
 				stop_name: stop.stop_name,
-				route_ids: routeIds ? Array.from(routeIds) : []
+				route_ids: orderedRouteIds,
+				route_names: routeNames,
+				route_name: representativeRouteName,
+				route_color: representativeRouteColor
 			}
 		});
 	}
@@ -161,6 +184,7 @@ export const readTimedStops = (
 interface RouteProperties {
 	route_id: string | null;
 	route_name: string;
+	route_color: string | null;
 }
 
 /**
@@ -209,11 +233,13 @@ const readRouteShapes = (gtfs: GTFS): FeatureCollection<MultiLineString, RoutePr
 
 	// route_id → route_name
 	const routeNameMap = new Map<string, string>();
+	const routeColorMap = new Map<string, string | null>();
 	for (const route of gtfs.routes) {
 		routeNameMap.set(
 			route.route_id,
 			(route.route_long_name ?? '') + (route.route_short_name ?? '')
 		);
+		routeColorMap.set(route.route_id, normalizeGtfsColor(route.route_color));
 	}
 
 	// route_id → MultiLineString
@@ -232,7 +258,8 @@ const readRouteShapes = (gtfs: GTFS): FeatureCollection<MultiLineString, RoutePr
 			geometry: { type: 'MultiLineString', coordinates },
 			properties: {
 				route_id: routeId,
-				route_name: routeNameMap.get(routeId) ?? ''
+				route_name: routeNameMap.get(routeId) ?? '',
+				route_color: routeColorMap.get(routeId) ?? null
 			}
 		});
 	}
@@ -245,7 +272,8 @@ const readRouteShapes = (gtfs: GTFS): FeatureCollection<MultiLineString, RoutePr
 			geometry: { type: 'MultiLineString', coordinates: [line] },
 			properties: {
 				route_id: null,
-				route_name: shapeId
+				route_name: shapeId,
+				route_color: null
 			}
 		});
 	}
@@ -302,11 +330,13 @@ const readRoutesFromStopTimes = (
 
 	// route_id → route_name
 	const routeNameMap = new Map<string, string>();
+	const routeColorMap = new Map<string, string | null>();
 	for (const route of gtfs.routes) {
 		routeNameMap.set(
 			route.route_id,
 			(route.route_long_name ?? '') + (route.route_short_name ?? '')
 		);
+		routeColorMap.set(route.route_id, normalizeGtfsColor(route.route_color));
 	}
 
 	const features: Feature<MultiLineString, RouteProperties>[] = [];
@@ -320,7 +350,8 @@ const readRoutesFromStopTimes = (
 			geometry: { type: 'MultiLineString', coordinates },
 			properties: {
 				route_id: routeId,
-				route_name: routeNameMap.get(routeId) ?? ''
+				route_name: routeNameMap.get(routeId) ?? '',
+				route_color: routeColorMap.get(routeId) ?? null
 			}
 		});
 	}

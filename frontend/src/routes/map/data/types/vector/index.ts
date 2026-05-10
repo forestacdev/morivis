@@ -28,6 +28,7 @@ export interface VectorTemporalFilterState {
 	enabled: boolean;
 	startIndex: number;
 	endIndex: number;
+	mode?: 'range' | 'single_start';
 }
 
 export interface VectorEntryState {

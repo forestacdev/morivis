@@ -43,7 +43,8 @@
 	const createDefaultTemporalFilterState = (): VectorTemporalFilterState => ({
 		enabled: false,
 		startIndex: 0,
-		endIndex: 0
+		endIndex: 0,
+		mode: 'range'
 	});
 
 	let { layerEntry = $bindable(), showTemporalOption = $bindable() }: Props = $props();
@@ -53,6 +54,7 @@
 	let isPlaying = $state(false);
 	let loopPlayback = $state(false);
 	let playbackSpeed = $state(1201);
+	let singleStartFilterMode = $state(false);
 	let restoredLayerId = $state<string | null>(null);
 	let lastTrackedTarget = $state<string | null>(null);
 	let playbackFrameId: number | null = null;
@@ -86,6 +88,10 @@
 	const temporalItems = $derived.by(() => {
 		return (layerEntry.properties.temporal?.items ?? []) as VectorTemporalItem[];
 	});
+	const isSingleStartFilterMode = $derived(singleStartFilterMode);
+	const activeTemporalIndex = $derived(
+		isSingleStartFilterMode ? temporalFilterState.startIndex : temporalFilterState.endIndex
+	);
 
 	const canTrackCamera = $derived(layerEntry.format.type === 'geojson');
 	const playbackIntervalMs = $derived(2001 - playbackSpeed);
@@ -290,7 +296,7 @@
 	const getCurrentTemporalFeature = () => {
 		if (!canTrackCamera) return null;
 
-		const currentValue = temporalItems[temporalFilterState.endIndex]?.raw;
+		const currentValue = temporalItems[activeTemporalIndex]?.raw;
 		if (!currentValue) return null;
 
 		const geojson = GeojsonCache.get(layerEntry.id);
@@ -564,11 +570,15 @@
 
 		let filter: FilterSpecification | null = null;
 		if (temporalFilterState.enabled && temporalExpression && startValue && endValue) {
-			filter = [
-				'all',
-				['>=', temporalExpression, startValue],
-				['<=', temporalExpression, endValue]
-			] as unknown as FilterSpecification;
+			if (isSingleStartFilterMode) {
+				filter = ['==', temporalExpression, startValue] as unknown as FilterSpecification;
+			} else {
+				filter = [
+					'all',
+					['>=', temporalExpression, startValue],
+					['<=', temporalExpression, endValue]
+				] as unknown as FilterSpecification;
+			}
 		}
 
 		// 地物クリック時のハイライト更新でも同じ時間条件を維持できるよう、
@@ -590,7 +600,8 @@
 			temporalFilterState = {
 				enabled: savedState.enabled,
 				startIndex: Math.min(savedState.startIndex, temporalItems.length - 1),
-				endIndex: Math.min(savedState.endIndex, temporalItems.length - 1)
+				endIndex: Math.min(savedState.endIndex, temporalItems.length - 1),
+				mode: savedState.mode ?? 'range'
 			};
 		} else {
 			temporalFilterState = {
@@ -598,6 +609,7 @@
 				endIndex: Math.max(temporalItems.length - 1, 0)
 			};
 		}
+		singleStartFilterMode = temporalFilterState.mode === 'single_start';
 
 		restoredLayerId = layerEntry.id;
 	};
@@ -612,10 +624,15 @@
 			...createDefaultTemporalFilterState(),
 			endIndex: Math.max(temporalItems.length - 1, 0)
 		};
+		singleStartFilterMode = false;
 	};
 
 	// 開始側が終了側を追い越したら、終了側を押し出す。
 	const handleStartInput = () => {
+		if (isSingleStartFilterMode) {
+			temporalFilterState.endIndex = temporalFilterState.startIndex;
+			return;
+		}
 		if (temporalFilterState.startIndex > temporalFilterState.endIndex) {
 			temporalFilterState.endIndex = temporalFilterState.startIndex;
 		}
@@ -647,6 +664,10 @@
 			temporalFilterState.enabled = true;
 		}
 
+		if (isSingleStartFilterMode) {
+			temporalFilterState.endIndex = temporalFilterState.startIndex;
+		}
+
 		if (temporalFilterState.endIndex >= temporalItems.length - 1) {
 			temporalFilterState.endIndex = temporalFilterState.startIndex;
 		}
@@ -661,6 +682,9 @@
 				if (temporalFilterState.endIndex >= temporalItems.length - 1) {
 					if (loopPlayback) {
 						temporalFilterState.endIndex = temporalFilterState.startIndex;
+						if (isSingleStartFilterMode) {
+							temporalFilterState.startIndex = temporalFilterState.endIndex;
+						}
 						resetCameraTrackingState();
 						continue;
 					}
@@ -668,6 +692,9 @@
 					return;
 				}
 				temporalFilterState.endIndex += 1;
+				if (isSingleStartFilterMode) {
+					temporalFilterState.startIndex = temporalFilterState.endIndex;
+				}
 			}
 
 			if (cameraTracking) {
@@ -713,10 +740,18 @@
 	// UI で変えた時間フィルター範囲を entry.state に同期し、
 	// あわせて map.setFilter() で即時反映する。
 	$effect(() => {
+		temporalFilterState.mode = singleStartFilterMode ? 'single_start' : 'range';
+		if (singleStartFilterMode) {
+			temporalFilterState.endIndex = temporalFilterState.startIndex;
+		}
+	});
+
+	$effect(() => {
 		if (temporalItems.length === 0) return;
 		temporalFilterState.enabled;
 		temporalFilterState.startIndex;
 		temporalFilterState.endIndex;
+		temporalFilterState.mode;
 		targetLayerIds;
 		temporalExpression;
 		const currentTemporalFilter = layerEntry.state?.temporalFilter;
@@ -749,14 +784,14 @@
 			resetTerrainCamera();
 			return;
 		}
-		temporalFilterState.endIndex;
-		const currentValue = temporalItems[temporalFilterState.endIndex]?.raw;
+		activeTemporalIndex;
+		const currentValue = temporalItems[activeTemporalIndex]?.raw;
 		if (!currentValue) return;
 		const nextTrackedTarget = `${layerEntry.id}:${currentValue}`;
 		if (lastTrackedTarget === nextTrackedTarget) return;
 		lastTrackedTarget = nextTrackedTarget;
 		if (isPlaying) return;
-		if (isTrackPointCacheValid() && trackCameraAlongRoute(temporalFilterState.endIndex, 0)) {
+		if (isTrackPointCacheValid() && trackCameraAlongRoute(activeTemporalIndex, 0)) {
 			return;
 		}
 		const feature = getCurrentTemporalFeature();
@@ -766,11 +801,11 @@
 
 	$effect(() => {
 		temporalItems.length;
-		temporalFilterState.endIndex;
+		activeTemporalIndex;
 		loopPlayback;
 		if (
 			temporalItems.length === 0 ||
-			(!loopPlayback && temporalFilterState.endIndex >= temporalItems.length - 1)
+			(!loopPlayback && activeTemporalIndex >= temporalItems.length - 1)
 		) {
 			stopPlayback();
 		}
@@ -793,6 +828,7 @@
 				{#if canTrackCamera}
 					<Switch label="カメラ追跡" bind:value={cameraTracking} />
 				{/if}
+				<Switch label="開始時刻のみで絞る" bind:value={singleStartFilterMode} />
 				<Switch label="ループ再生" bind:value={loopPlayback} />
 
 				<div class="rounded-lg bg-black/20 p-3">
@@ -812,22 +848,24 @@
 					/>
 				</div>
 
-				<div class="rounded-lg bg-black/20 p-3">
-					<div class="text-base/80 text-sm">終了</div>
-					<div class="mt-1 text-sm text-white">
-						{temporalItems[temporalFilterState.endIndex]?.label}
+				{#if !isSingleStartFilterMode}
+					<div class="rounded-lg bg-black/20 p-3">
+						<div class="text-base/80 text-sm">終了</div>
+						<div class="mt-1 text-sm text-white">
+							{temporalItems[temporalFilterState.endIndex]?.label}
+						</div>
+						<input
+							type="range"
+							min="0"
+							max={Math.max(temporalItems.length - 1, 0)}
+							step="1"
+							bind:value={temporalFilterState.endIndex}
+							oninput={handleEndInput}
+							class="mt-2 w-full cursor-pointer"
+							disabled={!temporalFilterState.enabled}
+						/>
 					</div>
-					<input
-						type="range"
-						min="0"
-						max={Math.max(temporalItems.length - 1, 0)}
-						step="1"
-						bind:value={temporalFilterState.endIndex}
-						oninput={handleEndInput}
-						class="mt-2 w-full cursor-pointer"
-						disabled={!temporalFilterState.enabled}
-					/>
-				</div>
+				{/if}
 
 				<div class="flex items-center justify-center gap-2">
 					<button

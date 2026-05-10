@@ -6,7 +6,6 @@
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FieldDef, VectorTemporalItem } from '$routes/map/data/types/vector/properties';
-	import type { PointStyle } from '$routes/map/data/types/vector/style';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { loadGTFSFromZip } from '$routes/map/utils/formats/gtfs';
@@ -124,7 +123,6 @@
 
 	const applyGtfsRouteColorStyle = (entry: GeoDataEntry, geojson: FeatureCollection) => {
 		if (entry.type !== 'vector') return;
-		if (entry.format.geometryType !== 'Point') return;
 
 		const routeNamesSet = new Set<string>();
 		const routeColorMap = new Map<string, string>();
@@ -143,7 +141,6 @@
 		const routeNames = Array.from(routeNamesSet);
 		if (routeNames.length === 0) return;
 
-		const style = entry.style as PointStyle;
 		const mapping = createMatchColorMapping(routeNames);
 		mapping.values = routeNames.map(
 			(routeName, index) => routeColorMap.get(routeName) ?? mapping.values[index]
@@ -156,13 +153,13 @@
 			mapping
 		};
 
-		style.colors = {
-			...style.colors,
+		entry.style.colors = {
+			...entry.style.colors,
 			key: 'route_name',
 			show: true,
 			expressions: [
 				routeColorExpression,
-				...style.colors.expressions.filter((expression) => expression.key !== 'route_name')
+				...entry.style.colors.expressions.filter((expression) => expression.key !== 'route_name')
 			]
 		};
 	};
@@ -195,6 +192,7 @@
 								template: `{stop_name}`
 							}
 						];
+						applyGtfsRouteColorStyle(entry, stopsGeoJson);
 						showDataEntry = entry;
 					}
 				}
@@ -221,6 +219,7 @@
 								template: `{route_name}`
 							}
 						];
+						applyGtfsRouteColorStyle(entry, routesGeoJson);
 						showDataEntry = entry;
 					}
 				}
