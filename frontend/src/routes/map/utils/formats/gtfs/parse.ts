@@ -9,6 +9,41 @@ interface StopProperties {
 	route_ids: string[];
 }
 
+interface TimedStopProperties {
+	stop_id: string;
+	stop_name: string;
+	route_id: string;
+	route_name: string;
+	route_color: string | null;
+	trip_id: string;
+	service_id: string;
+	stop_sequence: number;
+	arrival_time: string;
+	departure_time: string;
+	time: string;
+	time_seconds: number;
+}
+
+const parseGtfsTimeToSeconds = (value: string): number | null => {
+	const match = value.match(/^(\d{1,3}):(\d{2}):(\d{2})$/);
+	if (!match) return null;
+
+	const hours = parseInt(match[1], 10);
+	const minutes = parseInt(match[2], 10);
+	const seconds = parseInt(match[3], 10);
+
+	if (minutes >= 60 || seconds >= 60) return null;
+
+	return hours * 3600 + minutes * 60 + seconds;
+};
+
+const normalizeGtfsColor = (value: string | undefined): string | null => {
+	if (!value) return null;
+	const normalized = value.trim().replace(/^#/, '');
+	if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return null;
+	return `#${normalized.toUpperCase()}`;
+};
+
 /**
  * 停留所をGeoJSON FeatureCollectionに変換する。
  */
@@ -52,6 +87,71 @@ export const readStops = (
 			}
 		});
 	}
+
+	return { type: 'FeatureCollection', features };
+};
+
+/**
+ * stop_times を時間付きの停留所ポイントとして GeoJSON に変換する。
+ * 時刻軸は departure_time を優先し、空なら arrival_time を使う。
+ */
+export const readTimedStops = (
+	gtfs: GTFS
+): FeatureCollection<Point, TimedStopProperties> => {
+	const stopMap = new Map(gtfs.stops.map((stop) => [stop.stop_id, stop]));
+	const tripMap = new Map(gtfs.trips.map((trip) => [trip.trip_id, trip]));
+	const routeMap = new Map(gtfs.routes.map((route) => [route.route_id, route]));
+	const routeNameMap = new Map(
+		gtfs.routes.map((route) => [
+			route.route_id,
+			`${route.route_long_name ?? ''}${route.route_short_name ?? ''}`
+		])
+	);
+
+	const features: Feature<Point, TimedStopProperties>[] = [];
+
+	for (const stopTime of gtfs.stop_times) {
+		const stop = stopMap.get(stopTime.stop_id);
+		const trip = tripMap.get(stopTime.trip_id);
+		if (!stop || !trip) continue;
+
+		const rawTime =
+			stopTime.departure_time?.trim() || stopTime.arrival_time?.trim() || '';
+		const timeSeconds = parseGtfsTimeToSeconds(rawTime);
+		if (!rawTime || timeSeconds == null) continue;
+
+		features.push({
+			type: 'Feature',
+			geometry: {
+				type: 'Point',
+				coordinates: [stop.stop_lon, stop.stop_lat]
+			},
+			properties: {
+				stop_id: stop.stop_id,
+				stop_name: stop.stop_name,
+				route_id: trip.route_id,
+				route_name: routeNameMap.get(trip.route_id) ?? '',
+				route_color: normalizeGtfsColor(routeMap.get(trip.route_id)?.route_color),
+				trip_id: trip.trip_id,
+				service_id: trip.service_id,
+				stop_sequence: stopTime.stop_sequence,
+				arrival_time: stopTime.arrival_time,
+				departure_time: stopTime.departure_time,
+				time: rawTime,
+				time_seconds: timeSeconds
+			}
+		});
+	}
+
+	features.sort((left, right) => {
+		const timeDelta = left.properties.time_seconds - right.properties.time_seconds;
+		if (timeDelta !== 0) return timeDelta;
+
+		const tripDelta = left.properties.trip_id.localeCompare(right.properties.trip_id);
+		if (tripDelta !== 0) return tripDelta;
+
+		return left.properties.stop_sequence - right.properties.stop_sequence;
+	});
 
 	return { type: 'FeatureCollection', features };
 };

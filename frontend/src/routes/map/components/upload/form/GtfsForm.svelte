@@ -2,16 +2,19 @@
 	import turfBbox from '@turf/bbox';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { FieldDef, VectorTemporalItem } from '$routes/map/data/types/vector/properties';
+	import type { PointStyle } from '$routes/map/data/types/vector/style';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { loadGTFSFromZip } from '$routes/map/utils/formats/gtfs';
-	import { readStops, readRoutes } from '$routes/map/utils/formats/gtfs/parse';
+	import { readRoutes, readStops, readTimedStops } from '$routes/map/utils/formats/gtfs/parse';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
-	type DataType = 'stops' | 'routes';
+	type DataType = 'stops' | 'routes' | 'stop_times';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -31,6 +34,7 @@
 	let routeCount = $state(0);
 	let stopCount = $state(0);
 	let hasShapes = $state(false);
+	let stopTimeCount = $state(0);
 
 	let gtfsData = $state<Awaited<ReturnType<typeof loadGTFSFromZip>> | null>(null);
 
@@ -46,6 +50,7 @@
 			agencyName = gtfs.agency[0]?.agency_name ?? '';
 			routeCount = gtfs.routes.length;
 			stopCount = gtfs.stops.length;
+			stopTimeCount = gtfs.stop_times.length;
 			hasShapes = gtfs.shapes !== null && gtfs.shapes.length > 0;
 		} catch (e) {
 			showNotification(
@@ -64,6 +69,103 @@
 			if (file) setFile(file);
 		}
 	});
+
+	const getUpdatedTimeField = (field: FieldDef): FieldDef => ({
+		...field,
+		label: field.key === 'time_seconds' ? '時刻秒' : '時刻'
+	});
+
+	const getTemporalItemsFromGeojson = (geojson: FeatureCollection): VectorTemporalItem[] => {
+		const values = new Map<string, VectorTemporalItem>();
+
+		for (const feature of geojson.features ?? []) {
+			const properties = feature.properties as Record<string, unknown> | null | undefined;
+			const rawValue = properties?.time;
+			const secondsValue = properties?.time_seconds;
+			if (rawValue == null || secondsValue == null) continue;
+
+			const raw = String(rawValue);
+			const timestamp = Number(secondsValue);
+			if (raw === '' || Number.isNaN(timestamp) || values.has(raw)) continue;
+
+			values.set(raw, {
+				raw,
+				timestamp,
+				label: raw
+			});
+		}
+
+		return Array.from(values.values()).sort((a, b) => a.timestamp - b.timestamp);
+	};
+
+	const applyGtfsTemporalProperties = (
+		entry: GeoDataEntry,
+		geojson: FeatureCollection,
+		currentDataType: DataType
+	) => {
+		if (entry.type !== 'vector' || currentDataType !== 'stop_times') return;
+
+		entry.properties.fields = entry.properties.fields.map((field) =>
+			field.key === 'time' || field.key === 'time_seconds' ? getUpdatedTimeField(field) : field
+		);
+
+		const temporalItems = getTemporalItemsFromGeojson(geojson);
+		if (temporalItems.length === 0) {
+			showNotification('GTFS の stop_times から時間軸を作れませんでした', 'warning');
+			return;
+		}
+
+		entry.properties.temporal = {
+			key: 'time',
+			items: temporalItems
+		};
+		entry.properties.attributeView.timeKey = 'time';
+	};
+
+	const applyGtfsRouteColorStyle = (entry: GeoDataEntry, geojson: FeatureCollection) => {
+		if (entry.type !== 'vector') return;
+		if (entry.format.geometryType !== 'Point') return;
+
+		const routeNamesSet = new Set<string>();
+		const routeColorMap = new Map<string, string>();
+		for (const feature of geojson.features ?? []) {
+			const properties = feature.properties as Record<string, unknown> | null | undefined;
+			const routeName = properties?.route_name;
+			const routeColor = properties?.route_color;
+			if (typeof routeName !== 'string' || routeName === '') continue;
+			routeNamesSet.add(routeName);
+			if (typeof routeColor !== 'string' || routeColor === '') continue;
+			if (!routeColorMap.has(routeName)) {
+				routeColorMap.set(routeName, routeColor);
+			}
+		}
+
+		const routeNames = Array.from(routeNamesSet);
+		if (routeNames.length === 0) return;
+
+		const style = entry.style as PointStyle;
+		const mapping = createMatchColorMapping(routeNames);
+		mapping.values = routeNames.map(
+			(routeName, index) => routeColorMap.get(routeName) ?? mapping.values[index]
+		);
+
+		const routeColorExpression = {
+			type: 'match' as const,
+			key: 'route_name',
+			name: '路線色分け',
+			mapping
+		};
+
+		style.colors = {
+			...style.colors,
+			key: 'route_name',
+			show: true,
+			expressions: [
+				routeColorExpression,
+				...style.colors.expressions.filter((expression) => expression.key !== 'route_name')
+			]
+		};
+	};
 
 	const registration = async () => {
 		if (!gtfsData) return;
@@ -124,6 +226,38 @@
 				}
 			}
 
+			if (dataType === 'stop_times') {
+				const timedStopsGeoJson = readTimedStops(gtfsData) as unknown as FeatureCollection;
+				const entryType = geometryTypeToEntryType(timedStopsGeoJson);
+				if (entryType) {
+					const bbox = turfBbox(timedStopsGeoJson);
+					const entry = await createGeoJsonEntry(
+						timedStopsGeoJson,
+						entryType,
+						setFileName,
+						bbox as [number, number, number, number],
+						undefined,
+						{ attribution: agencyName || 'GTFS' }
+					);
+
+					if (entry) {
+						entry.properties.attributeView.titles = [
+							{
+								conditions: ['route_name', 'stop_name', 'time'],
+								template: `{route_name} {stop_name} {time}`
+							},
+							{
+								conditions: ['stop_name', 'time'],
+								template: `{stop_name} {time}`
+							}
+						];
+						applyGtfsTemporalProperties(entry, timedStopsGeoJson, dataType);
+						applyGtfsRouteColorStyle(entry, timedStopsGeoJson);
+						showDataEntry = entry;
+					}
+				}
+			}
+
 			showDialogType = null;
 		} catch (e) {
 			showNotification(
@@ -156,6 +290,7 @@
 					<p>事業者: {agencyName}</p>
 				{/if}
 				<p>路線数: {routeCount} / 停留所数: {stopCount}</p>
+				<p>stop_times 件数: {stopTimeCount}</p>
 				<p>形状データ(shapes.txt): {hasShapes ? 'あり' : 'なし'}</p>
 			</div>
 
@@ -164,7 +299,8 @@
 				bind:group={dataType}
 				options={[
 					{ key: 'routes', name: 'ルート' },
-					{ key: 'stops', name: '停留所' }
+					{ key: 'stops', name: '停留所' },
+					{ key: 'stop_times', name: '時刻付き停留所' }
 				]}
 			/>
 		</div>
