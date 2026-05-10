@@ -26,6 +26,8 @@ interface GarminRoute {
 	name: string;
 	pointNames: string[];
 	coordinates: [number, number][];
+	routePointCount: number;
+	shapingPointCount: number;
 }
 
 interface GarminTrackPoint {
@@ -53,6 +55,15 @@ export interface GarminGdbParseResult {
 interface GarminGdbHeader {
 	version: GarminGdbVersion;
 	application: GarminGdbApplication;
+}
+
+interface GarminRouteBounds {
+	maxLatitude: number;
+	maxLongitude: number;
+	maxAltitude: number | null;
+	minLatitude: number;
+	minLongitude: number;
+	minAltitude: number | null;
 }
 
 class BinaryReader {
@@ -212,16 +223,18 @@ const readGarminGdbHeader = (reader: BinaryReader): GarminGdbHeader => {
 	};
 };
 
-const readRouteBounds = (reader: BinaryReader) => {
+const readRouteBounds = (reader: BinaryReader): GarminRouteBounds | null => {
 	const isMissingBounds = reader.readUint8();
-	if (isMissingBounds !== 0) return;
+	if (isMissingBounds !== 0) return null;
 
-	reader.readLatLon();
-	reader.readLatLon();
-	reader.readOptionalFloat64();
-	reader.readLatLon();
-	reader.readLatLon();
-	reader.readOptionalFloat64();
+	return {
+		maxLatitude: reader.readLatLon(),
+		maxLongitude: reader.readLatLon(),
+		maxAltitude: reader.readOptionalFloat64(),
+		minLatitude: reader.readLatLon(),
+		minLongitude: reader.readLatLon(),
+		minAltitude: reader.readOptionalFloat64()
+	} satisfies GarminRouteBounds;
 };
 
 const readWaypointCommon = (reader: BinaryReader) => {
@@ -312,33 +325,161 @@ const extractReferencedWaypointNames = (
 	return names;
 };
 
+const isWithinRouteBounds = (
+	coordinate: [number, number],
+	bounds: GarminRouteBounds | null,
+	margin = 0.01
+) => {
+	if (!bounds) return true;
+	const [longitude, latitude] = coordinate;
+	return (
+		latitude >= bounds.minLatitude - margin &&
+		latitude <= bounds.maxLatitude + margin &&
+		longitude >= bounds.minLongitude - margin &&
+		longitude <= bounds.maxLongitude + margin
+	);
+};
+
+const areSameCoordinate = (left: [number, number], right: [number, number]) => {
+	return left[0] === right[0] && left[1] === right[1];
+};
+
+const skipRouteVersionTail = (reader: BinaryReader, version: GarminGdbVersion) => {
+	if (version >= 2) {
+		reader.skip(8);
+	}
+	if (version >= 3) {
+		reader.skip(2);
+	}
+};
+
+const tryReadRouteInterlinkSegment = (
+	payload: Uint8Array,
+	offset: number,
+	version: GarminGdbVersion,
+	bounds: GarminRouteBounds | null
+) => {
+	try {
+		const reader = new BinaryReader(payload);
+		reader.seek(offset);
+		const links = reader.readInt32LE();
+		if (links < 2 || links > 64) return null;
+
+		const coordinates: [number, number][] = [];
+		for (let index = 0; index < links; index += 1) {
+			const latitude = reader.readLatLon();
+			const longitude = reader.readLatLon();
+			reader.readOptionalFloat64();
+			const coordinate: [number, number] = [longitude, latitude];
+			if (!isWithinRouteBounds(coordinate, bounds)) {
+				return null;
+			}
+			coordinates.push(coordinate);
+		}
+
+		const segmentBounds = readRouteBounds(reader);
+		if (segmentBounds) {
+			for (const coordinate of coordinates) {
+				if (!isWithinRouteBounds(coordinate, segmentBounds, 0.002)) {
+					return null;
+				}
+			}
+		}
+
+		skipRouteVersionTail(reader, version);
+
+		return {
+			offset,
+			endOffset: reader.position,
+			coordinates
+		};
+	} catch {
+		return null;
+	}
+};
+
+const extractRouteCoordinatesFromInterlinks = (
+	payload: Uint8Array,
+	version: GarminGdbVersion,
+	bounds: GarminRouteBounds | null,
+	routePointCount: number
+) => {
+	const candidateSegments: Array<{
+		offset: number;
+		endOffset: number;
+		coordinates: [number, number][];
+	}> = [];
+
+	for (let offset = 0; offset <= payload.length - 4; offset += 1) {
+		const segment = tryReadRouteInterlinkSegment(payload, offset, version, bounds);
+		if (segment) {
+			candidateSegments.push(segment);
+		}
+	}
+
+	const acceptedSegments: typeof candidateSegments = [];
+	let nextOffsetFloor = 0;
+	const segmentLimit = Math.max(routePointCount - 1, 0);
+
+	for (const segment of candidateSegments) {
+		if (segment.offset < nextOffsetFloor) continue;
+		acceptedSegments.push(segment);
+		nextOffsetFloor = segment.endOffset;
+		if (segmentLimit > 0 && acceptedSegments.length >= segmentLimit) {
+			break;
+		}
+	}
+
+	const coordinates: [number, number][] = [];
+	for (const segment of acceptedSegments) {
+		for (const coordinate of segment.coordinates) {
+			if (coordinates.length === 0 || !areSameCoordinate(coordinates[coordinates.length - 1], coordinate)) {
+				coordinates.push(coordinate);
+			}
+		}
+	}
+
+	return coordinates;
+};
+
 const readRouteCommon = (
 	reader: BinaryReader,
-	waypointIndex: Map<string, [number, number]>
+	waypointIndex: Map<string, [number, number]>,
+	version: GarminGdbVersion
 ) => {
 	const name = reader.readCString();
 	reader.readUint8();
-	readRouteBounds(reader);
-	const pointCount = reader.readInt32LE();
+	const bounds = readRouteBounds(reader);
+	const routePointCount = reader.readInt32LE();
 	const payload = reader.readBytes(reader.remaining);
-	const pointNames = extractReferencedWaypointNames(payload, waypointIndex, pointCount);
-	const coordinates = pointNames
+	const pointNames = extractReferencedWaypointNames(payload, waypointIndex, routePointCount);
+	const fallbackCoordinates = pointNames
 		.map((pointName) => waypointIndex.get(pointName))
 		.filter((coordinate): coordinate is [number, number] => coordinate != null);
+	const interlinkCoordinates = extractRouteCoordinatesFromInterlinks(
+		payload,
+		version,
+		bounds,
+		routePointCount
+	);
+	const coordinates = interlinkCoordinates.length >= 2 ? interlinkCoordinates : fallbackCoordinates;
+	const shapingPointCount = Math.max(coordinates.length - pointNames.length, 0);
 
 	return {
 		name,
 		pointNames,
-		coordinates
+		coordinates: coordinates.length >= 2 ? coordinates : fallbackCoordinates,
+		routePointCount,
+		shapingPointCount
 	} satisfies GarminRoute;
 };
 
 const readRouteV1 = (reader: BinaryReader, waypointIndex: Map<string, [number, number]>) =>
-	readRouteCommon(reader, waypointIndex);
+	readRouteCommon(reader, waypointIndex, 1);
 const readRouteV2 = (reader: BinaryReader, waypointIndex: Map<string, [number, number]>) =>
-	readRouteCommon(reader, waypointIndex);
+	readRouteCommon(reader, waypointIndex, 2);
 const readRouteV3 = (reader: BinaryReader, waypointIndex: Map<string, [number, number]>) =>
-	readRouteCommon(reader, waypointIndex);
+	readRouteCommon(reader, waypointIndex, 3);
 
 const readWaypointByVersion = (version: GarminGdbVersion, reader: BinaryReader) => {
 	switch (version) {
@@ -503,8 +644,10 @@ export const garminGdbFileToGeojson = async (
 				},
 				properties: {
 					name: route.name,
+					route_point_count: route.routePointCount,
 					point_count: route.pointNames.length,
 					point_names: route.pointNames.join(', '),
+					shaping_point_count: route.shapingPointCount,
 					source_format: 'garmin-gdb',
 					gdb_version: parsed.version
 				} as unknown as FeatureProp
