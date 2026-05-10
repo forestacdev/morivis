@@ -45,6 +45,7 @@
 	let temporalFilterState = $state<VectorTemporalFilterState>(createDefaultTemporalFilterState());
 	let cameraTracking = $state(false);
 	let isPlaying = $state(false);
+	let loopPlayback = $state(false);
 	let playbackSpeed = $state(1201);
 	let restoredLayerId = $state<string | null>(null);
 	let lastTrackedTarget = $state<string | null>(null);
@@ -220,7 +221,10 @@
 			);
 
 			return {
-				raw: getFeatureTemporalValue(feature.properties as Record<string, unknown> | null | undefined) ?? '',
+				raw:
+					getFeatureTemporalValue(
+						feature.properties as Record<string, unknown> | null | undefined
+					) ?? '',
 				lng,
 				lat,
 				bearing: Number.isFinite(bearing) ? bearing : null
@@ -234,7 +238,10 @@
 			);
 
 			return {
-				raw: getFeatureTemporalValue(feature.properties as Record<string, unknown> | null | undefined) ?? '',
+				raw:
+					getFeatureTemporalValue(
+						feature.properties as Record<string, unknown> | null | undefined
+					) ?? '',
 				lng,
 				lat,
 				bearing: Number.isFinite(bearing) ? bearing : null
@@ -301,7 +308,10 @@
 		mapStore.resetCamera();
 	};
 
-	const updateCameraTracking = (targetPoint: { lng: number; lat: number }, targetBearing: number) => {
+	const updateCameraTracking = (
+		targetPoint: { lng: number; lat: number },
+		targetBearing: number
+	) => {
 		const map = mapStore.getMap();
 		if (!map) return;
 
@@ -330,7 +340,8 @@
 		const currentPoint = temporalTrackPoints[currentIndex];
 		if (!currentPoint) return false;
 
-		const nextPoint = temporalTrackPoints[Math.min(currentIndex + 1, temporalTrackPoints.length - 1)];
+		const nextPoint =
+			temporalTrackPoints[Math.min(currentIndex + 1, temporalTrackPoints.length - 1)];
 		const lookAheadPoint =
 			temporalTrackPoints[Math.min(currentIndex + 2, temporalTrackPoints.length - 1)] ?? nextPoint;
 		const progress = clamp(segmentProgress, 0, 1);
@@ -495,6 +506,11 @@
 			while (timestamp - playbackLastTimestamp >= playbackIntervalMs) {
 				playbackLastTimestamp += playbackIntervalMs;
 				if (temporalFilterState.endIndex >= temporalItems.length - 1) {
+					if (loopPlayback) {
+						temporalFilterState.endIndex = temporalFilterState.startIndex;
+						resetCameraTrackingState();
+						continue;
+					}
 					stopPlayback();
 					return;
 				}
@@ -595,7 +611,11 @@
 	$effect(() => {
 		temporalItems.length;
 		temporalFilterState.endIndex;
-		if (temporalItems.length === 0 || temporalFilterState.endIndex >= temporalItems.length - 1) {
+		loopPlayback;
+		if (
+			temporalItems.length === 0 ||
+			(!loopPlayback && temporalFilterState.endIndex >= temporalItems.length - 1)
+		) {
 			stopPlayback();
 		}
 	});
@@ -612,11 +632,12 @@
 		bind:value={showTemporalOption}
 	>
 		{#if temporalItems.length > 0}
-			<div class="flex flex-col gap-4">
+			<div class="flex flex-col">
 				<Switch label="時間フィルターを有効化" bind:value={temporalFilterState.enabled} />
 				{#if canTrackCamera}
 					<Switch label="カメラ追跡" bind:value={cameraTracking} />
 				{/if}
+				<Switch label="ループ再生" bind:value={loopPlayback} />
 
 				<div class="rounded-lg bg-black/20 p-3">
 					<div class="text-base/80 text-sm">開始</div>
