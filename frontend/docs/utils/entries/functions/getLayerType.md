@@ -8,7 +8,7 @@
 
 > **getLayerType**(`_dataEntry`): [`LayerType`](../type-aliases/LayerType.md) \| `undefined`
 
-Defined in: [frontend/src/routes/map/utils/entries/index.ts:7](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/utils/entries/index.ts#L7)
+Defined in: [frontend/src/routes/map/utils/entries/index.ts:7](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/entries/index.ts#L7)
 
 レイヤータイプの取得
 

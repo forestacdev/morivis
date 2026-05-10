@@ -6,7 +6,7 @@
 
 # Interface: PointEntry\<T\>
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:79](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L79)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:75](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L75)
 
 ## Extends
 
@@ -22,9 +22,9 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:79](https://gith
 
 ### auxiliaryLayers?
 
-> `optional` **auxiliaryLayers**: [`AuxiliaryLayersData`](AuxiliaryLayersData.md)
+> `optional` **auxiliaryLayers**: [`AuxiliaryLayersData`](../../interfaces/AuxiliaryLayersData.md)
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:88](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L88)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:83](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L83)
 
 ***
 
@@ -32,11 +32,7 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:88](https://gith
 
 > **format**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:81](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L81)
-
-#### data?
-
-> `optional` **data**: `PointFeatureCollection`\<`FeatureProp`\>
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:77](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L77)
 
 #### geometryType
 
@@ -56,7 +52,7 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:81](https://gith
 
 > **id**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:49](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L49)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:46](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L46)
 
 #### Inherited from
 
@@ -68,7 +64,7 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:49](https://gith
 
 > **interaction**: [`VectorInteraction`](VectorInteraction.md)
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:52](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L52)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:49](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L49)
 
 #### Inherited from
 
@@ -80,7 +76,7 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:52](https://gith
 
 > **metaData**: `T`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:80](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L80)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:76](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L76)
 
 ***
 
@@ -88,7 +84,7 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:80](https://gith
 
 > **properties**: `VectorProperties`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:51](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L51)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:48](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L48)
 
 #### Inherited from
 
@@ -96,11 +92,23 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:51](https://gith
 
 ***
 
+### state?
+
+> `optional` **state**: [`VectorEntryState`](VectorEntryState.md)
+
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:50](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L50)
+
+#### Inherited from
+
+`BaseVectorEntry.state`
+
+***
+
 ### style
 
 > **style**: `PointStyle`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:87](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L87)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:82](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L82)
 
 ***
 
@@ -108,7 +116,7 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:87](https://gith
 
 > **type**: `"vector"`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:50](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L50)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:47](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L47)
 
 #### Inherited from
 

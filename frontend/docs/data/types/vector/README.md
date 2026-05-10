@@ -8,12 +8,13 @@
 
 ## Interfaces
 
-- [AuxiliaryLayersData](interfaces/AuxiliaryLayersData.md)
 - [LineStringEntry](interfaces/LineStringEntry.md)
 - [PointEntry](interfaces/PointEntry.md)
 - [PolygonEntry](interfaces/PolygonEntry.md)
 - [TileMetaData](interfaces/TileMetaData.md)
+- [VectorEntryState](interfaces/VectorEntryState.md)
 - [VectorInteraction](interfaces/VectorInteraction.md)
+- [VectorTemporalFilterState](interfaces/VectorTemporalFilterState.md)
 
 ## Type Aliases
 

@@ -8,4 +8,4 @@
 
 > **VectorEntryGeometryType** = `"Point"` \| `"LineString"` \| `"Polygon"`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:26](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/vector/index.ts#L26)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:21](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/vector/index.ts#L21)

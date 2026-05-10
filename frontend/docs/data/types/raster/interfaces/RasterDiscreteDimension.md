@@ -6,7 +6,7 @@
 
 # Interface: RasterDiscreteDimension
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:249](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L249)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:250](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L250)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:249](https://git
 
 > **currentIndex**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:251](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L251)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:253](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L253)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:251](https://git
 
 > `optional` **labels**: `string`[]
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:252](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L252)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:254](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L254)
 
 ***
 
@@ -30,7 +30,15 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:252](https://git
 
 > `optional` **placeholder**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:253](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L253)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:255](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L255)
+
+***
+
+### type
+
+> **type**: `"time"` \| `"variant"`
+
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:251](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L251)
 
 ***
 
@@ -38,4 +46,4 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:253](https://git
 
 > **values**: `string`[]
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:250](https://github.com/forestacdev/morivis/blob/bc65177a344b1c607fa81eaf94f6779671c85401/frontend/src/routes/map/data/types/raster/index.ts#L250)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:252](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L252)

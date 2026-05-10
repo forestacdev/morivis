@@ -19,6 +19,7 @@
 - [RasterCategoricalStyle](interfaces/RasterCategoricalStyle.md)
 - [RasterCogEntry](interfaces/RasterCogEntry.md)
 - [RasterDemStyle](interfaces/RasterDemStyle.md)
+- [RasterDiscreteDimension](interfaces/RasterDiscreteDimension.md)
 - [RasterImageEntry](interfaces/RasterImageEntry.md)
 - [RasterImageGroupEntry](interfaces/RasterImageGroupEntry.md)
 - [RasterInteraction](interfaces/RasterInteraction.md)
@@ -27,7 +28,6 @@
 - [RasterTiffStyle](interfaces/RasterTiffStyle.md)
 - [ShingleBandData](interfaces/ShingleBandData.md)
 - [TileXYZ](interfaces/TileXYZ.md)
-- [RasterDiscreteDimension](interfaces/RasterDiscreteDimension.md)
 
 ## Type Aliases
 
