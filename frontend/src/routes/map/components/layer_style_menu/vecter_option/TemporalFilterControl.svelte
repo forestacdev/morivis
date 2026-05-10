@@ -1,5 +1,6 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
+	import turfDistance from '@turf/distance';
 	import { LngLat, type ExpressionSpecification, type FilterSpecification } from 'maplibre-gl';
 	import { onDestroy } from 'svelte';
 
@@ -32,6 +33,11 @@
 		bearing: number | null;
 	}
 
+	interface TemporalTrackPointSet {
+		points: TemporalTrackPoint[];
+		cumulativeMeters: number[];
+	}
+
 	// 時間フィルターの初期状態。
 	// 実際の選択範囲は、時間候補数が分かった後に補正する。
 	const createDefaultTemporalFilterState = (): VectorTemporalFilterState => ({
@@ -57,7 +63,7 @@
 	let cachedTrackPointsGeojson: unknown = null;
 	let cachedTrackPointsItems: VectorTemporalItem[] | null = null;
 	let cachedTrackPointsKeySignature = '';
-	let cachedTrackPoints: TemporalTrackPoint[] = [];
+	let cachedTrackPointSet: TemporalTrackPointSet = { points: [], cumulativeMeters: [] };
 
 	// 時間軸の定義は properties.temporal を正とし、
 	// 既存データのために attributeView.timeKey も後方互換で見る。
@@ -83,6 +89,17 @@
 
 	const canTrackCamera = $derived(layerEntry.format.type === 'geojson');
 	const playbackIntervalMs = $derived(2001 - playbackSpeed);
+	// 参考:
+	// Mapbox cinematic route animation
+	// https://www.mapbox.com/ja/blog/building-cinematic-route-animations-with-mapboxgl
+	// Android Location bearing / speed
+	// https://developer.android.com/reference/android/location/Location
+	const cameraFollowBackDistanceMeters = 12;
+	const cameraBearingLookAheadMeters = 8;
+	const cameraMaxLookAheadDistanceMeters = 36;
+	const cameraBearingUpdateThresholdDegrees = 2;
+	const cameraCenterSmoothing = 0.18;
+	const cameraBearingSmoothing = 0.14;
 
 	const clamp = (value: number, min: number, max: number) => {
 		return Math.min(Math.max(value, min), max);
@@ -101,6 +118,10 @@
 		return normalizeBearing(start + delta * amount);
 	};
 
+	const getBearingDelta = (from: number, to: number) => {
+		return Math.abs(normalizeBearing(to - from));
+	};
+
 	const getBearingBetweenPoints = (
 		from: { lng: number; lat: number },
 		to: { lng: number; lat: number }
@@ -114,6 +135,78 @@
 			Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLng);
 
 		return normalizeBearing((Math.atan2(y, x) * 180) / Math.PI);
+	};
+
+	// 累積距離配列から、指定距離地点の補間座標を引く。
+	const getPointAtDistance = (
+		points: TemporalTrackPoint[],
+		cumulativeMeters: number[],
+		targetDistanceMeters: number
+	) => {
+		if (points.length === 0) return null;
+		if (targetDistanceMeters <= 0) return points[0];
+
+		const lastIndex = points.length - 1;
+		if (targetDistanceMeters >= cumulativeMeters[lastIndex]) {
+			return points[lastIndex];
+		}
+
+		for (let index = 1; index < points.length; index += 1) {
+			if (cumulativeMeters[index] < targetDistanceMeters) continue;
+
+			const previousPoint = points[index - 1];
+			const currentPoint = points[index];
+			const previousDistance = cumulativeMeters[index - 1];
+			const currentDistance = cumulativeMeters[index];
+			const segmentDistance = currentDistance - previousDistance;
+			const segmentProgress =
+				segmentDistance > 0 ? (targetDistanceMeters - previousDistance) / segmentDistance : 0;
+
+			return {
+				raw: currentPoint.raw,
+				lng: lerp(previousPoint.lng, currentPoint.lng, segmentProgress),
+				lat: lerp(previousPoint.lat, currentPoint.lat, segmentProgress),
+				bearing: currentPoint.bearing
+			};
+		}
+
+		return points[lastIndex];
+	};
+
+	// 近接点のノイズに引っ張られないよう、現在距離から少し先の点に対する方位を使う。
+	// 参考:
+	// Mapbox cinematic route animation
+	// https://www.mapbox.com/ja/blog/building-cinematic-route-animations-with-mapboxgl
+	// speed / bearing を分けて扱う考え方は Android Location API も同系統。
+	// https://developer.android.com/reference/android/location/Location
+	const getLookAheadPoint = (
+		points: TemporalTrackPoint[],
+		cumulativeMeters: number[],
+		currentDistanceMeters: number,
+		lookAheadDistanceMeters: number
+	) => {
+		const lookAheadPoint = getPointAtDistance(
+			points,
+			cumulativeMeters,
+			currentDistanceMeters + lookAheadDistanceMeters
+		);
+		if (!lookAheadPoint) return null;
+		if (
+			Math.abs(lookAheadPoint.lng - points[points.length - 1].lng) < 1e-9 &&
+			Math.abs(lookAheadPoint.lat - points[points.length - 1].lat) < 1e-9 &&
+			currentDistanceMeters >= cumulativeMeters[cumulativeMeters.length - 1]
+		) {
+			return points[points.length - 1];
+		}
+		return lookAheadPoint;
+	};
+
+	const getAdaptiveLookAheadDistance = (segmentDistanceMeters: number) => {
+		return clamp(
+			Math.max(cameraBearingLookAheadMeters, segmentDistanceMeters * 2),
+			cameraBearingLookAheadMeters,
+			cameraMaxLookAheadDistanceMeters
+		);
 	};
 
 	// ベースレイヤーに加えて、色分けやラベルなどの派生サブレイヤーにも
@@ -256,14 +349,28 @@
 		cachedTrackPointsGeojson = null;
 		cachedTrackPointsItems = null;
 		cachedTrackPointsKeySignature = '';
-		cachedTrackPoints = [];
+		cachedTrackPointSet = { points: [], cumulativeMeters: [] };
 	};
 
-	const getTemporalTrackPoints = () => {
-		if (!canTrackCamera || temporalItems.length === 0) return [] as TemporalTrackPoint[];
+	const isTrackPointCacheValid = () => {
+		const geojson = GeojsonCache.get(layerEntry.id);
+		if (!geojson) return false;
+
+		return (
+			cachedTrackPointsLayerId === layerEntry.id &&
+			cachedTrackPointsGeojson === geojson &&
+			cachedTrackPointsItems === temporalItems &&
+			cachedTrackPointsKeySignature === temporalKeys.join('|')
+		);
+	};
+
+	const getTemporalTrackPointSet = () => {
+		if (!canTrackCamera || temporalItems.length === 0) {
+			return { points: [], cumulativeMeters: [] } as TemporalTrackPointSet;
+		}
 
 		const geojson = GeojsonCache.get(layerEntry.id);
-		if (!geojson) return [] as TemporalTrackPoint[];
+		if (!geojson) return { points: [], cumulativeMeters: [] } as TemporalTrackPointSet;
 
 		const keySignature = temporalKeys.join('|');
 		if (
@@ -272,7 +379,7 @@
 			cachedTrackPointsItems === temporalItems &&
 			cachedTrackPointsKeySignature === keySignature
 		) {
-			return cachedTrackPoints;
+			return cachedTrackPointSet;
 		}
 
 		const pointsByRaw: Record<string, TemporalTrackPoint> = {};
@@ -282,15 +389,27 @@
 			pointsByRaw[trackPoint.raw] = trackPoint;
 		}
 
-		cachedTrackPoints = temporalItems
+		const points = temporalItems
 			.map((item) => pointsByRaw[item.raw])
 			.filter((point): point is TemporalTrackPoint => point != null);
+		const cumulativeMeters: number[] = [0];
+		for (let index = 1; index < points.length; index += 1) {
+			const previousPoint = points[index - 1];
+			const point = points[index];
+			cumulativeMeters[index] =
+				cumulativeMeters[index - 1] +
+				turfDistance([previousPoint.lng, previousPoint.lat], [point.lng, point.lat], {
+					units: 'meters'
+				});
+		}
+
+		cachedTrackPointSet = { points, cumulativeMeters };
 		cachedTrackPointsLayerId = layerEntry.id;
 		cachedTrackPointsGeojson = geojson;
 		cachedTrackPointsItems = temporalItems;
 		cachedTrackPointsKeySignature = keySignature;
 
-		return cachedTrackPoints;
+		return cachedTrackPointSet;
 	};
 
 	const resetCameraTrackingState = () => {
@@ -309,7 +428,8 @@
 	};
 
 	const updateCameraTracking = (
-		targetPoint: { lng: number; lat: number },
+		cameraPoint: { lng: number; lat: number },
+		lookAtPoint: { lng: number; lat: number },
 		targetBearing: number
 	) => {
 		const map = mapStore.getMap();
@@ -317,23 +437,30 @@
 
 		const center = smoothedCameraCenter ?? map.getCenter();
 		const bearing = smoothedCameraBearing ?? map.getBearing();
-		const smoothing = 0.18;
 
 		smoothedCameraCenter = new LngLat(
-			lerp(center.lng, targetPoint.lng, smoothing),
-			lerp(center.lat, targetPoint.lat, smoothing)
+			lerp(center.lng, cameraPoint.lng, cameraCenterSmoothing),
+			lerp(center.lat, cameraPoint.lat, cameraCenterSmoothing)
 		);
-		smoothedCameraBearing = interpolateBearing(bearing, targetBearing, 0.14);
+		if (getBearingDelta(bearing, targetBearing) >= cameraBearingUpdateThresholdDegrees) {
+			smoothedCameraBearing = interpolateBearing(
+				bearing,
+				targetBearing,
+				cameraBearingSmoothing
+			);
+		} else {
+			smoothedCameraBearing = bearing;
+		}
 
 		map.jumpTo({
 			center: smoothedCameraCenter,
 			bearing: smoothedCameraBearing
 		});
-		syncTerrainCamera(smoothedCameraCenter);
+		syncTerrainCamera(new LngLat(lookAtPoint.lng, lookAtPoint.lat));
 	};
 
 	const trackCameraAlongRoute = (index: number, segmentProgress = 0) => {
-		const temporalTrackPoints = getTemporalTrackPoints();
+		const { points: temporalTrackPoints, cumulativeMeters } = getTemporalTrackPointSet();
 		if (temporalTrackPoints.length === 0) return false;
 
 		const currentIndex = clamp(index, 0, temporalTrackPoints.length - 1);
@@ -342,23 +469,43 @@
 
 		const nextPoint =
 			temporalTrackPoints[Math.min(currentIndex + 1, temporalTrackPoints.length - 1)];
-		const lookAheadPoint =
-			temporalTrackPoints[Math.min(currentIndex + 2, temporalTrackPoints.length - 1)] ?? nextPoint;
 		const progress = clamp(segmentProgress, 0, 1);
 		const fallbackBearing = mapStore.getBearing() ?? 0;
-
-		const interpolatedPoint = {
-			lng: nextPoint ? lerp(currentPoint.lng, nextPoint.lng, progress) : currentPoint.lng,
-			lat: nextPoint ? lerp(currentPoint.lat, nextPoint.lat, progress) : currentPoint.lat
-		};
+		const nextDistanceMeters =
+			cumulativeMeters[Math.min(currentIndex + 1, cumulativeMeters.length - 1)] ??
+			cumulativeMeters[currentIndex] ??
+			0;
+		const currentDistanceBase = cumulativeMeters[currentIndex] ?? 0;
+		const currentDistanceMeters = nextPoint
+			? lerp(currentDistanceBase, nextDistanceMeters, progress)
+			: currentDistanceBase;
+		const interpolatedPoint = getPointAtDistance(
+			temporalTrackPoints,
+			cumulativeMeters,
+			currentDistanceMeters
+		) ?? currentPoint;
+		const lookAheadDistanceMeters = getAdaptiveLookAheadDistance(
+			Math.max(nextDistanceMeters - currentDistanceBase, 0)
+		);
+		const lookAheadPoint = getLookAheadPoint(
+			temporalTrackPoints,
+			cumulativeMeters,
+			currentDistanceMeters,
+			lookAheadDistanceMeters
+		);
+		const cameraPoint =
+			getPointAtDistance(
+				temporalTrackPoints,
+				cumulativeMeters,
+				Math.max(currentDistanceMeters - cameraFollowBackDistanceMeters, 0)
+			) ?? interpolatedPoint;
+		const targetPoint = lookAheadPoint ?? interpolatedPoint;
 
 		const computedBearing =
 			currentPoint.bearing ??
-			(nextPoint && lookAheadPoint
-				? getBearingBetweenPoints(interpolatedPoint, progress > 0.6 ? lookAheadPoint : nextPoint)
-				: fallbackBearing);
+			(targetPoint ? getBearingBetweenPoints(cameraPoint, targetPoint) : fallbackBearing);
 
-		updateCameraTracking(interpolatedPoint, computedBearing ?? fallbackBearing);
+		updateCameraTracking(cameraPoint, targetPoint, computedBearing ?? fallbackBearing);
 		return true;
 	};
 
@@ -603,6 +750,9 @@
 		if (lastTrackedTarget === nextTrackedTarget) return;
 		lastTrackedTarget = nextTrackedTarget;
 		if (isPlaying) return;
+		if (isTrackPointCacheValid() && trackCameraAlongRoute(temporalFilterState.endIndex, 0)) {
+			return;
+		}
 		const feature = getCurrentTemporalFeature();
 		if (!feature) return;
 		trackCameraToFeature(feature as Feature<AnyGeometry>);
