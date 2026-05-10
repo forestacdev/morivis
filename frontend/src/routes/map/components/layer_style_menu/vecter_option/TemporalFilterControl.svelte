@@ -4,6 +4,7 @@
 	import { onDestroy } from 'svelte';
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
+	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import type {
 		VectorEntry,
@@ -24,6 +25,13 @@
 		showTemporalOption: boolean;
 	}
 
+	interface TemporalTrackPoint {
+		raw: string;
+		lng: number;
+		lat: number;
+		bearing: number | null;
+	}
+
 	// 時間フィルターの初期状態。
 	// 実際の選択範囲は、時間候補数が分かった後に補正する。
 	const createDefaultTemporalFilterState = (): VectorTemporalFilterState => ({
@@ -42,6 +50,8 @@
 	let lastTrackedTarget = $state<string | null>(null);
 	let playbackFrameId: number | null = null;
 	let playbackLastTimestamp: number | null = null;
+	let smoothedCameraCenter: LngLat | null = null;
+	let smoothedCameraBearing: number | null = null;
 
 	// 時間軸の定義は properties.temporal を正とし、
 	// 既存データのために attributeView.timeKey も後方互換で見る。
@@ -66,6 +76,38 @@
 	});
 
 	const canTrackCamera = $derived(layerEntry.format.type === 'geojson');
+
+	const clamp = (value: number, min: number, max: number) => {
+		return Math.min(Math.max(value, min), max);
+	};
+
+	const lerp = (start: number, end: number, amount: number) => {
+		return start + (end - start) * amount;
+	};
+
+	const normalizeBearing = (bearing: number) => {
+		return ((((bearing + 180) % 360) + 360) % 360) - 180;
+	};
+
+	const interpolateBearing = (start: number, end: number, amount: number) => {
+		const delta = normalizeBearing(end - start);
+		return normalizeBearing(start + delta * amount);
+	};
+
+	const getBearingBetweenPoints = (
+		from: { lng: number; lat: number },
+		to: { lng: number; lat: number }
+	) => {
+		const fromLat = (from.lat * Math.PI) / 180;
+		const toLat = (to.lat * Math.PI) / 180;
+		const deltaLng = ((to.lng - from.lng) * Math.PI) / 180;
+		const y = Math.sin(deltaLng) * Math.cos(toLat);
+		const x =
+			Math.cos(fromLat) * Math.sin(toLat) -
+			Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLng);
+
+		return normalizeBearing((Math.atan2(y, x) * 180) / Math.PI);
+	};
 
 	// ベースレイヤーに加えて、色分けやラベルなどの派生サブレイヤーにも
 	// 同じ時間フィルターをかけるため、対象レイヤーIDをまとめる。
@@ -162,6 +204,110 @@
 		);
 	};
 
+	const getFeatureTrackingPoint = (feature: Feature<AnyGeometry>): TemporalTrackPoint | null => {
+		if (!feature.geometry) return null;
+
+		if (feature.geometry.type === 'Point') {
+			const [lng, lat] = feature.geometry.coordinates;
+			const bearing = Number(
+				(feature.properties as Record<string, unknown> | null | undefined)?.angle
+			);
+
+			return {
+				raw: getFeatureTemporalValue(feature.properties as Record<string, unknown> | null | undefined) ?? '',
+				lng,
+				lat,
+				bearing: Number.isFinite(bearing) ? bearing : null
+			};
+		}
+
+		if (feature.geometry.type === 'MultiPoint' && feature.geometry.coordinates.length > 0) {
+			const [lng, lat] = feature.geometry.coordinates[0];
+			const bearing = Number(
+				(feature.properties as Record<string, unknown> | null | undefined)?.angle
+			);
+
+			return {
+				raw: getFeatureTemporalValue(feature.properties as Record<string, unknown> | null | undefined) ?? '',
+				lng,
+				lat,
+				bearing: Number.isFinite(bearing) ? bearing : null
+			};
+		}
+
+		return null;
+	};
+
+	const temporalTrackPoints = $derived.by(() => {
+		if (!canTrackCamera || temporalItems.length === 0) return [] as TemporalTrackPoint[];
+
+		const geojson = GeojsonCache.get(layerEntry.id);
+		if (!geojson) return [] as TemporalTrackPoint[];
+
+		const pointsByRaw = new Map<string, TemporalTrackPoint>();
+		for (const feature of geojson.features) {
+			const trackPoint = getFeatureTrackingPoint(feature as Feature<AnyGeometry>);
+			if (!trackPoint || trackPoint.raw === '' || pointsByRaw.has(trackPoint.raw)) continue;
+			pointsByRaw.set(trackPoint.raw, trackPoint);
+		}
+
+		return temporalItems
+			.map((item) => pointsByRaw.get(item.raw))
+			.filter((point): point is TemporalTrackPoint => point != null);
+	});
+
+	const resetCameraTrackingState = () => {
+		smoothedCameraCenter = null;
+		smoothedCameraBearing = null;
+	};
+
+	const updateCameraTracking = (targetPoint: { lng: number; lat: number }, targetBearing: number) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+
+		const center = smoothedCameraCenter ?? map.getCenter();
+		const bearing = smoothedCameraBearing ?? map.getBearing();
+		const smoothing = 0.18;
+
+		smoothedCameraCenter = new LngLat(
+			lerp(center.lng, targetPoint.lng, smoothing),
+			lerp(center.lat, targetPoint.lat, smoothing)
+		);
+		smoothedCameraBearing = interpolateBearing(bearing, targetBearing, 0.14);
+
+		map.jumpTo({
+			center: smoothedCameraCenter,
+			bearing: smoothedCameraBearing
+		});
+	};
+
+	const trackCameraAlongRoute = (index: number, segmentProgress = 0) => {
+		if (temporalTrackPoints.length === 0) return false;
+
+		const currentIndex = clamp(index, 0, temporalTrackPoints.length - 1);
+		const currentPoint = temporalTrackPoints[currentIndex];
+		if (!currentPoint) return false;
+
+		const nextPoint = temporalTrackPoints[Math.min(currentIndex + 1, temporalTrackPoints.length - 1)];
+		const lookAheadPoint =
+			temporalTrackPoints[Math.min(currentIndex + 2, temporalTrackPoints.length - 1)] ?? nextPoint;
+		const progress = clamp(segmentProgress, 0, 1);
+
+		const interpolatedPoint = {
+			lng: nextPoint ? lerp(currentPoint.lng, nextPoint.lng, progress) : currentPoint.lng,
+			lat: nextPoint ? lerp(currentPoint.lat, nextPoint.lat, progress) : currentPoint.lat
+		};
+
+		const computedBearing =
+			currentPoint.bearing ??
+			(nextPoint && lookAheadPoint
+				? getBearingBetweenPoints(interpolatedPoint, progress > 0.6 ? lookAheadPoint : nextPoint)
+				: mapStore.getBearing());
+
+		updateCameraTracking(interpolatedPoint, computedBearing ?? mapStore.getBearing());
+		return true;
+	};
+
 	// 点はその座標へ、線や面は bbox へカメラを寄せる。
 	const trackCameraToFeature = (feature: Feature<AnyGeometry>) => {
 		if (!feature.geometry) return;
@@ -250,6 +396,7 @@
 		stopPlayback();
 		cameraTracking = false;
 		lastTrackedTarget = null;
+		resetCameraTrackingState();
 		temporalFilterState = {
 			...createDefaultTemporalFilterState(),
 			endIndex: Math.max(temporalItems.length - 1, 0)
@@ -277,6 +424,7 @@
 		}
 		playbackLastTimestamp = null;
 		isPlaying = false;
+		resetCameraTrackingState();
 	};
 
 	const startPlayback = () => {
@@ -296,14 +444,22 @@
 				playbackLastTimestamp = timestamp;
 			}
 
-			const elapsed = timestamp - playbackLastTimestamp;
-			if (elapsed >= playbackIntervalMs) {
-				playbackLastTimestamp = timestamp;
+			while (timestamp - playbackLastTimestamp >= playbackIntervalMs) {
+				playbackLastTimestamp += playbackIntervalMs;
 				if (temporalFilterState.endIndex >= temporalItems.length - 1) {
 					stopPlayback();
 					return;
 				}
 				temporalFilterState.endIndex += 1;
+			}
+
+			if (cameraTracking && temporalTrackPoints.length > 0) {
+				const segmentProgress = clamp(
+					(timestamp - playbackLastTimestamp) / Math.max(playbackIntervalMs, 1),
+					0,
+					1
+				);
+				trackCameraAlongRoute(temporalFilterState.endIndex, segmentProgress);
 			}
 
 			if (temporalFilterState.endIndex >= temporalItems.length - 1) {
@@ -370,16 +526,20 @@
 			temporalItems.length === 0
 		) {
 			lastTrackedTarget = null;
+			resetCameraTrackingState();
 			return;
 		}
 		temporalFilterState.endIndex;
+		temporalTrackPoints.length;
 		const currentValue = temporalItems[temporalFilterState.endIndex]?.raw;
 		if (!currentValue) return;
 		const nextTrackedTarget = `${layerEntry.id}:${currentValue}`;
 		if (lastTrackedTarget === nextTrackedTarget) return;
+		lastTrackedTarget = nextTrackedTarget;
+		if (isPlaying && temporalTrackPoints.length > 0) return;
+		if (trackCameraAlongRoute(temporalFilterState.endIndex, 0)) return;
 		const feature = getCurrentTemporalFeature();
 		if (!feature) return;
-		lastTrackedTarget = nextTrackedTarget;
 		trackCameraToFeature(feature as Feature<AnyGeometry>);
 	});
 
@@ -464,20 +624,14 @@
 					</button>
 				</div>
 
-				<div class="rounded-lg bg-black/20 p-3">
-					<div class="flex items-center justify-between gap-3">
-						<div class="text-base/80 text-sm">再生間隔</div>
-						<div class="text-sm text-white">{playbackIntervalMs} ms</div>
-					</div>
-					<input
-						type="range"
-						min="1"
-						max="2000"
-						step="1"
-						bind:value={playbackIntervalMs}
-						class="mt-2 w-full cursor-pointer"
-					/>
-				</div>
+				<RangeSlider
+					label="再生間隔"
+					min={1}
+					max={2000}
+					step={1}
+					isInt={true}
+					bind:value={playbackIntervalMs}
+				/>
 
 				<button onclick={resetTemporalFilter} class="c-btn-sub cursor-pointer p-3 text-sm">
 					時間フィルターをリセット
