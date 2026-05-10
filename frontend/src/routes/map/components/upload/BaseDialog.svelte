@@ -11,6 +11,7 @@
 	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
+	import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
 	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
 	import GpkgForm from '$routes/map/components/upload/form/GpkgForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
@@ -248,6 +249,9 @@
 			{/if}
 			{#if showDialogType === 'gpx'}
 				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'gdb'}
+				<GarminGDBForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'osm'}
 				<OsmForm

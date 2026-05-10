@@ -86,6 +86,7 @@ export type DialogType =
 	| 'hdf5'
 	| 'csv'
 	| 'gpkg'
+	| 'gdb'
 	| '3dtiles'
 	| 'pmtiles'
 	| 'glb'
@@ -114,6 +115,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
 	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg'] },
 	{ label: 'GPX', extensions: ['.gpx'] },
+	{ label: 'Garmin GDB', extensions: ['.gdb'] },
 	{ label: 'OpenStreetMap XML', extensions: ['.osm'] },
 	{ label: 'GML', extensions: ['.gml', '.xml'] },
 	{ label: 'KML / KMZ', extensions: ['.kml', '.kmz'] },

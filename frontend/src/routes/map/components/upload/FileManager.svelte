@@ -190,6 +190,9 @@
 				case 'gpkg':
 					showDialogType = 'gpkg';
 					return;
+				case 'gdb':
+					showDialogType = 'gdb';
+					return;
 				case 'pmtiles':
 					showDialogType = 'pmtiles';
 					return;
