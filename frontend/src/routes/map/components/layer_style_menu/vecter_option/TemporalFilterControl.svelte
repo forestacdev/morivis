@@ -427,6 +427,12 @@
 		mapStore.resetCamera();
 	};
 
+	const getTrackingBearingBase = () => {
+		const map = mapStore.getMap();
+		if (smoothedCameraBearing != null) return smoothedCameraBearing;
+		return map?.getBearing() ?? 0;
+	};
+
 	const updateCameraTracking = (
 		cameraPoint: { lng: number; lat: number },
 		lookAtPoint: { lng: number; lat: number },
@@ -470,7 +476,7 @@
 		const nextPoint =
 			temporalTrackPoints[Math.min(currentIndex + 1, temporalTrackPoints.length - 1)];
 		const progress = clamp(segmentProgress, 0, 1);
-		const fallbackBearing = mapStore.getBearing() ?? 0;
+		const fallbackBearing = getTrackingBearingBase();
 		const nextDistanceMeters =
 			cumulativeMeters[Math.min(currentIndex + 1, cumulativeMeters.length - 1)] ??
 			cumulativeMeters[currentIndex] ??
@@ -521,7 +527,7 @@
 			);
 			mapStore.panTo(lngLat, {
 				duration: 500,
-				bearing: !Number.isNaN(bearing) ? bearing : mapStore.getBearing()
+				bearing: !Number.isNaN(bearing) ? bearing : getTrackingBearingBase()
 			});
 			syncTerrainCamera(lngLat);
 
@@ -536,7 +542,7 @@
 			);
 			mapStore.panTo(lngLat, {
 				duration: 500,
-				bearing: !Number.isNaN(bearing) ? bearing : mapStore.getBearing()
+				bearing: !Number.isNaN(bearing) ? bearing : getTrackingBearingBase()
 			});
 			syncTerrainCamera(lngLat);
 			return;
