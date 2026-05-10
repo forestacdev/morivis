@@ -118,9 +118,7 @@ export const readStops = (
  * stop_times を時間付きの停留所ポイントとして GeoJSON に変換する。
  * 時刻軸は departure_time を優先し、空なら arrival_time を使う。
  */
-export const readTimedStops = (
-	gtfs: GTFS
-): FeatureCollection<Point, TimedStopProperties> => {
+export const readTimedStops = (gtfs: GTFS): FeatureCollection<Point, TimedStopProperties> => {
 	const stopMap = new Map(gtfs.stops.map((stop) => [stop.stop_id, stop]));
 	const tripMap = new Map(gtfs.trips.map((trip) => [trip.trip_id, trip]));
 	const routeMap = new Map(gtfs.routes.map((route) => [route.route_id, route]));
@@ -138,8 +136,7 @@ export const readTimedStops = (
 		const trip = tripMap.get(stopTime.trip_id);
 		if (!stop || !trip) continue;
 
-		const rawTime =
-			stopTime.departure_time?.trim() || stopTime.arrival_time?.trim() || '';
+		const rawTime = stopTime.departure_time?.trim() || stopTime.arrival_time?.trim() || '';
 		const timeSeconds = parseGtfsTimeToSeconds(rawTime);
 		if (!rawTime || timeSeconds == null) continue;
 

@@ -48,6 +48,7 @@
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
+	import { getLayerWatchStyleTarget } from '$routes/map/utils/raster/dimension-runtime';
 	import { createSourcesItems } from '$routes/map/utils/sources';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import { isStreetView } from '$routes/stores';
@@ -141,7 +142,9 @@
 		return layerEntries.map((entry) => {
 			return {
 				id: entry.id,
-				style: entry.style
+				// 一部の raster dimension は source 直接更新で十分なので、
+				// currentIndex の変化では style 再構築を走らせない。
+				style: getLayerWatchStyleTarget(entry)
 			};
 		});
 	});

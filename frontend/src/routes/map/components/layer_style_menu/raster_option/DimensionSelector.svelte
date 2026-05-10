@@ -17,6 +17,7 @@
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
+	import { getRasterDimensionRuntimeUpdates } from '$routes/map/utils/raster/dimension-runtime';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -52,11 +53,23 @@
 			playOnInit: false // 初期化時に自動再生開始
 		})
 	];
+	let isSyncingInitialScroll = $state(false);
 
 	const onSelect = () => {
-		if (!emblaMainCarousel || !dimension) return;
+		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
 		const currentIndex = emblaMainCarousel.selectedScrollSnap();
 		dimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
+
+		// style 全更新は重いので、差し替え可能な raster source だけを直接更新する。
+		const runtimeUpdates = getRasterDimensionRuntimeUpdates(layerEntry);
+		runtimeUpdates.forEach((update) => {
+			if (update.type === 'tiles') {
+				mapStore.setTiles(update.sourceId, update.tiles);
+				return;
+			}
+
+			mapStore.setData(update.sourceId, update.data);
+		});
 	};
 
 	// const onSelect = () => {
@@ -72,10 +85,16 @@
 
 	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
 		emblaMainCarousel = event.detail;
-		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
 		if (dimension) {
+			// Embla 初期化直後は 0 番の select が走りやすいので、
+			// 先に currentIndex へ合わせる間だけ runtime update を止める。
+			isSyncingInitialScroll = true;
 			emblaMainCarousel.scrollTo(dimension.currentIndex, true);
+			queueMicrotask(() => {
+				isSyncingInitialScroll = false;
+			});
 		}
+		emblaMainCarousel.on('select', onSelect).on('reInit', onSelect);
 
 		// ホイールイベントリスナーを追加
 		if (carouselElement) {
@@ -204,7 +223,7 @@
 					onemblaInit={onInitEmblaMainCarousel}
 				>
 					<div class="flex gap-2 px-2">
-						{#each dimension.values as timeValue, i}
+						{#each dimension.values as timeValue, i (timeValue)}
 							<div
 								class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
 							>

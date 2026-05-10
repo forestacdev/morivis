@@ -2,8 +2,8 @@
 	import turfBbox from '@turf/bbox';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
-	import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
+	import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { FieldDef, VectorTemporalItem } from '$routes/map/data/types/vector/properties';
 	import type { DialogType } from '$routes/map/types';

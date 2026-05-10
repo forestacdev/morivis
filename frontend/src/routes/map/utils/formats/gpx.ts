@@ -40,8 +40,7 @@ const getBearing = (
 
 	const y = Math.sin(deltaLon) * Math.cos(toLat);
 	const x =
-		Math.cos(fromLat) * Math.sin(toLat) -
-		Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLon);
+		Math.cos(fromLat) * Math.sin(toLat) - Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLon);
 	const bearing = toDegrees(Math.atan2(y, x));
 
 	return (bearing + 360) % 360;

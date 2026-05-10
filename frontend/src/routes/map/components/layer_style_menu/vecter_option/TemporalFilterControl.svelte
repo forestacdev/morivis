@@ -433,6 +433,8 @@
 		mapStore.resetCamera();
 	};
 
+	const touchDependencies = (..._values: unknown[]) => _values;
+
 	const getTrackingBearingBase = () => {
 		const map = mapStore.getMap();
 		if (smoothedCameraBearing != null) return smoothedCameraBearing;
@@ -455,11 +457,7 @@
 			lerp(center.lat, cameraPoint.lat, cameraCenterSmoothing)
 		);
 		if (getBearingDelta(bearing, targetBearing) >= cameraBearingUpdateThresholdDegrees) {
-			smoothedCameraBearing = interpolateBearing(
-				bearing,
-				targetBearing,
-				cameraBearingSmoothing
-			);
+			smoothedCameraBearing = interpolateBearing(bearing, targetBearing, cameraBearingSmoothing);
 		} else {
 			smoothedCameraBearing = bearing;
 		}
@@ -491,11 +489,9 @@
 		const currentDistanceMeters = nextPoint
 			? lerp(currentDistanceBase, nextDistanceMeters, progress)
 			: currentDistanceBase;
-		const interpolatedPoint = getPointAtDistance(
-			temporalTrackPoints,
-			cumulativeMeters,
-			currentDistanceMeters
-		) ?? currentPoint;
+		const interpolatedPoint =
+			getPointAtDistance(temporalTrackPoints, cumulativeMeters, currentDistanceMeters) ??
+			currentPoint;
 		const lookAheadDistanceMeters = getAdaptiveLookAheadDistance(
 			Math.max(nextDistanceMeters - currentDistanceBase, 0)
 		);
@@ -729,9 +725,7 @@
 
 	// レイヤーIDまたは時刻候補数が変わったときだけ、保存済み状態の復元を試みる。
 	$effect(() => {
-		layerEntry.id;
-		temporalItems.length;
-		temporalKeys.length;
+		touchDependencies(layerEntry.id, temporalItems.length, temporalKeys.length);
 		stopPlayback();
 		invalidateTrackPointCache();
 		restoreTemporalFilterState();
@@ -748,12 +742,14 @@
 
 	$effect(() => {
 		if (temporalItems.length === 0) return;
-		temporalFilterState.enabled;
-		temporalFilterState.startIndex;
-		temporalFilterState.endIndex;
-		temporalFilterState.mode;
-		targetLayerIds;
-		temporalExpression;
+		touchDependencies(
+			temporalFilterState.enabled,
+			temporalFilterState.startIndex,
+			temporalFilterState.endIndex,
+			temporalFilterState.mode,
+			targetLayerIds,
+			temporalExpression
+		);
 		const currentTemporalFilter = layerEntry.state?.temporalFilter;
 
 		if (
@@ -784,7 +780,7 @@
 			resetTerrainCamera();
 			return;
 		}
-		activeTemporalIndex;
+		touchDependencies(activeTemporalIndex);
 		const currentValue = temporalItems[activeTemporalIndex]?.raw;
 		if (!currentValue) return;
 		const nextTrackedTarget = `${layerEntry.id}:${currentValue}`;
@@ -800,9 +796,7 @@
 	});
 
 	$effect(() => {
-		temporalItems.length;
-		activeTemporalIndex;
-		loopPlayback;
+		touchDependencies(temporalItems.length, activeTemporalIndex, loopPlayback);
 		if (
 			temporalItems.length === 0 ||
 			(!loopPlayback && activeTemporalIndex >= temporalItems.length - 1)

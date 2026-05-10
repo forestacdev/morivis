@@ -433,7 +433,10 @@ const extractRouteCoordinatesFromInterlinks = (
 	const coordinates: [number, number][] = [];
 	for (const segment of acceptedSegments) {
 		for (const coordinate of segment.coordinates) {
-			if (coordinates.length === 0 || !areSameCoordinate(coordinates[coordinates.length - 1], coordinate)) {
+			if (
+				coordinates.length === 0 ||
+				!areSameCoordinate(coordinates[coordinates.length - 1], coordinate)
+			) {
 				coordinates.push(coordinate);
 			}
 		}

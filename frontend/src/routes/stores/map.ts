@@ -1182,13 +1182,14 @@ const createMapStore = () => {
 	const setData = (
 		sourceId: string,
 		geojsonData:
+			| string
 			| Feature<Geometry, GeoJsonProperties>
 			| FeatureCollection<Geometry, GeoJsonProperties>
 	) => {
 		if (!map || !isMapValid(map)) return;
 		const source = map.getSource(sourceId) as GeoJSONSource;
 		if (source) {
-			source.setData(geojsonData);
+			source.setData(geojsonData as Parameters<GeoJSONSource['setData']>[0]);
 		} else {
 			console.warn(`Source with ID ${sourceId} does not exist.`);
 		}

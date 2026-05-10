@@ -41,7 +41,10 @@ const ensurePreviewProtocols = () => {
 	maplibregl.addProtocol('pmtiles', previewPmtilesProtocol.tile);
 	maplibregl.addProtocol(previewMbtilesProtocol.protocolName, previewMbtilesProtocol.request);
 	maplibregl.addProtocol(previewGeojsonProtocol.protocolName, previewGeojsonProtocol.request);
-	maplibregl.addProtocol(previewEsriFeatureProtocol.protocolName, previewEsriFeatureProtocol.request);
+	maplibregl.addProtocol(
+		previewEsriFeatureProtocol.protocolName,
+		previewEsriFeatureProtocol.request
+	);
 	previewProtocolsRegistered = true;
 };
 
