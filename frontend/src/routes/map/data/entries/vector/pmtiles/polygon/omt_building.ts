@@ -20,11 +20,11 @@ const entry: VectorEntry<TileMetaData> = {
 		description: '',
 		location: '全国',
 		tags: ['建物'],
-		minZoom: 10,
-		maxZoom: 16,
+		minZoom: 13,
+		maxZoom: 14,
 		sourceLayer: 'building',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: { x: 29099, y: 12902, z: 15 }
+		xyzImageTile: { x: 14550, y: 6452, z: 14 }
 		// mapImage: `${MAP_IMAGE_BASE_PATH}/plateau_lod2_mvt.webp`
 	},
 	properties: {
