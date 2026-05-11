@@ -22,6 +22,7 @@
 	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
 	import MeshModelForm from '$routes/map/components/upload/form/MeshModelForm.svelte';
+	import MfJsonForm from '$routes/map/components/upload/form/MfJsonForm.svelte';
 	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import OsmForm from '$routes/map/components/upload/form/OsmForm.svelte';
@@ -203,6 +204,9 @@
 					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
 				/>
+			{/if}
+			{#if showDialogType === 'mfjson'}
+				<MfJsonForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'topojson'}
 				<TopoJsonForm

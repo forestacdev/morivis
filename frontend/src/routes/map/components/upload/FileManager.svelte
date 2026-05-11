@@ -6,6 +6,7 @@
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
 	import { hasExifGps } from '$routes/map/utils/formats/exif';
 	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
+	import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 
@@ -150,6 +151,10 @@
 				case 'json':
 				case 'geojson':
 				case 'fgb':
+					if ((ext === 'json' || ext === 'geojson') && (await isMfJsonFile(file))) {
+						showDialogType = 'mfjson';
+						return;
+					}
 					showDialogType = 'geojson';
 					return;
 				case 'topojson':

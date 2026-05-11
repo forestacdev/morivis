@@ -88,6 +88,7 @@ export type DialogType =
 	| 'csv'
 	| 'gpkg'
 	| 'gdb'
+	| 'mfjson'
 	| '3dtiles'
 	| 'pmtiles'
 	| 'glb'
