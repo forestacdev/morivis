@@ -31,6 +31,7 @@
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 	import StacForm from '$routes/map/components/upload/form/StacForm.svelte';
+	import TcxForm from '$routes/map/components/upload/form/TcxForm.svelte';
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import TileUrlTypeForm from '$routes/map/components/upload/form/TileUrlTypeForm.svelte';
 	import TopoJsonForm from '$routes/map/components/upload/form/TopoJsonForm.svelte';
@@ -249,6 +250,9 @@
 			{/if}
 			{#if showDialogType === 'gpx'}
 				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'tcx'}
+				<TcxForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'gdb'}
 				<GarminGDBForm bind:showDataEntry bind:showDialogType bind:dropFile />

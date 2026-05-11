@@ -75,6 +75,7 @@ export type DialogType =
 	| 'tileurltype'
 	| 'shp'
 	| 'gpx'
+	| 'tcx'
 	| 'osm'
 	| 'geojson'
 	| 'geotiff'
@@ -115,6 +116,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
 	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg'] },
 	{ label: 'GPX', extensions: ['.gpx'] },
+	{ label: 'TCX', extensions: ['.tcx'] },
 	{ label: 'Garmin GDB', extensions: ['.gdb'] },
 	{ label: 'OpenStreetMap XML', extensions: ['.osm'] },
 	{ label: 'GML', extensions: ['.gml', '.xml'] },
