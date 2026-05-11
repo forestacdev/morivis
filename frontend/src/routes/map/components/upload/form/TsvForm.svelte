@@ -33,8 +33,8 @@
 	bind:focusBbox
 	bind:zoneConfirmedEpsg
 	{selectedEpsgCode}
-	formatName="CSV"
-	dialogTypeValue="csv"
-	delimiter=","
-	attribution="CSV"
+	formatName="TSV"
+	dialogTypeValue="tsv"
+	delimiter={'\t'}
+	attribution="TSV"
 />

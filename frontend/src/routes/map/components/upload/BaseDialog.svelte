@@ -36,6 +36,7 @@
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import TileUrlTypeForm from '$routes/map/components/upload/form/TileUrlTypeForm.svelte';
 	import TopoJsonForm from '$routes/map/components/upload/form/TopoJsonForm.svelte';
+	import TsvForm from '$routes/map/components/upload/form/TsvForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
@@ -114,6 +115,17 @@
 			{/if}
 			{#if showDialogType === 'csv'}
 				<CsvForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'tsv'}
+				<TsvForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile

@@ -148,6 +148,9 @@
 				case 'csv':
 					showDialogType = 'csv';
 					return;
+				case 'tsv':
+					showDialogType = 'tsv';
+					return;
 				case 'json':
 				case 'geojson':
 				case 'fgb':

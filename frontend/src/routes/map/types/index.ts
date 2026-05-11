@@ -86,6 +86,7 @@ export type DialogType =
 	| 'sima'
 	| 'hdf5'
 	| 'csv'
+	| 'tsv'
 	| 'gpkg'
 	| 'gdb'
 	| 'mfjson'
@@ -123,6 +124,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'GML', extensions: ['.gml', '.xml'] },
 	{ label: 'KML / KMZ', extensions: ['.kml', '.kmz'] },
 	{ label: 'CSV', extensions: ['.csv'] },
+	{ label: 'TSV', extensions: ['.tsv'] },
 	{ label: 'GeoTIFF', extensions: ['.tif', '.tiff'] },
 	{ label: 'MBTiles', extensions: ['.mbtiles'] },
 	{ label: 'PMTiles', extensions: ['.pmtiles'] },
