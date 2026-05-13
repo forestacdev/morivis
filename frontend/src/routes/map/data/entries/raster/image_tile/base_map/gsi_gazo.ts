@@ -27,13 +27,17 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION
 	},
+	state: {
+		dimension: {
+			currentIndex: 0
+		}
+	},
 	style: {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
 		dimension: {
 			type: 'time',
 			values: ['gazo4', 'gazo3', 'gazo2', 'gazo1'],
-			labels: ['1987年～1990年', '1984年～1986年', '1979年～1983年', '1974年～1978年'],
-			currentIndex: 0
+			labels: ['1987年～1990年', '1984年～1986年', '1979年～1983年', '1974年～1978年']
 		}
 	}
 };

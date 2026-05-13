@@ -250,9 +250,16 @@ interface RasterMetaData extends BaseMetaData {
 export interface RasterDiscreteDimension {
 	type: 'time' | 'variant';
 	values: string[];
-	currentIndex: number;
 	labels?: string[];
 	placeholder?: string;
+}
+
+export interface RasterDimensionState {
+	currentIndex: number;
+}
+
+export interface RasterEntryState {
+	dimension?: RasterDimensionState;
 }
 
 export interface RasterInteraction {
@@ -266,6 +273,7 @@ interface BaseRasterEntry {
 	metaData: RasterMetaData;
 	interaction: RasterInteraction;
 	auxiliaryLayers?: AuxiliaryLayersData;
+	state?: RasterEntryState;
 }
 
 export interface RasterImageEntry<T> extends BaseRasterEntry {

@@ -75,6 +75,7 @@ import { mapAttributions } from '$routes/stores/attributions';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
 import { resolveDimensionPlaceholders } from '$routes/map/utils/dimension';
 import { createMorivisLayerMetadata } from '$routes/map/utils/layers/id';
+import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
 
 // IDを収集
 const validIds = geoDataEntries.map((entry) => entry.id);
@@ -84,10 +85,6 @@ const validateId = (id: string) => {
 	}
 };
 
-const getDimensionValue = (entry: GeoDataEntry) => {
-	if (!('dimension' in entry.style) || !entry.style.dimension) return undefined;
-	return entry.style.dimension.values[entry.style.dimension.currentIndex];
-};
 INT_ADD_LAYER_IDS.forEach((id) => {
 	try {
 		validateId(id);
@@ -361,7 +358,7 @@ export const createLayersItems = (
 
 			if ('auxiliaryLayers' in entry && entry.auxiliaryLayers) {
 				entry.auxiliaryLayers.layers.forEach((auxiliaryLayer) => {
-					const dimensionValue = getDimensionValue(entry);
+					const dimensionValue = getRasterDimensionValue(entry);
 					const resolvedAuxiliaryLayer = resolveDimensionPlaceholders(
 						auxiliaryLayer,
 						dimensionValue

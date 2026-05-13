@@ -50,14 +50,13 @@ import {
 	replaceDimensionPlaceholder,
 	resolveDimensionPlaceholders
 } from '$routes/map/utils/dimension';
+import {
+	getRasterDimensionCurrentIndex,
+	getRasterDimensionValue
+} from '$routes/map/utils/raster/dimension-runtime';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
-};
-
-const getDimensionValue = (entry: GeoDataEntry) => {
-	if (!('dimension' in entry.style) || !entry.style.dimension) return undefined;
-	return entry.style.dimension.values[entry.style.dimension.currentIndex];
 };
 
 export const convertTmsToXyz = (url: string): string => {
@@ -81,7 +80,7 @@ export const createSourcesItems = async (
 						if (style.type === 'tiff') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
-							const timeIdx = style.dimension?.currentIndex ?? -1;
+							const timeIdx = getRasterDimensionCurrentIndex(entry) ?? -1;
 
 							let styleID;
 							if (mode === 'single') {
@@ -148,7 +147,7 @@ export const createSourcesItems = async (
 						} else {
 							let tileUrl = convertTmsToXyz(format.url);
 							if (style.dimension) {
-								const timeValue = style.dimension.values[style.dimension.currentIndex];
+								const timeValue = getRasterDimensionValue(entry);
 								if (timeValue) {
 									tileUrl = replaceDimensionPlaceholder(tileUrl, timeValue);
 								}
@@ -343,7 +342,7 @@ export const createSourcesItems = async (
 
 			if ('auxiliaryLayers' in entry && entry.auxiliaryLayers && entry.auxiliaryLayers.sources) {
 				const { sources } = entry.auxiliaryLayers;
-				const dimensionValue = getDimensionValue(entry);
+				const dimensionValue = getRasterDimensionValue(entry);
 
 				Object.entries(sources).forEach(([auxiliarySourceId, auxiliarySource]) => {
 					const sourceKey = `${auxiliarySourceId}`;

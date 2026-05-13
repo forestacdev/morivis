@@ -27,6 +27,11 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION
 	},
+	state: {
+		dimension: {
+			currentIndex: 11
+		}
+	},
 	style: {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
 		dimension: {
@@ -50,8 +55,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 				'2022',
 				'2023',
 				'2024'
-			],
-			currentIndex: 11
+			]
 		}
 	},
 	auxiliaryLayers: {

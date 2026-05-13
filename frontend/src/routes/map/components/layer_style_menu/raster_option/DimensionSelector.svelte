@@ -34,6 +34,7 @@
 	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
 
 	let dimension = $derived(layerEntry.style.dimension);
+	let dimensionState = $derived(layerEntry.state?.dimension);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -55,10 +56,26 @@
 	];
 	let isSyncingInitialScroll = $state(false);
 
+	$effect(() => {
+		if (!dimension || dimensionState) return;
+
+		layerEntry.state = {
+			...layerEntry.state,
+			dimension: {
+				currentIndex: 0
+			}
+		};
+	});
+
 	const onSelect = () => {
 		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
 		const currentIndex = emblaMainCarousel.selectedScrollSnap();
-		dimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
+		layerEntry.state = {
+			...layerEntry.state,
+			dimension: {
+				currentIndex
+			}
+		};
 
 		// style 全更新は重いので、差し替え可能な raster source だけを直接更新する。
 		const runtimeUpdates = getRasterDimensionRuntimeUpdates(layerEntry);
@@ -89,7 +106,7 @@
 			// Embla 初期化直後は 0 番の select が走りやすいので、
 			// 先に currentIndex へ合わせる間だけ runtime update を止める。
 			isSyncingInitialScroll = true;
-			emblaMainCarousel.scrollTo(dimension.currentIndex, true);
+			emblaMainCarousel.scrollTo(dimensionState?.currentIndex ?? 0, true);
 			queueMicrotask(() => {
 				isSyncingInitialScroll = false;
 			});

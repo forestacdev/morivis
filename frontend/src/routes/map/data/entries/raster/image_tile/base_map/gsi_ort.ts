@@ -28,13 +28,17 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION
 	},
+	state: {
+		dimension: {
+			currentIndex: 3
+		}
+	},
 	style: {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
 		dimension: {
 			type: 'time',
 			values: ['ort_1928', 'ort_riku10', 'ort_USA10', 'ort_old10'],
-			labels: ['1928年頃', '1936年～1942年頃', '1945年～1950年', '1961年～1969年'],
-			currentIndex: 3
+			labels: ['1928年頃', '1936年～1942年頃', '1945年～1950年', '1961年～1969年']
 		}
 	}
 };

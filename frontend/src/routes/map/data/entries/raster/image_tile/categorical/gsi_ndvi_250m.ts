@@ -51,6 +51,11 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	interaction: {
 		clickable: true
 	},
+	state: {
+		dimension: {
+			currentIndex: NDVI_TIME_VALUES.length - 1
+		}
+	},
 	style: {
 		type: 'categorical',
 		resampling: 'nearest',
@@ -58,8 +63,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		dimension: {
 			type: 'time',
 			values: NDVI_TIME_VALUES,
-			labels: NDVI_TIME_LABELS,
-			currentIndex: NDVI_TIME_VALUES.length - 1
+			labels: NDVI_TIME_LABELS
 		},
 		legend: {
 			type: 'gradient',

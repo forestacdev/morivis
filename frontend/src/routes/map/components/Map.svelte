@@ -142,8 +142,8 @@
 		return layerEntries.map((entry) => {
 			return {
 				id: entry.id,
-				// 一部の raster dimension は source 直接更新で十分なので、
-				// currentIndex の変化では style 再構築を走らせない。
+				// runtime state は style 監視から外して、
+				// 宣言的な style 変更だけを setStyle の対象にする。
 				style: getLayerWatchStyleTarget(entry)
 			};
 		});

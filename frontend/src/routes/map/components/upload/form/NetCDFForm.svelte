@@ -208,6 +208,7 @@
 			const variable = ncInfo.rasterVariables.find((v) => v.name === selectedVariable);
 			const unit = variable?.attributes['units'] ?? '';
 			const longName = variable?.attributes['long_name'] ?? selectedVariable;
+			let initialDimensionIndex = 0;
 
 			// 時間次元の検出
 			let dimension: RasterDiscreteDimension | undefined;
@@ -221,9 +222,9 @@
 
 					dimension = {
 						type: 'time',
-						values: timeValues,
-						currentIndex: sliceIndices[timeDim.name] ?? 0
+						values: timeValues
 					};
+					initialDimensionIndex = sliceIndices[timeDim.name] ?? 0;
 
 					// 時間以外のスライスインデックスを固定用にコピー
 					const fixedSlices = { ...sliceIndices };
@@ -238,7 +239,7 @@
 						width,
 						height,
 						nodata,
-						encodedTimeIndex: sliceIndices[timeDim.name] ?? 0
+						encodedTimeIndex: initialDimensionIndex
 					});
 				}
 			}
@@ -262,6 +263,13 @@
 				interaction: {
 					...DEFAULT_RASTER_BASEMAP_INTERACTION
 				},
+				...(dimension && {
+					state: {
+						dimension: {
+							currentIndex: initialDimensionIndex
+						}
+					}
+				}),
 				style: {
 					type: 'tiff',
 					opacity: 1.0,

@@ -31,6 +31,11 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION
 	},
+	state: {
+		dimension: {
+			currentIndex: 15
+		}
+	},
 	style: {
 		...DEFAULT_RASTER_BASEMAP_STYLE,
 		dimension: {
@@ -70,8 +75,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 				'2018年1月17日',
 				'2022年1月19日',
 				'2023年2月2日'
-			],
-			currentIndex: 15
+			]
 		}
 	}
 };

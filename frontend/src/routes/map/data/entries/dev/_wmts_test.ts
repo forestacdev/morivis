@@ -26,6 +26,11 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	interaction: {
 		clickable: false
 	},
+	state: {
+		dimension: {
+			currentIndex: 0
+		}
+	},
 	style: {
 		type: 'basemap',
 		opacity: 1,
@@ -646,8 +651,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 				'1980-03-01T00:00:00Z',
 				'1980-02-01T00:00:00Z',
 				'1980-01-01T00:00:00Z'
-			],
-			currentIndex: 0
+			]
 		}
 	}
 };

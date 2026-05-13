@@ -31,8 +31,7 @@ export const createRasterEntry = (
 	const wmsTimeDimension: RasterDiscreteDimension | undefined = options?.wmsTimeDimension
 		? {
 				type: 'time',
-				values: options.wmsTimeDimension.values,
-				currentIndex: 0
+				values: options.wmsTimeDimension.values
 			}
 		: undefined;
 
@@ -54,6 +53,13 @@ export const createRasterEntry = (
 		interaction: {
 			...DEFAULT_RASTER_BASEMAP_INTERACTION
 		},
+		...(wmsTimeDimension && {
+			state: {
+				dimension: {
+					currentIndex: 0
+				}
+			}
+		}),
 		style: {
 			...DEFAULT_RASTER_BASEMAP_STYLE,
 			...(wmsTimeDimension && { dimension: wmsTimeDimension })

@@ -19,6 +19,7 @@ import {
 } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { PMTiles } from 'pmtiles';
+import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
 
 /** Worker応答からObject URLを生成する（ImageBitmap / Blob 両対応） */
 const createObjectURLFromWorkerResult = async (data: {
@@ -136,9 +137,9 @@ export const getRasterImageUrl = async (
 
 	// {morivis:dimension}プレースホルダーを現在の選択値で置換
 	const resolveTime = (u: string): string => {
-		const td = _layerEntry.style.dimension;
-		if (td && u.includes('{morivis:dimension}')) {
-			return u.replace('{morivis:dimension}', td.values[td.currentIndex] ?? '');
+		const dimensionValue = getRasterDimensionValue(_layerEntry);
+		if (dimensionValue && u.includes('{morivis:dimension}')) {
+			return u.replace('{morivis:dimension}', dimensionValue);
 		}
 		return u;
 	};
