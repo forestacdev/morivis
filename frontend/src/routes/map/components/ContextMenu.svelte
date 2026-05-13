@@ -50,7 +50,31 @@
 		address: string | null;
 	}
 
-	const withTimeout = async <T,>(promise: Promise<T>, timeoutMs: number): Promise<T | null> => {
+	const withNumberTimeout = async (
+		promise: Promise<number | null>,
+		timeoutMs: number
+	): Promise<number | null> => {
+		let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+		const timeoutPromise = new Promise<null>((resolve) => {
+			timeoutId = setTimeout(() => resolve(null), timeoutMs);
+		});
+
+		try {
+			return await Promise.race([promise, timeoutPromise]);
+		} catch {
+			return null;
+		} finally {
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+		}
+	};
+
+	const withStringTimeout = async (
+		promise: Promise<string | null>,
+		timeoutMs: number
+	): Promise<string | null> => {
 		let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
 		const timeoutPromise = new Promise<null>((resolve) => {
@@ -73,8 +97,8 @@
 
 		const fetchData = async (): Promise<ContextData> => {
 			const [elev, addr] = await Promise.all([
-				withTimeout(gsiGetElevation(lng, lat), CONTEXT_API_TIMEOUT_MS),
-				withTimeout(lonLatToAddress(lng, lat), CONTEXT_API_TIMEOUT_MS)
+				withNumberTimeout(gsiGetElevation(lng, lat), CONTEXT_API_TIMEOUT_MS),
+				withStringTimeout(lonLatToAddress(lng, lat), CONTEXT_API_TIMEOUT_MS)
 			]);
 
 			return {

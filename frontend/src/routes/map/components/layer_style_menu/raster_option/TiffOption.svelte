@@ -153,9 +153,5 @@
 	{/if}
 </Accordion>
 
-{#if layerEntry.style.dimension}
-	<DimensionSelector bind:layerEntry bind:showDimensionOption />
-{/if}
-
 <style>
 </style>
