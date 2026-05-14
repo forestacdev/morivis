@@ -79,7 +79,6 @@ export interface BaseRasterStyle {
 	visible?: boolean; // NOTE: 動的追加
 	minZoom?: number;
 	maxZoom?: number;
-	dimension?: RasterDiscreteDimension;
 }
 
 export interface RasterBaseMapStyle extends BaseRasterStyle {
@@ -231,7 +230,6 @@ export interface RasterTiffStyle extends BaseRasterStyle {
 	type: 'tiff';
 	resampling?: 'nearest' | 'linear';
 	visualization: {
-		numBands: number;
 		mode: BandTypeKey;
 		uniformsData: {
 			single: ShingleBandData;
@@ -262,6 +260,19 @@ export interface RasterEntryState {
 	dimension?: RasterDimensionState;
 }
 
+export interface RasterTemporalProperties {
+	dimension: RasterDiscreteDimension;
+}
+
+export interface RasterBandProperties {
+	numBands: number;
+}
+
+export interface RasterProperties {
+	temporal?: RasterTemporalProperties;
+	bands?: RasterBandProperties;
+}
+
 export interface RasterInteraction {
 	clickable: boolean;
 	overlay?: boolean;
@@ -271,6 +282,7 @@ interface BaseRasterEntry {
 	id: string;
 	type: 'raster';
 	metaData: RasterMetaData;
+	properties?: RasterProperties;
 	interaction: RasterInteraction;
 	auxiliaryLayers?: AuxiliaryLayersData;
 	state?: RasterEntryState;

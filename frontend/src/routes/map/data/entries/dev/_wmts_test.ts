@@ -40,8 +40,11 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		brightnessMin: 0,
 		brightnessMax: 1,
 		saturation: 0,
-		contrast: 0,
-		dimension: {
+		contrast: 0
+	},
+	properties: {
+		temporal: {
+			dimension: {
 			type: 'time',
 			values: [
 				'2026-01-01T00:00:00Z',
@@ -651,7 +654,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 				'1980-03-01T00:00:00Z',
 				'1980-02-01T00:00:00Z',
 				'1980-01-01T00:00:00Z'
-			]
+				]
+			}
 		}
 	}
 };

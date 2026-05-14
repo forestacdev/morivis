@@ -145,13 +145,17 @@
 					bounds: resolvedBbox,
 					xyzImageTile: findCenterTile(resolvedBbox)
 				},
+				properties: {
+					bands: {
+						numBands: 1
+					}
+				},
 				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 				style: {
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands: 1,
 						mode: 'single',
 						uniformsData: {
 							single: { index: 0, min: ranges[0].min, max: ranges[0].max, colorMap: 'jet' },

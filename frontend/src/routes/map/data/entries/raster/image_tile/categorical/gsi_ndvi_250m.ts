@@ -56,15 +56,19 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 			currentIndex: NDVI_TIME_VALUES.length - 1
 		}
 	},
+	properties: {
+		temporal: {
+			dimension: {
+				type: 'time',
+				values: NDVI_TIME_VALUES,
+				labels: NDVI_TIME_LABELS
+			}
+		}
+	},
 	style: {
 		type: 'categorical',
 		resampling: 'nearest',
 		opacity: 0.7,
-		dimension: {
-			type: 'time',
-			values: NDVI_TIME_VALUES,
-			labels: NDVI_TIME_LABELS
-		},
 		legend: {
 			type: 'gradient',
 			name: '植生指標',

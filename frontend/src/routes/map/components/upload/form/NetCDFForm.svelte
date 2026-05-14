@@ -270,13 +270,21 @@
 						}
 					}
 				}),
+				properties: {
+					...(dimension && {
+						temporal: {
+							dimension
+						}
+					}),
+					bands: {
+						numBands: 1
+					}
+				},
 				style: {
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
-					dimension,
 					visualization: {
-						numBands: 1,
 						mode: 'single',
 						uniformsData: {
 							single: {
@@ -351,7 +359,7 @@
 						class="bg-sub rounded border border-gray-600 p-2 text-white"
 					>
 						<option value="" disabled>選択してください</option>
-						{#each ncInfo.rasterVariables as variable}
+						{#each ncInfo.rasterVariables as variable (variable.name)}
 							<option value={variable.name}>
 								{variable.name}
 								{#if variable.attributes['long_name']}
@@ -372,8 +380,8 @@
 
 		<!-- 追加次元のスライス選択（時間次元は除外） -->
 		{@const nonTimeDims = extraDimensions.filter((d) => !/^(time|t|date|datetime)$/i.test(d.name))}
-		{#if selectedVariable && nonTimeDims.length > 0}
-			{#each nonTimeDims as dim}
+			{#if selectedVariable && nonTimeDims.length > 0}
+				{#each nonTimeDims as dim (dim.name)}
 				<div transition:slide class="w-full">
 					<div class="flex flex-col gap-1">
 						<label for="nc-dim-{dim.name}" class="text-sm text-gray-300">
@@ -384,7 +392,7 @@
 							bind:value={sliceIndices[dim.name]}
 							class="bg-sub rounded border border-gray-600 p-2 text-white"
 						>
-							{#each Array.from({ length: dim.size }, (_, i) => i) as idx}
+								{#each Array.from({ length: dim.size }, (_, i) => i) as idx (idx)}
 								<option value={idx}>
 									{dim.values ? dim.values[idx] : idx}
 								</option>

@@ -222,6 +222,11 @@
 					xyzImageTile: findCenterTile(bbox),
 					mapImage
 				},
+				properties: {
+					bands: {
+						numBands: data.numBands
+					}
+				},
 				interaction: {
 					...DEFAULT_RASTER_BASEMAP_INTERACTION
 				},
@@ -230,7 +235,6 @@
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands: data.numBands,
 						mode: isSingleBand ? 'single' : 'multi',
 						uniformsData: {
 							single: {

@@ -51,6 +51,7 @@ import {
 	resolveDimensionPlaceholders
 } from '$routes/map/utils/dimension';
 import {
+	getRasterDimension,
 	getRasterDimensionCurrentIndex,
 	getRasterDimensionValue
 } from '$routes/map/utils/raster/dimension-runtime';
@@ -146,7 +147,7 @@ export const createSourcesItems = async (
 							}
 						} else {
 							let tileUrl = convertTmsToXyz(format.url);
-							if (style.dimension) {
+							if (getRasterDimension(entry)) {
 								const timeValue = getRasterDimensionValue(entry);
 								if (timeValue) {
 									tileUrl = replaceDimensionPlaceholder(tileUrl, timeValue);

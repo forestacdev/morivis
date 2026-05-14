@@ -174,13 +174,17 @@
 					xyzImageTile: findCenterTile(resolvedBbox),
 					mapImage
 				},
+				properties: {
+					bands: {
+						numBands: 1
+					}
+				},
 				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 				style: {
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands: 1,
 						mode: 'single',
 						uniformsData: {
 							single: {

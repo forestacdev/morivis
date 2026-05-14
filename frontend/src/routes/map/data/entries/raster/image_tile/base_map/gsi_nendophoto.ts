@@ -32,31 +32,35 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 			currentIndex: 11
 		}
 	},
-	style: {
-		...DEFAULT_RASTER_BASEMAP_STYLE,
-		dimension: {
-			type: 'time',
-			values: [
-				'2007',
-				'2008',
-				'2009',
-				'2010',
-				'2011',
-				'2012',
-				'2013',
-				'2014',
-				'2015',
-				'2016',
-				'2017',
-				'2018',
-				'2019',
-				'2020',
-				'2021',
-				'2022',
-				'2023',
-				'2024'
-			]
+	properties: {
+		temporal: {
+			dimension: {
+				type: 'time',
+				values: [
+					'2007',
+					'2008',
+					'2009',
+					'2010',
+					'2011',
+					'2012',
+					'2013',
+					'2014',
+					'2015',
+					'2016',
+					'2017',
+					'2018',
+					'2019',
+					'2020',
+					'2021',
+					'2022',
+					'2023',
+					'2024'
+				]
+			}
 		}
+	},
+	style: {
+		...DEFAULT_RASTER_BASEMAP_STYLE
 	},
 	auxiliaryLayers: {
 		sources: {

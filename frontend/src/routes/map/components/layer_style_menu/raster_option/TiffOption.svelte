@@ -28,7 +28,7 @@
 
 	const dataRanges = $derived(GeoTiffCache.getDataRanges(layerEntry.id));
 
-	const numBands = $derived(layerEntry.style.visualization.numBands);
+	const numBands = $derived(layerEntry.properties?.bands?.numBands ?? 1);
 
 	const BAND_CHANNELS = [
 		{ key: 'r' as const, label: 'R', color: '#ef4444' },
@@ -79,7 +79,7 @@
 						}
 					}}
 				>
-					{#each Array.from({ length: numBands }, (_, i) => i) as bandIdx}
+					{#each Array.from({ length: numBands }, (_, i) => i) as bandIdx (bandIdx)}
 						<option value={bandIdx}>{bandIdx + 1}</option>
 					{/each}
 				</select>
@@ -112,7 +112,7 @@
 		/>
 	{:else if layerEntry.style.visualization.mode === 'multi'}
 		<div class="flex flex-col gap-3 py-2">
-			{#each BAND_CHANNELS as { key, label, color }}
+			{#each BAND_CHANNELS as { key, label, color } (key)}
 				{@const bandIdx = layerEntry.style.visualization.uniformsData.multi[key].index}
 				{@const range = dataRanges?.[bandIdx]}
 				<div class="flex flex-col gap-2">
@@ -130,7 +130,7 @@
 								}
 							}}
 						>
-							{#each Array.from({ length: numBands }, (_, i) => i) as bandIdx}
+							{#each Array.from({ length: numBands }, (_, i) => i) as bandIdx (bandIdx)}
 								<option value={bandIdx}>{bandIdx + 1}</option>
 							{/each}
 						</select>

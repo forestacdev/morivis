@@ -23,12 +23,16 @@ const entry: RasterCogEntry<RasterTiffStyle> = {
 	interaction: {
 		clickable: false
 	},
+	properties: {
+		bands: {
+			numBands: 9
+		}
+	},
 	style: {
 		type: 'tiff',
 		opacity: 1.0,
 		resampling: 'nearest',
 		visualization: {
-			numBands: 9,
 			mode: 'single',
 			uniformsData: {
 				single: {

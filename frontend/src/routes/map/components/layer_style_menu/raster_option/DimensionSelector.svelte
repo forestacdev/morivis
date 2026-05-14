@@ -17,7 +17,10 @@
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
-	import { getRasterDimensionRuntimeUpdates } from '$routes/map/utils/raster/dimension-runtime';
+	import {
+		getRasterDimension,
+		getRasterDimensionRuntimeUpdates
+	} from '$routes/map/utils/raster/dimension-runtime';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -33,7 +36,7 @@
 
 	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
 
-	let dimension = $derived(layerEntry.style.dimension);
+	let dimension = $derived(getRasterDimension(layerEntry));
 	let dimensionState = $derived(layerEntry.state?.dimension);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();

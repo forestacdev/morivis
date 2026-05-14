@@ -60,9 +60,15 @@ export const createRasterEntry = (
 				}
 			}
 		}),
+		...(wmsTimeDimension && {
+			properties: {
+				temporal: {
+					dimension: wmsTimeDimension
+				}
+			}
+		}),
 		style: {
-			...DEFAULT_RASTER_BASEMAP_STYLE,
-			...(wmsTimeDimension && { dimension: wmsTimeDimension })
+			...DEFAULT_RASTER_BASEMAP_STYLE
 		}
 	};
 

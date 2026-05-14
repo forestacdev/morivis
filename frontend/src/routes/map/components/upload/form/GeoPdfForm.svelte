@@ -512,13 +512,17 @@
 				bounds: bbox,
 				xyzImageTile: findCenterTile(bbox)
 			},
+			properties: {
+				bands: {
+					numBands: 3
+				}
+			},
 			interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 			style: {
 				type: 'tiff',
 				opacity: 1.0,
 				visible: true,
 				visualization: {
-					numBands: 3,
 					mode: 'multi',
 					uniformsData: {
 						single: { index: 0, min: ranges[0].min, max: ranges[0].max, colorMap: 'jet' },

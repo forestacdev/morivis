@@ -502,6 +502,11 @@
 					xyzImageTile: findCenterTile(resolvedBbox),
 					mapImage
 				},
+				properties: {
+					bands: {
+						numBands
+					}
+				},
 				interaction: {
 					...DEFAULT_RASTER_BASEMAP_INTERACTION
 				},
@@ -510,7 +515,6 @@
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands,
 						mode: isSingleBand ? 'single' : 'multi',
 						uniformsData: {
 							single: {

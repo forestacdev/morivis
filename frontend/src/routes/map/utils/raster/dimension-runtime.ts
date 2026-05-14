@@ -23,8 +23,13 @@ export const getRasterDimensionCurrentIndex = (entry: GeoDataEntry) => {
 	return entry.state?.dimension?.currentIndex;
 };
 
+export const getRasterDimension = (entry: GeoDataEntry) => {
+	if (entry.type !== 'raster') return undefined;
+	return entry.properties?.temporal?.dimension;
+};
+
 export const getRasterDimensionValue = (entry: GeoDataEntry) => {
-	const dimension = entry.type === 'raster' ? entry.style.dimension : undefined;
+	const dimension = getRasterDimension(entry);
 	const currentIndex = getRasterDimensionCurrentIndex(entry);
 
 	if (!dimension || currentIndex == null) return undefined;
