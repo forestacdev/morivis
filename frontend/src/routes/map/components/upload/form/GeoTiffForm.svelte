@@ -2,8 +2,12 @@
 	import { fromArrayBuffer } from 'geotiff';
 	import { untrack } from 'svelte';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
-	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type {
+		GeoRefData,
+		RasterRegistrationMode
+	} from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -22,6 +26,7 @@
 		encodeAllBandsToTerrarium,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
+	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
 	import {
 		parseEpsgFromAuxXml,
 		parseBboxFromAuxXml
@@ -77,6 +82,7 @@
 	let analyzed = $state<boolean>(false);
 	let entryId = $state<string>('');
 	let hasTfw = $state<boolean>(false);
+	let registrationMode = $state<RasterRegistrationMode>('raster');
 
 	// 一時的に保持する解析済みデータ（Terrariumエンコード後に解放）
 	let parsedBands = $state<RasterBands | null>(null);
@@ -94,6 +100,15 @@
 	});
 
 	const isPlainImage = $derived(imageFile ? /\.(png|jpe?g|webp)$/i.test(imageFile.name) : false);
+	const canCreateMesh = $derived(!isPlainImage && numBands === 1);
+	const registrationModeOptions = $derived.by(() =>
+		canCreateMesh
+			? [
+					{ key: 'raster', name: 'ラスター' },
+					{ key: 'mesh', name: '3Dメッシュ' }
+				]
+			: [{ key: 'raster', name: 'ラスター' }]
+	);
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
@@ -141,15 +156,115 @@
 		return Array.from(files).find((f) => /\.aux\.xml$/i.test(f.name)) ?? null;
 	};
 
+	const openGeoRefForm = (file: File) => {
+		if (!parsedBands) return;
+
+		const previewImageUrl = generateThumbnail({
+			bands: parsedBands,
+			width: imageWidth,
+			height: imageHeight,
+			nodata: parsedNodata,
+			ranges: dataRanges
+		});
+
+		geoRefData = {
+			entryId,
+			entryName,
+			parsedBands,
+			parsedNodata,
+			dataRanges,
+			numBands,
+			imageWidth,
+			imageHeight,
+			bandMinMax,
+			multiBandMinMax,
+			imageFile: file,
+			previewImageUrl,
+			registrationMode
+		};
+		showGeoRefForm = true;
+		showDialogType = null;
+	};
+
+	const proceedAfterAnalyze = async (file: File) => {
+		const shouldStayForChoice = !isPlainImage && numBands === 1;
+		if (shouldStayForChoice) return;
+
+		if (resolvedBbox) {
+			if (hasTfw) {
+				showNotification('ワールドファイル(.tfw)から位置情報を取得しました', 'info');
+			}
+			await registration();
+			return;
+		}
+
+		if (rawBbox) {
+			showNotification('座標系が不明です。投影法を選択してください', 'warning');
+			focusBbox = rawBbox;
+			showZoneForm = true;
+			return;
+		}
+
+		showNotification('位置情報がありません。位置合わせフォームへ移動します', 'warning');
+		openGeoRefForm(file);
+	};
+
+	const parseBboxFromGeoTiffImage = (
+		image: Awaited<ReturnType<Awaited<ReturnType<typeof fromArrayBuffer>>['getImage']>>,
+		width: number,
+		height: number
+	): [number, number, number, number] | null => {
+		try {
+			const imageBbox = image.getBoundingBox();
+			if (imageBbox && imageBbox.length === 4) {
+				return imageBbox as [number, number, number, number];
+			}
+		} catch {
+			// getBoundingBox に必要なメタデータが欠けている場合は origin/resolution にフォールバックする
+		}
+
+		try {
+			const [originX, originY] = image.getOrigin();
+			const [resolutionX, resolutionY] = image.getResolution();
+
+			if (
+				![originX, originY, resolutionX, resolutionY].every((value) => Number.isFinite(value)) ||
+				resolutionX === 0 ||
+				resolutionY === 0
+			) {
+				return null;
+			}
+
+			const maxX = originX + resolutionX * width;
+			const maxY = originY + resolutionY * height;
+
+			return [
+				Math.min(originX, maxX),
+				Math.min(originY, maxY),
+				Math.max(originX, maxX),
+				Math.max(originY, maxY)
+			];
+		} catch {
+			return null;
+		}
+	};
+
 	// ファイルドロップ時: 解析
 	$effect(() => {
 		if (imageFile) {
 			entryName = imageFile.name.replace(/\.[^.]+$/, '');
+			registrationMode = 'raster';
 			if (isPlainImage) {
 				analyzeImage(imageFile);
 			} else {
 				analyzeGeoTiff(imageFile);
 			}
+		}
+	});
+
+	$effect(() => {
+		if (!canCreateMesh && registrationMode !== 'raster') {
+			registrationMode = 'raster';
 		}
 	});
 
@@ -159,6 +274,7 @@
 	const analyzeImage = async (file: File) => {
 		isProcessing.set(true);
 		analyzed = false;
+		rawBbox = null;
 		resolvedBbox = null;
 		hasTfw = false;
 		parsedBands = null;
@@ -252,27 +368,9 @@
 			} else if (rawBbox && auxEpsg) {
 				convertBboxWithEpsg(auxEpsg);
 				showNotification(`aux.xmlから座標系 EPSG:${auxEpsg} を検出しました`, 'success');
-			} else if (rawBbox) {
-				showZoneForm = true;
-				focusBbox = rawBbox;
-			} else {
-				// 位置情報なし → ジオリファレンスフォームへ
-				geoRefData = {
-					entryId,
-					entryName,
-					parsedBands: parsedBands!,
-					parsedNodata,
-					dataRanges,
-					numBands,
-					imageWidth,
-					imageHeight,
-					bandMinMax,
-					multiBandMinMax,
-					imageFile: file
-				};
-				showGeoRefForm = true;
-				showDialogType = null;
 			}
+
+			await proceedAfterAnalyze(file);
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : '画像の解析に失敗しました', 'error');
 			console.error(e);
@@ -284,6 +382,7 @@
 	const analyzeGeoTiff = async (file: File) => {
 		isProcessing.set(true);
 		analyzed = false;
+		rawBbox = null;
 		resolvedBbox = null;
 		hasTfw = false;
 		parsedBands = null;
@@ -298,15 +397,8 @@
 			imageWidth = width;
 			imageHeight = height;
 
-			// bbox取得: まずGeoTIFF内蔵のメタデータを試す
-			try {
-				const imageBbox = image.getBoundingBox();
-				if (imageBbox && imageBbox.length === 4) {
-					rawBbox = imageBbox as [number, number, number, number];
-				}
-			} catch {
-				rawBbox = null;
-			}
+			// bbox取得: まずGeoTIFF内蔵メタデータを試し、だめなら origin/resolution から組み立てる
+			rawBbox = parseBboxFromGeoTiffImage(image, width, height);
 
 			// GeoTIFFにbboxがなければワールドファイル(.tfw)を探す
 			if (!rawBbox && dropFile instanceof FileList) {
@@ -379,27 +471,9 @@
 				// aux.xmlに座標系があれば自動変換
 				convertBboxWithEpsg(auxEpsg);
 				showNotification(`aux.xmlから座標系 EPSG:${auxEpsg} を検出しました`, 'success');
-			} else if (rawBbox) {
-				showZoneForm = true;
-				focusBbox = rawBbox;
-			} else {
-				// 位置情報なし → ジオリファレンスフォームへ
-				geoRefData = {
-					entryId,
-					entryName,
-					parsedBands: parsedBands!,
-					parsedNodata,
-					dataRanges,
-					numBands,
-					imageWidth,
-					imageHeight,
-					bandMinMax,
-					multiBandMinMax,
-					imageFile: file
-				};
-				showGeoRefForm = true;
-				showDialogType = null;
 			}
+
+			await proceedAfterAnalyze(file);
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : 'GeoTIFFの解析に失敗しました', 'error');
 			console.error(e);
@@ -459,7 +533,17 @@
 	};
 
 	const registration = async () => {
-		if (!analyzed || !entryId || !resolvedBbox || !parsedBands) return;
+		if (!analyzed || !entryId || !parsedBands) return;
+
+		if (!resolvedBbox) {
+			if (rawBbox) {
+				focusBbox = rawBbox;
+				showZoneForm = true;
+			} else if (imageFile) {
+				openGeoRefForm(imageFile);
+			}
+			return;
+		}
 
 		isProcessing.set(true);
 
@@ -470,6 +554,26 @@
 				width: imageWidth,
 				height: imageHeight
 			});
+
+			if (registrationMode === 'mesh' && numBands === 1) {
+				const entry = await createRasterMeshEntry({
+					id: entryId,
+					name: entryName || 'GeoTIFF 3Dメッシュ',
+					band: parsedBands[0],
+					width: imageWidth,
+					height: imageHeight,
+					nodata: parsedNodata,
+					bounds: resolvedBbox,
+					mapImage
+				});
+
+				parsedBands = null;
+				showDataEntry = entry;
+				showDialogType = null;
+				dropFile = null;
+				showNotification('3Dメッシュを生成しました', 'success');
+				return;
+			}
 
 			// 全バンドをTerrariumエンコード
 			await encodeAllBandsToTerrarium(
@@ -595,13 +699,28 @@
 					)}, {resolvedBbox[3].toFixed(6)}]
 				</div>
 			{:else if rawBbox}
-				<div class="text-yellow-400">座標系が不明です。投影法を選択してください。</div>
+				<div class="text-yellow-400">
+					座標系が不明です。決定時に投影法の選択へ進みます。
+				</div>
 			{:else}
 				<div class="text-red-400">
-					位置情報がありません。.tfwファイルと一緒にドロップしてください。
+					位置情報がありません。決定時に位置合わせフォームへ進みます。
 				</div>
 			{/if}
 		</div>
+
+		{#if canCreateMesh}
+			<div class="w-full px-2">
+				<HorizontalSelectBox
+					label="登録方法"
+					options={registrationModeOptions}
+					bind:group={registrationMode}
+				/>
+				<p class="mt-2 text-xs text-gray-400">
+					3Dメッシュは 1 バンド値を高さとして GLB に変換して登録します
+				</p>
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -609,8 +728,8 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={registration}
-		disabled={!analyzed || !resolvedBbox || $isProcessing}
-		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed || !resolvedBbox || $isProcessing
+		disabled={!analyzed || $isProcessing}
+		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed || $isProcessing
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>

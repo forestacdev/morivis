@@ -5,6 +5,7 @@
 	import { onDestroy, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import GeoRefMarker from '$routes/map/components/marker/GeoRefMarker.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
@@ -13,10 +14,13 @@
 	import type { DialogType } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { encodeAllBandsToTerrarium, type RasterBands } from '$routes/map/utils/formats/geotiff';
+	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, showDataMenu } from '$routes/stores/ui';
+
+	export type RasterRegistrationMode = 'raster' | 'mesh';
 
 	export interface GeoRefData {
 		entryId: string;
@@ -34,6 +38,8 @@
 			b: { min: number; max: number };
 		};
 		imageFile: File;
+		previewImageUrl?: string;
+		registrationMode: RasterRegistrationMode;
 	}
 
 	interface Props {
@@ -59,6 +65,10 @@
 
 	let imageUrl = $state<string | null>(null);
 	let previewAdded = $state(false);
+	const registrationModeOptions = [
+		{ key: 'raster', name: 'ラスター' },
+		{ key: 'mesh', name: '3Dメッシュ' }
+	];
 
 	// 4コーナー座標: NW, NE, SE, SW
 	let nw = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
@@ -118,7 +128,7 @@
 				sw = new maplibregl.LngLat(center.lng - halfW, center.lat - halfH);
 
 				// 画像プレビュー用URL
-				imageUrl = URL.createObjectURL(data.imageFile);
+				imageUrl = data.previewImageUrl ?? URL.createObjectURL(data.imageFile);
 				addPreview();
 				initialized = true;
 			});
@@ -193,6 +203,25 @@
 				width: data.imageWidth,
 				height: data.imageHeight
 			});
+
+			if (data.registrationMode === 'mesh' && data.numBands === 1) {
+				const entry = await createRasterMeshEntry({
+					id: data.entryId,
+					name: data.entryName || 'GeoTIFF 3Dメッシュ',
+					band: data.parsedBands[0],
+					width: data.imageWidth,
+					height: data.imageHeight,
+					nodata: data.parsedNodata,
+					bounds: bbox,
+					corners,
+					mapImage
+				});
+
+				showDataEntry = entry;
+				cleanup();
+				showNotification('3Dメッシュを生成しました', 'success');
+				return;
+			}
 
 			await encodeAllBandsToTerrarium(
 				data.entryId,
@@ -282,10 +311,10 @@
 			}
 			previewAdded = false;
 		}
-		if (imageUrl) {
+		if (imageUrl && imageUrl.startsWith('blob:')) {
 			URL.revokeObjectURL(imageUrl);
-			imageUrl = null;
 		}
+		imageUrl = null;
 		if (rafId !== null) {
 			cancelAnimationFrame(rafId);
 			rafId = null;
@@ -332,6 +361,19 @@
 				<div>ファイル: {geoRefData.imageFile.name}</div>
 				<div>サイズ: {geoRefData.imageWidth} × {geoRefData.imageHeight} px</div>
 			</div>
+
+			{#if geoRefData.numBands === 1}
+				<div class="w-full px-2">
+					<HorizontalSelectBox
+						label="登録方法"
+						options={registrationModeOptions}
+						bind:group={geoRefData.registrationMode}
+					/>
+					<p class="mt-2 text-xs text-gray-400">
+						3Dメッシュは 1 バンド値を高さとして GLB に変換して登録します
+					</p>
+				</div>
+			{/if}
 
 			<div class="w-full px-2 text-sm text-gray-300">
 				<p class="mb-2 text-yellow-400">
