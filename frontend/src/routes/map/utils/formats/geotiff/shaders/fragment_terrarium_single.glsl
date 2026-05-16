@@ -50,7 +50,9 @@ vec2 reprojectUV(vec2 uv) {
     return vec2(u, v);
 }
 
-// Terrarium デコード → 正規化値 (0〜1)
+// 標準 Terrarium の標高値を復元しているのではなく、
+// 独自に 0〜65535 へ正規化して保存した値を 0〜1 に戻している。
+// ここで得られるのは実値ではなく、そのバンド内での相対値。
 float decodeTerrariumNormalized(vec4 color) {
     vec3 rgb = color.rgb * 255.0;
     return (rgb.r * 256.0 + rgb.g + rgb.b / 256.0) / 65535.0;
@@ -66,10 +68,12 @@ void main() {
         return;
     }
 
-    // Terrarium デコード → 0〜1
+    // 取り出すのは実値ではなく正規化値。
+    // 実値の復元は行わず、そのまま表示レンジ比較とカラーマップ適用に使う。
     float decoded = decodeTerrariumNormalized(encoded);
 
-    // 表示範囲で正規化（u_min, u_max は既にCPU側で正規化済み）
+    // u_min/u_max も CPU 側で同じ 0〜1 空間へ正規化済みなので、
+    // shader 側では軽いレンジ切り出しだけで済む。
     float displayNorm = clamp((decoded - u_min) / (u_max - u_min), 0.0, 1.0);
 
     fragColor = vec4(texture(u_color_map, vec2(displayNorm, 0.5)).rgb, 1.0);

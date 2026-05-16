@@ -147,7 +147,9 @@ export const loadRasterData = async (
 			GeoTiffCache.markTextureTransferred(id);
 		}
 
-		// ユニフォーム値（min/max を CPU側で正規化: 0〜1）
+		// Terrarium PNG に入っているのは実値ではなくバンド内での正規化値なので、
+		// 表示レンジ側も同じ 0〜1 空間へ変換してから shader に渡す。
+		// これにより shader 側では実値復元なしで色付けとレンジ調整ができる。
 		if (mode === 'single') {
 			const range = dataRanges[uniformsData.single.index];
 			const dMin = range?.min ?? 0;
