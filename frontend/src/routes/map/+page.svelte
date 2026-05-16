@@ -819,7 +819,7 @@
 
 			<PreviewMenu bind:showDataEntry />
 
-			{#if !showDataEntry && !showZoneForm}
+			{#if !showZoneForm}
 				<DataMenu
 					bind:showDataEntry
 					bind:dropFile
