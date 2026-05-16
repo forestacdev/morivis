@@ -10,10 +10,10 @@
 	import { ICONS } from '$lib/icons';
 	import type {
 		RasterEntry,
+		RasterImageEntry,
 		RasterCategoricalStyle,
 		RasterBaseMapStyle,
 		RasterDemStyle,
-		RasterDemEntry,
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
@@ -21,6 +21,7 @@
 		getRasterDimension,
 		getRasterDimensionRuntimeUpdates
 	} from '$routes/map/utils/raster/dimension-runtime';
+	import { getRasterTiffImageSource } from '$routes/map/utils/sources';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -58,6 +59,7 @@
 		})
 	];
 	let isSyncingInitialScroll = $state(false);
+	let imageUpdateRequestId = 0;
 
 	$effect(() => {
 		if (!dimension || dimensionState) return;
@@ -70,9 +72,10 @@
 		};
 	});
 
-	const onSelect = () => {
+	const onSelect = async () => {
 		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
 		const currentIndex = emblaMainCarousel.selectedScrollSnap();
+		const requestId = ++imageUpdateRequestId;
 		layerEntry.state = {
 			...layerEntry.state,
 			dimension: {
@@ -89,6 +92,24 @@
 			}
 
 			mapStore.setData(update.sourceId, update.data);
+		});
+
+		if (layerEntry.style.type !== 'tiff' || layerEntry.format.type !== 'image') return;
+
+		const imageSource = await getRasterTiffImageSource(
+			layerEntry as RasterImageEntry<RasterTiffStyle>
+		);
+		if (
+			!imageSource ||
+			requestId !== imageUpdateRequestId ||
+			layerEntry.state?.dimension?.currentIndex !== currentIndex
+		) {
+			return;
+		}
+
+		mapStore.setImage(`${layerEntry.id}_source`, {
+			url: imageSource.url,
+			coordinates: imageSource.coordinates
 		});
 	};
 

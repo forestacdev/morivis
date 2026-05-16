@@ -8,11 +8,11 @@ import {
 } from 'maplibre-gl';
 
 import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/map/data/types';
 import {
 	showLabelLayer,
-	showPoiLayer,
 	showBoundaryLayer,
 	showRoadLayer,
 	selectedBaseMap,
@@ -64,6 +64,52 @@ export const convertTmsToXyz = (url: string): string => {
 	return url.replace('{-y}', '{y}');
 };
 
+const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
+	const visualization = entry.style.visualization;
+	const mode = visualization.mode;
+	const timeIdx = getRasterDimensionCurrentIndex(entry) ?? -1;
+
+	if (mode === 'single') {
+		const uniformsData = visualization.uniformsData[mode];
+		return `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
+	}
+
+	if (mode === 'multi') {
+		const uniformsData = visualization.uniformsData[mode];
+		return `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${uniformsData.r.min}_${uniformsData.r.max}_${uniformsData.g.min}_${uniformsData.g.max}_${uniformsData.b.min}_${uniformsData.b.max}_t${timeIdx}`;
+	}
+};
+
+export const getRasterTiffImageSource = async (
+	entry: RasterImageEntry<RasterTiffStyle>
+): Promise<ImageSourceSpecification | undefined> => {
+	const styleID = getRasterTiffStyleId(entry);
+	if (!styleID) return;
+
+	const timeIdx = getRasterDimensionCurrentIndex(entry) ?? -1;
+	if (timeIdx >= 0 && NetCDFDataCache.has(entry.id)) {
+		await NetCDFDataCache.updateTimeStep(entry.id, timeIdx);
+	}
+
+	let imageData: string | undefined;
+	if (GeoTiffImageCache.has(styleID)) {
+		imageData = GeoTiffImageCache.get(styleID);
+	} else {
+		imageData = await loadRasterData(entry.id, entry.style.visualization);
+	}
+
+	if (!imageData) return;
+
+	GeoTiffImageCache.set(styleID, imageData);
+	GeoTiffImageCache.revokeOldEntries(entry.id, styleID);
+
+	return {
+		type: 'image',
+		url: imageData,
+		coordinates: entry.metaData.imageCorners ?? getBoundingBoxCorners(entry.metaData.bounds)
+	} satisfies ImageSourceSpecification;
+};
+
 export const createSourcesItems = async (
 	_dataEntries: GeoDataEntry[],
 	_type: 'main' | 'preview' = 'main'
@@ -79,41 +125,11 @@ export const createSourcesItems = async (
 				case 'raster': {
 					if (format.type === 'image') {
 						if (style.type === 'tiff') {
-							const visualization = style.visualization;
-							const mode = visualization.mode;
-							const timeIdx = getRasterDimensionCurrentIndex(entry) ?? -1;
-
-							let styleID;
-							if (mode === 'single') {
-								const uniformsData = visualization.uniformsData[mode];
-								styleID = `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
-							} else if (mode === 'multi') {
-								const uniformsData = visualization.uniformsData[mode];
-								styleID = `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${uniformsData.r.min}_${uniformsData.r.max}_${uniformsData.g.min}_${uniformsData.g.max}_${uniformsData.b.min}_${uniformsData.b.max}_t${timeIdx}`;
-							}
-
-							// NetCDF時間ステップの遅延エンコード
-							if (timeIdx >= 0 && NetCDFDataCache.has(entry.id)) {
-								await NetCDFDataCache.updateTimeStep(entry.id, timeIdx);
-							}
-
-							let imageData: string | undefined;
-							if (GeoTiffImageCache.has(styleID as string)) {
-								imageData = GeoTiffImageCache.get(styleID as string);
-							} else {
-								imageData = await loadRasterData(entry.id, visualization);
-							}
-
-							if (imageData) {
-								GeoTiffImageCache.set(styleID as string, imageData);
-								// 古いモードのキャッシュエントリ（blob URL）を解放
-								GeoTiffImageCache.revokeOldEntries(entry.id, styleID as string);
-
-								items[sourceId] = {
-									type: 'image',
-									url: imageData,
-									coordinates: metaData.imageCorners ?? getBoundingBoxCorners(metaData.bounds)
-								} as ImageSourceSpecification;
+							const imageSource = await getRasterTiffImageSource(
+								entry as RasterImageEntry<RasterTiffStyle>
+							);
+							if (imageSource) {
+								items[sourceId] = imageSource;
 							}
 						} else if (style.type === 'dem') {
 							const visualization = style.visualization;

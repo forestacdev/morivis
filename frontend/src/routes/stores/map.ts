@@ -16,7 +16,9 @@ import type {
 	FilterSpecification,
 	StyleSetterOptions,
 	FlyToOptions,
-	RasterTileSource
+	RasterTileSource,
+	Coordinates,
+	ImageSource
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import type { CSSCursor } from '$routes/map/types';
@@ -1267,6 +1269,22 @@ const createMapStore = () => {
 		}
 	};
 
+	const setImage = (
+		sourceId: string,
+		image: {
+			url: string;
+			coordinates: Coordinates;
+		}
+	) => {
+		if (!map || !isMapValid(map)) return;
+		const source = map.getSource(sourceId) as ImageSource;
+		if (source) {
+			source.updateImage(image);
+		} else {
+			console.warn(`Source with ID ${sourceId} does not exist.`);
+		}
+	};
+
 	const getLayer = (layerId: string) => {
 		if (!map || !isMapValid(map)) return undefined;
 		return map.getLayer(layerId);
@@ -1304,6 +1322,7 @@ const createMapStore = () => {
 		setCursor,
 		setData,
 		setTiles,
+		setImage,
 		setStyle,
 		setDeckOverlay,
 		// Three.js 関連
