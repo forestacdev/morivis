@@ -15,6 +15,17 @@ export interface Hdf5FileInfo {
 	attrs: Record<string, unknown>;
 }
 
+export type Hdf5SpecialProductType =
+	| 'earthcare_msi_clp'
+	| 'earthcare_cpr_clp'
+	| 'earthcare_cpr_fmr';
+
+export interface Hdf5SpecialProductInfo {
+	type: Hdf5SpecialProductType;
+	name: string;
+	description: string;
+}
+
 /** File APIからjsfive.Fileオブジェクトを返す */
 const openHdf5File = async (file: File): Promise<InstanceType<typeof hdf5.File>> => {
 	const buffer = await file.arrayBuffer();
@@ -318,14 +329,86 @@ export const getHdf5RasterDatasets = async (file: File): Promise<Hdf5DatasetInfo
 	return info.datasets.filter((d) => d.shape.length >= 2);
 };
 
+export const detectHdf5SpecialProduct = async (
+	file: File
+): Promise<Hdf5SpecialProductInfo | null> => {
+	const f = await openHdf5File(file);
+
+	const readHeaderString = (path: string): string | null => {
+		const dataset = f.get(path);
+		if (!(dataset instanceof hdf5.Dataset)) return null;
+
+		const value = dataset.value;
+		if (typeof value === 'string') return value.trim();
+		if (Array.isArray(value) && typeof value[0] === 'string') return value[0].trim();
+		return null;
+	};
+
+	const fileType = readHeaderString('HeaderData/FixedProductHeader/File_Type');
+	const productName = readHeaderString('HeaderData/VariableProductHeader/MainProductHeader/productName');
+
+	const scienceGeoLat = f.get('ScienceData/Geo/latitude');
+	const scienceGeoLon = f.get('ScienceData/Geo/longitude');
+
+	if (
+		fileType?.startsWith('MSI_CLP_') &&
+		productName?.includes('_MSI_CLP_') &&
+		scienceGeoLat instanceof hdf5.Dataset &&
+		scienceGeoLon instanceof hdf5.Dataset
+	) {
+		const shape = scienceGeoLat.shape ?? [];
+		if (shape.length >= 2) {
+			return {
+				type: 'earthcare_msi_clp',
+				name: 'EarthCARE MSI CLP',
+				description: '時刻付きポイントとして読み込みます'
+			};
+		}
+	}
+
+	if (
+		fileType?.startsWith('CPR_CLP_') &&
+		productName?.includes('_CPR_CLP_') &&
+		scienceGeoLat instanceof hdf5.Dataset &&
+		scienceGeoLon instanceof hdf5.Dataset
+	) {
+		const shape = scienceGeoLat.shape ?? [];
+		if (shape.length === 1) {
+			return {
+				type: 'earthcare_cpr_clp',
+				name: 'EarthCARE CPR CLP',
+				description: '時刻付きポイントとして読み込みます'
+			};
+		}
+	}
+
+	const scienceLat = f.get('ScienceData/latitude');
+	const scienceLon = f.get('ScienceData/longitude');
+
+	if (
+		fileType?.startsWith('CPR_FMR_') &&
+		productName?.includes('_CPR_FMR_') &&
+		scienceLat instanceof hdf5.Dataset &&
+		scienceLon instanceof hdf5.Dataset
+	) {
+		return {
+			type: 'earthcare_cpr_fmr',
+			name: 'EarthCARE CPR FMR',
+			description: '時刻付きポイントとして読み込みます'
+		};
+	}
+
+	return null;
+};
+
 /**
- * EarthCARE MSI CLP HDF5ファイルからスワス範囲ポリゴンGeoJSONを生成する
- * latitude/longitude (2D: scanlines x pixels) の左端・右端列で観測範囲ポリゴンを構築
+ * EarthCARE MSI CLP HDF5ファイルから時系列ポイントGeoJSONを生成する
+ * latitude/longitude (2D: scanlines x pixels) の各走査線中央をポイント化
  * @param file - HDF5ファイル (File API)
  */
 export const msiClpToOrbitTrackGeojson = async (file: File): Promise<FeatureCollection> => {
 	const f = await openHdf5File(file);
-	return buildMsiClpSwathGeojson(f);
+	return buildMsiClpOrbitTrackPointGeojson(f);
 };
 
 /** HDF5のfill valueかどうかを判定する */
@@ -363,20 +446,72 @@ const splitLineAtAntimeridian = (coords: [number, number][]): [number, number][]
 	return segments;
 };
 
-/**
- * 座標配列から日付変更線で分割された軌道トラックGeoJSONを生成する
- */
-const buildOrbitTrackFeatures = (coords: [number, number][]): FeatureCollection => {
-	const segments = splitLineAtAntimeridian(coords);
-
+const buildOrbitTrackPointFeatures = (
+	coords: [number, number][],
+	times: (string | undefined)[] = []
+): FeatureCollection => {
 	return {
 		type: 'FeatureCollection',
-		features: segments.map((seg) => ({
+		features: coords.map((coord, index) => ({
 			type: 'Feature' as const,
-			geometry: { type: 'LineString' as const, coordinates: seg },
-			properties: { type: 'orbit_track', num_points: seg.length }
+			geometry: { type: 'Point' as const, coordinates: coord },
+			properties: {
+				type: 'orbit_track_point',
+				index,
+				...(times[index] ? { time: times[index] } : {})
+			}
 		}))
 	};
+};
+
+const getDatasetNumberArray = (f: InstanceType<typeof hdf5.File>, path: string): number[] | null => {
+	try {
+		const dataset = f.get(path);
+		if (!(dataset instanceof hdf5.Dataset)) return null;
+		return Array.from(dataset.value as ArrayLike<number>);
+	} catch {
+		return null;
+	}
+};
+
+const padNumber = (value: number, size: number) => String(value).padStart(size, '0');
+
+const buildIsoTimeStrings = (f: InstanceType<typeof hdf5.File>): string[] => {
+	const years = getDatasetNumberArray(f, 'ScienceData/Geo/Scan_Time/Year');
+	const months = getDatasetNumberArray(f, 'ScienceData/Geo/Scan_Time/Month');
+	const days = getDatasetNumberArray(f, 'ScienceData/Geo/Scan_Time/DayOfMonth');
+	const hours = getDatasetNumberArray(f, 'ScienceData/Geo/Scan_Time/Hour');
+	const minutes = getDatasetNumberArray(f, 'ScienceData/Geo/Scan_Time/Minute');
+	const seconds = getDatasetNumberArray(f, 'ScienceData/Geo/Scan_Time/Second');
+	const milliSeconds = getDatasetNumberArray(f, 'ScienceData/Geo/Scan_Time/MilliSecond');
+
+	if (
+		years &&
+		months &&
+		days &&
+		hours &&
+		minutes &&
+		seconds &&
+		milliSeconds
+	) {
+		return years.map((year, index) => {
+			const month = months[index] ?? 1;
+			const day = days[index] ?? 1;
+			const hour = hours[index] ?? 0;
+			const minute = minutes[index] ?? 0;
+			const second = seconds[index] ?? 0;
+			const milliSecond = milliSeconds[index] ?? 0;
+			const wholeMilliSeconds = Math.floor(milliSecond);
+
+			return `${padNumber(year, 4)}-${padNumber(month, 2)}-${padNumber(day, 2)}T${padNumber(hour, 2)}:${padNumber(minute, 2)}:${padNumber(second, 2)}.${padNumber(wholeMilliSeconds, 3)}Z`;
+		});
+	}
+
+	const rawTimes = getDatasetNumberArray(f, 'ScienceData/Geo/time');
+	if (!rawTimes) return [];
+
+	const earthcareEpochMs = Date.UTC(2000, 0, 1, 0, 0, 0, 0);
+	return rawTimes.map((time) => new Date(earthcareEpochMs + time * 1000).toISOString());
 };
 
 /**
@@ -556,11 +691,34 @@ const getValidEdges = (
 	return { left, right };
 };
 
-/**
- * jsfive.FileオブジェクトからMSI CLPスワスポリゴンGeoJSONを構築する
- * 各スキャンラインの有効な最左端・最右端の座標でポリゴンを作成
- */
-const buildMsiClpSwathGeojson = (f: InstanceType<typeof hdf5.File>): FeatureCollection => {
+const getCenterTrackCoords = (
+	latFlat: ArrayLike<number>,
+	lonFlat: ArrayLike<number>,
+	rows: number,
+	cols: number
+): [number, number][] => {
+	const coords: [number, number][] = [];
+
+	for (let r = 0; r < rows; r++) {
+		const offset = r * cols;
+		const validIndices: number[] = [];
+
+		for (let c = 0; c < cols; c++) {
+			if (!isFillValue(latFlat[offset + c]) && !isFillValue(lonFlat[offset + c])) {
+				validIndices.push(c);
+			}
+		}
+
+		if (validIndices.length === 0) continue;
+
+		const centerIndex = validIndices[Math.floor(validIndices.length / 2)];
+		coords.push([lonFlat[offset + centerIndex], latFlat[offset + centerIndex]]);
+	}
+
+	return coords;
+};
+
+const buildMsiClpOrbitTrackPointGeojson = (f: InstanceType<typeof hdf5.File>): FeatureCollection => {
 	const latDataset = f.get('ScienceData/Geo/latitude');
 	const lonDataset = f.get('ScienceData/Geo/longitude');
 
@@ -574,37 +732,14 @@ const buildMsiClpSwathGeojson = (f: InstanceType<typeof hdf5.File>): FeatureColl
 	const latFlat = latDataset.value as ArrayLike<number>;
 	const lonFlat = lonDataset.value as ArrayLike<number>;
 	const [rows, cols] = latDataset.shape as [number, number];
+	const coords = getCenterTrackCoords(latFlat, lonFlat, rows, cols);
+	const times = buildIsoTimeStrings(f);
 
-	const { left, right } = getValidEdges(latFlat, lonFlat, rows, cols);
-
-	if (left.length === 0) {
+	if (coords.length === 0) {
 		throw new Error('有効な座標データがありません');
 	}
 
-	// 日付変更線で分割してポリゴンを生成
-	const polygons = buildSwathPolygons(left, right);
-
-	if (polygons.length === 1) {
-		return {
-			type: 'FeatureCollection',
-			features: [
-				{
-					type: 'Feature',
-					geometry: { type: 'Polygon', coordinates: polygons[0] },
-					properties: { type: 'swath', num_scanlines: rows, num_pixels: cols }
-				}
-			]
-		};
-	}
-
-	return {
-		type: 'FeatureCollection',
-		features: polygons.map((ring) => ({
-			type: 'Feature' as const,
-			geometry: { type: 'Polygon' as const, coordinates: ring },
-			properties: { type: 'swath', num_scanlines: rows, num_pixels: cols }
-		}))
-	};
+	return buildOrbitTrackPointFeatures(coords, times);
 };
 
 /**
@@ -633,9 +768,10 @@ const buildCprClpOrbitTrackGeojson = (f: InstanceType<typeof hdf5.File>): Featur
 
 	const latitude = latDataset.value as number[];
 	const longitude = lonDataset.value as number[];
+	const times = buildIsoTimeStrings(f);
 
 	const coords: [number, number][] = latitude.map((lat, i) => [longitude[i], lat]);
-	return buildOrbitTrackFeatures(coords);
+	return buildOrbitTrackPointFeatures(coords, times);
 };
 
 /**
@@ -664,7 +800,8 @@ const buildCprFmrOrbitTrackGeojson = (f: InstanceType<typeof hdf5.File>): Featur
 
 	const latitude = latDataset.value as number[];
 	const longitude = lonDataset.value as number[];
+	const times = buildIsoTimeStrings(f);
 
 	const coords: [number, number][] = latitude.map((lat, i) => [longitude[i], lat]);
-	return buildOrbitTrackFeatures(coords);
+	return buildOrbitTrackPointFeatures(coords, times);
 };
