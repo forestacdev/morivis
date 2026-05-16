@@ -7,6 +7,8 @@
  */
 
 import proj4 from 'proj4';
+import * as THREE from 'three';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { toGlbAndContours, reprojectGeoJson } from 'landxml';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
@@ -23,6 +25,8 @@ export interface LandXmlSurface {
 	glb: Uint8Array;
 	/** GLBの中心座標 [x, y]（元の座標系） */
 	center: [number, number];
+	/** 元の座標系 bbox [minX, minY, maxX, maxY] */
+	sourceBbox?: [number, number, number, number];
 	/** 元の座標系のWKT文字列 */
 	wktString?: string;
 }
@@ -57,6 +61,98 @@ const detectJprZone = (text: string): number | null => {
 const jprZoneToEpsg = (zone: number): string | null => {
 	if (zone < 1 || zone > 19) return null;
 	return String(6668 + zone); // zone 1 → 6669, zone 9 → 6677
+};
+
+const exportMeshToGlb = async (mesh: THREE.Mesh): Promise<Uint8Array> => {
+	const exporter = new GLTFExporter();
+
+	const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+		exporter.parse(
+			mesh,
+			(result) => {
+				if (result instanceof ArrayBuffer) {
+					resolve(result);
+					return;
+				}
+
+				reject(new Error('GLB export did not return binary data'));
+			},
+			(error) => {
+				reject(error instanceof Error ? error : new Error(String(error)));
+			},
+			{ binary: true }
+		);
+	});
+
+	return new Uint8Array(arrayBuffer);
+};
+
+const getTinBounds = (points: [number, number, number][]): [number, number, number, number] => {
+	let minX = Infinity;
+	let minY = Infinity;
+	let maxX = -Infinity;
+	let maxY = -Infinity;
+
+	for (const [x, y] of points) {
+		minX = Math.min(minX, x);
+		minY = Math.min(minY, y);
+		maxX = Math.max(maxX, x);
+		maxY = Math.max(maxY, y);
+	}
+
+	return [minX, minY, maxX, maxY];
+};
+
+const createGlbFromTin = async (tin: TinSurfaceData): Promise<{
+	glb: Uint8Array;
+	center: [number, number];
+	sourceBbox: [number, number, number, number];
+}> => {
+	const sourceBbox = getTinBounds(tin.points);
+	const centerX = (sourceBbox[0] + sourceBbox[2]) / 2;
+	const centerY = (sourceBbox[1] + sourceBbox[3]) / 2;
+	const positions = new Float32Array(tin.points.length * 3);
+	const indices: number[] = [];
+
+	for (let i = 0; i < tin.points.length; i++) {
+		const [xNorth, yEast, z] = tin.points[i];
+		const posIndex = i * 3;
+
+		// LandXML では X=北, Y=東 の並びを取ることがあるため、
+		// モデルローカルでは X=東西, Y=高さ, Z=南北 として扱う。
+		positions[posIndex] = yEast - centerY;
+		positions[posIndex + 1] = z;
+		positions[posIndex + 2] = xNorth - centerX;
+	}
+
+	for (const [a, b, c] of tin.faces) {
+		// LandXML の座標軸を model local へ組み替える際に handedness が反転するので、
+		// カリングで消えないよう winding を反転しておく。
+		indices.push(a - 1, c - 1, b - 1);
+	}
+
+	const geometry = new THREE.BufferGeometry();
+	geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+	geometry.setIndex(indices);
+	geometry.computeVertexNormals();
+
+	const material = new THREE.MeshStandardMaterial({
+		color: '#d9d9d9',
+		roughness: 1,
+		metalness: 0
+	});
+	const mesh = new THREE.Mesh(geometry, material);
+
+	try {
+		return {
+			glb: await exportMeshToGlb(mesh),
+			center: [centerX, centerY],
+			sourceBbox
+		};
+	} finally {
+		geometry.dispose();
+		material.dispose();
+	}
 };
 
 /**
@@ -130,15 +226,21 @@ export const parseLandXml = async (
 		throw new Error('No surfaces found in LandXML file');
 	}
 
-	const surfaces: LandXmlSurface[] = tinSurfaces.map((tin) => ({
-		name: tin.name,
-		description: '',
-		contourGeojsonRaw: { type: 'FeatureCollection', features: [] } as unknown as FeatureCollection,
-		contourGeojson: null,
-		glb: new Uint8Array(0),
-		center: [0, 0] as [number, number],
-		wktString: undefined
-	}));
+	const surfaces: LandXmlSurface[] = await Promise.all(
+		tinSurfaces.map(async (tin) => {
+			const mesh = await createGlbFromTin(tin);
+			return {
+				name: tin.name,
+				description: '',
+				contourGeojsonRaw: { type: 'FeatureCollection', features: [] } as unknown as FeatureCollection,
+				contourGeojson: null,
+				glb: mesh.glb,
+				center: mesh.center,
+				sourceBbox: mesh.sourceBbox,
+				wktString: undefined
+			};
+		})
+	);
 
 	return { surfaces, detectedZone, isReprojected: false };
 };

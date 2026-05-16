@@ -52,8 +52,16 @@ export class ThreeJsLayerManager {
 					});
 					this.renderer.autoClear = false;
 
-					const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+					const hemiLight = new THREE.HemisphereLight(0xf5f7ff, 0x4f5d73, 0.7);
 					this.scene.add(hemiLight);
+
+					const keyLight = new THREE.DirectionalLight(0xffffff, 1.15);
+					keyLight.position.set(0.8, 1.6, 0.9);
+					this.scene.add(keyLight);
+
+					const fillLight = new THREE.DirectionalLight(0xcfe1ff, 0.45);
+					fillLight.position.set(-0.7, 0.9, -0.6);
+					this.scene.add(fillLight);
 
 					this.isInitialized = true;
 				}

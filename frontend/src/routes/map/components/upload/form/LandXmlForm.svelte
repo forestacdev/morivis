@@ -1,7 +1,10 @@
 <script lang="ts">
+	import turfBbox from '@turf/bbox';
+	import proj4 from 'proj4';
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import { createMeshModelEntry } from '$routes/map/data/entries/_factories';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -56,6 +59,12 @@
 	let surfaceOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedSurfaceIndex = $state<string>('0');
 	let demResolution = $state<number>(256);
+	let registrationMode = $state<'dem' | 'mesh'>('dem');
+
+	const registrationModeOptions = [
+		{ key: 'dem', name: 'DEMラスター' },
+		{ key: 'mesh', name: '3Dメッシュ' }
+	];
 
 	const xmlFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -63,6 +72,9 @@
 	});
 
 	const entryName = $derived(xmlFile?.name.replace(/\.[^.]+$/, '') ?? 'LandXMLデータ');
+	const selectedSurface = $derived.by(
+		() => surfaces[Number(selectedSurfaceIndex)] ?? null
+	);
 
 	// ファイルドロップ時: パースしてサーフェス一覧取得
 	$effect(() => {
@@ -93,6 +105,86 @@
 				});
 		}
 	});
+
+	const resolveProjString = (surface: LandXmlSurface, overrideProjString?: string) => {
+		if (overrideProjString) return overrideProjString;
+		if (surface.wktString) return surface.wktString;
+		if (parseResult?.detectedZone) {
+			return getProjContext(String(6668 + parseResult.detectedZone) as EpsgCode);
+		}
+		return null;
+	};
+
+	const createMeshEntry = async (overrideProjString?: string) => {
+		const surface = selectedSurface;
+		if (!surface) return;
+
+		if (surface.glb.length === 0) {
+			showNotification('このサーフェスは 3D メッシュを生成できませんでした', 'error');
+			return;
+		}
+
+		const projString = resolveProjString(surface, overrideProjString);
+		if (!projString) {
+			showNotification('座標系が不明です。投影法を選択してください', 'warning');
+			showZoneForm = true;
+			focusBbox = [surface.center[0], surface.center[1], surface.center[0], surface.center[1]];
+			return;
+		}
+
+		let bounds: [number, number, number, number];
+		let lng: number;
+		let lat: number;
+
+		if (surface.contourGeojson && surface.contourGeojson.features.length > 0) {
+			const contourBbox = turfBbox(surface.contourGeojson);
+			bounds = [contourBbox[0], contourBbox[1], contourBbox[2], contourBbox[3]];
+			lng = (bounds[0] + bounds[2]) / 2;
+			lat = (bounds[1] + bounds[3]) / 2;
+		} else if (surface.sourceBbox) {
+			const sw = proj4(projString, 'EPSG:4326', [surface.sourceBbox[1], surface.sourceBbox[0]]);
+			const ne = proj4(projString, 'EPSG:4326', [surface.sourceBbox[3], surface.sourceBbox[2]]);
+			bounds = [sw[0], sw[1], ne[0], ne[1]];
+			lng = (bounds[0] + bounds[2]) / 2;
+			lat = (bounds[1] + bounds[3]) / 2;
+		} else {
+			const [centerLng, centerLat] = proj4(projString, 'EPSG:4326', [
+				surface.center[1],
+				surface.center[0]
+			]);
+			lng = centerLng;
+			lat = centerLat;
+			bounds = [lng - 0.001, lat - 0.001, lng + 0.001, lat + 0.001];
+		}
+
+		if (!isBboxValid(bounds)) {
+			showNotification('3Dメッシュの位置情報が不正です', 'error');
+			return;
+		}
+
+		const glbBytes = new Uint8Array(surface.glb.byteLength);
+		glbBytes.set(surface.glb);
+		const glbUrl = URL.createObjectURL(new Blob([glbBytes.buffer], { type: 'model/gltf-binary' }));
+
+		const entry = createMeshModelEntry({
+			id: `landxml_mesh_${crypto.randomUUID()}`,
+			name: `${entryName}_${surface.name || 'surface'}_mesh`,
+			url: glbUrl,
+			attribution: 'LandXML',
+			location: DEFAULT_CUSTOM_META_DATA.location,
+			bounds,
+			transform: {
+				lng,
+				lat,
+				altitude: 0
+			},
+			opacity: 1
+		});
+
+		showDataEntry = entry;
+		showDialogType = null;
+		showNotification('3Dメッシュを生成しました', 'success');
+	};
 
 	/** DEM生成してエントリ作成 */
 	const createDemEntry = async (projString?: string) => {
@@ -195,6 +287,15 @@
 		showDialogType = null;
 	};
 
+	const register = async () => {
+		if (registrationMode === 'mesh') {
+			await createMeshEntry();
+			return;
+		}
+
+		await createDemEntry();
+	};
+
 	// ZoneFormで座標系選択後
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'landxml') {
@@ -202,6 +303,10 @@
 			untrack(() => {
 				zoneConfirmedEpsg = null;
 				const projString = getProjContext(epsg);
+				if (registrationMode === 'mesh') {
+					createMeshEntry(projString);
+					return;
+				}
 				createDemEntry(projString);
 			});
 		}
@@ -235,25 +340,39 @@
 		</div>
 	{/if}
 
-	<div class="flex w-full items-center gap-2 p-2">
-		<label class="flex grow flex-col gap-1">
-			<span class="text-sm text-gray-300">解像度 (長辺ピクセル数)</span>
-			<input
-				type="number"
-				step="1"
-				min="64"
-				max="4096"
-				bind:value={demResolution}
-				class="bg-sub rounded border border-gray-600 p-2 text-white"
-			/>
-		</label>
+	<div class="w-full p-2">
+		<HorizontalSelectBox
+			label="登録方法"
+			bind:group={registrationMode}
+			options={registrationModeOptions}
+		/>
 	</div>
+
+	{#if registrationMode === 'dem'}
+		<div class="flex w-full items-center gap-2 p-2">
+			<label class="flex grow flex-col gap-1">
+				<span class="text-sm text-gray-300">解像度 (長辺ピクセル数)</span>
+				<input
+					type="number"
+					step="1"
+					min="64"
+					max="4096"
+					bind:value={demResolution}
+					class="bg-sub rounded border border-gray-600 p-2 text-white"
+				/>
+			</label>
+		</div>
+	{:else if selectedSurface}
+		<div class="w-full p-2 text-sm text-gray-300">
+			三角メッシュをそのまま GLB として登録します。
+		</div>
+	{/if}
 </div>
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
-		onclick={() => createDemEntry()}
+		onclick={register}
 		disabled={$isProcessing || surfaces.length === 0}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
 		surfaces.length === 0
