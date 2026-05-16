@@ -22,7 +22,7 @@ const entry: VectorEntry<TileMetaData> = {
 		location: '高知県',
 		tags: ['森林', '林相図'],
 		minZoom: 8,
-		maxZoom: 18,
+		maxZoom: 16,
 		sourceLayer: 'tree_species_kochi',
 		bounds: KOCHI_BBOX,
 		xyzImageTile: { x: 28533, y: 13129, z: 15 },
