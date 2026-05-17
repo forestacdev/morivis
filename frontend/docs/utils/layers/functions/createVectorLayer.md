@@ -8,7 +8,7 @@
 
 > **createVectorLayer**(`layer`, `style`, `fields`, `pointImageIcon?`): `FillLayerSpecification` \| `LineLayerSpecification` \| `SymbolLayerSpecification` \| `CircleLayerSpecification` \| `FillExtrusionLayerSpecification` \| `undefined`
 
-Defined in: [frontend/src/routes/map/utils/layers/index.ts:124](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/layers/index.ts#L124)
+Defined in: [frontend/src/routes/map/utils/layers/index.ts:121](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/utils/layers/index.ts#L121)
 
 ## Parameters
 

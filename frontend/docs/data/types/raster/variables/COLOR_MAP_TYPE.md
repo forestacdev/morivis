@@ -8,4 +8,4 @@
 
 > `const` **COLOR\_MAP\_TYPE**: readonly \[`"jet"`, `"hsv"`, `"hot"`, `"spring"`, `"summer"`, `"autumn"`, `"winter"`, `"bone"`, `"copper"`, `"greys"`, `"yignbu"`, `"greens"`, `"yiorrd"`, `"bluered"`, `"rdbu"`, `"picnic"`, `"rainbow"`, `"portland"`, `"blackbody"`, `"earth"`, `"electric"`, `"viridis"`, `"inferno"`, `"magma"`, `"plasma"`, `"warm"`, `"cool"`, `"rainbow-soft"`, `"bathymetry"`, `"cdom"`, `"chlorophyll"`, `"density"`, `"freesurface-blue"`, `"freesurface-red"`, `"oxygen"`, `"par"`, `"phase"`, `"salinity"`, `"temperature"`, `"turbidity"`, `"velocity-blue"`, `"velocity-green"`, `"cubehelix"`\]
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:124](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L124)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:105](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L105)

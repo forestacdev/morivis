@@ -8,7 +8,14 @@
 
 ## Interfaces
 
+- [MeshHeightColorRampStyle](interfaces/MeshHeightColorRampStyle.md)
+- [MeshShadingOptionStyle](interfaces/MeshShadingOptionStyle.md)
+- [MeshShadingStyle](interfaces/MeshShadingStyle.md)
 - [MeshStyle](interfaces/MeshStyle.md)
+- [MeshTransformOptionStyle](interfaces/MeshTransformOptionStyle.md)
+- [ModelAnimationClip](interfaces/ModelAnimationClip.md)
+- [ModelAnimationProperties](interfaces/ModelAnimationProperties.md)
+- [ModelAnimationState](interfaces/ModelAnimationState.md)
 - [ModelMeshEntry](interfaces/ModelMeshEntry.md)
 - [ModelPointCloudEntry](interfaces/ModelPointCloudEntry.md)
 - [ModelTiles3DEntry](interfaces/ModelTiles3DEntry.md)
@@ -22,3 +29,7 @@
 - [MeshFormatType](type-aliases/MeshFormatType.md)
 - [MeshStyleEntry](type-aliases/MeshStyleEntry.md)
 - [PointCloudStyleEntry](type-aliases/PointCloudStyleEntry.md)
+
+## Variables
+
+- [DEFAULT\_MESH\_SHADING](variables/DEFAULT_MESH_SHADING.md)
