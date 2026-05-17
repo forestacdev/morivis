@@ -191,7 +191,10 @@ export class ThreeJsLayerManager {
 		return material;
 	};
 
-	private createFlatMaterial = (sourceMaterial: THREE.Material, style: MeshStyle): THREE.Material => {
+	private createFlatMaterial = (
+		sourceMaterial: THREE.Material,
+		style: MeshStyle
+	): THREE.Material => {
 		const baseColor = new THREE.Color(style.color);
 		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
 			baseColor.multiply(sourceMaterial.color);
@@ -249,8 +252,8 @@ export class ThreeJsLayerManager {
 			isSkinnedMesh
 				? this.createStyledSourceMaterial(sourceMaterial, style)
 				: useShaderMaterial
-				? this.createShaderMaterial(sourceMaterial, style)
-				: this.createFlatMaterial(sourceMaterial, style)
+					? this.createShaderMaterial(sourceMaterial, style)
+					: this.createFlatMaterial(sourceMaterial, style)
 		);
 
 		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];

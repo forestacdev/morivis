@@ -93,14 +93,12 @@
 	};
 
 	const formatTemporalValue = (date: Date) => {
-		return [
-			date.getFullYear(),
-			pad2(date.getMonth() + 1),
-			pad2(date.getDate())
-		].join('-') +
+		return (
+			[date.getFullYear(), pad2(date.getMonth() + 1), pad2(date.getDate())].join('-') +
 			'T' +
 			[pad2(date.getHours()), pad2(date.getMinutes()), pad2(date.getSeconds())].join(':') +
-			'+09:00';
+			'+09:00'
+		);
 	};
 
 	const formatTemporalLabel = (date: Date) => {
@@ -175,7 +173,11 @@
 			messages = records.map((record, i) => {
 				const meta = record.metadata;
 				const paramName = meta.parameterName ?? `Param ${meta.parameterNumber}`;
-				const validTime = addForecastOffset(meta.referenceTime, meta.forecastTime, meta.timeRangeUnit);
+				const validTime = addForecastOffset(
+					meta.referenceTime,
+					meta.forecastTime,
+					meta.timeRangeUnit
+				);
 				return {
 					index: i,
 					label: `${formatTemporalLabel(validTime)} ${paramName} (${meta.nx}x${meta.ny}) Level:${meta.levelType}=${meta.levelValue}`,

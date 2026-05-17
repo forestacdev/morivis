@@ -72,9 +72,7 @@
 	});
 
 	const entryName = $derived(xmlFile?.name.replace(/\.[^.]+$/, '') ?? 'LandXMLデータ');
-	const selectedSurface = $derived.by(
-		() => surfaces[Number(selectedSurfaceIndex)] ?? null
-	);
+	const selectedSurface = $derived.by(() => surfaces[Number(selectedSurfaceIndex)] ?? null);
 
 	// ファイルドロップ時: パースしてサーフェス一覧取得
 	$effect(() => {

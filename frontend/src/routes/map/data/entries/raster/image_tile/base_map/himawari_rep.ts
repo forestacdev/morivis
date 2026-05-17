@@ -1,7 +1,4 @@
-import {
-	createHimawariFallbackEntry,
-	type HimawariProductConfig
-} from '$routes/map/api/himawari';
+import { createHimawariFallbackEntry, type HimawariProductConfig } from '$routes/map/api/himawari';
 
 const config: HimawariProductConfig = {
 	id: 'himawari_rep',

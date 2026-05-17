@@ -18,20 +18,16 @@
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
 		getRasterDimension,
 		getRasterDimensionRuntimeUpdates
 	} from '$routes/map/utils/raster/dimension-runtime';
-	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getRasterTiffImageSource } from '$routes/map/utils/sources';
 	import { mapStore } from '$routes/stores/map';
 
 	type DimensionEnabledRasterEntry = RasterEntry<
-		| RasterCategoricalStyle
-		| RasterBaseMapStyle
-		| RasterDemStyle
-		| RasterTiffStyle
-		| RasterCadStyle
+		RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
 	>;
 
 	type DimensionEnabledEntry = DimensionEnabledRasterEntry | ModelMeshEntry<MeshStyle>;
@@ -230,7 +226,8 @@
 	};
 
 	$effect(() => {
-		playbackIntervalMs;
+		const autoplayIntervalMs = playbackIntervalMs;
+		if (!autoplayIntervalMs) return;
 		if (!isPlaying) return;
 		scheduleAutoplayTick();
 	});
@@ -384,7 +381,7 @@
 			</div>
 			<div class="pt-2">
 				<RangeSlider
-					label={`再生速度 (${Math.round(1000 / playbackIntervalMs * 10) / 10} コマ/秒)`}
+					label={`再生速度 (${Math.round((1000 / playbackIntervalMs) * 10) / 10} コマ/秒)`}
 					bind:value={playbackSpeed}
 					min={1}
 					max={2000}

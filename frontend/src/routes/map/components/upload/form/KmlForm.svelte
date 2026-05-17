@@ -17,6 +17,7 @@
 	} from '$routes/map/data/types/vector/properties';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import {
 		kmlFileToGeoJson,
 		getKmlDefaultColor,
@@ -25,7 +26,6 @@
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
-	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
