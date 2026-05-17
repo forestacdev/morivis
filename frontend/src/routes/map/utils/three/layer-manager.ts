@@ -210,6 +210,22 @@ export class ThreeJsLayerManager {
 		return material;
 	};
 
+	private createStyledSourceMaterial = (
+		sourceMaterial: THREE.Material,
+		style: MeshStyle
+	): THREE.Material => {
+		const material = sourceMaterial.clone();
+		if ('color' in material && material.color instanceof THREE.Color) {
+			material.color = material.color.clone().multiply(new THREE.Color(style.color));
+		}
+		material.transparent = true;
+		material.opacity = style.opacity;
+		if ('wireframe' in material) {
+			material.wireframe = style.wireframe;
+		}
+		return material;
+	};
+
 	private applyStyleToMesh = (mesh: THREE.Mesh, style: MeshStyle) => {
 		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 		const originalMaterials =
@@ -222,9 +238,12 @@ export class ThreeJsLayerManager {
 
 		const useShaderMaterial =
 			Boolean(style.shading?.enabled) || Boolean(style.heightColorRamp?.enabled);
+		const isSkinnedMesh = (mesh as THREE.SkinnedMesh).isSkinnedMesh === true;
 
 		const nextMaterials = originalMaterials.map((sourceMaterial) =>
-			useShaderMaterial
+			isSkinnedMesh
+				? this.createStyledSourceMaterial(sourceMaterial, style)
+				: useShaderMaterial
 				? this.createShaderMaterial(sourceMaterial, style)
 				: this.createFlatMaterial(sourceMaterial, style)
 		);

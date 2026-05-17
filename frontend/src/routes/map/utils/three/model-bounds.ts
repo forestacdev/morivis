@@ -19,6 +19,7 @@ interface UploadedModelMeta {
 	xyzImageTile: TileXYZ;
 	scaleMultiplier: number;
 	localMaxDimension: number;
+	hasSkinnedMesh: boolean;
 }
 
 const gltfLoader = new GLTFLoader();
@@ -75,6 +76,12 @@ export const computeUploadedModelMeta = async ({
 	if (box.isEmpty()) {
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}
+	let hasSkinnedMesh = false;
+	object.traverse((child) => {
+		if ((child as THREE.SkinnedMesh).isSkinnedMesh === true) {
+			hasSkinnedMesh = true;
+		}
+	});
 	const size = box.getSize(new THREE.Vector3());
 	const localMaxDimension = Math.max(size.x, size.y, size.z);
 	const scaleMultiplier =
@@ -152,6 +159,7 @@ export const computeUploadedModelMeta = async ({
 		bounds,
 		xyzImageTile: findCenterTile(bounds),
 		scaleMultiplier,
-		localMaxDimension
+		localMaxDimension,
+		hasSkinnedMesh
 	};
 };

@@ -59,6 +59,10 @@ export interface MeshTransformOptionStyle {
 	heightOffset?: boolean;
 }
 
+export interface MeshShadingOptionStyle {
+	enabled?: boolean;
+}
+
 export interface MeshStyle {
 	type: 'mesh';
 	opacity: Opacity;
@@ -66,6 +70,7 @@ export interface MeshStyle {
 	wireframe: boolean;
 	color: string;
 	shading?: MeshShadingStyle;
+	shadingOptions?: MeshShadingOptionStyle;
 	heightColorRamp?: MeshHeightColorRampStyle;
 	transformOptions?: MeshTransformOptionStyle;
 	transform: {

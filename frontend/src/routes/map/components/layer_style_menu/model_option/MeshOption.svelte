@@ -19,6 +19,7 @@
 	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
 	let showDimensionOption = $state(false);
 	const colorMapManager = new ColorMapManager();
+	const canEditShading = $derived(layerEntry.style.shadingOptions?.enabled ?? true);
 	const canEditScale = $derived(layerEntry.style.transformOptions?.scale ?? true);
 	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);
 	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? true);
@@ -32,6 +33,9 @@
 
 	$effect(() => {
 		ensureShading();
+		if (!canEditShading && layerEntry.style.shading) {
+			layerEntry.style.shading.enabled = false;
+		}
 		if (temporalDimension && !layerEntry.state?.dimension) {
 			layerEntry.state = {
 				...layerEntry.state,
@@ -53,9 +57,11 @@
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
 </div>
 
-<div class="mt-4">
-	<Switch label="陰影" bind:value={layerEntry.style.shading!.enabled} />
-</div>
+{#if canEditShading}
+	<div class="mt-4">
+		<Switch label="陰影" bind:value={layerEntry.style.shading!.enabled} />
+	</div>
+{/if}
 
 {#if layerEntry.style.heightColorRamp}
 	<div class="mt-4">
@@ -92,7 +98,7 @@
 	{/if}
 {/if}
 
-{#if layerEntry.style.shading!.enabled}
+{#if canEditShading && layerEntry.style.shading!.enabled}
 	<div class="mt-4 flex w-full flex-col gap-4">
 		<RangeSlider
 			label="陰影強度"

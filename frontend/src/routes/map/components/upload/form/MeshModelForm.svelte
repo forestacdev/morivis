@@ -90,6 +90,14 @@
 						format: isObj ? 'obj' : 'gltf',
 						style: entry.style
 					});
+					if (uploadedModelMeta.hasSkinnedMesh) {
+						entry.style.shadingOptions = {
+							enabled: false
+						};
+						if (entry.style.shading) {
+							entry.style.shading.enabled = false;
+						}
+					}
 					if (uploadedModelMeta.scaleMultiplier !== 1) {
 						entry.style.transform.baseScale = uploadedModelMeta.scaleMultiplier;
 						showNotification('小さいモデルのため拡大して表示します', 'info');
