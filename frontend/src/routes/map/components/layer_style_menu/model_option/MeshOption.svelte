@@ -19,6 +19,10 @@
 	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
 	let showDimensionOption = $state(false);
 	const colorMapManager = new ColorMapManager();
+	const canEditScale = $derived(layerEntry.style.transformOptions?.scale ?? true);
+	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);
+	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? true);
+	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
 
 	const ensureShading = () => {
 		layerEntry.style.shading ??= { ...DEFAULT_MESH_SHADING };
@@ -131,16 +135,18 @@
 {/if}
 
 <div class="mt-4 flex w-full flex-col gap-4">
-	<RangeSlider
-		label="スケール"
-		bind:value={layerEntry.style.transform.scale}
-		min={0.01}
-		max={100}
-		step={0.01}
-		icon="mdi:resize"
-	/>
+	{#if canEditScale}
+		<RangeSlider
+			label="スケール"
+			bind:value={layerEntry.style.transform.scale}
+			min={0.01}
+			max={100}
+			step={0.01}
+			icon="mdi:resize"
+		/>
+	{/if}
 
-	{#if layerEntry.style.transform.heightScale != null}
+	{#if canEditHeightScale && layerEntry.style.transform.heightScale != null}
 		<RangeSlider
 			label="高さ倍率"
 			bind:value={layerEntry.style.transform.heightScale}
@@ -151,7 +157,7 @@
 		/>
 	{/if}
 
-	{#if layerEntry.style.transform.heightOffset != null}
+	{#if canEditHeightOffset && layerEntry.style.transform.heightOffset != null}
 		<RangeSlider
 			label="高さオフセット (m)"
 			bind:value={layerEntry.style.transform.heightOffset}
@@ -163,35 +169,37 @@
 		/>
 	{/if}
 
-	<RangeSlider
-		label="X回転 (°)"
-		bind:value={layerEntry.style.transform.rotationX}
-		min={0}
-		max={360}
-		step={1}
-		isInt
-		icon="mdi:rotate-right"
-	/>
+	{#if canEditRotation}
+		<RangeSlider
+			label="X回転 (°)"
+			bind:value={layerEntry.style.transform.rotationX}
+			min={0}
+			max={360}
+			step={1}
+			isInt
+			icon="mdi:rotate-right"
+		/>
 
-	<RangeSlider
-		label="Y回転 (°)"
-		bind:value={layerEntry.style.transform.rotationY}
-		min={0}
-		max={360}
-		step={1}
-		isInt
-		icon="mdi:rotate-right"
-	/>
+		<RangeSlider
+			label="Y回転 (°)"
+			bind:value={layerEntry.style.transform.rotationY}
+			min={0}
+			max={360}
+			step={1}
+			isInt
+			icon="mdi:rotate-right"
+		/>
 
-	<RangeSlider
-		label="Z回転 (°)"
-		bind:value={layerEntry.style.transform.rotationZ}
-		min={0}
-		max={360}
-		step={1}
-		isInt
-		icon="mdi:rotate-right"
-	/>
+		<RangeSlider
+			label="Z回転 (°)"
+			bind:value={layerEntry.style.transform.rotationZ}
+			min={0}
+			max={360}
+			step={1}
+			isInt
+			icon="mdi:rotate-right"
+		/>
+	{/if}
 </div>
 
 <style>

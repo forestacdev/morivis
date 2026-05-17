@@ -402,6 +402,10 @@ export const createRasterMeshEntry = async (
 				sourceMax: maxHeight,
 				sourceSign: -1
 			},
+			transformOptions: {
+				scale: false,
+				rotation: false
+			},
 			transform: {
 				lng: center.lng,
 				lat: center.lat,

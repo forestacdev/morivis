@@ -38,8 +38,8 @@ export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
 	enabled: true,
 	shadeStrength: 0.85,
 	ambientStrength: 0.35,
-	azimuthDeg: 45,
-	elevationDeg: 50
+	azimuthDeg: 810,
+	elevationDeg: 0
 };
 
 export interface MeshHeightColorRampStyle {
@@ -52,6 +52,13 @@ export interface MeshHeightColorRampStyle {
 	sourceSign?: 1 | -1;
 }
 
+export interface MeshTransformOptionStyle {
+	scale?: boolean;
+	rotation?: boolean;
+	heightScale?: boolean;
+	heightOffset?: boolean;
+}
+
 export interface MeshStyle {
 	type: 'mesh';
 	opacity: Opacity;
@@ -60,6 +67,7 @@ export interface MeshStyle {
 	color: string;
 	shading?: MeshShadingStyle;
 	heightColorRamp?: MeshHeightColorRampStyle;
+	transformOptions?: MeshTransformOptionStyle;
 	transform: {
 		lng: number;
 		lat: number;

@@ -22,10 +22,10 @@
 		getMinMax,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
-import {
-	createRasterMeshEntry,
-	sampleRasterMeshHeights
-} from '$routes/map/utils/formats/geotiff/mesh';
+	import {
+		createRasterMeshEntry,
+		sampleRasterMeshHeights
+	} from '$routes/map/utils/formats/geotiff/mesh';
 	import {
 		parseNetCDF,
 		extractRasterData,
@@ -164,19 +164,6 @@ import {
 				sliceIndices
 			);
 
-			console.log(
-				'[NetCDF] variable:',
-				selectedVariable,
-				'width:',
-				width,
-				'height:',
-				height,
-				'data length:',
-				data.length,
-				'bbox:',
-				bbox
-			);
-
 			if (width === 0 || height === 0) {
 				showNotification(
 					`データサイズが不正です (${width}x${height})。変数の次元構造を確認してください。`,
@@ -282,6 +269,15 @@ import {
 					baseValue: meshHeightSampling.effectiveBaseValue,
 					heightScale: meshHeightSampling.effectiveHeightScale
 				});
+				entry.style.shading = {
+					...entry.style.shading,
+					enabled: false
+				};
+				entry.style.heightColorRamp = {
+					...entry.style.heightColorRamp,
+					enabled: true
+				};
+				entry.style.opacity = 0.7;
 
 				showDataEntry = entry;
 				if (dimension) {
@@ -451,8 +447,8 @@ import {
 
 		<!-- 追加次元のスライス選択（時間次元は除外） -->
 		{@const nonTimeDims = extraDimensions.filter((d) => !/^(time|t|date|datetime)$/i.test(d.name))}
-			{#if selectedVariable && nonTimeDims.length > 0}
-				{#each nonTimeDims as dim (dim.name)}
+		{#if selectedVariable && nonTimeDims.length > 0}
+			{#each nonTimeDims as dim (dim.name)}
 				<div transition:slide class="w-full">
 					<div class="flex flex-col gap-1">
 						<label for="nc-dim-{dim.name}" class="text-sm text-gray-300">
@@ -463,7 +459,7 @@ import {
 							bind:value={sliceIndices[dim.name]}
 							class="bg-sub rounded border border-gray-600 p-2 text-white"
 						>
-								{#each Array.from({ length: dim.size }, (_, i) => i) as idx (idx)}
+							{#each Array.from({ length: dim.size }, (_, i) => i) as idx (idx)}
 								<option value={idx}>
 									{dim.values ? dim.values[idx] : idx}
 								</option>
