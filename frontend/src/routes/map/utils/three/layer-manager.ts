@@ -69,16 +69,39 @@ export class ThreeJsLayerManager {
 				? sourceMaterial.map
 				: null;
 		const colorRamp = style.heightColorRamp;
+		const colorRampArray = colorRamp?.enabled
+			? this.colorMapManager.createColorArray(colorRamp.colorMap)
+			: null;
+		const colorRampRgbaArray =
+			colorRampArray != null
+				? new Uint8Array(
+						Array.from({ length: 256 * 4 }, (_, i) => {
+							const colorIndex = Math.floor(i / 4);
+							const channel = i % 4;
+							if (channel === 3) return 255;
+							return colorRampArray[colorIndex * 3 + channel] ?? 0;
+						})
+					)
+				: null;
 		const colorRampTexture =
 			colorRamp?.enabled && colorRamp.max > colorRamp.min
 				? new THREE.DataTexture(
-						this.colorMapManager.createColorArray(colorRamp.colorMap),
-						256,
+						colorRampRgbaArray,
 						1,
-						THREE.RGBFormat
+						256,
+						THREE.RGBAFormat,
+						THREE.UnsignedByteType
 					)
 				: null;
 		if (colorRampTexture) {
+			colorRampTexture.colorSpace = THREE.SRGBColorSpace;
+			colorRampTexture.minFilter = THREE.LinearFilter;
+			colorRampTexture.magFilter = THREE.LinearFilter;
+			colorRampTexture.wrapS = THREE.ClampToEdgeWrapping;
+			colorRampTexture.wrapT = THREE.ClampToEdgeWrapping;
+			colorRampTexture.generateMipmaps = false;
+			colorRampTexture.flipY = false;
+			colorRampTexture.unpackAlignment = 1;
 			colorRampTexture.needsUpdate = true;
 		}
 
@@ -95,17 +118,16 @@ export class ThreeJsLayerManager {
 				uUseHeightColorRamp: { value: Boolean(colorRampTexture) },
 				uHeightRampMin: { value: colorRamp?.min ?? 0 },
 				uHeightRampMax: { value: colorRamp?.max ?? 1 },
-				uHeightRampSign: { value: colorRamp?.sourceSign ?? 1 }
+				uHeightRampSourceMin: { value: colorRamp?.sourceMin ?? colorRamp?.min ?? 0 },
+				uHeightRampSourceMax: { value: colorRamp?.sourceMax ?? colorRamp?.max ?? 1 }
 			},
 			vertexShader: `
 				varying vec3 vNormal;
 				varying vec2 vUv;
-				varying float vHeight;
 
 				void main() {
 					vNormal = normalize(normalMatrix * normal);
 					vUv = uv;
-					vHeight = position.y;
 					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 				}
 			`,
@@ -121,21 +143,28 @@ export class ThreeJsLayerManager {
 				uniform bool uUseHeightColorRamp;
 				uniform float uHeightRampMin;
 				uniform float uHeightRampMax;
-				uniform float uHeightRampSign;
+				uniform float uHeightRampSourceMin;
+				uniform float uHeightRampSourceMax;
 
 				varying vec3 vNormal;
 				varying vec2 vUv;
-				varying float vHeight;
 
 				void main() {
 					vec4 texel = uUseMap ? texture2D(uMap, vUv) : vec4(1.0);
-					float rampDenominator = max(uHeightRampMax - uHeightRampMin, 0.000001);
-					float rampValue = clamp(
-						((vHeight * uHeightRampSign) - uHeightRampMin) / rampDenominator,
+					float sourceDenominator = max(uHeightRampSourceMax - uHeightRampSourceMin, 0.000001);
+					float selectedMin = clamp(
+						(uHeightRampMin - uHeightRampSourceMin) / sourceDenominator,
 						0.0,
 						1.0
 					);
-					vec3 rampColor = texture2D(uColorRamp, vec2(rampValue, 0.5)).rgb;
+					float selectedMax = clamp(
+						(uHeightRampMax - uHeightRampSourceMin) / sourceDenominator,
+						0.0,
+						1.0
+					);
+					float rampDenominator = max(selectedMax - selectedMin, 0.000001);
+					float rampValue = clamp((vUv.y - selectedMin) / rampDenominator, 0.0, 1.0);
+					vec3 rampColor = texture2D(uColorRamp, vec2(0.5, rampValue)).rgb;
 					vec3 surfaceColor = uUseHeightColorRamp ? rampColor : (uBaseColor * texel.rgb);
 					vec3 normalDir = normalize(vNormal);
 					float diffuse = max(dot(normalDir, normalize(uLightDirection)), 0.0);
@@ -498,7 +527,11 @@ export class ThreeJsLayerManager {
 		loaded.entry = { ...loaded.entry, style };
 	}
 
-	updateModelMeshHeights(entryId: string, heights: ArrayLike<number>): boolean {
+	updateModelMeshHeights(
+		entryId: string,
+		heights: ArrayLike<number>,
+		normalizedHeights?: ArrayLike<number>
+	): boolean {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return false;
 
@@ -511,12 +544,26 @@ export class ThreeJsLayerManager {
 			if (!(positionAttribute instanceof THREE.BufferAttribute)) return;
 			if (positionAttribute.itemSize !== 3) return;
 			if (positionAttribute.count !== heights.length) return;
+			const uvAttribute = mesh.geometry.getAttribute('uv');
+			const uvBufferAttribute =
+				uvAttribute instanceof THREE.BufferAttribute &&
+				uvAttribute.itemSize === 2 &&
+				normalizedHeights != null &&
+				uvAttribute.count === normalizedHeights.length
+					? uvAttribute
+					: null;
 
 			for (let i = 0; i < positionAttribute.count; i++) {
 				positionAttribute.setY(i, heights[i] ?? 0);
+				if (uvBufferAttribute && normalizedHeights) {
+					uvBufferAttribute.setY(i, normalizedHeights[i] ?? 0);
+				}
 			}
 
 			positionAttribute.needsUpdate = true;
+			if (uvBufferAttribute) {
+				uvBufferAttribute.needsUpdate = true;
+			}
 			mesh.geometry.computeVertexNormals();
 
 			const normalAttribute = mesh.geometry.getAttribute('normal');

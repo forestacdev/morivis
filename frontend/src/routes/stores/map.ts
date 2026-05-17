@@ -729,7 +729,11 @@ const createMapStore = () => {
 			signedHeights[i] = -meshHeightSampling.heights[i];
 		}
 
-		return threeJsManager.updateModelMeshHeights(entry.id, signedHeights);
+		return threeJsManager.updateModelMeshHeights(
+			entry.id,
+			signedHeights,
+			meshHeightSampling.normalizedHeights
+		);
 	};
 
 	// Three.js モデルを設定（差分更新）

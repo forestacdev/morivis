@@ -48,6 +48,7 @@ export interface RasterMeshSampling {
 
 export interface RasterMeshHeightSampling extends RasterMeshSampling {
 	heights: Float32Array;
+	normalizedHeights: Float32Array;
 	validVertices: Uint8Array;
 	effectiveBaseValue: number;
 	effectiveHeightScale: number;
@@ -136,6 +137,7 @@ export const sampleRasterMeshHeights = ({
 		maxGridSize
 	);
 	const heights = new Float32Array(sampleWidth * sampleHeight);
+	const normalizedHeights = new Float32Array(sampleWidth * sampleHeight);
 	const validVertices = new Uint8Array(sampleWidth * sampleHeight);
 	let sampledMinValue = Number.POSITIVE_INFINITY;
 	let sampledMaxValue = Number.NEGATIVE_INFINITY;
@@ -170,6 +172,11 @@ export const sampleRasterMeshHeights = ({
 	const heightRange = Math.max(1e-6, sampledMaxValue - effectiveBaseValue);
 	const effectiveHeightScale =
 		heightScale ?? (autoHeightScale ? (targetHorizontalSpanMeters * 0.18) / heightRange : 1);
+	const normalizedRange = Math.max(
+		1e-6,
+		(sampledMaxValue - effectiveBaseValue) * effectiveHeightScale -
+			(sampledMinValue - effectiveBaseValue) * effectiveHeightScale
+	);
 
 	for (let y = 0; y < sampleHeight; y++) {
 		const sourceY = yIndices[y];
@@ -185,6 +192,9 @@ export const sampleRasterMeshHeights = ({
 			}
 
 			heights[vertexIndex] = (value - effectiveBaseValue) * effectiveHeightScale;
+			normalizedHeights[vertexIndex] =
+				(heights[vertexIndex] - (sampledMinValue - effectiveBaseValue) * effectiveHeightScale) /
+				normalizedRange;
 			validVertices[vertexIndex] = 1;
 		}
 	}
@@ -195,6 +205,7 @@ export const sampleRasterMeshHeights = ({
 		sampleWidth,
 		sampleHeight,
 		heights,
+		normalizedHeights,
 		validVertices,
 		effectiveBaseValue,
 		effectiveHeightScale,
@@ -252,6 +263,7 @@ const buildRasterMeshGeometry = async ({
 		sampleWidth,
 		sampleHeight,
 		heights,
+		normalizedHeights,
 		validVertices,
 		minHeight,
 		maxHeight
@@ -267,6 +279,7 @@ const buildRasterMeshGeometry = async ({
 		autoHeightScale
 	});
 	const positions = new Float32Array(sampleWidth * sampleHeight * 3);
+	const uvs = new Float32Array(sampleWidth * sampleHeight * 2);
 	const indices: number[] = [];
 
 	for (let y = 0; y < sampleHeight; y++) {
@@ -283,6 +296,8 @@ const buildRasterMeshGeometry = async ({
 				positions[posIndex] = 0;
 				positions[posIndex + 1] = 0;
 				positions[posIndex + 2] = 0;
+				uvs[vertexIndex * 2] = 0.5;
+				uvs[vertexIndex * 2 + 1] = 0;
 				continue;
 			}
 
@@ -294,6 +309,8 @@ const buildRasterMeshGeometry = async ({
 			// ラスターメッシュは高さを負方向で焼いて上向きにそろえる。
 			positions[posIndex + 1] = -heights[vertexIndex];
 			positions[posIndex + 2] = (merc.y - centerMerc.y) / meterUnit;
+			uvs[vertexIndex * 2] = 0.5;
+			uvs[vertexIndex * 2 + 1] = normalizedHeights[vertexIndex];
 		}
 	}
 
@@ -320,6 +337,7 @@ const buildRasterMeshGeometry = async ({
 
 	const geometry = new THREE.BufferGeometry();
 	geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+	geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
 	geometry.setIndex(indices);
 	geometry.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI / 1));
 	geometry.computeVertexNormals();
