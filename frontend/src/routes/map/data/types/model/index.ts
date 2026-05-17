@@ -68,6 +68,8 @@ export interface MeshStyle {
 		heightOffset?: number;
 		/** Y 方向だけに効く高さ倍率 */
 		heightScale?: number;
+		/** UI には出さない読み込み基準のスケール */
+		baseScale?: number;
 		/** UI には出さない読み込み基準の回転 */
 		baseRotationX?: number;
 		baseRotationY?: number;

@@ -5,7 +5,9 @@
 	import { createGlbEntry } from '$routes/map/data/entries/model';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
+	import { computeUploadedModelMeta } from '$routes/map/utils/three/model-bounds';
 	import { mapStore } from '$routes/stores/map';
+	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;
@@ -81,6 +83,22 @@
 					isObj ? 'obj' : 'gltf',
 					resolvedMtlUrl
 				);
+
+				try {
+					const uploadedModelMeta = await computeUploadedModelMeta({
+						file: glbFile,
+						format: isObj ? 'obj' : 'gltf',
+						style: entry.style
+					});
+					if (uploadedModelMeta.scaleMultiplier !== 1) {
+						entry.style.transform.baseScale = uploadedModelMeta.scaleMultiplier;
+						showNotification('小さいモデルのため拡大して表示します', 'info');
+					}
+					entry.metaData.bounds = uploadedModelMeta.bounds;
+					entry.metaData.xyzImageTile = uploadedModelMeta.xyzImageTile;
+				} catch (error) {
+					console.warn('3Dモデルの範囲を取得できませんでした', error);
+				}
 
 				if (entry) {
 					showDataEntry = entry;

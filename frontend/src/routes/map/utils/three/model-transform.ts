@@ -22,6 +22,7 @@ export const calculateModelTransform = (style: MeshStyle): ModelTransform => {
 		altitude,
 		heightOffset,
 		heightScale,
+		baseScale,
 		baseRotationX,
 		baseRotationY,
 		baseRotationZ,
@@ -33,7 +34,7 @@ export const calculateModelTransform = (style: MeshStyle): ModelTransform => {
 
 	const effectiveAltitude = (mapStore.getTerrain() ? altitude : 0) + (heightOffset ?? 0);
 	const mc = maplibregl.MercatorCoordinate.fromLngLat([lng, lat], effectiveAltitude);
-	const baseScale = mc.meterInMercatorCoordinateUnits();
+	const mercatorScale = mc.meterInMercatorCoordinateUnits();
 
 	return {
 		translateX: mc.x,
@@ -42,8 +43,8 @@ export const calculateModelTransform = (style: MeshStyle): ModelTransform => {
 		rotateX: Math.PI / 2 + ((baseRotationX ?? 0) + rotationX) * (Math.PI / 180),
 		rotateY: ((baseRotationY ?? 0) + rotationY) * (Math.PI / 180),
 		rotateZ: ((baseRotationZ ?? 0) + rotationZ) * (Math.PI / 180),
-		scaleX: baseScale * scale,
-		scaleY: baseScale * scale * (heightScale ?? 1),
-		scaleZ: baseScale * scale
+		scaleX: mercatorScale * (baseScale ?? 1) * scale,
+		scaleY: mercatorScale * (baseScale ?? 1) * scale * (heightScale ?? 1),
+		scaleZ: mercatorScale * (baseScale ?? 1) * scale
 	};
 };
