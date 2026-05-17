@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { fade, slide } from 'svelte/transition';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
+	import type { RasterRegistrationMode } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -21,6 +23,7 @@
 		getMinMax,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
+	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
@@ -46,6 +49,7 @@
 	let progressText = $state('');
 	let fileCount = $state(0);
 	let isDragover = $state(false);
+	let registrationMode = $state<RasterRegistrationMode>('raster');
 
 	// 蓄積されたXMLファイル一覧
 	let accumulatedFiles = $state<File[]>([]);
@@ -80,6 +84,12 @@
 			entryName = inputFiles[0].name.replace(/\.[^.]+$/, '');
 			initialAnalysisDone = true;
 			analyzeDemXml();
+		}
+	});
+
+	$effect(() => {
+		if (!analyzed && registrationMode !== 'raster') {
+			registrationMode = 'raster';
 		}
 	});
 
@@ -129,13 +139,6 @@
 
 		try {
 			const { data, width, height, bbox, nodata } = demResult;
-
-			const id = `geotiff_${crypto.randomUUID()}`;
-
-			const bands: RasterBands = [data];
-			const ranges: BandDataRange[] = [getMinMax(data, nodata)];
-
-			// サムネイル生成
 			const mapImage = generateThumbnail({
 				bands: [demResult.data],
 				width: demResult.width,
@@ -144,18 +147,41 @@
 				nodata: demResult.nodata
 			});
 
-			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
-
-			GeoTiffCache.setSize(id, width, height);
-			GeoTiffCache.setNumBands(id, 1);
-
-			// WGS84 → WebMercatorクリップ + 4326再投影
 			const resolvedBbox: [number, number, number, number] = [
 				Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, bbox[0])),
 				Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, bbox[1])),
 				Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, bbox[2])),
 				Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, bbox[3]))
 			];
+
+			if (registrationMode === 'mesh') {
+				const entry = await createRasterMeshEntry({
+					id: `mesh_${crypto.randomUUID()}`,
+					name: entryName || '基盤地図DEM 3Dメッシュ',
+					band: data,
+					width,
+					height,
+					nodata,
+					bounds: resolvedBbox,
+					mapImage
+				});
+				entry.metaData.attribution = '基盤地図DEM 3D Mesh';
+				showDataEntry = entry;
+				showDialogType = null;
+				dropFile = null;
+				showNotification('基盤地図DEMの3Dメッシュを生成しました', 'success');
+				return;
+			}
+
+			const id = `geotiff_${crypto.randomUUID()}`;
+
+			const bands: RasterBands = [data];
+			const ranges: BandDataRange[] = [getMinMax(data, nodata)];
+
+			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
+
+			GeoTiffCache.setSize(id, width, height);
+			GeoTiffCache.setNumBands(id, 1);
 
 			GeoTiffCache.setBbox(id, resolvedBbox);
 			GeoTiffCache.markAs4326(id);
@@ -259,6 +285,22 @@
 							6
 						)}, {demResult.bbox[3].toFixed(6)}]
 					</div>
+				</div>
+			{/if}
+
+			{#if analyzed}
+				<div class="w-full px-2">
+					<HorizontalSelectBox
+						label="登録方法"
+						options={[
+							{ key: 'raster', name: 'ラスター' },
+							{ key: 'mesh', name: '3Dメッシュ' }
+						]}
+						bind:group={registrationMode}
+					/>
+					<p class="mt-2 text-xs text-gray-400">
+						3Dメッシュは標高値を高さとして GLB に変換して登録します
+					</p>
 				</div>
 			{/if}
 

@@ -38,7 +38,7 @@ export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
 	enabled: true,
 	shadeStrength: 0.85,
 	ambientStrength: 0.35,
-	azimuthDeg: 810,
+	azimuthDeg: 180,
 	elevationDeg: 0
 };
 
