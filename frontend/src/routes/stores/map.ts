@@ -817,6 +817,13 @@ const createMapStore = () => {
 		}
 	};
 
+	const setModelAnimationState = (entry: ModelMeshEntry<MeshStyle>) => {
+		threeJsManager.setModelAnimationState(entry);
+		if (map && isMapValid(map)) {
+			map.triggerRepaint();
+		}
+	};
+
 	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
 		if (!map || !isMapValid(map)) return;
 		const layer = map.getLayer(layerId);
@@ -1392,6 +1399,7 @@ const createMapStore = () => {
 		ensureThreeLayer,
 		setThreeLayer,
 		setTemporalModelTimeStep,
+		setModelAnimationState,
 		setHighlightLayers,
 		clearHighlightLayers,
 		setFilter,

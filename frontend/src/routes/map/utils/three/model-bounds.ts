@@ -20,6 +20,7 @@ interface UploadedModelMeta {
 	scaleMultiplier: number;
 	localMaxDimension: number;
 	hasSkinnedMesh: boolean;
+	animationNames: string[];
 }
 
 const gltfLoader = new GLTFLoader();
@@ -27,15 +28,23 @@ const objLoader = new OBJLoader();
 const MIN_MODEL_MAX_DIMENSION_METERS = 1;
 const TARGET_MODEL_MAX_DIMENSION_METERS = 5;
 
-const parseGltfObject = async (file: File): Promise<THREE.Object3D> => {
+interface UploadedModelObject {
+	object: THREE.Object3D;
+	animationNames: string[];
+}
+
+const parseGltfObject = async (file: File): Promise<UploadedModelObject> => {
 	const buffer = await file.arrayBuffer();
 
-	return new Promise<THREE.Object3D>((resolve, reject) => {
+	return new Promise<UploadedModelObject>((resolve, reject) => {
 		gltfLoader.parse(
 			buffer,
 			'',
 			(gltf) => {
-				resolve(gltf.scene);
+				resolve({
+					object: gltf.scene,
+					animationNames: gltf.animations.map((clip, index) => clip.name || `Animation ${index + 1}`)
+				});
 			},
 			(error) => {
 				reject(error instanceof Error ? error : new Error(String(error)));
@@ -44,9 +53,12 @@ const parseGltfObject = async (file: File): Promise<THREE.Object3D> => {
 	});
 };
 
-const parseObjObject = async (file: File): Promise<THREE.Object3D> => {
+const parseObjObject = async (file: File): Promise<UploadedModelObject> => {
 	const text = await file.text();
-	return objLoader.parse(text);
+	return {
+		object: objLoader.parse(text),
+		animationNames: []
+	};
 };
 
 const getUploadedModelObject = async (file: File, format: 'gltf' | 'obj') => {
@@ -69,7 +81,7 @@ export const computeUploadedModelMeta = async ({
 	format,
 	style
 }: ComputeUploadedModelMetaParams): Promise<UploadedModelMeta> => {
-	const object = await getUploadedModelObject(file, format);
+	const { object, animationNames } = await getUploadedModelObject(file, format);
 	object.updateMatrixWorld(true);
 
 	const box = new THREE.Box3().setFromObject(object);
@@ -160,6 +172,7 @@ export const computeUploadedModelMeta = async ({
 		xyzImageTile: findCenterTile(bounds),
 		scaleMultiplier,
 		localMaxDimension,
-		hasSkinnedMesh
+		hasSkinnedMesh,
+		animationNames
 	};
 };

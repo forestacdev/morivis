@@ -9,6 +9,7 @@
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import { COLOR_MAP_TYPE } from '$routes/map/data/types/raster';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		layerEntry: ModelMeshEntry<MeshStyle>;
@@ -17,6 +18,7 @@
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
+	let animationClips = $derived(layerEntry.properties?.animation?.clips ?? []);
 	let showDimensionOption = $state(false);
 	const colorMapManager = new ColorMapManager();
 	const canEditShading = $derived(layerEntry.style.shadingOptions?.enabled ?? true);
@@ -36,6 +38,16 @@
 		if (!canEditShading && layerEntry.style.shading) {
 			layerEntry.style.shading.enabled = false;
 		}
+		if (animationClips.length > 0 && !layerEntry.state?.animation) {
+			layerEntry.state = {
+				...layerEntry.state,
+				animation: {
+					currentClipIndex: 0,
+					playing: false,
+					speed: 1
+				}
+			};
+		}
 		if (temporalDimension && !layerEntry.state?.dimension) {
 			layerEntry.state = {
 				...layerEntry.state,
@@ -44,6 +56,14 @@
 				}
 			};
 		}
+	});
+
+	$effect(() => {
+		if (animationClips.length === 0 || !layerEntry.state?.animation) return;
+		layerEntry.state.animation.currentClipIndex;
+		layerEntry.state.animation.playing;
+		layerEntry.state.animation.speed;
+		mapStore.setModelAnimationState(layerEntry);
 	});
 </script>
 
@@ -56,6 +76,37 @@
 <div class="mt-4">
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
 </div>
+
+{#if animationClips.length > 0 && layerEntry.state?.animation}
+	<div class="mt-4">
+		<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
+	</div>
+
+	{#if layerEntry.state.animation.playing}
+		<div class="mt-4 flex w-full flex-col gap-3">
+			<label class="text-sm text-gray-300">
+				<span class="mb-1 block">アニメーション</span>
+				<select
+					bind:value={layerEntry.state.animation.currentClipIndex}
+					class="bg-sub border-sub w-full rounded border px-3 py-2 text-white"
+				>
+					{#each animationClips as clip, index (clip.name)}
+						<option value={index}>{clip.name}</option>
+					{/each}
+				</select>
+			</label>
+
+			<RangeSlider
+				label="再生速度"
+				bind:value={layerEntry.state.animation.speed}
+				min={0.1}
+				max={3}
+				step={0.1}
+				icon="mdi:run-fast"
+			/>
+		</div>
+	{/if}
+{/if}
 
 {#if canEditShading}
 	<div class="mt-4">

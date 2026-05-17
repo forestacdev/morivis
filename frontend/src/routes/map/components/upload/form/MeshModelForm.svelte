@@ -98,6 +98,22 @@
 							entry.style.shading.enabled = false;
 						}
 					}
+					if (uploadedModelMeta.animationNames.length > 0) {
+						entry.properties = {
+							...entry.properties,
+							animation: {
+								clips: uploadedModelMeta.animationNames.map((name) => ({ name }))
+							}
+						};
+						entry.state = {
+							...entry.state,
+							animation: {
+								currentClipIndex: 0,
+								playing: false,
+								speed: 1
+							}
+						};
+					}
 					if (uploadedModelMeta.scaleMultiplier !== 1) {
 						entry.style.transform.baseScale = uploadedModelMeta.scaleMultiplier;
 						showNotification('小さいモデルのため拡大して表示します', 'info');

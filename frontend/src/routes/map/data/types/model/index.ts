@@ -9,6 +9,20 @@ interface ModelMetaData extends BaseMetaData {
 	altitude?: number;
 }
 
+export interface ModelAnimationClip {
+	name: string;
+}
+
+export interface ModelAnimationProperties {
+	clips: ModelAnimationClip[];
+}
+
+export interface ModelAnimationState {
+	currentClipIndex: number;
+	playing: boolean;
+	speed: number;
+}
+
 interface BaseModelEntry {
 	id: string;
 	type: 'model';
@@ -17,12 +31,14 @@ interface BaseModelEntry {
 		temporal?: {
 			dimension: RasterDiscreteDimension;
 		};
+		animation?: ModelAnimationProperties;
 	};
 	interaction: {
 		clickable: boolean;
 	};
 	state?: {
 		dimension?: RasterDimensionState;
+		animation?: ModelAnimationState;
 	};
 }
 

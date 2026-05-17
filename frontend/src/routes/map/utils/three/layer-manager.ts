@@ -1,4 +1,4 @@
-import type { CustomLayerInterface } from 'maplibre-gl';
+import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
@@ -19,6 +19,9 @@ interface LoadedModel {
 	entry: ModelMeshEntry<MeshStyle>;
 	object: THREE.Object3D;
 	transform: ModelTransform;
+	mixer?: THREE.AnimationMixer;
+	actions?: THREE.AnimationAction[];
+	lastClipIndex?: number;
 }
 
 /**
@@ -31,10 +34,12 @@ export class ThreeJsLayerManager {
 	private modelGroup: THREE.Group | null = null;
 	private previewModelGroup: THREE.Group | null = null;
 	private renderer: THREE.WebGLRenderer | null = null;
+	private map: MapLibreMap | null = null;
 	private loadedModels: Map<string, LoadedModel> = new Map();
 	private loader = new GLTFLoader();
 	private isInitialized = false;
 	private colorMapManager = new ColorMapManager();
+	private lastRenderTimeMs: number | null = null;
 
 	private resolveShading = (style: MeshStyle): Required<MeshShadingStyle> => ({
 		...DEFAULT_MESH_SHADING,
@@ -266,6 +271,40 @@ export class ThreeJsLayerManager {
 		});
 	};
 
+	private syncAnimationState = (loaded: LoadedModel) => {
+		if (!loaded.mixer || !loaded.actions || loaded.actions.length === 0) return;
+
+		const animationState = loaded.entry.state?.animation;
+		const clipIndex = Math.min(
+			Math.max(animationState?.currentClipIndex ?? 0, 0),
+			loaded.actions.length - 1
+		);
+		const speed = Math.max(animationState?.speed ?? 1, 0);
+		const playing = animationState?.playing ?? false;
+
+		loaded.actions.forEach((action, index) => {
+			if (index === clipIndex) {
+				if (loaded.lastClipIndex !== clipIndex) {
+					action.reset();
+				}
+				action.enabled = true;
+				action.setLoop(THREE.LoopRepeat, Infinity);
+				action.clampWhenFinished = false;
+				action.timeScale = speed;
+				action.paused = !playing;
+				action.play();
+				return;
+			}
+
+			action.stop();
+		});
+
+		loaded.lastClipIndex = clipIndex;
+		if (playing) {
+			this.map?.triggerRepaint();
+		}
+	};
+
 	/** カスタムレイヤーを作成（初期化用） */
 	createLayer(): CustomLayerInterface {
 		return {
@@ -274,6 +313,7 @@ export class ThreeJsLayerManager {
 			renderingMode: '3d',
 
 			onAdd: (map, gl) => {
+				this.map = map;
 				if (!this.isInitialized) {
 					this.camera = new THREE.Camera();
 					this.scene = new THREE.Scene();
@@ -313,6 +353,18 @@ export class ThreeJsLayerManager {
 			render: (_gl, args) => {
 				if (!this.scene || !this.camera || !this.renderer) return;
 				if (this.loadedModels.size === 0) return;
+				const nowMs = performance.now();
+				const deltaSeconds =
+					this.lastRenderTimeMs == null ? 0 : Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
+				this.lastRenderTimeMs = nowMs;
+				let hasPlayingAnimation = false;
+
+				this.loadedModels.forEach((loaded) => {
+					if (loaded.entry.state?.animation?.playing && loaded.mixer) {
+						loaded.mixer.update(deltaSeconds);
+						hasPlayingAnimation = true;
+					}
+				});
 
 				this.loadedModels.forEach((loaded) => {
 					const { transform } = loaded;
@@ -356,6 +408,10 @@ export class ThreeJsLayerManager {
 					this.renderer!.resetState();
 					this.renderer!.render(this.scene!, this.camera!);
 				});
+
+				if (hasPlayingAnimation) {
+					this.map?.triggerRepaint();
+				}
 			},
 
 			onRemove: () => {
@@ -399,13 +455,25 @@ export class ThreeJsLayerManager {
 				}
 			}
 
-			const onModelLoaded = (model: THREE.Group | THREE.Object3D) => {
+			const onModelLoaded = (
+				model: THREE.Group | THREE.Object3D,
+				animations: THREE.AnimationClip[] = []
+			) => {
 				this.applyStyleToObject(model, entry.style);
 
 				model.visible = entry.style.visible ?? true;
 				model.userData.entryId = entry.id;
-
-				this.loadedModels.set(entry.id, { entry, object: model, transform });
+				const loaded: LoadedModel = {
+					entry,
+					object: model,
+					transform
+				};
+				if (animations.length > 0) {
+					loaded.mixer = new THREE.AnimationMixer(model);
+					loaded.actions = animations.map((clip) => loaded.mixer!.clipAction(clip));
+				}
+				this.loadedModels.set(entry.id, loaded);
+				this.syncAnimationState(loaded);
 				if (_type === 'preview') {
 					this.previewModelGroup!.add(model);
 				} else {
@@ -444,7 +512,7 @@ export class ThreeJsLayerManager {
 			} else {
 				this.loader.load(
 					entry.format.url,
-					(gltf) => onModelLoaded(gltf.scene),
+					(gltf) => onModelLoaded(gltf.scene, gltf.animations),
 					undefined,
 					(error) => reject(error)
 				);
@@ -464,6 +532,8 @@ export class ThreeJsLayerManager {
 
 			const transform = calculateModelTransform(entry.style);
 			loaded.transform = transform;
+			loaded.entry = entry;
+			this.syncAnimationState(loaded);
 		});
 	}
 
@@ -522,6 +592,7 @@ export class ThreeJsLayerManager {
 		if (!loaded) return;
 		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, opacity } };
 		this.applyStyleToObject(loaded.object, loaded.entry.style);
+		this.syncAnimationState(loaded);
 	}
 
 	setModelWireframe(entryId: string, wireframe: boolean): void {
@@ -529,6 +600,7 @@ export class ThreeJsLayerManager {
 		if (!loaded) return;
 		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, wireframe } };
 		this.applyStyleToObject(loaded.object, loaded.entry.style);
+		this.syncAnimationState(loaded);
 	}
 
 	setModelColor(entryId: string, color: string): void {
@@ -536,6 +608,7 @@ export class ThreeJsLayerManager {
 		if (!loaded) return;
 		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, color } };
 		this.applyStyleToObject(loaded.object, loaded.entry.style);
+		this.syncAnimationState(loaded);
 	}
 
 	setModelTransform(entryId: string, style: MeshStyle): void {
@@ -544,6 +617,14 @@ export class ThreeJsLayerManager {
 		const newTransform = calculateModelTransform(style);
 		loaded.transform = newTransform;
 		loaded.entry = { ...loaded.entry, style };
+		this.syncAnimationState(loaded);
+	}
+
+	setModelAnimationState(entry: ModelMeshEntry<MeshStyle>): void {
+		const loaded = this.loadedModels.get(entry.id);
+		if (!loaded) return;
+		loaded.entry = entry;
+		this.syncAnimationState(loaded);
 	}
 
 	updateModelMeshHeights(
@@ -645,7 +726,9 @@ export class ThreeJsLayerManager {
 		this.loadedModels.clear();
 		this.scene = null;
 		this.camera = null;
+		this.map = null;
 		this.isInitialized = false;
+		this.lastRenderTimeMs = null;
 	}
 
 	/** 初期化済みかどうか */
