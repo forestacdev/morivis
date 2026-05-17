@@ -33,6 +33,8 @@ interface CreateRasterMeshEntryParams {
 interface RasterMeshGeometry {
 	glb: ArrayBuffer;
 	center: { lng: number; lat: number };
+	minHeight: number;
+	maxHeight: number;
 }
 
 const DEFAULT_MAX_GRID_SIZE = 192;
@@ -49,6 +51,8 @@ export interface RasterMeshHeightSampling extends RasterMeshSampling {
 	validVertices: Uint8Array;
 	effectiveBaseValue: number;
 	effectiveHeightScale: number;
+	minHeight: number;
+	maxHeight: number;
 }
 
 const isNodataValue = (value: number, nodata: number | null) => {
@@ -122,7 +126,10 @@ export const sampleRasterMeshHeights = ({
 	baseValue,
 	heightScale,
 	autoHeightScale = false
-}: Omit<CreateRasterMeshEntryParams, 'id' | 'name' | 'mapImage' | 'corners'>): RasterMeshHeightSampling => {
+}: Omit<
+	CreateRasterMeshEntryParams,
+	'id' | 'name' | 'mapImage' | 'corners'
+>): RasterMeshHeightSampling => {
 	const { xIndices, yIndices, sampleWidth, sampleHeight } = createRasterMeshSampling(
 		width,
 		height,
@@ -162,8 +169,7 @@ export const sampleRasterMeshHeights = ({
 	);
 	const heightRange = Math.max(1e-6, sampledMaxValue - effectiveBaseValue);
 	const effectiveHeightScale =
-		heightScale ??
-		(autoHeightScale ? (targetHorizontalSpanMeters * 0.18) / heightRange : 1);
+		heightScale ?? (autoHeightScale ? (targetHorizontalSpanMeters * 0.18) / heightRange : 1);
 
 	for (let y = 0; y < sampleHeight; y++) {
 		const sourceY = yIndices[y];
@@ -191,7 +197,9 @@ export const sampleRasterMeshHeights = ({
 		heights,
 		validVertices,
 		effectiveBaseValue,
-		effectiveHeightScale
+		effectiveHeightScale,
+		minHeight: (sampledMinValue - effectiveBaseValue) * effectiveHeightScale,
+		maxHeight: (sampledMaxValue - effectiveBaseValue) * effectiveHeightScale
 	};
 };
 
@@ -238,18 +246,26 @@ const buildRasterMeshGeometry = async ({
 	const centerLat = (bounds[1] + bounds[3]) / 2;
 	const centerMerc = maplibregl.MercatorCoordinate.fromLngLat([centerLng, centerLat], 0);
 	const meterUnit = centerMerc.meterInMercatorCoordinateUnits();
-	const { xIndices, yIndices, sampleWidth, sampleHeight, heights, validVertices } =
-		sampleRasterMeshHeights({
-			band,
-			width,
-			height,
-			nodata,
-			bounds,
-			maxGridSize,
-			baseValue,
-			heightScale,
-			autoHeightScale
-		});
+	const {
+		xIndices,
+		yIndices,
+		sampleWidth,
+		sampleHeight,
+		heights,
+		validVertices,
+		minHeight,
+		maxHeight
+	} = sampleRasterMeshHeights({
+		band,
+		width,
+		height,
+		nodata,
+		bounds,
+		maxGridSize,
+		baseValue,
+		heightScale,
+		autoHeightScale
+	});
 	const positions = new Float32Array(sampleWidth * sampleHeight * 3);
 	const indices: number[] = [];
 
@@ -273,7 +289,7 @@ const buildRasterMeshGeometry = async ({
 			const { lng, lat } = interpolateOnQuad(quadCorners, u, v);
 			const merc = maplibregl.MercatorCoordinate.fromLngLat([lng, lat], 0);
 
-			positions[posIndex] = (merc.x - centerMerc.x) / meterUnit;
+			positions[posIndex] = -(merc.x - centerMerc.x) / meterUnit;
 			// Three.js レイヤー側で Y 軸を反転しているため、
 			// ラスターメッシュは高さを負方向で焼いて上向きにそろえる。
 			positions[posIndex + 1] = -heights[vertexIndex];
@@ -289,11 +305,11 @@ const buildRasterMeshGeometry = async ({
 			const bottomRight = bottomLeft + 1;
 
 			if (validVertices[topLeft] && validVertices[bottomLeft] && validVertices[topRight]) {
-				indices.push(topLeft, topRight, bottomLeft);
+				indices.push(topLeft, bottomLeft, topRight);
 			}
 
 			if (validVertices[topRight] && validVertices[bottomLeft] && validVertices[bottomRight]) {
-				indices.push(topRight, bottomRight, bottomLeft);
+				indices.push(topRight, bottomLeft, bottomRight);
 			}
 		}
 	}
@@ -305,7 +321,7 @@ const buildRasterMeshGeometry = async ({
 	const geometry = new THREE.BufferGeometry();
 	geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 	geometry.setIndex(indices);
-	geometry.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI / -2));
+	geometry.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI / 1));
 	geometry.computeVertexNormals();
 
 	const material = new THREE.MeshStandardMaterial({
@@ -319,7 +335,9 @@ const buildRasterMeshGeometry = async ({
 		const glb = await exportMeshToGlb(mesh);
 		return {
 			glb,
-			center: { lng: centerLng, lat: centerLat }
+			center: { lng: centerLng, lat: centerLat },
+			minHeight,
+			maxHeight
 		};
 	} finally {
 		geometry.dispose();
@@ -331,7 +349,7 @@ export const createRasterMeshEntry = async (
 	params: CreateRasterMeshEntryParams
 ): Promise<ModelMeshEntry<MeshStyle>> => {
 	const { id, name, bounds, mapImage } = params;
-	const { glb, center } = await buildRasterMeshGeometry(params);
+	const { glb, center, minHeight, maxHeight } = await buildRasterMeshGeometry(params);
 	const url = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }));
 
 	return {
@@ -357,6 +375,15 @@ export const createRasterMeshEntry = async (
 			wireframe: false,
 			color: '#ffffff',
 			shading: { ...DEFAULT_MESH_SHADING },
+			heightColorRamp: {
+				enabled: false,
+				colorMap: 'jet',
+				min: minHeight,
+				max: maxHeight,
+				sourceMin: minHeight,
+				sourceMax: maxHeight,
+				sourceSign: -1
+			},
 			transform: {
 				lng: center.lng,
 				lat: center.lat,

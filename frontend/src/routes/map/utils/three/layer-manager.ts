@@ -13,6 +13,7 @@ import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 interface LoadedModel {
 	entry: ModelMeshEntry<MeshStyle>;
@@ -33,6 +34,7 @@ export class ThreeJsLayerManager {
 	private loadedModels: Map<string, LoadedModel> = new Map();
 	private loader = new GLTFLoader();
 	private isInitialized = false;
+	private colorMapManager = new ColorMapManager();
 
 	private resolveShading = (style: MeshStyle): Required<MeshShadingStyle> => ({
 		...DEFAULT_MESH_SHADING,
@@ -56,6 +58,7 @@ export class ThreeJsLayerManager {
 		style: MeshStyle
 	): THREE.ShaderMaterial => {
 		const shading = this.resolveShading(style);
+		const shadingEnabled = Boolean(style.shading?.enabled);
 		const baseColor = new THREE.Color(style.color);
 		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
 			baseColor.multiply(sourceMaterial.color);
@@ -65,24 +68,44 @@ export class ThreeJsLayerManager {
 			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
 				? sourceMaterial.map
 				: null;
+		const colorRamp = style.heightColorRamp;
+		const colorRampTexture =
+			colorRamp?.enabled && colorRamp.max > colorRamp.min
+				? new THREE.DataTexture(
+						this.colorMapManager.createColorArray(colorRamp.colorMap),
+						256,
+						1,
+						THREE.RGBFormat
+					)
+				: null;
+		if (colorRampTexture) {
+			colorRampTexture.needsUpdate = true;
+		}
 
 		const material = new THREE.ShaderMaterial({
 			uniforms: {
 				uBaseColor: { value: baseColor },
 				uOpacity: { value: style.opacity },
-				uAmbientStrength: { value: shading.ambientStrength },
-				uShadeStrength: { value: shading.shadeStrength },
+				uAmbientStrength: { value: shadingEnabled ? shading.ambientStrength : 1 },
+				uShadeStrength: { value: shadingEnabled ? shading.shadeStrength : 0 },
 				uLightDirection: { value: this.getLightDirection(shading) },
 				uMap: { value: map },
-				uUseMap: { value: Boolean(map) }
+				uUseMap: { value: Boolean(map) },
+				uColorRamp: { value: colorRampTexture },
+				uUseHeightColorRamp: { value: Boolean(colorRampTexture) },
+				uHeightRampMin: { value: colorRamp?.min ?? 0 },
+				uHeightRampMax: { value: colorRamp?.max ?? 1 },
+				uHeightRampSign: { value: colorRamp?.sourceSign ?? 1 }
 			},
 			vertexShader: `
 				varying vec3 vNormal;
 				varying vec2 vUv;
+				varying float vHeight;
 
 				void main() {
 					vNormal = normalize(normalMatrix * normal);
 					vUv = uv;
+					vHeight = position.y;
 					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 				}
 			`,
@@ -94,16 +117,30 @@ export class ThreeJsLayerManager {
 				uniform vec3 uLightDirection;
 				uniform sampler2D uMap;
 				uniform bool uUseMap;
+				uniform sampler2D uColorRamp;
+				uniform bool uUseHeightColorRamp;
+				uniform float uHeightRampMin;
+				uniform float uHeightRampMax;
+				uniform float uHeightRampSign;
 
 				varying vec3 vNormal;
 				varying vec2 vUv;
+				varying float vHeight;
 
 				void main() {
 					vec4 texel = uUseMap ? texture2D(uMap, vUv) : vec4(1.0);
+					float rampDenominator = max(uHeightRampMax - uHeightRampMin, 0.000001);
+					float rampValue = clamp(
+						((vHeight * uHeightRampSign) - uHeightRampMin) / rampDenominator,
+						0.0,
+						1.0
+					);
+					vec3 rampColor = texture2D(uColorRamp, vec2(rampValue, 0.5)).rgb;
+					vec3 surfaceColor = uUseHeightColorRamp ? rampColor : (uBaseColor * texel.rgb);
 					vec3 normalDir = normalize(vNormal);
 					float diffuse = max(dot(normalDir, normalize(uLightDirection)), 0.0);
 					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
-					vec3 shadedColor = uBaseColor * texel.rgb * shade;
+					vec3 shadedColor = surfaceColor * shade;
 					float alpha = texel.a * uOpacity;
 
 					if (alpha <= 0.001) discard;
@@ -116,6 +153,7 @@ export class ThreeJsLayerManager {
 			side: sourceMaterial.side
 		});
 		material.userData.morivisShaderShading = true;
+		material.userData.colorRampTexture = colorRampTexture;
 		return material;
 	};
 
@@ -153,14 +191,23 @@ export class ThreeJsLayerManager {
 			mesh.userData.originalMaterials = originalMaterials;
 		}
 
+		const useShaderMaterial =
+			Boolean(style.shading?.enabled) || Boolean(style.heightColorRamp?.enabled);
+
 		const nextMaterials = originalMaterials.map((sourceMaterial) =>
-			this.resolveShading(style).enabled
+			useShaderMaterial
 				? this.createShaderMaterial(sourceMaterial, style)
 				: this.createFlatMaterial(sourceMaterial, style)
 		);
 
 		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
-		currentMaterials.forEach((material) => material.dispose());
+		currentMaterials.forEach((material) => {
+			const colorRampTexture = material.userData?.colorRampTexture;
+			if (colorRampTexture instanceof THREE.Texture) {
+				colorRampTexture.dispose();
+			}
+			material.dispose();
+		});
 	};
 
 	private applyStyleToObject = (object: THREE.Object3D, style: MeshStyle) => {

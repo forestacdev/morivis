@@ -1,9 +1,14 @@
 <script lang="ts">
 	import DimensionSelector from '../raster_option/DimensionSelector.svelte';
+	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import { COLOR_MAP_TYPE } from '$routes/map/data/types/raster';
+	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 	interface Props {
 		layerEntry: ModelMeshEntry<MeshStyle>;
@@ -13,6 +18,7 @@
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
 	let showDimensionOption = $state(false);
+	const colorMapManager = new ColorMapManager();
 
 	const ensureShading = () => {
 		layerEntry.style.shading ??= { ...DEFAULT_MESH_SHADING };
@@ -46,6 +52,41 @@
 <div class="mt-4">
 	<Switch label="陰影" bind:value={layerEntry.style.shading!.enabled} />
 </div>
+
+{#if layerEntry.style.heightColorRamp}
+	<div class="mt-4">
+		<Switch label="高さカラーランプ" bind:value={layerEntry.style.heightColorRamp.enabled} />
+	</div>
+
+	{#if layerEntry.style.heightColorRamp.enabled}
+		<div class="mt-4 flex w-full flex-col gap-4">
+			<ColorMapSelect
+				bind:isColorMap={layerEntry.style.heightColorRamp.colorMap}
+				mutableColorMapType={[...COLOR_MAP_TYPE]}
+			>
+				{#snippet children(_isColorMap)}
+					<ColorScaleDem isColorMap={_isColorMap} />
+				{/snippet}
+			</ColorMapSelect>
+
+			<RangeSliderDouble
+				label="高さ範囲"
+				bind:lowerValue={layerEntry.style.heightColorRamp.min}
+				bind:upperValue={layerEntry.style.heightColorRamp.max}
+				min={layerEntry.style.heightColorRamp.sourceMin ??
+					Math.min(layerEntry.style.heightColorRamp.min, layerEntry.style.heightColorRamp.max)}
+				max={layerEntry.style.heightColorRamp.sourceMax ??
+					Math.max(layerEntry.style.heightColorRamp.min, layerEntry.style.heightColorRamp.max)}
+				step={0.01}
+				primaryColor={colorMapManager.createSimpleCSSGradient(
+					layerEntry.style.heightColorRamp.colorMap
+				)}
+				minRangeColor={colorMapManager.getMinColor(layerEntry.style.heightColorRamp.colorMap)}
+				maxRangeColor={colorMapManager.getMaxColor(layerEntry.style.heightColorRamp.colorMap)}
+			/>
+		</div>
+	{/if}
+{/if}
 
 {#if layerEntry.style.shading!.enabled}
 	<div class="mt-4 flex w-full flex-col gap-4">

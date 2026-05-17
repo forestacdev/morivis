@@ -1,5 +1,6 @@
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
 import type {
+	ColorMapType,
 	RasterDiscreteDimension,
 	RasterDimensionState
 } from '$routes/map/data/types/raster';
@@ -41,6 +42,16 @@ export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
 	elevationDeg: 50
 };
 
+export interface MeshHeightColorRampStyle {
+	enabled: boolean;
+	colorMap: ColorMapType;
+	min: number;
+	max: number;
+	sourceMin?: number;
+	sourceMax?: number;
+	sourceSign?: 1 | -1;
+}
+
 export interface MeshStyle {
 	type: 'mesh';
 	opacity: Opacity;
@@ -48,6 +59,7 @@ export interface MeshStyle {
 	wireframe: boolean;
 	color: string;
 	shading?: MeshShadingStyle;
+	heightColorRamp?: MeshHeightColorRampStyle;
 	transform: {
 		lng: number;
 		lat: number;
