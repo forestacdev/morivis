@@ -80,6 +80,14 @@ export interface FeaturePanelAudioMedia {
 export interface TimberSpecies {
 	url: string;
 	distribution?: string;
+	nameEn?: string;
+	scientificName?: string;
+	airDryDensity?: number | { min: number; max: number };
+	woodStructure?: string;
+	hardness?: string;
+	summary?: string;
+	characteristics?: string[];
+	uses?: string[];
 }
 
 export interface FeaturePanelTextContent {

@@ -210,7 +210,18 @@ const getProtectionForestDescription = (
 const getTimberSpeciesSummary = (
 	targetLayer: GeoDataEntry | null,
 	featureMenuData: FeatureMenuData
-): { url: string; distribution?: string } | undefined => {
+): {
+	url: string;
+	distribution?: string;
+	nameEn?: string;
+	scientificName?: string;
+	airDryDensity?: number | { min: number; max: number };
+	woodStructure?: string;
+	hardness?: string;
+	summary?: string;
+	characteristics?: string[];
+	uses?: string[];
+} | undefined => {
 	if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData.properties) {
 		return undefined;
 	}
@@ -225,7 +236,21 @@ const getTimberSpeciesSummary = (
 		return undefined;
 	}
 
-	return getTimberSpeciesData(timberSpeciesName) ?? undefined;
+	const timberSpecies = getTimberSpeciesData(timberSpeciesName);
+	if (!timberSpecies) return undefined;
+
+	return {
+		url: timberSpecies.url,
+		distribution: timberSpecies.distribution,
+		nameEn: timberSpecies.detail?.nameEn,
+		scientificName: timberSpecies.detail?.scientificName,
+		airDryDensity: timberSpecies.detail?.airDryDensity,
+		woodStructure: timberSpecies.detail?.woodStructure,
+		hardness: timberSpecies.detail?.hardness,
+		summary: timberSpecies.detail?.summary,
+		characteristics: timberSpecies.detail?.characteristics,
+		uses: timberSpecies.detail?.uses
+	};
 };
 
 // 通常の地物クリック時に表示する概要情報をここで集約して組み立てる。
