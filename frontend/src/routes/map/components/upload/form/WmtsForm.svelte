@@ -36,7 +36,14 @@
 			.required('URLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
 				if (!value) return false;
-				return value.startsWith('http://') || value.startsWith('https://');
+				try {
+					const normalized = value.trim();
+					if (!normalized) return false;
+					const parsed = new URL(normalized);
+					return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+				} catch {
+					return false;
+				}
 			})
 	});
 
@@ -157,6 +164,7 @@
 
 		try {
 			const url = forms.url.trim();
+			forms.url = url;
 
 			// まずWMTSを試行
 			let wmtsResult = await parseWmtsCapabilities(url);
@@ -233,7 +241,11 @@
 		}}
 	>
 		<div class="grow">
-			<TextForm bind:value={forms.url} label="Capabilities URL" error={urlErrors.url} />
+			<TextForm
+				bind:value={forms.url}
+				label="Capabilities URL / サービスURL"
+				error={urlErrors.url}
+			/>
 		</div>
 	</form>
 
@@ -268,7 +280,7 @@
 		</div>
 
 		<div transition:slide class="flex w-full flex-col gap-1 px-2">
-			{#each pagedLayers as layer}
+			{#each pagedLayers as layer (layer.id)}
 				<button
 					type="button"
 					onclick={() => {
@@ -345,7 +357,7 @@
 			? 'cursor-not-allowed px-8 opacity-50'
 			: ''}"
 	>
-		{layers.length > 0 ? 'レイヤーを再取得' : 'レイヤーを取得'}
+		{layers.length > 0 ? '再取得' : 'レイヤーを取得'}
 	</button>
 	{#if layers.length > 0}
 		<button
