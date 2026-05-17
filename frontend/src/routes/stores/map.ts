@@ -724,7 +724,12 @@ const createMapStore = () => {
 			maxGridSize: cacheEntry.meshConfig.maxGridSize
 		});
 
-		return threeJsManager.updateModelMeshHeights(entry.id, meshHeightSampling.heights);
+		const signedHeights = new Float32Array(meshHeightSampling.heights.length);
+		for (let i = 0; i < meshHeightSampling.heights.length; i++) {
+			signedHeights[i] = -meshHeightSampling.heights[i];
+		}
+
+		return threeJsManager.updateModelMeshHeights(entry.id, signedHeights);
 	};
 
 	// Three.js モデルを設定（差分更新）
