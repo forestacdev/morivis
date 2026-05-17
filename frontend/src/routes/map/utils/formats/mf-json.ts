@@ -380,24 +380,35 @@ export const mfJsonFileToGeojson = async (
 	}
 
 	if (dataType === 'polygons') {
-		const features = parsedFeatures.flatMap((parsed, featureIndex) => {
+		const features: Array<{
+			type: 'Feature';
+			id: string;
+			geometry: PolygonGeometry | MultiPolygonGeometry;
+			properties: FeatureProp;
+		}> = parsedFeatures.flatMap((parsed, featureIndex) => {
 			if (parsed.geometryType !== 'MovingPolygon') return [];
 
 			return parsed.coordinates.flatMap((coordinate, timeIndex) => {
 				const polygonCoordinates = parsePolygonCoordinate(coordinate);
 				if (!polygonCoordinates) return [];
 
-				const geometryType =
-					Array.isArray(polygonCoordinates[0]?.[0]?.[0]) ? 'MultiPolygon' : 'Polygon';
+				const geometry: PolygonGeometry | MultiPolygonGeometry = Array.isArray(
+					polygonCoordinates[0]?.[0]?.[0]
+				)
+					? {
+							type: 'MultiPolygon',
+							coordinates: polygonCoordinates as MultiPolygonGeometry['coordinates']
+						}
+					: {
+							type: 'Polygon',
+							coordinates: polygonCoordinates as PolygonGeometry['coordinates']
+						};
 
 				return [
 					{
 						type: 'Feature' as const,
 						id: `${featureIndex}-${timeIndex}`,
-						geometry: {
-							type: geometryType,
-							coordinates: polygonCoordinates
-						},
+						geometry,
 						properties: createPointProperties(parsed, timeIndex, {
 							geometry_kind: 'MovingPolygon'
 						})

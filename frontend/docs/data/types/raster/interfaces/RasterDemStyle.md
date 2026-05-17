@@ -6,7 +6,7 @@
 
 # Interface: RasterDemStyle
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:184](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L184)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:165](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L165)
 
 ## Extends
 
@@ -14,23 +14,11 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:184](https://git
 
 ## Properties
 
-### dimension?
-
-> `optional` **dimension**: [`RasterDiscreteDimension`](RasterDiscreteDimension.md)
-
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:82](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L82)
-
-#### Inherited from
-
-[`BaseRasterStyle`](BaseRasterStyle.md).[`dimension`](BaseRasterStyle.md#dimension)
-
-***
-
 ### maxZoom?
 
 > `optional` **maxZoom**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:81](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L81)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:81](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L81)
 
 #### Inherited from
 
@@ -42,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:81](https://gith
 
 > `optional` **minZoom**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:80](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L80)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:80](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L80)
 
 #### Inherited from
 
@@ -54,7 +42,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:80](https://gith
 
 > **opacity**: [`Opacity`](../../type-aliases/Opacity.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:78](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L78)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:78](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L78)
 
 #### Inherited from
 
@@ -66,7 +54,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:78](https://gith
 
 > **type**: `"dem"`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:185](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L185)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:166](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L166)
 
 ***
 
@@ -74,7 +62,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:185](https://git
 
 > `optional` **visible**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:79](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L79)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:79](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L79)
 
 #### Inherited from
 
@@ -86,7 +74,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:79](https://gith
 
 > **visualization**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:186](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L186)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:167](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L167)
 
 #### demType
 
@@ -106,7 +94,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:186](https://git
 
 ##### uniformsData.aspect.colorMap
 
-> **colorMap**: `"cool"` \| `"warm"` \| `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
+> **colorMap**: `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"warm"` \| `"cool"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
 
 ##### uniformsData.curvature?
 
@@ -114,7 +102,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:186](https://git
 
 ##### uniformsData.curvature.colorMap
 
-> **colorMap**: `"cool"` \| `"warm"` \| `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
+> **colorMap**: `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"warm"` \| `"cool"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
 
 ##### uniformsData.relief
 
@@ -122,7 +110,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:186](https://git
 
 ##### uniformsData.relief.colorMap
 
-> **colorMap**: `"cool"` \| `"warm"` \| `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
+> **colorMap**: `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"warm"` \| `"cool"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
 
 ##### uniformsData.relief.max
 
@@ -138,7 +126,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:186](https://git
 
 ##### uniformsData.slope.colorMap
 
-> **colorMap**: `"cool"` \| `"warm"` \| `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
+> **colorMap**: `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"warm"` \| `"cool"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
 
 ##### uniformsData.slope.max
 

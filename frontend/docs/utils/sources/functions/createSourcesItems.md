@@ -8,7 +8,7 @@
 
 > **createSourcesItems**(`_dataEntries`, `_type`): `Promise`\<\{\[`_`: `string`\]: `SourceSpecification`; \}\>
 
-Defined in: [frontend/src/routes/map/utils/sources/index.ts:67](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/sources/index.ts#L67)
+Defined in: [frontend/src/routes/map/utils/sources/index.ts:113](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/utils/sources/index.ts#L113)
 
 ## Parameters
 

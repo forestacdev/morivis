@@ -210,18 +210,20 @@ const getProtectionForestDescription = (
 const getTimberSpeciesSummary = (
 	targetLayer: GeoDataEntry | null,
 	featureMenuData: FeatureMenuData
-): {
-	url: string;
-	distribution?: string;
-	nameEn?: string;
-	scientificName?: string;
-	airDryDensity?: number | { min: number; max: number };
-	woodStructure?: string;
-	hardness?: string;
-	summary?: string;
-	characteristics?: string[];
-	uses?: string[];
-} | undefined => {
+):
+	| {
+			url: string;
+			distribution?: string;
+			nameEn?: string;
+			scientificName?: string;
+			airDryDensity?: number | { min: number; max: number };
+			woodStructure?: string;
+			hardness?: string;
+			summary?: string;
+			characteristics?: string[];
+			uses?: string[];
+	  }
+	| undefined => {
 	if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData.properties) {
 		return undefined;
 	}

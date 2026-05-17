@@ -6,15 +6,15 @@
 
 # Interface: ShingleBandData
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:217](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L217)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:198](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L198)
 
 ## Properties
 
 ### colorMap
 
-> **colorMap**: `"cool"` \| `"warm"` \| `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
+> **colorMap**: `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"warm"` \| `"cool"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:221](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L221)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:202](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L202)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:221](https://git
 
 > **index**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:218](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L218)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:199](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L199)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:218](https://git
 
 > **max**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:220](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L220)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:201](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L201)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:220](https://git
 
 > **min**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:219](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L219)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:200](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L200)

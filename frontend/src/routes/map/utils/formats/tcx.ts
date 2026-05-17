@@ -239,7 +239,8 @@ const parseActivityContainer = (
 	waypoints: TcxWaypoint[],
 	kind: 'activity' | 'history'
 ): void => {
-	const activityId = getText(activity.Id) ?? getText(activity.Name) ?? `${kind}-${tracks.length + 1}`;
+	const activityId =
+		getText(activity.Id) ?? getText(activity.Name) ?? `${kind}-${tracks.length + 1}`;
 	const sport = getText(activity.Sport);
 	const laps = asArray(activity.Lap ?? getNestedValue(activity, ['Laps', 'Lap']));
 	let lapWaypointIndex = waypoints.filter((waypoint) => waypoint.kind === 'lap').length;
@@ -252,7 +253,9 @@ const parseActivityContainer = (
 			const trackNode = asNode(trackValue);
 			if (!trackNode) return;
 
-			const points = asArray(trackNode.Trackpoint).map(parseTrackPoint).filter(Boolean) as TcxTrackPoint[];
+			const points = asArray(trackNode.Trackpoint)
+				.map(parseTrackPoint)
+				.filter(Boolean) as TcxTrackPoint[];
 			if (points.length === 0) return;
 
 			const parsedTrack: TcxTrack = {
@@ -284,7 +287,9 @@ const parseCourseContainer = (course: TcxNode, tracks: TcxTrack[], waypoints: Tc
 		const trackNode = asNode(trackValue);
 		if (!trackNode) return;
 
-		const points = asArray(trackNode.Trackpoint).map(parseTrackPoint).filter(Boolean) as TcxTrackPoint[];
+		const points = asArray(trackNode.Trackpoint)
+			.map(parseTrackPoint)
+			.filter(Boolean) as TcxTrackPoint[];
 		if (points.length === 0) return;
 
 		tracks.push({
@@ -366,7 +371,10 @@ export const checkTcxFile = async (
 	};
 };
 
-export const tcxFileToGeojson = async (file: File, type: TcxDataType): Promise<FeatureCollection> => {
+export const tcxFileToGeojson = async (
+	file: File,
+	type: TcxDataType
+): Promise<FeatureCollection> => {
 	const parsed = await readTcxFile(file);
 
 	if (type === 'tracks') {

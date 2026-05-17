@@ -17,11 +17,11 @@
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
 	import { getLayerImage } from '$routes/map/utils/image';
+	import { getRasterDimension } from '$routes/map/utils/raster/dimension-runtime';
 	import {
 		getRasterStylePreset,
 		type RasterStylePreset
 	} from '$routes/map/utils/style/raster-preset';
-	import { getRasterDimension } from '$routes/map/utils/raster/dimension-runtime';
 
 	interface Props {
 		layerEntry: RasterEntry<

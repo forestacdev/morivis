@@ -43,7 +43,9 @@ const parseGltfObject = async (file: File): Promise<UploadedModelObject> => {
 			(gltf) => {
 				resolve({
 					object: gltf.scene,
-					animationNames: gltf.animations.map((clip, index) => clip.name || `Animation ${index + 1}`)
+					animationNames: gltf.animations.map(
+						(clip, index) => clip.name || `Animation ${index + 1}`
+					)
 				});
 			},
 			(error) => {
@@ -161,12 +163,7 @@ export const computeUploadedModelMeta = async ({
 		north = Math.max(north, lat);
 	});
 
-	const bounds: [number, number, number, number] = [
-		west,
-		south,
-		east,
-		north
-	];
+	const bounds: [number, number, number, number] = [west, south, east, north];
 	return {
 		bounds,
 		xyzImageTile: findCenterTile(bounds),

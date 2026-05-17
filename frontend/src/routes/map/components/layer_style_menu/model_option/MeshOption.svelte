@@ -1,10 +1,11 @@
 <script lang="ts">
-	import DimensionSelector from '../raster_option/DimensionSelector.svelte';
 	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
+	import DimensionSelector from '../raster_option/DimensionSelector.svelte';
+
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
-	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
+	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import { COLOR_MAP_TYPE } from '$routes/map/data/types/raster';
@@ -60,9 +61,12 @@
 
 	$effect(() => {
 		if (animationClips.length === 0 || !layerEntry.state?.animation) return;
-		layerEntry.state.animation.currentClipIndex;
-		layerEntry.state.animation.playing;
-		layerEntry.state.animation.speed;
+		const animationStateKey = [
+			layerEntry.state.animation.currentClipIndex,
+			layerEntry.state.animation.playing,
+			layerEntry.state.animation.speed
+		].join(':');
+		if (!animationStateKey) return;
 		mapStore.setModelAnimationState(layerEntry);
 	});
 </script>

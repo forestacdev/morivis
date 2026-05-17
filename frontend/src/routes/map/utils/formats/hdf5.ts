@@ -345,7 +345,9 @@ export const detectHdf5SpecialProduct = async (
 	};
 
 	const fileType = readHeaderString('HeaderData/FixedProductHeader/File_Type');
-	const productName = readHeaderString('HeaderData/VariableProductHeader/MainProductHeader/productName');
+	const productName = readHeaderString(
+		'HeaderData/VariableProductHeader/MainProductHeader/productName'
+	);
 
 	const scienceGeoLat = f.get('ScienceData/Geo/latitude');
 	const scienceGeoLon = f.get('ScienceData/Geo/longitude');
@@ -464,7 +466,10 @@ const buildOrbitTrackPointFeatures = (
 	};
 };
 
-const getDatasetNumberArray = (f: InstanceType<typeof hdf5.File>, path: string): number[] | null => {
+const getDatasetNumberArray = (
+	f: InstanceType<typeof hdf5.File>,
+	path: string
+): number[] | null => {
 	try {
 		const dataset = f.get(path);
 		if (!(dataset instanceof hdf5.Dataset)) return null;
@@ -485,15 +490,7 @@ const buildIsoTimeStrings = (f: InstanceType<typeof hdf5.File>): string[] => {
 	const seconds = getDatasetNumberArray(f, 'ScienceData/Geo/Scan_Time/Second');
 	const milliSeconds = getDatasetNumberArray(f, 'ScienceData/Geo/Scan_Time/MilliSecond');
 
-	if (
-		years &&
-		months &&
-		days &&
-		hours &&
-		minutes &&
-		seconds &&
-		milliSeconds
-	) {
+	if (years && months && days && hours && minutes && seconds && milliSeconds) {
 		return years.map((year, index) => {
 			const month = months[index] ?? 1;
 			const day = days[index] ?? 1;
@@ -718,7 +715,9 @@ const getCenterTrackCoords = (
 	return coords;
 };
 
-const buildMsiClpOrbitTrackPointGeojson = (f: InstanceType<typeof hdf5.File>): FeatureCollection => {
+const buildMsiClpOrbitTrackPointGeojson = (
+	f: InstanceType<typeof hdf5.File>
+): FeatureCollection => {
 	const latDataset = f.get('ScienceData/Geo/latitude');
 	const lonDataset = f.get('ScienceData/Geo/longitude');
 

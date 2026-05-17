@@ -123,7 +123,10 @@
 			dataTypeOptions = options;
 			dataType = options[0].key;
 		} catch (error) {
-			showNotification(error instanceof Error ? error.message : 'TCX の読み込みに失敗しました', 'error');
+			showNotification(
+				error instanceof Error ? error.message : 'TCX の読み込みに失敗しました',
+				'error'
+			);
 			cancel();
 		} finally {
 			isProcessing.set(false);
@@ -168,7 +171,10 @@
 			showDataEntry = entry;
 			showDialogType = null;
 		} catch (error) {
-			showNotification(error instanceof Error ? error.message : 'TCX の変換に失敗しました', 'error');
+			showNotification(
+				error instanceof Error ? error.message : 'TCX の変換に失敗しました',
+				'error'
+			);
 		} finally {
 			isProcessing.set(false);
 		}

@@ -1,4 +1,4 @@
-import { loadJmaNowcastRasterEntry, type JmaNowcastConfig } from '$routes/map/api/nowcast';
+import { createJmaNowcastFallbackEntry, type JmaNowcastConfig } from '$routes/map/api/nowcast';
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
@@ -12,7 +12,7 @@ const config: JmaNowcastConfig = {
 	downloadUrl: 'https://www.jma.go.jp/jma/kishou/know/kurashi/highres_nowcast.html'
 };
 
-const entry = await loadJmaNowcastRasterEntry(config);
+const entry = createJmaNowcastFallbackEntry(config);
 
 const categoricalEntry = entry as unknown as RasterImageEntry<RasterCategoricalStyle>;
 categoricalEntry.style = {

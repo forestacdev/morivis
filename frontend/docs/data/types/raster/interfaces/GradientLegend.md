@@ -6,7 +6,7 @@
 
 # Interface: GradientLegend
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:30](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L30)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:30](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L30)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:30](https://gith
 
 > **colors**: `string`[]
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:33](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L33)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:33](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L33)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:33](https://gith
 
 > **name**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:32](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L32)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:32](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L32)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:32](https://gith
 
 > **ranges**: `number`[]
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:34](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L34)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:34](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L34)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:34](https://gith
 
 > **type**: `"gradient"`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:31](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L31)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:31](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L31)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:31](https://gith
 
 > **unit**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:35](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/data/types/raster/index.ts#L35)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:35](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L35)

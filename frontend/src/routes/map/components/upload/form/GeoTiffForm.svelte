@@ -699,13 +699,9 @@
 					)}, {resolvedBbox[3].toFixed(6)}]
 				</div>
 			{:else if rawBbox}
-				<div class="text-yellow-400">
-					座標系が不明です。決定時に投影法の選択へ進みます。
-				</div>
+				<div class="text-yellow-400">座標系が不明です。決定時に投影法の選択へ進みます。</div>
 			{:else}
-				<div class="text-red-400">
-					位置情報がありません。決定時に位置合わせフォームへ進みます。
-				</div>
+				<div class="text-red-400">位置情報がありません。決定時に位置合わせフォームへ進みます。</div>
 			{/if}
 		</div>
 

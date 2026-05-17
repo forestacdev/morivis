@@ -4,7 +4,6 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
-	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -13,6 +12,7 @@
 		WEB_MERCATOR_MAX_LNG
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import {

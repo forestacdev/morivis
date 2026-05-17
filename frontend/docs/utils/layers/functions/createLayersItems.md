@@ -8,7 +8,7 @@
 
 > **createLayersItems**(`_dataEntries`, `_type`): `LayerSpecification`[]
 
-Defined in: [frontend/src/routes/map/utils/layers/index.ts:159](https://github.com/forestacdev/morivis/blob/ee0f463664fecbbce3a97d40b1cff6b3f42251c5/frontend/src/routes/map/utils/layers/index.ts#L159)
+Defined in: [frontend/src/routes/map/utils/layers/index.ts:156](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/utils/layers/index.ts#L156)
 
 ## Parameters
 

@@ -1,4 +1,4 @@
-import { loadHimawariRasterEntry, type HimawariProductConfig } from '$routes/map/api/himawari';
+import { createHimawariFallbackEntry, type HimawariProductConfig } from '$routes/map/api/himawari';
 
 const config: HimawariProductConfig = {
 	id: 'himawari_rep',
@@ -12,6 +12,6 @@ const config: HimawariProductConfig = {
 	downloadUrl: 'https://www.data.jma.go.jp/sat_info/himawari/satobs.html'
 };
 
-const entry = await loadHimawariRasterEntry(config);
+const entry = createHimawariFallbackEntry(config);
 
 export default entry;

@@ -103,7 +103,9 @@ const getTinBounds = (points: [number, number, number][]): [number, number, numb
 	return [minX, minY, maxX, maxY];
 };
 
-const createGlbFromTin = async (tin: TinSurfaceData): Promise<{
+const createGlbFromTin = async (
+	tin: TinSurfaceData
+): Promise<{
 	glb: Uint8Array;
 	center: [number, number];
 	sourceBbox: [number, number, number, number];
@@ -232,7 +234,10 @@ export const parseLandXml = async (
 			return {
 				name: tin.name,
 				description: '',
-				contourGeojsonRaw: { type: 'FeatureCollection', features: [] } as unknown as FeatureCollection,
+				contourGeojsonRaw: {
+					type: 'FeatureCollection',
+					features: []
+				} as unknown as FeatureCollection,
 				contourGeojson: null,
 				glb: mesh.glb,
 				center: mesh.center,

@@ -130,7 +130,10 @@
 			dataType = options[0].key;
 			summaryText = `形式: ${summary.geometryType} / 時刻数: ${summary.timestamps.length}`;
 		} catch (error) {
-			showNotification(error instanceof Error ? error.message : 'MF-JSON の読み込みに失敗しました', 'error');
+			showNotification(
+				error instanceof Error ? error.message : 'MF-JSON の読み込みに失敗しました',
+				'error'
+			);
 			cancel();
 		} finally {
 			isProcessing.set(false);
@@ -175,7 +178,10 @@
 			showDataEntry = entry;
 			showDialogType = null;
 		} catch (error) {
-			showNotification(error instanceof Error ? error.message : 'MF-JSON の変換に失敗しました', 'error');
+			showNotification(
+				error instanceof Error ? error.message : 'MF-JSON の変換に失敗しました',
+				'error'
+			);
 		} finally {
 			isProcessing.set(false);
 		}
