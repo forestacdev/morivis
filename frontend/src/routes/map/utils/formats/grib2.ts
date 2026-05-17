@@ -51,6 +51,7 @@ interface GribMetadata {
 	levelValue: number;
 	referenceTime: Date;
 	forecastTime: number;
+	timeRangeUnit: number;
 	nx: number;
 	ny: number;
 	la1: number;
@@ -555,10 +556,11 @@ export class PureGrib2Parser {
 
 		// 予測時間の計算（利用可能な場合）
 		let forecastTime = 0;
+		let timeRangeUnit = 1;
 		if (sec4.data.byteLength >= 22) {
 			const hoursAfterRT = section4View.getUint16(14, false);
 			const minutesAfterRT = section4View.getUint8(16);
-			const timeRangeUnit = section4View.getUint8(17);
+			timeRangeUnit = section4View.getUint8(17);
 			forecastTime = section4View.getUint32(18, false);
 		}
 
@@ -580,6 +582,7 @@ export class PureGrib2Parser {
 			levelValue,
 			referenceTime,
 			forecastTime,
+			timeRangeUnit,
 			nx,
 			ny,
 			la1,

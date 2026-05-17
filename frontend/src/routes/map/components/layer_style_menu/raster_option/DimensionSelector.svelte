@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
-	import Autoplay from 'embla-carousel-autoplay';
+	import type { EmblaCarouselType, EmblaOptionsType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { onDestroy } from 'svelte';
 
 	import Accordion from '../../atoms/Accordion.svelte';
+	import RangeSlider from '../../atoms/RangeSlider.svelte';
 
 	import { ICONS } from '$lib/icons';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
@@ -22,6 +22,7 @@
 		getRasterDimension,
 		getRasterDimensionRuntimeUpdates
 	} from '$routes/map/utils/raster/dimension-runtime';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getRasterTiffImageSource } from '$routes/map/utils/sources';
 	import { mapStore } from '$routes/stores/map';
 
@@ -69,17 +70,11 @@
 		slidesToScroll: 1, // 1つずつスクロール
 		startIndex: 0
 	};
-	// let emblaThumbnailCarousel: EmblaCarouselType | undefined = $state();
-	let emblaMainCarouselPlugins: EmblaPluginType[] = [
-		Autoplay({
-			delay: 1000,
-			// stopOnMouseEnter: true, // マウスホバー時に停止
-			playOnInit: false // 初期化時に自動再生開始
-		})
-	];
 	let isSyncingInitialScroll = $state(false);
 	let imageUpdateRequestId = 0;
 	let isUpdatingDimension = $state(false);
+	let playbackSpeed = $state(1200);
+	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 
 	$effect(() => {
 		if (!dimension || dimensionState) return;
@@ -115,6 +110,19 @@
 			}
 		};
 		if (!isRasterEntry(layerEntry)) return;
+
+		if (
+			layerEntry.style.type === 'tiff' &&
+			layerEntry.format.type === 'image' &&
+			layerEntry.style.visualization.mode === 'single'
+		) {
+			layerEntry.style.visualization.uniformsData.single.index = currentIndex;
+			const currentRange = GeoTiffCache.getDataRanges(layerEntry.id)?.[currentIndex];
+			if (currentRange) {
+				layerEntry.style.visualization.uniformsData.single.min = currentRange.min;
+				layerEntry.style.visualization.uniformsData.single.max = currentRange.max;
+			}
+		}
 
 		// style 全更新は重いので、差し替え可能な raster source だけを直接更新する。
 		const runtimeUpdates = getRasterDimensionRuntimeUpdates(layerEntry);
@@ -187,21 +195,45 @@
 
 	let isPlaying = $state(false);
 
-	const toggleAutoplay = () => {
-		if (!emblaMainCarousel) return;
-		const autoplay = emblaMainCarousel.plugins()?.autoplay as
-			| { play: () => void; stop: () => void; isPlaying: () => boolean }
-			| undefined;
-		if (!autoplay) return;
+	let autoplayTimeout: ReturnType<typeof setTimeout> | null = null;
 
-		if (autoplay.isPlaying()) {
-			autoplay.stop();
-			isPlaying = false;
-		} else {
-			autoplay.play();
-			isPlaying = true;
+	const clearAutoplayTimer = () => {
+		if (autoplayTimeout) {
+			clearTimeout(autoplayTimeout);
+			autoplayTimeout = null;
 		}
 	};
+
+	const scheduleAutoplayTick = () => {
+		clearAutoplayTimer();
+		if (!isPlaying || !emblaMainCarousel) return;
+
+		autoplayTimeout = setTimeout(() => {
+			if (!isPlaying || !emblaMainCarousel) return;
+			if (!isUpdatingDimension) {
+				emblaMainCarousel.scrollNext();
+			}
+			scheduleAutoplayTick();
+		}, playbackIntervalMs);
+	};
+
+	const toggleAutoplay = () => {
+		if (!emblaMainCarousel) return;
+
+		if (isPlaying) {
+			clearAutoplayTimer();
+			isPlaying = false;
+		} else {
+			isPlaying = true;
+			scheduleAutoplayTick();
+		}
+	};
+
+	$effect(() => {
+		playbackIntervalMs;
+		if (!isPlaying) return;
+		scheduleAutoplayTick();
+	});
 
 	// ホイールイベント用の変数
 	let carouselElement: HTMLElement | undefined = $state();
@@ -239,6 +271,7 @@
 	};
 
 	onDestroy(() => {
+		clearAutoplayTimer();
 		if (carouselElement) {
 			carouselElement.removeEventListener('wheel', handleWheel);
 		}
@@ -289,7 +322,7 @@
 			<div class="flex items-center gap-1">
 				<div
 					use:emblaCarouselSvelte={{
-						plugins: emblaMainCarouselPlugins,
+						plugins: [],
 						options: emblaMainCarouselOptions
 					}}
 					bind:this={carouselElement}
@@ -348,6 +381,15 @@
 						再生
 					{/if}
 				</button>
+			</div>
+			<div class="pt-2">
+				<RangeSlider
+					label={`再生速度 (${Math.round(1000 / playbackIntervalMs * 10) / 10} コマ/秒)`}
+					bind:value={playbackSpeed}
+					min={1}
+					max={2000}
+					step={1}
+				/>
 			</div>
 		{/if}
 	</Accordion>

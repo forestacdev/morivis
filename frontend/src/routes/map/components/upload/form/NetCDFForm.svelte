@@ -269,14 +269,26 @@
 					baseValue: meshHeightSampling.effectiveBaseValue,
 					heightScale: meshHeightSampling.effectiveHeightScale
 				});
-				entry.style.shading = {
-					...entry.style.shading,
-					enabled: false
-				};
-				entry.style.heightColorRamp = {
-					...entry.style.heightColorRamp,
-					enabled: true
-				};
+				if (entry.style.shading) {
+					entry.style.shading = {
+						enabled: false,
+						shadeStrength: entry.style.shading.shadeStrength,
+						ambientStrength: entry.style.shading.ambientStrength,
+						azimuthDeg: entry.style.shading.azimuthDeg,
+						elevationDeg: entry.style.shading.elevationDeg
+					};
+				}
+				if (entry.style.heightColorRamp) {
+					entry.style.heightColorRamp = {
+						enabled: true,
+						colorMap: entry.style.heightColorRamp.colorMap,
+						min: entry.style.heightColorRamp.min,
+						max: entry.style.heightColorRamp.max,
+						sourceMin: entry.style.heightColorRamp.sourceMin,
+						sourceMax: entry.style.heightColorRamp.sourceMax,
+						sourceSign: entry.style.heightColorRamp.sourceSign
+					};
+				}
 				entry.style.opacity = 0.7;
 
 				showDataEntry = entry;
