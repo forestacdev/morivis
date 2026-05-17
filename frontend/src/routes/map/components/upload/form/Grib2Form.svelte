@@ -41,6 +41,13 @@
 	interface GribMessage {
 		index: number;
 		label: string;
+		parameterNumber: number;
+		levelType: number;
+		levelValue: number;
+		referenceTime: Date;
+		forecastTime: number;
+		timeRangeUnit: number;
+		validTime: Date;
 		nx: number;
 		ny: number;
 		la1: number;
@@ -51,6 +58,88 @@
 	}
 
 	const MAX_BANDS = 10;
+
+	const pad2 = (value: number) => value.toString().padStart(2, '0');
+
+	const addForecastOffset = (referenceTime: Date, forecastTime: number, timeRangeUnit: number) => {
+		const validTime = new Date(referenceTime.getTime());
+		switch (timeRangeUnit) {
+			case 0:
+				validTime.setMinutes(validTime.getMinutes() + forecastTime);
+				break;
+			case 1:
+				validTime.setHours(validTime.getHours() + forecastTime);
+				break;
+			case 2:
+				validTime.setDate(validTime.getDate() + forecastTime);
+				break;
+			case 10:
+				validTime.setHours(validTime.getHours() + forecastTime * 3);
+				break;
+			case 11:
+				validTime.setHours(validTime.getHours() + forecastTime * 6);
+				break;
+			case 12:
+				validTime.setHours(validTime.getHours() + forecastTime * 12);
+				break;
+			case 13:
+				validTime.setSeconds(validTime.getSeconds() + forecastTime);
+				break;
+			default:
+				validTime.setHours(validTime.getHours() + forecastTime);
+				break;
+		}
+		return validTime;
+	};
+
+	const formatTemporalValue = (date: Date) => {
+		return [
+			date.getFullYear(),
+			pad2(date.getMonth() + 1),
+			pad2(date.getDate())
+		].join('-') +
+			'T' +
+			[pad2(date.getHours()), pad2(date.getMinutes()), pad2(date.getSeconds())].join(':') +
+			'+09:00';
+	};
+
+	const formatTemporalLabel = (date: Date) => {
+		return `${date.getFullYear()}/${pad2(date.getMonth() + 1)}/${pad2(date.getDate())} ${pad2(
+			date.getHours()
+		)}:${pad2(date.getMinutes())}`;
+	};
+
+	const getTemporalSeriesInfo = (selectedMessages: GribMessage[]) => {
+		if (selectedMessages.length <= 1) return null;
+
+		const first = selectedMessages[0];
+		const isSameSeries = selectedMessages.every(
+			(message) =>
+				message.nx === first.nx &&
+				message.ny === first.ny &&
+				message.parameterNumber === first.parameterNumber &&
+				message.levelType === first.levelType &&
+				message.levelValue === first.levelValue &&
+				message.la1 === first.la1 &&
+				message.lo1 === first.lo1 &&
+				message.la2 === first.la2 &&
+				message.lo2 === first.lo2
+		);
+
+		if (!isSameSeries) return null;
+
+		const sortedMessages = [...selectedMessages].sort(
+			(a, b) => a.validTime.getTime() - b.validTime.getTime()
+		);
+		const values = sortedMessages.map((message) => formatTemporalValue(message.validTime));
+		if (new Set(values).size !== values.length) return null;
+
+		return {
+			messages: sortedMessages,
+			values,
+			labels: sortedMessages.map((message) => formatTemporalLabel(message.validTime))
+		};
+	};
 
 	let entryName = $state('');
 	let analyzed = $state(false);
@@ -86,9 +175,17 @@
 			messages = records.map((record, i) => {
 				const meta = record.metadata;
 				const paramName = meta.parameterName ?? `Param ${meta.parameterNumber}`;
+				const validTime = addForecastOffset(meta.referenceTime, meta.forecastTime, meta.timeRangeUnit);
 				return {
 					index: i,
-					label: `${paramName} (${meta.nx}x${meta.ny}) Level:${meta.levelType}=${meta.levelValue}`,
+					label: `${formatTemporalLabel(validTime)} ${paramName} (${meta.nx}x${meta.ny}) Level:${meta.levelType}=${meta.levelValue}`,
+					parameterNumber: meta.parameterNumber,
+					levelType: meta.levelType,
+					levelValue: meta.levelValue,
+					referenceTime: meta.referenceTime,
+					forecastTime: meta.forecastTime,
+					timeRangeUnit: meta.timeRangeUnit,
+					validTime,
 					nx: meta.nx,
 					ny: meta.ny,
 					la1: meta.la1,
@@ -121,13 +218,15 @@
 
 		try {
 			const selectedMessages = selectedIndices.map((i) => messages[i]);
-			const firstMsg = selectedMessages[0];
+			const temporalSeriesInfo = getTemporalSeriesInfo(selectedMessages);
+			const orderedMessages = temporalSeriesInfo?.messages ?? selectedMessages;
+			const firstMsg = orderedMessages[0];
 			const { nx, ny, la1, lo1, la2, lo2 } = firstMsg;
-			const numBands = selectedMessages.length;
+			const numBands = orderedMessages.length;
 
 			const id = `geotiff_${crypto.randomUUID()}`;
 
-			const bands: RasterBands = selectedMessages.map((m) => m.values);
+			const bands: RasterBands = orderedMessages.map((m) => m.values);
 			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, null));
 
 			// bbox
@@ -172,7 +271,8 @@
 			GeoTiffCache.markAs4326(id);
 			GeoTiffCache.setRawBbox(id, rawBbox);
 
-			const isSingleBand = numBands === 1;
+			const isTemporalSeries = temporalSeriesInfo !== null;
+			const isSingleBand = numBands === 1 || isTemporalSeries;
 
 			const entry: RasterImageEntry<RasterTiffStyle> = {
 				id,
@@ -187,13 +287,33 @@
 					xyzImageTile: findCenterTile(resolvedBbox),
 					mapImage
 				},
+				properties: {
+					bands: {
+						numBands
+					},
+					...(temporalSeriesInfo && {
+						temporal: {
+							dimension: {
+								type: 'time' as const,
+								values: temporalSeriesInfo.values,
+								labels: temporalSeriesInfo.labels
+							}
+						}
+					})
+				},
+				...(temporalSeriesInfo && {
+					state: {
+						dimension: {
+							currentIndex: 0
+						}
+					}
+				}),
 				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 				style: {
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands,
 						mode: isSingleBand ? 'single' : 'multi',
 						uniformsData: {
 							single: {
@@ -223,8 +343,12 @@
 			showDataEntry = entry;
 			showDialogType = null;
 			dropFile = null;
-			const labels = selectedMessages.map((m) => m.label).join(', ');
-			showNotification(`GPV ${numBands}バンドを読み込みました`, 'success');
+			showNotification(
+				isTemporalSeries
+					? `GPV ${numBands}時刻を時間軸付きで読み込みました`
+					: `GPV ${numBands}バンドを読み込みました`,
+				'success'
+			);
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : 'エンコードに失敗しました', 'error');
 			console.error(e);
@@ -261,7 +385,7 @@
 					メッセージを選択 ({selectedIndices.length}/{messages.length}件, 最大{MAX_BANDS}バンド)
 				</span>
 				<div class="bg-sub max-h-48 overflow-y-auto rounded border border-gray-600">
-					{#each messages as msg}
+					{#each messages as msg (msg.index)}
 						<label
 							class="flex cursor-pointer items-center gap-2 px-2 py-1 text-sm text-white hover:bg-gray-700
 								{selectedIndices.includes(msg.index) ? 'bg-gray-700' : ''}"

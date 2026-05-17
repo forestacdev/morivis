@@ -62,11 +62,14 @@ self.onmessage = async (e) => {
 				continue;
 			}
 
-			// 正規化: 0〜65535 の範囲にマッピング
+			// 標準 Terrarium のように実値そのものをRGBへ詰めるのではなく、
+			// このバンドの dataMin〜dataMax を 16bit 相当の 0〜65535 に圧縮して保存する。
+			// そのため、この PNG 単体では元の実値は決まらず、復元には dataMin/dataMax が必要。
 			const normalized = (value - dataMin) * invRange;
 			const clamped = Math.max(0, Math.min(65535, normalized));
 
-			// Terrarium エンコード
+			// ビット配置だけ Terrarium と同じ形を借りている。
+			// 意味としては「標高タイル」ではなく「任意ラスタの正規化値テクスチャ」。
 			const r = Math.floor(clamped / 256);
 			const g = Math.floor(clamped) % 256;
 			const b = Math.floor((clamped % 1) * 256);

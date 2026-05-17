@@ -131,7 +131,7 @@ export const getGuide = (
 		})
 		.sort((a, b) => a.distance - b.distance)[0];
 
-	return { color: closest.color, label: closest.label };
+	return { color: closest.color, label: String(closest.label ?? '') };
 };
 
 /** タイルURLを取得 */

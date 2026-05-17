@@ -1,7 +1,6 @@
 import type { SourceSpecification } from 'maplibre-gl';
 
 import type { GeoDataEntry } from '$routes/map/data/types';
-import type { RasterDiscreteDimension } from '$routes/map/data/types/raster';
 import {
 	replaceDimensionPlaceholder,
 	resolveDimensionPlaceholders
@@ -19,9 +18,22 @@ type RuntimeDimensionUpdate =
 			data: string;
 	  };
 
-const getDimensionValue = (dimension?: RasterDiscreteDimension) => {
-	if (!dimension) return undefined;
-	return dimension.values[dimension.currentIndex];
+export const getRasterDimensionCurrentIndex = (entry: GeoDataEntry) => {
+	if (entry.type !== 'raster') return undefined;
+	return entry.state?.dimension?.currentIndex;
+};
+
+export const getRasterDimension = (entry: GeoDataEntry) => {
+	if (entry.type !== 'raster') return undefined;
+	return entry.properties?.temporal?.dimension;
+};
+
+export const getRasterDimensionValue = (entry: GeoDataEntry) => {
+	const dimension = getRasterDimension(entry);
+	const currentIndex = getRasterDimensionCurrentIndex(entry);
+
+	if (!dimension || currentIndex == null) return undefined;
+	return dimension.values[currentIndex];
 };
 
 const convertTmsToXyz = (url: string) => {
@@ -47,7 +59,7 @@ const hasDimensionPlaceholder = (value: unknown): boolean => {
 export const canApplyRasterDimensionRuntimeUpdate = (entry: GeoDataEntry) => {
 	if (entry.type !== 'raster') return false;
 
-	const dimensionValue = getDimensionValue(entry.style.dimension);
+	const dimensionValue = getRasterDimensionValue(entry);
 	if (!dimensionValue) return false;
 
 	// 単純な URL 置換で済むラスタだけを runtime update 対象にする。
@@ -69,7 +81,7 @@ export const canApplyRasterDimensionRuntimeUpdate = (entry: GeoDataEntry) => {
 export const getRasterDimensionRuntimeUpdates = (entry: GeoDataEntry): RuntimeDimensionUpdate[] => {
 	if (entry.type !== 'raster') return [];
 
-	const dimensionValue = getDimensionValue(entry.style.dimension);
+	const dimensionValue = getRasterDimensionValue(entry);
 	if (!dimensionValue) return [];
 
 	const updates: RuntimeDimensionUpdate[] = [];
@@ -122,21 +134,7 @@ export const getRasterDimensionRuntimeUpdates = (entry: GeoDataEntry): RuntimeDi
 };
 
 export const getLayerWatchStyleTarget = (entry: GeoDataEntry) => {
-	if (entry.type !== 'raster') {
-		return entry.style;
-	}
-
-	if (!canApplyRasterDimensionRuntimeUpdate(entry) || !entry.style.dimension) {
-		return entry.style;
-	}
-
-	// runtime update できるラスタは currentIndex を監視対象から外して、
-	// Map.svelte の setStyleDebounce を発火させない。
 	return {
-		...entry.style,
-		dimension: {
-			...entry.style.dimension,
-			currentIndex: -1
-		}
+		...entry.style
 	};
 };

@@ -171,13 +171,17 @@
 					xyzImageTile: findCenterTile(resolvedBbox),
 					mapImage
 				},
+				properties: {
+					bands: {
+						numBands
+					}
+				},
 				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 				style: {
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands,
 						mode: numBands >= 3 ? 'multi' : 'single',
 						uniformsData: {
 							single: {
@@ -251,13 +255,17 @@
 					xyzImageTile: findCenterTile(resolvedBbox),
 					mapImage
 				},
+				properties: {
+					bands: {
+						numBands
+					}
+				},
 				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 				style: {
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands,
 						mode: numBands >= 3 ? 'multi' : 'single',
 						uniformsData: {
 							single: { index: 0, min: ranges[0].min, max: ranges[0].max, colorMap: 'jet' },
@@ -523,13 +531,17 @@
 						xyzImageTile: findCenterTile(resolvedBbox),
 						mapImage
 					},
+					properties: {
+						bands: {
+							numBands
+						}
+					},
 					interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 					style: {
 						type: 'tiff',
 						opacity: 1.0,
 						visible: true,
 						visualization: {
-							numBands,
 							mode: numBands >= 3 ? 'multi' : 'single',
 							uniformsData: {
 								single: {
@@ -607,13 +619,17 @@
 						xyzImageTile: findCenterTile(resolvedBbox),
 						mapImage
 					},
+					properties: {
+						bands: {
+							numBands
+						}
+					},
 					interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 					style: {
 						type: 'tiff',
 						opacity: 1.0,
 						visible: true,
 						visualization: {
-							numBands,
 							mode: numBands >= 3 ? 'multi' : 'single',
 							uniformsData: {
 								single: {

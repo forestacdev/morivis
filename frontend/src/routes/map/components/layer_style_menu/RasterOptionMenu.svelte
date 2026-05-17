@@ -21,6 +21,7 @@
 		getRasterStylePreset,
 		type RasterStylePreset
 	} from '$routes/map/utils/style/raster-preset';
+	import { getRasterDimension } from '$routes/map/utils/raster/dimension-runtime';
 
 	interface Props {
 		layerEntry: RasterEntry<
@@ -72,7 +73,7 @@
 	});
 </script>
 
-{#if style.dimension}
+{#if getRasterDimension(layerEntry)}
 	<DimensionSelector bind:layerEntry bind:showDimensionOption />
 {/if}
 {#if layerEntry && layerEntry.type === 'raster' && style}

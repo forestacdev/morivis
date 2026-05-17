@@ -10,6 +10,10 @@ const baseAttributions = {
 		name: '森林文化アカデミー',
 		url: 'https://www.forest.ac.jp/'
 	},
+	Mapterhorn: {
+		name: '© Mapterhorn',
+		url: 'https://mapterhorn.com/attribution'
+	},
 	MIERUNE: {
 		name: 'MIERUNE Inc.',
 		url: 'https://mierune.co.jp/'

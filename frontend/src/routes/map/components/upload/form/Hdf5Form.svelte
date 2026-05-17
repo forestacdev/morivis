@@ -1,7 +1,10 @@
 <script lang="ts">
+	import turfBbox from '@turf/bbox';
 	import { slide } from 'svelte/transition';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -12,7 +15,13 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
+	import {
+		formatDate,
+		type FieldDef,
+		type VectorTemporalItem
+	} from '$routes/map/data/types/vector/properties';
 	import type { DialogType } from '$routes/map/types';
+	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
 		encodeAllBandsToTerrarium,
@@ -20,9 +29,14 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import {
+		detectHdf5SpecialProduct,
+		msiClpToOrbitTrackGeojson,
+		cprClpToOrbitTrackGeojson,
+		cprFmrToOrbitTrackGeojson,
 		getHdf5RasterDatasets,
 		extractHdf5Raster,
-		type Hdf5DatasetInfo
+		type Hdf5DatasetInfo,
+		type Hdf5SpecialProductInfo
 	} from '$routes/map/utils/formats/hdf5';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
@@ -42,12 +56,15 @@
 	}: Props = $props();
 
 	// === 共通 ===
-	let mode = $state<'raster' | ''>('');
+	let mode = $state<'raster' | 'special' | ''>('');
 	let entryName = $state('');
+	let readMode = $state<'special' | 'raster'>('special');
+	let readModeOptions = $state<{ key: 'special' | 'raster'; name: string }[]>([]);
 
 	let rasterDatasets = $state<Hdf5DatasetInfo[]>([]);
 	let selectedDataset = $state('');
 	let rasterAnalyzed = $state(false);
+	let specialProduct = $state<Hdf5SpecialProductInfo | null>(null);
 
 	const hdf5File = $derived.by(() => {
 		if (!dropFile) return null;
@@ -66,25 +83,157 @@
 		rasterDatasets = [];
 		rasterAnalyzed = false;
 		selectedDataset = '';
+		specialProduct = null;
+		readMode = 'special';
+		readModeOptions = [];
 		mode = '';
 
 		try {
+			const detectedProduct = await detectHdf5SpecialProduct(file);
 			// ラスターデータセットを探す
 			const datasets = await getHdf5RasterDatasets(file);
 			if (datasets.length > 0) {
 				rasterDatasets = datasets;
 				rasterAnalyzed = true;
-				mode = 'raster';
 
 				if (datasets.length === 1) {
 					selectedDataset = datasets[0].path;
 				}
-			} else {
+			} else if (!detectedProduct) {
 				showNotification('2D以上のデータセットが見つかりません', 'error');
+			}
+
+			if (detectedProduct) {
+				specialProduct = detectedProduct;
+				readModeOptions = [{ key: 'special', name: '専用' }];
+				if (datasets.length > 0) {
+					readModeOptions = [
+						{ key: 'special', name: '専用' },
+						{ key: 'raster', name: '汎用ラスター' }
+					];
+				}
+				readMode = 'special';
+				mode = 'special';
+				return;
+			}
+
+			if (datasets.length > 0) {
+				mode = 'raster';
 			}
 		} catch (e) {
 			showNotification(
 				e instanceof Error ? e.message : 'HDF5ファイルの読み込みに失敗しました',
+				'error'
+			);
+			console.error(e);
+		} finally {
+			isProcessing.set(false);
+		}
+	};
+
+	const getUpdatedTimeField = (field: FieldDef): FieldDef => ({
+		...field,
+		label: '時刻',
+		type: 'datetime',
+		format: {
+			...field.format,
+			date: {
+				...(field.format?.date ?? {}),
+				inputPatterns: ['YYYY-MM-DDTHH:mm:ss.sssZ', 'YYYY-MM-DDTHH:mm:ssZ'],
+				displayPattern: 'YYYY年M月D日 HH:mm:ss',
+				invalidText: ''
+			}
+		}
+	});
+
+	const getTemporalItemsFromEntry = (entry: GeoDataEntry): VectorTemporalItem[] => {
+		if (entry.type !== 'vector' || entry.format.type !== 'geojson') return [];
+
+		const values = new Map<string, VectorTemporalItem>();
+		const geojson = GeojsonCache.get(entry.id);
+
+		for (const feature of geojson?.features ?? []) {
+			const properties = feature.properties as Record<string, unknown> | null | undefined;
+			const value = properties?.time;
+			if (value == null || String(value) === '') continue;
+
+			const raw = String(value);
+			const timestamp = Date.parse(raw);
+			if (Number.isNaN(timestamp) || values.has(raw)) continue;
+
+			values.set(raw, {
+				raw,
+				timestamp,
+				label: formatDate(raw, {
+					inputPatterns: ['YYYY-MM-DDTHH:mm:ss.sssZ', 'YYYY-MM-DDTHH:mm:ssZ'],
+					displayPattern: 'YYYY年M月D日 HH:mm:ss',
+					invalidText: raw
+				})
+			});
+		}
+
+		return Array.from(values.values()).sort((a, b) => a.timestamp - b.timestamp);
+	};
+
+	const applyTemporalProperties = (entry: GeoDataEntry) => {
+		if (entry.type !== 'vector') return;
+
+		entry.properties.fields = entry.properties.fields.map((field) =>
+			field.key === 'time' ? getUpdatedTimeField(field) : field
+		);
+
+		const temporalItems = getTemporalItemsFromEntry(entry);
+		if (temporalItems.length === 0) return;
+
+		entry.properties.temporal = {
+			key: 'time',
+			items: temporalItems
+		};
+		entry.properties.attributeView.timeKey = 'time';
+	};
+
+	const registrationSpecial = async () => {
+		if (!hdf5File || !specialProduct) return;
+
+		isProcessing.set(true);
+
+		try {
+			const geojson =
+				specialProduct.type === 'earthcare_msi_clp'
+					? await msiClpToOrbitTrackGeojson(hdf5File)
+					: specialProduct.type === 'earthcare_cpr_clp'
+						? await cprClpToOrbitTrackGeojson(hdf5File)
+						: await cprFmrToOrbitTrackGeojson(hdf5File);
+
+			const entryType = geometryTypeToEntryType(geojson);
+			if (!entryType) {
+				showNotification('EarthCARE レイヤーを作成できませんでした', 'error');
+				return;
+			}
+
+			const bbox = turfBbox(geojson) as [number, number, number, number];
+			const entry = await createGeoJsonEntry(
+				geojson,
+				entryType,
+				entryName || specialProduct.name,
+				bbox,
+				undefined,
+				{ attribution: 'EarthCARE HDF5' }
+			);
+
+			if (!entry) {
+				showNotification('EarthCARE レイヤーの登録に失敗しました', 'error');
+				return;
+			}
+
+			applyTemporalProperties(entry);
+			showDataEntry = entry;
+			showDialogType = null;
+			dropFile = null;
+			showNotification(`${specialProduct.name} を読み込みました`, 'success');
+		} catch (e) {
+			showNotification(
+				e instanceof Error ? e.message : 'EarthCARE データの変換に失敗しました',
 				'error'
 			);
 			console.error(e);
@@ -145,13 +294,17 @@
 					bounds: resolvedBbox,
 					xyzImageTile: findCenterTile(resolvedBbox)
 				},
+				properties: {
+					bands: {
+						numBands: 1
+					}
+				},
 				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 				style: {
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands: 1,
 						mode: 'single',
 						uniformsData: {
 							single: { index: 0, min: ranges[0].min, max: ranges[0].max, colorMap: 'jet' },
@@ -196,9 +349,26 @@
 		</div>
 	{/if}
 
-	{#if mode === 'raster' && rasterAnalyzed}
-		<!-- ラスターモード -->
+	{#if mode === 'special' && specialProduct}
 		<TextForm bind:value={entryName} label="データ名" />
+
+		<div transition:slide class="flex w-full flex-col gap-4 px-2 text-sm text-gray-300">
+			<p>{specialProduct.name}</p>
+			<p>{specialProduct.description}</p>
+			{#if readModeOptions.length > 1}
+				<HorizontalSelectBox
+					label="読み込み方法"
+					bind:group={readMode}
+					bind:options={readModeOptions}
+				/>
+			{/if}
+		</div>
+	{/if}
+
+	{#if (mode === 'raster' && rasterAnalyzed) || (mode === 'special' && readMode === 'raster')}
+		{#if mode !== 'special'}
+			<TextForm bind:value={entryName} label="データ名" />
+		{/if}
 
 		{#if rasterDatasets.length > 0}
 			<div transition:slide class="w-full">
@@ -212,7 +382,7 @@
 						class="bg-sub rounded border border-gray-600 p-2 text-sm text-white"
 					>
 						<option value="" disabled>選択してください</option>
-						{#each rasterDatasets as ds}
+						{#each rasterDatasets as ds (ds.path)}
 							<option value={ds.path}>
 								{ds.path} [{ds.shape.join('x')}] {ds.dtype}
 							</option>
@@ -227,11 +397,23 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 
-	{#if mode === 'raster'}
+	{#if mode === 'raster' || (mode === 'special' && readMode === 'raster')}
 		<button
 			onclick={registrationRaster}
 			disabled={$isProcessing || !selectedDataset}
 			class="c-btn-confirm min-w-[200px] p-4 text-lg {$isProcessing || !selectedDataset
+				? 'cursor-not-allowed opacity-50'
+				: 'cursor-pointer'}"
+		>
+			決定
+		</button>
+	{/if}
+
+	{#if mode === 'special' && readMode === 'special'}
+		<button
+			onclick={registrationSpecial}
+			disabled={$isProcessing}
+			class="c-btn-confirm min-w-[200px] p-4 text-lg {$isProcessing
 				? 'cursor-not-allowed opacity-50'
 				: 'cursor-pointer'}"
 		>

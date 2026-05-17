@@ -22,6 +22,7 @@
 	});
 	const MENU_OFFSET = 10;
 	const MENU_MARGIN = 12;
+	const CONTEXT_API_TIMEOUT_MS = 3000;
 
 	$effect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -49,18 +50,60 @@
 		address: string | null;
 	}
 
+	const withNumberTimeout = async (
+		promise: Promise<number | null>,
+		timeoutMs: number
+	): Promise<number | null> => {
+		let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+		const timeoutPromise = new Promise<null>((resolve) => {
+			timeoutId = setTimeout(() => resolve(null), timeoutMs);
+		});
+
+		try {
+			return await Promise.race([promise, timeoutPromise]);
+		} catch {
+			return null;
+		} finally {
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+		}
+	};
+
+	const withStringTimeout = async (
+		promise: Promise<string | null>,
+		timeoutMs: number
+	): Promise<string | null> => {
+		let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+		const timeoutPromise = new Promise<null>((resolve) => {
+			timeoutId = setTimeout(() => resolve(null), timeoutMs);
+		});
+
+		try {
+			return await Promise.race([promise, timeoutPromise]);
+		} catch {
+			return null;
+		} finally {
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+		}
+	};
+
 	const fetchContextData = async (lng: number, lat: number): Promise<ContextData> => {
 		const minDelay = new Promise((resolve) => setTimeout(resolve, 300));
 
 		const fetchData = async (): Promise<ContextData> => {
-			const [elev, addr] = await Promise.allSettled([
-				gsiGetElevation(lng, lat),
-				lonLatToAddress(lng, lat)
+			const [elev, addr] = await Promise.all([
+				withNumberTimeout(gsiGetElevation(lng, lat), CONTEXT_API_TIMEOUT_MS),
+				withStringTimeout(lonLatToAddress(lng, lat), CONTEXT_API_TIMEOUT_MS)
 			]);
 
 			return {
-				elevation: elev.status === 'fulfilled' ? elev.value : null,
-				address: addr.status === 'fulfilled' ? addr.value : null
+				elevation: elev,
+				address: addr
 			};
 		};
 

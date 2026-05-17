@@ -22,6 +22,7 @@
 	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
 	import MeshModelForm from '$routes/map/components/upload/form/MeshModelForm.svelte';
+	import MfJsonForm from '$routes/map/components/upload/form/MfJsonForm.svelte';
 	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import OsmForm from '$routes/map/components/upload/form/OsmForm.svelte';
@@ -31,9 +32,11 @@
 	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
 	import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 	import StacForm from '$routes/map/components/upload/form/StacForm.svelte';
+	import TcxForm from '$routes/map/components/upload/form/TcxForm.svelte';
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import TileUrlTypeForm from '$routes/map/components/upload/form/TileUrlTypeForm.svelte';
 	import TopoJsonForm from '$routes/map/components/upload/form/TopoJsonForm.svelte';
+	import TsvForm from '$routes/map/components/upload/form/TsvForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
@@ -112,6 +115,17 @@
 			{/if}
 			{#if showDialogType === 'csv'}
 				<CsvForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'tsv'}
+				<TsvForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
@@ -203,6 +217,9 @@
 					{selectedEpsgCode}
 				/>
 			{/if}
+			{#if showDialogType === 'mfjson'}
+				<MfJsonForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
 			{#if showDialogType === 'topojson'}
 				<TopoJsonForm
 					bind:showDataEntry
@@ -249,6 +266,9 @@
 			{/if}
 			{#if showDialogType === 'gpx'}
 				<GpxForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'tcx'}
+				<TcxForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'gdb'}
 				<GarminGDBForm bind:showDataEntry bind:showDialogType bind:dropFile />

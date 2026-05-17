@@ -24,7 +24,7 @@ export interface CategoryLegend {
 	type: 'category';
 	name: string;
 	colors: string[];
-	labels: string[];
+	labels: string[] | number[];
 }
 
 export interface GradientLegend {
@@ -79,7 +79,6 @@ export interface BaseRasterStyle {
 	visible?: boolean; // NOTE: 動的追加
 	minZoom?: number;
 	maxZoom?: number;
-	dimension?: RasterDiscreteDimension;
 }
 
 export interface RasterBaseMapStyle extends BaseRasterStyle {
@@ -90,24 +89,6 @@ export interface RasterBaseMapStyle extends BaseRasterStyle {
 	brightnessMax: number;
 	saturation: number;
 	contrast: number;
-}
-
-// TODO: グループ化したスタイルの型を定義する
-export interface RasterBaseGroupMapStyle extends BaseRasterStyle {
-	type: 'basemap';
-	hueRotate: number;
-	brightnessMin: number;
-	brightnessMax: number;
-	saturation: number;
-	contrast: number;
-	tile: {
-		key: string;
-		tiles: {
-			key: string;
-			name: string;
-			url: string;
-		}[];
-	};
 }
 
 export interface RasterCategoricalStyle extends BaseRasterStyle {
@@ -231,7 +212,6 @@ export interface RasterTiffStyle extends BaseRasterStyle {
 	type: 'tiff';
 	resampling?: 'nearest' | 'linear';
 	visualization: {
-		numBands: number;
 		mode: BandTypeKey;
 		uniformsData: {
 			single: ShingleBandData;
@@ -250,9 +230,29 @@ interface RasterMetaData extends BaseMetaData {
 export interface RasterDiscreteDimension {
 	type: 'time' | 'variant';
 	values: string[];
-	currentIndex: number;
 	labels?: string[];
 	placeholder?: string;
+}
+
+export interface RasterDimensionState {
+	currentIndex: number;
+}
+
+export interface RasterEntryState {
+	dimension?: RasterDimensionState;
+}
+
+export interface RasterTemporalProperties {
+	dimension: RasterDiscreteDimension;
+}
+
+export interface RasterBandProperties {
+	numBands: number;
+}
+
+export interface RasterProperties {
+	temporal?: RasterTemporalProperties;
+	bands?: RasterBandProperties;
 }
 
 export interface RasterInteraction {
@@ -264,8 +264,10 @@ interface BaseRasterEntry {
 	id: string;
 	type: 'raster';
 	metaData: RasterMetaData;
+	properties?: RasterProperties;
 	interaction: RasterInteraction;
 	auxiliaryLayers?: AuxiliaryLayersData;
+	state?: RasterEntryState;
 }
 
 export interface RasterImageEntry<T> extends BaseRasterEntry {

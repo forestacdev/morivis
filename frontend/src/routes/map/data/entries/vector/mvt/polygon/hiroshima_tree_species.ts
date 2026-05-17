@@ -1,29 +1,30 @@
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { MAP_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import { HIROSHIMA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { TREE_SPECIES_PROPERTIES } from '$routes/map/data/entries/vector/_properties';
 import {
 	DEFAULT_POLYGON_STYLE,
 	TREE_SPECIES_LABELS,
 	TREE_SPECIES_OUTLINE,
 	TREE_SPECIES_STYLE,
-	TREE_SINGLE_COLOR_STYLE
+	TREE_SINGLE_COLOR_STYLE,
+	createMatchColorMapping
 } from '$routes/map/data/entries/vector/_style';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: PolygonEntry<TileMetaData> = {
 	id: 'hiroshima_tree_species',
 	type: 'vector',
 	format: {
-		type: 'mvt',
+		type: 'pmtiles',
 		geometryType: 'Polygon',
-		url: 'https://raw.githubusercontent.com/forestacdev/tiles-tree-species-hiroshima/main/tiles/{z}/{x}/{y}.pbf'
+		url: `${ENTRY_PMTILES_VECTOR_PATH}/tree_species_hiroshima.pmtiles`
 	},
 	metaData: {
 		name: '広島県 樹種ポリゴン',
 		attribution: '広島県林業課_林野庁加工',
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-hiroshima-maptiles',
 		location: '広島県',
-		tags: ['森林', '林相図'],
+		tags: ['森林', '林相図', '樹種'],
 		minZoom: 8,
 		maxZoom: 16,
 		sourceLayer: 'tree_species_hiroshima',
@@ -50,18 +51,10 @@ const entry: VectorEntry<TileMetaData> = {
 					type: 'match',
 					key: '解析樹種',
 					name: '樹種ごとの色分け',
-					mapping: {
-						categories: ['スギ', 'ヒノキ類', 'マツ類', 'タケ', 'その他'],
-						values: [
-							'#33a02c',
-							'#b2df8a',
-							'#a6cee3',
-							'#b15928',
-							'#1f78b4' // その他（グレー）
-						],
-						// パターン情報
-						patterns: [null, null, null, null, 'tmpoly-line-vertical-down-light-200-black']
-					}
+					mapping: createMatchColorMapping(
+						['スギ', 'ヒノキ類', 'マツ類', 'タケ', 'その他'],
+						'treeSpecies'
+					) // '
 				},
 				{
 					type: 'step',

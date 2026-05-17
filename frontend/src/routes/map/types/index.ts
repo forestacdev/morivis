@@ -75,6 +75,7 @@ export type DialogType =
 	| 'tileurltype'
 	| 'shp'
 	| 'gpx'
+	| 'tcx'
 	| 'osm'
 	| 'geojson'
 	| 'geotiff'
@@ -85,8 +86,10 @@ export type DialogType =
 	| 'sima'
 	| 'hdf5'
 	| 'csv'
+	| 'tsv'
 	| 'gpkg'
 	| 'gdb'
+	| 'mfjson'
 	| '3dtiles'
 	| 'pmtiles'
 	| 'glb'
@@ -115,11 +118,13 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
 	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg'] },
 	{ label: 'GPX', extensions: ['.gpx'] },
+	{ label: 'TCX', extensions: ['.tcx'] },
 	{ label: 'Garmin GDB', extensions: ['.gdb'] },
 	{ label: 'OpenStreetMap XML', extensions: ['.osm'] },
 	{ label: 'GML', extensions: ['.gml', '.xml'] },
 	{ label: 'KML / KMZ', extensions: ['.kml', '.kmz'] },
 	{ label: 'CSV', extensions: ['.csv'] },
+	{ label: 'TSV', extensions: ['.tsv'] },
 	{ label: 'GeoTIFF', extensions: ['.tif', '.tiff'] },
 	{ label: 'MBTiles', extensions: ['.mbtiles'] },
 	{ label: 'PMTiles', extensions: ['.pmtiles'] },

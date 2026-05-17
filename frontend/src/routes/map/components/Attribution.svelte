@@ -8,7 +8,7 @@
 	} from '$routes/map/data/entries/_meta_data/_attribution';
 	import { mapAttributions } from '$routes/stores/attributions';
 
-	const systemAttributionss: AttributionKey[] = ['国土地理院', 'OMT', 'OSM', 'USGS'];
+	const systemAttributionss: AttributionKey[] = ['国土地理院', 'OMT', 'OSM', 'USGS', 'Mapterhorn'];
 
 	let newAttributions = $derived.by(() => {
 		const attributions = $mapAttributions;

@@ -1,39 +1,64 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
-	import Autoplay from 'embla-carousel-autoplay';
+	import type { EmblaCarouselType, EmblaOptionsType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { onDestroy } from 'svelte';
 
 	import Accordion from '../../atoms/Accordion.svelte';
+	import RangeSlider from '../../atoms/RangeSlider.svelte';
 
 	import { ICONS } from '$lib/icons';
+	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
 		RasterEntry,
+		RasterImageEntry,
 		RasterCategoricalStyle,
 		RasterBaseMapStyle,
 		RasterDemStyle,
-		RasterDemEntry,
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
-	import { getRasterDimensionRuntimeUpdates } from '$routes/map/utils/raster/dimension-runtime';
+	import {
+		getRasterDimension,
+		getRasterDimensionRuntimeUpdates
+	} from '$routes/map/utils/raster/dimension-runtime';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { getRasterTiffImageSource } from '$routes/map/utils/sources';
 	import { mapStore } from '$routes/stores/map';
 
+	type DimensionEnabledRasterEntry = RasterEntry<
+		| RasterCategoricalStyle
+		| RasterBaseMapStyle
+		| RasterDemStyle
+		| RasterTiffStyle
+		| RasterCadStyle
+	>;
+
+	type DimensionEnabledEntry = DimensionEnabledRasterEntry | ModelMeshEntry<MeshStyle>;
+
 	interface Props {
-		layerEntry: RasterEntry<
-			| RasterCategoricalStyle
-			| RasterBaseMapStyle
-			| RasterDemStyle
-			| RasterTiffStyle
-			| RasterCadStyle
-		>;
+		layerEntry: DimensionEnabledEntry;
 		showDimensionOption: boolean;
 	}
 
 	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
 
-	let dimension = $derived(layerEntry.style.dimension);
+	const isRasterEntry = (entry: DimensionEnabledEntry): entry is DimensionEnabledRasterEntry =>
+		entry.type === 'raster';
+
+	const isTemporalMeshEntry = (entry: DimensionEnabledEntry): entry is ModelMeshEntry<MeshStyle> =>
+		entry.type === 'model' &&
+		entry.style.type === 'mesh' &&
+		Boolean(entry.properties?.temporal?.dimension);
+
+	const getDimension = (entry: DimensionEnabledEntry) => {
+		if (isRasterEntry(entry)) return getRasterDimension(entry);
+		if (isTemporalMeshEntry(entry)) return entry.properties?.temporal?.dimension;
+		return undefined;
+	};
+
+	let dimension = $derived(getDimension(layerEntry));
+	let dimensionState = $derived(layerEntry.state?.dimension);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
 	let emblaMainCarouselOptions: EmblaOptionsType = {
@@ -45,20 +70,59 @@
 		slidesToScroll: 1, // 1つずつスクロール
 		startIndex: 0
 	};
-	// let emblaThumbnailCarousel: EmblaCarouselType | undefined = $state();
-	let emblaMainCarouselPlugins: EmblaPluginType[] = [
-		Autoplay({
-			delay: 1000,
-			// stopOnMouseEnter: true, // マウスホバー時に停止
-			playOnInit: false // 初期化時に自動再生開始
-		})
-	];
 	let isSyncingInitialScroll = $state(false);
+	let imageUpdateRequestId = 0;
+	let isUpdatingDimension = $state(false);
+	let playbackSpeed = $state(1200);
+	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 
-	const onSelect = () => {
+	$effect(() => {
+		if (!dimension || dimensionState) return;
+
+		layerEntry.state = {
+			...layerEntry.state,
+			dimension: {
+				currentIndex: 0
+			}
+		};
+	});
+
+	const onSelect = async () => {
 		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
 		const currentIndex = emblaMainCarousel.selectedScrollSnap();
-		dimension.currentIndex = currentIndex; // 現在のインデックスをスタイルに保存
+		if (currentIndex === dimensionState?.currentIndex) return;
+		const requestId = ++imageUpdateRequestId;
+
+		if (isTemporalMeshEntry(layerEntry)) {
+			isUpdatingDimension = true;
+			try {
+				await mapStore.setTemporalModelTimeStep(layerEntry, currentIndex);
+			} finally {
+				isUpdatingDimension = false;
+			}
+			return;
+		}
+
+		layerEntry.state = {
+			...layerEntry.state,
+			dimension: {
+				currentIndex
+			}
+		};
+		if (!isRasterEntry(layerEntry)) return;
+
+		if (
+			layerEntry.style.type === 'tiff' &&
+			layerEntry.format.type === 'image' &&
+			layerEntry.style.visualization.mode === 'single'
+		) {
+			layerEntry.style.visualization.uniformsData.single.index = currentIndex;
+			const currentRange = GeoTiffCache.getDataRanges(layerEntry.id)?.[currentIndex];
+			if (currentRange) {
+				layerEntry.style.visualization.uniformsData.single.min = currentRange.min;
+				layerEntry.style.visualization.uniformsData.single.max = currentRange.max;
+			}
+		}
 
 		// style 全更新は重いので、差し替え可能な raster source だけを直接更新する。
 		const runtimeUpdates = getRasterDimensionRuntimeUpdates(layerEntry);
@@ -69,6 +133,24 @@
 			}
 
 			mapStore.setData(update.sourceId, update.data);
+		});
+
+		if (layerEntry.style.type !== 'tiff' || layerEntry.format.type !== 'image') return;
+
+		const imageSource = await getRasterTiffImageSource(
+			layerEntry as RasterImageEntry<RasterTiffStyle>
+		);
+		if (
+			!imageSource ||
+			requestId !== imageUpdateRequestId ||
+			layerEntry.state?.dimension?.currentIndex !== currentIndex
+		) {
+			return;
+		}
+
+		mapStore.setImage(`${layerEntry.id}_source`, {
+			url: imageSource.url,
+			coordinates: imageSource.coordinates
 		});
 	};
 
@@ -89,7 +171,7 @@
 			// Embla 初期化直後は 0 番の select が走りやすいので、
 			// 先に currentIndex へ合わせる間だけ runtime update を止める。
 			isSyncingInitialScroll = true;
-			emblaMainCarousel.scrollTo(dimension.currentIndex, true);
+			emblaMainCarousel.scrollTo(dimensionState?.currentIndex ?? 0, true);
 			queueMicrotask(() => {
 				isSyncingInitialScroll = false;
 			});
@@ -113,21 +195,45 @@
 
 	let isPlaying = $state(false);
 
-	const toggleAutoplay = () => {
-		if (!emblaMainCarousel) return;
-		const autoplay = emblaMainCarousel.plugins()?.autoplay as
-			| { play: () => void; stop: () => void; isPlaying: () => boolean }
-			| undefined;
-		if (!autoplay) return;
+	let autoplayTimeout: ReturnType<typeof setTimeout> | null = null;
 
-		if (autoplay.isPlaying()) {
-			autoplay.stop();
-			isPlaying = false;
-		} else {
-			autoplay.play();
-			isPlaying = true;
+	const clearAutoplayTimer = () => {
+		if (autoplayTimeout) {
+			clearTimeout(autoplayTimeout);
+			autoplayTimeout = null;
 		}
 	};
+
+	const scheduleAutoplayTick = () => {
+		clearAutoplayTimer();
+		if (!isPlaying || !emblaMainCarousel) return;
+
+		autoplayTimeout = setTimeout(() => {
+			if (!isPlaying || !emblaMainCarousel) return;
+			if (!isUpdatingDimension) {
+				emblaMainCarousel.scrollNext();
+			}
+			scheduleAutoplayTick();
+		}, playbackIntervalMs);
+	};
+
+	const toggleAutoplay = () => {
+		if (!emblaMainCarousel) return;
+
+		if (isPlaying) {
+			clearAutoplayTimer();
+			isPlaying = false;
+		} else {
+			isPlaying = true;
+			scheduleAutoplayTick();
+		}
+	};
+
+	$effect(() => {
+		playbackIntervalMs;
+		if (!isPlaying) return;
+		scheduleAutoplayTick();
+	});
 
 	// ホイールイベント用の変数
 	let carouselElement: HTMLElement | undefined = $state();
@@ -165,6 +271,7 @@
 	};
 
 	onDestroy(() => {
+		clearAutoplayTimer();
 		if (carouselElement) {
 			carouselElement.removeEventListener('wheel', handleWheel);
 		}
@@ -215,7 +322,7 @@
 			<div class="flex items-center gap-1">
 				<div
 					use:emblaCarouselSvelte={{
-						plugins: emblaMainCarouselPlugins,
+						plugins: [],
 						options: emblaMainCarouselOptions
 					}}
 					bind:this={carouselElement}
@@ -238,16 +345,18 @@
 			>
 				<button
 					onclick={onClickPrev}
-					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150"
+					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
 					aria-label="前へ"
+					disabled={isUpdatingDimension}
 				>
 					<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
 				</button>
 
 				<button
 					onclick={onClickNext}
-					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150"
+					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
 					aria-label="次へ"
+					disabled={isUpdatingDimension}
 				>
 					<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
 				</button>
@@ -272,6 +381,15 @@
 						再生
 					{/if}
 				</button>
+			</div>
+			<div class="pt-2">
+				<RangeSlider
+					label={`再生速度 (${Math.round(1000 / playbackIntervalMs * 10) / 10} コマ/秒)`}
+					bind:value={playbackSpeed}
+					min={1}
+					max={2000}
+					step={1}
+				/>
 			</div>
 		{/if}
 	</Accordion>

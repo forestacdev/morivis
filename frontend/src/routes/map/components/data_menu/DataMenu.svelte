@@ -193,7 +193,9 @@
 {#if $showDataMenu}
 	<div
 		transition:scale={{ duration: 300, start: !$isMobile ? 0.9 : 1.0 }}
-		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 lg:pl-[100px]"
+		class="bg-main absolute bottom-0 flex h-full w-full flex-col overflow-hidden p-2 transition-opacity duration-200 lg:pl-[100px] {showDataEntry
+			? 'pointer-events-none opacity-0'
+			: 'opacity-100'}"
 		style="padding-top: env(safe-area-inset-top);"
 	>
 		<!-- <button
@@ -293,7 +295,7 @@
 									? 256
 									: 100}px, 1fr));"
 							>
-								{#each Array(rowColumns) as _, i}
+								{#each Array(rowColumns) as _, i (`catalog-column-${i}`)}
 									{#if filterDataEntries[index * rowColumns + i]}
 										{@const itemIndex = index * rowColumns + i}
 										{@const isTopEdge = itemIndex < rowColumns}

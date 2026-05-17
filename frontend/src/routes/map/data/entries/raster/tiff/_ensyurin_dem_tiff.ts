@@ -23,11 +23,15 @@ const entry: RasterImageEntry<RasterTiffStyle> = {
 	interaction: {
 		clickable: false
 	},
+	properties: {
+		bands: {
+			numBands: 1
+		}
+	},
 	style: {
 		type: 'tiff',
 		opacity: 1.0,
 		visualization: {
-			numBands: 1,
 			mode: 'single',
 			uniformsData: {
 				single: {

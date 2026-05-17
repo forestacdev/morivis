@@ -1,18 +1,27 @@
-import type { CustomLayerInterface } from 'maplibre-gl';
+import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+import {
+	DEFAULT_MESH_SHADING,
+	type MeshShadingStyle,
+	type ModelMeshEntry,
+	type MeshStyle
+} from '$routes/map/data/types/model';
 import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 interface LoadedModel {
 	entry: ModelMeshEntry<MeshStyle>;
 	object: THREE.Object3D;
 	transform: ModelTransform;
+	mixer?: THREE.AnimationMixer;
+	actions?: THREE.AnimationAction[];
+	lastClipIndex?: number;
 }
 
 /**
@@ -25,9 +34,276 @@ export class ThreeJsLayerManager {
 	private modelGroup: THREE.Group | null = null;
 	private previewModelGroup: THREE.Group | null = null;
 	private renderer: THREE.WebGLRenderer | null = null;
+	private map: MapLibreMap | null = null;
 	private loadedModels: Map<string, LoadedModel> = new Map();
 	private loader = new GLTFLoader();
 	private isInitialized = false;
+	private colorMapManager = new ColorMapManager();
+	private lastRenderTimeMs: number | null = null;
+
+	private resolveShading = (style: MeshStyle): Required<MeshShadingStyle> => ({
+		...DEFAULT_MESH_SHADING,
+		...style.shading
+	});
+
+	private getLightDirection = (shading: Required<MeshShadingStyle>) => {
+		const azimuth = THREE.MathUtils.degToRad(shading.azimuthDeg);
+		const elevation = THREE.MathUtils.degToRad(shading.elevationDeg);
+		const cosElevation = Math.cos(elevation);
+
+		return new THREE.Vector3(
+			Math.cos(azimuth) * cosElevation,
+			Math.sin(elevation),
+			Math.sin(azimuth) * cosElevation
+		).normalize();
+	};
+
+	private createShaderMaterial = (
+		sourceMaterial: THREE.Material,
+		style: MeshStyle
+	): THREE.ShaderMaterial => {
+		const shading = this.resolveShading(style);
+		const shadingEnabled = Boolean(style.shading?.enabled);
+		const baseColor = new THREE.Color(style.color);
+		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
+			baseColor.multiply(sourceMaterial.color);
+		}
+
+		const map =
+			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+				? sourceMaterial.map
+				: null;
+		const colorRamp = style.heightColorRamp;
+		const colorRampArray = colorRamp?.enabled
+			? this.colorMapManager.createColorArray(colorRamp.colorMap)
+			: null;
+		const colorRampRgbaArray =
+			colorRampArray != null
+				? new Uint8Array(
+						Array.from({ length: 256 * 4 }, (_, i) => {
+							const colorIndex = Math.floor(i / 4);
+							const channel = i % 4;
+							if (channel === 3) return 255;
+							return colorRampArray[colorIndex * 3 + channel] ?? 0;
+						})
+					)
+				: null;
+		const colorRampTexture =
+			colorRamp?.enabled && colorRamp.max > colorRamp.min
+				? new THREE.DataTexture(
+						colorRampRgbaArray,
+						1,
+						256,
+						THREE.RGBAFormat,
+						THREE.UnsignedByteType
+					)
+				: null;
+		if (colorRampTexture) {
+			colorRampTexture.colorSpace = THREE.SRGBColorSpace;
+			colorRampTexture.minFilter = THREE.LinearFilter;
+			colorRampTexture.magFilter = THREE.LinearFilter;
+			colorRampTexture.wrapS = THREE.ClampToEdgeWrapping;
+			colorRampTexture.wrapT = THREE.ClampToEdgeWrapping;
+			colorRampTexture.generateMipmaps = false;
+			colorRampTexture.flipY = false;
+			colorRampTexture.unpackAlignment = 1;
+			colorRampTexture.needsUpdate = true;
+		}
+
+		const material = new THREE.ShaderMaterial({
+			uniforms: {
+				uBaseColor: { value: baseColor },
+				uOpacity: { value: style.opacity },
+				uAmbientStrength: { value: shadingEnabled ? shading.ambientStrength : 1 },
+				uShadeStrength: { value: shadingEnabled ? shading.shadeStrength : 0 },
+				uLightDirection: { value: this.getLightDirection(shading) },
+				uMap: { value: map },
+				uUseMap: { value: Boolean(map) },
+				uColorRamp: { value: colorRampTexture },
+				uUseHeightColorRamp: { value: Boolean(colorRampTexture) },
+				uHeightRampMin: { value: colorRamp?.min ?? 0 },
+				uHeightRampMax: { value: colorRamp?.max ?? 1 },
+				uHeightRampSourceMin: { value: colorRamp?.sourceMin ?? colorRamp?.min ?? 0 },
+				uHeightRampSourceMax: { value: colorRamp?.sourceMax ?? colorRamp?.max ?? 1 }
+			},
+			vertexShader: `
+				varying vec3 vNormal;
+				varying vec2 vUv;
+
+				void main() {
+					vNormal = normalize(normalMatrix * normal);
+					vUv = uv;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+				}
+			`,
+			fragmentShader: `
+				uniform vec3 uBaseColor;
+				uniform float uOpacity;
+				uniform float uAmbientStrength;
+				uniform float uShadeStrength;
+				uniform vec3 uLightDirection;
+				uniform sampler2D uMap;
+				uniform bool uUseMap;
+				uniform sampler2D uColorRamp;
+				uniform bool uUseHeightColorRamp;
+				uniform float uHeightRampMin;
+				uniform float uHeightRampMax;
+				uniform float uHeightRampSourceMin;
+				uniform float uHeightRampSourceMax;
+
+				varying vec3 vNormal;
+				varying vec2 vUv;
+
+				void main() {
+					vec4 texel = uUseMap ? texture2D(uMap, vUv) : vec4(1.0);
+					float sourceDenominator = max(uHeightRampSourceMax - uHeightRampSourceMin, 0.000001);
+					float selectedMin = clamp(
+						(uHeightRampMin - uHeightRampSourceMin) / sourceDenominator,
+						0.0,
+						1.0
+					);
+					float selectedMax = clamp(
+						(uHeightRampMax - uHeightRampSourceMin) / sourceDenominator,
+						0.0,
+						1.0
+					);
+					float rampDenominator = max(selectedMax - selectedMin, 0.000001);
+					float rampValue = clamp((vUv.y - selectedMin) / rampDenominator, 0.0, 1.0);
+					vec3 rampColor = texture2D(uColorRamp, vec2(0.5, rampValue)).rgb;
+					vec3 surfaceColor = uUseHeightColorRamp ? rampColor : (uBaseColor * texel.rgb);
+					vec3 normalDir = normalize(vNormal);
+					float diffuse = max(dot(normalDir, normalize(uLightDirection)), 0.0);
+					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
+					vec3 shadedColor = surfaceColor * shade;
+					float alpha = texel.a * uOpacity;
+
+					if (alpha <= 0.001) discard;
+
+					gl_FragColor = vec4(shadedColor, alpha);
+				}
+			`,
+			transparent: true,
+			wireframe: style.wireframe,
+			side: sourceMaterial.side
+		});
+		material.userData.morivisShaderShading = true;
+		material.userData.colorRampTexture = colorRampTexture;
+		return material;
+	};
+
+	private createFlatMaterial = (sourceMaterial: THREE.Material, style: MeshStyle): THREE.Material => {
+		const baseColor = new THREE.Color(style.color);
+		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
+			baseColor.multiply(sourceMaterial.color);
+		}
+
+		const map =
+			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+				? sourceMaterial.map
+				: null;
+
+		const material = new THREE.MeshBasicMaterial({
+			color: baseColor,
+			map,
+			transparent: true,
+			opacity: style.opacity,
+			wireframe: style.wireframe,
+			side: sourceMaterial.side
+		});
+		material.transparent = true;
+		material.opacity = style.opacity;
+		return material;
+	};
+
+	private createStyledSourceMaterial = (
+		sourceMaterial: THREE.Material,
+		style: MeshStyle
+	): THREE.Material => {
+		const material = sourceMaterial.clone();
+		if ('color' in material && material.color instanceof THREE.Color) {
+			material.color = material.color.clone().multiply(new THREE.Color(style.color));
+		}
+		material.transparent = true;
+		material.opacity = style.opacity;
+		if ('wireframe' in material) {
+			material.wireframe = style.wireframe;
+		}
+		return material;
+	};
+
+	private applyStyleToMesh = (mesh: THREE.Mesh, style: MeshStyle) => {
+		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+		const originalMaterials =
+			(mesh.userData.originalMaterials as THREE.Material[] | undefined) ??
+			currentMaterials.map((material) => material.clone());
+
+		if (!mesh.userData.originalMaterials) {
+			mesh.userData.originalMaterials = originalMaterials;
+		}
+
+		const useShaderMaterial =
+			Boolean(style.shading?.enabled) || Boolean(style.heightColorRamp?.enabled);
+		const isSkinnedMesh = (mesh as THREE.SkinnedMesh).isSkinnedMesh === true;
+
+		const nextMaterials = originalMaterials.map((sourceMaterial) =>
+			isSkinnedMesh
+				? this.createStyledSourceMaterial(sourceMaterial, style)
+				: useShaderMaterial
+				? this.createShaderMaterial(sourceMaterial, style)
+				: this.createFlatMaterial(sourceMaterial, style)
+		);
+
+		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
+		currentMaterials.forEach((material) => {
+			const colorRampTexture = material.userData?.colorRampTexture;
+			if (colorRampTexture instanceof THREE.Texture) {
+				colorRampTexture.dispose();
+			}
+			material.dispose();
+		});
+	};
+
+	private applyStyleToObject = (object: THREE.Object3D, style: MeshStyle) => {
+		object.traverse((child) => {
+			if ((child as THREE.Mesh).isMesh) {
+				this.applyStyleToMesh(child as THREE.Mesh, style);
+			}
+		});
+	};
+
+	private syncAnimationState = (loaded: LoadedModel) => {
+		if (!loaded.mixer || !loaded.actions || loaded.actions.length === 0) return;
+
+		const animationState = loaded.entry.state?.animation;
+		const clipIndex = Math.min(
+			Math.max(animationState?.currentClipIndex ?? 0, 0),
+			loaded.actions.length - 1
+		);
+		const speed = Math.max(animationState?.speed ?? 1, 0);
+		const playing = animationState?.playing ?? false;
+
+		loaded.actions.forEach((action, index) => {
+			if (index === clipIndex) {
+				if (loaded.lastClipIndex !== clipIndex) {
+					action.reset();
+				}
+				action.enabled = true;
+				action.setLoop(THREE.LoopRepeat, Infinity);
+				action.clampWhenFinished = false;
+				action.timeScale = speed;
+				action.paused = !playing;
+				action.play();
+				return;
+			}
+
+			action.stop();
+		});
+
+		loaded.lastClipIndex = clipIndex;
+		if (playing) {
+			this.map?.triggerRepaint();
+		}
+	};
 
 	/** カスタムレイヤーを作成（初期化用） */
 	createLayer(): CustomLayerInterface {
@@ -37,6 +313,7 @@ export class ThreeJsLayerManager {
 			renderingMode: '3d',
 
 			onAdd: (map, gl) => {
+				this.map = map;
 				if (!this.isInitialized) {
 					this.camera = new THREE.Camera();
 					this.scene = new THREE.Scene();
@@ -51,9 +328,23 @@ export class ThreeJsLayerManager {
 						antialias: true
 					});
 					this.renderer.autoClear = false;
+					this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+					this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+					this.renderer.toneMappingExposure = 1.0;
 
-					const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.0);
+					// 全体を均一に明るくしすぎず、空と地面からの回り込みだけを薄く入れる。
+					const hemiLight = new THREE.HemisphereLight(0xeef3fb, 0x5a6470, 0.45);
 					this.scene.add(hemiLight);
+
+					// 主光源は少し高い位置から当てて、地形や建物の面変化を読みやすくする。
+					const keyLight = new THREE.DirectionalLight(0xfff6e8, 1.5);
+					keyLight.position.set(1.4, 2.2, 1.1);
+					this.scene.add(keyLight);
+
+					// 反対側は弱い補助光だけにして、陰影を潰さない。
+					const fillLight = new THREE.DirectionalLight(0xdbe7f6, 0.22);
+					fillLight.position.set(-1.2, 1.1, -0.9);
+					this.scene.add(fillLight);
 
 					this.isInitialized = true;
 				}
@@ -62,6 +353,18 @@ export class ThreeJsLayerManager {
 			render: (_gl, args) => {
 				if (!this.scene || !this.camera || !this.renderer) return;
 				if (this.loadedModels.size === 0) return;
+				const nowMs = performance.now();
+				const deltaSeconds =
+					this.lastRenderTimeMs == null ? 0 : Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
+				this.lastRenderTimeMs = nowMs;
+				let hasPlayingAnimation = false;
+
+				this.loadedModels.forEach((loaded) => {
+					if (loaded.entry.state?.animation?.playing && loaded.mixer) {
+						loaded.mixer.update(deltaSeconds);
+						hasPlayingAnimation = true;
+					}
+				});
 
 				this.loadedModels.forEach((loaded) => {
 					const { transform } = loaded;
@@ -78,13 +381,18 @@ export class ThreeJsLayerManager {
 						new THREE.Vector3(0, 0, 1),
 						transform.rotateZ
 					);
+					const scaleMatrix = new THREE.Matrix4().makeScale(
+						transform.scaleX,
+						-transform.scaleY,
+						transform.scaleZ
+					);
 
 					const modelMatrix = new THREE.Matrix4()
 						.makeTranslation(transform.translateX, transform.translateY, transform.translateZ)
-						.scale(new THREE.Vector3(transform.scale, -transform.scale, transform.scale))
 						.multiply(rotationX)
 						.multiply(rotationY)
-						.multiply(rotationZ);
+						.multiply(rotationZ)
+						.multiply(scaleMatrix);
 
 					const projectionMatrix = new THREE.Matrix4().fromArray(
 						args.defaultProjectionData.mainMatrix
@@ -100,6 +408,10 @@ export class ThreeJsLayerManager {
 					this.renderer!.resetState();
 					this.renderer!.render(this.scene!, this.camera!);
 				});
+
+				if (hasPlayingAnimation) {
+					this.map?.triggerRepaint();
+				}
 			},
 
 			onRemove: () => {
@@ -143,26 +455,25 @@ export class ThreeJsLayerManager {
 				}
 			}
 
-			const onModelLoaded = (model: THREE.Group | THREE.Object3D) => {
-				model.traverse((child) => {
-					if ((child as THREE.Mesh).isMesh) {
-						const mesh = child as THREE.Mesh;
-						const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-
-						materials.forEach((material) => {
-							material.transparent = true;
-							material.opacity = entry.style.opacity;
-							if (entry.style.wireframe) {
-								(material as THREE.MeshStandardMaterial).wireframe = true;
-							}
-						});
-					}
-				});
+			const onModelLoaded = (
+				model: THREE.Group | THREE.Object3D,
+				animations: THREE.AnimationClip[] = []
+			) => {
+				this.applyStyleToObject(model, entry.style);
 
 				model.visible = entry.style.visible ?? true;
 				model.userData.entryId = entry.id;
-
-				this.loadedModels.set(entry.id, { entry, object: model, transform });
+				const loaded: LoadedModel = {
+					entry,
+					object: model,
+					transform
+				};
+				if (animations.length > 0) {
+					loaded.mixer = new THREE.AnimationMixer(model);
+					loaded.actions = animations.map((clip) => loaded.mixer!.clipAction(clip));
+				}
+				this.loadedModels.set(entry.id, loaded);
+				this.syncAnimationState(loaded);
 				if (_type === 'preview') {
 					this.previewModelGroup!.add(model);
 				} else {
@@ -201,7 +512,7 @@ export class ThreeJsLayerManager {
 			} else {
 				this.loader.load(
 					entry.format.url,
-					(gltf) => onModelLoaded(gltf.scene),
+					(gltf) => onModelLoaded(gltf.scene, gltf.animations),
 					undefined,
 					(error) => reject(error)
 				);
@@ -221,6 +532,8 @@ export class ThreeJsLayerManager {
 
 			const transform = calculateModelTransform(entry.style);
 			loaded.transform = transform;
+			loaded.entry = entry;
+			this.syncAnimationState(loaded);
 		});
 	}
 
@@ -236,6 +549,8 @@ export class ThreeJsLayerManager {
 				mesh.geometry.dispose();
 				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 				materials.forEach((mat) => mat.dispose());
+				const originalMaterials = mesh.userData.originalMaterials as THREE.Material[] | undefined;
+				originalMaterials?.forEach((material) => material.dispose());
 			}
 		});
 
@@ -272,51 +587,28 @@ export class ThreeJsLayerManager {
 	}
 
 	/** モデルの不透明度を変更 */
-	setModelOpacity(entryId: string, opacity: number): void {
+	setModelOpacity(entryId: string, opacity: MeshStyle['opacity']): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-
-		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-				materials.forEach((material) => {
-					material.opacity = opacity;
-				});
-			}
-		});
+		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, opacity } };
+		this.applyStyleToObject(loaded.object, loaded.entry.style);
+		this.syncAnimationState(loaded);
 	}
 
 	setModelWireframe(entryId: string, wireframe: boolean): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-				materials.forEach((material) => {
-					if ('wireframe' in material) {
-						(material as THREE.MeshStandardMaterial).wireframe = wireframe;
-					}
-				});
-			}
-		});
+		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, wireframe } };
+		this.applyStyleToObject(loaded.object, loaded.entry.style);
+		this.syncAnimationState(loaded);
 	}
 
 	setModelColor(entryId: string, color: string): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-				materials.forEach((material) => {
-					if ('color' in material && material.color instanceof THREE.Color) {
-						material.color = new THREE.Color(color);
-					}
-				});
-			}
-		});
+		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, color } };
+		this.applyStyleToObject(loaded.object, loaded.entry.style);
+		this.syncAnimationState(loaded);
 	}
 
 	setModelTransform(entryId: string, style: MeshStyle): void {
@@ -325,6 +617,64 @@ export class ThreeJsLayerManager {
 		const newTransform = calculateModelTransform(style);
 		loaded.transform = newTransform;
 		loaded.entry = { ...loaded.entry, style };
+		this.syncAnimationState(loaded);
+	}
+
+	setModelAnimationState(entry: ModelMeshEntry<MeshStyle>): void {
+		const loaded = this.loadedModels.get(entry.id);
+		if (!loaded) return;
+		loaded.entry = entry;
+		this.syncAnimationState(loaded);
+	}
+
+	updateModelMeshHeights(
+		entryId: string,
+		heights: ArrayLike<number>,
+		normalizedHeights?: ArrayLike<number>
+	): boolean {
+		const loaded = this.loadedModels.get(entryId);
+		if (!loaded) return false;
+
+		let updated = false;
+		loaded.object.traverse((child) => {
+			if (!(child as THREE.Mesh).isMesh) return;
+
+			const mesh = child as THREE.Mesh;
+			const positionAttribute = mesh.geometry.getAttribute('position');
+			if (!(positionAttribute instanceof THREE.BufferAttribute)) return;
+			if (positionAttribute.itemSize !== 3) return;
+			if (positionAttribute.count !== heights.length) return;
+			const uvAttribute = mesh.geometry.getAttribute('uv');
+			const uvBufferAttribute =
+				uvAttribute instanceof THREE.BufferAttribute &&
+				uvAttribute.itemSize === 2 &&
+				normalizedHeights != null &&
+				uvAttribute.count === normalizedHeights.length
+					? uvAttribute
+					: null;
+
+			for (let i = 0; i < positionAttribute.count; i++) {
+				positionAttribute.setY(i, heights[i] ?? 0);
+				if (uvBufferAttribute && normalizedHeights) {
+					uvBufferAttribute.setY(i, normalizedHeights[i] ?? 0);
+				}
+			}
+
+			positionAttribute.needsUpdate = true;
+			if (uvBufferAttribute) {
+				uvBufferAttribute.needsUpdate = true;
+			}
+			mesh.geometry.computeVertexNormals();
+
+			const normalAttribute = mesh.geometry.getAttribute('normal');
+			if (normalAttribute instanceof THREE.BufferAttribute) {
+				normalAttribute.needsUpdate = true;
+			}
+
+			updated = true;
+		});
+
+		return updated;
 	}
 
 	setGroupVisibility(visible: boolean): void {
@@ -376,7 +726,9 @@ export class ThreeJsLayerManager {
 		this.loadedModels.clear();
 		this.scene = null;
 		this.camera = null;
+		this.map = null;
 		this.isInitialized = false;
+		this.lastRenderTimeMs = null;
 	}
 
 	/** 初期化済みかどうか */

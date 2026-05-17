@@ -13,6 +13,10 @@
 	let description = $derived(summary.description?.text.trim() ?? '');
 	let protectionForestName = $derived(summary.protectionForestName?.trim() ?? '');
 	let protectionForestDescription = $derived(summary.protectionForestDescription?.trim() ?? '');
+	const formatDensity = (density: number | { min: number; max: number }) => {
+		if (typeof density === 'number') return density.toFixed(3);
+		return `${density.min.toFixed(3)} - ${density.max.toFixed(3)}`;
+	};
 </script>
 
 <div in:fade={{ duration: 100 }} class="lg:pl-2">
@@ -101,32 +105,85 @@
 		{/if}
 
 		<!-- TODO 保安林の説明があってるか確認 -->
-		<!-- {#if protectionForestDescription}
+		{#if protectionForestDescription}
 			<div class="bg-sub mt-2 flex flex-col gap-2 rounded-lg p-3">
-				<span class="text-sm text-gray-300">{protectionForestName || '保安林の説明'}</span>
+				<span class="text-base">{'保安林の種類'}</span>
+				<div class="flex items-center justify-center p-2">
+					<span class="bg-base self-start rounded-full px-4 py-2 text-gray-900"
+						>{protectionForestName}</span
+					>
+				</div>
 				<span class="text-justify text-base whitespace-pre-line">
 					{protectionForestDescription}
 				</span>
 			</div>
-		{/if} -->
+		{/if}
 
+		<!-- 木材の情報 -->
 		{#if summary.timberSpecies}
 			<div class="bg-sub mt-2 flex flex-col gap-2 rounded-lg p-3 py-2">
 				<span class="text-base">木材</span>
-				<div class="flex items-center justify-center gap-4">
-					<div
-						class="flex h-[250px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-black"
-					>
-						<img
-							in:fade={{ duration: 200 }}
-							src={summary.timberSpecies.url}
-							alt="木材の画像"
-							class="object-cover"
-						/>
+				<div class="flex flex-col gap-3">
+					<div class="flex items-center justify-center gap-4">
+						<div
+							class="flex h-[250px] shrink-0 items-center justify-center overflow-hidden rounded-md bg-black"
+						>
+							<img
+								in:fade={{ duration: 200 }}
+								src={summary.timberSpecies.url}
+								alt="木材の画像"
+								class="object-cover"
+							/>
+						</div>
 					</div>
-					<!-- {#if summary.timberSpecies.distribution}
-						<span class="text-base">{summary.timberSpecies.distribution}</span>
-					{/if} -->
+					{#if summary.timberSpecies.summary}
+						<div class="text-base leading-relaxed">{summary.timberSpecies.summary}</div>
+					{/if}
+					{#if summary.timberSpecies.airDryDensity || summary.timberSpecies.woodStructure || summary.timberSpecies.hardness}
+						<div class="grid gap-2 text-sm text-gray-900 lg:grid-cols-3">
+							{#if summary.timberSpecies.airDryDensity}
+								<div class="rounded border">
+									<div class="bg-base p-1">気乾比重</div>
+									<div class="p-2 text-center text-base">
+										{formatDensity(summary.timberSpecies.airDryDensity)}
+									</div>
+								</div>
+							{/if}
+							{#if summary.timberSpecies.woodStructure}
+								<div class="rounded border">
+									<div class="bg-base p-1">材の構造</div>
+									<div class="p-2 text-center text-base">{summary.timberSpecies.woodStructure}</div>
+								</div>
+							{/if}
+							{#if summary.timberSpecies.hardness}
+								<div class="rounded border">
+									<div class="bg-base p-1">硬さ</div>
+									<div class="p-2 text-center text-base">{summary.timberSpecies.hardness}</div>
+								</div>
+							{/if}
+						</div>
+					{/if}
+
+					{#if summary.timberSpecies.characteristics && summary.timberSpecies.characteristics.length > 0}
+						<div class="flex flex-col gap-2">
+							<div class="text-base text-sm">特徴</div>
+							<div class="flex flex-wrap gap-2">
+								{#each summary.timberSpecies.characteristics as item (item)}
+									<span class="bg-base rounded-full px-3 py-1 text-sm">{item}</span>
+								{/each}
+							</div>
+						</div>
+					{/if}
+					{#if summary.timberSpecies.uses && summary.timberSpecies.uses.length > 0}
+						<div class="flex flex-col gap-2">
+							<div class="text-base text-sm">用途</div>
+							<div class="flex flex-wrap gap-2">
+								{#each summary.timberSpecies.uses as item (item)}
+									<span class="bg-base rounded-full px-3 py-1 text-sm">{item}</span>
+								{/each}
+							</div>
+						</div>
+					{/if}
 				</div>
 			</div>
 		{/if}

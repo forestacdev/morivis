@@ -26,17 +26,25 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	interaction: {
 		clickable: true
 	},
+	state: {
+		dimension: {
+			currentIndex: 0
+		}
+	},
+	properties: {
+		temporal: {
+			dimension: {
+				type: 'variant',
+				values: ['OCS30', 'OCS_0_5', 'OCS_5_15', 'OCS_15_30'],
+				labels: ['深さ 0-30cm', '深さ 0-5cm', '深さ 5-15cm', '深さ 15-30cm'],
+				placeholder: '深さを選択'
+			}
+		}
+	},
 	style: {
 		type: 'categorical',
 		resampling: 'nearest',
 		opacity: 0.7,
-		dimension: {
-			type: 'variant',
-			values: ['OCS30', 'OCS_0_5', 'OCS_5_15', 'OCS_15_30'],
-			labels: ['深さ 0-30cm', '深さ 0-5cm', '深さ 5-15cm', '深さ 15-30cm'],
-			currentIndex: 0,
-			placeholder: '深さを選択'
-		},
 		legend: {
 			type: 'gradient',
 			name: '炭素蓄積量',

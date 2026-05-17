@@ -2,6 +2,7 @@
 	import type { NetCDFReader } from 'netcdfjs';
 	import { slide } from 'svelte/transition';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
@@ -21,6 +22,10 @@
 		getMinMax,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
+	import {
+		createRasterMeshEntry,
+		sampleRasterMeshHeights
+	} from '$routes/map/utils/formats/geotiff/mesh';
 	import {
 		parseNetCDF,
 		extractRasterData,
@@ -53,12 +58,22 @@
 	let ncReader = $state<NetCDFReader | null>(null);
 	let selectedVariable = $state('');
 	let analyzed = $state(false);
+	let registrationMode = $state<'raster' | 'mesh'>('raster');
 
 	// 3D以上の次元のスライス選択
 	let extraDimensions = $state<
 		{ name: string; size: number; values: number[] | string[] | null }[]
 	>([]);
 	let sliceIndices = $state<Record<string, number>>({});
+	const canCreateMesh = $derived(Boolean(selectedVariable));
+	const registrationModeOptions = $derived.by(() =>
+		canCreateMesh
+			? [
+					{ key: 'raster', name: 'ラスター' },
+					{ key: 'mesh', name: '3Dメッシュ' }
+				]
+			: [{ key: 'raster', name: 'ラスター' }]
+	);
 
 	const ncFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -83,6 +98,7 @@
 		selectedVariable = '';
 		extraDimensions = [];
 		sliceIndices = {};
+		registrationMode = 'raster';
 
 		try {
 			const arrayBuffer = await file.arrayBuffer();
@@ -148,19 +164,6 @@
 				sliceIndices
 			);
 
-			console.log(
-				'[NetCDF] variable:',
-				selectedVariable,
-				'width:',
-				width,
-				'height:',
-				height,
-				'data length:',
-				data.length,
-				'bbox:',
-				bbox
-			);
-
 			if (width === 0 || height === 0) {
 				showNotification(
 					`データサイズが不正です (${width}x${height})。変数の次元構造を確認してください。`,
@@ -177,6 +180,7 @@
 
 			// NetCDFの座標はWGS84（4326）
 			const rawBbox: [number, number, number, number] = bbox ?? [-180, -90, 180, 90];
+			const hasValidBbox = bbox ? isBboxValid(bbox) : false;
 
 			// サムネイル画像を生成（メルカトル補正）
 			const mapImage = generateThumbnail({
@@ -200,19 +204,14 @@
 				Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, rawBbox[2])),
 				Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, rawBbox[3]))
 			];
-
-			GeoTiffCache.setBbox(id, resolvedBbox);
-			GeoTiffCache.markAs4326(id);
-			GeoTiffCache.setRawBbox(id, rawBbox);
-
 			const variable = ncInfo.rasterVariables.find((v) => v.name === selectedVariable);
 			const unit = variable?.attributes['units'] ?? '';
 			const longName = variable?.attributes['long_name'] ?? selectedVariable;
 
 			// 時間次元の検出
 			let dimension: RasterDiscreteDimension | undefined;
+			let initialDimensionIndex = 0;
 			if (variable && extraDimensions.length > 0) {
-				// time/Time/TIME等の名前を持つ次元を探す
 				const timeDim = extraDimensions.find((d) => /^(time|t|date|datetime)$/i.test(d.name));
 				if (timeDim && timeDim.size > 1) {
 					const timeValues = timeDim.values
@@ -221,11 +220,10 @@
 
 					dimension = {
 						type: 'time',
-						values: timeValues,
-						currentIndex: sliceIndices[timeDim.name] ?? 0
+						values: timeValues
 					};
+					initialDimensionIndex = sliceIndices[timeDim.name] ?? 0;
 
-					// 時間以外のスライスインデックスを固定用にコピー
 					const fixedSlices = { ...sliceIndices };
 					delete fixedSlices[timeDim.name];
 
@@ -238,11 +236,93 @@
 						width,
 						height,
 						nodata,
-						encodedTimeIndex: sliceIndices[timeDim.name] ?? 0
+						encodedTimeIndex: initialDimensionIndex
 					});
 				}
 			}
 
+			if (registrationMode === 'mesh') {
+				if (!hasValidBbox) {
+					showNotification('3Dメッシュ化には有効な座標範囲が必要です', 'error');
+					return;
+				}
+
+				const meshHeightSampling = sampleRasterMeshHeights({
+					band: data,
+					width,
+					height,
+					nodata,
+					bounds: resolvedBbox,
+					baseValue: ranges[0].min,
+					autoHeightScale: true
+				});
+
+				const entry = await createRasterMeshEntry({
+					id,
+					name: entryName || `${longName} 3Dメッシュ`,
+					band: data,
+					width,
+					height,
+					nodata,
+					bounds: resolvedBbox,
+					mapImage,
+					baseValue: meshHeightSampling.effectiveBaseValue,
+					heightScale: meshHeightSampling.effectiveHeightScale
+				});
+				if (entry.style.shading) {
+					entry.style.shading = {
+						enabled: false,
+						shadeStrength: entry.style.shading.shadeStrength,
+						ambientStrength: entry.style.shading.ambientStrength,
+						azimuthDeg: entry.style.shading.azimuthDeg,
+						elevationDeg: entry.style.shading.elevationDeg
+					};
+				}
+				if (entry.style.heightColorRamp) {
+					entry.style.heightColorRamp = {
+						enabled: true,
+						colorMap: entry.style.heightColorRamp.colorMap,
+						min: entry.style.heightColorRamp.min,
+						max: entry.style.heightColorRamp.max,
+						sourceMin: entry.style.heightColorRamp.sourceMin,
+						sourceMax: entry.style.heightColorRamp.sourceMax,
+						sourceSign: entry.style.heightColorRamp.sourceSign
+					};
+				}
+				entry.style.opacity = 0.7;
+
+				showDataEntry = entry;
+				if (dimension) {
+					entry.state = {
+						...entry.state,
+						dimension: {
+							currentIndex: initialDimensionIndex
+						}
+					};
+					entry.properties = {
+						...entry.properties,
+						temporal: {
+							dimension
+						}
+					};
+					const cachedEntry = NetCDFDataCache.get(id);
+					if (cachedEntry) {
+						cachedEntry.meshConfig = {
+							baseValue: meshHeightSampling.effectiveBaseValue,
+							heightScale: meshHeightSampling.effectiveHeightScale,
+							maxGridSize: 192
+						};
+					}
+				}
+				showDialogType = null;
+				dropFile = null;
+				showNotification(`NetCDF変数「${longName}」の3Dメッシュを生成しました`, 'success');
+				return;
+			}
+
+			GeoTiffCache.setBbox(id, resolvedBbox);
+			GeoTiffCache.markAs4326(id);
+			GeoTiffCache.setRawBbox(id, rawBbox);
 			const entry: RasterImageEntry<RasterTiffStyle> = {
 				id,
 				type: 'raster',
@@ -262,13 +342,28 @@
 				interaction: {
 					...DEFAULT_RASTER_BASEMAP_INTERACTION
 				},
+				...(dimension && {
+					state: {
+						dimension: {
+							currentIndex: initialDimensionIndex
+						}
+					}
+				}),
+				properties: {
+					...(dimension && {
+						temporal: {
+							dimension
+						}
+					}),
+					bands: {
+						numBands: 1
+					}
+				},
 				style: {
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
-					dimension,
 					visualization: {
-						numBands: 1,
 						mode: 'single',
 						uniformsData: {
 							single: {
@@ -343,7 +438,7 @@
 						class="bg-sub rounded border border-gray-600 p-2 text-white"
 					>
 						<option value="" disabled>選択してください</option>
-						{#each ncInfo.rasterVariables as variable}
+						{#each ncInfo.rasterVariables as variable (variable.name)}
 							<option value={variable.name}>
 								{variable.name}
 								{#if variable.attributes['long_name']}
@@ -365,7 +460,7 @@
 		<!-- 追加次元のスライス選択（時間次元は除外） -->
 		{@const nonTimeDims = extraDimensions.filter((d) => !/^(time|t|date|datetime)$/i.test(d.name))}
 		{#if selectedVariable && nonTimeDims.length > 0}
-			{#each nonTimeDims as dim}
+			{#each nonTimeDims as dim (dim.name)}
 				<div transition:slide class="w-full">
 					<div class="flex flex-col gap-1">
 						<label for="nc-dim-{dim.name}" class="text-sm text-gray-300">
@@ -376,7 +471,7 @@
 							bind:value={sliceIndices[dim.name]}
 							class="bg-sub rounded border border-gray-600 p-2 text-white"
 						>
-							{#each Array.from({ length: dim.size }, (_, i) => i) as idx}
+							{#each Array.from({ length: dim.size }, (_, i) => i) as idx (idx)}
 								<option value={idx}>
 									{dim.values ? dim.values[idx] : idx}
 								</option>
@@ -385,6 +480,19 @@
 					</div>
 				</div>
 			{/each}
+		{/if}
+
+		{#if selectedVariable}
+			<div class="w-full px-2">
+				<HorizontalSelectBox
+					label="登録方法"
+					options={registrationModeOptions}
+					bind:group={registrationMode}
+				/>
+				<p class="mt-2 text-xs text-gray-400">
+					3Dメッシュは選択中の変数スライスを高さとして GLB に変換して登録します
+				</p>
+			</div>
 		{/if}
 	{/if}
 </div>

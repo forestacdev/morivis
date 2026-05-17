@@ -292,13 +292,17 @@
 					xyzImageTile: findCenterTile(resolvedBbox),
 					mapImage
 				},
+				properties: {
+					bands: {
+						numBands: result.bands.length
+					}
+				},
 				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 				style: {
 					type: 'tiff',
 					opacity: 1.0,
 					visible: true,
 					visualization: {
-						numBands: result.bands.length,
 						mode: isSingleBand ? 'single' : 'multi',
 						uniformsData: {
 							single: {

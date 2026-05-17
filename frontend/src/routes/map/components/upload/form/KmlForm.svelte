@@ -10,6 +10,11 @@
 	} from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+	import {
+		formatDate,
+		type FieldDef,
+		type VectorTemporalItem
+	} from '$routes/map/data/types/vector/properties';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import {
@@ -20,6 +25,7 @@
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -60,6 +66,68 @@
 	});
 
 	const entryName = $derived(kmlFile?.name.replace(/\.[^.]+$/, '') ?? 'KMLデータ');
+
+	const getUpdatedTimeField = (field: FieldDef): FieldDef => ({
+		...field,
+		label: '時刻',
+		type: 'datetime',
+		format: {
+			...field.format,
+			date: {
+				...(field.format?.date ?? {}),
+				inputPatterns: ['YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss+HH:mm'],
+				displayPattern: 'YYYY年M月D日 HH:mm:ss',
+				invalidText: ''
+			}
+		}
+	});
+
+	const getTemporalItemsFromEntry = (entry: GeoDataEntry): VectorTemporalItem[] => {
+		if (entry.type !== 'vector') return [];
+		if (entry.format.type !== 'geojson') return [];
+
+		const values = new Map<string, VectorTemporalItem>();
+		const geojson = GeojsonCache.get(entry.id);
+
+		for (const feature of geojson?.features ?? []) {
+			const properties = feature.properties as Record<string, unknown> | null | undefined;
+			const value = properties?.time;
+			if (value == null || String(value) === '') continue;
+
+			const raw = String(value);
+			const timestamp = Date.parse(raw);
+			if (Number.isNaN(timestamp) || values.has(raw)) continue;
+
+			values.set(raw, {
+				raw,
+				timestamp,
+				label: formatDate(raw, {
+					inputPatterns: ['YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss+HH:mm'],
+					displayPattern: 'YYYY年M月D日 HH:mm:ss',
+					invalidText: raw
+				})
+			});
+		}
+
+		return Array.from(values.values()).sort((a, b) => a.timestamp - b.timestamp);
+	};
+
+	const applyKmlTemporalProperties = (entry: GeoDataEntry) => {
+		if (entry.type !== 'vector') return;
+
+		entry.properties.fields = entry.properties.fields.map((field) =>
+			field.key === 'time' ? getUpdatedTimeField(field) : field
+		);
+
+		const temporalItems = getTemporalItemsFromEntry(entry);
+		if (temporalItems.length === 0) return;
+
+		entry.properties.temporal = {
+			key: 'time',
+			items: temporalItems
+		};
+		entry.properties.attributeView.timeKey = 'time';
+	};
 
 	// ファイルドロップ時: KML/KMZ → GeoJSON → ジオメトリタイプ確認
 	$effect(() => {
@@ -123,6 +191,7 @@
 			);
 
 			if (entry) {
+				applyKmlTemporalProperties(entry);
 				showDataEntry = entry;
 				showDialogType = null;
 				showNotification('ファイルを読み込みました', 'success');
@@ -173,6 +242,7 @@
 			);
 
 			if (entry) {
+				applyKmlTemporalProperties(entry);
 				showDataEntry = entry;
 				showDialogType = null;
 				showNotification('ファイルを読み込みました', 'success');

@@ -150,7 +150,8 @@
 				imageHeight: height,
 				bandMinMax: ranges[0],
 				multiBandMinMax: { r: ranges[0], g: ranges[1], b: ranges[2] },
-				imageFile: file
+				imageFile: file,
+				registrationMode: 'raster'
 			};
 			showGeoRefForm = true;
 			showDialogType = null;
@@ -299,7 +300,8 @@
 			imageHeight: height,
 			bandMinMax: ranges[0],
 			multiBandMinMax: { r: ranges[0], g: ranges[1], b: ranges[2] },
-			imageFile: pngFile
+			imageFile: pngFile,
+			registrationMode: 'raster'
 		};
 		showGeoRefForm = true;
 		showDialogType = null;
@@ -512,13 +514,17 @@
 				bounds: bbox,
 				xyzImageTile: findCenterTile(bbox)
 			},
+			properties: {
+				bands: {
+					numBands: 3
+				}
+			},
 			interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 			style: {
 				type: 'tiff',
 				opacity: 1.0,
 				visible: true,
 				visualization: {
-					numBands: 3,
 					mode: 'multi',
 					uniformsData: {
 						single: { index: 0, min: ranges[0].min, max: ranges[0].max, colorMap: 'jet' },

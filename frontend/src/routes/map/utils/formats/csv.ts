@@ -7,6 +7,10 @@ import type { ParseResult } from 'papaparse';
 import { showNotification } from '$routes/stores/notification';
 import { parseDmsString } from '$routes/map/utils/proj/dms';
 
+export interface DelimitedTextOptions {
+	delimiter?: string;
+}
+
 /**
  * 座標値をパースする（10進数 or 度分秒文字列）
  * Number()で変換できない場合、度分秒文字列としてパースを試みる
@@ -36,6 +40,8 @@ export const readCsvAsUtf8 = async (file: File): Promise<string> => {
 	});
 	return Encoding.codeToString(unicodeArray);
 };
+
+export const readDelimitedTextAsUtf8 = readCsvAsUtf8;
 
 /**
  * CSVファイルのヘッダー情報をエンコード自動判定で取得する
@@ -74,12 +80,22 @@ export interface CSVPreview {
  * @returns ヘッダーとプレビュー行
  */
 export const getCSVPreview = (text: string, previewRows = 5): Promise<CSVPreview> => {
+	return getDelimitedTextPreview(text, previewRows, { delimiter: ',' });
+};
+
+export const getDelimitedTextPreview = (
+	text: string,
+	previewRows = 5,
+	options: DelimitedTextOptions = {}
+): Promise<CSVPreview> => {
+	const delimiter = options.delimiter ?? ',';
 	return new Promise((resolve, reject) => {
 		Papa.parse(text, {
 			header: true,
 			preview: previewRows,
 			dynamicTyping: true,
 			skipEmptyLines: true,
+			delimiter,
 			complete: (results: ParseResult<Record<string, string | number>>) => {
 				if (
 					results.errors.length > 0 &&
@@ -112,8 +128,19 @@ export const csvTextToGeojson = (
 	latColumn: string,
 	lonColumn: string
 ): Promise<FeatureCollection> => {
+	return delimitedTextToGeojson(text, latColumn, lonColumn, { delimiter: ',' });
+};
+
+export const delimitedTextToGeojson = (
+	text: string,
+	latColumn: string,
+	lonColumn: string,
+	options: DelimitedTextOptions = {}
+): Promise<FeatureCollection> => {
+	const delimiter = options.delimiter ?? ',';
 	return new Promise((resolve, reject) => {
 		Papa.parse(text, {
+			delimiter,
 			complete: (results: ParseResult<Record<string, string | number>>) => {
 				const headers = results.meta.fields || [];
 				if (!headers.includes(latColumn)) {

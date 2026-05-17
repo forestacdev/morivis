@@ -52,13 +52,15 @@ vec2 reprojectUV(vec2 uv) {
     return vec2(u, v);
 }
 
-// Terrarium デコード → 正規化値 (0〜1)
+// 標準 Terrarium の標高値を復元しているのではなく、
+// 独自に 0〜65535 へ正規化して保存した値を 0〜1 に戻している。
+// ここで得られるのは各バンドの実値ではなく相対値。
 float decodeTerrariumNormalized(vec4 color) {
     vec3 rgb = color.rgb * 255.0;
     return (rgb.r * 256.0 + rgb.g + rgb.b / 256.0) / 65535.0;
 }
 
-// デコード → 表示正規化
+// 各バンドを同じ正規化空間で扱い、そのまま RGB 合成用の 0〜1 値に切り直す。
 float decodeAndNormalize(vec2 uv, int bandIndex, float dispMin, float dispMax) {
     vec4 encoded = texture(u_terrarium_bands, vec3(uv, bandIndex));
     if (encoded.a == 0.0) return 0.0;

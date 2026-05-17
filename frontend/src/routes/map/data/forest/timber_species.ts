@@ -1,4 +1,8 @@
 import { TIMBER_SPECIES_DATA_PATH } from '$routes/constants';
+import {
+	timberSpecies as timberSpeciesCatalog,
+	type TimberSpecies as TimberSpeciesCatalogItem
+} from '$routes/map/data/forest/timberSpecies';
 
 /**
  * CSV の行番号。
@@ -348,14 +352,24 @@ export const getTimberSpeciesImageUrl = (name: string): string => {
 
 export const getTimberSpeciesData = (
 	name: string
-): { url: string; distribution?: string } | null => {
+): {
+	url: string;
+	distribution?: string;
+	detail?: TimberSpeciesCatalogItem;
+} | null => {
 	const timberSpecies = TIMBER_SPECIES_JAWIC_REFERENCE_DICT[name as WoodImageIdKey];
 	if (!timberSpecies) {
 		return null;
 	}
 
+	const detail =
+		timberSpeciesCatalog.find((item) => item.nameJa === name) ??
+		timberSpeciesCatalog.find((item) => name.startsWith(item.nameJa)) ??
+		timberSpeciesCatalog.find((item) => item.nameJa.startsWith(name));
+
 	return {
 		url: `${TIMBER_SPECIES_DATA_PATH}/face_grain/thumb/${timberSpecies.id}.webp`,
-		distribution: timberSpecies.distribution
+		distribution: timberSpecies.distribution,
+		detail
 	};
 };

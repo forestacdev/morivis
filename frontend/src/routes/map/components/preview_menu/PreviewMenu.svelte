@@ -55,7 +55,8 @@
 	$effect(() => {
 		if (showDataEntry) {
 			const mapBbox = mapStore.getMapBounds();
-			if (!isBBoxInside(mapBbox, showDataEntry.metaData.bounds)) {
+			const shouldForceFocus = showDataEntry.type === 'model';
+			if (shouldForceFocus || !isBBoxInside(mapBbox, showDataEntry.metaData.bounds)) {
 				mapStore.focusLayer(showDataEntry);
 			}
 		}

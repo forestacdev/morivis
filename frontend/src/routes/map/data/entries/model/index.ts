@@ -1,5 +1,6 @@
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
+import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	ModelMeshEntry,
 	MeshStyle,
@@ -80,7 +81,14 @@ export const createPointCloudEntry = (
 export const createGlbEntry = (
 	name: string,
 	url: string,
-	transform: { lng: number; lat: number; altitude: number; scale?: number; rotationY?: number },
+	transform: {
+		lng: number;
+		lat: number;
+		altitude: number;
+		scale?: number;
+		rotationX?: number;
+		rotationY?: number;
+	},
 	formatType: MeshFormatType = 'gltf',
 	mtlUrl?: string
 ): ModelMeshEntry<MeshStyle> => ({
@@ -105,13 +113,14 @@ export const createGlbEntry = (
 		opacity: 1,
 		wireframe: false,
 		color: '#ffffff',
+		shading: { ...DEFAULT_MESH_SHADING },
 		transform: {
 			lng: transform.lng,
 			lat: transform.lat,
 			altitude: transform.altitude,
-			heightOffset: 0,
+			baseRotationX: -180,
 			scale: transform.scale ?? 1,
-			rotationX: 0,
+			rotationX: transform.rotationX ?? 0,
 			rotationY: transform.rotationY ?? 0,
 			rotationZ: 0
 		}

@@ -25,7 +25,13 @@ export const parseWmtsCapabilities = async (
 	url: string
 ): Promise<MapLibreRasterSourceInfo[] | null> => {
 	try {
-		const response = await fetch(url);
+		const capUrl = new URL(url);
+		if (!capUrl.searchParams.has('service')) capUrl.searchParams.set('service', 'WMTS');
+		if (!capUrl.searchParams.has('request')) {
+			capUrl.searchParams.set('request', 'GetCapabilities');
+		}
+
+		const response = await fetch(capUrl.toString());
 		if (!response.ok) {
 			throw new Error(`Failed to fetch WMTS Capabilities: ${response.statusText}`);
 		}
