@@ -1,0 +1,17 @@
+import { loadHimawariRasterEntry, type HimawariProductConfig } from '$routes/map/api/himawari';
+
+const config: HimawariProductConfig = {
+	id: 'himawari_b08',
+	name: 'ひまわり 水蒸気画像',
+	band: 'B08',
+	prod: 'TBB',
+	description:
+		'気象庁ひまわりの水蒸気画像。観測時刻ごとの上空の湿りや大気の流れの変化を確認する際に利用できる。',
+	tags: ['写真'],
+	xyzImageTile: { x: 7, y: 3, z: 3 },
+	downloadUrl: 'https://www.data.jma.go.jp/mscweb/ja/prod/band_wv.html'
+};
+
+const entry = await loadHimawariRasterEntry(config);
+
+export default entry;

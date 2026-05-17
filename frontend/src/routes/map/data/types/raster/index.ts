@@ -91,24 +91,6 @@ export interface RasterBaseMapStyle extends BaseRasterStyle {
 	contrast: number;
 }
 
-// TODO: グループ化したスタイルの型を定義する
-export interface RasterBaseGroupMapStyle extends BaseRasterStyle {
-	type: 'basemap';
-	hueRotate: number;
-	brightnessMin: number;
-	brightnessMax: number;
-	saturation: number;
-	contrast: number;
-	tile: {
-		key: string;
-		tiles: {
-			key: string;
-			name: string;
-			url: string;
-		}[];
-	};
-}
-
 export interface RasterCategoricalStyle extends BaseRasterStyle {
 	type: 'categorical';
 	resampling?: 'nearest' | 'linear';

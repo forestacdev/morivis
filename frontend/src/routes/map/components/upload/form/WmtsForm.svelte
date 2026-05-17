@@ -211,7 +211,7 @@
 			minZoom: selectedLayer.minZoom,
 			maxZoom: selectedLayer.maxZoom,
 			bounds: selectedLayer.bounds,
-			wmsTimeDimension: selectedLayer.timeDimension
+			timeDimension: selectedLayer.timeDimension
 		});
 
 		showDataEntry = entry;

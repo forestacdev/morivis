@@ -1,0 +1,17 @@
+import { loadHimawariRasterEntry, type HimawariProductConfig } from '$routes/map/api/himawari';
+
+const config: HimawariProductConfig = {
+	id: 'himawari_snd',
+	name: 'ひまわり 雲頂強調画像',
+	band: 'SND',
+	prod: 'ETC',
+	description:
+		'気象庁ひまわりの雲頂強調画像。観測時刻ごとの発達した雲の分布や変化を強調表示で確認する際に利用できる。',
+	tags: ['写真'],
+	xyzImageTile: { x: 7, y: 3, z: 3 },
+	downloadUrl: 'https://www.data.jma.go.jp/mscweb/ja/prod/rgb_snd.html'
+};
+
+const entry = await loadHimawariRasterEntry(config);
+
+export default entry;

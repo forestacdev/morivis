@@ -25,13 +25,14 @@ export const createRasterEntry = (
 		minZoom?: number;
 		maxZoom?: number;
 		bounds?: [number, number, number, number];
-		wmsTimeDimension?: { values: string[] };
+		timeDimension?: { values: string[]; labels?: string[] };
 	}
 ): RasterEntry<RasterBaseMapStyle> => {
-	const wmsTimeDimension: RasterDiscreteDimension | undefined = options?.wmsTimeDimension
+	const timeDimension: RasterDiscreteDimension | undefined = options?.timeDimension
 		? {
 				type: 'time',
-				values: options.wmsTimeDimension.values
+				values: options.timeDimension.values,
+				labels: options.timeDimension.labels
 			}
 		: undefined;
 
@@ -53,17 +54,17 @@ export const createRasterEntry = (
 		interaction: {
 			...DEFAULT_RASTER_BASEMAP_INTERACTION
 		},
-		...(wmsTimeDimension && {
+		...(timeDimension && {
 			state: {
 				dimension: {
 					currentIndex: 0
 				}
 			}
 		}),
-		...(wmsTimeDimension && {
+		...(timeDimension && {
 			properties: {
 				temporal: {
-					dimension: wmsTimeDimension
+					dimension: timeDimension
 				}
 			}
 		}),

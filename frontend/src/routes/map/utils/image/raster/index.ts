@@ -20,6 +20,7 @@ import {
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { PMTiles } from 'pmtiles';
 import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
+import { replaceDimensionPlaceholder } from '$routes/map/utils/dimension';
 
 /** Worker応答からObject URLを生成する（ImageBitmap / Blob 両対応） */
 const createObjectURLFromWorkerResult = async (data: {
@@ -138,10 +139,7 @@ export const getRasterImageUrl = async (
 	// {morivis:dimension}プレースホルダーを現在の選択値で置換
 	const resolveTime = (u: string): string => {
 		const dimensionValue = getRasterDimensionValue(_layerEntry);
-		if (dimensionValue && u.includes('{morivis:dimension}')) {
-			return u.replace('{morivis:dimension}', dimensionValue);
-		}
-		return u;
+		return replaceDimensionPlaceholder(u, dimensionValue);
 	};
 
 	// WMS URL（{bbox-epsg-3857}を含む）の場合はbboxを計算して置換
