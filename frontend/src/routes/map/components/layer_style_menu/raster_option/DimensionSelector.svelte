@@ -8,6 +8,7 @@
 	import Accordion from '../../atoms/Accordion.svelte';
 
 	import { ICONS } from '$lib/icons';
+	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
 		RasterEntry,
 		RasterImageEntry,
@@ -24,20 +25,38 @@
 	import { getRasterTiffImageSource } from '$routes/map/utils/sources';
 	import { mapStore } from '$routes/stores/map';
 
+	type DimensionEnabledRasterEntry = RasterEntry<
+		| RasterCategoricalStyle
+		| RasterBaseMapStyle
+		| RasterDemStyle
+		| RasterTiffStyle
+		| RasterCadStyle
+	>;
+
+	type DimensionEnabledEntry = DimensionEnabledRasterEntry | ModelMeshEntry<MeshStyle>;
+
 	interface Props {
-		layerEntry: RasterEntry<
-			| RasterCategoricalStyle
-			| RasterBaseMapStyle
-			| RasterDemStyle
-			| RasterTiffStyle
-			| RasterCadStyle
-		>;
+		layerEntry: DimensionEnabledEntry;
 		showDimensionOption: boolean;
 	}
 
 	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
 
-	let dimension = $derived(getRasterDimension(layerEntry));
+	const isRasterEntry = (entry: DimensionEnabledEntry): entry is DimensionEnabledRasterEntry =>
+		entry.type === 'raster';
+
+	const isTemporalMeshEntry = (entry: DimensionEnabledEntry): entry is ModelMeshEntry<MeshStyle> =>
+		entry.type === 'model' &&
+		entry.style.type === 'mesh' &&
+		Boolean(entry.properties?.temporal?.dimension);
+
+	const getDimension = (entry: DimensionEnabledEntry) => {
+		if (isRasterEntry(entry)) return getRasterDimension(entry);
+		if (isTemporalMeshEntry(entry)) return entry.properties?.temporal?.dimension;
+		return undefined;
+	};
+
+	let dimension = $derived(getDimension(layerEntry));
 	let dimensionState = $derived(layerEntry.state?.dimension);
 
 	let emblaMainCarousel: EmblaCarouselType | undefined = $state();
@@ -60,6 +79,7 @@
 	];
 	let isSyncingInitialScroll = $state(false);
 	let imageUpdateRequestId = 0;
+	let isUpdatingDimension = $state(false);
 
 	$effect(() => {
 		if (!dimension || dimensionState) return;
@@ -75,13 +95,26 @@
 	const onSelect = async () => {
 		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
 		const currentIndex = emblaMainCarousel.selectedScrollSnap();
+		if (currentIndex === dimensionState?.currentIndex) return;
 		const requestId = ++imageUpdateRequestId;
+
+		if (isTemporalMeshEntry(layerEntry)) {
+			isUpdatingDimension = true;
+			try {
+				await mapStore.setTemporalModelTimeStep(layerEntry, currentIndex);
+			} finally {
+				isUpdatingDimension = false;
+			}
+			return;
+		}
+
 		layerEntry.state = {
 			...layerEntry.state,
 			dimension: {
 				currentIndex
 			}
 		};
+		if (!isRasterEntry(layerEntry)) return;
 
 		// style 全更新は重いので、差し替え可能な raster source だけを直接更新する。
 		const runtimeUpdates = getRasterDimensionRuntimeUpdates(layerEntry);
@@ -279,16 +312,18 @@
 			>
 				<button
 					onclick={onClickPrev}
-					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150"
+					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
 					aria-label="前へ"
+					disabled={isUpdatingDimension}
 				>
 					<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
 				</button>
 
 				<button
 					onclick={onClickNext}
-					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150"
+					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
 					aria-label="次へ"
+					disabled={isUpdatingDimension}
 				>
 					<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
 				</button>

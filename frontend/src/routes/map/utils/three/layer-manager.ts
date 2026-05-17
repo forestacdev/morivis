@@ -234,13 +234,18 @@ export class ThreeJsLayerManager {
 						new THREE.Vector3(0, 0, 1),
 						transform.rotateZ
 					);
+					const scaleMatrix = new THREE.Matrix4().makeScale(
+						transform.scaleX,
+						-transform.scaleY,
+						transform.scaleZ
+					);
 
 					const modelMatrix = new THREE.Matrix4()
 						.makeTranslation(transform.translateX, transform.translateY, transform.translateZ)
-						.scale(new THREE.Vector3(transform.scale, -transform.scale, transform.scale))
 						.multiply(rotationX)
 						.multiply(rotationY)
-						.multiply(rotationZ);
+						.multiply(rotationZ)
+						.multiply(scaleMatrix);
 
 					const projectionMatrix = new THREE.Matrix4().fromArray(
 						args.defaultProjectionData.mainMatrix
@@ -444,6 +449,38 @@ export class ThreeJsLayerManager {
 		const newTransform = calculateModelTransform(style);
 		loaded.transform = newTransform;
 		loaded.entry = { ...loaded.entry, style };
+	}
+
+	updateModelMeshHeights(entryId: string, heights: ArrayLike<number>): boolean {
+		const loaded = this.loadedModels.get(entryId);
+		if (!loaded) return false;
+
+		let updated = false;
+		loaded.object.traverse((child) => {
+			if (!(child as THREE.Mesh).isMesh) return;
+
+			const mesh = child as THREE.Mesh;
+			const positionAttribute = mesh.geometry.getAttribute('position');
+			if (!(positionAttribute instanceof THREE.BufferAttribute)) return;
+			if (positionAttribute.itemSize !== 3) return;
+			if (positionAttribute.count !== heights.length) return;
+
+			for (let i = 0; i < positionAttribute.count; i++) {
+				positionAttribute.setY(i, heights[i] ?? 0);
+			}
+
+			positionAttribute.needsUpdate = true;
+			mesh.geometry.computeVertexNormals();
+
+			const normalAttribute = mesh.geometry.getAttribute('normal');
+			if (normalAttribute instanceof THREE.BufferAttribute) {
+				normalAttribute.needsUpdate = true;
+			}
+
+			updated = true;
+		});
+
+		return updated;
 	}
 
 	setGroupVisibility(visible: boolean): void {

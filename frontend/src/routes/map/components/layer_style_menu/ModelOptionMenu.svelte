@@ -4,7 +4,8 @@
 
 	import type {
 		AnyModelEntry,
-		MeshStyleEntry,
+		ModelMeshEntry,
+		MeshStyle,
 		PointCloudStyleEntry
 	} from '$routes/map/data/types/model';
 
@@ -24,7 +25,7 @@
 
 	{#if layerEntry.style.type === 'mesh'}
 		<!-- Model options go here -->
-		<MeshOption bind:layerEntry={layerEntry as MeshStyleEntry} bind:showColorOption />
+		<MeshOption bind:layerEntry={layerEntry as ModelMeshEntry<MeshStyle>} bind:showColorOption />
 	{/if}
 {/if}
 

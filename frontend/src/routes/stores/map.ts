@@ -59,6 +59,8 @@ import type { LayersList } from '@deck.gl/core';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
+import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
+import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 import {
 	handleStyleImageMissing,
 	isGeneratedPoiIconId,
@@ -701,6 +703,30 @@ const createMapStore = () => {
 	// 現在のエントリIDを追跡
 	let currentThreeModelIds: Set<string> = new Set();
 
+	const applyTemporalModelMeshTimeStep = (
+		entry: ModelMeshEntry<MeshStyle>,
+		timeIndex: number
+	): boolean => {
+		const cacheEntry = NetCDFDataCache.get(entry.id);
+		if (!cacheEntry?.meshConfig) return false;
+
+		const stepData = NetCDFDataCache.getTimeStepData(entry.id, timeIndex);
+		if (!stepData) return false;
+
+		const meshHeightSampling = sampleRasterMeshHeights({
+			band: stepData.data,
+			width: stepData.width,
+			height: stepData.height,
+			nodata: stepData.nodata,
+			bounds: entry.metaData.bounds,
+			baseValue: cacheEntry.meshConfig.baseValue,
+			heightScale: cacheEntry.meshConfig.heightScale,
+			maxGridSize: cacheEntry.meshConfig.maxGridSize
+		});
+
+		return threeJsManager.updateModelMeshHeights(entry.id, meshHeightSampling.heights);
+	};
+
 	// Three.js モデルを設定（差分更新）
 	const setThreeLayer = async (
 		newEntries: ModelMeshEntry<MeshStyle>[],
@@ -729,6 +755,10 @@ const createMapStore = () => {
 		}
 		for (const entry of entriesToAdd) {
 			await threeJsManager.addModel(entry);
+			const currentIndex = entry.state?.dimension?.currentIndex;
+			if (currentIndex != null && currentIndex > 0) {
+				applyTemporalModelMeshTimeStep(entry, currentIndex);
+			}
 		}
 
 		// 更新: 両方にあるもの（opacity, visible, wireframe, transform の変更）
@@ -751,6 +781,30 @@ const createMapStore = () => {
 
 		if (threeJsManager.modelIds.length === 0) {
 			releaseThreeLayer();
+		}
+	};
+
+	const setTemporalModelTimeStep = async (
+		entry: ModelMeshEntry<MeshStyle>,
+		timeIndex: number
+	): Promise<void> => {
+		const dimension = entry.properties?.temporal?.dimension;
+		if (!dimension) return;
+		if (timeIndex < 0 || timeIndex >= dimension.values.length) return;
+
+		entry.state = {
+			...entry.state,
+			dimension: {
+				currentIndex: timeIndex
+			}
+		};
+
+		if (currentThreeModelIds.has(entry.id)) {
+			applyTemporalModelMeshTimeStep(entry, timeIndex);
+		}
+
+		if (map && isMapValid(map)) {
+			map.triggerRepaint();
 		}
 	};
 
@@ -1328,6 +1382,7 @@ const createMapStore = () => {
 		// Three.js 関連
 		ensureThreeLayer,
 		setThreeLayer,
+		setTemporalModelTimeStep,
 		setHighlightLayers,
 		clearHighlightLayers,
 		setFilter,

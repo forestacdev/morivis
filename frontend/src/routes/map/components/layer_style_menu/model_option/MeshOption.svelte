@@ -1,15 +1,18 @@
 <script lang="ts">
+	import DimensionSelector from '../raster_option/DimensionSelector.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
-	import type { MeshStyleEntry } from '$routes/map/data/types/model';
+	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 
 	interface Props {
-		layerEntry: MeshStyleEntry;
+		layerEntry: ModelMeshEntry<MeshStyle>;
 		showColorOption: boolean;
 	}
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
+	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
+	let showDimensionOption = $state(false);
 
 	const ensureShading = () => {
 		layerEntry.style.shading ??= { ...DEFAULT_MESH_SHADING };
@@ -19,8 +22,22 @@
 
 	$effect(() => {
 		ensureShading();
+		if (temporalDimension && !layerEntry.state?.dimension) {
+			layerEntry.state = {
+				...layerEntry.state,
+				dimension: {
+					currentIndex: 0
+				}
+			};
+		}
 	});
 </script>
+
+{#if temporalDimension}
+	<div class="mt-4">
+		<DimensionSelector bind:layerEntry bind:showDimensionOption />
+	</div>
+{/if}
 
 <div class="mt-4">
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
@@ -82,15 +99,28 @@
 		icon="mdi:resize"
 	/>
 
-	<RangeSlider
-		label="高さオフセット (m)"
-		bind:value={layerEntry.style.transform.heightOffset}
-		min={-100}
-		max={1000}
-		step={1}
-		isInt
-		icon="mdi:arrow-up-down"
-	/>
+	{#if layerEntry.style.transform.heightScale != null}
+		<RangeSlider
+			label="高さ倍率"
+			bind:value={layerEntry.style.transform.heightScale}
+			min={0.01}
+			max={100}
+			step={0.01}
+			icon="mdi:image-filter-hdr"
+		/>
+	{/if}
+
+	{#if layerEntry.style.transform.heightOffset != null}
+		<RangeSlider
+			label="高さオフセット (m)"
+			bind:value={layerEntry.style.transform.heightOffset}
+			min={-100}
+			max={1000}
+			step={1}
+			isInt
+			icon="mdi:arrow-up-down"
+		/>
+	{/if}
 
 	<RangeSlider
 		label="X回転 (°)"

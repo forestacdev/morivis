@@ -40,6 +40,7 @@ export interface MeshModelEntryConfig extends BaseModelConfig {
 		lat: number;
 		altitude: number;
 		scale?: number;
+		rotationX?: number;
 		rotationY?: number;
 	};
 	wireframe?: boolean;
@@ -96,8 +97,10 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): ModelMeshEnt
 				lat: transform.lat,
 				altitude: transform.altitude,
 				heightOffset: 0,
+				heightScale: 1,
+				baseRotationX: -180,
 				scale: transform.scale ?? 1,
-				rotationX: 0,
+				rotationX: transform.rotationX ?? 0,
 				rotationY: transform.rotationY ?? 0,
 				rotationZ: 0
 			}

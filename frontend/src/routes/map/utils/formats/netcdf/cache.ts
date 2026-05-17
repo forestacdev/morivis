@@ -22,9 +22,44 @@ interface NetCDFCacheEntry {
 	nodata: number | null;
 	/** 現在エンコード済みの時間インデックス */
 	encodedTimeIndex: number;
+	meshConfig?: {
+		baseValue: number;
+		heightScale: number;
+		maxGridSize: number;
+	};
+}
+
+export interface NetCDFTimeStepData {
+	data: Float32Array;
+	width: number;
+	height: number;
+	nodata: number | null;
+	ranges: BandDataRange[];
 }
 
 const cache = new Map<string, NetCDFCacheEntry>();
+
+const extractTimeStepData = (entry: NetCDFCacheEntry, timeIndex: number): NetCDFTimeStepData => {
+	const sliceIndices = {
+		...entry.sliceIndices,
+		[entry.timeDimName]: timeIndex
+	};
+
+	const { data, width, height, nodata } = extractRasterData(
+		entry.reader,
+		entry.variableName,
+		entry.info,
+		sliceIndices
+	);
+
+	return {
+		data,
+		width,
+		height,
+		nodata,
+		ranges: [getMinMax(data, nodata)]
+	};
+};
 
 export const NetCDFDataCache = {
 	set: (entryId: string, entry: NetCDFCacheEntry) => {
@@ -39,6 +74,12 @@ export const NetCDFDataCache = {
 		cache.delete(entryId);
 	},
 
+	getTimeStepData: (entryId: string, timeIndex: number): NetCDFTimeStepData | null => {
+		const entry = cache.get(entryId);
+		if (!entry) return null;
+		return extractTimeStepData(entry, timeIndex);
+	},
+
 	/**
 	 * 指定した時間インデックスのデータを抽出・エンコードしてGeoTiffCacheを更新する
 	 * 既にそのインデックスでエンコード済みならスキップ
@@ -47,21 +88,8 @@ export const NetCDFDataCache = {
 		const entry = cache.get(entryId);
 		if (!entry) return false;
 		if (entry.encodedTimeIndex === timeIndex) return false;
-
-		const sliceIndices = {
-			...entry.sliceIndices,
-			[entry.timeDimName]: timeIndex
-		};
-
-		const { data, width, height, nodata } = extractRasterData(
-			entry.reader,
-			entry.variableName,
-			entry.info,
-			sliceIndices
-		);
-
+		const { data, width, height, nodata, ranges } = extractTimeStepData(entry, timeIndex);
 		const bands: RasterBands = [data];
-		const ranges: BandDataRange[] = [getMinMax(data, nodata)];
 
 		await encodeAllBandsToTerrarium(entryId, bands, width, height, nodata, ranges);
 

@@ -1,4 +1,8 @@
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
+import type {
+	RasterDiscreteDimension,
+	RasterDimensionState
+} from '$routes/map/data/types/raster';
 
 interface ModelMetaData extends BaseMetaData {
 	altitude?: number;
@@ -8,8 +12,16 @@ interface BaseModelEntry {
 	id: string;
 	type: 'model';
 	metaData: ModelMetaData;
+	properties?: {
+		temporal?: {
+			dimension: RasterDiscreteDimension;
+		};
+	};
 	interaction: {
 		clickable: boolean;
+	};
+	state?: {
+		dimension?: RasterDimensionState;
 	};
 }
 
@@ -41,7 +53,13 @@ export interface MeshStyle {
 		lat: number;
 		altitude: number;
 		/** 高さオフセット（常に適用、地形時はaltitude+heightOffset） */
-		heightOffset: number;
+		heightOffset?: number;
+		/** Y 方向だけに効く高さ倍率 */
+		heightScale?: number;
+		/** UI には出さない読み込み基準の回転 */
+		baseRotationX?: number;
+		baseRotationY?: number;
+		baseRotationZ?: number;
 		scale: number;
 		rotationX: number;
 		rotationY: number;

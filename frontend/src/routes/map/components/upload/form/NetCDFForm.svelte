@@ -2,6 +2,7 @@
 	import type { NetCDFReader } from 'netcdfjs';
 	import { slide } from 'svelte/transition';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
@@ -21,6 +22,10 @@
 		getMinMax,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
+import {
+	createRasterMeshEntry,
+	sampleRasterMeshHeights
+} from '$routes/map/utils/formats/geotiff/mesh';
 	import {
 		parseNetCDF,
 		extractRasterData,
@@ -53,12 +58,22 @@
 	let ncReader = $state<NetCDFReader | null>(null);
 	let selectedVariable = $state('');
 	let analyzed = $state(false);
+	let registrationMode = $state<'raster' | 'mesh'>('raster');
 
 	// 3D以上の次元のスライス選択
 	let extraDimensions = $state<
 		{ name: string; size: number; values: number[] | string[] | null }[]
 	>([]);
 	let sliceIndices = $state<Record<string, number>>({});
+	const canCreateMesh = $derived(Boolean(selectedVariable));
+	const registrationModeOptions = $derived.by(() =>
+		canCreateMesh
+			? [
+					{ key: 'raster', name: 'ラスター' },
+					{ key: 'mesh', name: '3Dメッシュ' }
+				]
+			: [{ key: 'raster', name: 'ラスター' }]
+	);
 
 	const ncFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -83,6 +98,7 @@
 		selectedVariable = '';
 		extraDimensions = [];
 		sliceIndices = {};
+		registrationMode = 'raster';
 
 		try {
 			const arrayBuffer = await file.arrayBuffer();
@@ -177,6 +193,7 @@
 
 			// NetCDFの座標はWGS84（4326）
 			const rawBbox: [number, number, number, number] = bbox ?? [-180, -90, 180, 90];
+			const hasValidBbox = bbox ? isBboxValid(bbox) : false;
 
 			// サムネイル画像を生成（メルカトル補正）
 			const mapImage = generateThumbnail({
@@ -200,20 +217,14 @@
 				Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, rawBbox[2])),
 				Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, rawBbox[3]))
 			];
-
-			GeoTiffCache.setBbox(id, resolvedBbox);
-			GeoTiffCache.markAs4326(id);
-			GeoTiffCache.setRawBbox(id, rawBbox);
-
 			const variable = ncInfo.rasterVariables.find((v) => v.name === selectedVariable);
 			const unit = variable?.attributes['units'] ?? '';
 			const longName = variable?.attributes['long_name'] ?? selectedVariable;
-			let initialDimensionIndex = 0;
 
 			// 時間次元の検出
 			let dimension: RasterDiscreteDimension | undefined;
+			let initialDimensionIndex = 0;
 			if (variable && extraDimensions.length > 0) {
-				// time/Time/TIME等の名前を持つ次元を探す
 				const timeDim = extraDimensions.find((d) => /^(time|t|date|datetime)$/i.test(d.name));
 				if (timeDim && timeDim.size > 1) {
 					const timeValues = timeDim.values
@@ -226,7 +237,6 @@
 					};
 					initialDimensionIndex = sliceIndices[timeDim.name] ?? 0;
 
-					// 時間以外のスライスインデックスを固定用にコピー
 					const fixedSlices = { ...sliceIndices };
 					delete fixedSlices[timeDim.name];
 
@@ -244,6 +254,67 @@
 				}
 			}
 
+			if (registrationMode === 'mesh') {
+				if (!hasValidBbox) {
+					showNotification('3Dメッシュ化には有効な座標範囲が必要です', 'error');
+					return;
+				}
+
+				const meshHeightSampling = sampleRasterMeshHeights({
+					band: data,
+					width,
+					height,
+					nodata,
+					bounds: resolvedBbox,
+					baseValue: ranges[0].min,
+					autoHeightScale: true
+				});
+
+				const entry = await createRasterMeshEntry({
+					id,
+					name: entryName || `${longName} 3Dメッシュ`,
+					band: data,
+					width,
+					height,
+					nodata,
+					bounds: resolvedBbox,
+					mapImage,
+					baseValue: meshHeightSampling.effectiveBaseValue,
+					heightScale: meshHeightSampling.effectiveHeightScale
+				});
+
+				showDataEntry = entry;
+				if (dimension) {
+					entry.state = {
+						...entry.state,
+						dimension: {
+							currentIndex: initialDimensionIndex
+						}
+					};
+					entry.properties = {
+						...entry.properties,
+						temporal: {
+							dimension
+						}
+					};
+					const cachedEntry = NetCDFDataCache.get(id);
+					if (cachedEntry) {
+						cachedEntry.meshConfig = {
+							baseValue: meshHeightSampling.effectiveBaseValue,
+							heightScale: meshHeightSampling.effectiveHeightScale,
+							maxGridSize: 192
+						};
+					}
+				}
+				showDialogType = null;
+				dropFile = null;
+				showNotification(`NetCDF変数「${longName}」の3Dメッシュを生成しました`, 'success');
+				return;
+			}
+
+			GeoTiffCache.setBbox(id, resolvedBbox);
+			GeoTiffCache.markAs4326(id);
+			GeoTiffCache.setRawBbox(id, rawBbox);
 			const entry: RasterImageEntry<RasterTiffStyle> = {
 				id,
 				type: 'raster',
@@ -401,6 +472,19 @@
 					</div>
 				</div>
 			{/each}
+		{/if}
+
+		{#if selectedVariable}
+			<div class="w-full px-2">
+				<HorizontalSelectBox
+					label="登録方法"
+					options={registrationModeOptions}
+					bind:group={registrationMode}
+				/>
+				<p class="mt-2 text-xs text-gray-400">
+					3Dメッシュは選択中の変数スライスを高さとして GLB に変換して登録します
+				</p>
+			</div>
 		{/if}
 	{/if}
 </div>

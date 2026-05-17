@@ -81,7 +81,14 @@ export const createPointCloudEntry = (
 export const createGlbEntry = (
 	name: string,
 	url: string,
-	transform: { lng: number; lat: number; altitude: number; scale?: number; rotationY?: number },
+	transform: {
+		lng: number;
+		lat: number;
+		altitude: number;
+		scale?: number;
+		rotationX?: number;
+		rotationY?: number;
+	},
 	formatType: MeshFormatType = 'gltf',
 	mtlUrl?: string
 ): ModelMeshEntry<MeshStyle> => ({
@@ -100,20 +107,20 @@ export const createGlbEntry = (
 		bounds: pointToBbox(transform.lng, transform.lat)
 	},
 	interaction: { clickable: false },
-		style: {
-			visible: true,
-			type: 'mesh',
-			opacity: 1,
-			wireframe: false,
-			color: '#ffffff',
-			shading: { ...DEFAULT_MESH_SHADING },
-			transform: {
-				lng: transform.lng,
-				lat: transform.lat,
-				altitude: transform.altitude,
-			heightOffset: 0,
+	style: {
+		visible: true,
+		type: 'mesh',
+		opacity: 1,
+		wireframe: false,
+		color: '#ffffff',
+		shading: { ...DEFAULT_MESH_SHADING },
+		transform: {
+			lng: transform.lng,
+			lat: transform.lat,
+			altitude: transform.altitude,
+			baseRotationX: -180,
 			scale: transform.scale ?? 1,
-			rotationX: 0,
+			rotationX: transform.rotationX ?? 0,
 			rotationY: transform.rotationY ?? 0,
 			rotationZ: 0
 		}
