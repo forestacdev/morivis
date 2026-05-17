@@ -2,6 +2,7 @@ import type { Region } from '$routes/map/data/types/location';
 import type { Tag } from '$routes/map/data/types/tags';
 import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
 import type { Opacity } from '$routes/map/data/types';
+import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	ModelMeshEntry,
 	ModelTiles3DEntry,
@@ -89,6 +90,7 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): ModelMeshEnt
 			opacity,
 			wireframe,
 			color,
+			shading: { ...DEFAULT_MESH_SHADING },
 			transform: {
 				lng: transform.lng,
 				lat: transform.lat,

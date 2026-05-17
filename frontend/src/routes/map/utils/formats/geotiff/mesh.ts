@@ -4,6 +4,7 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 
 export type RasterMeshCornerCoordinates = [
@@ -231,6 +232,7 @@ export const createRasterMeshEntry = async (
 			opacity: 1,
 			wireframe: false,
 			color: '#ffffff',
+			shading: { ...DEFAULT_MESH_SHADING },
 			transform: {
 				lng: center.lng,
 				lat: center.lat,

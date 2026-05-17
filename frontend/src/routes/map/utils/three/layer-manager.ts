@@ -3,7 +3,12 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+import {
+	DEFAULT_MESH_SHADING,
+	type MeshShadingStyle,
+	type ModelMeshEntry,
+	type MeshStyle
+} from '$routes/map/data/types/model';
 import {
 	calculateModelTransform,
 	type ModelTransform
@@ -29,6 +34,143 @@ export class ThreeJsLayerManager {
 	private loader = new GLTFLoader();
 	private isInitialized = false;
 
+	private resolveShading = (style: MeshStyle): Required<MeshShadingStyle> => ({
+		...DEFAULT_MESH_SHADING,
+		...style.shading
+	});
+
+	private getLightDirection = (shading: Required<MeshShadingStyle>) => {
+		const azimuth = THREE.MathUtils.degToRad(shading.azimuthDeg);
+		const elevation = THREE.MathUtils.degToRad(shading.elevationDeg);
+		const cosElevation = Math.cos(elevation);
+
+		return new THREE.Vector3(
+			Math.cos(azimuth) * cosElevation,
+			Math.sin(elevation),
+			Math.sin(azimuth) * cosElevation
+		).normalize();
+	};
+
+	private createShaderMaterial = (
+		sourceMaterial: THREE.Material,
+		style: MeshStyle
+	): THREE.ShaderMaterial => {
+		const shading = this.resolveShading(style);
+		const baseColor = new THREE.Color(style.color);
+		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
+			baseColor.multiply(sourceMaterial.color);
+		}
+
+		const map =
+			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+				? sourceMaterial.map
+				: null;
+
+		const material = new THREE.ShaderMaterial({
+			uniforms: {
+				uBaseColor: { value: baseColor },
+				uOpacity: { value: style.opacity },
+				uAmbientStrength: { value: shading.ambientStrength },
+				uShadeStrength: { value: shading.shadeStrength },
+				uLightDirection: { value: this.getLightDirection(shading) },
+				uMap: { value: map },
+				uUseMap: { value: Boolean(map) }
+			},
+			vertexShader: `
+				varying vec3 vNormal;
+				varying vec2 vUv;
+
+				void main() {
+					vNormal = normalize(normal);
+					vUv = uv;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+				}
+			`,
+			fragmentShader: `
+				uniform vec3 uBaseColor;
+				uniform float uOpacity;
+				uniform float uAmbientStrength;
+				uniform float uShadeStrength;
+				uniform vec3 uLightDirection;
+				uniform sampler2D uMap;
+				uniform bool uUseMap;
+
+				varying vec3 vNormal;
+				varying vec2 vUv;
+
+				void main() {
+					vec4 texel = uUseMap ? texture2D(uMap, vUv) : vec4(1.0);
+					vec3 normalDir = normalize(vNormal);
+					float diffuse = max(dot(normalDir, normalize(uLightDirection)), 0.0);
+					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
+					vec3 shadedColor = uBaseColor * texel.rgb * shade;
+					float alpha = texel.a * uOpacity;
+
+					if (alpha <= 0.001) discard;
+
+					gl_FragColor = vec4(shadedColor, alpha);
+				}
+			`,
+			transparent: true,
+			wireframe: style.wireframe,
+			side: sourceMaterial.side
+		});
+		material.userData.morivisShaderShading = true;
+		return material;
+	};
+
+	private createFlatMaterial = (sourceMaterial: THREE.Material, style: MeshStyle): THREE.Material => {
+		const baseColor = new THREE.Color(style.color);
+		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
+			baseColor.multiply(sourceMaterial.color);
+		}
+
+		const map =
+			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+				? sourceMaterial.map
+				: null;
+
+		const material = new THREE.MeshBasicMaterial({
+			color: baseColor,
+			map,
+			transparent: true,
+			opacity: style.opacity,
+			wireframe: style.wireframe,
+			side: sourceMaterial.side
+		});
+		material.transparent = true;
+		material.opacity = style.opacity;
+		return material;
+	};
+
+	private applyStyleToMesh = (mesh: THREE.Mesh, style: MeshStyle) => {
+		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+		const originalMaterials =
+			(mesh.userData.originalMaterials as THREE.Material[] | undefined) ??
+			currentMaterials.map((material) => material.clone());
+
+		if (!mesh.userData.originalMaterials) {
+			mesh.userData.originalMaterials = originalMaterials;
+		}
+
+		const nextMaterials = originalMaterials.map((sourceMaterial) =>
+			this.resolveShading(style).enabled
+				? this.createShaderMaterial(sourceMaterial, style)
+				: this.createFlatMaterial(sourceMaterial, style)
+		);
+
+		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
+		currentMaterials.forEach((material) => material.dispose());
+	};
+
+	private applyStyleToObject = (object: THREE.Object3D, style: MeshStyle) => {
+		object.traverse((child) => {
+			if ((child as THREE.Mesh).isMesh) {
+				this.applyStyleToMesh(child as THREE.Mesh, style);
+			}
+		});
+	};
+
 	/** カスタムレイヤーを作成（初期化用） */
 	createLayer(): CustomLayerInterface {
 		return {
@@ -51,16 +193,22 @@ export class ThreeJsLayerManager {
 						antialias: true
 					});
 					this.renderer.autoClear = false;
+					this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+					this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+					this.renderer.toneMappingExposure = 1.0;
 
-					const hemiLight = new THREE.HemisphereLight(0xf5f7ff, 0x4f5d73, 0.7);
+					// 全体を均一に明るくしすぎず、空と地面からの回り込みだけを薄く入れる。
+					const hemiLight = new THREE.HemisphereLight(0xeef3fb, 0x5a6470, 0.45);
 					this.scene.add(hemiLight);
 
-					const keyLight = new THREE.DirectionalLight(0xffffff, 1.15);
-					keyLight.position.set(0.8, 1.6, 0.9);
+					// 主光源は少し高い位置から当てて、地形や建物の面変化を読みやすくする。
+					const keyLight = new THREE.DirectionalLight(0xfff6e8, 1.5);
+					keyLight.position.set(1.4, 2.2, 1.1);
 					this.scene.add(keyLight);
 
-					const fillLight = new THREE.DirectionalLight(0xcfe1ff, 0.45);
-					fillLight.position.set(-0.7, 0.9, -0.6);
+					// 反対側は弱い補助光だけにして、陰影を潰さない。
+					const fillLight = new THREE.DirectionalLight(0xdbe7f6, 0.22);
+					fillLight.position.set(-1.2, 1.1, -0.9);
 					this.scene.add(fillLight);
 
 					this.isInitialized = true;
@@ -152,20 +300,7 @@ export class ThreeJsLayerManager {
 			}
 
 			const onModelLoaded = (model: THREE.Group | THREE.Object3D) => {
-				model.traverse((child) => {
-					if ((child as THREE.Mesh).isMesh) {
-						const mesh = child as THREE.Mesh;
-						const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-
-						materials.forEach((material) => {
-							material.transparent = true;
-							material.opacity = entry.style.opacity;
-							if (entry.style.wireframe) {
-								(material as THREE.MeshStandardMaterial).wireframe = true;
-							}
-						});
-					}
-				});
+				this.applyStyleToObject(model, entry.style);
 
 				model.visible = entry.style.visible ?? true;
 				model.userData.entryId = entry.id;
@@ -244,6 +379,8 @@ export class ThreeJsLayerManager {
 				mesh.geometry.dispose();
 				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 				materials.forEach((mat) => mat.dispose());
+				const originalMaterials = mesh.userData.originalMaterials as THREE.Material[] | undefined;
+				originalMaterials?.forEach((material) => material.dispose());
 			}
 		});
 
@@ -280,51 +417,25 @@ export class ThreeJsLayerManager {
 	}
 
 	/** モデルの不透明度を変更 */
-	setModelOpacity(entryId: string, opacity: number): void {
+	setModelOpacity(entryId: string, opacity: MeshStyle['opacity']): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-
-		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-				materials.forEach((material) => {
-					material.opacity = opacity;
-				});
-			}
-		});
+		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, opacity } };
+		this.applyStyleToObject(loaded.object, loaded.entry.style);
 	}
 
 	setModelWireframe(entryId: string, wireframe: boolean): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-				materials.forEach((material) => {
-					if ('wireframe' in material) {
-						(material as THREE.MeshStandardMaterial).wireframe = wireframe;
-					}
-				});
-			}
-		});
+		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, wireframe } };
+		this.applyStyleToObject(loaded.object, loaded.entry.style);
 	}
 
 	setModelColor(entryId: string, color: string): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-				materials.forEach((material) => {
-					if ('color' in material && material.color instanceof THREE.Color) {
-						material.color = new THREE.Color(color);
-					}
-				});
-			}
-		});
+		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, color } };
+		this.applyStyleToObject(loaded.object, loaded.entry.style);
 	}
 
 	setModelTransform(entryId: string, style: MeshStyle): void {

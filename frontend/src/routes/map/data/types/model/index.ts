@@ -13,12 +13,29 @@ interface BaseModelEntry {
 	};
 }
 
+export interface MeshShadingStyle {
+	enabled: boolean;
+	shadeStrength: number;
+	ambientStrength: number;
+	azimuthDeg: number;
+	elevationDeg: number;
+}
+
+export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
+	enabled: true,
+	shadeStrength: 0.85,
+	ambientStrength: 0.35,
+	azimuthDeg: 45,
+	elevationDeg: 50
+};
+
 export interface MeshStyle {
 	type: 'mesh';
 	opacity: Opacity;
 	visible?: boolean;
 	wireframe: boolean;
 	color: string;
+	shading?: MeshShadingStyle;
 	transform: {
 		lng: number;
 		lat: number;

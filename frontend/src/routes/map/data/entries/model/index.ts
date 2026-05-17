@@ -1,5 +1,6 @@
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
+import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	ModelMeshEntry,
 	MeshStyle,
@@ -99,16 +100,17 @@ export const createGlbEntry = (
 		bounds: pointToBbox(transform.lng, transform.lat)
 	},
 	interaction: { clickable: false },
-	style: {
-		visible: true,
-		type: 'mesh',
-		opacity: 1,
-		wireframe: false,
-		color: '#ffffff',
-		transform: {
-			lng: transform.lng,
-			lat: transform.lat,
-			altitude: transform.altitude,
+		style: {
+			visible: true,
+			type: 'mesh',
+			opacity: 1,
+			wireframe: false,
+			color: '#ffffff',
+			shading: { ...DEFAULT_MESH_SHADING },
+			transform: {
+				lng: transform.lng,
+				lat: transform.lat,
+				altitude: transform.altitude,
 			heightOffset: 0,
 			scale: transform.scale ?? 1,
 			rotationX: 0,
