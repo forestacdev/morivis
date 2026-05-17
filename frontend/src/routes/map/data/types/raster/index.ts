@@ -24,7 +24,7 @@ export interface CategoryLegend {
 	type: 'category';
 	name: string;
 	colors: string[];
-	labels: string[];
+	labels: string[] | number[];
 }
 
 export interface GradientLegend {
