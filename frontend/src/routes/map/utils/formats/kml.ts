@@ -48,6 +48,93 @@ const getFirstChildText = (parent: Element, namespace: string, tagName: string) 
 	return parent.getElementsByTagNameNS(namespace, tagName)[0]?.textContent?.trim();
 };
 
+const getDirectChildText = (parent: Element, namespace: string, tagName: string) => {
+	for (const child of Array.from(parent.children)) {
+		if (child.namespaceURI === namespace && child.localName === tagName) {
+			return child.textContent?.trim();
+		}
+	}
+};
+
+const getAncestorFolderNames = (element: Element): string[] => {
+	const names: string[] = [];
+	let current = element.parentElement;
+
+	while (current) {
+		if (current.namespaceURI === KML_NS && current.localName === 'Folder') {
+			const name = getDirectChildText(current, KML_NS, 'name');
+			if (name) names.push(name);
+		}
+		current = current.parentElement;
+	}
+
+	return names.reverse();
+};
+
+const parseFolderTemporalText = (text: string) => {
+	const normalized = text.trim();
+	if (!normalized) return null;
+
+	const yearMonthMatch = normalized.match(/(?:^|[^\d])((?:19|20)?\d{2})年\s*(\d{1,2})月(?:$|[^\d])/);
+	if (yearMonthMatch) {
+		let year = Number(yearMonthMatch[1]);
+		const month = Number(yearMonthMatch[2]);
+		if (year < 100) year += year >= 70 ? 1900 : 2000;
+		if (month >= 1 && month <= 12) {
+			return {
+				label: normalized,
+				year: String(year).padStart(4, '0'),
+				month: String(month).padStart(2, '0'),
+				period: `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}`
+			};
+		}
+	}
+
+	const isoYearMonthMatch = normalized.match(/\b((?:19|20)\d{2})[-/](\d{1,2})\b/);
+	if (isoYearMonthMatch) {
+		const year = Number(isoYearMonthMatch[1]);
+		const month = Number(isoYearMonthMatch[2]);
+		if (month >= 1 && month <= 12) {
+			return {
+				label: normalized,
+				year: String(year).padStart(4, '0'),
+				month: String(month).padStart(2, '0'),
+				period: `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}`
+			};
+		}
+	}
+
+	const yearOnlyMatch = normalized.match(/\b((?:19|20)\d{2})\b/);
+	if (yearOnlyMatch) {
+		const year = Number(yearOnlyMatch[1]);
+		return {
+			label: normalized,
+			year: String(year).padStart(4, '0')
+		};
+	}
+
+	return null;
+};
+
+const extractPlacemarkTime = (placemark: Element): string | null => {
+	const explicitTimeStamp = getFirstChildText(placemark, KML_NS, 'when');
+	if (explicitTimeStamp) return explicitTimeStamp;
+
+	const timeStamp = placemark.getElementsByTagNameNS(KML_NS, 'TimeStamp')[0];
+	const timeStampWhen = timeStamp
+		? getFirstChildText(timeStamp, KML_NS, 'when') ?? getFirstChildText(timeStamp, GX_NS, 'when')
+		: null;
+	if (timeStampWhen) return timeStampWhen;
+
+	const timeSpan = placemark.getElementsByTagNameNS(KML_NS, 'TimeSpan')[0];
+	const begin = timeSpan ? getFirstChildText(timeSpan, KML_NS, 'begin') : null;
+	if (begin) return begin;
+	const end = timeSpan ? getFirstChildText(timeSpan, KML_NS, 'end') : null;
+	if (end) return end;
+
+	return null;
+};
+
 const extractPlacemarkProperties = (placemark: Element) => {
 	const properties: Record<string, string | number | boolean> = {};
 
@@ -77,6 +164,25 @@ const extractPlacemarkProperties = (placemark: Element) => {
 		const value = simpleDataElement.textContent?.trim();
 		if (key && value) properties[key] = value;
 	}
+
+	const folderNames = getAncestorFolderNames(placemark);
+	if (folderNames.length > 0) {
+		properties.folder_name = folderNames[folderNames.length - 1];
+		properties.folder_path = folderNames.join(' / ');
+	}
+
+	for (const folderName of folderNames.slice().reverse()) {
+		const temporalInfo = parseFolderTemporalText(folderName);
+		if (!temporalInfo) continue;
+		properties.folder_time_label = temporalInfo.label;
+		if (temporalInfo.year) properties.folder_time_year = temporalInfo.year;
+		if (temporalInfo.month) properties.folder_time_month = temporalInfo.month;
+		if (temporalInfo.period) properties.folder_time_period = temporalInfo.period;
+		break;
+	}
+
+	const time = extractPlacemarkTime(placemark);
+	if (time) properties.time = time;
 
 	return properties as FeatureProp;
 };
@@ -282,6 +388,11 @@ const parseKmlString = (
 
 			const properties = olFeature.getProperties();
 			delete properties[olFeature.getGeometryName()];
+			const placemark = doc.getElementsByTagNameNS(KML_NS, 'Placemark')[index];
+			if (placemark) {
+				const xmlProperties = extractPlacemarkProperties(placemark);
+				Object.assign(properties, xmlProperties);
+			}
 
 			// descriptionにHTMLテーブルが含まれていれば属性を展開
 			const desc = properties['description'];

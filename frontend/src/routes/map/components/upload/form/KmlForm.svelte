@@ -75,7 +75,12 @@
 			...field.format,
 			date: {
 				...(field.format?.date ?? {}),
-				inputPatterns: ['YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss+HH:mm'],
+				inputPatterns: [
+					'YYYY-MM-DDTHH:mm:ssZ',
+					'YYYY-MM-DDTHH:mm:ss+HH:mm',
+					'YYYY-MM-DD',
+					'YYYY-MM'
+				],
 				displayPattern: 'YYYY年M月D日 HH:mm:ss',
 				invalidText: ''
 			}
@@ -102,7 +107,12 @@
 				raw,
 				timestamp,
 				label: formatDate(raw, {
-					inputPatterns: ['YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss+HH:mm'],
+					inputPatterns: [
+						'YYYY-MM-DDTHH:mm:ssZ',
+						'YYYY-MM-DDTHH:mm:ss+HH:mm',
+						'YYYY-MM-DD',
+						'YYYY-MM'
+					],
 					displayPattern: 'YYYY年M月D日 HH:mm:ss',
 					invalidText: raw
 				})
@@ -129,7 +139,6 @@
 		entry.properties.attributeView.timeKey = 'time';
 	};
 
-	// ファイルドロップ時: KML/KMZ → GeoJSON → ジオメトリタイプ確認
 	$effect(() => {
 		if (kmlFile) {
 			isProcessing.set(true);
@@ -137,7 +146,7 @@
 				.then((result) => {
 					kmlResult = result;
 					rawGeojson = result.geojson as unknown as FeatureCollection;
-					const types = getGeometryTypes(rawGeojson!);
+					const types = getGeometryTypes(rawGeojson);
 
 					if (types.length === 1) {
 						selectedGeometryType = types[0];
@@ -201,7 +210,6 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!kmlFile || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);
