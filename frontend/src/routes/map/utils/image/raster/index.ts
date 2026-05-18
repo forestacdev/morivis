@@ -21,6 +21,8 @@ import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { PMTiles } from 'pmtiles';
 import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
 import { replaceDimensionPlaceholder } from '$routes/map/utils/dimension';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
+import { createClientId } from '$routes/utils/id';
 
 /** Worker応答からObject URLを生成する（ImageBitmap / Blob 両対応） */
 const createObjectURLFromWorkerResult = async (data: {
@@ -306,7 +308,7 @@ const loadImagePmtiles = async (
 	tile: { x: number; y: number; z: number }
 ): Promise<ImageBitmap> => {
 	try {
-		const pmtiles = new PMTiles(src);
+		const pmtiles = new PMTiles(resolveRequestUrl(src));
 
 		// タイルデータを取得
 		const tileData = await pmtiles.getZxy(tile.z, tile.x, tile.y);
@@ -360,7 +362,7 @@ export const generateDemCoverImage = async (
 	const { x, y, z } = metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
 
 	const mode = visualization.mode as DemStyleMode;
-	const tileId = crypto.randomUUID();
+	const tileId = createClientId();
 	const demType = visualization.demType as DemDataTypeKey;
 	const demTypeNumber = DEM_DATA_TYPE[demType];
 	const modeNumber = DEM_STYLE_TYPE[mode as keyof typeof DEM_STYLE_TYPE];
@@ -486,7 +488,7 @@ export const generateDemCoverImage = async (
 
 // 色と画像urlを引数に画像の特定の色を変える関数
 const replaceColorInImage = async (imageUrl: string, _entry: RasterCadEntry): Promise<string> => {
-	const tileId = crypto.randomUUID();
+	const tileId = createClientId();
 	const worker = new Worker(new URL('./image_replacement_color.worker.ts', import.meta.url), {
 		type: 'module'
 	});

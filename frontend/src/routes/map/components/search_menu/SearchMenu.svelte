@@ -15,6 +15,7 @@
 		ResultAddressData,
 		SearchGeojsonData
 	} from '$routes/map/utils/data/search-result';
+	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
 	import { isStyleEdit } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
@@ -56,14 +57,12 @@
 
 	onMount(async () => {
 		// 検索データの初期化
-		searchData = await fetch(`${DATA_PATH}/search_data.json`)
-			.then((res) => res.json())
-			.then((data) => {
-				return data;
-			})
-			.catch((error) => {
+		searchData = await fetchJsonWithDevProxy<SearchData[]>(`${DATA_PATH}/search_data.json`).catch(
+			(error) => {
 				console.error('Error fetching search data:', error);
-			});
+				return [];
+			}
+		);
 
 		searchData.forEach((data) => {
 			const layerId = data.layer_id;

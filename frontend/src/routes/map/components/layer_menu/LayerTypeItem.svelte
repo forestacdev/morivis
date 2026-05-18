@@ -79,8 +79,8 @@
 		style="transform: scale({iconScale}); opacity: {iconOpacity};"
 	>
 		<div
-			class=" peer absolute z-10 aspect-square rounded-full p-1.5 {isHoveredLayerType ===
-				layerType && !isDeleteOverlayActive
+			class="peer absolute z-10 rounded-full p-1.5 {isHoveredLayerType === layerType &&
+			!isDeleteOverlayActive
 				? 'bg-accent text-base'
 				: 'bg-base text-main'} duration-200"
 		>

@@ -16,7 +16,7 @@ import type {
 	ImageSource,
 	VectorProperties
 } from '$routes/map/data/types/vector/properties';
-import { devProxyTransform } from '$routes/map/utils/platform/proxy';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 import type { PointImageIcon } from '$routes/map/data/types/vector/style';
 
@@ -460,7 +460,7 @@ const loadImage = async (src: string): Promise<ImageBitmap> => {
 	}
 
 	const imagePromise = (async () => {
-		const requestUrl = import.meta.env.PROD ? src : devProxyTransform(src).url;
+		const requestUrl = resolveRequestUrl(src);
 		const response = await fetch(requestUrl);
 		if (!response.ok) {
 			throw new Error('Failed to fetch image');

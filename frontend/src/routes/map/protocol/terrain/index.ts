@@ -1,5 +1,6 @@
 import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/types/raster';
 import { PMTiles } from 'pmtiles';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 const pmCache = new Map<string, PMTiles>();
 
@@ -11,7 +12,7 @@ const loadImagePmtiles = async (
 	try {
 		let pmtiles = pmCache.get(src);
 		if (!pmtiles) {
-			pmtiles = new PMTiles(src);
+			pmtiles = new PMTiles(resolveRequestUrl(src));
 			pmCache.set(src, pmtiles);
 		}
 
@@ -39,7 +40,7 @@ const loadImagePmtiles = async (
 
 const loadImage = async (src: string, signal: AbortSignal): Promise<ImageBitmap> => {
 	try {
-		const response = await fetch(src, { signal });
+		const response = await fetch(resolveRequestUrl(src), { signal });
 		if (!response.ok) {
 			throw new Error('Failed to fetch image');
 		}

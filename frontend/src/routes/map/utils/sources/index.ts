@@ -38,6 +38,7 @@ import { JoinDataCache } from '$routes/map/utils/cache/join-data-cache';
 import { GeoTiffImageCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 import { getGeojson } from '$routes/map/utils/formats/geojson';
 import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 import { objectToUrlParams } from '$routes/map/utils/platform/url-params';
 
@@ -181,6 +182,7 @@ export const createSourcesItems = async (
 							} as RasterSourceSpecification;
 						}
 					} else if (format.type === 'pmtiles') {
+						const pmtilesUrl = resolveRequestUrl(format.url);
 						if (style.type === 'dem') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
@@ -193,7 +195,7 @@ export const createSourcesItems = async (
 								items[sourceId] = {
 									type: 'raster',
 									tiles: [
-										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${encodeURIComponent(format.url)}&x={x}&y={y}&z={z}`
+										`webgl://${pmtilesUrl}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${encodeURIComponent(pmtilesUrl)}&x={x}&y={y}&z={z}`
 									],
 									maxzoom: metaData.maxZoom,
 									minzoom: metaData.minZoom,
@@ -204,7 +206,7 @@ export const createSourcesItems = async (
 							} else {
 								items[sourceId] = {
 									type: 'raster',
-									url: `pmtiles://${format.url}`,
+									url: `pmtiles://${pmtilesUrl}`,
 									maxzoom: metaData.maxZoom,
 									minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 									tileSize: metaData.tileSize,
@@ -215,7 +217,7 @@ export const createSourcesItems = async (
 						} else if (style.type === 'cad') {
 							items[sourceId] = {
 								type: 'raster',
-								url: `pmtiles://${format.url}`,
+								url: `pmtiles://${pmtilesUrl}`,
 								maxzoom: metaData.maxZoom,
 								minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 								tileSize: metaData.tileSize,
@@ -225,7 +227,7 @@ export const createSourcesItems = async (
 						} else {
 							items[sourceId] = {
 								type: 'raster',
-								url: `pmtiles://${format.url}`,
+								url: `pmtiles://${pmtilesUrl}`,
 								maxzoom: metaData.maxZoom,
 								minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 								tileSize: metaData.tileSize,
@@ -306,9 +308,10 @@ export const createSourcesItems = async (
 							bounds: metaData.bounds
 						} as VectorSourceSpecification;
 					} else if (format.type === 'pmtiles') {
+						const pmtilesUrl = resolveRequestUrl(format.url);
 						items[sourceId] = {
 							type: 'vector',
-							url: `pmtiles://${format.url}`,
+							url: `pmtiles://${pmtilesUrl}`,
 							maxzoom: metaData.maxZoom,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,

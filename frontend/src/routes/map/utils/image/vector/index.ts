@@ -10,6 +10,7 @@ import { CoverImageManager } from '../index';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 import { esriFeatureProtocol } from '$routes/map/protocol/vector/esri-feature';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 export interface MapImageOptions {
 	name: string;
@@ -84,7 +85,10 @@ class MapInstancePool {
 				},
 				zoom: 0,
 				interactive: false,
-				attributionControl: false
+				attributionControl: false,
+				transformRequest: (url) => {
+					return { url: resolveRequestUrl(url) };
+				}
 			});
 
 			this.instances.push(map);
@@ -319,7 +323,7 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 
 		try {
 			if (checkUrl) {
-				const response = await fetch(checkUrl, {
+				const response = await fetch(resolveRequestUrl(checkUrl), {
 					method: 'HEAD',
 					mode: 'cors', // 明示的にCORSモードを指定
 					headers: {
@@ -370,8 +374,8 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 
 	const style: maplibregl.StyleSpecification = {
 		version: 8,
-		sprite: MAP_SPRITE_DATA_PATH,
-		glyphs: MAP_FONT_DATA_PATH,
+		sprite: resolveRequestUrl(MAP_SPRITE_DATA_PATH),
+		glyphs: resolveRequestUrl(MAP_FONT_DATA_PATH),
 		sources: {
 			// TODO 背景地図のみ処理を分離
 			// mierune_mono: {

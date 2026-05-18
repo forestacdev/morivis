@@ -36,7 +36,8 @@ import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protoco
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
 import poiTopIcon from '$lib/icons/poi_top.png';
-import { devProxyTransform } from '$routes/map/utils/platform/proxy';
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { isHighlightLayerId } from '$routes/map/utils/layers/highlight';
 
 import {
@@ -327,7 +328,7 @@ const createMapStore = () => {
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
 			transformRequest: (url) => {
 				if (import.meta.env.PROD) return { url };
-				return devProxyTransform(url);
+				return { url: resolveRequestUrl(url) };
 			}
 
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
@@ -350,7 +351,7 @@ const createMapStore = () => {
 			if (id === 'poi_top') {
 				if (map.hasImage('poi_top')) return;
 				// 検索用のマーカーアイコンを追加
-				fetch(poiTopIcon).then(async (response) => {
+				fetchWithDevProxy(poiTopIcon).then(async (response) => {
 					if (!response.ok) {
 						throw new Error(`Failed to fetch image: ${response.statusText}`);
 					}
@@ -361,7 +362,7 @@ const createMapStore = () => {
 			} else if (id === 'marker_png') {
 				if (map.hasImage('marker_png')) return;
 				// 検索用のマーカーアイコンを追加
-				fetch(markerPngIcon).then(async (response) => {
+				fetchWithDevProxy(markerPngIcon).then(async (response) => {
 					if (!response.ok) {
 						throw new Error(`Failed to fetch image: ${response.statusText}`);
 					}

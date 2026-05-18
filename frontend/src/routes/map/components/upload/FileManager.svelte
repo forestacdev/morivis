@@ -5,10 +5,10 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
 	import { hasExifGps } from '$routes/map/utils/formats/exif';
-	import { inspectObjFile } from '$routes/map/utils/formats/obj';
-	import { isPointCloudTextFile } from '$routes/map/utils/formats/xyz';
 	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
 	import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
+	import { inspectObjFile } from '$routes/map/utils/formats/obj';
+	import { isPointCloudTextFile } from '$routes/map/utils/formats/xyz';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 

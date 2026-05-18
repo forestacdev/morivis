@@ -14,6 +14,7 @@
 		type WcsCoverageDescription,
 		type WcsCoverageSummary
 	} from '$routes/map/utils/formats/wcs';
+	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -221,7 +222,7 @@
 				height
 			});
 
-			const response = await fetch(coverageUrl);
+			const response = await fetchWithDevProxy(coverageUrl);
 			if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
 			const blob = await response.blob();

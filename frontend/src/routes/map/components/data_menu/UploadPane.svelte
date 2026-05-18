@@ -11,6 +11,7 @@
 	} from '$routes/map/types';
 	import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
 	import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
+	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -258,7 +259,7 @@
 				return;
 			}
 
-			const response = await fetch(trimmedUrl);
+			const response = await fetchWithDevProxy(trimmedUrl);
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}`);
 			}

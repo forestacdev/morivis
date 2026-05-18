@@ -1,7 +1,8 @@
 /**
  * CORSプロキシ設定の唯一の定義元
  *
- * 新しいCORSエラーが出たときは PROXY_RULES にエントリを追加するだけでよい。
+ * 新しいCORSエラーが出たときは STATIC_PROXY_RULES か
+ * CLOUDFRONT_PUBLIC_ENV_RULES にエントリを追加するだけでよい。
  * - vite.config.ts の server.proxy は buildViteProxyConfig() で自動生成
  * - MapLibre の transformRequest は devProxyTransform() で URL を書き換え
  */
@@ -17,7 +18,22 @@ interface ProxyRule {
 	excludeExt?: string[];
 }
 
-export const PROXY_RULES: ProxyRule[] = [
+interface CloudFrontPublicEnvRule {
+	envKey: string;
+	proxyPath: string;
+}
+
+type PublicEnvValues = Record<string, string | undefined>;
+
+const CLOUDFRONT_PUBLIC_ENV_RULES: CloudFrontPublicEnvRule[] = [
+	{ envKey: 'PUBLIC_BASE_PATH', proxyPath: '/api/cloudfront-assets' },
+	{ envKey: 'PUBLIC_ENTRY_PATH', proxyPath: '/api/cloudfront-entry' },
+	{ envKey: 'PUBLIC_PANORAMA_PATH', proxyPath: '/api/cloudfront-panorama' },
+	{ envKey: 'PUBLIC_TIMBER_SPECIES_PATH', proxyPath: '/api/cloudfront-timber-species' },
+	{ envKey: 'PUBLIC_DISASTER_LORE_ALL_PATH', proxyPath: '/api/cloudfront-disaster-lore' }
+];
+
+const STATIC_PROXY_RULES: ProxyRule[] = [
 	{ match: 'mapdata.qchizu.xyz', target: 'https://mapdata.qchizu.xyz', proxyPath: '/api/qchizu' },
 	{
 		match: 'www2.ffpri.go.jp',
@@ -77,12 +93,56 @@ export const PROXY_RULES: ProxyRule[] = [
 	}
 ];
 
+const createCloudFrontProxyRule = (
+	value: string | undefined,
+	proxyPath: string
+): ProxyRule | null => {
+	if (!value) return null;
+
+	try {
+		const url = new URL(value);
+		return {
+			match: url.hostname,
+			target: url.origin,
+			proxyPath
+		};
+	} catch {
+		return null;
+	}
+};
+
+const getRuntimePublicEnvValue = (key: string): string | undefined => {
+	const value = import.meta.env?.[key];
+	return typeof value === 'string' && value.length > 0 ? value : undefined;
+};
+
+const dedupeProxyRules = (rules: ProxyRule[]): ProxyRule[] => {
+	const seen = new Set<string>();
+
+	return rules.filter((rule) => {
+		const key = `${rule.match}|${rule.target}|${rule.proxyPath}`;
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
+};
+
+const buildCloudFrontProxyRules = (publicEnvValues: PublicEnvValues): ProxyRule[] => {
+	return CLOUDFRONT_PUBLIC_ENV_RULES.map(({ envKey, proxyPath }) =>
+		createCloudFrontProxyRule(publicEnvValues[envKey], proxyPath)
+	).filter((rule): rule is ProxyRule => rule !== null);
+};
+
+export const buildRuntimeProxyRules = (publicEnvValues: PublicEnvValues = {}): ProxyRule[] => {
+	return dedupeProxyRules([...buildCloudFrontProxyRules(publicEnvValues), ...STATIC_PROXY_RULES]);
+};
+
 /**
  * MapLibre の transformRequest に渡す関数。
- * dev環境のみ動作し、PROXY_RULES に従って URL を書き換える。
+ * dev環境のみ動作し、実行時の proxy ルールに従って URL を書き換える。
  */
-export const devProxyTransform = (url: string): { url: string } => {
-	for (const rule of PROXY_RULES) {
+export const devProxyTransform = (url: string, publicEnvValues: PublicEnvValues = {}): { url: string } => {
+	for (const rule of buildRuntimeProxyRules(publicEnvValues)) {
 		if (!url.includes(rule.match)) continue;
 		if (rule.excludeExt?.some((ext) => url.endsWith(ext))) return { url };
 		return { url: url.replace(rule.target, rule.proxyPath) };
@@ -92,15 +152,16 @@ export const devProxyTransform = (url: string): { url: string } => {
 
 /**
  * vite.config.ts の server.proxy に渡すオブジェクトを生成する。
- * PROXY_RULES から自動生成されるため、手動で vite.config.ts を編集する必要はない。
+ * publicEnv の CloudFront 配信元と STATIC_PROXY_RULES から自動生成される。
  */
-export const buildViteProxyConfig = () => {
+export const buildViteProxyConfig = (publicEnv: Record<string, string | undefined> = {}) => {
+	const proxyRules = buildRuntimeProxyRules(publicEnv);
 	const config: Record<
 		string,
 		{ target: string; changeOrigin: boolean; rewrite: (path: string) => string }
 	> = {};
 
-	for (const rule of PROXY_RULES) {
+	for (const rule of proxyRules) {
 		const { proxyPath, target } = rule;
 		config[proxyPath] = {
 			target,

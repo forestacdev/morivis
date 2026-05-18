@@ -2,6 +2,7 @@ import * as tilebelt from '@mapbox/tilebelt';
 import chroma from 'chroma-js';
 import type { LngLat } from 'maplibre-gl';
 import { PMTiles } from 'pmtiles';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import type {
 	CategoryLegend,
 	RasterFormatType,
@@ -14,7 +15,7 @@ export const getImagePmtiles = async (
 	url: string,
 	tile: { x: number; y: number; z: number }
 ): Promise<string> => {
-	const pmtiles = new PMTiles(url);
+	const pmtiles = new PMTiles(resolveRequestUrl(url));
 
 	const tileData = await pmtiles.getZxy(tile.z, tile.x, tile.y);
 	if (!tileData || !tileData.data) {
