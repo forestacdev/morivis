@@ -5,6 +5,8 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
 	import { hasExifGps } from '$routes/map/utils/formats/exif';
+	import { inspectObjFile } from '$routes/map/utils/formats/obj';
+	import { isPointCloudTextFile } from '$routes/map/utils/formats/xyz';
 	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
 	import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
@@ -208,9 +210,13 @@
 					showDialogType = 'pmtiles';
 					return;
 				case 'glb':
-				case 'obj':
 					showDialogType = 'glb';
 					return;
+				case 'obj': {
+					const inspection = await inspectObjFile(file);
+					showDialogType = inspection.isPointCloud ? 'pointcloud' : 'glb';
+					return;
+				}
 				case 'h5':
 					showDialogType = 'hdf5';
 					return;
@@ -238,6 +244,13 @@
 				case 'pcd':
 				case 'xyz':
 					showDialogType = 'pointcloud';
+					return;
+				case 'txt':
+					if (await isPointCloudTextFile(file)) {
+						showDialogType = 'pointcloud';
+						return;
+					}
+					showNotification('対応していないTXTファイルです', 'error');
 					return;
 				case 'mbtiles':
 					showDialogType = 'mbtiles';
@@ -303,7 +316,13 @@
 			if (!(await checkLargeFile(files))) return;
 
 			if (files.some((f) => /\.obj$/i.test(f.name))) {
-				showDialogType = 'glb';
+				const objFile = files.find((f) => /\.obj$/i.test(f.name));
+				if (!objFile) {
+					showNotification('OBJファイルの判定に失敗しました', 'error');
+					return;
+				}
+				const inspection = await inspectObjFile(objFile);
+				showDialogType = inspection.isPointCloud ? 'pointcloud' : 'glb';
 			} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
 				// 全ファイルがJPEG/HEIC → 1枚でもGPS付きなら位置情報付き写真
 				const hasGps = await hasExifGps(files[0]);

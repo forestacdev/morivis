@@ -140,7 +140,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: '画像 (EXIF GPS)', extensions: ['.png', '.jpg', '.jpeg', '.webp'] },
 	{ label: 'GeoPDF', extensions: ['.pdf'] },
 	{ label: '3Dモデル', extensions: ['.glb', '.obj', '.mtl'] },
-	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz'] }
+	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz', '.txt'] }
 ];
 
 /** SUPPORTED_FILE_GROUPS から自動生成 */
