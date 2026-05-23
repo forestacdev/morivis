@@ -16,8 +16,10 @@ const runtimePublicEnvValues = {
 	PUBLIC_DISASTER_LORE_ALL_PATH
 };
 
+const isMobileMode = import.meta.env.MODE === 'mobile';
+
 const resolveRuntimeUrl = (url: string): string => {
-	return import.meta.env.PROD ? url : devProxyTransform(url, runtimePublicEnvValues).url;
+	return isMobileMode ? devProxyTransform(url, runtimePublicEnvValues).url : url;
 };
 
 const toAbsoluteUrl = (url: string): string => {

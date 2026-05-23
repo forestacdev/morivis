@@ -139,7 +139,7 @@ export const buildRuntimeProxyRules = (publicEnvValues: PublicEnvValues = {}): P
 
 /**
  * MapLibre の transformRequest に渡す関数。
- * dev環境のみ動作し、実行時の proxy ルールに従って URL を書き換える。
+ * mobile モードのみ動作し、実行時の proxy ルールに従って URL を書き換える。
  */
 export const devProxyTransform = (url: string, publicEnvValues: PublicEnvValues = {}): { url: string } => {
 	for (const rule of buildRuntimeProxyRules(publicEnvValues)) {

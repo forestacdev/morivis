@@ -287,18 +287,37 @@ export const generatePmtilesImageUrl = async (
 	});
 };
 
-const loadImageToBitmap = async (imageUrl: string): Promise<ImageBitmap> => {
+const loadImageToBitmap = async (
+	imageUrl: string,
+	context?: {
+		layerId?: string;
+		layerName?: string;
+		xyz?: { x: number; y: number; z: number };
+	}
+): Promise<ImageBitmap> => {
 	try {
 		const finalUrl = TileProxy.toProxyUrl(imageUrl);
 		const response = await fetch(finalUrl);
 
 		if (!response.ok) {
-			throw new Error(`Failed to fetch image: ${response.statusText}`);
+			console.error('Raster preview fetch failed', {
+				imageUrl,
+				finalUrl,
+				status: response.status,
+				statusText: response.statusText,
+				...context
+			});
+			throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
 		}
 		const blob = await response.blob();
 		return await createImageBitmap(blob);
 	} catch (error) {
-		console.error('Error loading image to bitmap:', error);
+		console.error('Error loading image to bitmap:', {
+			error,
+			imageUrl,
+			finalUrl: TileProxy.toProxyUrl(imageUrl),
+			...context
+		});
 		throw error; // エラーを再投げして呼び出し元で処
 	}
 };
@@ -372,9 +391,14 @@ export const generateDemCoverImage = async (
 
 	try {
 		let image;
+		const previewContext = {
+			layerId: _entry.id,
+			layerName: _entry.metaData.name,
+			xyz: { x, y, z }
+		};
 
 		if (_entry.format.type === 'image') {
-			image = await loadImageToBitmap(imageUrl);
+			image = await loadImageToBitmap(imageUrl, previewContext);
 		} else if (_entry.format.type === 'pmtiles') {
 			image = await loadImagePmtiles(baseUrl, { x, y, z });
 		} else {
@@ -498,9 +522,14 @@ const replaceColorInImage = async (imageUrl: string, _entry: RasterCadEntry): Pr
 	const encodeType: 'blob' | 'buffar' = 'blob';
 
 	let image;
+	const previewContext = {
+		layerId: _entry.id,
+		layerName: _entry.metaData.name,
+		xyz: { x, y, z }
+	};
 
 	if (_entry.format.type === 'image') {
-		image = await loadImageToBitmap(imageUrl);
+		image = await loadImageToBitmap(imageUrl, previewContext);
 	} else if (_entry.format.type === 'pmtiles') {
 		image = await loadImagePmtiles(baseUrl, { x, y, z });
 	} else {
