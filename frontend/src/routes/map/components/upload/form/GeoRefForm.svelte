@@ -39,6 +39,7 @@
 		};
 		imageFile: File;
 		previewImageUrl?: string;
+		initialCorners?: [[number, number], [number, number], [number, number], [number, number]];
 		registrationMode: RasterRegistrationMode;
 	}
 
@@ -102,30 +103,37 @@
 			const data = geoRefData;
 			untrack(() => {
 				showDataMenu.set(false);
-				const center = map.getCenter();
-				const bounds = map.getBounds();
-				const viewWidth = bounds.getEast() - bounds.getWest();
-				const viewHeight = bounds.getNorth() - bounds.getSouth();
-
-				// 緯度によるメルカトル歪み補正
-				const cosLat = Math.cos((center.lat * Math.PI) / 180);
-				const aspect = data.imageWidth / data.imageHeight;
-				const size = Math.min(viewWidth, viewHeight) * 0.3;
-
-				let halfW: number;
-				let halfH: number;
-				if (aspect >= 1) {
-					halfW = size / 2 / cosLat;
-					halfH = size / (2 * aspect);
+				if (data.initialCorners) {
+					nw = new maplibregl.LngLat(data.initialCorners[0][0], data.initialCorners[0][1]);
+					ne = new maplibregl.LngLat(data.initialCorners[1][0], data.initialCorners[1][1]);
+					se = new maplibregl.LngLat(data.initialCorners[2][0], data.initialCorners[2][1]);
+					sw = new maplibregl.LngLat(data.initialCorners[3][0], data.initialCorners[3][1]);
 				} else {
-					halfW = (size * aspect) / 2 / cosLat;
-					halfH = size / 2;
-				}
+					const center = map.getCenter();
+					const bounds = map.getBounds();
+					const viewWidth = bounds.getEast() - bounds.getWest();
+					const viewHeight = bounds.getNorth() - bounds.getSouth();
 
-				nw = new maplibregl.LngLat(center.lng - halfW, center.lat + halfH);
-				ne = new maplibregl.LngLat(center.lng + halfW, center.lat + halfH);
-				se = new maplibregl.LngLat(center.lng + halfW, center.lat - halfH);
-				sw = new maplibregl.LngLat(center.lng - halfW, center.lat - halfH);
+					// 緯度によるメルカトル歪み補正
+					const cosLat = Math.cos((center.lat * Math.PI) / 180);
+					const aspect = data.imageWidth / data.imageHeight;
+					const size = Math.min(viewWidth, viewHeight) * 0.3;
+
+					let halfW: number;
+					let halfH: number;
+					if (aspect >= 1) {
+						halfW = size / 2 / cosLat;
+						halfH = size / (2 * aspect);
+					} else {
+						halfW = (size * aspect) / 2 / cosLat;
+						halfH = size / 2;
+					}
+
+					nw = new maplibregl.LngLat(center.lng - halfW, center.lat + halfH);
+					ne = new maplibregl.LngLat(center.lng + halfW, center.lat + halfH);
+					se = new maplibregl.LngLat(center.lng + halfW, center.lat - halfH);
+					sw = new maplibregl.LngLat(center.lng - halfW, center.lat - halfH);
+				}
 
 				// 画像プレビュー用URL
 				imageUrl = data.previewImageUrl ?? URL.createObjectURL(data.imageFile);

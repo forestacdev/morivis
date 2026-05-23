@@ -56,6 +56,14 @@ const getDirectChildText = (parent: Element, namespace: string, tagName: string)
 	}
 };
 
+const getDirectChildElement = (parent: Element, namespace: string, tagName: string) => {
+	for (const child of Array.from(parent.children)) {
+		if (child.namespaceURI === namespace && child.localName === tagName) {
+			return child;
+		}
+	}
+};
+
 const getAncestorFolderNames = (element: Element): string[] => {
 	const names: string[] = [];
 	let current = element.parentElement;
@@ -433,6 +441,14 @@ const parseKmlString = (
 	return { geojson: { type: 'FeatureCollection', features }, fillColors, lineColors };
 };
 
+export interface KmlGroundOverlayResult {
+	entryName: string;
+	imageFile: File;
+	imageHref: string;
+	bbox: [number, number, number, number];
+	corners: [[number, number], [number, number], [number, number], [number, number]];
+}
+
 /**
  * KMZファイルからKML文字列を取り出す
  */
@@ -445,6 +461,85 @@ const extractKmlFromKmz = async (file: File): Promise<string> => {
 	}
 
 	return zip.files[kmlFileName].async('string');
+};
+
+const extractKmzPayload = async (file: File) => {
+	const zip = await JSZip.loadAsync(await file.arrayBuffer());
+	const kmlFileName = Object.keys(zip.files).find((name) => name.toLowerCase().endsWith('.kml'));
+
+	if (!kmlFileName) {
+		throw new Error('No KML file found in KMZ');
+	}
+
+	const kmlText = await zip.files[kmlFileName].async('string');
+	return { zip, kmlFileName, kmlText };
+};
+
+const resolveKmzEntryPath = (basePath: string, relativePath: string) => {
+	const baseSegments = basePath.split('/').slice(0, -1);
+	const targetSegments = relativePath.split('/');
+	const resolved = [...baseSegments];
+
+	for (const segment of targetSegments) {
+		if (segment === '' || segment === '.') continue;
+		if (segment === '..') {
+			resolved.pop();
+			continue;
+		}
+		resolved.push(segment);
+	}
+
+	return resolved.join('/');
+};
+
+export const extractGroundOverlayFromKmz = async (
+	file: File
+): Promise<KmlGroundOverlayResult | null> => {
+	const { zip, kmlFileName, kmlText } = await extractKmzPayload(file);
+	const parser = new DOMParser();
+	const doc = parser.parseFromString(kmlText, 'text/xml');
+	const overlay = doc.getElementsByTagNameNS(KML_NS, 'GroundOverlay')[0];
+	if (!overlay) return null;
+
+	const icon = getDirectChildElement(overlay, KML_NS, 'Icon');
+	const href = icon ? getFirstChildText(icon, KML_NS, 'href') : null;
+	const latLonBox = getDirectChildElement(overlay, KML_NS, 'LatLonBox');
+	if (!href || !latLonBox) return null;
+
+	const west = Number(getFirstChildText(latLonBox, KML_NS, 'west'));
+	const south = Number(getFirstChildText(latLonBox, KML_NS, 'south'));
+	const east = Number(getFirstChildText(latLonBox, KML_NS, 'east'));
+	const north = Number(getFirstChildText(latLonBox, KML_NS, 'north'));
+	if (![west, south, east, north].every((value) => Number.isFinite(value))) {
+		return null;
+	}
+
+	const imagePathCandidates = [
+		resolveKmzEntryPath(kmlFileName, href),
+		href.replace(/^\/+/, '')
+	];
+	const imagePath = imagePathCandidates.find((path) => Boolean(zip.files[path]));
+	if (!imagePath) {
+		throw new Error(`GroundOverlay image not found in KMZ: ${href}`);
+	}
+
+	const imageBlob = await zip.files[imagePath].async('blob');
+	const imageName = imagePath.split('/').pop() ?? 'overlay-image';
+	const imageFile = new File([imageBlob], imageName, { type: imageBlob.type || 'image/png' });
+	const entryName = file.name.replace(/\.[^.]+$/, '');
+
+	return {
+		entryName,
+		imageFile,
+		imageHref: href,
+		bbox: [west, south, east, north],
+		corners: [
+			[west, north],
+			[east, north],
+			[east, south],
+			[west, south]
+		]
+	};
 };
 
 export interface KmlParseResult {
