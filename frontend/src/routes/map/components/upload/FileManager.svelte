@@ -6,6 +6,7 @@
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
 	import { hasExifGps } from '$routes/map/utils/formats/exif';
 	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
+	import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
 	import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
 	import { inspectObjFile } from '$routes/map/utils/formats/obj';
 	import { isPointCloudTextFile } from '$routes/map/utils/formats/xyz';
@@ -156,6 +157,10 @@
 				case 'json':
 				case 'geojson':
 				case 'fgb':
+					if (ext === 'json' && (await isLocationHistoryFile(file))) {
+						showDialogType = 'locationhistory';
+						return;
+					}
 					if ((ext === 'json' || ext === 'geojson') && (await isMfJsonFile(file))) {
 						showDialogType = 'mfjson';
 						return;

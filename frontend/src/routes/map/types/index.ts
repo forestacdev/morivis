@@ -107,6 +107,7 @@ export type DialogType =
 	| 'geopdf'
 	| 'mojxml'
 	| 'geophoto'
+	| 'locationhistory'
 	| 'gtfs'
 	| null;
 
@@ -139,7 +140,8 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: '法務局地図XML', extensions: ['.xml'] },
 	{ label: '画像 (EXIF GPS)', extensions: ['.png', '.jpg', '.jpeg', '.webp'] },
 	{ label: 'GeoPDF', extensions: ['.pdf'] },
-	{ label: '3Dモデル', extensions: ['.glb', '.obj', '.mtl'] },
+	{ label: 'GLB', extensions: ['.glb'] },
+	{ label: 'Wavefront OBJ', extensions: ['.obj'] },
 	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz', '.txt'] }
 ];
 
@@ -152,7 +154,8 @@ export const SUPPORTED_FILE_ACCEPT = [
 	'.tfw',
 	'.pgw',
 	'.jgw',
-	'.wld' // ワールドファイル
+	'.wld', // ワールドファイル
+	'.mtl'
 ].join(',');
 
 export interface ClickedLayerFeaturesData {

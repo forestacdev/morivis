@@ -20,6 +20,7 @@
 	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
 	import KmlForm from '$routes/map/components/upload/form/KmlForm.svelte';
 	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
+	import LocationHistoryForm from '$routes/map/components/upload/form/LocationHistoryForm.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
 	import MeshModelForm from '$routes/map/components/upload/form/MeshModelForm.svelte';
 	import MfJsonForm from '$routes/map/components/upload/form/MfJsonForm.svelte';
@@ -219,6 +220,9 @@
 			{/if}
 			{#if showDialogType === 'mfjson'}
 				<MfJsonForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'locationhistory'}
+				<LocationHistoryForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'topojson'}
 				<TopoJsonForm
