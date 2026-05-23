@@ -37,7 +37,7 @@ import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protoco
 import markerPngIcon from '$lib/icons/marker.png';
 import poiTopIcon from '$lib/icons/poi_top.png';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
-import { resolveRequestUrl } from '$routes/map/utils/platform/request';
+import { resolveMapLibreRequest, resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { isHighlightLayerId } from '$routes/map/utils/layers/highlight';
 
 import {
@@ -326,9 +326,8 @@ const createMapStore = () => {
 			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
 			// maxZoom: 18,
 			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
-			transformRequest: (url) => {
-				if (import.meta.env.PROD) return { url };
-				return { url: resolveRequestUrl(url) };
+			transformRequest: (url, resourceType) => {
+				return resolveMapLibreRequest(url, resourceType);
 			}
 
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
@@ -370,10 +369,10 @@ const createMapStore = () => {
 					if (!map || map.hasImage('marker_png')) return;
 					map.addImage('marker_png', image);
 				});
-			} else if (isGeneratedPoiIconId(id)) {
-				// 接頭辞付きの生成アイコンだけを styleimagemissing 側で処理する
-				handleStyleImageMissing(e, map);
-			}
+				} else if (isGeneratedPoiIconId(id)) {
+					// 接頭辞付きの生成アイコンだけを styleimagemissing 側で処理する
+					handleStyleImageMissing(e, map);
+				}
 
 			// NOTE: ハイライトパターン作成は停止
 			// else if (isHighlightFillPatternId(id) || isHighlightLinePatternId(id)) {

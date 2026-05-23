@@ -10,7 +10,7 @@ import { CoverImageManager } from '../index';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 import { esriFeatureProtocol } from '$routes/map/protocol/vector/esri-feature';
-import { resolveRequestUrl } from '$routes/map/utils/platform/request';
+import { resolveAbsoluteRequestUrl, resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 export interface MapImageOptions {
 	name: string;
@@ -374,8 +374,8 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 
 	const style: maplibregl.StyleSpecification = {
 		version: 8,
-		sprite: resolveRequestUrl(MAP_SPRITE_DATA_PATH),
-		glyphs: resolveRequestUrl(MAP_FONT_DATA_PATH),
+		sprite: resolveAbsoluteRequestUrl(MAP_SPRITE_DATA_PATH),
+		glyphs: resolveAbsoluteRequestUrl(MAP_FONT_DATA_PATH),
 		sources: {
 			// TODO 背景地図のみ処理を分離
 			// mierune_mono: {
