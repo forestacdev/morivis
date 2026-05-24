@@ -20,7 +20,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		maxZoom: 18,
 		tileSize: 256,
 		bounds: KANAGAWA_BBOX,
-		xyzImageTile: { x: 3621, y: 1612, z: 12 }
+		xyzImageTile: { x: 7262, y: 3230, z: 13 }
 	},
 	interaction: {
 		clickable: true
