@@ -797,12 +797,12 @@
 	>
 		<div
 			bind:this={mapContainer}
-			class="h-full w-full overflow-hidden bg-black saturate-[90%] transition-opacity lg:rounded-lg lg:rounded-tl-[35px] lg:rounded-br-[35px] {!showMapCanvas &&
+			class="h-full w-full overflow-hidden bg-black saturate-[90%] transition-opacity lg:rounded-lg {!showMapCanvas &&
 			$mapMode === 'view'
 				? 'opacity-0'
 				: $isStreetView && $mapMode === 'small'
 					? ''
-					: 'opacity-100'}"
+					: 'opacity-100 lg:rounded-tl-[35px] lg:rounded-br-[35px]'}"
 		>
 			{#if maplibreMap}
 				<HighlightMarkerManager map={maplibreMap} {highlightMarkerState} />
