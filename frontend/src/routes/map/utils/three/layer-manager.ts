@@ -184,7 +184,7 @@ export class ThreeJsLayerManager {
 			`,
 			transparent: true,
 			wireframe: style.wireframe,
-			side: sourceMaterial.side
+			side: THREE.DoubleSide
 		});
 		material.userData.morivisShaderShading = true;
 		material.userData.colorRampTexture = colorRampTexture;
@@ -211,7 +211,7 @@ export class ThreeJsLayerManager {
 			transparent: true,
 			opacity: style.opacity,
 			wireframe: style.wireframe,
-			side: sourceMaterial.side
+			side: THREE.DoubleSide
 		});
 		material.transparent = true;
 		material.opacity = style.opacity;
@@ -228,6 +228,7 @@ export class ThreeJsLayerManager {
 		}
 		material.transparent = true;
 		material.opacity = style.opacity;
+		material.side = THREE.DoubleSide;
 		if ('wireframe' in material) {
 			material.wireframe = style.wireframe;
 		}
@@ -372,6 +373,9 @@ export class ThreeJsLayerManager {
 				this.loadedModels.forEach((loaded) => {
 					const { transform } = loaded;
 
+					const anchoredModelMatrix = new THREE.Matrix4().fromArray(
+						this.map!.transform.getMatrixForModel(transform.modelOrigin, transform.modelAltitude)
+					);
 					const rotationX = new THREE.Matrix4().makeRotationAxis(
 						new THREE.Vector3(1, 0, 0),
 						transform.rotateX
@@ -387,11 +391,10 @@ export class ThreeJsLayerManager {
 					const scaleMatrix = new THREE.Matrix4().makeScale(
 						transform.scaleX,
 						-transform.scaleY,
-						transform.scaleZ
+						-transform.scaleZ
 					);
 
-					const modelMatrix = new THREE.Matrix4()
-						.makeTranslation(transform.translateX, transform.translateY, transform.translateZ)
+					const modelMatrix = anchoredModelMatrix
 						.multiply(rotationX)
 						.multiply(rotationY)
 						.multiply(rotationZ)

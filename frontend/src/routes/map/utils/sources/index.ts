@@ -35,7 +35,7 @@ import { get } from 'svelte/store';
 
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 import { JoinDataCache } from '$routes/map/utils/cache/join-data-cache';
-import { GeoTiffImageCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+import { GeoTiffCache, GeoTiffImageCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 import { getGeojson } from '$routes/map/utils/formats/geojson';
 import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
@@ -81,16 +81,42 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 	}
 };
 
+const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiffStyle>) => {
+	const dataRanges = GeoTiffCache.getDataRanges(entry.id);
+	if (!dataRanges || dataRanges.length === 0) return;
+
+	if (entry.style.visualization.mode === 'single') {
+		const currentRange = dataRanges[0];
+		if (!currentRange) return;
+		entry.style.visualization.uniformsData.single.index = 0;
+		entry.style.visualization.uniformsData.single.min = currentRange.min;
+		entry.style.visualization.uniformsData.single.max = currentRange.max;
+		return;
+	}
+
+	if (entry.style.visualization.mode === 'multi') {
+		const uniforms = entry.style.visualization.uniformsData.multi;
+		const nextRanges = [uniforms.r, uniforms.g, uniforms.b];
+		nextRanges.forEach((uniform, index) => {
+			const currentRange = dataRanges[index];
+			if (!currentRange) return;
+			uniform.min = currentRange.min;
+			uniform.max = currentRange.max;
+		});
+	}
+};
+
 export const getRasterTiffImageSource = async (
 	entry: RasterImageEntry<RasterTiffStyle>
 ): Promise<ImageSourceSpecification | undefined> => {
-	const styleID = getRasterTiffStyleId(entry);
-	if (!styleID) return;
-
 	const timeIdx = getRasterDimensionCurrentIndex(entry) ?? -1;
 	if (timeIdx >= 0 && NetCDFDataCache.has(entry.id)) {
 		await NetCDFDataCache.updateTimeStep(entry.id, timeIdx);
+		syncTemporalRasterVisualizationRange(entry);
 	}
+
+	const styleID = getRasterTiffStyleId(entry);
+	if (!styleID) return;
 
 	let imageData: string | undefined;
 	if (GeoTiffImageCache.has(styleID)) {

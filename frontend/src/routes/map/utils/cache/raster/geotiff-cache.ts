@@ -119,6 +119,11 @@ export class GeoTiffCache {
 	static isTextureTransferred(key: string): boolean {
 		return this.textureTransferredSet.has(key);
 	}
+	static invalidateTextureTransfer(key: string) {
+		this.textureTransferredSet.delete(key);
+		this.revokeBlob(key);
+		releaseRenderTexture(key);
+	}
 
 	// --- 4326 再投影 ---
 	private static is4326Set: Set<string> = new Set();

@@ -112,8 +112,8 @@
 			layerEntry.format.type === 'image' &&
 			layerEntry.style.visualization.mode === 'single'
 		) {
-			layerEntry.style.visualization.uniformsData.single.index = currentIndex;
-			const currentRange = GeoTiffCache.getDataRanges(layerEntry.id)?.[currentIndex];
+			layerEntry.style.visualization.uniformsData.single.index = 0;
+			const currentRange = GeoTiffCache.getDataRanges(layerEntry.id)?.[0];
 			if (currentRange) {
 				layerEntry.style.visualization.uniformsData.single.min = currentRange.min;
 				layerEntry.style.visualization.uniformsData.single.max = currentRange.max;
@@ -363,7 +363,7 @@
 			<div class="flex items-center justify-center gap-2 pt-3">
 				<button
 					onclick={toggleAutoplay}
-					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white hover:bg-white/10"
+					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white select-none hover:bg-white/10"
 					aria-label={isPlaying ? '停止' : '再生'}
 				>
 					{#if isPlaying}

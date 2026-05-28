@@ -28,6 +28,7 @@
 	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
 	let animationClips = $derived(layerEntry.properties?.animation?.clips ?? []);
 	let showMaterialOption = $state(false);
+	let showAnimationOption = $state(false);
 	let showTransformOption = $state(false);
 	let showRotateOption = $state(false);
 
@@ -81,16 +82,8 @@
 	});
 </script>
 
-{#if temporalDimension || animationClips.length > 0}
-	<Accordion
-		label={temporalDimension ? `${temporalDimension}時間` : 'アニメーション'}
-		icon={'mdi:clock-outline'}
-		bind:value={showDimensionOption}
-	>
-		<div class="">
-			<DimensionSelector bind:layerEntry bind:showDimensionOption />
-		</div>
-
+{#if animationClips.length > 0}
+	<Accordion label={'アニメーション'} icon={'mdi:run-fast'} bind:value={showAnimationOption}>
 		{#if animationClips.length > 0 && layerEntry.state?.animation}
 			<div class="">
 				<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
@@ -112,13 +105,14 @@
 						min={0.1}
 						max={3}
 						step={0.1}
-						icon="mdi:run-fast"
 					/>
 				</div>
 			{/if}
 		{/if}
 	</Accordion>
 {/if}
+
+<DimensionSelector bind:layerEntry bind:showDimensionOption />
 
 <Accordion label={'マテリアル'} icon={'mdi:format-color-highlight'} bind:value={showMaterialOption}>
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />

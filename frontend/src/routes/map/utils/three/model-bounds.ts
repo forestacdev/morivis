@@ -6,7 +6,7 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import type { MeshStyle } from '$routes/map/data/types/model';
-import { calculateModelTransform } from '$routes/map/utils/three/model-transform';
+import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transform';
 
 interface ComputeUploadedModelMetaParams {
 	file: File;
@@ -103,7 +103,7 @@ export const computeUploadedModelMeta = async ({
 			? TARGET_MODEL_MAX_DIMENSION_METERS / localMaxDimension
 			: 1;
 
-	const transform = calculateModelTransform({
+	const modelMatrix = createMercatorModelMatrix({
 		type: 'mesh',
 		opacity: 1,
 		wireframe: false,
@@ -113,30 +113,6 @@ export const computeUploadedModelMeta = async ({
 			baseScale: (style.transform.baseScale ?? 1) * scaleMultiplier
 		}
 	});
-	const rotationX = new THREE.Matrix4().makeRotationAxis(
-		new THREE.Vector3(1, 0, 0),
-		transform.rotateX
-	);
-	const rotationY = new THREE.Matrix4().makeRotationAxis(
-		new THREE.Vector3(0, 1, 0),
-		transform.rotateY
-	);
-	const rotationZ = new THREE.Matrix4().makeRotationAxis(
-		new THREE.Vector3(0, 0, 1),
-		transform.rotateZ
-	);
-	const scaleMatrix = new THREE.Matrix4().makeScale(
-		transform.scaleX,
-		-transform.scaleY,
-		transform.scaleZ
-	);
-	const modelMatrix = new THREE.Matrix4()
-		.makeTranslation(transform.translateX, transform.translateY, transform.translateZ)
-		.multiply(rotationX)
-		.multiply(rotationY)
-		.multiply(rotationZ)
-		.multiply(scaleMatrix);
-
 	const corners = [
 		new THREE.Vector3(box.min.x, box.min.y, box.min.z),
 		new THREE.Vector3(box.min.x, box.min.y, box.max.z),
