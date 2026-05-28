@@ -407,7 +407,9 @@ export class ThreeJsLayerManager {
 
 					this.modelGroup!.traverse((child) => {
 						if (child.userData.entryId) {
-							child.visible = child.userData.entryId === loaded.entry.id;
+							child.visible =
+								child.userData.entryId === loaded.entry.id &&
+								(loaded.entry.style.visible ?? true);
 						}
 					});
 
@@ -580,16 +582,8 @@ export class ThreeJsLayerManager {
 	setModelVisibility(entryId: string, visible: boolean): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-
-		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-				materials.forEach((material) => {
-					material.visible = visible;
-				});
-			}
-		});
+		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, visible } };
+		loaded.object.visible = visible;
 	}
 
 	/** モデルの不透明度を変更 */
