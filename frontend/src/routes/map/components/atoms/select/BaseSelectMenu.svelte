@@ -4,14 +4,14 @@
 	import { fly } from 'svelte/transition';
 
 	export interface SelectMenuItem {
-		key: string;
+		key: string | number;
 		name: string;
 		icon?: string;
 	}
 
 	interface Props {
 		items: SelectMenuItem[];
-		selectedKey: string;
+		selectedKey: string | number;
 		children?: Snippet;
 		triggerContent?: Snippet<[SelectMenuItem]>;
 		itemContent?: Snippet<[SelectMenuItem]>;

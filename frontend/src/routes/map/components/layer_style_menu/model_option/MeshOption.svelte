@@ -1,26 +1,36 @@
 <script lang="ts">
-	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
-	import DimensionSelector from '../raster_option/DimensionSelector.svelte';
+	import { slide } from 'svelte/transition';
 
+	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
+	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
+	import ColorScaleDem from '$routes/map/components/layer_style_menu/extension_menu/ColorScaleDem.svelte';
+	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import { COLOR_MAP_TYPE } from '$routes/map/data/types/raster';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	import { mapStore } from '$routes/stores/map';
-
 	interface Props {
 		layerEntry: ModelMeshEntry<MeshStyle>;
 		showColorOption: boolean;
+		showDimensionOption: boolean;
 	}
 
-	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
+	let {
+		layerEntry = $bindable(),
+		showColorOption = $bindable(),
+		showDimensionOption = $bindable()
+	}: Props = $props();
 	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
 	let animationClips = $derived(layerEntry.properties?.animation?.clips ?? []);
-	let showDimensionOption = $state(false);
+	let showMaterialOption = $state(false);
+	let showTransformOption = $state(false);
+	let showRotateOption = $state(false);
+
 	const colorMapManager = new ColorMapManager();
 	const canEditShading = $derived(layerEntry.style.shadingOptions?.enabled ?? true);
 	const canEditScale = $derived(layerEntry.style.transformOptions?.scale ?? true);
@@ -71,131 +81,127 @@
 	});
 </script>
 
-{#if temporalDimension}
-	<div class="mt-4">
-		<DimensionSelector bind:layerEntry bind:showDimensionOption />
-	</div>
+{#if temporalDimension || animationClips.length > 0}
+	<Accordion
+		label={temporalDimension ? `${temporalDimension}時間` : 'アニメーション'}
+		icon={'mdi:clock-outline'}
+		bind:value={showDimensionOption}
+	>
+		<div class="">
+			<DimensionSelector bind:layerEntry bind:showDimensionOption />
+		</div>
+
+		{#if animationClips.length > 0 && layerEntry.state?.animation}
+			<div class="">
+				<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
+			</div>
+
+			{#if layerEntry.state.animation.playing}
+				<div class="mt-4 flex w-full flex-col gap-3" transition:slide>
+					<BaseSelectMenu
+						bind:selectedKey={layerEntry.state.animation.currentClipIndex}
+						items={animationClips.map((clip, index) => ({
+							key: index,
+							name: clip.name
+						}))}
+					/>
+
+					<RangeSlider
+						label="再生速度"
+						bind:value={layerEntry.state.animation.speed}
+						min={0.1}
+						max={3}
+						step={0.1}
+						icon="mdi:run-fast"
+					/>
+				</div>
+			{/if}
+		{/if}
+	</Accordion>
 {/if}
 
-<div class="mt-4">
+<Accordion label={'マテリアル'} icon={'mdi:format-color-highlight'} bind:value={showMaterialOption}>
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
-</div>
 
-{#if animationClips.length > 0 && layerEntry.state?.animation}
-	<div class="mt-4">
-		<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
-	</div>
+	{#if layerEntry.style.heightColorRamp}
+		<Switch label="高さカラーランプ" bind:value={layerEntry.style.heightColorRamp.enabled} />
 
-	{#if layerEntry.state.animation.playing}
-		<div class="mt-4 flex w-full flex-col gap-3">
-			<label class="text-sm text-gray-300">
-				<span class="mb-1 block">アニメーション</span>
-				<select
-					bind:value={layerEntry.state.animation.currentClipIndex}
-					class="bg-sub border-sub w-full rounded border px-3 py-2 text-white"
+		{#if layerEntry.style.heightColorRamp.enabled}
+			<div transition:slide class="mb-4 flex w-full flex-col gap-2">
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.heightColorRamp.colorMap}
+					mutableColorMapType={[...COLOR_MAP_TYPE]}
 				>
-					{#each animationClips as clip, index (clip.name)}
-						<option value={index}>{clip.name}</option>
-					{/each}
-				</select>
-			</label>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+
+				<RangeSliderDouble
+					label="高さ範囲"
+					bind:lowerValue={layerEntry.style.heightColorRamp.min}
+					bind:upperValue={layerEntry.style.heightColorRamp.max}
+					min={layerEntry.style.heightColorRamp.sourceMin ??
+						Math.min(layerEntry.style.heightColorRamp.min, layerEntry.style.heightColorRamp.max)}
+					max={layerEntry.style.heightColorRamp.sourceMax ??
+						Math.max(layerEntry.style.heightColorRamp.min, layerEntry.style.heightColorRamp.max)}
+					step={0.01}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.heightColorRamp.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(layerEntry.style.heightColorRamp.colorMap)}
+					maxRangeColor={colorMapManager.getMaxColor(layerEntry.style.heightColorRamp.colorMap)}
+				/>
+			</div>
+		{/if}
+	{/if}
+	{#if canEditShading}
+		<Switch label="陰影" bind:value={layerEntry.style.shading!.enabled} />
+	{/if}
+	{#if canEditShading && layerEntry.style.shading!.enabled}
+		<div transition:slide class="mb-4 flex w-full flex-col gap-2">
+			<RangeSlider
+				label="陰影強度"
+				bind:value={layerEntry.style.shading!.shadeStrength}
+				min={0}
+				max={1.5}
+				step={0.05}
+				icon="mdi:weather-sunny-alert"
+			/>
 
 			<RangeSlider
-				label="再生速度"
-				bind:value={layerEntry.state.animation.speed}
-				min={0.1}
-				max={3}
-				step={0.1}
-				icon="mdi:run-fast"
+				label="環境光"
+				bind:value={layerEntry.style.shading!.ambientStrength}
+				min={0}
+				max={1}
+				step={0.05}
+				icon="mdi:lightbulb-on-outline"
+			/>
+
+			<RangeSlider
+				label="光源の方位角 (°)"
+				bind:value={layerEntry.style.shading!.azimuthDeg}
+				min={0}
+				max={360}
+				step={1}
+				isInt
+				icon="mdi:compass-outline"
+			/>
+
+			<RangeSlider
+				label="光源の仰角 (°)"
+				bind:value={layerEntry.style.shading!.elevationDeg}
+				min={0}
+				max={90}
+				step={1}
+				isInt
+				icon="mdi:weather-sunset-up"
 			/>
 		</div>
 	{/if}
-{/if}
+</Accordion>
 
-{#if canEditShading}
-	<div class="mt-4">
-		<Switch label="陰影" bind:value={layerEntry.style.shading!.enabled} />
-	</div>
-{/if}
-
-{#if layerEntry.style.heightColorRamp}
-	<div class="mt-4">
-		<Switch label="高さカラーランプ" bind:value={layerEntry.style.heightColorRamp.enabled} />
-	</div>
-
-	{#if layerEntry.style.heightColorRamp.enabled}
-		<div class="mt-4 flex w-full flex-col gap-4">
-			<ColorMapSelect
-				bind:isColorMap={layerEntry.style.heightColorRamp.colorMap}
-				mutableColorMapType={[...COLOR_MAP_TYPE]}
-			>
-				{#snippet children(_isColorMap)}
-					<ColorScaleDem isColorMap={_isColorMap} />
-				{/snippet}
-			</ColorMapSelect>
-
-			<RangeSliderDouble
-				label="高さ範囲"
-				bind:lowerValue={layerEntry.style.heightColorRamp.min}
-				bind:upperValue={layerEntry.style.heightColorRamp.max}
-				min={layerEntry.style.heightColorRamp.sourceMin ??
-					Math.min(layerEntry.style.heightColorRamp.min, layerEntry.style.heightColorRamp.max)}
-				max={layerEntry.style.heightColorRamp.sourceMax ??
-					Math.max(layerEntry.style.heightColorRamp.min, layerEntry.style.heightColorRamp.max)}
-				step={0.01}
-				primaryColor={colorMapManager.createSimpleCSSGradient(
-					layerEntry.style.heightColorRamp.colorMap
-				)}
-				minRangeColor={colorMapManager.getMinColor(layerEntry.style.heightColorRamp.colorMap)}
-				maxRangeColor={colorMapManager.getMaxColor(layerEntry.style.heightColorRamp.colorMap)}
-			/>
-		</div>
-	{/if}
-{/if}
-
-{#if canEditShading && layerEntry.style.shading!.enabled}
-	<div class="mt-4 flex w-full flex-col gap-4">
-		<RangeSlider
-			label="陰影強度"
-			bind:value={layerEntry.style.shading!.shadeStrength}
-			min={0}
-			max={1.5}
-			step={0.05}
-			icon="mdi:weather-sunny-alert"
-		/>
-
-		<RangeSlider
-			label="環境光"
-			bind:value={layerEntry.style.shading!.ambientStrength}
-			min={0}
-			max={1}
-			step={0.05}
-			icon="mdi:lightbulb-on-outline"
-		/>
-
-		<RangeSlider
-			label="光源の方位角 (°)"
-			bind:value={layerEntry.style.shading!.azimuthDeg}
-			min={0}
-			max={360}
-			step={1}
-			isInt
-			icon="mdi:compass-outline"
-		/>
-
-		<RangeSlider
-			label="光源の仰角 (°)"
-			bind:value={layerEntry.style.shading!.elevationDeg}
-			min={0}
-			max={90}
-			step={1}
-			isInt
-			icon="mdi:weather-sunset-up"
-		/>
-	</div>
-{/if}
-
-<div class="mt-4 flex w-full flex-col gap-4">
+<Accordion label={'変形・移動'} icon={'gis:cube-3d'} bind:value={showTransformOption}>
 	{#if canEditScale}
 		<RangeSlider
 			label="スケール"
@@ -229,8 +235,10 @@
 			icon="mdi:arrow-up-down"
 		/>
 	{/if}
+</Accordion>
 
-	{#if canEditRotation}
+{#if canEditRotation}
+	<Accordion label={'回転'} icon={'lucide:rotate-3d'} bind:value={showRotateOption}>
 		<RangeSlider
 			label="X回転 (°)"
 			bind:value={layerEntry.style.transform.rotationX}
@@ -260,8 +268,8 @@
 			isInt
 			icon="mdi:rotate-right"
 		/>
-	{/if}
-</div>
+	</Accordion>
+{/if}
 
 <style>
 </style>

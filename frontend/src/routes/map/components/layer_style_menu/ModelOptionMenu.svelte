@@ -12,9 +12,14 @@
 	interface Props {
 		layerEntry: AnyModelEntry;
 		showColorOption: boolean;
+		showDimensionOption: boolean;
 	}
 
-	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
+	let {
+		layerEntry = $bindable(),
+		showColorOption = $bindable(),
+		showDimensionOption = $bindable()
+	}: Props = $props();
 </script>
 
 {#if layerEntry && layerEntry.type === 'model'}
@@ -25,7 +30,11 @@
 
 	{#if layerEntry.style.type === 'mesh'}
 		<!-- Model options go here -->
-		<MeshOption bind:layerEntry={layerEntry as ModelMeshEntry<MeshStyle>} bind:showColorOption />
+		<MeshOption
+			bind:layerEntry={layerEntry as ModelMeshEntry<MeshStyle>}
+			bind:showColorOption
+			bind:showDimensionOption
+		/>
 	{/if}
 {/if}
 

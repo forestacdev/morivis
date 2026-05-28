@@ -22,6 +22,7 @@
 	let { layerEntry = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
 	let showVisibleOption = $state<boolean>(false);
 	let showColorOption = $state<boolean>(false);
+	let showDimensionOption = $state<boolean>(false);
 
 	// const promise = (() => {
 	// 	try {
@@ -104,15 +105,15 @@
 						<OpacityControl bind:layerEntry previewSrc={src} />
 
 						{#if layerEntry.type === 'vector'}
-							<VectorOptionMenu bind:layerEntry bind:showColorOption />
+							<VectorOptionMenu bind:layerEntry bind:showColorOption bind:showDimensionOption />
 						{/if}
 
 						{#if layerEntry.type === 'raster'}
-							<RasterOptionMenu bind:layerEntry bind:showColorOption />
+							<RasterOptionMenu bind:layerEntry bind:showColorOption bind:showDimensionOption />
 						{/if}
 
 						{#if layerEntry.type === 'model'}
-							<ModelOptionMenu bind:layerEntry bind:showColorOption />
+							<ModelOptionMenu bind:layerEntry bind:showColorOption bind:showDimensionOption />
 						{/if}
 					</div>
 					<!-- フォグ -->

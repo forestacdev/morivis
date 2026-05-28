@@ -16,14 +16,18 @@
 	interface Props {
 		layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData>;
 		showColorOption: boolean;
+		showDimensionOption: boolean;
 	}
 
-	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
-	let showTemporalOption = $state(false);
+	let {
+		layerEntry = $bindable(),
+		showColorOption = $bindable(),
+		showDimensionOption = $bindable()
+	}: Props = $props();
 </script>
 
 {#if layerEntry && layerEntry.type === 'vector'}
-	<TemporalFilterControl bind:layerEntry bind:showTemporalOption />
+	<TemporalFilterControl bind:layerEntry bind:showDimensionOption />
 
 	{#if layerEntry.format.geometryType === 'Point'}
 		<PointOption

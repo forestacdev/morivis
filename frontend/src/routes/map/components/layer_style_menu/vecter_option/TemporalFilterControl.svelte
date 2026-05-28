@@ -23,7 +23,7 @@
 
 	interface Props {
 		layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData>;
-		showTemporalOption: boolean;
+		showDimensionOption: boolean;
 	}
 
 	interface TemporalTrackPoint {
@@ -47,7 +47,7 @@
 		mode: 'range'
 	});
 
-	let { layerEntry = $bindable(), showTemporalOption = $bindable() }: Props = $props();
+	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
 
 	let temporalFilterState = $state<VectorTemporalFilterState>(createDefaultTemporalFilterState());
 	let cameraTracking = $state(false);
@@ -814,7 +814,7 @@
 	<Accordion
 		label="時間フィルター"
 		icon="mdi:timeline-clock-outline"
-		bind:value={showTemporalOption}
+		bind:value={showDimensionOption}
 	>
 		{#if temporalItems.length > 0}
 			<div class="flex flex-col">
