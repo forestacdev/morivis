@@ -38,6 +38,7 @@ interface RasterMeshGeometry {
 }
 
 const DEFAULT_MAX_GRID_SIZE = 192;
+const AUTO_MESH_HEIGHT_RATIO = 0.18;
 
 export interface RasterMeshSampling {
 	xIndices: number[];
@@ -170,8 +171,10 @@ export const sampleRasterMeshHeights = ({
 			maplibregl.MercatorCoordinate.fromLngLat([centerLng, bounds[1]], 0).y / meterUnit
 	);
 	const heightRange = Math.max(1e-6, sampledMaxValue - effectiveBaseValue);
+	// 初期表示で起伏が潰れすぎないよう、縦方向の最大差を横方向スパンの一定比率に収める。
 	const effectiveHeightScale =
-		heightScale ?? (autoHeightScale ? (targetHorizontalSpanMeters * 0.18) / heightRange : 1);
+		heightScale ??
+		(autoHeightScale ? (targetHorizontalSpanMeters * AUTO_MESH_HEIGHT_RATIO) / heightRange : 1);
 	const normalizedRange = Math.max(
 		1e-6,
 		(sampledMaxValue - effectiveBaseValue) * effectiveHeightScale -

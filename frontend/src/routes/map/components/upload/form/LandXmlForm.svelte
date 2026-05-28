@@ -176,6 +176,17 @@
 				lat,
 				altitude: 0
 			},
+			...(surface.minHeight != null &&
+				surface.maxHeight != null && {
+					heightColorRamp: {
+						enabled: true,
+						min: surface.minHeight,
+						max: surface.maxHeight,
+						sourceMin: surface.minHeight,
+						sourceMax: surface.maxHeight,
+						sourceSign: 1
+					}
+				}),
 			opacity: 1
 		});
 

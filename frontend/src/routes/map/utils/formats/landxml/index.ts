@@ -27,6 +27,10 @@ export interface LandXmlSurface {
 	center: [number, number];
 	/** 元の座標系 bbox [minX, minY, maxX, maxY] */
 	sourceBbox?: [number, number, number, number];
+	/** 標高の最小値 */
+	minHeight?: number;
+	/** 標高の最大値 */
+	maxHeight?: number;
 	/** 元の座標系のWKT文字列 */
 	wktString?: string;
 }
@@ -103,28 +107,60 @@ const getTinBounds = (points: [number, number, number][]): [number, number, numb
 	return [minX, minY, maxX, maxY];
 };
 
+const getTinHeightRange = (points: [number, number, number][]): [number, number] => {
+	let minHeight = Infinity;
+	let maxHeight = -Infinity;
+
+	for (const [, , z] of points) {
+		minHeight = Math.min(minHeight, z);
+		maxHeight = Math.max(maxHeight, z);
+	}
+
+	return [minHeight, maxHeight];
+};
+
+const buildTinHeightRangeMap = (tinSurfaces: TinSurfaceData[]) => {
+	const rangeMap = new Map<string, [number, number][]>();
+
+	for (const tin of tinSurfaces) {
+		const current = rangeMap.get(tin.name) ?? [];
+		current.push(getTinHeightRange(tin.points));
+		rangeMap.set(tin.name, current);
+	}
+
+	return rangeMap;
+};
+
 const createGlbFromTin = async (
 	tin: TinSurfaceData
 ): Promise<{
 	glb: Uint8Array;
 	center: [number, number];
 	sourceBbox: [number, number, number, number];
+	minHeight: number;
+	maxHeight: number;
 }> => {
 	const sourceBbox = getTinBounds(tin.points);
+	const [minHeight, maxHeight] = getTinHeightRange(tin.points);
+	const normalizedHeightRange = Math.max(1e-6, maxHeight - minHeight);
 	const centerX = (sourceBbox[0] + sourceBbox[2]) / 2;
 	const centerY = (sourceBbox[1] + sourceBbox[3]) / 2;
 	const positions = new Float32Array(tin.points.length * 3);
+	const uvs = new Float32Array(tin.points.length * 2);
 	const indices: number[] = [];
 
 	for (let i = 0; i < tin.points.length; i++) {
 		const [xNorth, yEast, z] = tin.points[i];
 		const posIndex = i * 3;
+		const uvIndex = i * 2;
 
 		// LandXML では X=北, Y=東 の並びを取ることがあるため、
 		// モデルローカルでは X=東西, Y=高さ, Z=南北 として扱う。
 		positions[posIndex] = yEast - centerY;
 		positions[posIndex + 1] = z;
 		positions[posIndex + 2] = xNorth - centerX;
+		uvs[uvIndex] = 0.5;
+		uvs[uvIndex + 1] = (z - minHeight) / normalizedHeightRange;
 	}
 
 	for (const [a, b, c] of tin.faces) {
@@ -135,6 +171,7 @@ const createGlbFromTin = async (
 
 	const geometry = new THREE.BufferGeometry();
 	geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+	geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
 	geometry.setIndex(indices);
 	geometry.computeVertexNormals();
 
@@ -149,7 +186,9 @@ const createGlbFromTin = async (
 		return {
 			glb: await exportMeshToGlb(mesh),
 			center: [centerX, centerY],
-			sourceBbox
+			sourceBbox,
+			minHeight,
+			maxHeight
 		};
 	} finally {
 		geometry.dispose();
@@ -167,12 +206,36 @@ export const parseLandXml = async (
 ): Promise<LandXmlParseResult> => {
 	const text = await file.text();
 	const detectedZone = detectJprZone(text);
+	const tinSurfaces = parseTinSurfaces(text);
+	const tinHeightRangeMap = buildTinHeightRangeMap(tinSurfaces);
+	const tinMeshMap = new Map<
+		string,
+		{
+			glb: Uint8Array;
+			center: [number, number];
+			sourceBbox: [number, number, number, number];
+			minHeight: number;
+			maxHeight: number;
+		}[]
+	>();
 
 	// landxmlパッケージでの等高線+GLB生成を試行
 	try {
 		const results = await toGlbAndContours(text, contourInterval, true, 'auto');
 
 		if (results && results.length > 0) {
+			const tinMeshes = await Promise.all(
+				tinSurfaces.map(async (tin) => ({
+					name: tin.name,
+					mesh: await createGlbFromTin(tin)
+				}))
+			);
+			for (const { name, mesh } of tinMeshes) {
+				const current = tinMeshMap.get(name) ?? [];
+				current.push(mesh);
+				tinMeshMap.set(name, current);
+			}
+
 			let projString: string | null = null;
 			let isReprojected = false;
 
@@ -188,6 +251,17 @@ export const parseLandXml = async (
 			const surfaces: LandXmlSurface[] = results.map((result) => {
 				let contourGeojson: FeatureCollection | null = null;
 				const rawGeojson = result.geojson as unknown as FeatureCollection;
+				const surfaceName = result.name || 'Surface';
+				const heightRangeCandidates = tinHeightRangeMap.get(surfaceName) ?? [];
+				const heightRange = heightRangeCandidates.shift();
+				if (heightRangeCandidates.length === 0) {
+					tinHeightRangeMap.delete(surfaceName);
+				}
+				const meshCandidates = tinMeshMap.get(surfaceName) ?? [];
+				const mesh = meshCandidates.shift();
+				if (meshCandidates.length === 0) {
+					tinMeshMap.delete(surfaceName);
+				}
 
 				const effectiveProj = result.wktString || projString;
 
@@ -205,12 +279,15 @@ export const parseLandXml = async (
 				}
 
 				return {
-					name: result.name || 'Surface',
+					name: surfaceName,
 					description: result.description || '',
 					contourGeojsonRaw: rawGeojson,
 					contourGeojson,
-					glb: result.glb,
-					center: result.center,
+					glb: mesh?.glb ?? result.glb,
+					center: mesh?.center ?? result.center,
+					sourceBbox: mesh?.sourceBbox,
+					minHeight: mesh?.minHeight ?? heightRange?.[0],
+					maxHeight: mesh?.maxHeight ?? heightRange?.[1],
 					wktString: result.wktString
 				};
 			});
@@ -222,8 +299,6 @@ export const parseLandXml = async (
 	}
 
 	// フォールバック: 自前でTINをパースして最低限のサーフェス情報を返す
-	const tinSurfaces = parseTinSurfaces(text);
-
 	if (tinSurfaces.length === 0) {
 		throw new Error('No surfaces found in LandXML file');
 	}
@@ -242,6 +317,8 @@ export const parseLandXml = async (
 				glb: mesh.glb,
 				center: mesh.center,
 				sourceBbox: mesh.sourceBbox,
+				minHeight: mesh.minHeight,
+				maxHeight: mesh.maxHeight,
 				wktString: undefined
 			};
 		})

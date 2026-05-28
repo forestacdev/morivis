@@ -45,6 +45,14 @@ export interface MeshModelEntryConfig extends BaseModelConfig {
 	};
 	wireframe?: boolean;
 	color?: string;
+	heightColorRamp?: {
+		enabled?: boolean;
+		min: number;
+		max: number;
+		sourceMin?: number;
+		sourceMax?: number;
+		sourceSign?: 1 | -1;
+	};
 }
 
 export function createMeshModelEntry(config: MeshModelEntryConfig): ModelMeshEntry<MeshStyle> {
@@ -62,7 +70,8 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): ModelMeshEnt
 		opacity = 0.7,
 		transform,
 		wireframe = false,
-		color = '#ffffff'
+		color = '#ffffff',
+		heightColorRamp
 	} = config;
 
 	return {
@@ -92,6 +101,17 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): ModelMeshEnt
 			wireframe,
 			color,
 			shading: { ...DEFAULT_MESH_SHADING },
+			...(heightColorRamp && {
+				heightColorRamp: {
+					enabled: heightColorRamp.enabled ?? true,
+					colorMap: 'jet',
+					min: heightColorRamp.min,
+					max: heightColorRamp.max,
+					sourceMin: heightColorRamp.sourceMin ?? heightColorRamp.min,
+					sourceMax: heightColorRamp.sourceMax ?? heightColorRamp.max,
+					sourceSign: heightColorRamp.sourceSign ?? 1
+				}
+			}),
 			transform: {
 				lng: transform.lng,
 				lat: transform.lat,
