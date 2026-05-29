@@ -21,9 +21,21 @@
 		dropFile = $bindable()
 	}: Props = $props();
 
+	interface ModelPlacement {
+		name?: string;
+		lng: number;
+		lat: number;
+		altitude: number;
+		scale?: number;
+	}
+
 	const getPathLikeName = (file: File) => {
 		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
 		return (relativePath ?? file.name).toLowerCase();
+	};
+
+	const getModelPlacement = (file: File): ModelPlacement | undefined => {
+		return (file as File & { morivisModelPlacement?: ModelPlacement }).morivisModelPlacement;
 	};
 
 	const glbFile = $derived.by(() => {
@@ -74,7 +86,8 @@
 	$effect(() => {
 		if (glbFile) {
 			const blobUrl = URL.createObjectURL(glbFile);
-			const name = glbFile.name.replace(/\.[^.]+$/, '');
+			const modelPlacement = getModelPlacement(glbFile);
+			const name = modelPlacement?.name?.trim() || glbFile.name.replace(/\.[^.]+$/, '');
 			const isObj = glbFile.name.toLowerCase().endsWith('.obj');
 			const is3ds = glbFile.name.toLowerCase().endsWith('.3ds');
 			const isDae = glbFile.name.toLowerCase().endsWith('.dae');
@@ -95,9 +108,10 @@
 					name,
 					blobUrl,
 					{
-						lng: center?.lng ?? 0,
-						lat: center?.lat ?? 0,
-						altitude: 0
+						lng: modelPlacement?.lng ?? center?.lng ?? 0,
+						lat: modelPlacement?.lat ?? center?.lat ?? 0,
+						altitude: modelPlacement?.altitude ?? 0,
+						scale: modelPlacement?.scale
 					},
 					isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : 'gltf',
 					resolvedMtlUrl,

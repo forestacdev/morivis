@@ -449,6 +449,20 @@ export interface KmlGroundOverlayResult {
 	corners: [[number, number], [number, number], [number, number], [number, number]];
 }
 
+export interface KmzModelPlacement {
+	name?: string;
+	lng: number;
+	lat: number;
+	altitude: number;
+	scale?: number;
+}
+
+export interface KmzModelResult {
+	modelFiles: File[];
+	mainModelPath: string;
+	placement?: KmzModelPlacement;
+}
+
 /**
  * KMZファイルからKML文字列を取り出す
  */
@@ -490,6 +504,112 @@ const resolveKmzEntryPath = (basePath: string, relativePath: string) => {
 	}
 
 	return resolved.join('/');
+};
+
+const setRelativePath = (file: File, relativePath: string) => {
+	Object.defineProperty(file, 'morivisRelativePath', {
+		value: relativePath,
+		configurable: true
+	});
+	return file;
+};
+
+const setModelPlacement = (file: File, placement: KmzModelPlacement) => {
+	Object.defineProperty(file, 'morivisModelPlacement', {
+		value: placement,
+		configurable: true
+	});
+	return file;
+};
+
+const parseKmzModelPlacement = (doc: Document): KmzModelPlacement | undefined => {
+	const placemark = doc.getElementsByTagNameNS(KML_NS, 'Placemark')[0];
+	if (!placemark) return undefined;
+
+	const name = getFirstChildText(placemark, KML_NS, 'name') ?? undefined;
+	const model = placemark.getElementsByTagNameNS(KML_NS, 'Model')[0];
+	const point = placemark.getElementsByTagNameNS(KML_NS, 'Point')[0];
+
+	const location = model ? getDirectChildElement(model, KML_NS, 'Location') : null;
+	const locationLng = location ? Number(getFirstChildText(location, KML_NS, 'longitude')) : NaN;
+	const locationLat = location ? Number(getFirstChildText(location, KML_NS, 'latitude')) : NaN;
+	const locationAltitude = location ? Number(getFirstChildText(location, KML_NS, 'altitude')) : NaN;
+
+	if (Number.isFinite(locationLng) && Number.isFinite(locationLat)) {
+		const scaleNode = getDirectChildElement(model!, KML_NS, 'Scale');
+		const scaleX = scaleNode ? Number(getFirstChildText(scaleNode, KML_NS, 'x')) : NaN;
+		const scaleY = scaleNode ? Number(getFirstChildText(scaleNode, KML_NS, 'y')) : NaN;
+		const scaleZ = scaleNode ? Number(getFirstChildText(scaleNode, KML_NS, 'z')) : NaN;
+		const uniformScale =
+			Number.isFinite(scaleX) &&
+			Number.isFinite(scaleY) &&
+			Number.isFinite(scaleZ) &&
+			Math.abs(scaleX - scaleY) < 1e-6 &&
+			Math.abs(scaleX - scaleZ) < 1e-6
+				? scaleX
+				: undefined;
+
+		return {
+			name,
+			lng: locationLng,
+			lat: locationLat,
+			altitude: Number.isFinite(locationAltitude) ? locationAltitude : 0,
+			scale: uniformScale
+		};
+	}
+
+	const coordinatesText = point ? getFirstChildText(point, KML_NS, 'coordinates') : null;
+	if (!coordinatesText) return undefined;
+
+	const [lngText, latText, altitudeText] = coordinatesText.split(',').map((value) => value.trim());
+	const lng = Number(lngText);
+	const lat = Number(latText);
+	const altitude = Number(altitudeText ?? '0');
+	if (!Number.isFinite(lng) || !Number.isFinite(lat)) return undefined;
+
+	return {
+		name,
+		lng,
+		lat,
+		altitude: Number.isFinite(altitude) ? altitude : 0
+	};
+};
+
+export const extractModelFromKmz = async (file: File): Promise<KmzModelResult | null> => {
+	const { zip, kmlFileName, kmlText } = await extractKmzPayload(file);
+	const parser = new DOMParser();
+	const doc = parser.parseFromString(kmlText, 'text/xml');
+	const model = doc.getElementsByTagNameNS(KML_NS, 'Model')[0];
+	if (!model) return null;
+
+	const link = getDirectChildElement(model, KML_NS, 'Link');
+	const href = link ? getFirstChildText(link, KML_NS, 'href') : null;
+	if (!href) return null;
+
+	const mainModelPathCandidates = [resolveKmzEntryPath(kmlFileName, href), href.replace(/^\/+/, '')];
+	const mainModelPath = mainModelPathCandidates.find((path) => Boolean(zip.files[path]));
+	if (!mainModelPath) {
+		throw new Error(`Model file not found in KMZ: ${href}`);
+	}
+
+	const placement = parseKmzModelPlacement(doc);
+	const modelFiles: File[] = [];
+
+	for (const [path, entry] of Object.entries(zip.files)) {
+		if (entry.dir || path.startsWith('__MACOSX/')) continue;
+		if (path.toLowerCase().endsWith('.kml')) continue;
+
+		const blob = await entry.async('blob');
+		const fileName = path.split('/').pop() ?? path;
+		const extractedFile = setRelativePath(new File([blob], fileName, { type: blob.type }), path);
+		modelFiles.push(path === mainModelPath && placement ? setModelPlacement(extractedFile, placement) : extractedFile);
+	}
+
+	return {
+		modelFiles,
+		mainModelPath,
+		placement
+	};
 };
 
 export const extractGroundOverlayFromKmz = async (

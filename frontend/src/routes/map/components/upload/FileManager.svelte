@@ -6,6 +6,7 @@
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
 	import { hasExifGps } from '$routes/map/utils/formats/exif';
 	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
+	import { extractModelFromKmz } from '$routes/map/utils/formats/kml';
 	import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
 	import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
 	import { inspectObjFile } from '$routes/map/utils/formats/obj';
@@ -199,9 +200,20 @@
 					showDialogType = 'gml';
 					return;
 				case 'kml':
-				case 'kmz':
 					showDialogType = 'kml';
 					return;
+				case 'kmz': {
+					const kmzModel = await extractModelFromKmz(file).catch(() => null);
+					if (kmzModel && kmzModel.modelFiles.length > 0) {
+						const dt = new DataTransfer();
+						kmzModel.modelFiles.forEach((modelFile) => dt.items.add(modelFile));
+						dropFile = dt.files;
+						showDialogType = 'glb';
+						return;
+					}
+					showDialogType = 'kml';
+					return;
+				}
 				case 'landxml':
 					showDialogType = 'landxml';
 					return;
