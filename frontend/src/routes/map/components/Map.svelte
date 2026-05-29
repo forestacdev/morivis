@@ -629,7 +629,9 @@
 						entry.format.type === '3dm' ||
 						entry.format.type === 'fbx' ||
 						entry.format.type === 'drc' ||
-						entry.format.type === '3mf')
+						entry.format.type === '3mf' ||
+						entry.format.type === 'amf' ||
+						entry.format.type === 'ifc')
 		) as ModelMeshEntry<MeshStyle>[];
 
 		const previewMeshEntry =

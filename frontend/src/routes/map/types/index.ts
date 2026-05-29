@@ -148,6 +148,8 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'Autodesk FBX', extensions: ['.fbx'] },
 	{ label: 'Draco DRC', extensions: ['.drc'] },
 	{ label: '3D Manufacturing Format', extensions: ['.3mf'] },
+	{ label: 'Additive Manufacturing Format', extensions: ['.amf'] },
+	{ label: 'Industry Foundation Classes', extensions: ['.ifc'] },
 	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz', '.txt'] }
 ];
 

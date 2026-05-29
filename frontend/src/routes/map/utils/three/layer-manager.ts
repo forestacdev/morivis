@@ -1,6 +1,7 @@
 import { asset } from '$app/paths';
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
+import { AMFLoader } from 'three/addons/loaders/AMFLoader.js';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
@@ -10,6 +11,7 @@ import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { IFCLoader } from 'web-ifc-three/IFCLoader.js';
 import {
 	DEFAULT_MESH_SHADING,
 	type MeshShadingStyle,
@@ -23,6 +25,7 @@ import {
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 const DRACO_DECODER_PATH = asset('/draco/gltf/');
+const IFC_WASM_PATH = asset('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
 
 interface LoadedModel {
@@ -685,6 +688,27 @@ export class ThreeJsLayerManager {
 					undefined,
 					(error) => reject(error)
 				);
+			} else if (entry.format.type === 'amf') {
+				const loader = new AMFLoader();
+				loader.load(
+					entry.format.url,
+					(object) => onModelLoaded(object),
+					undefined,
+					(error) => reject(error)
+				);
+			} else if (entry.format.type === 'ifc') {
+				const loader = new IFCLoader();
+				loader.ifcManager
+					.setWasmPath(IFC_WASM_PATH)
+					.then(() => {
+						loader.load(
+							entry.format.url,
+							(object) => onModelLoaded(object),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
 			} else {
 				this.loader.load(
 					entry.format.url,

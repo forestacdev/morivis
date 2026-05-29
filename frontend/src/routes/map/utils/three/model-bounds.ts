@@ -1,6 +1,7 @@
 import { asset } from '$app/paths';
 import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
+import { AMFLoader } from 'three/addons/loaders/AMFLoader.js';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
@@ -9,6 +10,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { IFCLoader } from 'web-ifc-three/IFCLoader.js';
 
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
@@ -17,7 +19,7 @@ import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transfo
 
 interface ComputeUploadedModelMetaParams {
 	file: File;
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf';
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc';
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 }
@@ -36,6 +38,7 @@ const objLoader = new OBJLoader();
 const MIN_MODEL_MAX_DIMENSION_METERS = 1;
 const TARGET_MODEL_MAX_DIMENSION_METERS = 5;
 const DRACO_DECODER_PATH = asset('/draco/gltf/');
+const IFC_WASM_PATH = asset('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
 const dracoLoader = new DRACOLoader();
 
@@ -242,9 +245,38 @@ const parse3mfObject = async (file: File): Promise<UploadedModelObject> => {
 	}
 };
 
+const parseAmfObject = async (file: File): Promise<UploadedModelObject> => {
+	const loader = new AMFLoader();
+	const url = URL.createObjectURL(file);
+	try {
+		const object = await loader.loadAsync(url);
+		return {
+			object,
+			animationNames: []
+		};
+	} finally {
+		URL.revokeObjectURL(url);
+	}
+};
+
+const parseIfcObject = async (file: File): Promise<UploadedModelObject> => {
+	const loader = new IFCLoader();
+	await loader.ifcManager.setWasmPath(IFC_WASM_PATH);
+	const url = URL.createObjectURL(file);
+	try {
+		const object = (await loader.loadAsync(url)) as THREE.Object3D;
+		return {
+			object,
+			animationNames: []
+		};
+	} finally {
+		URL.revokeObjectURL(url);
+	}
+};
+
 const getUploadedModelObject = async (
 	file: File,
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf',
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc',
 	resourceUrls?: Record<string, string>
 ) => {
 	if (format === 'obj') {
@@ -273,6 +305,14 @@ const getUploadedModelObject = async (
 
 	if (format === '3mf') {
 		return parse3mfObject(file);
+	}
+
+	if (format === 'amf') {
+		return parseAmfObject(file);
+	}
+
+	if (format === 'ifc') {
+		return parseIfcObject(file);
 	}
 
 	return parseGltfObject(file);
