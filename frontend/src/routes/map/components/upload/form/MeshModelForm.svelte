@@ -29,7 +29,7 @@
 	const glbFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds)$/i.test(getPathLikeName(f))) ?? null;
+			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds|dae)$/i.test(getPathLikeName(f))) ?? null;
 		}
 		return dropFile;
 	});
@@ -77,6 +77,7 @@
 			const name = glbFile.name.replace(/\.[^.]+$/, '');
 			const isObj = glbFile.name.toLowerCase().endsWith('.obj');
 			const is3ds = glbFile.name.toLowerCase().endsWith('.3ds');
+			const isDae = glbFile.name.toLowerCase().endsWith('.dae');
 
 			const register = async () => {
 				let resolvedMtlUrl: string | undefined;
@@ -98,15 +99,15 @@
 						lat: center?.lat ?? 0,
 						altitude: 0
 					},
-					isObj ? 'obj' : is3ds ? '3ds' : 'gltf',
+					isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : 'gltf',
 					resolvedMtlUrl,
-					isObj || is3ds ? resourceUrls : undefined
+					isObj || is3ds || isDae ? resourceUrls : undefined
 				);
 
 				try {
 					const uploadedModelMeta = await computeUploadedModelMeta({
 						file: glbFile,
-						format: isObj ? 'obj' : is3ds ? '3ds' : 'gltf',
+						format: isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : 'gltf',
 						style: entry.style,
 						resourceUrls
 					});
@@ -197,6 +198,8 @@
 			? 'obj'
 			: normalizedUrl.endsWith('.3ds')
 				? '3ds'
+				: normalizedUrl.endsWith('.dae')
+					? 'dae'
 				: 'gltf';
 		const entry = createGlbEntry(
 			forms.name,
@@ -229,7 +232,7 @@
 		class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 	>
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
-		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS)" error={errors.url} />
+		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS / DAE)" error={errors.url} />
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">

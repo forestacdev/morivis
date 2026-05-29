@@ -1,5 +1,6 @@
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
+import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
@@ -561,6 +562,29 @@ export class ThreeJsLayerManager {
 				tdsLoader.load(
 					entry.format.url,
 					(object) => onModelLoaded(object),
+					undefined,
+					(error) => reject(error)
+				);
+			} else if (entry.format.type === 'dae') {
+				const manager = new THREE.LoadingManager();
+				const resourceUrls = entry.format.resourceUrls;
+				if (resourceUrls) {
+					manager.setURLModifier((url) => {
+						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+						const fileName = normalizedUrl.split('/').pop() ?? '';
+						return (
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
+						);
+					});
+				}
+				const colladaLoader = new ColladaLoader(manager);
+				colladaLoader.load(
+					entry.format.url,
+					(collada) => onModelLoaded(collada.scene, collada.scene.animations),
 					undefined,
 					(error) => reject(error)
 				);

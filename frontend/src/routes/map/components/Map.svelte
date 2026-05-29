@@ -624,7 +624,8 @@
 				entry.type === 'model' &&
 				(entry.format.type === 'gltf' ||
 					entry.format.type === 'obj' ||
-					entry.format.type === '3ds')
+					entry.format.type === '3ds' ||
+					entry.format.type === 'dae')
 		) as ModelMeshEntry<MeshStyle>[];
 
 		const previewMeshEntry =

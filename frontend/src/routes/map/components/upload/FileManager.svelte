@@ -232,6 +232,7 @@
 					return;
 				case 'glb':
 				case '3ds':
+				case 'dae':
 					showDialogType = 'glb';
 					return;
 				case 'obj': {
@@ -346,9 +347,11 @@
 				}
 				const inspection = await inspectObjFile(objFile);
 				showDialogType = inspection.isPointCloud ? 'pointcloud' : 'glb';
-			} else if (files.some((f) => hasExtension(f, '.3ds'))) {
-				showDialogType = 'glb';
-			} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
+				} else if (files.some((f) => hasExtension(f, '.3ds'))) {
+					showDialogType = 'glb';
+				} else if (files.some((f) => hasExtension(f, '.dae'))) {
+					showDialogType = 'glb';
+				} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
 				// 全ファイルがJPEG/HEIC → 1枚でもGPS付きなら位置情報付き写真
 				const hasGps = await hasExifGps(files[0]);
 				if (hasGps) {

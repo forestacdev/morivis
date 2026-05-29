@@ -1,5 +1,6 @@
 import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
+import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
@@ -11,7 +12,7 @@ import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transfo
 
 interface ComputeUploadedModelMetaParams {
 	file: File;
-	format: 'gltf' | 'obj' | '3ds';
+	format: 'gltf' | 'obj' | '3ds' | 'dae';
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 }
@@ -97,9 +98,39 @@ const parseTdsObject = async (
 	}
 };
 
+const parseDaeObject = async (
+	file: File,
+	resourceUrls?: Record<string, string>
+): Promise<UploadedModelObject> => {
+	const manager = new THREE.LoadingManager();
+	if (resourceUrls) {
+		manager.setURLModifier((url) => {
+			const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+			const fileName = normalizedUrl.split('/').pop() ?? '';
+			return (
+				resourceUrls[normalizedUrl] ??
+				resourceUrls[relativeWithoutRoot] ??
+				resourceUrls[fileName] ??
+				url
+			);
+		});
+	}
+
+	const loader = new ColladaLoader(manager);
+	const text = await file.text();
+	const collada = loader.parse(text, '');
+	return {
+		object: collada.scene,
+		animationNames: collada.scene.animations.map(
+			(clip: THREE.AnimationClip, index: number) => clip.name || `Animation ${index + 1}`
+		)
+	};
+};
+
 const getUploadedModelObject = async (
 	file: File,
-	format: 'gltf' | 'obj' | '3ds',
+	format: 'gltf' | 'obj' | '3ds' | 'dae',
 	resourceUrls?: Record<string, string>
 ) => {
 	if (format === 'obj') {
@@ -108,6 +139,10 @@ const getUploadedModelObject = async (
 
 	if (format === '3ds') {
 		return parseTdsObject(file, resourceUrls);
+	}
+
+	if (format === 'dae') {
+		return parseDaeObject(file, resourceUrls);
 	}
 
 	return parseGltfObject(file);

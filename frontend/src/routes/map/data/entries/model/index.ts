@@ -103,7 +103,14 @@ export const createGlbEntry = (
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
-		attribution: formatType === 'obj' ? 'OBJ' : formatType === '3ds' ? '3DS' : 'GLB',
+		attribution:
+			formatType === 'obj'
+				? 'OBJ'
+				: formatType === '3ds'
+					? '3DS'
+					: formatType === 'dae'
+						? 'DAE'
+						: 'GLB',
 		name,
 		altitude: transform.altitude,
 		bounds: pointToBbox(transform.lng, transform.lat)

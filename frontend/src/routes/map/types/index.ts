@@ -143,6 +143,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'GLB', extensions: ['.glb'] },
 	{ label: 'Wavefront OBJ', extensions: ['.obj'] },
 	{ label: 'Autodesk 3DS', extensions: ['.3ds'] },
+	{ label: 'Collada DAE', extensions: ['.dae'] },
 	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz', '.txt'] }
 ];
 
