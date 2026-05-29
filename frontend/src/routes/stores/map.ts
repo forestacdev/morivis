@@ -369,10 +369,10 @@ const createMapStore = () => {
 					if (!map || map.hasImage('marker_png')) return;
 					map.addImage('marker_png', image);
 				});
-				} else if (isGeneratedPoiIconId(id)) {
-					// 接頭辞付きの生成アイコンだけを styleimagemissing 側で処理する
-					handleStyleImageMissing(e, map);
-				}
+			} else if (isGeneratedPoiIconId(id)) {
+				// 接頭辞付きの生成アイコンだけを styleimagemissing 側で処理する
+				handleStyleImageMissing(e, map);
+			}
 
 			// NOTE: ハイライトパターン作成は停止
 			// else if (isHighlightFillPatternId(id) || isHighlightLinePatternId(id)) {

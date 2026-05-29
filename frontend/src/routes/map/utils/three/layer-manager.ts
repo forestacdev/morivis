@@ -3,6 +3,7 @@ import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
@@ -613,6 +614,40 @@ export class ThreeJsLayerManager {
 				rhinoLoader.load(
 					entry.format.url,
 					(object) => onModelLoaded(object),
+					undefined,
+					(error) => reject(error)
+				);
+			} else if (entry.format.type === 'fbx') {
+				const manager = new THREE.LoadingManager();
+				const resourceUrls = entry.format.resourceUrls;
+				if (resourceUrls) {
+					manager.setURLModifier((url) => {
+						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+						const fileName = normalizedUrl.split('/').pop() ?? '';
+						return (
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
+						);
+					});
+				}
+				const fbxLoader = new FBXLoader(manager);
+				if (!resourceUrls) {
+					try {
+						fbxLoader.setResourcePath(new URL('./', entry.format.url).href);
+					} catch {
+						// blob URL などは URL 基底を組めないので、そのままロードする。
+					}
+				}
+				fbxLoader.load(
+					entry.format.url,
+					(object) =>
+						onModelLoaded(
+							object,
+							(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? []
+						),
 					undefined,
 					(error) => reject(error)
 				);

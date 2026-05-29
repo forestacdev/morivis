@@ -3,6 +3,7 @@ import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
@@ -14,7 +15,7 @@ import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transfo
 
 interface ComputeUploadedModelMetaParams {
 	file: File;
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm';
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx';
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 }
@@ -164,9 +165,49 @@ const parse3dmObject = async (
 	}
 };
 
+const parseFbxObject = async (
+	file: File,
+	resourceUrls?: Record<string, string>
+): Promise<UploadedModelObject> => {
+	const manager = new THREE.LoadingManager();
+	if (resourceUrls) {
+		manager.setURLModifier((url) => {
+			const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+			const fileName = normalizedUrl.split('/').pop() ?? '';
+			return (
+				resourceUrls[normalizedUrl] ??
+				resourceUrls[relativeWithoutRoot] ??
+				resourceUrls[fileName] ??
+				url
+			);
+		});
+	}
+
+	const loader = new FBXLoader(manager);
+	const url = URL.createObjectURL(file);
+	if (!resourceUrls) {
+		try {
+			loader.setResourcePath(new URL('./', url).href);
+		} catch {
+			// blob URL などは基底パスを組めないので、そのまま読む。
+		}
+	}
+	try {
+		const object = await loader.loadAsync(url);
+		const animations = (object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? [];
+		return {
+			object,
+			animationNames: animations.map((clip, index) => clip.name || `Animation ${index + 1}`)
+		};
+	} finally {
+		URL.revokeObjectURL(url);
+	}
+};
+
 const getUploadedModelObject = async (
 	file: File,
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm',
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx',
 	resourceUrls?: Record<string, string>
 ) => {
 	if (format === 'obj') {
@@ -183,6 +224,10 @@ const getUploadedModelObject = async (
 
 	if (format === '3dm') {
 		return parse3dmObject(file, resourceUrls);
+	}
+
+	if (format === 'fbx') {
+		return parseFbxObject(file, resourceUrls);
 	}
 
 	return parseGltfObject(file);

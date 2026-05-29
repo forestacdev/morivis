@@ -41,7 +41,7 @@
 	const glbFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds|dae|3dm)$/i.test(getPathLikeName(f))) ?? null;
+			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds|dae|3dm|fbx)$/i.test(getPathLikeName(f))) ?? null;
 		}
 		return dropFile;
 	});
@@ -92,6 +92,7 @@
 			const is3ds = glbFile.name.toLowerCase().endsWith('.3ds');
 			const isDae = glbFile.name.toLowerCase().endsWith('.dae');
 			const is3dm = glbFile.name.toLowerCase().endsWith('.3dm');
+			const isFbx = glbFile.name.toLowerCase().endsWith('.fbx');
 
 			const register = async () => {
 				let resolvedMtlUrl: string | undefined;
@@ -114,15 +115,15 @@
 						altitude: modelPlacement?.altitude ?? 0,
 						scale: modelPlacement?.scale
 					},
-					isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : is3dm ? '3dm' : 'gltf',
+					isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : is3dm ? '3dm' : isFbx ? 'fbx' : 'gltf',
 					resolvedMtlUrl,
-					isObj || is3ds || isDae || is3dm ? resourceUrls : undefined
+					isObj || is3ds || isDae || is3dm || isFbx ? resourceUrls : undefined
 				);
 
 				try {
 					const uploadedModelMeta = await computeUploadedModelMeta({
 						file: glbFile,
-						format: isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : is3dm ? '3dm' : 'gltf',
+						format: isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : is3dm ? '3dm' : isFbx ? 'fbx' : 'gltf',
 						style: entry.style,
 						resourceUrls
 					});
@@ -215,8 +216,10 @@
 				? '3ds'
 				: normalizedUrl.endsWith('.dae')
 					? 'dae'
-					: normalizedUrl.endsWith('.3dm')
-						? '3dm'
+				: normalizedUrl.endsWith('.3dm')
+					? '3dm'
+					: normalizedUrl.endsWith('.fbx')
+						? 'fbx'
 						: 'gltf';
 		const entry = createGlbEntry(
 			forms.name,
@@ -249,7 +252,7 @@
 		class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 	>
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
-		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS / DAE / 3DM)" error={errors.url} />
+		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS / DAE / 3DM / FBX)" error={errors.url} />
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
