@@ -2,6 +2,7 @@ import { asset } from '$app/paths';
 import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -15,7 +16,7 @@ import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transfo
 
 interface ComputeUploadedModelMetaParams {
 	file: File;
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx';
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc';
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 }
@@ -33,7 +34,12 @@ const gltfLoader = new GLTFLoader();
 const objLoader = new OBJLoader();
 const MIN_MODEL_MAX_DIMENSION_METERS = 1;
 const TARGET_MODEL_MAX_DIMENSION_METERS = 5;
+const DRACO_DECODER_PATH = asset('/draco/gltf/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
+const dracoLoader = new DRACOLoader();
+
+dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
+gltfLoader.setDRACOLoader(dracoLoader);
 
 interface UploadedModelObject {
 	object: THREE.Object3D;
@@ -205,9 +211,25 @@ const parseFbxObject = async (
 	}
 };
 
+const parseDrcObject = async (file: File): Promise<UploadedModelObject> => {
+	const url = URL.createObjectURL(file);
+	try {
+		const geometry = await dracoLoader.loadAsync(url);
+		if (!geometry.getAttribute('normal')) {
+			geometry.computeVertexNormals();
+		}
+		return {
+			object: new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#ffffff' })),
+			animationNames: []
+		};
+	} finally {
+		URL.revokeObjectURL(url);
+	}
+};
+
 const getUploadedModelObject = async (
 	file: File,
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx',
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc',
 	resourceUrls?: Record<string, string>
 ) => {
 	if (format === 'obj') {
@@ -228,6 +250,10 @@ const getUploadedModelObject = async (
 
 	if (format === 'fbx') {
 		return parseFbxObject(file, resourceUrls);
+	}
+
+	if (format === 'drc') {
+		return parseDrcObject(file);
 	}
 
 	return parseGltfObject(file);

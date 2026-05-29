@@ -114,7 +114,9 @@ export const createGlbEntry = (
 							? '3DM'
 							: formatType === 'fbx'
 								? 'FBX'
-							: 'GLB',
+								: formatType === 'drc'
+									? 'DRC'
+								: 'GLB',
 		name,
 		altitude: transform.altitude,
 		bounds: pointToBbox(transform.lng, transform.lat)

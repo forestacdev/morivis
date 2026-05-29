@@ -2,6 +2,7 @@ import { asset } from '$app/paths';
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -20,6 +21,7 @@ import {
 } from '$routes/map/utils/three/model-transform';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
+const DRACO_DECODER_PATH = asset('/draco/gltf/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
 
 interface LoadedModel {
@@ -43,10 +45,16 @@ export class ThreeJsLayerManager {
 	private renderer: THREE.WebGLRenderer | null = null;
 	private map: MapLibreMap | null = null;
 	private loadedModels: Map<string, LoadedModel> = new Map();
+	private dracoLoader = new DRACOLoader();
 	private loader = new GLTFLoader();
 	private isInitialized = false;
 	private colorMapManager = new ColorMapManager();
 	private lastRenderTimeMs: number | null = null;
+
+	constructor() {
+		this.dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
+		this.loader.setDRACOLoader(this.dracoLoader);
+	}
 
 	private resolveShading = (style: MeshStyle): Required<MeshShadingStyle> => ({
 		...DEFAULT_MESH_SHADING,
@@ -648,6 +656,23 @@ export class ThreeJsLayerManager {
 							object,
 							(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? []
 						),
+					undefined,
+					(error) => reject(error)
+				);
+			} else if (entry.format.type === 'drc') {
+				this.dracoLoader.load(
+					entry.format.url,
+					(geometry) => {
+						if (!geometry.getAttribute('normal')) {
+							geometry.computeVertexNormals();
+						}
+						onModelLoaded(
+							new THREE.Mesh(
+								geometry,
+								new THREE.MeshStandardMaterial({ color: '#ffffff' })
+							)
+						);
+					},
 					undefined,
 					(error) => reject(error)
 				);

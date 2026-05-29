@@ -146,6 +146,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'Collada DAE', extensions: ['.dae'] },
 	{ label: 'Rhino 3DM', extensions: ['.3dm'] },
 	{ label: 'Autodesk FBX', extensions: ['.fbx'] },
+	{ label: 'Draco DRC', extensions: ['.drc'] },
 	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz', '.txt'] }
 ];
 
