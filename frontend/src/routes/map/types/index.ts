@@ -142,6 +142,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'GeoPDF', extensions: ['.pdf'] },
 	{ label: 'GLB', extensions: ['.glb'] },
 	{ label: 'Wavefront OBJ', extensions: ['.obj'] },
+	{ label: 'Autodesk 3DS', extensions: ['.3ds'] },
 	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz', '.txt'] }
 ];
 

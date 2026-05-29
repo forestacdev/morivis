@@ -2,6 +2,7 @@
 	import { tick } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
+	import DropContainer from '$routes/map/components/DropContainer.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import {
 		SUPPORTED_FILE_ACCEPT,
@@ -290,6 +291,12 @@
 		const files = (e.target as HTMLInputElement).files;
 		if (!files || files.length === 0) return;
 
+		await handleDroppedFiles(files);
+	};
+
+	const handleDroppedFiles = async (files: FileList) => {
+		if (!files || files.length === 0) return;
+
 		// 単一ZIPファイルの場合は展開
 		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
 			try {
@@ -349,42 +356,12 @@
 		formListFileInput?.click();
 	};
 	let isDragover = $state(false);
-
-	// ドラッグ中のイベント
-	const dragover: (e: DragEvent) => void = (e) => {
-		e.preventDefault();
-		isDragover = true;
-	};
-	const dragleave: (e: DragEvent) => void = (e) => {
-		e.preventDefault();
-		isDragover = false;
-	};
-	// ドロップ完了時にファイルを取得
-	/** FileSystemEntryからFileを取得 */
-	const entryToFile = (entry: FileSystemFileEntry): Promise<File> =>
-		new Promise((resolve, reject) => entry.file(resolve, reject));
-
-	/** ディレクトリを再帰的に読み取り全ファイルを収集 */
-	const readDirectoryRecursive = async (dirEntry: FileSystemDirectoryEntry): Promise<File[]> => {
-		const files: File[] = [];
-		const reader = dirEntry.createReader();
-
-		const readEntries = (): Promise<FileSystemEntry[]> =>
-			new Promise((resolve, reject) => reader.readEntries(resolve, reject));
-
-		let entries: FileSystemEntry[];
-		do {
-			entries = await readEntries();
-			for (const entry of entries) {
-				if (entry.isFile) {
-					files.push(await entryToFile(entry as FileSystemFileEntry));
-				} else if (entry.isDirectory) {
-					files.push(...(await readDirectoryRecursive(entry as FileSystemDirectoryEntry)));
-				}
-			}
-		} while (entries.length > 0);
-
-		return files;
+	const setRelativePath = (file: File, relativePath: string) => {
+		Object.defineProperty(file, 'morivisRelativePath', {
+			value: relativePath,
+			configurable: true
+		});
+		return file;
 	};
 
 	/** ZIPファイルを展開してFile配列にする */
@@ -399,62 +376,16 @@
 		for (const [path, entry] of entries) {
 			const blob = await entry.async('blob');
 			const fileName = path.split('/').pop() ?? path;
-			files.push(new File([blob], fileName, { type: blob.type }));
+			files.push(setRelativePath(new File([blob], fileName, { type: blob.type }), path));
 		}
 		return files;
-	};
-
-	const drop: (e: DragEvent) => void = async (e) => {
-		e.preventDefault();
-		isDragover = false;
-
-		const dataTransfer = e.dataTransfer;
-		if (!dataTransfer) return;
-
-		// フォルダドロップの判定
-		const items = dataTransfer.items;
-		if (items && items.length > 0) {
-			const firstEntry = items[0].webkitGetAsEntry?.();
-			if (firstEntry?.isDirectory) {
-				// フォルダ → 再帰的にファイル収集
-				const allFiles = await readDirectoryRecursive(firstEntry as FileSystemDirectoryEntry);
-				if (allFiles.length > 0) {
-					const dt = new DataTransfer();
-					allFiles.forEach((f) => dt.items.add(f));
-					dropFile = dt.files;
-					return;
-				}
-			}
-		}
-
-		const files = dataTransfer.files;
-		if (!files || files.length === 0) return;
-
-		// 単一ZIPファイルの場合、展開してFileListとして渡す
-		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
-			try {
-				const extracted = await extractZipFiles(files[0]);
-				if (extracted.length > 0) {
-					const dt = new DataTransfer();
-					extracted.forEach((f) => dt.items.add(f));
-					dropFile = dt.files;
-					return;
-				}
-			} catch {
-				// ZIP展開失敗時は通常フローへ
-			}
-		}
-
-		dropFile = files;
 	};
 </script>
 
 <div class="flex h-full grow flex-col gap-4 p-4 text-white">
-	<div
-		role="region"
-		ondrop={drop}
-		ondragover={dragover}
-		ondragleave={dragleave}
+	<DropContainer
+		bind:isDragover
+		onDropFile={handleDroppedFiles}
 		class="flex h-full w-full grow flex-col items-center justify-center gap-16 rounded-lg border-2 decoration-amber-200 transition-all {isDragover
 			? 'border-white bg-black'
 			: 'border-dashed bg-black/70'}"
@@ -528,29 +459,29 @@
 					</div>
 				{/if}
 			</div>
-		</div>
-		<div class="flex flex-wrap items-center justify-center gap-4 px-4">
-			<button
-				onclick={() => {
-					showFormListDialog = true;
-				}}
-				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 px-6 text-black transition-colors hover:text-white"
-			>
-				フォーム一覧
-			</button>
-		</div>
-		<div class="marquee-container overflow-hidden">
-			<div class="marquee-track flex w-max gap-2">
-				{#each { length: 2 } as _}
-					{#each SUPPORTED_FILE_GROUPS as group}
-						<span class="bg-sub rounded-full p-1 px-3 text-xs whitespace-nowrap text-gray-300">
-							{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
-						</span>
+			<div class="flex flex-wrap items-center justify-center gap-4 px-4">
+				<button
+					onclick={() => {
+						showFormListDialog = true;
+					}}
+					class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 px-6 text-black transition-colors hover:text-white"
+				>
+					フォーム一覧
+				</button>
+			</div>
+			<div class="marquee-container overflow-hidden">
+				<div class="marquee-track flex w-max gap-2">
+					{#each Array.from({ length: 2 }) as _, index (index)}
+						{#each SUPPORTED_FILE_GROUPS as group (group.label)}
+							<span class="bg-sub rounded-full p-1 px-3 text-xs whitespace-nowrap text-gray-300">
+								{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
+							</span>
+						{/each}
 					{/each}
-				{/each}
+				</div>
 			</div>
 		</div>
-	</div>
+	</DropContainer>
 </div>
 
 {#if showFormListDialog}
@@ -576,31 +507,31 @@
 				</button>
 			</div>
 
-			<div class="c-scroll flex flex-col gap-5 overflow-y-auto pr-1">
-				{#each urlDialogGroups as group}
-					<div class="flex flex-col gap-3">
-						<span class="text-sm font-bold text-gray-300">{group.title}</span>
-						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
-							{#each group.dialogs as dialog}
-								<button
-									onclick={() => showUploadDialog(dialog.type)}
-									class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
-								>
+				<div class="c-scroll flex flex-col gap-5 overflow-y-auto pr-1">
+					{#each urlDialogGroups as group (group.title)}
+						<div class="flex flex-col gap-3">
+							<span class="text-sm font-bold text-gray-300">{group.title}</span>
+							<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+								{#each group.dialogs as dialog (dialog.type)}
+									<button
+										onclick={() => showUploadDialog(dialog.type)}
+										class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
+									>
 									{dialog.label}
 								</button>
 							{/each}
+							</div>
 						</div>
-					</div>
-				{/each}
-				{#each fileDialogGroups as group}
-					<div class="flex flex-col gap-3">
-						<span class="text-sm font-bold text-gray-300">{group.title}</span>
-						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
-							{#each group.groups as fileGroup}
-								<button
-									onclick={async () => {
-										showFormListDialog = false;
-										await openFilteredFilePicker(fileGroup.accept);
+					{/each}
+					{#each fileDialogGroups as group (group.title)}
+						<div class="flex flex-col gap-3">
+							<span class="text-sm font-bold text-gray-300">{group.title}</span>
+							<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+								{#each group.groups as fileGroup (fileGroup.label)}
+									<button
+										onclick={async () => {
+											showFormListDialog = false;
+											await openFilteredFilePicker(fileGroup.accept);
 									}}
 									class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
 								>

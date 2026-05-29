@@ -621,7 +621,10 @@
 
 		const meshEntries = entries.filter(
 			(entry) =>
-				entry.type === 'model' && (entry.format.type === 'gltf' || entry.format.type === 'obj')
+				entry.type === 'model' &&
+				(entry.format.type === 'gltf' ||
+					entry.format.type === 'obj' ||
+					entry.format.type === '3ds')
 		) as ModelMeshEntry<MeshStyle>[];
 
 		const previewMeshEntry =

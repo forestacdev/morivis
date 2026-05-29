@@ -39,6 +39,22 @@
 	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|webp|tiff?)$/i.test(file.name);
 	const isGeoImageRelated = (file: File): boolean =>
 		/\.(png|jpe?g|webp|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
+	const getPathLikeName = (file: File) => {
+		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
+		return (relativePath ?? file.name).toLowerCase();
+	};
+	const hasExtension = (file: File, extension: string) => getPathLikeName(file).endsWith(extension);
+	const logDroppedFiles = (files: File[]) => {
+		console.log(
+			'[FileManager] dropped files',
+			files.map((file) => ({
+				name: file.name,
+				relativePath: (file as File & { morivisRelativePath?: string }).morivisRelativePath ?? null,
+				pathLikeName: getPathLikeName(file),
+				size: file.size
+			}))
+		);
+	};
 
 	/** XMLファイルの先頭を読んで基盤地図情報DEMかどうかを判定 */
 	const isDemXml = async (file: File): Promise<boolean> => {
@@ -215,6 +231,7 @@
 					showDialogType = 'pmtiles';
 					return;
 				case 'glb':
+				case '3ds':
 					showDialogType = 'glb';
 					return;
 				case 'obj': {
@@ -316,18 +333,21 @@
 			}
 		} else if (file instanceof FileList) {
 			const files = Array.from(file);
+			logDroppedFiles(files);
 
 			// 大きなファイルの確認
 			if (!(await checkLargeFile(files))) return;
 
-			if (files.some((f) => /\.obj$/i.test(f.name))) {
-				const objFile = files.find((f) => /\.obj$/i.test(f.name));
+			if (files.some((f) => hasExtension(f, '.obj'))) {
+				const objFile = files.find((f) => hasExtension(f, '.obj'));
 				if (!objFile) {
 					showNotification('OBJファイルの判定に失敗しました', 'error');
 					return;
 				}
 				const inspection = await inspectObjFile(objFile);
 				showDialogType = inspection.isPointCloud ? 'pointcloud' : 'glb';
+			} else if (files.some((f) => hasExtension(f, '.3ds'))) {
+				showDialogType = 'glb';
 			} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
 				// 全ファイルがJPEG/HEIC → 1枚でもGPS付きなら位置情報付き写真
 				const hasGps = await hasExifGps(files[0]);

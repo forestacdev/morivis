@@ -22,6 +22,76 @@
 		children
 	}: Props = $props();
 
+	const setRelativePath = (file: File, relativePath: string) => {
+		Object.defineProperty(file, 'morivisRelativePath', {
+			value: relativePath,
+			configurable: true
+		});
+		return file;
+	};
+
+	const entryToFile = (
+		entry: FileSystemFileEntry,
+		relativePath: string
+	): Promise<File> =>
+		new Promise((resolve, reject) =>
+			entry.file((file) => resolve(setRelativePath(file, relativePath)), reject)
+		);
+
+	const readDirectoryRecursive = async (
+		dirEntry: FileSystemDirectoryEntry,
+		basePath = dirEntry.name
+	): Promise<File[]> => {
+		const files: File[] = [];
+		const reader = dirEntry.createReader();
+
+		const readEntries = (): Promise<FileSystemEntry[]> =>
+			new Promise((resolve, reject) => reader.readEntries(resolve, reject));
+
+		let entries: FileSystemEntry[];
+		do {
+			entries = await readEntries();
+			for (const entry of entries) {
+				if (entry.isFile) {
+					files.push(await entryToFile(entry as FileSystemFileEntry, `${basePath}/${entry.name}`));
+				} else if (entry.isDirectory) {
+					files.push(
+						...(await readDirectoryRecursive(
+							entry as FileSystemDirectoryEntry,
+							`${basePath}/${entry.name}`
+						))
+					);
+				}
+			}
+		} while (entries.length > 0);
+
+		return files;
+	};
+
+	const collectDroppedItemFiles = async (items: DataTransferItemList): Promise<File[]> => {
+		const files: File[] = [];
+
+		for (const item of Array.from(items)) {
+			const entry = item.webkitGetAsEntry?.();
+			if (entry?.isDirectory) {
+				files.push(...(await readDirectoryRecursive(entry as FileSystemDirectoryEntry, entry.name)));
+				continue;
+			}
+
+			if (entry?.isFile) {
+				files.push(await entryToFile(entry as FileSystemFileEntry, entry.name));
+				continue;
+			}
+
+			const file = item.getAsFile();
+			if (file) {
+				files.push(file);
+			}
+		}
+
+		return files;
+	};
+
 	// ドラッグ中のイベント
 	const dragover: (e: DragEvent) => void = (e) => {
 		const isEntryDrag = e.dataTransfer?.types.includes('application/x-entry-id');
@@ -51,6 +121,17 @@
 		}
 
 		if (disabled) return;
+
+		const items = dataTransfer.items;
+		if (items && items.length > 0) {
+			const collectedFiles = await collectDroppedItemFiles(items);
+			if (collectedFiles.length > 0) {
+				const dt = new DataTransfer();
+				collectedFiles.forEach((file) => dt.items.add(file));
+				onDropFile?.(dt.files);
+				return;
+			}
+		}
 
 		const files = dataTransfer.files;
 		if (!files || files.length === 0) return;

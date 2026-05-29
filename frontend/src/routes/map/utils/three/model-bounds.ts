@@ -1,6 +1,7 @@
 import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 import type { TileXYZ } from '$routes/map/data/types/raster';
@@ -10,8 +11,9 @@ import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transfo
 
 interface ComputeUploadedModelMetaParams {
 	file: File;
-	format: 'gltf' | 'obj';
+	format: 'gltf' | 'obj' | '3ds';
 	style: Pick<MeshStyle, 'transform'>;
+	resourceUrls?: Record<string, string>;
 }
 
 interface UploadedModelMeta {
@@ -63,9 +65,49 @@ const parseObjObject = async (file: File): Promise<UploadedModelObject> => {
 	};
 };
 
-const getUploadedModelObject = async (file: File, format: 'gltf' | 'obj') => {
+const parseTdsObject = async (
+	file: File,
+	resourceUrls?: Record<string, string>
+): Promise<UploadedModelObject> => {
+	const manager = new THREE.LoadingManager();
+	if (resourceUrls) {
+		manager.setURLModifier((url) => {
+			const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+			const fileName = normalizedUrl.split('/').pop() ?? '';
+			return (
+				resourceUrls[normalizedUrl] ??
+				resourceUrls[relativeWithoutRoot] ??
+				resourceUrls[fileName] ??
+				url
+			);
+		});
+	}
+
+	const loader = new TDSLoader(manager);
+	const url = URL.createObjectURL(file);
+	try {
+		const object = await loader.loadAsync(url);
+		return {
+			object,
+			animationNames: []
+		};
+	} finally {
+		URL.revokeObjectURL(url);
+	}
+};
+
+const getUploadedModelObject = async (
+	file: File,
+	format: 'gltf' | 'obj' | '3ds',
+	resourceUrls?: Record<string, string>
+) => {
 	if (format === 'obj') {
 		return parseObjObject(file);
+	}
+
+	if (format === '3ds') {
+		return parseTdsObject(file, resourceUrls);
 	}
 
 	return parseGltfObject(file);
@@ -81,9 +123,10 @@ const mercatorYToLat = (y: number) => {
 export const computeUploadedModelMeta = async ({
 	file,
 	format,
-	style
+	style,
+	resourceUrls
 }: ComputeUploadedModelMetaParams): Promise<UploadedModelMeta> => {
-	const { object, animationNames } = await getUploadedModelObject(file, format);
+	const { object, animationNames } = await getUploadedModelObject(file, format, resourceUrls);
 	object.updateMatrixWorld(true);
 
 	const box = new THREE.Box3().setFromObject(object);

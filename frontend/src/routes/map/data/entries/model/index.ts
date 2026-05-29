@@ -90,18 +90,20 @@ export const createGlbEntry = (
 		rotationY?: number;
 	},
 	formatType: MeshFormatType = 'gltf',
-	mtlUrl?: string
+	mtlUrl?: string,
+	resourceUrls?: Record<string, string>
 ): ModelMeshEntry<MeshStyle> => ({
 	id: 'glb_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
 		type: formatType,
 		url,
-		...(mtlUrl && { mtlUrl })
+		...(mtlUrl && { mtlUrl }),
+		...(resourceUrls && { resourceUrls })
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
-		attribution: formatType === 'obj' ? 'OBJ' : 'GLB',
+		attribution: formatType === 'obj' ? 'OBJ' : formatType === '3ds' ? '3DS' : 'GLB',
 		name,
 		altitude: transform.altitude,
 		bounds: pointToBbox(transform.lng, transform.lat)

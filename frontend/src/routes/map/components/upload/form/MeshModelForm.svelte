@@ -21,10 +21,15 @@
 		dropFile = $bindable()
 	}: Props = $props();
 
+	const getPathLikeName = (file: File) => {
+		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
+		return (relativePath ?? file.name).toLowerCase();
+	};
+
 	const glbFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(glb|obj)$/i.test(f.name)) ?? null;
+			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds)$/i.test(getPathLikeName(f))) ?? null;
 		}
 		return dropFile;
 	});
@@ -38,6 +43,32 @@
 		if (!dropFile || !(dropFile instanceof FileList)) return [];
 		return Array.from(dropFile).filter((f) => /\.(png|jpe?g|bmp|tga|gif|webp)$/i.test(f.name));
 	});
+
+	const getRelativePath = (file: File) => {
+		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
+		return relativePath?.replace(/\\/g, '/');
+	};
+
+	const buildResourceUrls = (files: File[]) => {
+		const resourceUrls: Record<string, string> = {};
+		files.forEach((file) => {
+			const blobUrl = URL.createObjectURL(file);
+			const relativePath = getRelativePath(file);
+			const lowerFileName = file.name.toLowerCase();
+			resourceUrls[lowerFileName] = blobUrl;
+
+			if (!relativePath) return;
+
+			const normalizedRelativePath = relativePath.toLowerCase();
+			resourceUrls[normalizedRelativePath] = blobUrl;
+
+			const relativeWithoutRoot = normalizedRelativePath.split('/').slice(1).join('/');
+			if (relativeWithoutRoot) {
+				resourceUrls[relativeWithoutRoot] = blobUrl;
+			}
+		});
+		return resourceUrls;
+	};
 
 	/** MTL内のテクスチャパスをBlobURLに書き換える */
 	const processMtl = async (mtl: File, textures: File[]): Promise<string> => {
@@ -63,11 +94,16 @@
 			const blobUrl = URL.createObjectURL(glbFile);
 			const name = glbFile.name.replace(/\.[^.]+$/, '');
 			const isObj = glbFile.name.toLowerCase().endsWith('.obj');
+			const is3ds = glbFile.name.toLowerCase().endsWith('.3ds');
 
 			const register = async () => {
 				let resolvedMtlUrl: string | undefined;
+				let resourceUrls: Record<string, string> | undefined;
 				if (mtlFile) {
 					resolvedMtlUrl = await processMtl(mtlFile, textureFiles);
+				}
+				if (is3ds && textureFiles.length > 0) {
+					resourceUrls = buildResourceUrls(textureFiles);
 				}
 
 				// 現在の地図中心を配置位置にする
@@ -80,15 +116,17 @@
 						lat: center?.lat ?? 0,
 						altitude: 0
 					},
-					isObj ? 'obj' : 'gltf',
-					resolvedMtlUrl
+					isObj ? 'obj' : is3ds ? '3ds' : 'gltf',
+					resolvedMtlUrl,
+					resourceUrls
 				);
 
 				try {
 					const uploadedModelMeta = await computeUploadedModelMeta({
 						file: glbFile,
-						format: isObj ? 'obj' : 'gltf',
-						style: entry.style
+						format: isObj ? 'obj' : is3ds ? '3ds' : 'gltf',
+						style: entry.style,
+						resourceUrls
 					});
 					if (uploadedModelMeta.hasSkinnedMesh) {
 						entry.style.shadingOptions = {
@@ -172,11 +210,22 @@
 
 	const registrationFromUrl = () => {
 		const center = mapStore.getCenter();
-		const entry = createGlbEntry(forms.name, forms.url.trim(), {
-			lng: center?.lng ?? 0,
-			lat: center?.lat ?? 0,
-			altitude: 0
-		});
+		const normalizedUrl = forms.url.trim().toLowerCase();
+		const format = normalizedUrl.endsWith('.obj')
+			? 'obj'
+			: normalizedUrl.endsWith('.3ds')
+				? '3ds'
+				: 'gltf';
+		const entry = createGlbEntry(
+			forms.name,
+			forms.url.trim(),
+			{
+				lng: center?.lng ?? 0,
+				lat: center?.lat ?? 0,
+				altitude: 0
+			},
+			format
+		);
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;
@@ -198,7 +247,7 @@
 		class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 	>
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
-		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ)" error={errors.url} />
+		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS)" error={errors.url} />
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
