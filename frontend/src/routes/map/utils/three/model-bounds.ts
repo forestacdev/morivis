@@ -1,6 +1,8 @@
+import { asset } from '$app/paths';
 import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
+import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
@@ -12,7 +14,7 @@ import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transfo
 
 interface ComputeUploadedModelMetaParams {
 	file: File;
-	format: 'gltf' | 'obj' | '3ds' | 'dae';
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm';
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 }
@@ -30,6 +32,7 @@ const gltfLoader = new GLTFLoader();
 const objLoader = new OBJLoader();
 const MIN_MODEL_MAX_DIMENSION_METERS = 1;
 const TARGET_MODEL_MAX_DIMENSION_METERS = 5;
+const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
 
 interface UploadedModelObject {
 	object: THREE.Object3D;
@@ -128,9 +131,42 @@ const parseDaeObject = async (
 	};
 };
 
+const parse3dmObject = async (
+	file: File,
+	resourceUrls?: Record<string, string>
+): Promise<UploadedModelObject> => {
+	const manager = new THREE.LoadingManager();
+	if (resourceUrls) {
+		manager.setURLModifier((url) => {
+			const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+			const fileName = normalizedUrl.split('/').pop() ?? '';
+			return (
+				resourceUrls[normalizedUrl] ??
+				resourceUrls[relativeWithoutRoot] ??
+				resourceUrls[fileName] ??
+				url
+			);
+		});
+	}
+
+	const loader = new Rhino3dmLoader(manager);
+	loader.setLibraryPath(RHINO3DM_LIBRARY_PATH);
+	const url = URL.createObjectURL(file);
+	try {
+		const object = await loader.loadAsync(url);
+		return {
+			object,
+			animationNames: []
+		};
+	} finally {
+		URL.revokeObjectURL(url);
+	}
+};
+
 const getUploadedModelObject = async (
 	file: File,
-	format: 'gltf' | 'obj' | '3ds' | 'dae',
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm',
 	resourceUrls?: Record<string, string>
 ) => {
 	if (format === 'obj') {
@@ -143,6 +179,10 @@ const getUploadedModelObject = async (
 
 	if (format === 'dae') {
 		return parseDaeObject(file, resourceUrls);
+	}
+
+	if (format === '3dm') {
+		return parse3dmObject(file, resourceUrls);
 	}
 
 	return parseGltfObject(file);

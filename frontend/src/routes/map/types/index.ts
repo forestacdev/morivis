@@ -144,6 +144,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'Wavefront OBJ', extensions: ['.obj'] },
 	{ label: 'Autodesk 3DS', extensions: ['.3ds'] },
 	{ label: 'Collada DAE', extensions: ['.dae'] },
+	{ label: 'Rhino 3DM', extensions: ['.3dm'] },
 	{ label: '点群', extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz', '.txt'] }
 ];
 

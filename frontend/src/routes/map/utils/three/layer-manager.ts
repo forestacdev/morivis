@@ -1,6 +1,8 @@
+import { asset } from '$app/paths';
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
+import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
@@ -16,6 +18,8 @@ import {
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+
+const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
 
 interface LoadedModel {
 	entry: ModelMeshEntry<MeshStyle>;
@@ -585,6 +589,30 @@ export class ThreeJsLayerManager {
 				colladaLoader.load(
 					entry.format.url,
 					(collada) => onModelLoaded(collada.scene, collada.scene.animations),
+					undefined,
+					(error) => reject(error)
+				);
+			} else if (entry.format.type === '3dm') {
+				const manager = new THREE.LoadingManager();
+				const resourceUrls = entry.format.resourceUrls;
+				if (resourceUrls) {
+					manager.setURLModifier((url) => {
+						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+						const fileName = normalizedUrl.split('/').pop() ?? '';
+						return (
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
+						);
+					});
+				}
+				const rhinoLoader = new Rhino3dmLoader(manager);
+				rhinoLoader.setLibraryPath(RHINO3DM_LIBRARY_PATH);
+				rhinoLoader.load(
+					entry.format.url,
+					(object) => onModelLoaded(object),
 					undefined,
 					(error) => reject(error)
 				);

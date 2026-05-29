@@ -117,7 +117,7 @@ export interface PointCloudStyle {
 	pointSize: number;
 }
 
-export type MeshFormatType = 'gltf' | 'obj' | '3ds' | 'dae';
+export type MeshFormatType = 'gltf' | 'obj' | '3ds' | 'dae' | '3dm';
 
 export interface ModelMeshEntry<T> extends BaseModelEntry {
 	format: {

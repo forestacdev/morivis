@@ -41,7 +41,7 @@
 	const glbFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds|dae)$/i.test(getPathLikeName(f))) ?? null;
+			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds|dae|3dm)$/i.test(getPathLikeName(f))) ?? null;
 		}
 		return dropFile;
 	});
@@ -91,6 +91,7 @@
 			const isObj = glbFile.name.toLowerCase().endsWith('.obj');
 			const is3ds = glbFile.name.toLowerCase().endsWith('.3ds');
 			const isDae = glbFile.name.toLowerCase().endsWith('.dae');
+			const is3dm = glbFile.name.toLowerCase().endsWith('.3dm');
 
 			const register = async () => {
 				let resolvedMtlUrl: string | undefined;
@@ -113,15 +114,15 @@
 						altitude: modelPlacement?.altitude ?? 0,
 						scale: modelPlacement?.scale
 					},
-					isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : 'gltf',
+					isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : is3dm ? '3dm' : 'gltf',
 					resolvedMtlUrl,
-					isObj || is3ds || isDae ? resourceUrls : undefined
+					isObj || is3ds || isDae || is3dm ? resourceUrls : undefined
 				);
 
 				try {
 					const uploadedModelMeta = await computeUploadedModelMeta({
 						file: glbFile,
-						format: isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : 'gltf',
+						format: isObj ? 'obj' : is3ds ? '3ds' : isDae ? 'dae' : is3dm ? '3dm' : 'gltf',
 						style: entry.style,
 						resourceUrls
 					});
@@ -214,7 +215,9 @@
 				? '3ds'
 				: normalizedUrl.endsWith('.dae')
 					? 'dae'
-				: 'gltf';
+					: normalizedUrl.endsWith('.3dm')
+						? '3dm'
+						: 'gltf';
 		const entry = createGlbEntry(
 			forms.name,
 			forms.url.trim(),
@@ -246,7 +249,7 @@
 		class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 	>
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
-		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS / DAE)" error={errors.url} />
+		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS / DAE / 3DM)" error={errors.url} />
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">

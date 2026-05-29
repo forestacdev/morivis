@@ -288,6 +288,9 @@ importers:
       proj4:
         specifier: ^2.15.0
         version: 2.20.2
+      rhino3dm:
+        specifier: ^8.17.0
+        version: 8.17.0
       shapefile:
         specifier: ^0.6.6
         version: 0.6.6
@@ -4852,6 +4855,9 @@ packages:
   rgbcolor@1.0.1:
     resolution: {integrity: sha512-9aZLIrhRaD97sgVhtJOW6ckOEh6/GnvQtdVNfdZ6s67+3/XwLS9lBcQYzEEhYVeUowN7pRzMLsyGhK2i/xvWbw==}
     engines: {node: '>= 0.8.15'}
+
+  rhino3dm@8.17.0:
+    resolution: {integrity: sha512-6m3nE/DUwu8vgc4Y7ffmLvV+WvUgjGYAf68q5WAn/CJZvboAPRlU6wTM7PpPU+wxiKfyfkOKKEkXVyPGIQyGeg==}
 
   robust-predicates@3.0.2:
     resolution: {integrity: sha512-IXgzBWvWQwE6PrDI05OvmXUIruQTcoMDzRsOd5CDvHCVLcLHMTSYvOK5Cm46kWqlV3yAbuSpBZdJ5oP5OUoStg==}
@@ -10637,6 +10643,8 @@ snapshots:
 
   rgbcolor@1.0.1:
     optional: true
+
+  rhino3dm@8.17.0: {}
 
   robust-predicates@3.0.2: {}
 

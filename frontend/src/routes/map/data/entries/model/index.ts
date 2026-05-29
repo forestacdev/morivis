@@ -110,6 +110,8 @@ export const createGlbEntry = (
 					? '3DS'
 					: formatType === 'dae'
 						? 'DAE'
+						: formatType === '3dm'
+							? '3DM'
 						: 'GLB',
 		name,
 		altitude: transform.altitude,
