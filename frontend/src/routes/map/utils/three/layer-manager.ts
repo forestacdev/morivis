@@ -4,14 +4,12 @@ import * as THREE from 'three';
 import { AMFLoader } from 'three/addons/loaders/AMFLoader.js';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { IFCLoader } from 'web-ifc-three/IFCLoader.js';
 import {
 	DEFAULT_MESH_SHADING,
 	type MeshShadingStyle,
@@ -27,6 +25,23 @@ import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 const DRACO_DECODER_PATH = asset('/draco/gltf/');
 const IFC_WASM_PATH = asset('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
+let rhino3dmLoaderModulePromise: Promise<typeof import('three/addons/loaders/3DMLoader.js')> | null =
+	null;
+let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
+
+const loadRhino3dmLoaderModule = async () => {
+	if (!rhino3dmLoaderModulePromise) {
+		rhino3dmLoaderModulePromise = import('three/addons/loaders/3DMLoader.js');
+	}
+	return rhino3dmLoaderModulePromise;
+};
+
+const loadIfcLoaderModule = async () => {
+	if (!ifcLoaderModulePromise) {
+		ifcLoaderModulePromise = import('web-ifc-three/IFCLoader.js');
+	}
+	return ifcLoaderModulePromise;
+};
 
 interface LoadedModel {
 	entry: ModelMeshEntry<MeshStyle>;
@@ -621,14 +636,18 @@ export class ThreeJsLayerManager {
 						);
 					});
 				}
-				const rhinoLoader = new Rhino3dmLoader(manager);
-				rhinoLoader.setLibraryPath(RHINO3DM_LIBRARY_PATH);
-				rhinoLoader.load(
-					entry.format.url,
-					(object) => onModelLoaded(object),
-					undefined,
-					(error) => reject(error)
-				);
+				loadRhino3dmLoaderModule()
+					.then(({ Rhino3dmLoader }) => {
+						const rhinoLoader = new Rhino3dmLoader(manager);
+						rhinoLoader.setLibraryPath(RHINO3DM_LIBRARY_PATH);
+						rhinoLoader.load(
+							entry.format.url,
+							(object) => onModelLoaded(object),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
 			} else if (entry.format.type === 'fbx') {
 				const manager = new THREE.LoadingManager();
 				const resourceUrls = entry.format.resourceUrls;
@@ -697,16 +716,17 @@ export class ThreeJsLayerManager {
 					(error) => reject(error)
 				);
 			} else if (entry.format.type === 'ifc') {
-				const loader = new IFCLoader();
-				loader.ifcManager
-					.setWasmPath(IFC_WASM_PATH)
-					.then(() => {
+				loadIfcLoaderModule()
+					.then(({ IFCLoader }) => {
+						const loader = new IFCLoader();
+						return loader.ifcManager.setWasmPath(IFC_WASM_PATH).then(() => {
 						loader.load(
 							entry.format.url,
 							(object) => onModelLoaded(object),
 							undefined,
 							(error) => reject(error)
 						);
+						});
 					})
 					.catch((error) => reject(error));
 			} else {

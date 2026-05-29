@@ -4,13 +4,11 @@ import * as THREE from 'three';
 import { AMFLoader } from 'three/addons/loaders/AMFLoader.js';
 import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { IFCLoader } from 'web-ifc-three/IFCLoader.js';
 
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
@@ -41,9 +39,26 @@ const DRACO_DECODER_PATH = asset('/draco/gltf/');
 const IFC_WASM_PATH = asset('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
 const dracoLoader = new DRACOLoader();
+let rhino3dmLoaderModulePromise: Promise<typeof import('three/addons/loaders/3DMLoader.js')> | null =
+	null;
+let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
 
 dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
 gltfLoader.setDRACOLoader(dracoLoader);
+
+const loadRhino3dmLoaderModule = async () => {
+	if (!rhino3dmLoaderModulePromise) {
+		rhino3dmLoaderModulePromise = import('three/addons/loaders/3DMLoader.js');
+	}
+	return rhino3dmLoaderModulePromise;
+};
+
+const loadIfcLoaderModule = async () => {
+	if (!ifcLoaderModulePromise) {
+		ifcLoaderModulePromise = import('web-ifc-three/IFCLoader.js');
+	}
+	return ifcLoaderModulePromise;
+};
 
 interface UploadedModelObject {
 	object: THREE.Object3D;
@@ -146,6 +161,7 @@ const parse3dmObject = async (
 	file: File,
 	resourceUrls?: Record<string, string>
 ): Promise<UploadedModelObject> => {
+	const { Rhino3dmLoader } = await loadRhino3dmLoaderModule();
 	const manager = new THREE.LoadingManager();
 	if (resourceUrls) {
 		manager.setURLModifier((url) => {
@@ -260,6 +276,7 @@ const parseAmfObject = async (file: File): Promise<UploadedModelObject> => {
 };
 
 const parseIfcObject = async (file: File): Promise<UploadedModelObject> => {
+	const { IFCLoader } = await loadIfcLoaderModule();
 	const loader = new IFCLoader();
 	await loader.ifcManager.setWasmPath(IFC_WASM_PATH);
 	const url = URL.createObjectURL(file);
