@@ -248,6 +248,7 @@
 				case '3dm':
 				case 'fbx':
 				case 'drc':
+				case '3mf':
 					showDialogType = 'glb';
 					return;
 				case 'obj': {
@@ -371,6 +372,8 @@
 				} else if (files.some((f) => hasExtension(f, '.fbx'))) {
 					showDialogType = 'glb';
 				} else if (files.some((f) => hasExtension(f, '.drc'))) {
+					showDialogType = 'glb';
+				} else if (files.some((f) => hasExtension(f, '.3mf'))) {
 					showDialogType = 'glb';
 				} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
 				// 全ファイルがJPEG/HEIC → 1枚でもGPS付きなら位置情報付き写真

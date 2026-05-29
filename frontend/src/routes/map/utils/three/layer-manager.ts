@@ -6,6 +6,7 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
@@ -673,6 +674,14 @@ export class ThreeJsLayerManager {
 							)
 						);
 					},
+					undefined,
+					(error) => reject(error)
+				);
+			} else if (entry.format.type === '3mf') {
+				const loader = new ThreeMFLoader();
+				loader.load(
+					entry.format.url,
+					(object) => onModelLoaded(object),
 					undefined,
 					(error) => reject(error)
 				);

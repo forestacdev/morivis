@@ -628,7 +628,8 @@
 						entry.format.type === 'dae' ||
 						entry.format.type === '3dm' ||
 						entry.format.type === 'fbx' ||
-						entry.format.type === 'drc')
+						entry.format.type === 'drc' ||
+						entry.format.type === '3mf')
 		) as ModelMeshEntry<MeshStyle>[];
 
 		const previewMeshEntry =

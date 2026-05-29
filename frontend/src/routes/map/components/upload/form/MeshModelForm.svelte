@@ -41,7 +41,7 @@
 	const glbFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds|dae|3dm|fbx|drc)$/i.test(getPathLikeName(f))) ?? null;
+			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds|dae|3dm|fbx|drc|3mf)$/i.test(getPathLikeName(f))) ?? null;
 		}
 		return dropFile;
 	});
@@ -94,6 +94,7 @@
 			const is3dm = glbFile.name.toLowerCase().endsWith('.3dm');
 			const isFbx = glbFile.name.toLowerCase().endsWith('.fbx');
 			const isDrc = glbFile.name.toLowerCase().endsWith('.drc');
+			const is3mf = glbFile.name.toLowerCase().endsWith('.3mf');
 
 			const register = async () => {
 				let resolvedMtlUrl: string | undefined;
@@ -128,6 +129,8 @@
 										? 'fbx'
 										: isDrc
 											? 'drc'
+											: is3mf
+												? '3mf'
 											: 'gltf',
 					resolvedMtlUrl,
 					isObj || is3ds || isDae || is3dm || isFbx ? resourceUrls : undefined
@@ -148,6 +151,8 @@
 											? 'fbx'
 											: isDrc
 												? 'drc'
+												: is3mf
+													? '3mf'
 												: 'gltf',
 						style: entry.style,
 						resourceUrls
@@ -247,6 +252,8 @@
 							? 'fbx'
 							: normalizedUrl.endsWith('.drc')
 								? 'drc'
+								: normalizedUrl.endsWith('.3mf')
+									? '3mf'
 								: 'gltf';
 		const entry = createGlbEntry(
 			forms.name,
@@ -279,7 +286,7 @@
 		class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 	>
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
-		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS / DAE / 3DM / FBX / DRC)" error={errors.url} />
+		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF)" error={errors.url} />
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">

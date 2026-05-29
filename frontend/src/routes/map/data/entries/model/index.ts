@@ -92,54 +92,61 @@ export const createGlbEntry = (
 	formatType: MeshFormatType = 'gltf',
 	mtlUrl?: string,
 	resourceUrls?: Record<string, string>
-): ModelMeshEntry<MeshStyle> => ({
-	id: 'glb_' + crypto.randomUUID(),
-	type: 'model',
-	format: {
-		type: formatType,
-		url,
-		...(mtlUrl && { mtlUrl }),
-		...(resourceUrls && { resourceUrls })
-	},
-	metaData: {
-		...DEFAULT_CUSTOM_META_DATA,
-		attribution:
-			formatType === 'obj'
-				? 'OBJ'
-				: formatType === '3ds'
-					? '3DS'
-					: formatType === 'dae'
-						? 'DAE'
-						: formatType === '3dm'
-							? '3DM'
-							: formatType === 'fbx'
-								? 'FBX'
-								: formatType === 'drc'
-									? 'DRC'
-								: 'GLB',
-		name,
-		altitude: transform.altitude,
-		bounds: pointToBbox(transform.lng, transform.lat)
-	},
-	interaction: { clickable: false },
-	style: {
-		visible: true,
-		type: 'mesh',
-		opacity: 1,
-		wireframe: false,
-		color: '#ffffff',
-		shading: { ...DEFAULT_MESH_SHADING },
-		transform: {
-			lng: transform.lng,
-			lat: transform.lat,
+): ModelMeshEntry<MeshStyle> => {
+	// 3MF は Z-up 前提のモデルが多く、そのままだと map 上で横倒しになるため基準回転を分ける。
+	const baseRotationX = formatType === '3mf' ? 90 : -180;
+
+	return {
+		id: 'glb_' + crypto.randomUUID(),
+		type: 'model',
+		format: {
+			type: formatType,
+			url,
+			...(mtlUrl && { mtlUrl }),
+			...(resourceUrls && { resourceUrls })
+		},
+		metaData: {
+			...DEFAULT_CUSTOM_META_DATA,
+			attribution:
+				formatType === 'obj'
+					? 'OBJ'
+					: formatType === '3ds'
+						? '3DS'
+						: formatType === 'dae'
+							? 'DAE'
+							: formatType === '3dm'
+								? '3DM'
+								: formatType === 'fbx'
+									? 'FBX'
+									: formatType === 'drc'
+										? 'DRC'
+										: formatType === '3mf'
+											? '3MF'
+									: 'GLB',
+			name,
 			altitude: transform.altitude,
-			heightOffset: 0,
-			heightScale: 1,
-			baseRotationX: -180,
-			scale: transform.scale ?? 1,
-			rotationX: transform.rotationX ?? 0,
-			rotationY: transform.rotationY ?? 0,
-			rotationZ: 0
+			bounds: pointToBbox(transform.lng, transform.lat)
+		},
+		interaction: { clickable: false },
+		style: {
+			visible: true,
+			type: 'mesh',
+			opacity: 1,
+			wireframe: false,
+			color: '#ffffff',
+			shading: { ...DEFAULT_MESH_SHADING },
+			transform: {
+				lng: transform.lng,
+				lat: transform.lat,
+				altitude: transform.altitude,
+				heightOffset: 0,
+				heightScale: 1,
+				baseRotationX,
+				scale: transform.scale ?? 1,
+				rotationX: transform.rotationX ?? 0,
+				rotationY: transform.rotationY ?? 0,
+				rotationZ: 0
+			}
 		}
-	}
-});
+	};
+};

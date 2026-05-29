@@ -6,6 +6,7 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { Rhino3dmLoader } from 'three/addons/loaders/3DMLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
 import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
@@ -16,7 +17,7 @@ import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transfo
 
 interface ComputeUploadedModelMetaParams {
 	file: File;
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc';
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf';
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 }
@@ -227,9 +228,23 @@ const parseDrcObject = async (file: File): Promise<UploadedModelObject> => {
 	}
 };
 
+const parse3mfObject = async (file: File): Promise<UploadedModelObject> => {
+	const loader = new ThreeMFLoader();
+	const url = URL.createObjectURL(file);
+	try {
+		const object = await loader.loadAsync(url);
+		return {
+			object,
+			animationNames: []
+		};
+	} finally {
+		URL.revokeObjectURL(url);
+	}
+};
+
 const getUploadedModelObject = async (
 	file: File,
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc',
+	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf',
 	resourceUrls?: Record<string, string>
 ) => {
 	if (format === 'obj') {
@@ -254,6 +269,10 @@ const getUploadedModelObject = async (
 
 	if (format === 'drc') {
 		return parseDrcObject(file);
+	}
+
+	if (format === '3mf') {
+		return parse3mfObject(file);
 	}
 
 	return parseGltfObject(file);
