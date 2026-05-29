@@ -492,7 +492,22 @@ export class ThreeJsLayerManager {
 			};
 
 			if (entry.format.type === 'obj') {
-				const objLoader = new OBJLoader();
+				const manager = new THREE.LoadingManager();
+				const resourceUrls = entry.format.resourceUrls;
+				if (resourceUrls) {
+					manager.setURLModifier((url) => {
+						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+						const fileName = normalizedUrl.split('/').pop() ?? '';
+						return (
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
+						);
+					});
+				}
+				const objLoader = new OBJLoader(manager);
 				const loadObj = () => {
 					objLoader.load(
 						entry.format.url,
@@ -503,7 +518,8 @@ export class ThreeJsLayerManager {
 				};
 
 				if (entry.format.mtlUrl) {
-					const mtlLoader = new MTLLoader();
+					const mtlLoader = new MTLLoader(manager);
+					mtlLoader.setMaterialOptions({ side: THREE.DoubleSide });
 					mtlLoader.setResourcePath('');
 					mtlLoader.load(
 						entry.format.mtlUrl,

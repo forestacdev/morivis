@@ -70,24 +70,6 @@
 		return resourceUrls;
 	};
 
-	/** MTL内のテクスチャパスをBlobURLに書き換える */
-	const processMtl = async (mtl: File, textures: File[]): Promise<string> => {
-		let mtlText = await mtl.text();
-		const texMap = new Map<string, string>();
-		for (const tex of textures) {
-			texMap.set(tex.name.toLowerCase(), URL.createObjectURL(tex));
-		}
-		mtlText = mtlText.replace(
-			/^(map_Kd|map_Ka|map_Ks|map_Ns|map_d|bump|disp|decal|refl)\s+(.+)$/gim,
-			(_match, key, path) => {
-				const fileName = path.trim().split(/[\\/]/).pop()?.toLowerCase() ?? '';
-				const blobUrl = texMap.get(fileName);
-				return blobUrl ? `${key} ${blobUrl}` : `${key} ${path}`;
-			}
-		);
-		return URL.createObjectURL(new Blob([mtlText], { type: 'text/plain' }));
-	};
-
 	// ファイルドロップ時: 自動的にプレビューエントリに登録
 	$effect(() => {
 		if (glbFile) {
@@ -99,11 +81,11 @@
 			const register = async () => {
 				let resolvedMtlUrl: string | undefined;
 				let resourceUrls: Record<string, string> | undefined;
-				if (mtlFile) {
-					resolvedMtlUrl = await processMtl(mtlFile, textureFiles);
-				}
-				if (is3ds && textureFiles.length > 0) {
+				if (textureFiles.length > 0) {
 					resourceUrls = buildResourceUrls(textureFiles);
+				}
+				if (mtlFile) {
+					resolvedMtlUrl = URL.createObjectURL(mtlFile);
 				}
 
 				// 現在の地図中心を配置位置にする
@@ -118,7 +100,7 @@
 					},
 					isObj ? 'obj' : is3ds ? '3ds' : 'gltf',
 					resolvedMtlUrl,
-					resourceUrls
+					isObj || is3ds ? resourceUrls : undefined
 				);
 
 				try {
