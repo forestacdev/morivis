@@ -120,6 +120,8 @@ export const createGlbEntry = (
 			lng: transform.lng,
 			lat: transform.lat,
 			altitude: transform.altitude,
+			heightOffset: 0,
+			heightScale: 1,
 			baseRotationX: -180,
 			scale: transform.scale ?? 1,
 			rotationX: transform.rotationX ?? 0,
