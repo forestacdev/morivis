@@ -187,6 +187,10 @@
 				case 'topojson':
 					showDialogType = 'topojson';
 					return;
+				case 'parquet':
+				case 'geoparquet':
+					showDialogType = 'geoparquet';
+					return;
 				case 'gpx':
 					showDialogType = 'gpx';
 					return;

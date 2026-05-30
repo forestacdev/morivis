@@ -104,6 +104,7 @@ export type DialogType =
 	| 'topojson'
 	| 'landxml'
 	| 'stac'
+	| 'geoparquet'
 	| 'geopdf'
 	| 'mojxml'
 	| 'geophoto'
@@ -116,6 +117,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'GeoJSON', extensions: ['.geojson', '.json'] },
 	{ label: 'TopoJSON', extensions: ['.topojson'] },
 	{ label: 'FlatGeobuf', extensions: ['.fgb'] },
+	{ label: 'GeoParquet', extensions: ['.parquet', '.geoparquet'] },
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
 	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg'] },
 	{ label: 'GPX', extensions: ['.gpx'] },
