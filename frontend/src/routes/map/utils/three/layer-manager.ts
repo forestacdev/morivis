@@ -1,13 +1,8 @@
 import { asset } from '$app/paths';
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
-import { AMFLoader } from 'three/addons/loaders/AMFLoader.js';
-import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
-import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import {
@@ -29,6 +24,15 @@ const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
 let rhino3dmLoaderModulePromise: Promise<typeof import('three/addons/loaders/3DMLoader.js')> | null =
 	null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
+let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null = null;
+let colladaLoaderModulePromise:
+	| Promise<typeof import('three/addons/loaders/ColladaLoader.js')>
+	| null = null;
+let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null = null;
+let threeMfLoaderModulePromise:
+	| Promise<typeof import('three/addons/loaders/3MFLoader.js')>
+	| null = null;
+let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null = null;
 
 const loadRhino3dmLoaderModule = async () => {
 	if (!rhino3dmLoaderModulePromise) {
@@ -42,6 +46,41 @@ const loadIfcLoaderModule = async () => {
 		ifcLoaderModulePromise = import('web-ifc-three/IFCLoader.js');
 	}
 	return ifcLoaderModulePromise;
+};
+
+const loadTdsLoaderModule = async () => {
+	if (!tdsLoaderModulePromise) {
+		tdsLoaderModulePromise = import('three/addons/loaders/TDSLoader.js');
+	}
+	return tdsLoaderModulePromise;
+};
+
+const loadColladaLoaderModule = async () => {
+	if (!colladaLoaderModulePromise) {
+		colladaLoaderModulePromise = import('three/addons/loaders/ColladaLoader.js');
+	}
+	return colladaLoaderModulePromise;
+};
+
+const loadFbxLoaderModule = async () => {
+	if (!fbxLoaderModulePromise) {
+		fbxLoaderModulePromise = import('three/addons/loaders/FBXLoader.js');
+	}
+	return fbxLoaderModulePromise;
+};
+
+const loadThreeMfLoaderModule = async () => {
+	if (!threeMfLoaderModulePromise) {
+		threeMfLoaderModulePromise = import('three/addons/loaders/3MFLoader.js');
+	}
+	return threeMfLoaderModulePromise;
+};
+
+const loadAmfLoaderModule = async () => {
+	if (!amfLoaderModulePromise) {
+		amfLoaderModulePromise = import('three/addons/loaders/AMFLoader.js');
+	}
+	return amfLoaderModulePromise;
 };
 
 interface LoadedModel {
@@ -584,20 +623,24 @@ export class ThreeJsLayerManager {
 						);
 					});
 				}
-				const tdsLoader = new TDSLoader(manager);
-				if (!resourceUrls) {
-					try {
-						tdsLoader.setResourcePath(new URL('./', entry.format.url).href);
-					} catch {
-						// blob URL などは URL 基底を組めないので、そのままロードする。
-					}
-				}
-				tdsLoader.load(
-					entry.format.url,
-					(object) => onModelLoaded(object),
-					undefined,
-					(error) => reject(error)
-				);
+				loadTdsLoaderModule()
+					.then(({ TDSLoader }) => {
+						const tdsLoader = new TDSLoader(manager);
+						if (!resourceUrls) {
+							try {
+								tdsLoader.setResourcePath(new URL('./', entry.format.url).href);
+							} catch {
+								// blob URL などは URL 基底を組めないので、そのままロードする。
+							}
+						}
+						tdsLoader.load(
+							entry.format.url,
+							(object) => onModelLoaded(object),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
 			} else if (entry.format.type === 'dae') {
 				const manager = new THREE.LoadingManager();
 				const resourceUrls = entry.format.resourceUrls;
@@ -614,13 +657,17 @@ export class ThreeJsLayerManager {
 						);
 					});
 				}
-				const colladaLoader = new ColladaLoader(manager);
-				colladaLoader.load(
-					entry.format.url,
-					(collada) => onModelLoaded(collada.scene, collada.scene.animations),
-					undefined,
-					(error) => reject(error)
-				);
+				loadColladaLoaderModule()
+					.then(({ ColladaLoader }) => {
+						const colladaLoader = new ColladaLoader(manager);
+						colladaLoader.load(
+							entry.format.url,
+							(collada) => onModelLoaded(collada.scene, collada.scene.animations),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
 			} else if (entry.format.type === '3dm') {
 				const manager = new THREE.LoadingManager();
 				const resourceUrls = entry.format.resourceUrls;
@@ -665,24 +712,28 @@ export class ThreeJsLayerManager {
 						);
 					});
 				}
-				const fbxLoader = new FBXLoader(manager);
-				if (!resourceUrls) {
-					try {
-						fbxLoader.setResourcePath(new URL('./', entry.format.url).href);
-					} catch {
-						// blob URL などは URL 基底を組めないので、そのままロードする。
-					}
-				}
-				fbxLoader.load(
-					entry.format.url,
-					(object) =>
-						onModelLoaded(
-							object,
-							(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? []
-						),
-					undefined,
-					(error) => reject(error)
-				);
+				loadFbxLoaderModule()
+					.then(({ FBXLoader }) => {
+						const fbxLoader = new FBXLoader(manager);
+						if (!resourceUrls) {
+							try {
+								fbxLoader.setResourcePath(new URL('./', entry.format.url).href);
+							} catch {
+								// blob URL などは URL 基底を組めないので、そのままロードする。
+							}
+						}
+						fbxLoader.load(
+							entry.format.url,
+							(object) =>
+								onModelLoaded(
+									object,
+									(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? []
+								),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
 			} else if (entry.format.type === 'drc') {
 				this.dracoLoader.load(
 					entry.format.url,
@@ -701,21 +752,29 @@ export class ThreeJsLayerManager {
 					(error) => reject(error)
 				);
 			} else if (entry.format.type === '3mf') {
-				const loader = new ThreeMFLoader();
-				loader.load(
-					entry.format.url,
-					(object) => onModelLoaded(object),
-					undefined,
-					(error) => reject(error)
-				);
+				loadThreeMfLoaderModule()
+					.then(({ ThreeMFLoader }) => {
+						const loader = new ThreeMFLoader();
+						loader.load(
+							entry.format.url,
+							(object) => onModelLoaded(object),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
 			} else if (entry.format.type === 'amf') {
-				const loader = new AMFLoader();
-				loader.load(
-					entry.format.url,
-					(object) => onModelLoaded(object),
-					undefined,
-					(error) => reject(error)
-				);
+				loadAmfLoaderModule()
+					.then(({ AMFLoader }) => {
+						const loader = new AMFLoader();
+						loader.load(
+							entry.format.url,
+							(object) => onModelLoaded(object),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
 			} else if (entry.format.type === 'ifc') {
 				loadIfcLoaderModule()
 					.then(({ IFCLoader }) => {

@@ -1,13 +1,8 @@
 import { asset } from '$app/paths';
 import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
-import { AMFLoader } from 'three/addons/loaders/AMFLoader.js';
-import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
-import { TDSLoader } from 'three/addons/loaders/TDSLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 import type { TileXYZ } from '$routes/map/data/types/raster';
@@ -44,6 +39,15 @@ const dracoLoader = new DRACOLoader();
 let rhino3dmLoaderModulePromise: Promise<typeof import('three/addons/loaders/3DMLoader.js')> | null =
 	null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
+let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null = null;
+let colladaLoaderModulePromise:
+	| Promise<typeof import('three/addons/loaders/ColladaLoader.js')>
+	| null = null;
+let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null = null;
+let threeMfLoaderModulePromise:
+	| Promise<typeof import('three/addons/loaders/3MFLoader.js')>
+	| null = null;
+let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null = null;
 
 dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
 gltfLoader.setDRACOLoader(dracoLoader);
@@ -60,6 +64,41 @@ const loadIfcLoaderModule = async () => {
 		ifcLoaderModulePromise = import('web-ifc-three/IFCLoader.js');
 	}
 	return ifcLoaderModulePromise;
+};
+
+const loadTdsLoaderModule = async () => {
+	if (!tdsLoaderModulePromise) {
+		tdsLoaderModulePromise = import('three/addons/loaders/TDSLoader.js');
+	}
+	return tdsLoaderModulePromise;
+};
+
+const loadColladaLoaderModule = async () => {
+	if (!colladaLoaderModulePromise) {
+		colladaLoaderModulePromise = import('three/addons/loaders/ColladaLoader.js');
+	}
+	return colladaLoaderModulePromise;
+};
+
+const loadFbxLoaderModule = async () => {
+	if (!fbxLoaderModulePromise) {
+		fbxLoaderModulePromise = import('three/addons/loaders/FBXLoader.js');
+	}
+	return fbxLoaderModulePromise;
+};
+
+const loadThreeMfLoaderModule = async () => {
+	if (!threeMfLoaderModulePromise) {
+		threeMfLoaderModulePromise = import('three/addons/loaders/3MFLoader.js');
+	}
+	return threeMfLoaderModulePromise;
+};
+
+const loadAmfLoaderModule = async () => {
+	if (!amfLoaderModulePromise) {
+		amfLoaderModulePromise = import('three/addons/loaders/AMFLoader.js');
+	}
+	return amfLoaderModulePromise;
 };
 
 interface UploadedModelObject {
@@ -101,6 +140,7 @@ const parseTdsObject = async (
 	file: File,
 	resourceUrls?: Record<string, string>
 ): Promise<UploadedModelObject> => {
+	const { TDSLoader } = await loadTdsLoaderModule();
 	const manager = new THREE.LoadingManager();
 	if (resourceUrls) {
 		manager.setURLModifier((url) => {
@@ -133,6 +173,7 @@ const parseDaeObject = async (
 	file: File,
 	resourceUrls?: Record<string, string>
 ): Promise<UploadedModelObject> => {
+	const { ColladaLoader } = await loadColladaLoaderModule();
 	const manager = new THREE.LoadingManager();
 	if (resourceUrls) {
 		manager.setURLModifier((url) => {
@@ -197,6 +238,7 @@ const parseFbxObject = async (
 	file: File,
 	resourceUrls?: Record<string, string>
 ): Promise<UploadedModelObject> => {
+	const { FBXLoader } = await loadFbxLoaderModule();
 	const manager = new THREE.LoadingManager();
 	if (resourceUrls) {
 		manager.setURLModifier((url) => {
@@ -250,6 +292,7 @@ const parseDrcObject = async (file: File): Promise<UploadedModelObject> => {
 };
 
 const parse3mfObject = async (file: File): Promise<UploadedModelObject> => {
+	const { ThreeMFLoader } = await loadThreeMfLoaderModule();
 	const loader = new ThreeMFLoader();
 	const url = URL.createObjectURL(file);
 	try {
@@ -264,6 +307,7 @@ const parse3mfObject = async (file: File): Promise<UploadedModelObject> => {
 };
 
 const parseAmfObject = async (file: File): Promise<UploadedModelObject> => {
+	const { AMFLoader } = await loadAmfLoaderModule();
 	const loader = new AMFLoader();
 	const url = URL.createObjectURL(file);
 	try {
