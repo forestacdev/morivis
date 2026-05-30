@@ -20,6 +20,7 @@ import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 const DRACO_DECODER_PATH = asset('/draco/gltf/');
@@ -720,12 +721,30 @@ export class ThreeJsLayerManager {
 					.then(({ IFCLoader }) => {
 						const loader = new IFCLoader();
 						return loader.ifcManager.setWasmPath(IFC_WASM_PATH).then(() => {
-						loader.load(
-							entry.format.url,
-							(object) => onModelLoaded(object),
-							undefined,
-							(error) => reject(error)
-						);
+							loader.load(
+								entry.format.url,
+								(object) => {
+									console.log('[IFC] layer load before normalization', {
+										entryId: entry.id,
+										name: entry.metaData.name,
+										normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
+										transform: entry.style.transform
+									});
+									if (entry.format.normalizeToLocalOrigin) {
+										normalizeObjectToLocalOrigin(object);
+									}
+									console.log('[IFC] layer load after normalization', {
+										entryId: entry.id,
+										name: entry.metaData.name,
+										position: object.position.toArray(),
+										rotation: [object.rotation.x, object.rotation.y, object.rotation.z],
+										scale: object.scale.toArray()
+									});
+									onModelLoaded(object);
+								},
+								undefined,
+								(error) => reject(error)
+							);
 						});
 					})
 					.catch((error) => reject(error));

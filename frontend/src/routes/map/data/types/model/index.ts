@@ -135,6 +135,7 @@ export interface ModelMeshEntry<T> extends BaseModelEntry {
 		url: string;
 		mtlUrl?: string;
 		resourceUrls?: Record<string, string>;
+		normalizeToLocalOrigin?: boolean;
 	};
 	style: T;
 }

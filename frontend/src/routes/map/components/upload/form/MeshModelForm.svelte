@@ -5,6 +5,16 @@
 	import { createGlbEntry } from '$routes/map/data/entries/model';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
+	import {
+		type IfcPlacementMetadata,
+		readIfcPlacementMetadata,
+		resolveIfcPlacementWithEpsg
+	} from '$routes/map/utils/three/ifc-metadata';
+	import {
+		getEpsgInfoArray,
+		getName,
+		type EpsgCode
+	} from '$routes/map/utils/proj/dict';
 	import { computeUploadedModelMeta } from '$routes/map/utils/three/model-bounds';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -82,6 +92,30 @@
 		return resourceUrls;
 	};
 
+	const ifcEpsgOptions = getEpsgInfoArray({ exclude4326: true, exclude3857: true });
+	let pendingIfcPlacement = $state<IfcPlacementMetadata | null>(null);
+	let selectedIfcEpsg = $state<EpsgCode | null>(null);
+	let confirmedIfcEpsg = $state<EpsgCode | null>(null);
+	let ifcEpsgFilter = $state('');
+	const filteredIfcEpsgOptions = $derived.by(() => {
+		const keyword = ifcEpsgFilter.trim().toLowerCase();
+		if (!keyword) return ifcEpsgOptions;
+		return ifcEpsgOptions.filter((info) => {
+			return (
+				info.code.toLowerCase().includes(keyword) ||
+				info.name_ja.toLowerCase().includes(keyword) ||
+				(info.prefecture ?? '').toLowerCase().includes(keyword)
+			);
+		});
+	});
+
+	const resetIfcEpsgSelection = () => {
+		pendingIfcPlacement = null;
+		selectedIfcEpsg = null;
+		confirmedIfcEpsg = null;
+		ifcEpsgFilter = '';
+	};
+
 	// ファイルドロップ時: 自動的にプレビューエントリに登録
 	$effect(() => {
 		if (glbFile) {
@@ -99,6 +133,25 @@
 			const isIfc = glbFile.name.toLowerCase().endsWith('.ifc');
 
 			const register = async () => {
+				let ifcPlacement = isIfc ? pendingIfcPlacement : undefined;
+				if (isIfc && !ifcPlacement) {
+					ifcPlacement = await readIfcPlacementMetadata(glbFile);
+				}
+				if (isIfc && ifcPlacement?.requiresEpsg) {
+					pendingIfcPlacement = ifcPlacement;
+					console.log('[IFC] requires EPSG selection', {
+						fileName: glbFile.name,
+						ifcPlacement
+					});
+					if (!confirmedIfcEpsg) {
+						return;
+					}
+					ifcPlacement = resolveIfcPlacementWithEpsg(ifcPlacement, confirmedIfcEpsg);
+					if (ifcPlacement.requiresEpsg) {
+						showNotification('EPSGコードからIFCの配置を解決できませんでした', 'error');
+						return;
+					}
+				}
 				let resolvedMtlUrl: string | undefined;
 				let resourceUrls: Record<string, string> | undefined;
 				if (textureFiles.length > 0) {
@@ -114,9 +167,9 @@
 					name,
 					blobUrl,
 					{
-						lng: modelPlacement?.lng ?? center?.lng ?? 0,
-						lat: modelPlacement?.lat ?? center?.lat ?? 0,
-						altitude: modelPlacement?.altitude ?? 0,
+						lng: ifcPlacement?.lng ?? modelPlacement?.lng ?? center?.lng ?? 0,
+						lat: ifcPlacement?.lat ?? modelPlacement?.lat ?? center?.lat ?? 0,
+						altitude: ifcPlacement?.altitude ?? modelPlacement?.altitude ?? 0,
 						scale: modelPlacement?.scale
 					},
 					isObj
@@ -135,12 +188,27 @@
 												? '3mf'
 												: isAmf
 													? 'amf'
-													: isIfc
-														? 'ifc'
-											: 'gltf',
+												: isIfc
+													? 'ifc'
+													: 'gltf',
 					resolvedMtlUrl,
-					isObj || is3ds || isDae || is3dm || isFbx ? resourceUrls : undefined
+					isObj || is3ds || isDae || is3dm || isFbx ? resourceUrls : undefined,
+					isIfc ? { normalizeToLocalOrigin: !!ifcPlacement?.requiresEpsg } : undefined
 				);
+				if (isIfc) {
+					console.log('[IFC] registration entry', {
+						fileName: glbFile.name,
+						ifcPlacement,
+						transform: entry.style.transform,
+						normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin
+					});
+				}
+				if (ifcPlacement?.unitScale && ifcPlacement.unitScale !== 1) {
+					entry.style.transform.baseScale = ifcPlacement.unitScale;
+				}
+				if (ifcPlacement?.baseRotationZ != null) {
+					entry.style.transform.baseRotationZ = ifcPlacement.baseRotationZ;
+				}
 
 				try {
 					const uploadedModelMeta = await computeUploadedModelMeta({
@@ -163,9 +231,10 @@
 														? 'amf'
 														: isIfc
 															? 'ifc'
-												: 'gltf',
+															: 'gltf',
 						style: entry.style,
-						resourceUrls
+						resourceUrls,
+						normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin
 					});
 					if (uploadedModelMeta.hasSkinnedMesh) {
 						entry.style.shadingOptions = {
@@ -192,16 +261,24 @@
 						};
 					}
 					if (uploadedModelMeta.scaleMultiplier !== 1) {
-						entry.style.transform.baseScale = uploadedModelMeta.scaleMultiplier;
+							entry.style.transform.baseScale =
+								(entry.style.transform.baseScale ?? 1) * uploadedModelMeta.scaleMultiplier;
 						showNotification('小さいモデルのため拡大して表示します', 'info');
 					}
 					entry.metaData.bounds = uploadedModelMeta.bounds;
 					entry.metaData.xyzImageTile = uploadedModelMeta.xyzImageTile;
+					if (isIfc) {
+						console.log('[IFC] uploaded model meta', {
+							fileName: glbFile.name,
+							uploadedModelMeta
+						});
+					}
 				} catch (error) {
 					console.warn('3Dモデルの範囲を取得できませんでした', error);
 				}
 
 				if (entry) {
+					resetIfcEpsgSelection();
 					showDataEntry = entry;
 					showDialogType = null;
 					dropFile = null;
@@ -286,12 +363,61 @@
 	};
 
 	const cancel = () => {
+		resetIfcEpsgSelection();
 		showDialogType = null;
 		dropFile = null;
 	};
 </script>
 
-{#if !glbFile}
+{#if glbFile && pendingIfcPlacement?.requiresEpsg}
+	<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+		<span class="text-2xl font-bold">IFCの座標系選択</span>
+	</div>
+
+	<div
+		class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
+	>
+		<p class="w-full text-sm text-gray-300">
+			IFCに地理座標系名が入っていません。使用するEPSGコードを選択してください。
+		</p>
+		<TextForm bind:value={ifcEpsgFilter} label="EPSG検索" />
+		<div class="c-scroll flex w-full grow flex-col gap-2 overflow-y-auto pr-1">
+			{#each filteredIfcEpsgOptions as info (info.code)}
+				<label
+					class="border-sub lg:hover:border-accent flex w-full cursor-pointer items-center justify-start rounded-md border p-3 transition-colors duration-200 {info.code ===
+					selectedIfcEpsg
+						? 'bg-accent'
+						: 'text-white'}"
+				>
+					<input type="radio" bind:group={selectedIfcEpsg} value={info.code} class="hidden" />
+					<div class="flex flex-col">
+						<span>{info.name_ja}</span>
+						<span class="text-sm text-gray-300">EPSG:{info.code} {info.prefecture ?? ''}</span>
+					</div>
+				</label>
+			{/each}
+		</div>
+		{#if selectedIfcEpsg}
+			<p class="w-full text-sm text-gray-300">選択中: EPSG:{selectedIfcEpsg} {getName(selectedIfcEpsg)}</p>
+		{/if}
+	</div>
+
+	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+		<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
+		<button
+			onclick={() => {
+				if (!selectedIfcEpsg) return;
+				confirmedIfcEpsg = selectedIfcEpsg;
+			}}
+			disabled={!selectedIfcEpsg}
+			class="c-btn-confirm min-w-[200px] p-4 text-lg {!selectedIfcEpsg
+				? 'cursor-not-allowed opacity-50'
+				: 'cursor-pointer'}"
+		>
+			決定
+		</button>
+	</div>
+{:else if !glbFile}
 	<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
 		<span class="text-2xl font-bold">3Dモデルの登録</span>
 	</div>

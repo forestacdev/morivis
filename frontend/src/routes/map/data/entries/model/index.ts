@@ -91,7 +91,10 @@ export const createGlbEntry = (
 	},
 	formatType: MeshFormatType = 'gltf',
 	mtlUrl?: string,
-	resourceUrls?: Record<string, string>
+	resourceUrls?: Record<string, string>,
+	options?: {
+		normalizeToLocalOrigin?: boolean;
+	}
 ): ModelMeshEntry<MeshStyle> => {
 	// 3MF は Z-up 前提のモデルが多く、そのままだと map 上で横倒しになるため基準回転を分ける。
 	const baseRotationX = formatType === '3mf' ? 90 : -180;
@@ -103,7 +106,10 @@ export const createGlbEntry = (
 			type: formatType,
 			url,
 			...(mtlUrl && { mtlUrl }),
-			...(resourceUrls && { resourceUrls })
+			...(resourceUrls && { resourceUrls }),
+			...(options?.normalizeToLocalOrigin != null && {
+				normalizeToLocalOrigin: options.normalizeToLocalOrigin
+			})
 		},
 		metaData: {
 			...DEFAULT_CUSTOM_META_DATA,

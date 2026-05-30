@@ -14,12 +14,14 @@ import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import type { MeshStyle } from '$routes/map/data/types/model';
 import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transform';
+import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 
 interface ComputeUploadedModelMetaParams {
 	file: File;
 	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc';
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
+	normalizeToLocalOrigin?: boolean;
 }
 
 interface UploadedModelMeta {
@@ -275,13 +277,19 @@ const parseAmfObject = async (file: File): Promise<UploadedModelObject> => {
 	}
 };
 
-const parseIfcObject = async (file: File): Promise<UploadedModelObject> => {
+const parseIfcObject = async (
+	file: File,
+	normalizeToLocalOrigin = false
+): Promise<UploadedModelObject> => {
 	const { IFCLoader } = await loadIfcLoaderModule();
 	const loader = new IFCLoader();
 	await loader.ifcManager.setWasmPath(IFC_WASM_PATH);
 	const url = URL.createObjectURL(file);
 	try {
 		const object = (await loader.loadAsync(url)) as THREE.Object3D;
+		if (normalizeToLocalOrigin) {
+			normalizeObjectToLocalOrigin(object);
+		}
 		return {
 			object,
 			animationNames: []
@@ -294,7 +302,8 @@ const parseIfcObject = async (file: File): Promise<UploadedModelObject> => {
 const getUploadedModelObject = async (
 	file: File,
 	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc',
-	resourceUrls?: Record<string, string>
+	resourceUrls?: Record<string, string>,
+	normalizeToLocalOrigin = false
 ) => {
 	if (format === 'obj') {
 		return parseObjObject(file);
@@ -329,7 +338,7 @@ const getUploadedModelObject = async (
 	}
 
 	if (format === 'ifc') {
-		return parseIfcObject(file);
+		return parseIfcObject(file, normalizeToLocalOrigin);
 	}
 
 	return parseGltfObject(file);
@@ -346,9 +355,15 @@ export const computeUploadedModelMeta = async ({
 	file,
 	format,
 	style,
-	resourceUrls
+	resourceUrls,
+	normalizeToLocalOrigin
 }: ComputeUploadedModelMetaParams): Promise<UploadedModelMeta> => {
-	const { object, animationNames } = await getUploadedModelObject(file, format, resourceUrls);
+	const { object, animationNames } = await getUploadedModelObject(
+		file,
+		format,
+		resourceUrls,
+		normalizeToLocalOrigin
+	);
 	object.updateMatrixWorld(true);
 
 	const box = new THREE.Box3().setFromObject(object);
