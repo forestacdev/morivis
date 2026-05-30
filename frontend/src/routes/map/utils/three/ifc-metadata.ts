@@ -2,8 +2,18 @@ import { asset } from '$app/paths';
 import proj4 from 'proj4';
 import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 
+// IFC georeferencing helper for future use.
+// Spec references:
+// IfcSite:
+// https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/HTML/lexical/IfcSite.htm
+// IfcProjectedCRS:
+// https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/HTML/lexical/IfcProjectedCRS.htm
+// IfcMapConversion:
+// https://standards.buildingsmart.org/IFC/RELEASE/IFC4/ADD1/HTML/schema/ifcrepresentationresource/lexical/ifcmapconversion.htm
+
 const IFC_WASM_PATH = asset('/web-ifc/');
-const IFC_DEBUG_PREFIX = '[IFC]';
+
+export type IfcPlacementQuality = 'exact' | 'requires_epsg' | 'approximate' | 'normalized';
 
 export interface IfcPlacementMetadata {
 	lng?: number;
@@ -12,6 +22,8 @@ export interface IfcPlacementMetadata {
 	unitScale?: number;
 	baseRotationZ?: number;
 	requiresEpsg?: boolean;
+	placementQuality?: IfcPlacementQuality;
+	missingRequirements?: string[];
 	eastings?: number;
 	northings?: number;
 	orthogonalHeight?: number;
@@ -131,9 +143,12 @@ const parseMapConversionPlacement = async (model: any, mapConversion: any) => {
 	if (!Number.isFinite(eastings) || !Number.isFinite(northings)) return {};
 	const xAxisAbscissa = Number(unwrapIfcValue(mapConversion?.XAxisAbscissa) ?? 1);
 	const xAxisOrdinate = Number(unwrapIfcValue(mapConversion?.XAxisOrdinate) ?? 0);
+
 	if (!crsName) {
 		return {
 			requiresEpsg: true,
+			placementQuality: 'requires_epsg' as const,
+			missingRequirements: ['IfcProjectedCRS.Name'],
 			eastings,
 			northings,
 			orthogonalHeight: Number.isFinite(orthogonalHeight) ? orthogonalHeight : 0,
@@ -156,7 +171,8 @@ const parseMapConversionPlacement = async (model: any, mapConversion: any) => {
 			lng,
 			lat,
 			altitude: Number.isFinite(orthogonalHeight) ? orthogonalHeight : 0,
-			baseRotationZ
+			baseRotationZ,
+			placementQuality: 'exact' as const
 		};
 	} catch {
 		return {};
@@ -177,27 +193,18 @@ export const resolveIfcPlacementWithEpsg = (
 			metadata.xAxisAbscissa != null && metadata.xAxisOrdinate != null
 				? (Math.atan2(metadata.xAxisOrdinate, metadata.xAxisAbscissa) * 180) / Math.PI
 				: undefined;
-		const resolved = {
+
+		return {
 			...metadata,
 			requiresEpsg: false,
+			placementQuality: 'exact',
+			missingRequirements: [],
 			lng,
 			lat,
 			altitude: metadata.orthogonalHeight,
 			baseRotationZ
 		};
-		console.log(`${IFC_DEBUG_PREFIX} resolved placement with EPSG`, {
-			epsg,
-			eastings: metadata.eastings,
-			northings: metadata.northings,
-			resolved
-		});
-		return resolved;
 	} catch {
-		console.warn(`${IFC_DEBUG_PREFIX} failed to resolve placement with EPSG`, {
-			epsg,
-			eastings: metadata.eastings,
-			northings: metadata.northings
-		});
 		return metadata;
 	}
 };
@@ -221,13 +228,6 @@ export const readIfcPlacementMetadata = async (file: File): Promise<IfcPlacement
 		if (mapConversionId != null) {
 			const mapConversion = await model.getItemProperties(mapConversionId, false);
 			const placement = await parseMapConversionPlacement(model, mapConversion);
-			console.log(`${IFC_DEBUG_PREFIX} map conversion metadata`, {
-				fileName: file.name,
-				mapConversionId,
-				mapConversion,
-				placement,
-				unitScale
-			});
 			return {
 				...placement,
 				unitScale
@@ -237,11 +237,11 @@ export const readIfcPlacementMetadata = async (file: File): Promise<IfcPlacement
 		const siteIds = await model.getAllItemsOfType(webIfc.IFCSITE, false);
 		const siteId = Array.isArray(siteIds) ? siteIds[0] : undefined;
 		if (siteId == null) {
-			console.log(`${IFC_DEBUG_PREFIX} no site or map conversion metadata`, {
-				fileName: file.name,
-				unitScale
-			});
-			return unitScale !== 1 ? { unitScale } : undefined;
+			return {
+				unitScale,
+				placementQuality: 'normalized',
+				missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
+			};
 		}
 
 		const site = await model.getItemProperties(siteId, false);
@@ -249,18 +249,14 @@ export const readIfcPlacementMetadata = async (file: File): Promise<IfcPlacement
 		const lng = parseAngleComponentList(site?.RefLongitude);
 		const refElevation = Number(unwrapIfcValue(site?.RefElevation) ?? 0);
 
-		const placement = {
+		return {
 			lng: Number.isFinite(lng) ? lng : undefined,
 			lat: Number.isFinite(lat) ? lat : undefined,
 			altitude: Number.isFinite(refElevation) ? refElevation * unitScale : undefined,
-			unitScale
+			unitScale,
+			placementQuality: 'approximate',
+			missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
 		};
-		console.log(`${IFC_DEBUG_PREFIX} site placement metadata`, {
-			fileName: file.name,
-			siteId,
-			placement
-		});
-		return placement;
 	} finally {
 		await model.ifcManager?.dispose?.();
 	}

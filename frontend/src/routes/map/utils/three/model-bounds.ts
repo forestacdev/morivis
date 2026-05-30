@@ -236,7 +236,8 @@ const parse3dmObject = async (
 
 const parseFbxObject = async (
 	file: File,
-	resourceUrls?: Record<string, string>
+	resourceUrls?: Record<string, string>,
+	normalizeToLocalOrigin = false
 ): Promise<UploadedModelObject> => {
 	const { FBXLoader } = await loadFbxLoaderModule();
 	const manager = new THREE.LoadingManager();
@@ -265,6 +266,9 @@ const parseFbxObject = async (
 	}
 	try {
 		const object = await loader.loadAsync(url);
+		if (normalizeToLocalOrigin) {
+			normalizeObjectToLocalOrigin(object);
+		}
 		const animations = (object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? [];
 		return {
 			object,
@@ -366,7 +370,7 @@ const getUploadedModelObject = async (
 	}
 
 	if (format === 'fbx') {
-		return parseFbxObject(file, resourceUrls);
+		return parseFbxObject(file, resourceUrls, normalizeToLocalOrigin);
 	}
 
 	if (format === 'drc') {

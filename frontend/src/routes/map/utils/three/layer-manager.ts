@@ -724,11 +724,15 @@ export class ThreeJsLayerManager {
 						}
 						fbxLoader.load(
 							entry.format.url,
-							(object) =>
+							(object) => {
+								if (entry.format.normalizeToLocalOrigin) {
+									normalizeObjectToLocalOrigin(object);
+								}
 								onModelLoaded(
 									object,
 									(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? []
-								),
+								);
+							},
 							undefined,
 							(error) => reject(error)
 						);
