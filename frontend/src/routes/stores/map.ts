@@ -27,6 +27,7 @@ import turfBbox from '@turf/bbox';
 import { setMapParams, getMapParams, set3dParams } from '$routes/map/utils/platform/url-params';
 import { isDebugMode } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
+import type { Opacity } from '$routes/map/data/types';
 import { get } from 'svelte/store';
 import { debounce } from 'es-toolkit';
 
@@ -58,10 +59,19 @@ import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
-import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+import {
+	type AnyModelTiles3DEntry,
+	type ModelMeshEntry,
+	type MeshStyle,
+	type ModelPointCloudEntry
+} from '$routes/map/data/types/model';
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
+import {
+	clearPointCloudDataCache,
+	createDeckOverlay
+} from '$routes/map/utils/deck/overlay';
 import {
 	handleStyleImageMissing,
 	isGeneratedPoiIconId,
@@ -656,6 +666,9 @@ const createMapStore = () => {
 				deckOverlay.finalize();
 				deckOverlay = null;
 			}
+			currentDeckTiles3dEntries.clear();
+			currentDeckPointCloudEntries.clear();
+			clearPointCloudDataCache();
 			return;
 		}
 
@@ -702,6 +715,28 @@ const createMapStore = () => {
 
 	// 現在のエントリIDを追跡
 	let currentThreeModelIds: Set<string> = new Set();
+	let currentDeckTiles3dEntries = new Map<string, AnyModelTiles3DEntry>();
+	let currentDeckPointCloudEntries = new Map<string, ModelPointCloudEntry>();
+
+	const syncDeckOverlay = async (
+		tiles3dEntries: AnyModelTiles3DEntry[],
+		pointCloudEntries: ModelPointCloudEntry[] = []
+	) => {
+		currentDeckTiles3dEntries = new Map(tiles3dEntries.map((entry) => [entry.id, entry]));
+		currentDeckPointCloudEntries = new Map(pointCloudEntries.map((entry) => [entry.id, entry]));
+		const layers = await createDeckOverlay(tiles3dEntries, pointCloudEntries);
+		setDeckOverlay(layers);
+	};
+
+	const refreshCurrentDeckOverlay = async () => {
+		await syncDeckOverlay(
+			Array.from(currentDeckTiles3dEntries.values()),
+			Array.from(currentDeckPointCloudEntries.values())
+		);
+		if (map && isMapValid(map)) {
+			map.triggerRepaint();
+		}
+	};
 
 	const applyTemporalModelMeshTimeStep = (
 		entry: ModelMeshEntry<MeshStyle>,
@@ -834,6 +869,55 @@ const createMapStore = () => {
 		if (map && isMapValid(map)) {
 			map.triggerRepaint();
 		}
+	};
+
+	const setDeckModelStyleEntries = async (
+		tiles3dEntries: AnyModelTiles3DEntry[],
+		pointCloudEntries: ModelPointCloudEntry[] = []
+	) => {
+		await syncDeckOverlay(tiles3dEntries, pointCloudEntries);
+	};
+
+	const setDeckModelVisibility = async (entryId: string, visible: boolean) => {
+		const tilesEntry = currentDeckTiles3dEntries.get(entryId);
+		if (tilesEntry) {
+			tilesEntry.style.visible = visible;
+			await refreshCurrentDeckOverlay();
+			return;
+		}
+
+		const pointCloudEntry = currentDeckPointCloudEntries.get(entryId);
+		if (!pointCloudEntry) return;
+		pointCloudEntry.style.visible = visible;
+		await refreshCurrentDeckOverlay();
+	};
+
+	const setDeckModelOpacity = async (entryId: string, opacity: Opacity) => {
+		const tilesEntry = currentDeckTiles3dEntries.get(entryId);
+		if (tilesEntry) {
+			tilesEntry.style.opacity = opacity;
+			await refreshCurrentDeckOverlay();
+			return;
+		}
+
+		const pointCloudEntry = currentDeckPointCloudEntries.get(entryId);
+		if (!pointCloudEntry) return;
+		pointCloudEntry.style.opacity = opacity;
+		await refreshCurrentDeckOverlay();
+	};
+
+	const setDeckPointCloudPointSize = async (entryId: string, pointSize: number) => {
+		const tilesEntry = currentDeckTiles3dEntries.get(entryId);
+		if (tilesEntry && tilesEntry.style.type === 'point-cloud') {
+			tilesEntry.style.pointSize = pointSize;
+			await refreshCurrentDeckOverlay();
+			return;
+		}
+
+		const pointCloudEntry = currentDeckPointCloudEntries.get(entryId);
+		if (!pointCloudEntry) return;
+		pointCloudEntry.style.pointSize = pointSize;
+		await refreshCurrentDeckOverlay();
 	};
 
 	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
@@ -1412,6 +1496,10 @@ const createMapStore = () => {
 		setThreeLayer,
 		setTemporalModelTimeStep,
 		setModelStyle,
+		setDeckModelStyleEntries,
+		setDeckModelVisibility,
+		setDeckModelOpacity,
+		setDeckPointCloudPointSize,
 		setModelAnimationState,
 		setHighlightLayers,
 		clearHighlightLayers,

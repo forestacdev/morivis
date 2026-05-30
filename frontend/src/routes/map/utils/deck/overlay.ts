@@ -11,7 +11,14 @@ interface Tile3D {
 	content?: TileContent;
 }
 
-const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
+type PointCloudDatum = {
+	position: [number, number, number];
+	color: [number, number, number, number];
+};
+
+const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
+
+export const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
 	const altitudeOffset = dataEntry.metaData.altitude ?? 0;
 
 	return new Tile3DLayer({
@@ -35,13 +42,16 @@ const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
 	});
 };
 
-const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
+const getPointCloudData = (dataEntry: ModelPointCloudEntry) => {
 	const { positions, colors, pointCount } = dataEntry.format;
 	if (!positions || pointCount === 0) return null;
 
+	const cached = pointCloudDataCache.get(dataEntry.id);
+	if (cached) return cached;
+
 	const colorChannels = colors ? Math.round(colors.length / pointCount) : 0;
 
-	const data = new Array(pointCount);
+	const data = new Array<PointCloudDatum>(pointCount);
 	for (let i = 0; i < pointCount; i++) {
 		const posIdx = i * 3;
 		data[i] = {
@@ -67,6 +77,22 @@ const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
 				: ([255, 255, 255, 255] as [number, number, number, number])
 		};
 	}
+
+	pointCloudDataCache.set(dataEntry.id, data);
+	return data;
+};
+
+export const clearPointCloudDataCache = (entryId?: string) => {
+	if (entryId) {
+		pointCloudDataCache.delete(entryId);
+		return;
+	}
+	pointCloudDataCache.clear();
+};
+
+export const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
+	const data = getPointCloudData(dataEntry);
+	if (!data) return null;
 
 	return new PointCloudLayer({
 		id: `point-cloud-layer-${dataEntry.id}`,

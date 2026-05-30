@@ -1,6 +1,7 @@
 <script lang="ts">
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import type { PointCloudStyleEntry } from '$routes/map/data/types/model';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		layerEntry: PointCloudStyleEntry;
@@ -8,6 +9,11 @@
 	}
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
+
+	$effect(() => {
+		$state.snapshot(layerEntry.style.pointSize);
+		mapStore.setDeckPointCloudPointSize(layerEntry.id, layerEntry.style.pointSize);
+	});
 </script>
 
 <div class="mt-8">

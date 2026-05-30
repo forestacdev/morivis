@@ -42,7 +42,6 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import { createDeckOverlay } from '$routes/map/utils/deck/overlay';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
@@ -140,25 +139,11 @@
 	// 監視用のデータを保持
 	let layerWatchTargets = $derived.by(() => {
 		return layerEntries.map((entry) => {
-			const isThreeMeshEntry =
-				entry.type === 'model' &&
-				(entry.format.type === 'gltf' ||
-					entry.format.type === 'obj' ||
-					entry.format.type === '3ds' ||
-					entry.format.type === 'dae' ||
-					entry.format.type === '3dm' ||
-					entry.format.type === 'fbx' ||
-					entry.format.type === 'drc' ||
-					entry.format.type === '3mf' ||
-					entry.format.type === 'amf' ||
-					entry.format.type === 'ifc') &&
-				entry.style.type === 'mesh';
-
 			return {
 				id: entry.id,
 				// runtime state は style 監視から外して、
 				// 宣言的な style 変更だけを setStyle の対象にする。
-				style: isThreeMeshEntry ? null : getLayerWatchStyleTarget(entry)
+				style: entry.type === 'model' ? null : getLayerWatchStyleTarget(entry)
 			};
 		});
 	});
@@ -628,10 +613,9 @@
 			pointCloudEntries.push(showDataEntry as ModelPointCloudEntry);
 		}
 
-		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry, pointCloudEntries);
+		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries);
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
-		mapStore.setDeckOverlay(deckOverlayLayers);
 
 		const meshEntries = entries.filter(
 				(entry) =>
