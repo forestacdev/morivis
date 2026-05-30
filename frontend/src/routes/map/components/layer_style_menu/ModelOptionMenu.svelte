@@ -8,6 +8,7 @@
 		MeshStyle,
 		PointCloudStyleEntry
 	} from '$routes/map/data/types/model';
+	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		layerEntry: AnyModelEntry;
@@ -20,6 +21,12 @@
 		showColorOption = $bindable(),
 		showDimensionOption = $bindable()
 	}: Props = $props();
+
+	$effect(() => {
+		if (layerEntry.type !== 'model' || layerEntry.style.type !== 'mesh') return;
+		$state.snapshot(layerEntry.style);
+		mapStore.setModelStyle(layerEntry as ModelMeshEntry<MeshStyle>);
+	});
 </script>
 
 {#if layerEntry && layerEntry.type === 'model'}

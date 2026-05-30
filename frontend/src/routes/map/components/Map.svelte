@@ -140,11 +140,25 @@
 	// 監視用のデータを保持
 	let layerWatchTargets = $derived.by(() => {
 		return layerEntries.map((entry) => {
+			const isThreeMeshEntry =
+				entry.type === 'model' &&
+				(entry.format.type === 'gltf' ||
+					entry.format.type === 'obj' ||
+					entry.format.type === '3ds' ||
+					entry.format.type === 'dae' ||
+					entry.format.type === '3dm' ||
+					entry.format.type === 'fbx' ||
+					entry.format.type === 'drc' ||
+					entry.format.type === '3mf' ||
+					entry.format.type === 'amf' ||
+					entry.format.type === 'ifc') &&
+				entry.style.type === 'mesh';
+
 			return {
 				id: entry.id,
 				// runtime state は style 監視から外して、
 				// 宣言的な style 変更だけを setStyle の対象にする。
-				style: getLayerWatchStyleTarget(entry)
+				style: isThreeMeshEntry ? null : getLayerWatchStyleTarget(entry)
 			};
 		});
 	});

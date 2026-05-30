@@ -824,6 +824,18 @@ const createMapStore = () => {
 		}
 	};
 
+	const setModelStyle = (entry: ModelMeshEntry<MeshStyle>) => {
+		threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
+		threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
+		threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
+		threeJsManager.setModelColor(entry.id, entry.style.color);
+		threeJsManager.setModelTransform(entry.id, entry.style);
+		threeJsManager.setModelAnimationState(entry);
+		if (map && isMapValid(map)) {
+			map.triggerRepaint();
+		}
+	};
+
 	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
 		if (!map || !isMapValid(map)) return;
 		const layer = map.getLayer(layerId);
@@ -1399,6 +1411,7 @@ const createMapStore = () => {
 		ensureThreeLayer,
 		setThreeLayer,
 		setTemporalModelTimeStep,
+		setModelStyle,
 		setModelAnimationState,
 		setHighlightLayers,
 		clearHighlightLayers,
