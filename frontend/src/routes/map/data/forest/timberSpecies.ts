@@ -1,4 +1,11 @@
-export type WoodStructure = '環孔材' | '散孔材' | '放射孔材' | '針葉樹';
+export type WoodStructure =
+	| '環孔材'
+	| '散孔材'
+	| '半環孔材'
+	| '放射孔材'
+	| '針葉樹'
+	| '裸子植物材'
+	| '無道管広葉樹';
 
 export interface TimberSpecies {
 	id: number;
@@ -28,16 +35,16 @@ export const timberSpecies: TimberSpecies[] = [
 	},
 	{
 		id: 2,
-		nameJa: 'トネリコ',
-		nameEn: 'Ash',
-		scientificName: 'Fraxinus spp.',
-		airDryDensity: 0.711,
+		nameJa: 'アオダモ（トネリコ属）',
+		nameEn: 'Japanese Ash',
+		scientificName: 'Fraxinus lanuginosa',
+		airDryDensity: { min: 0.62, max: 0.84 },
 		woodStructure: '環孔材',
 		hardness: '重硬',
 		summary:
-			'重硬でありながら繊維が長く強靭で、衝撃を受けても折れにくいしなりを持ち、野球バットなどに用いられる。',
-		characteristics: ['しなり大', '衝撃吸収性高', '繊維長く強靭', '折れにくい'],
-		uses: ['野球バット', 'スポーツ用品', '工具柄']
+			'トネリコ属のうちアオダモは、弾力性と靭性を持つやや重硬な環孔材で、野球バットなど衝撃を受ける運動具に用いられてきた。',
+		characteristics: ['弾力性がある', '靭性が高い', '環孔材で年輪が明瞭', '曲げ木適性がある'],
+		uses: ['野球バット', 'スポーツ用品', '工具柄', '器具材']
 	},
 	{
 		id: 3,
@@ -94,27 +101,27 @@ export const timberSpecies: TimberSpecies[] = [
 		id: 7,
 		nameJa: 'ソメイヨシノ',
 		nameEn: 'Yoshino Cherry',
-		scientificName: 'Cerasus × yedoensis',
-		airDryDensity: 0.75,
+		scientificName: 'Prunus × yedoensis',
+		airDryDensity: { min: 0.48, max: 0.74 },
 		woodStructure: '散孔材',
-		hardness: '重硬',
+		hardness: '中庸',
 		summary:
-			'サクラ類の中でも高い比重を持ち、加工後の表面が非常に滑らかになるため、直接手や口に触れる椅子・器・スプーンなどに適する。',
-		characteristics: ['淡い赤褐色', '肌目滑らか', '加工後表面が滑らか'],
-		uses: ['椅子製作', '器', 'ペントレー', 'スプーン']
+			'主に観賞樹として植栽されるサクラで、木材としての流通は多くない。材質はサクラ類に準じ、赤褐色を帯び、肌目が精で、器・小物・家具部材など手触りを重視する用途に使われることがある。',
+		characteristics: ['赤褐色を帯びる', '肌目が精', '仕上がりが滑らか', '流通量は限定的'],
+		uses: ['器', '小物', 'スプーン', '家具部材']
 	},
 	{
 		id: 8,
 		nameJa: 'シラカシ（柾目）',
-		nameEn: 'Ring-cupped Oak (radial)',
+		nameEn: 'Bamboo-leaf Oak (quarter-sawn)',
 		scientificName: 'Quercus myrsinifolia',
-		airDryDensity: 0.931,
+		airDryDensity: { min: 0.74, max: 1.02 },
 		woodStructure: '放射孔材',
 		hardness: '極重硬',
 		summary:
-			'気乾比重0.931の高い硬度と耐摩耗性を持ち、木槌や鉋台など大きな負荷がかかる道具に用いられる。',
-		characteristics: ['国内最高峰の硬度', '耐摩耗性最高', '衝撃強さ最高'],
-		uses: ['木槌', '鉋台', '鉈の柄', '鎌の柄', 'ティースプーン']
+			'シラカシは日本産材の中でも特に重硬な部類に入るカシ類で、柾目面では大きな放射組織による落ち着いた表情が現れる。強靭さを生かし、鉋台・木槌・道具柄などに用いられてきた。',
+		characteristics: ['非常に重硬', '強靭', '大きな放射組織を持つ', '乾燥・加工は難しい'],
+		uses: ['木槌', '鉋台', '道具柄', '木刀', '器具材']
 	},
 	{
 		id: 9,
@@ -149,9 +156,15 @@ export const timberSpecies: TimberSpecies[] = [
 		woodStructure: '針葉樹',
 		hardness: '中庸',
 		summary:
-			'細かい年輪と気品ある赤褐色を持ち、飛騨高山の「一位一刀彫」に不可欠な彫刻材でありながら、ウィンザーチェアの洋家具にも活用される。',
-		characteristics: ['細かい年輪', '赤褐色', '心辺材の境界明瞭', '保存性高', '狂い少'],
-		uses: ['一位一刀彫', 'ウィンザーチェア', '洋風家具']
+			'細かい年輪と濃赤褐色の心材を持つ針葉樹材で、耐久性が高く切削しやすい。飛騨高山の一位一刀彫をはじめ、細工物・彫刻・床柱などに用いられてきた。',
+		characteristics: [
+			'年輪が細かい',
+			'心材は濃赤褐色',
+			'心辺材の境界が明瞭',
+			'耐久性が高い',
+			'切削しやすい'
+		],
+		uses: ['一位一刀彫', '彫刻', '細工物', '床柱', '笏']
 	},
 	{
 		id: 12,
@@ -171,13 +184,13 @@ export const timberSpecies: TimberSpecies[] = [
 		nameJa: 'カツラ',
 		nameEn: 'Katsura',
 		scientificName: 'Cercidiphyllum japonicum',
-		airDryDensity: 0.485,
+		airDryDensity: { min: 0.4, max: 0.66 },
 		woodStructure: '散孔材',
 		hardness: '軽軟',
 		summary:
-			'日本の広葉樹の中で最も寸法安定性に優れ、乾燥後の狂いが驚異的に少ないため、鎌倉彫の木地や製図板・将棋盤など精度を要する用途に最適。',
-		characteristics: ['寸法安定性最高', '乾燥後の狂い極小', '木理通直', '刃物通り滑らか'],
-		uses: ['鎌倉彫木地', '製図板', '裁ち板', '囲碁・将棋盤']
+			'やや軽軟で肌目が精、加工しやすく仕上がりもよい材。家具の引き出し側板、裁ち板、碁盤・将棋盤、彫刻、器具など、安定した板物や加工性を生かす用途に用いられてきた。',
+		characteristics: ['やや軽軟', '肌目が精', '加工容易', '仕上がり良好', '耐久性は低い'],
+		uses: ['家具引き出し側板', '裁ち板', '製図板', '碁盤・将棋盤', '彫刻', '器具']
 	},
 	{
 		id: 14,
@@ -194,15 +207,22 @@ export const timberSpecies: TimberSpecies[] = [
 	},
 	{
 		id: 15,
-		nameJa: 'クワ',
-		nameEn: 'White Mulberry',
-		scientificName: 'Morus alba',
-		airDryDensity: 0.681,
+		nameJa: 'ヤマグワ（クワ）',
+		nameEn: 'Mulberry',
+		scientificName: 'Morus bombycis',
+		airDryDensity: { min: 0.52, max: 0.75 },
 		woodStructure: '環孔材',
 		hardness: '重硬',
-		summary: '心材は経年で色味と光沢が深まり、江戸指物や茶道具などに用いられる。',
-		characteristics: ['明瞭な木目', '経年で深みある光沢', '高貴な暗褐色'],
-		uses: ['江戸指物', '茶道具', '針箱', '鏡台', '収納家具']
+		summary:
+			'心材は鮮やかな黄褐色から経年で濃褐色へ深まり、環孔材らしい明瞭な木目と美しい仕上がりを持つ。蓄積は少ないが、和家具・指物・茶道具・楽器・旋作物など装飾性を生かす用途に用いられてきた。',
+		characteristics: [
+			'心材は黄褐色から濃褐色',
+			'環孔材で年輪が明瞭',
+			'杢が現れることがある',
+			'仕上がりが美しい',
+			'耐久性が高い'
+		],
+		uses: ['江戸指物', '和家具', '茶道具', '鏡台', '楽器', '旋作物']
 	},
 	{
 		id: 16,
@@ -221,13 +241,20 @@ export const timberSpecies: TimberSpecies[] = [
 		id: 17,
 		nameJa: 'イヌエンジュ',
 		nameEn: 'Amur Maackia',
-		scientificName: 'Maackia amurensis',
+		scientificName: 'Maackia amurensis var. buergeri',
 		airDryDensity: 0.64,
 		woodStructure: '環孔材',
 		hardness: '重硬',
-		summary: '辺材の黄白と心材の濃褐色の対比が明瞭で、心材の耐朽性が高く、磨くと光沢が現れる。',
-		characteristics: ['心材濃褐色', '辺材黄白色', '心材の耐朽性極高', '磨くと光沢'],
-		uses: ['床柱', '木工ワークショップ材', '小物アクセント材']
+		summary:
+			'辺材の黄白色と心材の暗褐色の対比が明瞭な、やや重硬な環孔材。磨くと光沢が出て、心材の耐久性も高く、床柱・器具材・漆器木地・小物などに用いられる。',
+		characteristics: [
+			'心材は暗褐色',
+			'辺材は黄白色',
+			'やや重硬',
+			'磨くと光沢',
+			'心材の耐久性が高い'
+		],
+		uses: ['床柱', '器具材', '漆器木地', '旋作物', '小物']
 	},
 	{
 		id: 18,
@@ -236,11 +263,11 @@ export const timberSpecies: TimberSpecies[] = [
 		scientificName: 'Castanopsis spp.',
 		airDryDensity: 0.568,
 		woodStructure: '環孔材',
-		hardness: '重硬',
+		hardness: '中庸',
 		summary:
-			'西日本の照葉樹林を代表する非常に硬く強靭な樹種だが、乾燥時の割れ・ねじれが激しく良質な板材を得ることが難しい扱いが難しい材。',
-		characteristics: ['非常に硬く強靭', '乾燥時割れ・ねじれ激しい'],
-		uses: ['建築造作', '家具材（稀）', '薪（旧来）', 'シイタケ原木（旧来）']
+			'西日本の照葉樹林を代表する常緑広葉樹で、材は環孔材で年輪がはっきり見える。シイノキとコジイで材質差があり、耐久性は高くなく、狂いも出やすいため、建築内装・器具・ほだ木などの用途が中心となる。',
+		characteristics: ['環孔材で年輪が明瞭', '肌目は粗い', '耐久性は低め', '狂いやすい'],
+		uses: ['建築内装', '器具材', 'シイタケ原木', '薪炭材']
 	},
 	{
 		id: 19,
@@ -264,9 +291,9 @@ export const timberSpecies: TimberSpecies[] = [
 		woodStructure: '環孔材',
 		hardness: '重硬',
 		summary:
-			'北米原産の帰化植物ながら国内屈指の強度と耐朽性を誇り、地中に埋めても腐らないといわれる黄緑色の心材が屋外用途に最適。',
-		characteristics: ['極高密度', '耐朽性最高レベル', '心材黄緑色', '強度ミズナラ凌ぐ'],
-		uses: ['坑木（旧来）', '枕木（旧来）', '屋外遊具構造材', 'フローリング']
+			'北米原産の帰化樹種で、重硬・高強度かつ耐朽性が非常に高い。黄緑色を帯びる心材を持ち、フェンス支柱・枕木・屋外材・工芸品・家具などに用いられてきた。',
+		characteristics: ['重硬', '強度が高い', '耐朽性が非常に高い', '心材は黄緑色を帯びる'],
+		uses: ['フェンス支柱', '枕木', '屋外材', '工芸品', '家具', 'フローリング']
 	},
 	{
 		id: 21,
@@ -283,15 +310,15 @@ export const timberSpecies: TimberSpecies[] = [
 	{
 		id: 22,
 		nameJa: 'シラカシ（板目）',
-		nameEn: 'Ring-cupped Oak (tangential)',
+		nameEn: 'Bamboo-leaf Oak (flat-sawn)',
 		scientificName: 'Quercus myrsinifolia',
-		airDryDensity: 0.891,
+		airDryDensity: { min: 0.74, max: 1.02 },
 		woodStructure: '放射孔材',
 		hardness: '極重硬',
 		summary:
-			'気乾比重0.891の最強クラスの硬度を持つシラカシの板目材で、鉈・鎌の柄や鉋台など「叩く・こする」道具の主役として使われる。',
-		characteristics: ['最強クラスの硬度', '緻密な肌触り'],
-		uses: ['鉈の柄', '鎌の柄', '鉋台', 'ティースプーン']
+			'シラカシの板目材では、カシ類に特徴的な放射組織がごま状の模様として現れる。非常に重硬で強靭なため、鉋台・道具柄・木槌など、叩く・こする負荷を受ける道具に使われてきた。',
+		characteristics: ['非常に重硬', '強靭', '板目面にカシ目が出る', '加工は難しい'],
+		uses: ['鉋台', '木槌', '鉈の柄', '鎌の柄', '器具材']
 	},
 	{
 		id: 23,
@@ -321,41 +348,48 @@ export const timberSpecies: TimberSpecies[] = [
 	},
 	{
 		id: 25,
-		nameJa: 'ニレ（ハルニレ）',
+		nameJa: 'ハルニレ',
 		nameEn: 'Japanese Elm',
-		scientificName: 'Ulmus spp.',
+		scientificName: 'Ulmus japonica',
 		airDryDensity: 0.666,
 		woodStructure: '環孔材',
 		hardness: '重硬',
 		summary:
-			'交錯木理により割ることが困難なほどの靭性を持ち、ウィンザーチェアの座面や和太鼓の胴など強い衝撃を受ける道具に不可欠な材。',
-		characteristics: ['交錯木理', '靭性極高', '割れにくい', '荒々しい木目'],
-		uses: ['ウィンザーチェア座面', '和太鼓の胴', '臼']
+			'ハルニレは大きな道管が環状に並ぶため年輪が明瞭な、やや重硬の環孔材。曲木が可能で家具・器具・車両材などに用いられるが、耐久性は低めで加工はやや難しい。',
+		characteristics: [
+			'環孔材で年輪が明瞭',
+			'やや重硬',
+			'曲木可能',
+			'耐久性は低め',
+			'加工はやや難しい'
+		],
+		uses: ['家具', '器具材', '車両材', '内装材']
 	},
 	{
 		id: 26,
 		nameJa: 'ヤマザクラ',
-		nameEn: 'Mountain Cherry',
-		scientificName: 'Cerasus jamasakura',
+		nameEn: 'Japanese Mountain Cherry',
+		scientificName: 'Prunus jamasakura',
 		airDryDensity: 0.594,
 		woodStructure: '散孔材',
 		hardness: '中庸',
 		summary:
-			'絹のような光沢と経年で深まる美しい赤褐色を持ち、物理的特性と美観のバランスが最も優れた広葉樹として浮世絵の版木から現代クラフトまで活躍する。',
-		characteristics: ['緻密かつ滑らか', '絹のような光沢', '経年で飴色→深い赤褐色'],
-		uses: ['版木（浮世絵）', 'スプーン', 'カッティングボード', '取っ手付き箱']
+			'赤褐色の心材と精な肌目、加工性のよさを持つサクラ類の代表的な材。器具・家具・楽器・挽物・彫刻など、美観と手触りを生かす用途に用いられてきた。',
+		characteristics: ['肌目が精', '赤褐色の心材', '仕上がりが滑らか', '加工しやすい'],
+		uses: ['版木', '器具', '家具', '楽器', '挽物', '彫刻', 'スプーン']
 	},
 	{
 		id: 27,
 		nameJa: 'ウダイカンバ（マカンバ）',
 		nameEn: 'Monarch Birch',
 		scientificName: 'Betula maximowicziana',
-		airDryDensity: 0.615,
+		airDryDensity: { min: 0.5, max: 0.84 },
 		woodStructure: '散孔材',
 		hardness: '重硬',
-		summary: '均質で強靭な材質と高い耐摩耗性を持ち、長机の天面や曲げわっぱなどに用いられる。',
-		characteristics: ['均質', '強靭', '耐摩耗性高', '平滑さが長続き'],
-		uses: ['テーブル天板', '曲物', '家具']
+		summary:
+			'均質で重硬なカンバ類の代表材。耐摩耗性と平滑性に優れ、家具・床板・内装材・合板・器具材などに用いられる。',
+		characteristics: ['均質', '重硬', '耐摩耗性が高い', '仕上がり良好'],
+		uses: ['テーブル天板', '家具', '床板', '内装材', '合板', '器具材']
 	},
 	{
 		id: 28,
@@ -374,26 +408,32 @@ export const timberSpecies: TimberSpecies[] = [
 		nameJa: 'キハダ',
 		nameEn: 'Amur Cork Tree',
 		scientificName: 'Phellodendron amurense',
-		airDryDensity: 0.478,
-		woodStructure: '散孔材',
+		airDryDensity: { min: 0.38, max: 0.57 },
+		woodStructure: '環孔材',
 		hardness: '軽軟',
 		summary:
-			'緑みを帯びた黄褐色の材色と高い耐水性を持ち、クワに似た木目から茶箪笥や小箱などに用いられてきた。',
-		characteristics: ['黄褐色', '水湿に強い', 'クリに匹敵する耐水性'],
-		uses: ['茶箪笥', '小箱', '椅子座面', 'テーブル']
+			'緑みを帯びた黄褐色の心材を持つ、やや軽軟な環孔材。年輪は明瞭で加工はしやすいが、耐久性は高くないため、家具・指物・器具・単板など屋内用途に向く。',
+		characteristics: [
+			'黄褐色から褐色',
+			'環孔材で年輪が明瞭',
+			'やや軽軟',
+			'加工容易',
+			'耐久性は低い'
+		],
+		uses: ['茶箪笥', '指物', '小箱', '家具', '器具材', '単板']
 	},
 	{
 		id: 30,
 		nameJa: 'オニグルミ',
 		nameEn: 'Japanese Walnut',
-		scientificName: 'Juglans ailanthifolia',
-		airDryDensity: 0.51,
+		scientificName: 'Juglans sieboldiana',
+		airDryDensity: { min: 0.42, max: 0.7 },
 		woodStructure: '散孔材',
 		hardness: '中庸',
 		summary:
-			'北米産ウォールナットに近い落ち着いた褐色と手触りの良さを持ち、軽くて狂いが少なく加工性が良好なため椅子座面に特に高い適性を示す。',
-		characteristics: ['軽量', '狂い少', '加工性良好', '落ち着いた褐色', '手触り良'],
-		uses: ['椅子座面', '家具']
+			'落ち着いた褐色の心材を持つ中庸な材で、狂いが少なく靭性があり、加工性と仕上がりも良好。家具・フローリング・器具・彫刻などに用いられる。',
+		characteristics: ['中庸な硬さ', '狂いが少ない', '靭性がある', '加工容易', '仕上がり良好'],
+		uses: ['椅子座面', '家具', 'フローリング', '器具材', '彫刻']
 	},
 	{
 		id: 31,
@@ -465,38 +505,39 @@ export const timberSpecies: TimberSpecies[] = [
 		nameJa: 'イチョウ',
 		nameEn: 'Ginkgo',
 		scientificName: 'Ginkgo biloba',
-		airDryDensity: 0.45,
-		woodStructure: '針葉樹',
-		hardness: '軽軟',
+		airDryDensity: 0.55,
+		woodStructure: '裸子植物材',
+		hardness: '中庸',
 		summary:
-			'適度な油分と水はけの良さ、包丁を受け止める弾力性を持ち、まな板や碁盤、将棋盤に用いられる。',
-		characteristics: ['適度な油分', '水はけ良', '包丁を優しく受け止める弾力'],
-		uses: ['まな板', '碁盤', '将棋盤']
+			'イチョウは裸子植物で、材は道管を持たず針葉樹材に近い構造を持つ。均質で肌目が精、加工しやすく仕上がりもよいため、まな板・碁盤・将棋盤・彫刻・漆器木地などに用いられてきた。',
+		characteristics: ['裸子植物材', '道管を持たない', '均質', '肌目が精', '加工しやすい'],
+		uses: ['まな板', '碁盤', '将棋盤', '彫刻', '漆器木地']
 	},
 	{
 		id: 37,
 		nameJa: 'キリ',
 		nameEn: 'Paulownia',
 		scientificName: 'Paulownia tomentosa',
-		airDryDensity: 0.319,
-		woodStructure: '散孔材',
+		airDryDensity: { min: 0.19, max: 0.4 },
+		woodStructure: '半環孔材',
 		hardness: '軽軟',
 		summary:
-			'気乾比重0.319と日本産樹木で最軽量クラスを誇り、卓越した調湿・防虫性能により桐タンスが着物保存の最高級収納とされ、琴や茶筒にも活用される。',
-		characteristics: ['日本最軽量クラス', '断熱性極高', '調湿性高', '寸法変化極小', '防虫性'],
-		uses: ['桐タンス', '琴', '琵琶', '茶筒', '引き出し側板', 'すのこ']
+			'日本産木材の中でも特に軽軟な材で、加工が容易で寸法安定性が高い。箪笥・箱・建具・琴など、軽さと安定性を生かす用途に用いられてきた。',
+		characteristics: ['非常に軽軟', '加工容易', '寸法安定性が高い', '断熱性が高い'],
+		uses: ['桐タンス', '箱', '建具', '琴', '彫刻', '下駄']
 	},
 	{
 		id: 38,
-		nameJa: 'オオウラジロノキ',
-		nameEn: 'Wild Service Tree',
-		scientificName: 'Sorbus torminalis',
+		nameJa: 'オオウラジロノキ（ヤマズミ）',
+		nameEn: "Tschonoski's Crabapple",
+		scientificName: 'Malus tschonoskii',
 		airDryDensity: 0.859,
 		woodStructure: '散孔材',
 		hardness: '極重硬',
-		summary: '気乾比重0.859の極重硬材で、細い部材でも高い荷重に耐え、椅子の脚部などに用いられる。',
-		characteristics: ['極重硬', '強靭な細胞構造', '細くても高荷重支持可能'],
-		uses: ['椅子脚部']
+		summary:
+			'日本産のリンゴ属樹木で、材木としての流通は少ないが、密で硬い材として家具部材や椅子の脚・スピンドルなどに用いられる作例がある。',
+		characteristics: ['材は密で硬い', '流通量は少ない', '小径材中心', '家具部材への作例がある'],
+		uses: ['椅子脚部', 'スピンドル', '家具部材', '小物']
 	},
 	{
 		id: 39,
@@ -515,13 +556,18 @@ export const timberSpecies: TimberSpecies[] = [
 		nameJa: 'イヌマキ',
 		nameEn: 'Japanese Yew Plum Pine',
 		scientificName: 'Podocarpus macrophyllus',
-		airDryDensity: 0.588,
+		airDryDensity: { min: 0.48, max: 0.65 },
 		woodStructure: '針葉樹',
 		hardness: '重硬',
 		summary:
-			'特有の精油成分によるシロアリへの絶対的な抵抗力を持ち、南西諸島などシロアリ被害の激しい地域における最高級の建築材として重宝される。',
-		characteristics: ['水湿に極強', 'シロアリへの絶対的抵抗力', '精油成分による防虫'],
-		uses: ['建築材（南西諸島）', '構造材']
+			'針葉樹としてはやや重く硬い材で、耐久性が高く、白蟻に対する抵抗性もあるとされる。沖縄など白蟻被害の多い地域では建築材として重宝されてきた。',
+		characteristics: [
+			'針葉樹としてはやや重硬',
+			'耐久性が高い',
+			'白蟻に対する抵抗性がある',
+			'湿気に強い'
+		],
+		uses: ['建築材', '器具材', '構造材']
 	},
 	{
 		id: 41,
@@ -541,13 +587,13 @@ export const timberSpecies: TimberSpecies[] = [
 		nameJa: 'ツガ',
 		nameEn: 'Southern Japanese Hemlock',
 		scientificName: 'Tsuga sieboldii',
-		airDryDensity: 0.56,
+		airDryDensity: { min: 0.45, max: 0.6 },
 		woodStructure: '針葉樹',
 		hardness: '中庸',
 		summary:
-			'日本の針葉樹の中で最も力学的に強靭な部類に属し、特に垂直圧縮強度に優れるため住宅の柱材として最高級の評価を得てきた「構造の背骨」。',
-		characteristics: ['非常に強靭', '垂直圧縮強度優秀'],
-		uses: ['柱材', '構造材']
+			'針葉樹材としては比較的重硬で、建築材・建具材・器具材などに用いられてきた。耐久性は中庸で、構造用途では材の等級や品質を確認して使う必要がある。',
+		characteristics: ['針葉樹としては重硬', '年輪が明瞭', '耐久性は中庸', '乾燥は比較的容易'],
+		uses: ['建築材', '建具材', '長押', '敷居', '鴨居', '器具材']
 	},
 	{
 		id: 44,
@@ -593,11 +639,11 @@ export const timberSpecies: TimberSpecies[] = [
 		nameEn: 'Wheel Tree',
 		scientificName: 'Trochodendron aralioides',
 		airDryDensity: { min: 0.75, max: 1.02 },
-		woodStructure: '散孔材',
+		woodStructure: '無道管広葉樹',
 		hardness: '極重硬',
 		summary:
-			'道管を持たない植物学的に特殊な構造でありながら比重が0.75〜1.02に達する日本最硬クラスの樹種で、かつては最強の木刀の材料として知られた。',
-		characteristics: ['道管なし（仮道管構造）', '日本最高硬度クラス'],
-		uses: ['木刀（最強クラス）']
+			'ヤマグルマは広葉樹でありながら道管を持たない特殊な材構造を持つ。緻密で重硬な材として知られ、木刀や器具材など硬さと粘りを求める用途に用いられてきた。',
+		characteristics: ['道管を持たない', '仮道管主体の特殊な材構造', '緻密', '重硬'],
+		uses: ['木刀', '器具材', '小物']
 	}
 ];
