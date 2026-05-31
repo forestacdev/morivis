@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { DemRangeColorStyle, RasterDemEntry } from '$routes/map/data/types/raster';
-	import { isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 	import { type ImageResult, getLayerImage } from '$routes/map/utils/image';
+	import { isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 
 	interface Props {
 		isMode: string;
@@ -61,7 +61,7 @@
 
 	$effect(() => {
 		try {
-			previewKey;
+			void previewKey;
 			promise = getLayerImage(copyEntry);
 		} catch (error) {
 			isImageError = true;
