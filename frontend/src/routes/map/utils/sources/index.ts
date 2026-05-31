@@ -47,7 +47,7 @@ import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { objectToUrlParams } from '$routes/map/utils/platform/url-params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map/bbox';
-import { loadRasterData } from '$routes/map/utils/formats/geotiff';
+import { getTwiCacheKey, loadRasterData } from '$routes/map/utils/formats/geotiff';
 import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -101,6 +101,12 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 		return `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
 	}
 
+	if (mode === 'twi') {
+		const uniformsData = visualization.uniformsData.twi;
+		if (!uniformsData) return;
+		return `${entry.id}_${mode}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
+	}
+
 	if (mode === 'multi') {
 		const uniformsData = visualization.uniformsData[mode];
 		return `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${uniformsData.r.min}_${uniformsData.r.max}_${uniformsData.g.min}_${uniformsData.g.max}_${uniformsData.b.min}_${uniformsData.b.max}_t${timeIdx}`;
@@ -117,6 +123,17 @@ const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiff
 		entry.style.visualization.uniformsData.single.index = 0;
 		entry.style.visualization.uniformsData.single.min = currentRange.min;
 		entry.style.visualization.uniformsData.single.max = currentRange.max;
+		return;
+	}
+
+	if (entry.style.visualization.mode === 'twi') {
+		const currentRange = GeoTiffCache.getDataRanges(getTwiCacheKey(entry.id))?.[0];
+		if (!currentRange) return;
+		entry.style.visualization.uniformsData.twi = {
+			colorMap: entry.style.visualization.uniformsData.twi?.colorMap ?? 'hsv',
+			min: currentRange.min,
+			max: currentRange.max
+		};
 		return;
 	}
 

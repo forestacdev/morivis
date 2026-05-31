@@ -24,9 +24,11 @@
 		parseRasterBands,
 		getMinMax,
 		encodeAllBandsToTerrarium,
+		cacheDerivedSingleBand,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
+	import { computeTwiBand, terminateTwiWorker } from '$routes/map/utils/formats/geotiff/twi';
 	import {
 		parseEpsgFromAuxXml,
 		parseBboxFromAuxXml
@@ -585,6 +587,36 @@
 				dataRanges
 			);
 
+			let twiRange: BandDataRange | null = null;
+			if (numBands === 1) {
+				try {
+					const sourceBand =
+						parsedBands[0] instanceof Float32Array
+							? parsedBands[0]
+							: new Float32Array(parsedBands[0]);
+					const twiResult = await computeTwiBand(
+						sourceBand,
+						imageWidth,
+						imageHeight,
+						parsedNodata
+					);
+					twiRange = { min: twiResult.min, max: twiResult.max };
+					await cacheDerivedSingleBand(
+						entryId,
+						'twi',
+						twiResult.band,
+						imageWidth,
+						imageHeight,
+						null,
+						twiRange
+					);
+				} catch (error) {
+					console.warn('TWI の事前計算に失敗しました', error);
+				} finally {
+					terminateTwiWorker();
+				}
+			}
+
 			// 生データを解放（メモリ節約）
 			parsedBands = null;
 
@@ -627,6 +659,13 @@
 								max: bandMinMax.max,
 								colorMap: 'jet'
 							},
+							twi: twiRange
+								? {
+										min: twiRange.min,
+										max: twiRange.max,
+										colorMap: 'hsv'
+									}
+								: undefined,
 							multi: {
 								r: { index: 0, min: multiBandMinMax.r.min, max: multiBandMinMax.r.max },
 								g: {

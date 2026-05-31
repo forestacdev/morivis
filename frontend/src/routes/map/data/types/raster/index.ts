@@ -158,10 +158,16 @@ export interface RasterDemStyle extends BaseRasterStyle {
 	};
 }
 
-export type BandTypeKey = 'single' | 'multi';
+export type BandTypeKey = 'single' | 'multi' | 'twi';
 
 export interface ShingleBandData {
 	index: number;
+	min: number;
+	max: number;
+	colorMap: ColorMapType;
+}
+
+export interface TwiBandData {
 	min: number;
 	max: number;
 	colorMap: ColorMapType;
@@ -181,6 +187,7 @@ export interface RasterTiffStyle extends BaseRasterStyle {
 		uniformsData: {
 			single: ShingleBandData;
 			multi: MultiBandData;
+			twi?: TwiBandData;
 		};
 	};
 }

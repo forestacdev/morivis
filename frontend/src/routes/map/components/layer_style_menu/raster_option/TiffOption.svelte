@@ -10,6 +10,7 @@
 	import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { getTwiCacheKey } from '$routes/map/utils/formats/geotiff';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	const colorMapManager = new ColorMapManager();
 	const colorMapOptions = [...SEQUENTIAL_SCHEMES, ...COLORMAP_PRESET_NAMES];
@@ -40,6 +41,8 @@
 	);
 	const rangeMin = $derived(singleRange?.min ?? 0);
 	const rangeMax = $derived(singleRange?.max ?? 65535);
+	const twiRange = $derived(GeoTiffCache.getDataRanges(getTwiCacheKey(layerEntry.id))?.[0]);
+	const hasTwiMode = $derived(Boolean(twiRange) && numBands === 1);
 
 	/** min/maxからスライダーのstepを動的に算出 */
 	const calcStep = (min: number, max: number): number => {
@@ -51,14 +54,44 @@
 		return Math.max(magnitude, 0.001);
 	};
 
-	let tiffStyleModes = $state([
-		{ key: 'single', name: 'カラーマップ', icon: 'mdi:format-color-highlight' },
-		{ key: 'multi', name: 'RGB合成', icon: 'boxicons:rgb-filled' }
-		// { key: 'shadow', name: '陰影' },
-		// { key: 'slope', name: '傾斜量' },
-		// { key: 'aspect', name: '傾斜方向' },
-		// { key: 'curvature', name: '曲率' }
-	]);
+	const tiffStyleModes = $derived.by(() => {
+		const items = [
+			{ key: 'single', name: 'カラーマップ', icon: 'mdi:format-color-highlight' }
+		];
+
+		if (hasTwiMode) {
+			items.push({ key: 'twi', name: '地形湿潤指数', icon: 'mdi:water-percent' });
+		}
+
+		if (numBands > 1) {
+			items.push({ key: 'multi', name: 'RGB合成', icon: 'boxicons:rgb-filled' });
+		}
+
+		return items;
+	});
+
+	const ensureTwiData = () => {
+		if (!twiRange) return;
+		if (layerEntry.style.visualization.uniformsData.twi) return;
+
+		layerEntry.style.visualization.uniformsData.twi = {
+			colorMap: 'hsv',
+			min: twiRange.min,
+			max: twiRange.max
+		};
+	};
+
+	$effect(() => {
+		if (layerEntry.style.visualization.mode === 'twi' && !hasTwiMode) {
+			layerEntry.style.visualization.mode = 'single';
+		}
+	});
+
+	$effect(() => {
+		if (layerEntry.style.visualization.mode === 'twi') {
+			ensureTwiData();
+		}
+	});
 </script>
 
 <Accordion label="色の調整" icon="mdi:paint" bind:value={showColorOption}>
@@ -107,6 +140,32 @@
 			)}
 			maxRangeColor={colorMapManager.getMaxColor(
 				layerEntry.style.visualization.uniformsData['single'].colorMap
+			)}
+		/>
+	{:else if layerEntry.style.visualization.mode === 'twi'}
+		<ColorMapSelect
+			bind:isColorMap={layerEntry.style.visualization.uniformsData.twi!.colorMap}
+			mutableColorMapType={colorMapOptions}
+		>
+			{#snippet children(_isColorMap)}
+				<ColorScaleDem isColorMap={_isColorMap} />
+			{/snippet}
+		</ColorMapSelect>
+		<RangeSliderDouble
+			label="数値範囲"
+			bind:lowerValue={layerEntry.style.visualization.uniformsData.twi!.min}
+			bind:upperValue={layerEntry.style.visualization.uniformsData.twi!.max}
+			min={twiRange?.min ?? 0}
+			max={twiRange?.max ?? 1}
+			step={calcStep(twiRange?.min ?? 0, twiRange?.max ?? 1)}
+			primaryColor={colorMapManager.createSimpleCSSGradient(
+				layerEntry.style.visualization.uniformsData.twi!.colorMap
+			)}
+			minRangeColor={colorMapManager.getMinColor(
+				layerEntry.style.visualization.uniformsData.twi!.colorMap
+			)}
+			maxRangeColor={colorMapManager.getMaxColor(
+				layerEntry.style.visualization.uniformsData.twi!.colorMap
 			)}
 		/>
 	{:else if layerEntry.style.visualization.mode === 'multi'}

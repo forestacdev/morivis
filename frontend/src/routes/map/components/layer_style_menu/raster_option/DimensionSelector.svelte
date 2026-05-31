@@ -19,6 +19,7 @@
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { getTwiCacheKey } from '$routes/map/utils/formats/geotiff';
 	import {
 		getRasterDimension,
 		getRasterDimensionRuntimeUpdates
@@ -117,6 +118,21 @@
 			if (currentRange) {
 				layerEntry.style.visualization.uniformsData.single.min = currentRange.min;
 				layerEntry.style.visualization.uniformsData.single.max = currentRange.max;
+			}
+		}
+
+		if (
+			layerEntry.style.type === 'tiff' &&
+			layerEntry.format.type === 'image' &&
+			layerEntry.style.visualization.mode === 'twi'
+		) {
+			const currentRange = GeoTiffCache.getDataRanges(getTwiCacheKey(layerEntry.id))?.[0];
+			if (currentRange) {
+				layerEntry.style.visualization.uniformsData.twi = {
+					colorMap: layerEntry.style.visualization.uniformsData.twi?.colorMap ?? 'hsv',
+					min: currentRange.min,
+					max: currentRange.max
+				};
 			}
 		}
 

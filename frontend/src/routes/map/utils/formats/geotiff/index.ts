@@ -1,13 +1,19 @@
 import type { TypedArray, ReadRasterResult } from 'geotiff';
 
 import type { RasterTiffStyle } from '$routes/map/data/types/raster';
-import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
+import {
+	GeoTiffCache,
+	getDerivedRasterCacheKey,
+	type BandDataRange
+} from '$routes/map/utils/cache/raster/geotiff-cache';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { encodeBandsToTerrariumUrls } from '$routes/map/utils/formats/raster/terrarium';
 import { renderTerrarium } from '$routes/map/utils/formats/raster/terrarium-render';
 
 /** バンドごとのTypedArray配列 */
 export type RasterBands = TypedArray[];
+export const TWI_CACHE_SUFFIX = 'twi';
+export const getTwiCacheKey = (id: string): string => getDerivedRasterCacheKey(id, TWI_CACHE_SUFFIX);
 
 // --- Utilities ---
 
@@ -65,6 +71,35 @@ export const encodeAllBandsToTerrarium = async (
 	GeoTiffCache.setNumBands(id, bands.length);
 };
 
+export const cacheDerivedSingleBand = async (
+	id: string,
+	suffix: string,
+	band: TypedArray,
+	width: number,
+	height: number,
+	nodata: number | null,
+	dataRange: BandDataRange
+): Promise<void> => {
+	const cacheKey = getDerivedRasterCacheKey(id, suffix);
+	const urls = await encodeBandsToTerrariumUrls([band], width, height, nodata, [dataRange]);
+
+	GeoTiffCache.setTerrarium(cacheKey, urls);
+	GeoTiffCache.setDataRanges(cacheKey, [dataRange]);
+	GeoTiffCache.setSize(cacheKey, width, height);
+	GeoTiffCache.setNumBands(cacheKey, 1);
+	if (GeoTiffCache.is4326(id)) {
+		GeoTiffCache.markAs4326(cacheKey);
+	}
+	const bbox = GeoTiffCache.getBbox(id);
+	if (bbox) {
+		GeoTiffCache.setBbox(cacheKey, bbox);
+	}
+	const rawBbox = GeoTiffCache.getRawBbox(id);
+	if (rawBbox) {
+		GeoTiffCache.setRawBbox(cacheKey, rawBbox);
+	}
+};
+
 // --- Rendering ---
 
 /**
@@ -77,32 +112,40 @@ export const loadRasterData = async (
 	visualization: RasterTiffStyle['visualization']
 ): Promise<string | undefined> => {
 	try {
-		if (!GeoTiffCache.hasTerrarium(id)) {
+		const mode = visualization.mode;
+		const cacheKey = mode === 'twi' ? getTwiCacheKey(id) : id;
+
+		if (!GeoTiffCache.hasTerrarium(cacheKey)) {
 			throw new Error('Terrarium data not found in cache');
 		}
 
-		const size = GeoTiffCache.getSize(id);
+		const size = GeoTiffCache.getSize(cacheKey);
 		if (!size) throw new Error('Size not found in cache');
 
-		const dataRanges = GeoTiffCache.getDataRanges(id);
+		const dataRanges = GeoTiffCache.getDataRanges(cacheKey);
 		if (!dataRanges) throw new Error('Data ranges not found in cache');
 
-		const mode = visualization.mode;
 		const uniformsData = visualization.uniformsData;
-		const colorArray = colorMapManager.createColorArray(uniformsData.single.colorMap || 'bone');
+		const colorMap =
+			mode === 'single'
+				? uniformsData.single.colorMap
+				: mode === 'twi'
+					? uniformsData.twi?.colorMap ?? 'hsv'
+					: uniformsData.single.colorMap;
+		const colorArray = colorMapManager.createColorArray(colorMap || 'bone');
 
 		// Worker メッセージ構築
 		const workerMessage: Record<string, unknown> = {
-			entryId: id,
-			type: mode,
+			entryId: cacheKey,
+			type: mode === 'twi' ? 'single' : mode,
 			width: size.width,
 			height: size.height
 		};
 
 		// 4326→メルカトル再投影
-		if (GeoTiffCache.is4326(id)) {
-			const bbox = GeoTiffCache.getBbox(id); // クリップ済み（表示用）
-			const rawBbox = GeoTiffCache.getRawBbox(id); // 元の範囲（テクスチャUV計算用）
+		if (GeoTiffCache.is4326(cacheKey)) {
+			const bbox = GeoTiffCache.getBbox(cacheKey); // クリップ済み（表示用）
+			const rawBbox = GeoTiffCache.getRawBbox(cacheKey); // 元の範囲（テクスチャUV計算用）
 			if (bbox && rawBbox) {
 				workerMessage.reproject4326 = true;
 				workerMessage.bboxDisplay = [bbox[0], bbox[1], bbox[2], bbox[3]];
@@ -134,8 +177,8 @@ export const loadRasterData = async (
 		}
 
 		// 初回: ImageBitmap を転送
-		if (!GeoTiffCache.isTextureTransferred(id)) {
-			const terrariumUrls = GeoTiffCache.getTerrarium(id)!;
+		if (!GeoTiffCache.isTextureTransferred(cacheKey)) {
+			const terrariumUrls = GeoTiffCache.getTerrarium(cacheKey)!;
 			const images = await Promise.all(
 				terrariumUrls.map(async (url) => {
 					const response = await fetch(url);
@@ -144,7 +187,7 @@ export const loadRasterData = async (
 				})
 			);
 			workerMessage.images = images;
-			GeoTiffCache.markTextureTransferred(id);
+			GeoTiffCache.markTextureTransferred(cacheKey);
 		}
 
 		// Terrarium PNG に入っているのは実値ではなくバンド内での正規化値なので、
@@ -159,6 +202,17 @@ export const loadRasterData = async (
 			workerMessage.bandIndex = uniformsData.single.index;
 			workerMessage.min = (uniformsData.single.min - dMin) * invRange;
 			workerMessage.max = (uniformsData.single.max - dMin) * invRange;
+			workerMessage.colorArray = new Uint8Array(colorArray);
+		} else if (mode === 'twi') {
+			const range = dataRanges[0];
+			const twiData = uniformsData.twi;
+			const dMin = range?.min ?? 0;
+			const dMax = range?.max ?? 1;
+			const invRange = dMax !== dMin ? 1 / (dMax - dMin) : 0;
+
+			workerMessage.bandIndex = 0;
+			workerMessage.min = ((twiData?.min ?? dMin) - dMin) * invRange;
+			workerMessage.max = ((twiData?.max ?? dMax) - dMin) * invRange;
 			workerMessage.colorArray = new Uint8Array(colorArray);
 		} else if (mode === 'multi') {
 			const normalize = (val: number, dMin: number, dMax: number) =>
@@ -182,7 +236,7 @@ export const loadRasterData = async (
 
 		const blob = await renderTerrarium(workerMessage);
 		const url = URL.createObjectURL(blob);
-		GeoTiffCache.setBlob(id, blob, url);
+		GeoTiffCache.setBlob(cacheKey, blob, url);
 		return url;
 	} catch (error) {
 		console.error('Error rendering raster data', error);
