@@ -25,6 +25,28 @@ type PointCloudDatum = {
 	color: [number, number, number, number];
 };
 
+const hexToRgba = (color: string, alpha = 255): [number, number, number, number] => {
+	const normalized = color.replace('#', '');
+	const hex =
+		normalized.length === 3
+			? normalized
+					.split('')
+					.map((char) => char + char)
+					.join('')
+			: normalized;
+
+	if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+		return [64, 140, 255, alpha];
+	}
+
+	return [
+		parseInt(hex.slice(0, 2), 16),
+		parseInt(hex.slice(2, 4), 16),
+		parseInt(hex.slice(4, 6), 16),
+		alpha
+	];
+};
+
 const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
 
 export const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
@@ -129,8 +151,8 @@ export const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
 				stroked: true,
 				radiusMinPixels: 4,
 				lineWidthMinPixels: 1,
-				getFillColor: [64, 140, 255, 180],
-				getLineColor: [38, 90, 160, 220],
+				getFillColor: hexToRgba(dataEntry.style.color, 180),
+				getLineColor: hexToRgba(dataEntry.style.color, 220),
 				parameters: { depthTest: false },
 				beforeId: 'deck-reference-layer'
 			})
@@ -142,7 +164,7 @@ export const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
 					opacity: dataEntry.style.opacity,
 					visible: dataEntry.style.visible ?? true,
 					widthMinPixels: 2,
-					getColor: [38, 90, 160, 220],
+					getColor: hexToRgba(dataEntry.style.color, 220),
 					parameters: { depthTest: false },
 					beforeId: 'deck-reference-layer'
 				})
@@ -155,8 +177,8 @@ export const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
 					filled: true,
 					stroked: true,
 					lineWidthMinPixels: 2,
-					getFillColor: [64, 140, 255, 96],
-					getLineColor: [38, 90, 160, 220],
+					getFillColor: hexToRgba(dataEntry.style.color, 96),
+					getLineColor: hexToRgba(dataEntry.style.color, 220),
 					parameters: { depthTest: false },
 					beforeId: 'deck-reference-layer'
 				});

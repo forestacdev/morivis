@@ -1,9 +1,11 @@
 <script lang="ts">
+	import GeoArrowOption from './model_option/GeoArrowOption.svelte';
 	import MeshOption from './model_option/MeshOption.svelte';
 	import PointCloudOption from './model_option/PoinbtCloudOption..svelte';
 
 	import type {
 		AnyModelEntry,
+		ModelGeoArrowEntry,
 		ModelMeshEntry,
 		MeshStyle,
 		PointCloudStyleEntry
@@ -33,6 +35,10 @@
 	{#if layerEntry.style.type === 'point-cloud'}
 		<!-- Model options go here -->
 		<PointCloudOption bind:layerEntry={layerEntry as PointCloudStyleEntry} bind:showColorOption />
+	{/if}
+
+	{#if layerEntry.style.type === 'geoarrow'}
+		<GeoArrowOption bind:layerEntry={layerEntry as ModelGeoArrowEntry} bind:showColorOption />
 	{/if}
 
 	{#if layerEntry.style.type === 'mesh'}

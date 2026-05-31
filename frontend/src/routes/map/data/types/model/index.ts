@@ -123,6 +123,7 @@ export interface GeoArrowStyle {
 	type: 'geoarrow';
 	opacity: Opacity;
 	visible?: boolean;
+	color: string;
 }
 
 export type MeshFormatType =

@@ -941,6 +941,13 @@ const createMapStore = () => {
 		await refreshCurrentDeckOverlay();
 	};
 
+	const setDeckGeoArrowColor = async (entryId: string, color: string) => {
+		const geoArrowEntry = currentDeckGeoArrowEntries.get(entryId);
+		if (!geoArrowEntry) return;
+		geoArrowEntry.style.color = color;
+		await refreshCurrentDeckOverlay();
+	};
+
 	const setFilter = (layerId: string, filter: FilterSpecification | null) => {
 		if (!map || !isMapValid(map)) return;
 		const layer = map.getLayer(layerId);
@@ -1521,6 +1528,7 @@ const createMapStore = () => {
 		setDeckModelVisibility,
 		setDeckModelOpacity,
 		setDeckPointCloudPointSize,
+		setDeckGeoArrowColor,
 		setModelAnimationState,
 		setHighlightLayers,
 		clearHighlightLayers,

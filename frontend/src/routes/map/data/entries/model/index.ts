@@ -13,6 +13,8 @@ import type {
 	ModelGeoArrowEntry
 } from '$routes/map/data/types/model';
 
+import { getRandomColor } from '$routes/map/utils/color/color-brewer';
+
 export const createTiles3DEntry = (
 	name: string,
 	url: string,
@@ -104,7 +106,8 @@ export const createGeoArrowEntry = (
 	style: {
 		visible: true,
 		type: 'geoarrow',
-		opacity: 0.7
+		opacity: 0.7,
+		color: getRandomColor()
 	}
 });
 
@@ -156,13 +159,13 @@ export const createGlbEntry = (
 									? 'FBX'
 									: formatType === 'drc'
 										? 'DRC'
-									: formatType === '3mf'
-										? '3MF'
-										: formatType === 'amf'
-											? 'AMF'
-											: formatType === 'ifc'
-												? 'IFC'
-								: 'GLB',
+										: formatType === '3mf'
+											? '3MF'
+											: formatType === 'amf'
+												? 'AMF'
+												: formatType === 'ifc'
+													? 'IFC'
+													: 'GLB',
 			name,
 			altitude: transform.altitude,
 			bounds: pointToBbox(transform.lng, transform.lat)
