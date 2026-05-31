@@ -324,18 +324,61 @@
 		showDialogType = type;
 	};
 
-	const urlDialogGroups: { title: string; dialogs: { type: DialogType; label: string }[] }[] = [
+	const urlDialogGroups: {
+		title: string;
+		dialogs: { type: DialogType; label: string; description: string }[];
+	}[] = [
 		{
 			title: 'URL・サービス',
 			dialogs: [
-				{ type: 'raster', label: 'XYZタイル' },
-				{ type: 'vector', label: 'ベクタータイル' },
-				{ type: 'wmts', label: 'WMS/WMTS' },
-				{ type: 'wcs', label: 'WCS' },
-				{ type: 'arcgis', label: 'ArcGIS' },
-				{ type: 'pmtiles', label: 'PMTiles' },
-				{ type: '3dtiles', label: '3D Tiles' },
-				{ type: 'stac', label: 'STAC / COG' }
+				{
+					type: 'raster',
+					label: 'XYZタイル',
+					description:
+						'画像タイルのURLテンプレートです。背景地図やオルソ画像を表示するときに使います。'
+				},
+				{
+					type: 'vector',
+					label: 'ベクタータイル',
+					description:
+						'ベクタータイルのURLテンプレートです。属性を持つタイルデータを表示するときに使います。'
+				},
+				{
+					type: 'wmts',
+					label: 'WMS/WMTS',
+					description:
+						'地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。'
+				},
+				{
+					type: 'wcs',
+					label: 'WCS',
+					description:
+						'カバレッジ配信サービスのURLです。ラスターデータを範囲指定で取得するときに使います。'
+				},
+				{
+					type: 'arcgis',
+					label: 'ArcGIS',
+					description:
+						'ArcGIS REST サービスのURLです。ArcGIS Server や Online のレイヤーを追加するときに使います。'
+				},
+				{
+					type: 'pmtiles',
+					label: 'PMTiles',
+					description:
+						'PMTiles ファイルのURLです。単一ファイルで配信されるタイルデータを開くときに使います。'
+				},
+				{
+					type: '3dtiles',
+					label: '3D Tiles',
+					description:
+						'3D Tiles の tileset.json のURLです。3次元の地物やモデルを表示するときに使います。'
+				},
+				{
+					type: 'stac',
+					label: 'STAC / COG',
+					description:
+						'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。'
+				}
 			]
 		}
 	];
@@ -479,7 +522,7 @@
 					{#each Array.from({ length: 2 }) as _, index (index)}
 						{#each SUPPORTED_FILE_GROUPS as group (group.label)}
 							<span class="bg-sub rounded-full p-1 px-3 text-xs whitespace-nowrap text-gray-300">
-								{group.label}{group.extensions.length > 1 ? ` (${group.extensions.join(' ')})` : ''}
+								{group.label}
 							</span>
 						{/each}
 					{/each}
@@ -520,9 +563,12 @@
 							{#each group.dialogs as dialog (dialog.type)}
 								<button
 									onclick={() => showUploadDialog(dialog.type)}
-									class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
+									class="bg-base hover:bg-accent group flex min-h-[112px] cursor-pointer flex-col gap-2 rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
 								>
-									{dialog.label}
+									<span class="font-semibold">{dialog.label}</span>
+									<span class="text-xs leading-5 text-black/70 group-hover:text-white/80">
+										{dialog.description}
+									</span>
 								</button>
 							{/each}
 						</div>

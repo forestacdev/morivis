@@ -159,7 +159,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	},
 	{
 		label: 'Shapefile',
-		description: 'ESRIが作った複数ファイル構成のベクターデータです。`.shp` を中心に図形と属性をまとめて読み込むときに使います。',
+		description: 'ESRIが策定した複数ファイル構成のベクターデータです。`.shp` を中心に図形と属性をまとめて読み込むときに使います。',
 		extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg']
 	},
 	{
