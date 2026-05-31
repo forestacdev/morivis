@@ -12,7 +12,7 @@
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
-	import { MATLAB_COLOR_MAP_NAMES } from '$routes/map/utils/color/matlab-colormaps';
+	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	import { mapStore } from '$routes/stores/map';
 	interface Props {
@@ -34,7 +34,7 @@
 	let showRotateOption = $state(false);
 
 	const colorMapManager = new ColorMapManager();
-	const colorMapOptions = [...MATLAB_COLOR_MAP_NAMES];
+	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
 	const canEditShading = $derived(layerEntry.style.shadingOptions?.enabled ?? true);
 	const canEditScale = $derived(layerEntry.style.transformOptions?.scale ?? true);
 	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);

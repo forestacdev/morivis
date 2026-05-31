@@ -8,11 +8,11 @@
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import { type RasterEntry, type RasterTiffStyle } from '$routes/map/data/types/raster';
 	import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
-	import { MATLAB_COLOR_MAP_NAMES } from '$routes/map/utils/color/matlab-colormaps';
+	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	const colorMapManager = new ColorMapManager();
-	const colorMapOptions = [...SEQUENTIAL_SCHEMES, ...MATLAB_COLOR_MAP_NAMES];
+	const colorMapOptions = [...SEQUENTIAL_SCHEMES, ...COLORMAP_PRESET_NAMES];
 	interface Props {
 		layerEntry: RasterEntry<RasterTiffStyle>;
 		showColorOption: boolean;

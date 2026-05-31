@@ -2,7 +2,7 @@ import type { BaseMetaData, Opacity } from '$routes/map/data/types';
 import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
 import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 import type { SequentialScheme } from '$routes/map/utils/color/color-brewer';
-import type { MatlabColorMapName } from '$routes/map/utils/color/matlab-colormaps';
+import type { ColormapPresetName } from '$routes/map/utils/color/colormap-presets';
 
 export const DEM_DATA_TYPE = {
 	mapbox: 0.0,
@@ -104,7 +104,7 @@ export interface RasterCadStyle extends BaseRasterStyle {
 	color: string;
 }
 
-export type ColorMapType = SequentialScheme | MatlabColorMapName;
+export type ColorMapType = SequentialScheme | ColormapPresetName;
 
 export const DEM_STYLE_TYPE = {
 	default: 0.0,

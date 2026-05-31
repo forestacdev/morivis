@@ -8,7 +8,7 @@ const stop = (index: number, rgb: [number, number, number]): ColorMapStop => ({
 	color: `#${rgb[0].toString(16).padStart(2, '0')}${rgb[1].toString(16).padStart(2, '0')}${rgb[2].toString(16).padStart(2, '0')}`
 });
 
-export const MATLAB_COLOR_MAPS = {
+export const COLORMAP_PRESETS = {
 	parula: [
 		stop(0, [53, 42, 135]),
 		stop(0.167, [15, 92, 221]),
@@ -63,6 +63,6 @@ export const MATLAB_COLOR_MAPS = {
 	cubehelix: [stop(0, [0, 0, 0]), stop(0.07, [22, 5, 59]), stop(0.13, [60, 4, 105]), stop(0.2, [109, 1, 135]), stop(0.27, [161, 0, 147]), stop(0.33, [210, 2, 142]), stop(0.4, [251, 11, 123]), stop(0.47, [255, 29, 97]), stop(0.53, [255, 54, 69]), stop(0.6, [255, 85, 46]), stop(0.67, [255, 120, 34]), stop(0.73, [255, 157, 37]), stop(0.8, [241, 191, 57]), stop(0.87, [224, 220, 93]), stop(0.93, [218, 241, 142]), stop(1, [227, 253, 198])]
 } as const;
 
-export type MatlabColorMapName = keyof typeof MATLAB_COLOR_MAPS;
+export type ColormapPresetName = keyof typeof COLORMAP_PRESETS;
 
-export const MATLAB_COLOR_MAP_NAMES = Object.keys(MATLAB_COLOR_MAPS) as MatlabColorMapName[];
+export const COLORMAP_PRESET_NAMES = Object.keys(COLORMAP_PRESETS) as ColormapPresetName[];

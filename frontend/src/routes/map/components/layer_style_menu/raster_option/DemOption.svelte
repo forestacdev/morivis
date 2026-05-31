@@ -7,11 +7,11 @@
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
 	import type { RasterDemEntry } from '$routes/map/data/types/raster';
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
-	import { MATLAB_COLOR_MAP_NAMES } from '$routes/map/utils/color/matlab-colormaps';
+	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 	const colorMapManager = new ColorMapManager();
-	const colorMapOptions = [...MATLAB_COLOR_MAP_NAMES];
+	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
 
 	interface Props {
 		layerEntry: RasterDemEntry;

@@ -5,10 +5,10 @@ import {
 	type SequentialScheme
 } from '$routes/map/utils/color/color-brewer';
 import {
-	MATLAB_COLOR_MAPS,
+	COLORMAP_PRESETS,
 	type ColorMapStop,
-	type MatlabColorMapName
-} from '$routes/map/utils/color/matlab-colormaps';
+	type ColormapPresetName
+} from '$routes/map/utils/color/colormap-presets';
 
 type ColorTuple = [number, number, number, number];
 type ColorOutputFormat = 'hex' | 'rgb' | 'rgba';
@@ -102,7 +102,7 @@ const COLOR_MAP_ALIASES = {} as const satisfies Record<string, SequentialScheme>
 
 const resolveColorMapName = (
 	colorMapName: string
-): SequentialScheme | MatlabColorMapName | string => {
+): SequentialScheme | ColormapPresetName | string => {
 	return COLOR_MAP_ALIASES[colorMapName as keyof typeof COLOR_MAP_ALIASES] ?? colorMapName;
 };
 
@@ -202,7 +202,7 @@ export const generateHueBasedHexColors = (count: number): string[] => {
 export class ColorMapManager {
 	private cache: Map<string, Uint8Array>;
 	private readonly sequentialSchemeNames: Set<string>;
-	private readonly matlabColorMapNames: Set<string>;
+	private readonly colormapPresetNames: Set<string>;
 	public constructor() {
 		this.cache = new Map();
 		this.sequentialSchemeNames = new Set<string>([
@@ -225,7 +225,7 @@ export class ColorMapManager {
 			'YlOrBr',
 			'YlOrRd'
 		]);
-		this.matlabColorMapNames = new Set<string>(Object.keys(MATLAB_COLOR_MAPS));
+		this.colormapPresetNames = new Set<string>(Object.keys(COLORMAP_PRESETS));
 		this.registerCustomColorMap(
 			'gsi_relief',
 			[0, 300, 1000, 2000, 4000],
@@ -246,8 +246,8 @@ export class ColorMapManager {
 			return getSequentSchemeColors(resolvedName as SequentialScheme, 9);
 		}
 
-		if (this.matlabColorMapNames.has(resolvedName)) {
-			return MATLAB_COLOR_MAPS[resolvedName as MatlabColorMapName];
+		if (this.colormapPresetNames.has(resolvedName)) {
+			return COLORMAP_PRESETS[resolvedName as ColormapPresetName];
 		}
 
 		if (this.has(resolvedName)) {
