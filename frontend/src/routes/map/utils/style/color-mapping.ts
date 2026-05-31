@@ -1,17 +1,98 @@
 import type { ColorStepExpression } from '$routes/map/data/types/vector/style';
-import colormap from 'colormap';
+import type {
+	ColorMapType,
+	DemLinearColorStyle,
+	DemRangeColorStyle,
+	DemStepColorStyle
+} from '$routes/map/data/types/raster';
 
-import { getSequentSchemeColors } from '$routes/map/utils/color/color-brewer';
+import {
+	getSequentSchemeColors,
+	type SequentialCount,
+	type SequentialScheme
+} from '$routes/map/utils/color/color-brewer';
+import {
+	COLORMAP_PRESETS,
+	type ColorMapStop,
+	type ColormapPresetName
+} from '$routes/map/utils/color/colormap-presets';
 
 type ColorTuple = [number, number, number, number];
 type ColorOutputFormat = 'hex' | 'rgb' | 'rgba';
 
-const createRgbaColorMap = (colorMapName: string, shades: number): ColorTuple[] => {
-	return colormap({
-		colormap: colorMapName,
-		nshades: shades,
-		format: 'rgba',
-		alpha: 1
+const hexToRgbTuple = (hex: string): [number, number, number] => {
+	return [
+		parseInt(hex.slice(1, 3), 16),
+		parseInt(hex.slice(3, 5), 16),
+		parseInt(hex.slice(5, 7), 16)
+	];
+};
+
+const interpolateChannel = (start: number, end: number, t: number): number => {
+	return Math.round(start + (end - start) * t);
+};
+
+const resampleHexColors = (colors: readonly string[], shades: number): ColorTuple[] => {
+	if (colors.length === 0) {
+		throw new Error('colors must not be empty');
+	}
+
+	if (colors.length === 1) {
+		const [r, g, b] = hexToRgbTuple(colors[0]);
+		return Array.from({ length: shades }, () => [r, g, b, 1]);
+	}
+
+	return Array.from({ length: shades }, (_, index) => {
+		const position = (index / Math.max(shades - 1, 1)) * (colors.length - 1);
+		const lowerIndex = Math.floor(position);
+		const upperIndex = Math.min(Math.ceil(position), colors.length - 1);
+		const t = position - lowerIndex;
+		const [r1, g1, b1] = hexToRgbTuple(colors[lowerIndex]);
+		const [r2, g2, b2] = hexToRgbTuple(colors[upperIndex]);
+
+		return [
+			interpolateChannel(r1, r2, t),
+			interpolateChannel(g1, g2, t),
+			interpolateChannel(b1, b2, t),
+			1
+		];
+	});
+};
+
+const resampleColorStops = (stops: readonly ColorMapStop[], shades: number): ColorTuple[] => {
+	if (stops.length === 0) {
+		throw new Error('stops must not be empty');
+	}
+
+	if (stops.length === 1) {
+		const [r, g, b] = hexToRgbTuple(stops[0].color);
+		return Array.from({ length: shades }, () => [r, g, b, 1]);
+	}
+
+	return Array.from({ length: shades }, (_, index) => {
+		const position = index / Math.max(shades - 1, 1);
+		let lower = stops[0];
+		let upper = stops[stops.length - 1];
+
+		for (let i = 0; i < stops.length - 1; i++) {
+			if (position >= stops[i].index && position <= stops[i + 1].index) {
+				lower = stops[i];
+				upper = stops[i + 1];
+				break;
+			}
+		}
+
+		const span = upper.index - lower.index;
+		const t = span === 0 ? 0 : (position - lower.index) / span;
+		const [r1, g1, b1] = hexToRgbTuple(lower.color);
+		const [r2, g2, b2] = hexToRgbTuple(upper.color);
+
+		return [
+			interpolateChannel(r1, r2, t),
+			interpolateChannel(g1, g2, t),
+			interpolateChannel(b1, b2, t),
+			1
+		];
 	});
 };
 
@@ -22,6 +103,16 @@ const formatColorTuple = (color: ColorTuple, format: ColorOutputFormat): string 
 	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
 		.toString(16)
 		.padStart(2, '0')}`;
+};
+
+const COLOR_MAP_ALIASES = {} as const satisfies Record<string, SequentialScheme>;
+const DEFAULT_DEM_LINEAR_COLOR_MAP: ColormapPresetName = 'jet';
+const DEFAULT_DEM_STEP_COLOR_MAP: SequentialScheme = 'YlOrRd';
+
+const resolveColorMapName = (
+	colorMapName: string
+): SequentialScheme | ColormapPresetName | string => {
+	return COLOR_MAP_ALIASES[colorMapName as keyof typeof COLOR_MAP_ALIASES] ?? colorMapName;
 };
 
 export const generateNumberAndColorMap = (
@@ -61,6 +152,61 @@ export const generateStepGradient = (colors: readonly string[]): string => {
 		return `${color} ${start}%, ${color} ${end}%`;
 	});
 	return `linear-gradient(to right, ${stops.join(', ')})`;
+};
+
+export const isDemStepColorStyle = (style: DemRangeColorStyle): style is DemStepColorStyle =>
+	style.type === 'step';
+
+export const isDemLinearColorStyle = (style: DemRangeColorStyle): style is DemLinearColorStyle =>
+	style.type !== 'step';
+
+export const getDemStyleColorMapName = (style: DemRangeColorStyle): ColorMapType => {
+	return style.colorMap;
+};
+
+export const getDemStyleRange = (style: DemRangeColorStyle): [number, number] => {
+	return [style.min, style.max];
+};
+
+export const toDemLinearColorStyle = (style: DemRangeColorStyle): DemLinearColorStyle => {
+	if (isDemLinearColorStyle(style)) {
+		return style;
+	}
+
+	return {
+		type: 'linear',
+		colorMap: DEFAULT_DEM_LINEAR_COLOR_MAP,
+		min: style.min,
+		max: style.max
+	};
+};
+
+export const toDemStepColorStyle = (
+	style: DemRangeColorStyle,
+	defaultDivisions: DemStepColorStyle['divisions'] = 5
+): DemStepColorStyle => {
+	if (isDemStepColorStyle(style)) {
+		return style;
+	}
+
+	return {
+		type: 'step',
+		colorMap: DEFAULT_DEM_STEP_COLOR_MAP,
+		min: style.min,
+		max: style.max,
+		divisions: defaultDivisions
+	};
+};
+
+const getFormattedScaleValues = (min: number, max: number, divisions: number): number[] => {
+	const dataRange = max - min;
+	const decimalPlaces = dataRange >= 100 ? 0 : dataRange >= 10 ? 1 : dataRange >= 1 ? 2 : 3;
+
+	return Array.from({ length: divisions }, (_, i) => {
+		const ratio = divisions === 1 ? 0 : i / (divisions - 1);
+		const value = min + (max - min) * ratio;
+		return Number(value.toFixed(decimalPlaces));
+	});
 };
 
 // HSLからRGBへの変換ヘルパー関数
@@ -119,8 +265,31 @@ export const generateHueBasedHexColors = (count: number): string[] => {
 // カラーマップデータを作成するクラス
 export class ColorMapManager {
 	private cache: Map<string, Uint8Array>;
+	private readonly sequentialSchemeNames: Set<string>;
+	private readonly colormapPresetNames: Set<string>;
 	public constructor() {
 		this.cache = new Map();
+		this.sequentialSchemeNames = new Set<string>([
+			'Blues',
+			'Greens',
+			'Greys',
+			'Oranges',
+			'Purples',
+			'Reds',
+			'BuGn',
+			'BuPu',
+			'GnBu',
+			'OrRd',
+			'PuBu',
+			'PuBuGn',
+			'PuRd',
+			'RdPu',
+			'YlGn',
+			'YlGnBu',
+			'YlOrBr',
+			'YlOrRd'
+		]);
+		this.colormapPresetNames = new Set<string>(Object.keys(COLORMAP_PRESETS));
 		this.registerCustomColorMap(
 			'gsi_relief',
 			[0, 300, 1000, 2000, 4000],
@@ -133,8 +302,105 @@ export class ColorMapManager {
 			'#ff8484' // 尾根（正の曲率）: red
 		);
 	}
+
+	private resolvePaletteColors(colorMapName: string): readonly string[] | readonly ColorMapStop[] {
+		const resolvedName = resolveColorMapName(colorMapName);
+
+		if (this.sequentialSchemeNames.has(resolvedName)) {
+			return getSequentSchemeColors(resolvedName as SequentialScheme, 9);
+		}
+
+		if (this.colormapPresetNames.has(resolvedName)) {
+			return COLORMAP_PRESETS[resolvedName as ColormapPresetName];
+		}
+
+		if (this.has(resolvedName)) {
+			const pixels = this.get(resolvedName);
+			if (!pixels) {
+				throw new Error(`Unknown color map: ${colorMapName}`);
+			}
+
+			const colors: string[] = [];
+			for (let i = 0; i < pixels.length; i += 3) {
+				colors.push(
+					`#${pixels[i].toString(16).padStart(2, '0')}${pixels[i + 1].toString(16).padStart(2, '0')}${pixels[i + 2].toString(16).padStart(2, '0')}`
+				);
+			}
+			return colors;
+		}
+
+		throw new Error(`Unknown color map: ${colorMapName}`);
+	}
+
+	private getPaletteColorTuples(
+		colorMapName: string,
+		shades: number,
+		step: boolean = false
+	): ColorTuple[] {
+		const palette = this.resolvePaletteColors(colorMapName);
+
+		if (typeof palette[0] === 'string') {
+			return step
+				? this.createStepColorTuplesFromHexColors(palette as readonly string[], shades)
+				: resampleHexColors(palette as readonly string[], shades);
+		}
+
+		return step
+			? this.createStepColorTuplesFromStops(palette as readonly ColorMapStop[], shades)
+			: resampleColorStops(palette as readonly ColorMapStop[], shades);
+	}
+
+	private createStepColorTuplesFromHexColors(
+		colors: readonly string[],
+		shades: number
+	): ColorTuple[] {
+		const tuples = colors.map((color) => {
+			const [r, g, b] = hexToRgbTuple(color);
+			return [r, g, b, 1] satisfies ColorTuple;
+		});
+
+		return this.expandStepColorTuples(tuples, shades);
+	}
+
+	private getStepHexColors(colorMapName: string, divisions: number): readonly string[] {
+		const resolvedName = resolveColorMapName(colorMapName);
+
+		if (this.sequentialSchemeNames.has(resolvedName)) {
+			return getSequentSchemeColors(resolvedName as SequentialScheme, divisions as SequentialCount);
+		}
+
+		return this.getColorArrayFromMap(colorMapName, 'hex', divisions);
+	}
+
+	private createStepColorTuplesFromStops(
+		stops: readonly ColorMapStop[],
+		shades: number
+	): ColorTuple[] {
+		const tuples = stops.map((stop) => {
+			const [r, g, b] = hexToRgbTuple(stop.color);
+			return [r, g, b, 1] satisfies ColorTuple;
+		});
+
+		return this.expandStepColorTuples(tuples, shades);
+	}
+
+	private expandStepColorTuples(colors: readonly ColorTuple[], shades: number): ColorTuple[] {
+		if (colors.length === 0) {
+			throw new Error('colors must not be empty');
+		}
+
+		return Array.from({ length: shades }, (_, index) => {
+			const colorIndex = Math.min(
+				colors.length - 1,
+				Math.floor((index / Math.max(shades, 1)) * colors.length)
+			);
+			return colors[colorIndex];
+		});
+	}
+
 	public createColorArray(colorMapName: string): Uint8Array {
-		const cacheKey = `${colorMapName}`;
+		const resolvedName = resolveColorMapName(colorMapName);
+		const cacheKey = `${resolvedName}`;
 
 		if (this.has(cacheKey)) {
 			return this.get(cacheKey) as Uint8Array;
@@ -143,7 +409,11 @@ export class ColorMapManager {
 		const width = 256;
 		const pixels = new Uint8Array(width * 3); // RGBのみの3チャンネルデータ
 
-		const colors = createRgbaColorMap(colorMapName, width);
+		const palette = this.resolvePaletteColors(colorMapName);
+		const colors =
+			typeof palette[0] === 'string'
+				? resampleHexColors(palette as readonly string[], width)
+				: resampleColorStops(palette as readonly ColorMapStop[], width);
 
 		// RGBデータの格納
 		let ptr = 0;
@@ -160,20 +430,66 @@ export class ColorMapManager {
 		return pixels;
 	}
 
+	public createStepColorArray(colorMapName: string, divisions: number): Uint8Array {
+		const resolvedName = resolveColorMapName(colorMapName);
+		const cacheKey = `${resolvedName}_step_${divisions}`;
+
+		if (this.has(cacheKey)) {
+			return this.get(cacheKey) as Uint8Array;
+		}
+
+		const pixels = new Uint8Array(256 * 3);
+		const colors = this.createStepColorTuplesFromHexColors(
+			this.getStepHexColors(colorMapName, divisions),
+			256
+		);
+
+		let ptr = 0;
+		for (let i = 0; i < colors.length; i++) {
+			const color = colors[i];
+			pixels[ptr++] = color[0];
+			pixels[ptr++] = color[1];
+			pixels[ptr++] = color[2];
+		}
+
+		this.cache.set(cacheKey, pixels);
+		return pixels;
+	}
+
+	public createDemColorArray(style: DemRangeColorStyle): Uint8Array {
+		return isDemStepColorStyle(style)
+			? this.createStepColorArray(style.colorMap, style.divisions)
+			: this.createColorArray(style.colorMap);
+	}
+
 	public createSimpleCSSGradient(
 		colorMapName: string,
 		steps: number = 30,
 		direction: string = 'to right'
 	): string {
-		const colors = colormap({
-			colormap: colorMapName,
-			nshades: steps, // ステップ数を指定
-			format: 'hex', // RGBAからRGBに変更
-			alpha: 1
-		});
+		const colors = this.getColorArrayFromMap(colorMapName, 'hex', steps);
 
 		const gradient = `linear-gradient(${direction}, ${colors.join(', ')})`;
 		return gradient;
+	}
+
+	public getColorArrayFromMap(
+		colorMapName: string,
+		format: ColorOutputFormat = 'hex',
+		steps: number = 16
+	): string[] {
+		return this.getPaletteColorTuples(colorMapName, steps).map((color) =>
+			formatColorTuple(color, format)
+		);
+	}
+
+	public createDemCSSGradient(style: DemRangeColorStyle): string {
+		if (isDemStepColorStyle(style)) {
+			const colors = this.getStepHexColors(style.colorMap, style.divisions);
+			return generateStepGradient(colors);
+		}
+
+		return this.createSimpleCSSGradient(style.colorMap);
 	}
 
 	/**
@@ -183,8 +499,16 @@ export class ColorMapManager {
 	 * @returns 最小値の色
 	 */
 	public getMinColor(colorMapName: string, format: ColorOutputFormat = 'hex'): string {
-		const colors = createRgbaColorMap(colorMapName, 16);
+		const colors = this.getPaletteColorTuples(colorMapName, 16);
 		return formatColorTuple(colors[0], format); // 最初の色（最小値）
+	}
+
+	public getDemMinColor(style: DemRangeColorStyle, format: ColorOutputFormat = 'hex'): string {
+		if (isDemStepColorStyle(style)) {
+			return this.getColorArrayFromMap(style.colorMap, format, style.divisions)[0];
+		}
+
+		return this.getMinColor(style.colorMap, format);
 	}
 
 	/**
@@ -194,8 +518,17 @@ export class ColorMapManager {
 	 * @returns 最大値の色
 	 */
 	public getMaxColor(colorMapName: string, format: ColorOutputFormat = 'hex'): string {
-		const colors = createRgbaColorMap(colorMapName, 16);
+		const colors = this.getPaletteColorTuples(colorMapName, 16);
 		return formatColorTuple(colors[colors.length - 1], format); // 最後の色（最大値）
+	}
+
+	public getDemMaxColor(style: DemRangeColorStyle, format: ColorOutputFormat = 'hex'): string {
+		if (isDemStepColorStyle(style)) {
+			const colors = this.getColorArrayFromMap(style.colorMap, format, style.divisions);
+			return colors[colors.length - 1];
+		}
+
+		return this.getMaxColor(style.colorMap, format);
 	}
 
 	/**
@@ -320,3 +653,26 @@ export class ColorMapManager {
 		return this.cache.has(cacheKey);
 	}
 }
+
+export const generateDemLegend = (
+	style: DemRangeColorStyle,
+	linearDivisions: number = 5
+): {
+	categories: number[];
+	values: readonly string[];
+} => {
+	const [min, max] = getDemStyleRange(style);
+
+	if (isDemStepColorStyle(style)) {
+		return {
+			categories: getFormattedScaleValues(min, max, style.divisions),
+			values: getSequentSchemeColors(style.colorMap, style.divisions)
+		};
+	}
+
+	const colorMapManager = new ColorMapManager();
+	return {
+		categories: getFormattedScaleValues(min, max, linearDivisions),
+		values: colorMapManager.getColorArrayFromMap(style.colorMap, 'hex', linearDivisions)
+	};
+};

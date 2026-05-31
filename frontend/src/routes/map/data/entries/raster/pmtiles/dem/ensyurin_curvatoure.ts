@@ -34,6 +34,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 			uniformsData: {
 				relief: {
 					...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData.relief,
+					type: 'linear',
 					max: 5.3,
 					min: -4.3,
 					colorMap: 'rdbu'

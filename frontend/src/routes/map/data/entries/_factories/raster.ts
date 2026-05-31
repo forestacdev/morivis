@@ -13,9 +13,9 @@ import type {
 	GradientLegend,
 	ImageLegend,
 	DemDataTypeKey,
-	ColorMapType,
 	TileXYZ
 } from '$routes/map/data/types/raster';
+import type { ColormapPresetName } from '$routes/map/utils/color/colormap-presets';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import { resolveBounds, type Bounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
 import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
@@ -108,7 +108,7 @@ export interface DemEntryConfig {
 	xyzImageTile?: XYZPresetKey;
 	demType?: DemDataTypeKey;
 	reliefRange?: { min: number; max: number };
-	colorMap?: ColorMapType;
+	colorMap?: ColormapPresetName;
 	format?: 'image' | 'pmtiles';
 }
 
@@ -160,11 +160,13 @@ export function createDemEntry(
 			mode: 'relief',
 			uniformsData: {
 				relief: {
+					type: 'linear',
 					max: reliefRange.max,
 					min: reliefRange.min,
 					colorMap
 				},
 				slope: {
+					type: 'linear',
 					max: 90,
 					min: 0,
 					colorMap: 'salinity'

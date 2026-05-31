@@ -1,4 +1,6 @@
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
+import type { Table } from 'apache-arrow';
+import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type {
 	ColorMapType,
 	RasterDiscreteDimension,
@@ -117,13 +119,32 @@ export interface PointCloudStyle {
 	pointSize: number;
 }
 
-export type MeshFormatType = 'gltf' | 'obj';
+export interface GeoArrowStyle {
+	type: 'geoarrow';
+	opacity: Opacity;
+	visible?: boolean;
+	color: string;
+}
+
+export type MeshFormatType =
+	| 'gltf'
+	| 'obj'
+	| '3ds'
+	| 'dae'
+	| '3dm'
+	| 'fbx'
+	| 'drc'
+	| '3mf'
+	| 'amf'
+	| 'ifc';
 
 export interface ModelMeshEntry<T> extends BaseModelEntry {
 	format: {
 		type: MeshFormatType;
 		url: string;
 		mtlUrl?: string;
+		resourceUrls?: Record<string, string>;
+		normalizeToLocalOrigin?: boolean;
 	};
 	style: T;
 }
@@ -151,6 +172,15 @@ export interface ModelPointCloudEntry extends BaseModelEntry {
 	style: PointCloudStyle;
 }
 
+export interface ModelGeoArrowEntry extends BaseModelEntry {
+	format: {
+		type: 'geoarrow';
+		table: Table;
+		geometryType: VectorEntryGeometryType;
+	};
+	style: GeoArrowStyle;
+}
+
 export type AnyModelMeshEntry = ModelMeshEntry<MeshStyle> | ModelMeshEntry<PointCloudStyle>;
 
 export type AnyModelTiles3DEntry =
@@ -163,4 +193,8 @@ export type PointCloudStyleEntry =
 	| ModelTiles3DEntry<PointCloudStyle>
 	| ModelPointCloudEntry;
 
-export type AnyModelEntry = AnyModelMeshEntry | AnyModelTiles3DEntry | ModelPointCloudEntry;
+export type AnyModelEntry =
+	| AnyModelMeshEntry
+	| AnyModelTiles3DEntry
+	| ModelPointCloudEntry
+	| ModelGeoArrowEntry;

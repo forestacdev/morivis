@@ -90,6 +90,7 @@ export const NetCDFDataCache = {
 		if (entry.encodedTimeIndex === timeIndex) return false;
 		const { data, width, height, nodata, ranges } = extractTimeStepData(entry, timeIndex);
 		const bands: RasterBands = [data];
+		GeoTiffCache.invalidateTextureTransfer(entryId);
 
 		await encodeAllBandsToTerrarium(entryId, bands, width, height, nodata, ranges);
 

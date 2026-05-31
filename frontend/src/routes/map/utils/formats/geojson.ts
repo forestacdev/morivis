@@ -6,6 +6,7 @@ import { geojson as fgb } from 'flatgeobuf';
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { FeatureMenuData } from '$routes/map/types';
 import type { DrawGeojsonData } from '$routes/map/types/draw';
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 
 export class GeoJsonParseError extends Error {
 	constructor(message: string) {
@@ -17,7 +18,7 @@ export class GeoJsonParseError extends Error {
 /** GeoJSONを取得する */
 export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 	try {
-		const response = await fetch(url);
+		const response = await fetchWithDevProxy(url);
 		const geojson = await response.json();
 		return normalizeGeometryCollections(geojson);
 	} catch (error) {
@@ -115,7 +116,7 @@ const normalizeGeometryCollections = (
 /** fgbを取得してGeoJSONで返す */
 export const getFgbToGeojson = async (url: string, index?: number): Promise<FeatureCollection> => {
 	try {
-		const response = await fetch(url);
+		const response = await fetchWithDevProxy(url);
 
 		const featureIterator = fgb.deserialize(response.body as ReadableStream);
 

@@ -15,7 +15,7 @@
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
-	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { isBboxValid, isFiniteBbox } from '$routes/map/utils/map/bbox';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import {
 		getEpsgInfoArray,
@@ -82,6 +82,16 @@
 			// bboxリセット時にデータもクリア
 			_internalGeojson = { type: 'FeatureCollection', features: [] };
 			poiData = [];
+			return;
+		}
+
+		if (!isFiniteBbox(originalBbox)) {
+			_internalGeojson = { type: 'FeatureCollection', features: [] };
+			poiData = [];
+			zoneBboxGeojsonData = {
+				type: 'FeatureCollection',
+				features: []
+			};
 			return;
 		}
 
@@ -219,7 +229,7 @@
 			<div
 				class="c-scroll-hidden flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto pb-[250px]"
 			>
-				{#each poiData as info}
+				{#each poiData as info (info.properties.code)}
 					<label
 						class="border-sub lg:hover:border-accent z-10 flex w-full cursor-pointer items-center justify-start rounded-md border p-3 transition-colors duration-200 {info
 							.properties.code === selectedEpsgCode

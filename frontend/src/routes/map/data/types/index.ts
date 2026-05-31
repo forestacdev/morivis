@@ -9,12 +9,13 @@ import type {
 	TileXYZ
 } from '$routes/map/data/types/raster';
 import type { AnyModelEntry } from '$routes/map/data/types/model';
+import type { StyleJsonEntry } from '$routes/map/data/types/stylejson';
 import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
 import type { Region } from './location';
 import type { Tag } from './tags';
 import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
 
-export type GeoDataType = 'raster' | 'vector' | 'model';
+export type GeoDataType = 'raster' | 'vector' | 'model' | 'stylejson';
 export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 
 export type AuxiliaryLayerSpecification = LayerSpecification & {
@@ -56,4 +57,4 @@ export type AnyRasterEntry = RasterEntry<
 
 export type AnyVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;
 
-export type GeoDataEntry = AnyRasterEntry | AnyVectorEntry | AnyModelEntry;
+export type GeoDataEntry = AnyRasterEntry | AnyVectorEntry | AnyModelEntry | StyleJsonEntry;

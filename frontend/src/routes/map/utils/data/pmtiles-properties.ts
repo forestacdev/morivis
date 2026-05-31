@@ -3,6 +3,7 @@ import { PMTiles } from 'pmtiles';
 import Pbf from 'pbf';
 
 import type { FeatureProp } from '$routes/map/types/properties';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 interface Tile {
 	z: number;
@@ -16,7 +17,7 @@ export const getPropertiesFromPMTiles = async (
 	layerName: string,
 	featureId: number
 ): Promise<FeatureProp | null> => {
-	const pmtiles = new PMTiles(url);
+	const pmtiles = new PMTiles(resolveRequestUrl(url));
 	const tileData = await pmtiles.getZxy(z, x, y);
 
 	if (!tileData || !tileData.data) throw new Error('タイル取得失敗');

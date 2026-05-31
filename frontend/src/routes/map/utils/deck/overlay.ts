@@ -1,7 +1,16 @@
 import { Tile3DLayer } from '@deck.gl/geo-layers';
 import { PointCloudLayer } from '@deck.gl/layers';
+import {
+	GeoArrowPathLayer,
+	GeoArrowPolygonLayer,
+	GeoArrowScatterplotLayer
+} from '@geoarrow/deck.gl-layers';
 
-import type { AnyModelTiles3DEntry, ModelPointCloudEntry } from '$routes/map/data/types/model';
+import type {
+	AnyModelTiles3DEntry,
+	ModelGeoArrowEntry,
+	ModelPointCloudEntry
+} from '$routes/map/data/types/model';
 
 interface TileContent {
 	cartographicOrigin?: number[];
@@ -11,7 +20,36 @@ interface Tile3D {
 	content?: TileContent;
 }
 
-const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
+type PointCloudDatum = {
+	position: [number, number, number];
+	color: [number, number, number, number];
+};
+
+const hexToRgba = (color: string, alpha = 255): [number, number, number, number] => {
+	const normalized = color.replace('#', '');
+	const hex =
+		normalized.length === 3
+			? normalized
+					.split('')
+					.map((char) => char + char)
+					.join('')
+			: normalized;
+
+	if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+		return [64, 140, 255, alpha];
+	}
+
+	return [
+		parseInt(hex.slice(0, 2), 16),
+		parseInt(hex.slice(2, 4), 16),
+		parseInt(hex.slice(4, 6), 16),
+		alpha
+	];
+};
+
+const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
+
+export const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
 	const altitudeOffset = dataEntry.metaData.altitude ?? 0;
 
 	return new Tile3DLayer({
@@ -35,13 +73,16 @@ const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
 	});
 };
 
-const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
+const getPointCloudData = (dataEntry: ModelPointCloudEntry) => {
 	const { positions, colors, pointCount } = dataEntry.format;
 	if (!positions || pointCount === 0) return null;
 
+	const cached = pointCloudDataCache.get(dataEntry.id);
+	if (cached) return cached;
+
 	const colorChannels = colors ? Math.round(colors.length / pointCount) : 0;
 
-	const data = new Array(pointCount);
+	const data = new Array<PointCloudDatum>(pointCount);
 	for (let i = 0; i < pointCount; i++) {
 		const posIdx = i * 3;
 		data[i] = {
@@ -68,6 +109,22 @@ const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
 		};
 	}
 
+	pointCloudDataCache.set(dataEntry.id, data);
+	return data;
+};
+
+export const clearPointCloudDataCache = (entryId?: string) => {
+	if (entryId) {
+		pointCloudDataCache.delete(entryId);
+		return;
+	}
+	pointCloudDataCache.clear();
+};
+
+export const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
+	const data = getPointCloudData(dataEntry);
+	if (!data) return null;
+
 	return new PointCloudLayer({
 		id: `point-cloud-layer-${dataEntry.id}`,
 		data,
@@ -82,14 +139,60 @@ const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
 	});
 };
 
+export const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
+	dataEntry.format.geometryType === 'Point'
+		? new GeoArrowScatterplotLayer({
+				id: `geoarrow-layer-${dataEntry.id}`,
+				data: dataEntry.format.table,
+				pickable: dataEntry.interaction.clickable,
+				opacity: dataEntry.style.opacity,
+				visible: dataEntry.style.visible ?? true,
+				filled: true,
+				stroked: true,
+				radiusMinPixels: 4,
+				lineWidthMinPixels: 1,
+				getFillColor: hexToRgba(dataEntry.style.color, 180),
+				getLineColor: hexToRgba(dataEntry.style.color, 220),
+				parameters: { depthTest: false },
+				beforeId: 'deck-reference-layer'
+			})
+		: dataEntry.format.geometryType === 'LineString'
+			? new GeoArrowPathLayer({
+					id: `geoarrow-layer-${dataEntry.id}`,
+					data: dataEntry.format.table,
+					pickable: dataEntry.interaction.clickable,
+					opacity: dataEntry.style.opacity,
+					visible: dataEntry.style.visible ?? true,
+					widthMinPixels: 2,
+					getColor: hexToRgba(dataEntry.style.color, 220),
+					parameters: { depthTest: false },
+					beforeId: 'deck-reference-layer'
+				})
+			: new GeoArrowPolygonLayer({
+					id: `geoarrow-layer-${dataEntry.id}`,
+					data: dataEntry.format.table,
+					pickable: dataEntry.interaction.clickable,
+					opacity: dataEntry.style.opacity,
+					visible: dataEntry.style.visible ?? true,
+					filled: true,
+					stroked: true,
+					lineWidthMinPixels: 2,
+					getFillColor: hexToRgba(dataEntry.style.color, 96),
+					getLineColor: hexToRgba(dataEntry.style.color, 220),
+					parameters: { depthTest: false },
+					beforeId: 'deck-reference-layer'
+				});
+
 export const createDeckOverlay = async (
 	tiles3dEntries: AnyModelTiles3DEntry[],
-	pointCloudEntries: ModelPointCloudEntry[] = []
+	pointCloudEntries: ModelPointCloudEntry[] = [],
+	geoArrowEntries: ModelGeoArrowEntry[] = []
 ) => {
 	const tiles3dLayers = tiles3dEntries.map((entry) => createTiles3DLayer(entry));
 	const pointCloudLayers = pointCloudEntries
 		.map((entry) => createPointCloudLayer(entry))
 		.filter((layer) => layer !== null);
+	const geoArrowLayers = geoArrowEntries.map((entry) => createGeoArrowLayer(entry));
 
-	return [...tiles3dLayers, ...pointCloudLayers];
+	return [...tiles3dLayers, ...pointCloudLayers, ...geoArrowLayers];
 };

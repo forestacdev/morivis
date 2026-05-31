@@ -9,6 +9,7 @@
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
+	import { parseObjPointCloudFile } from '$routes/map/utils/formats/obj';
 	import { parseXyzFile } from '$routes/map/utils/formats/xyz';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformBbox } from '$routes/map/utils/proj';
@@ -50,7 +51,9 @@
 	const pointCloudFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(las|laz|ply|pcd|xyz)$/i.test(f.name)) ?? null;
+			return (
+				Array.from(dropFile).find((f) => /\.(las|laz|ply|pcd|xyz|txt|obj)$/i.test(f.name)) ?? null
+			);
 		}
 		return dropFile;
 	});
@@ -70,7 +73,8 @@
 		}
 	});
 
-	const isXyzFile = (fileName: string) => /\.xyz$/i.test(fileName);
+	const isTextPointCloudFile = (fileName: string) => /\.(xyz|txt)$/i.test(fileName);
+	const isObjPointCloudFile = (fileName: string) => /\.obj$/i.test(fileName);
 
 	const analyzePointCloud = async (file: File) => {
 		isProcessing.set(true);
@@ -87,9 +91,30 @@
 			let colors: Uint8Array | undefined = undefined;
 			let bbox: [number, number, number, number] | null = null;
 
-			if (isXyzFile(file.name)) {
+			if (isTextPointCloudFile(file.name)) {
 				// XYZ テキスト形式
 				const result = await parseXyzFile(file);
+				positions = result.positions;
+				colors = result.colors ?? undefined;
+				pointCount = result.pointCount;
+
+				if (pointCount > 0) {
+					let minX = Infinity,
+						minY = Infinity,
+						maxX = -Infinity,
+						maxY = -Infinity;
+					for (let i = 0; i < positions.length; i += 3) {
+						const x = positions[i],
+							y = positions[i + 1];
+						if (x < minX) minX = x;
+						if (y < minY) minY = y;
+						if (x > maxX) maxX = x;
+						if (y > maxY) maxY = y;
+					}
+					bbox = [minX, minY, maxX, maxY];
+				}
+			} else if (isObjPointCloudFile(file.name)) {
+				const result = await parseObjPointCloudFile(file);
 				positions = result.positions;
 				colors = result.colors ?? undefined;
 				pointCount = result.pointCount;

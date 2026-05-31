@@ -2,6 +2,7 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 
 import { generateVectorImageUrl } from './vector';
 import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 /** BlobURLかどうかを判定 */
 const isBlobUrl = (url: string): boolean => url.startsWith('blob:');
@@ -94,17 +95,12 @@ export class CoverImageManager {
 // TODO 不要になる可能性あり
 export class TileProxy {
 	static toProxyUrl(originalUrl: string): string {
-		if (import.meta.env.PROD) return originalUrl;
-
 		try {
-			// const url = new URL(originalUrl);
-			// if (url.hostname === 'tiles.gsj.jp') {
-			// 	return `/api/gsj${url.pathname}`;
-			// }
+			return resolveRequestUrl(originalUrl);
 		} catch (error) {
-			console.warn('Invalid URL:', originalUrl);
+			console.warn('Invalid URL:', originalUrl, error);
+			return originalUrl;
 		}
-		return originalUrl;
 	}
 }
 

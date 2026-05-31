@@ -6,7 +6,17 @@
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
 	import { hasExifGps } from '$routes/map/utils/formats/exif';
 	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
+	import { extractModelFromKmz } from '$routes/map/utils/formats/kml';
+	import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
 	import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
+	import { inspectObjFile } from '$routes/map/utils/formats/obj';
+	import {
+		findGeoReferencedImageFile,
+		findRasterImageFile,
+		isRasterImageMainFile,
+		isRasterImageSidecarFile
+	} from '$routes/map/utils/formats/raster/sidecar';
+	import { isPointCloudTextFile } from '$routes/map/utils/formats/xyz';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 
@@ -33,9 +43,22 @@
 	}: Props = $props();
 
 	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx|cpg)$/i.test(file.name);
-	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|webp|tiff?)$/i.test(file.name);
-	const isGeoImageRelated = (file: File): boolean =>
-		/\.(png|jpe?g|webp|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
+	const getPathLikeName = (file: File) => {
+		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
+		return (relativePath ?? file.name).toLowerCase();
+	};
+	const hasExtension = (file: File, extension: string) => getPathLikeName(file).endsWith(extension);
+	const logDroppedFiles = (files: File[]) => {
+		console.log(
+			'[FileManager] dropped files',
+			files.map((file) => ({
+				name: file.name,
+				relativePath: (file as File & { morivisRelativePath?: string }).morivisRelativePath ?? null,
+				pathLikeName: getPathLikeName(file),
+				size: file.size
+			}))
+		);
+	};
 
 	/** XMLファイルの先頭を読んで基盤地図情報DEMかどうかを判定 */
 	const isDemXml = async (file: File): Promise<boolean> => {
@@ -154,6 +177,10 @@
 				case 'json':
 				case 'geojson':
 				case 'fgb':
+					if (ext === 'json' && (await isLocationHistoryFile(file))) {
+						showDialogType = 'locationhistory';
+						return;
+					}
 					if ((ext === 'json' || ext === 'geojson') && (await isMfJsonFile(file))) {
 						showDialogType = 'mfjson';
 						return;
@@ -162,6 +189,18 @@
 					return;
 				case 'topojson':
 					showDialogType = 'topojson';
+					return;
+				case 'parquet':
+				case 'geoparquet':
+					showDialogType = 'geoparquet';
+					return;
+				case 'arrow':
+				case 'feather':
+					showDialogType = 'geoarrow';
+					return;
+				case 'mif':
+				case 'mid':
+					showDialogType = 'mif';
 					return;
 				case 'gpx':
 					showDialogType = 'gpx';
@@ -176,9 +215,20 @@
 					showDialogType = 'gml';
 					return;
 				case 'kml':
-				case 'kmz':
 					showDialogType = 'kml';
 					return;
+				case 'kmz': {
+					const kmzModel = await extractModelFromKmz(file).catch(() => null);
+					if (kmzModel && kmzModel.modelFiles.length > 0) {
+						const dt = new DataTransfer();
+						kmzModel.modelFiles.forEach((modelFile) => dt.items.add(modelFile));
+						dropFile = dt.files;
+						showDialogType = 'glb';
+						return;
+					}
+					showDialogType = 'kml';
+					return;
+				}
 				case 'landxml':
 					showDialogType = 'landxml';
 					return;
@@ -208,9 +258,21 @@
 					showDialogType = 'pmtiles';
 					return;
 				case 'glb':
-				case 'obj':
+				case '3ds':
+				case 'dae':
+				case '3dm':
+				case 'fbx':
+				case 'drc':
+				case '3mf':
+				case 'amf':
+				case 'ifc':
 					showDialogType = 'glb';
 					return;
+				case 'obj': {
+					const inspection = await inspectObjFile(file);
+					showDialogType = inspection.isPointCloud ? 'pointcloud' : 'glb';
+					return;
+				}
 				case 'h5':
 					showDialogType = 'hdf5';
 					return;
@@ -227,6 +289,8 @@
 					return;
 				case 'tiff':
 				case 'tif':
+					showDialogType = 'geotiff';
+					return;
 				case 'png':
 				case 'webp':
 				case 'pdf':
@@ -238,6 +302,13 @@
 				case 'pcd':
 				case 'xyz':
 					showDialogType = 'pointcloud';
+					return;
+				case 'txt':
+					if (await isPointCloudTextFile(file)) {
+						showDialogType = 'pointcloud';
+						return;
+					}
+					showNotification('対応していないTXTファイルです', 'error');
 					return;
 				case 'mbtiles':
 					showDialogType = 'mbtiles';
@@ -298,11 +369,34 @@
 			}
 		} else if (file instanceof FileList) {
 			const files = Array.from(file);
+			logDroppedFiles(files);
 
 			// 大きなファイルの確認
 			if (!(await checkLargeFile(files))) return;
 
-			if (files.some((f) => /\.obj$/i.test(f.name))) {
+			if (files.some((f) => hasExtension(f, '.obj'))) {
+				const objFile = files.find((f) => hasExtension(f, '.obj'));
+				if (!objFile) {
+					showNotification('OBJファイルの判定に失敗しました', 'error');
+					return;
+				}
+				const inspection = await inspectObjFile(objFile);
+				showDialogType = inspection.isPointCloud ? 'pointcloud' : 'glb';
+			} else if (files.some((f) => hasExtension(f, '.3ds'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.dae'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.3dm'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.fbx'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.drc'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.3mf'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.amf'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.ifc'))) {
 				showDialogType = 'glb';
 			} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
 				// 全ファイルがJPEG/HEIC → 1枚でもGPS付きなら位置情報付き写真
@@ -316,35 +410,45 @@
 				}
 			} else if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';
-			} else if (files.some(isGeoImageRelated)) {
-				if (!files.some(isGeoImageMain)) {
-					showNotification('画像ファイル(.tif/.png/.jpg)と一緒にドロップしてください', 'error');
-					return;
-				}
-				showDialogType = 'geotiff';
-			} else if (files.every((f) => /\.xml$/i.test(f.name))) {
-				// 複数XMLファイル → 先頭ファイルでDEM/GML判定
-				if (await isDemXml(files[0])) {
-					showDialogType = 'demxml';
-				} else if (await isGmlXml(files[0])) {
-					showDialogType = 'gml';
-				} else if (await isLandXml(files[0])) {
-					showDialogType = 'landxml';
-				} else if (await isMojXml(files[0])) {
-					showDialogType = 'mojxml';
-				} else {
-					showNotification('対応していないXMLファイルです', 'error');
-				}
 			} else {
-				// 対応ファイルを探して最初にマッチしたものを処理
-				const supportedFile = files.find((f) => {
-					const ext = '.' + (f.name.split('.').pop()?.toLowerCase() ?? '');
-					return SUPPORTED_FILE_EXTENSIONS.includes(ext);
-				});
-				if (supportedFile) {
-					setFile(supportedFile);
+				const geoReferencedImageFile = findGeoReferencedImageFile(files);
+				if (geoReferencedImageFile) {
+					showDialogType = 'geotiff';
+				} else if (files.some(isRasterImageSidecarFile)) {
+					if (!findRasterImageFile(files) && !files.some(isRasterImageMainFile)) {
+						showNotification('画像ファイル(.tif/.png/.jpg)と一緒にドロップしてください', 'error');
+						return;
+					}
+
+					showNotification(
+						'画像ファイルと補助ファイルの組み合わせが一致しません。同じ名前の .tfw または .aux.xml を一緒にドロップしてください',
+						'error'
+					);
+					return;
+				} else if (files.every((f) => /\.xml$/i.test(f.name))) {
+					// 複数XMLファイル → 先頭ファイルでDEM/GML判定
+					if (await isDemXml(files[0])) {
+						showDialogType = 'demxml';
+					} else if (await isGmlXml(files[0])) {
+						showDialogType = 'gml';
+					} else if (await isLandXml(files[0])) {
+						showDialogType = 'landxml';
+					} else if (await isMojXml(files[0])) {
+						showDialogType = 'mojxml';
+					} else {
+						showNotification('対応していないXMLファイルです', 'error');
+					}
 				} else {
-					showNotification('対応していないファイル形式です', 'error');
+					// 対応ファイルを探して最初にマッチしたものを処理
+					const supportedFile = files.find((f) => {
+						const ext = '.' + (f.name.split('.').pop()?.toLowerCase() ?? '');
+						return SUPPORTED_FILE_EXTENSIONS.includes(ext);
+					});
+					if (supportedFile) {
+						setFile(supportedFile);
+					} else {
+						showNotification('対応していないファイル形式です', 'error');
+					}
 				}
 			}
 		}

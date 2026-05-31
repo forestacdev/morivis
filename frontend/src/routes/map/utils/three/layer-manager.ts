@@ -1,5 +1,7 @@
+import { asset } from '$app/paths';
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
@@ -13,7 +15,76 @@ import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+
+const DRACO_DECODER_PATH = asset('/draco/gltf/');
+const IFC_WASM_PATH = asset('/web-ifc/');
+const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
+let rhino3dmLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/3DMLoader.js')
+> | null = null;
+let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
+let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
+	null;
+let colladaLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/ColladaLoader.js')
+> | null = null;
+let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
+	null;
+let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
+	null;
+let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null =
+	null;
+
+const loadRhino3dmLoaderModule = async () => {
+	if (!rhino3dmLoaderModulePromise) {
+		rhino3dmLoaderModulePromise = import('three/addons/loaders/3DMLoader.js');
+	}
+	return rhino3dmLoaderModulePromise;
+};
+
+const loadIfcLoaderModule = async () => {
+	if (!ifcLoaderModulePromise) {
+		ifcLoaderModulePromise = import('web-ifc-three/IFCLoader.js');
+	}
+	return ifcLoaderModulePromise;
+};
+
+const loadTdsLoaderModule = async () => {
+	if (!tdsLoaderModulePromise) {
+		tdsLoaderModulePromise = import('three/addons/loaders/TDSLoader.js');
+	}
+	return tdsLoaderModulePromise;
+};
+
+const loadColladaLoaderModule = async () => {
+	if (!colladaLoaderModulePromise) {
+		colladaLoaderModulePromise = import('three/addons/loaders/ColladaLoader.js');
+	}
+	return colladaLoaderModulePromise;
+};
+
+const loadFbxLoaderModule = async () => {
+	if (!fbxLoaderModulePromise) {
+		fbxLoaderModulePromise = import('three/addons/loaders/FBXLoader.js');
+	}
+	return fbxLoaderModulePromise;
+};
+
+const loadThreeMfLoaderModule = async () => {
+	if (!threeMfLoaderModulePromise) {
+		threeMfLoaderModulePromise = import('three/addons/loaders/3MFLoader.js');
+	}
+	return threeMfLoaderModulePromise;
+};
+
+const loadAmfLoaderModule = async () => {
+	if (!amfLoaderModulePromise) {
+		amfLoaderModulePromise = import('three/addons/loaders/AMFLoader.js');
+	}
+	return amfLoaderModulePromise;
+};
 
 interface LoadedModel {
 	entry: ModelMeshEntry<MeshStyle>;
@@ -36,10 +107,16 @@ export class ThreeJsLayerManager {
 	private renderer: THREE.WebGLRenderer | null = null;
 	private map: MapLibreMap | null = null;
 	private loadedModels: Map<string, LoadedModel> = new Map();
+	private dracoLoader = new DRACOLoader();
 	private loader = new GLTFLoader();
 	private isInitialized = false;
 	private colorMapManager = new ColorMapManager();
 	private lastRenderTimeMs: number | null = null;
+
+	constructor() {
+		this.dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
+		this.loader.setDRACOLoader(this.dracoLoader);
+	}
 
 	private resolveShading = (style: MeshStyle): Required<MeshShadingStyle> => ({
 		...DEFAULT_MESH_SHADING,
@@ -184,7 +261,7 @@ export class ThreeJsLayerManager {
 			`,
 			transparent: true,
 			wireframe: style.wireframe,
-			side: sourceMaterial.side
+			side: THREE.DoubleSide
 		});
 		material.userData.morivisShaderShading = true;
 		material.userData.colorRampTexture = colorRampTexture;
@@ -211,7 +288,7 @@ export class ThreeJsLayerManager {
 			transparent: true,
 			opacity: style.opacity,
 			wireframe: style.wireframe,
-			side: sourceMaterial.side
+			side: THREE.DoubleSide
 		});
 		material.transparent = true;
 		material.opacity = style.opacity;
@@ -228,6 +305,7 @@ export class ThreeJsLayerManager {
 		}
 		material.transparent = true;
 		material.opacity = style.opacity;
+		material.side = THREE.DoubleSide;
 		if ('wireframe' in material) {
 			material.wireframe = style.wireframe;
 		}
@@ -372,6 +450,9 @@ export class ThreeJsLayerManager {
 				this.loadedModels.forEach((loaded) => {
 					const { transform } = loaded;
 
+					const anchoredModelMatrix = new THREE.Matrix4().fromArray(
+						this.map!.transform.getMatrixForModel(transform.modelOrigin, transform.modelAltitude)
+					);
 					const rotationX = new THREE.Matrix4().makeRotationAxis(
 						new THREE.Vector3(1, 0, 0),
 						transform.rotateX
@@ -387,11 +468,10 @@ export class ThreeJsLayerManager {
 					const scaleMatrix = new THREE.Matrix4().makeScale(
 						transform.scaleX,
 						-transform.scaleY,
-						transform.scaleZ
+						-transform.scaleZ
 					);
 
-					const modelMatrix = new THREE.Matrix4()
-						.makeTranslation(transform.translateX, transform.translateY, transform.translateZ)
+					const modelMatrix = anchoredModelMatrix
 						.multiply(rotationX)
 						.multiply(rotationY)
 						.multiply(rotationZ)
@@ -404,7 +484,8 @@ export class ThreeJsLayerManager {
 
 					this.modelGroup!.traverse((child) => {
 						if (child.userData.entryId) {
-							child.visible = child.userData.entryId === loaded.entry.id;
+							child.visible =
+								child.userData.entryId === loaded.entry.id && (loaded.entry.style.visible ?? true);
 						}
 					});
 
@@ -486,7 +567,22 @@ export class ThreeJsLayerManager {
 			};
 
 			if (entry.format.type === 'obj') {
-				const objLoader = new OBJLoader();
+				const manager = new THREE.LoadingManager();
+				const resourceUrls = entry.format.resourceUrls;
+				if (resourceUrls) {
+					manager.setURLModifier((url) => {
+						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+						const fileName = normalizedUrl.split('/').pop() ?? '';
+						return (
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
+						);
+					});
+				}
+				const objLoader = new OBJLoader(manager);
 				const loadObj = () => {
 					objLoader.load(
 						entry.format.url,
@@ -497,7 +593,8 @@ export class ThreeJsLayerManager {
 				};
 
 				if (entry.format.mtlUrl) {
-					const mtlLoader = new MTLLoader();
+					const mtlLoader = new MTLLoader(manager);
+					mtlLoader.setMaterialOptions({ side: THREE.DoubleSide });
 					mtlLoader.setResourcePath('');
 					mtlLoader.load(
 						entry.format.mtlUrl,
@@ -512,6 +609,207 @@ export class ThreeJsLayerManager {
 				} else {
 					loadObj();
 				}
+			} else if (entry.format.type === '3ds') {
+				const manager = new THREE.LoadingManager();
+				const resourceUrls = entry.format.resourceUrls;
+				if (resourceUrls) {
+					manager.setURLModifier((url) => {
+						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+						const fileName = normalizedUrl.split('/').pop() ?? '';
+						return (
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
+						);
+					});
+				}
+				loadTdsLoaderModule()
+					.then(({ TDSLoader }) => {
+						const tdsLoader = new TDSLoader(manager);
+						if (!resourceUrls) {
+							try {
+								tdsLoader.setResourcePath(new URL('./', entry.format.url).href);
+							} catch {
+								// blob URL などは URL 基底を組めないので、そのままロードする。
+							}
+						}
+						tdsLoader.load(
+							entry.format.url,
+							(object) => onModelLoaded(object),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
+			} else if (entry.format.type === 'dae') {
+				const manager = new THREE.LoadingManager();
+				const resourceUrls = entry.format.resourceUrls;
+				if (resourceUrls) {
+					manager.setURLModifier((url) => {
+						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+						const fileName = normalizedUrl.split('/').pop() ?? '';
+						return (
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
+						);
+					});
+				}
+				loadColladaLoaderModule()
+					.then(({ ColladaLoader }) => {
+						const colladaLoader = new ColladaLoader(manager);
+						colladaLoader.load(
+							entry.format.url,
+							(collada) => onModelLoaded(collada.scene, collada.scene.animations),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
+			} else if (entry.format.type === '3dm') {
+				const manager = new THREE.LoadingManager();
+				const resourceUrls = entry.format.resourceUrls;
+				if (resourceUrls) {
+					manager.setURLModifier((url) => {
+						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+						const fileName = normalizedUrl.split('/').pop() ?? '';
+						return (
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
+						);
+					});
+				}
+				loadRhino3dmLoaderModule()
+					.then(({ Rhino3dmLoader }) => {
+						const rhinoLoader = new Rhino3dmLoader(manager);
+						rhinoLoader.setLibraryPath(RHINO3DM_LIBRARY_PATH);
+						rhinoLoader.load(
+							entry.format.url,
+							(object) => onModelLoaded(object),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
+			} else if (entry.format.type === 'fbx') {
+				const manager = new THREE.LoadingManager();
+				const resourceUrls = entry.format.resourceUrls;
+				if (resourceUrls) {
+					manager.setURLModifier((url) => {
+						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+						const fileName = normalizedUrl.split('/').pop() ?? '';
+						return (
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
+						);
+					});
+				}
+				loadFbxLoaderModule()
+					.then(({ FBXLoader }) => {
+						const fbxLoader = new FBXLoader(manager);
+						if (!resourceUrls) {
+							try {
+								fbxLoader.setResourcePath(new URL('./', entry.format.url).href);
+							} catch {
+								// blob URL などは URL 基底を組めないので、そのままロードする。
+							}
+						}
+						fbxLoader.load(
+							entry.format.url,
+							(object) => {
+								if (entry.format.normalizeToLocalOrigin) {
+									normalizeObjectToLocalOrigin(object);
+								}
+								onModelLoaded(
+									object,
+									(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? []
+								);
+							},
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
+			} else if (entry.format.type === 'drc') {
+				this.dracoLoader.load(
+					entry.format.url,
+					(geometry) => {
+						if (!geometry.getAttribute('normal')) {
+							geometry.computeVertexNormals();
+						}
+						onModelLoaded(
+							new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#ffffff' }))
+						);
+					},
+					undefined,
+					(error) => reject(error)
+				);
+			} else if (entry.format.type === '3mf') {
+				loadThreeMfLoaderModule()
+					.then(({ ThreeMFLoader }) => {
+						const loader = new ThreeMFLoader();
+						loader.load(
+							entry.format.url,
+							(object) => onModelLoaded(object),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
+			} else if (entry.format.type === 'amf') {
+				loadAmfLoaderModule()
+					.then(({ AMFLoader }) => {
+						const loader = new AMFLoader();
+						loader.load(
+							entry.format.url,
+							(object) => onModelLoaded(object),
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
+			} else if (entry.format.type === 'ifc') {
+				loadIfcLoaderModule()
+					.then(({ IFCLoader }) => {
+						const loader = new IFCLoader();
+						return loader.ifcManager.setWasmPath(IFC_WASM_PATH).then(() => {
+							loader.load(
+								entry.format.url,
+								(object) => {
+									console.log('[IFC] layer load before normalization', {
+										entryId: entry.id,
+										name: entry.metaData.name,
+										normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
+										transform: entry.style.transform
+									});
+									if (entry.format.normalizeToLocalOrigin) {
+										normalizeObjectToLocalOrigin(object);
+									}
+									console.log('[IFC] layer load after normalization', {
+										entryId: entry.id,
+										name: entry.metaData.name,
+										position: object.position.toArray(),
+										rotation: [object.rotation.x, object.rotation.y, object.rotation.z],
+										scale: object.scale.toArray()
+									});
+									onModelLoaded(object);
+								},
+								undefined,
+								(error) => reject(error)
+							);
+						});
+					})
+					.catch((error) => reject(error));
 			} else {
 				this.loader.load(
 					entry.format.url,
@@ -577,16 +875,8 @@ export class ThreeJsLayerManager {
 	setModelVisibility(entryId: string, visible: boolean): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-
-		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-				materials.forEach((material) => {
-					material.visible = visible;
-				});
-			}
-		});
+		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, visible } };
+		loaded.object.visible = visible;
 	}
 
 	/** モデルの不透明度を変更 */

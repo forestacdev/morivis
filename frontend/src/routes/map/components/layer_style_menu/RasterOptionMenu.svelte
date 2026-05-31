@@ -32,15 +32,18 @@
 			| RasterCadStyle
 		>;
 		showColorOption: boolean;
+		showDimensionOption: boolean;
 	}
 
-	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
+	let {
+		layerEntry = $bindable(),
+		showColorOption = $bindable(),
+		showDimensionOption = $bindable()
+	}: Props = $props();
 
 	let style = $derived(layerEntry.style);
 
 	let showOption = $state<boolean>(false);
-
-	let showDimensionOption = $state(true);
 
 	let preset = $derived.by(() => {
 		if (style.type === 'basemap') {

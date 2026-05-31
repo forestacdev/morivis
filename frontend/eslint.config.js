@@ -40,6 +40,37 @@ export default [
 		}
 	},
 	{
+		files: [
+			'src/routes/stores/**/*.{js,ts,svelte}',
+			'src/routes/map/components/**/*.{js,ts,svelte}'
+		],
+		rules: {
+			'no-restricted-globals': [
+				'error',
+				{
+					name: 'fetch',
+					message:
+						'直接 fetch は使わず、$routes/map/utils/platform/request のラッパー関数を使ってください。'
+				}
+			],
+			'no-restricted-properties': [
+				'error',
+				{
+					object: 'window',
+					property: 'fetch',
+					message:
+						'window.fetch は使わず、$routes/map/utils/platform/request のラッパー関数を使ってください。'
+				},
+				{
+					object: 'globalThis',
+					property: 'fetch',
+					message:
+						'globalThis.fetch は使わず、$routes/map/utils/platform/request のラッパー関数を使ってください。'
+				}
+			]
+		}
+	},
+	{
 		files: ['**/*.svelte'],
 		plugins: {
 			import: importPlugin

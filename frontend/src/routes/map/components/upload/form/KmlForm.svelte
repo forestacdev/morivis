@@ -3,12 +3,15 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
 		filterByGeometryType
 	} from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import {
 		formatDate,
@@ -18,12 +21,20 @@
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
+	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
+		getMinMax,
+		encodeAllBandsToTerrarium,
+		type RasterBands
+	} from '$routes/map/utils/formats/geotiff';
+	import {
+		extractGroundOverlayFromKmz,
 		kmlFileToGeoJson,
 		getKmlDefaultColor,
 		type KmlParseResult
 	} from '$routes/map/utils/formats/kml';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
@@ -67,6 +78,132 @@
 
 	const entryName = $derived(kmlFile?.name.replace(/\.[^.]+$/, '') ?? 'KMLデータ');
 
+	const buildRgbBandsFromImage = async (file: File) => {
+		const objectUrl = URL.createObjectURL(file);
+
+		try {
+			const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+				const img = new Image();
+				img.onload = () => resolve(img);
+				img.onerror = () => reject(new Error('画像の読み込みに失敗しました'));
+				img.src = objectUrl;
+			});
+
+			const width = image.naturalWidth;
+			const height = image.naturalHeight;
+			const canvas = document.createElement('canvas');
+			canvas.width = width;
+			canvas.height = height;
+			const ctx = canvas.getContext('2d');
+			if (!ctx) throw new Error('Canvas context取得失敗');
+
+			ctx.drawImage(image, 0, 0);
+			const imgData = ctx.getImageData(0, 0, width, height);
+			const rgba = imgData.data;
+			const pixelCount = width * height;
+
+			const rBand = new Float32Array(pixelCount);
+			const gBand = new Float32Array(pixelCount);
+			const bBand = new Float32Array(pixelCount);
+			for (let i = 0; i < pixelCount; i += 1) {
+				const alpha = rgba[i * 4 + 3];
+				if (alpha === 0) {
+					rBand[i] = Number.NaN;
+					gBand[i] = Number.NaN;
+					bBand[i] = Number.NaN;
+					continue;
+				}
+
+				rBand[i] = rgba[i * 4];
+				gBand[i] = rgba[i * 4 + 1];
+				bBand[i] = rgba[i * 4 + 2];
+			}
+
+			const bands: RasterBands = [rBand, gBand, bBand];
+			const nodata = Number.NaN;
+			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, nodata));
+
+			return {
+				bands,
+				ranges,
+				nodata,
+				width,
+				height
+			};
+		} finally {
+			URL.revokeObjectURL(objectUrl);
+		}
+	};
+
+	const registerGroundOverlay = async (file: File) => {
+		const overlay = await extractGroundOverlayFromKmz(file);
+		if (!overlay) return false;
+
+		const imageData = await buildRgbBandsFromImage(overlay.imageFile);
+		const entryId = `geotiff_${crypto.randomUUID()}`;
+
+		GeoTiffCache.setSize(entryId, imageData.width, imageData.height);
+		GeoTiffCache.setNumBands(entryId, 3);
+		GeoTiffCache.setBbox(entryId, overlay.bbox);
+
+		await encodeAllBandsToTerrarium(
+			entryId,
+			imageData.bands,
+			imageData.width,
+			imageData.height,
+			imageData.nodata,
+			imageData.ranges
+		);
+
+		const entry: RasterImageEntry<RasterTiffStyle> = {
+			id: entryId,
+			type: 'raster',
+			format: { type: 'image', url: '' },
+			metaData: {
+				...DEFAULT_CUSTOM_META_DATA,
+				attribution: 'KML',
+				name: overlay.entryName || 'KMZ GroundOverlay',
+				tileSize: 256,
+				bounds: overlay.bbox,
+				imageCorners: overlay.corners,
+				xyzImageTile: findCenterTile(overlay.bbox)
+			},
+			properties: {
+				bands: {
+					numBands: 3
+				}
+			},
+			interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
+			style: {
+				type: 'tiff',
+				opacity: 1.0,
+				visible: true,
+				visualization: {
+					mode: 'multi',
+					uniformsData: {
+						single: {
+							index: 0,
+							min: imageData.ranges[0].min,
+							max: imageData.ranges[0].max,
+							colorMap: 'jet'
+						},
+						multi: {
+							r: { index: 0, min: imageData.ranges[0].min, max: imageData.ranges[0].max },
+							g: { index: 1, min: imageData.ranges[1].min, max: imageData.ranges[1].max },
+							b: { index: 2, min: imageData.ranges[2].min, max: imageData.ranges[2].max }
+						}
+					}
+				}
+			}
+		};
+
+		showDataEntry = entry;
+		showDialogType = null;
+		dropFile = null;
+		showNotification('GroundOverlay をラスターとして読み込みました', 'success');
+		return true;
+	};
+
 	const getUpdatedTimeField = (field: FieldDef): FieldDef => ({
 		...field,
 		label: '時刻',
@@ -75,7 +212,12 @@
 			...field.format,
 			date: {
 				...(field.format?.date ?? {}),
-				inputPatterns: ['YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss+HH:mm'],
+				inputPatterns: [
+					'YYYY-MM-DDTHH:mm:ssZ',
+					'YYYY-MM-DDTHH:mm:ss+HH:mm',
+					'YYYY-MM-DD',
+					'YYYY-MM'
+				],
 				displayPattern: 'YYYY年M月D日 HH:mm:ss',
 				invalidText: ''
 			}
@@ -102,7 +244,12 @@
 				raw,
 				timestamp,
 				label: formatDate(raw, {
-					inputPatterns: ['YYYY-MM-DDTHH:mm:ssZ', 'YYYY-MM-DDTHH:mm:ss+HH:mm'],
+					inputPatterns: [
+						'YYYY-MM-DDTHH:mm:ssZ',
+						'YYYY-MM-DDTHH:mm:ss+HH:mm',
+						'YYYY-MM-DD',
+						'YYYY-MM'
+					],
 					displayPattern: 'YYYY年M月D日 HH:mm:ss',
 					invalidText: raw
 				})
@@ -129,35 +276,40 @@
 		entry.properties.attributeView.timeKey = 'time';
 	};
 
-	// ファイルドロップ時: KML/KMZ → GeoJSON → ジオメトリタイプ確認
 	$effect(() => {
 		if (kmlFile) {
 			isProcessing.set(true);
-			kmlFileToGeoJson(kmlFile)
-				.then((result) => {
-					kmlResult = result;
-					rawGeojson = result.geojson as unknown as FeatureCollection;
-					const types = getGeometryTypes(rawGeojson!);
+			(async () => {
+				const ext = kmlFile.name.split('.').pop()?.toLowerCase();
+				if (ext === 'kmz' && (await registerGroundOverlay(kmlFile))) {
+					return;
+				}
 
-					if (types.length === 1) {
-						selectedGeometryType = types[0];
-						geometryTypeOptions = [];
-						processGeojson();
-					} else {
-						geometryTypeOptions = types.map((t) => ({
-							key: t,
-							name: GEOMETRY_TYPE_LABELS[t] ?? t
-						}));
-						selectedGeometryType = types[0];
-					}
-				})
-				.catch((e) => {
-					showNotification('KMLファイルの読み込みに失敗しました', 'error');
-					console.error(e);
-				})
-				.finally(() => {
-					isProcessing.set(false);
-				});
+				return kmlFileToGeoJson(kmlFile)
+					.then((result) => {
+						kmlResult = result;
+						rawGeojson = result.geojson as unknown as FeatureCollection;
+						const types = getGeometryTypes(rawGeojson);
+
+						if (types.length === 1) {
+							selectedGeometryType = types[0];
+							geometryTypeOptions = [];
+							processGeojson();
+						} else {
+							geometryTypeOptions = types.map((t) => ({
+								key: t,
+								name: GEOMETRY_TYPE_LABELS[t] ?? t
+							}));
+							selectedGeometryType = types[0];
+						}
+					})
+					.catch((e) => {
+						showNotification('KMLファイルの読み込みに失敗しました', 'error');
+						console.error(e);
+					});
+			})().finally(() => {
+				isProcessing.set(false);
+			});
 		}
 	});
 
@@ -201,7 +353,6 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!kmlFile || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);

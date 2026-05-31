@@ -7,13 +7,24 @@
 	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import {
-		COLOR_MAP_TYPE,
+		type ColorMapType,
+		type DerivedBandData,
 		type RasterEntry,
 		type RasterTiffStyle
 	} from '$routes/map/data/types/raster';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
+	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
+	import {
+		ensureRasterDerivedCache,
+		getAspectCacheKey,
+		getSlopeCacheKey,
+		getTpiCacheKey,
+		getTwiCacheKey
+	} from '$routes/map/utils/formats/geotiff';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	const colorMapManager = new ColorMapManager();
+	const colorMapOptions = [...SEQUENTIAL_SCHEMES, ...COLORMAP_PRESET_NAMES];
 	interface Props {
 		layerEntry: RasterEntry<RasterTiffStyle>;
 		showColorOption: boolean;
@@ -41,7 +52,13 @@
 	);
 	const rangeMin = $derived(singleRange?.min ?? 0);
 	const rangeMax = $derived(singleRange?.max ?? 65535);
-
+	const twiRange = $derived(GeoTiffCache.getDataRanges(getTwiCacheKey(layerEntry.id))?.[0]);
+	const slopeRange = $derived(GeoTiffCache.getDataRanges(getSlopeCacheKey(layerEntry.id))?.[0]);
+	const aspectRange = $derived(GeoTiffCache.getDataRanges(getAspectCacheKey(layerEntry.id))?.[0]);
+	const tpiRange = $derived(GeoTiffCache.getDataRanges(getTpiCacheKey(layerEntry.id))?.[0]);
+	const hasDerivedModes = $derived(numBands === 1 && GeoTiffCache.hasRawSingleBand(layerEntry.id));
+	let generatingDerivedMode = $state<string | null>(null);
+	let lastHandledMode = $state<string | null>(null);
 	/** min/maxからスライダーのstepを動的に算出 */
 	const calcStep = (min: number, max: number): number => {
 		const range = Math.abs(max - min);
@@ -52,18 +69,192 @@
 		return Math.max(magnitude, 0.001);
 	};
 
-	let tiffStyleModes = $state([
-		{ key: 'single', name: 'カラーマップ', icon: 'mdi:format-color-highlight' },
-		{ key: 'multi', name: 'RGB合成', icon: 'boxicons:rgb-filled' }
-		// { key: 'shadow', name: '陰影' },
-		// { key: 'slope', name: '傾斜量' },
-		// { key: 'aspect', name: '傾斜方向' },
-		// { key: 'curvature', name: '曲率' }
-	]);
+	const tiffStyleModes = $derived.by(() => {
+		const items = [{ key: 'single', name: '段彩図', icon: 'mdi:terrain' }];
+
+		if (hasDerivedModes) {
+			items.push({ key: 'slope', name: '傾斜量', icon: 'mdi:terrain' });
+			items.push({ key: 'aspect', name: '傾斜方位', icon: 'mdi:compass-outline' });
+			items.push({ key: 'tpi', name: '地形位置指数', icon: 'mdi:chart-bell-curve-cumulative' });
+			items.push({ key: 'twi', name: '地形湿潤指数', icon: 'mdi:water-percent' });
+		}
+
+		if (numBands > 1) {
+			items.push({ key: 'multi', name: 'RGB合成', icon: 'boxicons:rgb-filled' });
+		}
+
+		return items;
+	});
+	const isDerivedModeLoading = $derived(
+		layerEntry.style.visualization.mode === 'twi' ||
+			layerEntry.style.visualization.mode === 'slope' ||
+			layerEntry.style.visualization.mode === 'aspect' ||
+			layerEntry.style.visualization.mode === 'tpi'
+			? generatingDerivedMode === layerEntry.style.visualization.mode
+			: false
+	);
+
+	const ensureDerivedData = () => {
+		if (
+			layerEntry.style.visualization.mode === 'twi' &&
+			twiRange &&
+			!layerEntry.style.visualization.uniformsData.twi
+		) {
+			layerEntry.style.visualization.uniformsData.twi = {
+				colorMap: 'hsv',
+				min: twiRange.min,
+				max: twiRange.max
+			};
+			return;
+		}
+
+		if (
+			layerEntry.style.visualization.mode === 'slope' &&
+			slopeRange &&
+			!layerEntry.style.visualization.uniformsData.slope
+		) {
+			layerEntry.style.visualization.uniformsData.slope = {
+				colorMap: 'salinity',
+				min: slopeRange.min,
+				max: slopeRange.max
+			};
+			return;
+		}
+
+		if (
+			layerEntry.style.visualization.mode === 'aspect' &&
+			aspectRange &&
+			!layerEntry.style.visualization.uniformsData.aspect
+		) {
+			layerEntry.style.visualization.uniformsData.aspect = {
+				colorMap: 'rainbow-soft',
+				min: aspectRange.min,
+				max: aspectRange.max
+			};
+			return;
+		}
+
+		if (
+			layerEntry.style.visualization.mode === 'tpi' &&
+			tpiRange &&
+			!layerEntry.style.visualization.uniformsData.tpi
+		) {
+			layerEntry.style.visualization.uniformsData.tpi = {
+				colorMap: 'rdbu',
+				min: tpiRange.min,
+				max: tpiRange.max
+			};
+		}
+	};
+
+	const createDerivedDefaultStyle = (
+		mode: 'twi' | 'slope' | 'aspect' | 'tpi'
+	): { colorMap: ColorMapType; min: number; max: number } => {
+		if (mode === 'twi') {
+			return {
+				colorMap: 'hsv',
+				min: twiRange?.min ?? 0,
+				max: twiRange?.max ?? 1
+			};
+		}
+		if (mode === 'slope') {
+			return {
+				colorMap: 'salinity',
+				min: slopeRange?.min ?? 0,
+				max: slopeRange?.max ?? 90
+			};
+		}
+		if (mode === 'aspect') {
+			return {
+				colorMap: 'rainbow-soft',
+				min: aspectRange?.min ?? 0,
+				max: aspectRange?.max ?? 360
+			};
+		}
+		return {
+			colorMap: 'rdbu',
+			min: tpiRange?.min ?? -1,
+			max: tpiRange?.max ?? 1
+		};
+	};
+
+	const activateDerivedMode = async (mode: 'twi' | 'slope' | 'aspect' | 'tpi') => {
+		if (mode === 'twi' && !layerEntry.style.visualization.uniformsData.twi) {
+			layerEntry.style.visualization.uniformsData.twi = createDerivedDefaultStyle(mode);
+		}
+		if (mode === 'slope' && !layerEntry.style.visualization.uniformsData.slope) {
+			layerEntry.style.visualization.uniformsData.slope = createDerivedDefaultStyle(mode);
+		}
+		if (mode === 'aspect' && !layerEntry.style.visualization.uniformsData.aspect) {
+			layerEntry.style.visualization.uniformsData.aspect = createDerivedDefaultStyle(mode);
+		}
+		if (mode === 'tpi' && !layerEntry.style.visualization.uniformsData.tpi) {
+			layerEntry.style.visualization.uniformsData.tpi = createDerivedDefaultStyle(mode);
+		}
+
+		await ensureDerivedCacheForMode();
+		ensureDerivedData();
+	};
+
+	const ensureDerivedCacheForMode = async () => {
+		const mode = layerEntry.style.visualization.mode;
+		if (mode !== 'twi' && mode !== 'slope' && mode !== 'aspect' && mode !== 'tpi') {
+			return;
+		}
+
+		if (generatingDerivedMode === mode) return;
+
+		const currentRange =
+			mode === 'twi'
+				? twiRange
+				: mode === 'slope'
+					? slopeRange
+					: mode === 'aspect'
+						? aspectRange
+						: tpiRange;
+		if (currentRange) return;
+
+		generatingDerivedMode = mode;
+		try {
+			await ensureRasterDerivedCache(layerEntry.id, mode);
+		} finally {
+			generatingDerivedMode = null;
+		}
+	};
+
+	$effect(() => {
+		if (layerEntry.style.visualization.mode === 'twi' && !hasDerivedModes) {
+			layerEntry.style.visualization.mode = 'single';
+		}
+		if (layerEntry.style.visualization.mode === 'slope' && !hasDerivedModes) {
+			layerEntry.style.visualization.mode = 'single';
+		}
+		if (layerEntry.style.visualization.mode === 'aspect' && !hasDerivedModes) {
+			layerEntry.style.visualization.mode = 'single';
+		}
+		if (layerEntry.style.visualization.mode === 'tpi' && !hasDerivedModes) {
+			layerEntry.style.visualization.mode = 'single';
+		}
+	});
+
+	$effect(() => {
+		const mode = layerEntry.style.visualization.mode;
+		if (mode === lastHandledMode) return;
+		lastHandledMode = mode;
+
+		if (mode === 'twi' || mode === 'slope' || mode === 'aspect' || mode === 'tpi') {
+			void activateDerivedMode(mode);
+		}
+	});
 </script>
 
-<Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
+<Accordion label="色の調整" icon="mdi:paint" bind:value={showColorOption}>
 	<BaseSelectMenu bind:selectedKey={layerEntry.style.visualization.mode} items={tiffStyleModes} />
+	{#if isDerivedModeLoading}
+		<div class="bg-sub/60 mb-2 rounded-2xl px-3 py-2 text-sm text-gray-200">
+			地形解析を計算中です...
+		</div>
+	{/if}
 	{#if layerEntry.style.visualization.mode === 'single'}
 		{#if numBands > 1}
 			<div class="flex items-center gap-2 py-2">
@@ -87,7 +278,7 @@
 		{/if}
 		<ColorMapSelect
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['single'].colorMap}
-			mutableColorMapType={[...COLOR_MAP_TYPE]}
+			mutableColorMapType={colorMapOptions}
 		>
 			{#snippet children(_isColorMap)}
 				<ColorScaleDem isColorMap={_isColorMap} />
@@ -110,6 +301,134 @@
 				layerEntry.style.visualization.uniformsData['single'].colorMap
 			)}
 		/>
+	{:else if layerEntry.style.visualization.mode === 'twi'}
+		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
+			{#if layerEntry.style.visualization.uniformsData.twi}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.twi.colorMap}
+					mutableColorMapType={colorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.twi.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.twi.max}
+					min={twiRange?.min ?? 0}
+					max={twiRange?.max ?? 1}
+					step={calcStep(twiRange?.min ?? 0, twiRange?.max ?? 1)}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.visualization.uniformsData.twi.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(
+						layerEntry.style.visualization.uniformsData.twi.colorMap
+					)}
+					maxRangeColor={colorMapManager.getMaxColor(
+						layerEntry.style.visualization.uniformsData.twi.colorMap
+					)}
+				/>
+			{:else}
+				<div class="py-3 text-sm text-gray-300">地形湿潤指数を計算中です。</div>
+			{/if}
+		</div>
+	{:else if layerEntry.style.visualization.mode === 'slope'}
+		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
+			{#if layerEntry.style.visualization.uniformsData.slope}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
+					mutableColorMapType={colorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
+					min={slopeRange?.min ?? 0}
+					max={slopeRange?.max ?? 90}
+					step={calcStep(slopeRange?.min ?? 0, slopeRange?.max ?? 90)}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.visualization.uniformsData.slope.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(
+						layerEntry.style.visualization.uniformsData.slope.colorMap
+					)}
+					maxRangeColor={colorMapManager.getMaxColor(
+						layerEntry.style.visualization.uniformsData.slope.colorMap
+					)}
+				/>
+			{:else}
+				<div class="py-3 text-sm text-gray-300">傾斜量を計算中です。</div>
+			{/if}
+		</div>
+	{:else if layerEntry.style.visualization.mode === 'aspect'}
+		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
+			{#if layerEntry.style.visualization.uniformsData.aspect}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.aspect.colorMap}
+					mutableColorMapType={colorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.aspect.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.aspect.max}
+					min={aspectRange?.min ?? 0}
+					max={aspectRange?.max ?? 360}
+					step={calcStep(aspectRange?.min ?? 0, aspectRange?.max ?? 360)}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.visualization.uniformsData.aspect.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(
+						layerEntry.style.visualization.uniformsData.aspect.colorMap
+					)}
+					maxRangeColor={colorMapManager.getMaxColor(
+						layerEntry.style.visualization.uniformsData.aspect.colorMap
+					)}
+				/>
+			{:else}
+				<div class="py-3 text-sm text-gray-300">傾斜方位を計算中です。</div>
+			{/if}
+		</div>
+	{:else if layerEntry.style.visualization.mode === 'tpi'}
+		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
+			{#if layerEntry.style.visualization.uniformsData.tpi}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.tpi.colorMap}
+					mutableColorMapType={colorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.tpi.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.tpi.max}
+					min={tpiRange?.min ?? -1}
+					max={tpiRange?.max ?? 1}
+					step={calcStep(tpiRange?.min ?? -1, tpiRange?.max ?? 1)}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.visualization.uniformsData.tpi.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(
+						layerEntry.style.visualization.uniformsData.tpi.colorMap
+					)}
+					maxRangeColor={colorMapManager.getMaxColor(
+						layerEntry.style.visualization.uniformsData.tpi.colorMap
+					)}
+				/>
+			{:else}
+				<div class="py-3 text-sm text-gray-300">地形位置指数を計算中です。</div>
+			{/if}
+		</div>
 	{:else if layerEntry.style.visualization.mode === 'multi'}
 		<div class="flex flex-col gap-3 py-2">
 			{#each BAND_CHANNELS as { key, label, color } (key)}

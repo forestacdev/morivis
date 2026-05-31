@@ -20,7 +20,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		maxZoom: 18,
 		tileSize: 256,
 		bounds: KANAGAWA_BBOX,
-		xyzImageTile: { x: 7262, y: 3230, z: 13 }
+		xyzImageTile: { x: 3621, y: 1612, z: 12 }
 	},
 	interaction: {
 		clickable: true
@@ -33,6 +33,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 			uniformsData: {
 				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
 				relief: {
+					type: 'linear',
 					max: 2000,
 					min: 0,
 					colorMap: 'jet'

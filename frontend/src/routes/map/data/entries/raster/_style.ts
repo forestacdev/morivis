@@ -37,12 +37,14 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 		mode: 'relief',
 		uniformsData: {
 			relief: {
+				type: 'linear',
 				max: 4000,
 				min: 0,
 				colorMap: 'jet'
 			},
 
 			slope: {
+				type: 'linear',
 				max: 90,
 				min: 0,
 				colorMap: 'salinity'

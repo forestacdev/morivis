@@ -31,6 +31,11 @@
 		parseEpsgFromAuxXml,
 		parseBboxFromAuxXml
 	} from '$routes/map/utils/formats/raster/aux-xml';
+	import {
+		findGeoReferencedImageFile,
+		findMatchingAuxXmlFile,
+		findMatchingWorldFile
+	} from '$routes/map/utils/formats/raster/sidecar';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
@@ -93,7 +98,9 @@
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
 			return (
-				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g|webp)$/i.test(f.name)) ?? null
+				findGeoReferencedImageFile(dropFile) ??
+				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g|webp)$/i.test(f.name)) ??
+				null
 			);
 		}
 		return dropFile;
@@ -109,6 +116,22 @@
 				]
 			: [{ key: 'raster', name: 'ラスター' }]
 	);
+
+	const getRasterResolutionMeters = (
+		bbox: [number, number, number, number],
+		width: number,
+		height: number
+	): { ewres: number; nsres: number } => {
+		const [west, south, east, north] = bbox;
+		const centerLat = (south + north) / 2;
+		const latMeters = 111320;
+		const lonMeters = 111320 * Math.cos((centerLat * Math.PI) / 180);
+
+		return {
+			ewres: Math.max(((east - west) * lonMeters) / Math.max(width, 1), 0.01),
+			nsres: Math.max(((north - south) * latMeters) / Math.max(height, 1), 0.01)
+		};
+	};
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
@@ -146,14 +169,6 @@
 		} catch {
 			return null;
 		}
-	};
-
-	const findWorldFile = (files: FileList): File | null => {
-		return Array.from(files).find((f) => /\.(tfw|tifw|tiffw|pgw|jgw|wld)$/i.test(f.name)) ?? null;
-	};
-
-	const findAuxXmlFile = (files: FileList): File | null => {
-		return Array.from(files).find((f) => /\.aux\.xml$/i.test(f.name)) ?? null;
 	};
 
 	const openGeoRefForm = (file: File) => {
@@ -339,7 +354,7 @@
 			let auxEpsg: EpsgCode | null = null;
 			let auxContent: string | null = null;
 			if (dropFile instanceof FileList) {
-				const auxFile = findAuxXmlFile(dropFile);
+				const auxFile = findMatchingAuxXmlFile(dropFile, file);
 				if (auxFile) {
 					auxContent = await auxFile.text();
 					auxEpsg = parseEpsgFromAuxXml(auxContent);
@@ -348,7 +363,7 @@
 
 			// ワールドファイルから位置情報を取得
 			if (dropFile instanceof FileList) {
-				const wf = findWorldFile(dropFile);
+				const wf = findMatchingWorldFile(dropFile, file);
 				if (wf) {
 					rawBbox = await parseTfw(wf, width, height);
 					hasTfw = true;
@@ -402,7 +417,7 @@
 
 			// GeoTIFFにbboxがなければワールドファイル(.tfw)を探す
 			if (!rawBbox && dropFile instanceof FileList) {
-				const tfwFile = findWorldFile(dropFile);
+				const tfwFile = findMatchingWorldFile(dropFile, file);
 				if (tfwFile) {
 					rawBbox = await parseTfw(tfwFile, width, height);
 					hasTfw = true;
@@ -449,7 +464,7 @@
 			let auxEpsg: EpsgCode | null = null;
 			let auxContent: string | null = null;
 			if (dropFile instanceof FileList) {
-				const auxFile = findAuxXmlFile(dropFile);
+				const auxFile = findMatchingAuxXmlFile(dropFile, file);
 				if (auxFile) {
 					auxContent = await auxFile.text();
 					auxEpsg = parseEpsgFromAuxXml(auxContent);
@@ -584,6 +599,20 @@
 				parsedNodata,
 				dataRanges
 			);
+
+			if (numBands === 1) {
+				const sourceBand =
+					parsedBands[0] instanceof Float32Array
+						? parsedBands[0]
+						: new Float32Array(parsedBands[0]);
+				const { ewres, nsres } = getRasterResolutionMeters(resolvedBbox, imageWidth, imageHeight);
+				GeoTiffCache.setRawSingleBand(entryId, {
+					band: sourceBand,
+					nodata: parsedNodata,
+					ewres,
+					nsres
+				});
+			}
 
 			// 生データを解放（メモリ節約）
 			parsedBands = null;

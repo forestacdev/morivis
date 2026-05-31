@@ -20,6 +20,12 @@
 	} from '$routes/map/data/types/raster';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
+		getAspectCacheKey,
+		getSlopeCacheKey,
+		getTpiCacheKey,
+		getTwiCacheKey
+	} from '$routes/map/utils/formats/geotiff';
+	import {
 		getRasterDimension,
 		getRasterDimensionRuntimeUpdates
 	} from '$routes/map/utils/raster/dimension-runtime';
@@ -112,11 +118,52 @@
 			layerEntry.format.type === 'image' &&
 			layerEntry.style.visualization.mode === 'single'
 		) {
-			layerEntry.style.visualization.uniformsData.single.index = currentIndex;
-			const currentRange = GeoTiffCache.getDataRanges(layerEntry.id)?.[currentIndex];
+			layerEntry.style.visualization.uniformsData.single.index = 0;
+			const currentRange = GeoTiffCache.getDataRanges(layerEntry.id)?.[0];
 			if (currentRange) {
 				layerEntry.style.visualization.uniformsData.single.min = currentRange.min;
 				layerEntry.style.visualization.uniformsData.single.max = currentRange.max;
+			}
+		}
+
+		if (
+			layerEntry.style.type === 'tiff' &&
+			layerEntry.format.type === 'image' &&
+			layerEntry.style.visualization.mode === 'twi'
+		) {
+			const currentRange = GeoTiffCache.getDataRanges(getTwiCacheKey(layerEntry.id))?.[0];
+			if (currentRange) {
+				layerEntry.style.visualization.uniformsData.twi = {
+					colorMap: layerEntry.style.visualization.uniformsData.twi?.colorMap ?? 'hsv',
+					min: currentRange.min,
+					max: currentRange.max
+				};
+			}
+		}
+
+		if (
+			layerEntry.style.type === 'tiff' &&
+			layerEntry.format.type === 'image' &&
+			(layerEntry.style.visualization.mode === 'slope' ||
+				layerEntry.style.visualization.mode === 'aspect' ||
+				layerEntry.style.visualization.mode === 'tpi')
+		) {
+			const mode = layerEntry.style.visualization.mode;
+			const currentRange = GeoTiffCache.getDataRanges(
+				mode === 'slope'
+					? getSlopeCacheKey(layerEntry.id)
+					: mode === 'aspect'
+						? getAspectCacheKey(layerEntry.id)
+						: getTpiCacheKey(layerEntry.id)
+			)?.[0];
+			if (currentRange) {
+				layerEntry.style.visualization.uniformsData[mode] = {
+					colorMap:
+						layerEntry.style.visualization.uniformsData[mode]?.colorMap ??
+						(mode === 'slope' ? 'salinity' : mode === 'aspect' ? 'rainbow-soft' : 'rdbu'),
+					min: currentRange.min,
+					max: currentRange.max
+				};
 			}
 		}
 
@@ -363,7 +410,7 @@
 			<div class="flex items-center justify-center gap-2 pt-3">
 				<button
 					onclick={toggleAutoplay}
-					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white hover:bg-white/10"
+					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white select-none hover:bg-white/10"
 					aria-label={isPlaying ? '停止' : '再生'}
 				>
 					{#if isPlaying}

@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { RasterDemEntry } from '$routes/map/data/types/raster';
+	import type { DemRangeColorStyle, RasterDemEntry } from '$routes/map/data/types/raster';
 	import { type ImageResult, getLayerImage } from '$routes/map/utils/image';
+	import { isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 
 	interface Props {
 		isMode: string;
@@ -30,8 +31,37 @@
 		} as RasterDemEntry;
 	});
 
+	const normalizePreviewRangeStyle = (style: DemRangeColorStyle): DemRangeColorStyle => {
+		return isDemStepColorStyle(style)
+			? {
+					...style,
+					min: 0,
+					max: 0
+				}
+			: {
+					...style,
+					min: 0,
+					max: 0
+				};
+	};
+
+	const previewKey = $derived.by(() =>
+		JSON.stringify({
+			id: copyEntry.id,
+			mode: copyEntry.style.visualization.mode,
+			uniformsData: {
+				...copyEntry.style.visualization.uniformsData,
+				relief: normalizePreviewRangeStyle(copyEntry.style.visualization.uniformsData.relief),
+				slope: copyEntry.style.visualization.uniformsData.slope
+					? normalizePreviewRangeStyle(copyEntry.style.visualization.uniformsData.slope)
+					: undefined
+			}
+		})
+	);
+
 	$effect(() => {
 		try {
+			void previewKey;
 			promise = getLayerImage(copyEntry);
 		} catch (error) {
 			isImageError = true;

@@ -1,14 +1,19 @@
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
+import type { Table } from 'apache-arrow';
+import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type {
 	ModelMeshEntry,
 	MeshStyle,
 	MeshFormatType,
 	ModelTiles3DEntry,
 	ModelPointCloudEntry,
-	PointCloudStyle
+	PointCloudStyle,
+	ModelGeoArrowEntry
 } from '$routes/map/data/types/model';
+
+import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 
 export const createTiles3DEntry = (
 	name: string,
@@ -78,6 +83,34 @@ export const createPointCloudEntry = (
 	}
 });
 
+export const createGeoArrowEntry = (
+	name: string,
+	table: Table,
+	geometryType: VectorEntryGeometryType,
+	bounds?: [number, number, number, number]
+): ModelGeoArrowEntry => ({
+	id: 'geoarrow_' + crypto.randomUUID(),
+	type: 'model',
+	format: {
+		type: 'geoarrow',
+		table,
+		geometryType
+	},
+	metaData: {
+		...DEFAULT_CUSTOM_META_DATA,
+		attribution: 'GeoArrow',
+		name,
+		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
+	},
+	interaction: { clickable: false },
+	style: {
+		visible: true,
+		type: 'geoarrow',
+		opacity: 0.7,
+		color: getRandomColor()
+	}
+});
+
 export const createGlbEntry = (
 	name: string,
 	url: string,
@@ -90,39 +123,73 @@ export const createGlbEntry = (
 		rotationY?: number;
 	},
 	formatType: MeshFormatType = 'gltf',
-	mtlUrl?: string
-): ModelMeshEntry<MeshStyle> => ({
-	id: 'glb_' + crypto.randomUUID(),
-	type: 'model',
-	format: {
-		type: formatType,
-		url,
-		...(mtlUrl && { mtlUrl })
-	},
-	metaData: {
-		...DEFAULT_CUSTOM_META_DATA,
-		attribution: formatType === 'obj' ? 'OBJ' : 'GLB',
-		name,
-		altitude: transform.altitude,
-		bounds: pointToBbox(transform.lng, transform.lat)
-	},
-	interaction: { clickable: false },
-	style: {
-		visible: true,
-		type: 'mesh',
-		opacity: 1,
-		wireframe: false,
-		color: '#ffffff',
-		shading: { ...DEFAULT_MESH_SHADING },
-		transform: {
-			lng: transform.lng,
-			lat: transform.lat,
-			altitude: transform.altitude,
-			baseRotationX: -180,
-			scale: transform.scale ?? 1,
-			rotationX: transform.rotationX ?? 0,
-			rotationY: transform.rotationY ?? 0,
-			rotationZ: 0
-		}
+	mtlUrl?: string,
+	resourceUrls?: Record<string, string>,
+	options?: {
+		normalizeToLocalOrigin?: boolean;
 	}
-});
+): ModelMeshEntry<MeshStyle> => {
+	// 3MF は Z-up 前提のモデルが多く、そのままだと map 上で横倒しになるため基準回転を分ける。
+	const baseRotationX = formatType === '3mf' ? 90 : -180;
+
+	return {
+		id: 'glb_' + crypto.randomUUID(),
+		type: 'model',
+		format: {
+			type: formatType,
+			url,
+			...(mtlUrl && { mtlUrl }),
+			...(resourceUrls && { resourceUrls }),
+			...(options?.normalizeToLocalOrigin != null && {
+				normalizeToLocalOrigin: options.normalizeToLocalOrigin
+			})
+		},
+		metaData: {
+			...DEFAULT_CUSTOM_META_DATA,
+			attribution:
+				formatType === 'obj'
+					? 'OBJ'
+					: formatType === '3ds'
+						? '3DS'
+						: formatType === 'dae'
+							? 'DAE'
+							: formatType === '3dm'
+								? '3DM'
+								: formatType === 'fbx'
+									? 'FBX'
+									: formatType === 'drc'
+										? 'DRC'
+										: formatType === '3mf'
+											? '3MF'
+											: formatType === 'amf'
+												? 'AMF'
+												: formatType === 'ifc'
+													? 'IFC'
+													: 'GLB',
+			name,
+			altitude: transform.altitude,
+			bounds: pointToBbox(transform.lng, transform.lat)
+		},
+		interaction: { clickable: false },
+		style: {
+			visible: true,
+			type: 'mesh',
+			opacity: 1,
+			wireframe: false,
+			color: '#ffffff',
+			shading: { ...DEFAULT_MESH_SHADING },
+			transform: {
+				lng: transform.lng,
+				lat: transform.lat,
+				altitude: transform.altitude,
+				heightOffset: 0,
+				heightScale: 1,
+				baseRotationX,
+				scale: transform.scale ?? 1,
+				rotationX: transform.rotationX ?? 0,
+				rotationY: transform.rotationY ?? 0,
+				rotationZ: 0
+			}
+		}
+	};
+};

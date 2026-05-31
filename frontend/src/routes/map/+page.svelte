@@ -74,6 +74,7 @@
 		resolveGeneratedPoiIconUrl,
 		resolvePopupImageUrl
 	} from '$routes/map/utils/icon';
+	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
 	import {
 		get3dParams,
 		getParams,
@@ -335,8 +336,8 @@
 
 		streetViewLineData = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/links.fgb`);
 
-		nodeConnectionsJson = await fetch(`${STREET_VIEW_DATA_PATH}/node_connections.json`).then(
-			(res) => res.json()
+		nodeConnectionsJson = await fetchJsonWithDevProxy(
+			`${STREET_VIEW_DATA_PATH}/node_connections.json`
 		);
 
 		// ストリートビューのパラメータを取得

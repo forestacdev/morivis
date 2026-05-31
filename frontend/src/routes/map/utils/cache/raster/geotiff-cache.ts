@@ -19,6 +19,19 @@ export interface BandDataRange {
 	max: number;
 }
 
+export interface RawSingleBandCache {
+	band: Float32Array;
+	nodata: number | null;
+	ewres: number;
+	nsres: number;
+}
+
+export const getDerivedRasterCacheKey = (key: string, suffix: string): string => {
+	return `${key}__${suffix}`;
+};
+
+const DERIVED_RASTER_SUFFIXES = ['twi', 'slope', 'aspect', 'tpi'] as const;
+
 export class GeoTiffCache {
 	// Terrarium PNG Blob URL（バンドごと）
 	private static terrariumCache: Map<string, string[]> = new Map();
@@ -34,6 +47,8 @@ export class GeoTiffCache {
 	private static blobCache: Map<string, { blob: Blob; url: string }> = new Map();
 	// render worker にテクスチャ転送済みか
 	private static textureTransferredSet: Set<string> = new Set();
+	// single-band GeoTIFF の元データ
+	private static rawSingleBandCache: Map<string, RawSingleBandCache> = new Map();
 
 	// --- Terrarium PNG ---
 	static setTerrarium(key: string, urls: string[]) {
@@ -97,6 +112,20 @@ export class GeoTiffCache {
 		return this.numBandsCache.has(key);
 	}
 
+	// --- Raw single band ---
+	static setRawSingleBand(key: string, data: RawSingleBandCache) {
+		this.rawSingleBandCache.set(key, data);
+	}
+	static getRawSingleBand(key: string): RawSingleBandCache | undefined {
+		return this.rawSingleBandCache.get(key);
+	}
+	static hasRawSingleBand(key: string): boolean {
+		return this.rawSingleBandCache.has(key);
+	}
+	static deleteRawSingleBand(key: string) {
+		this.rawSingleBandCache.delete(key);
+	}
+
 	// --- Blob (rendered image) ---
 	static setBlob(key: string, blob: Blob, url: string) {
 		this.blobCache.set(key, { blob, url });
@@ -118,6 +147,11 @@ export class GeoTiffCache {
 	}
 	static isTextureTransferred(key: string): boolean {
 		return this.textureTransferredSet.has(key);
+	}
+	static invalidateTextureTransfer(key: string) {
+		this.textureTransferredSet.delete(key);
+		this.revokeBlob(key);
+		releaseRenderTexture(key);
 	}
 
 	// --- 4326 再投影 ---
@@ -196,6 +230,7 @@ export class GeoTiffCache {
 		}
 		this.blobCache.clear();
 		this.textureTransferredSet.clear();
+		this.rawSingleBandCache.clear();
 		this.is4326Set.clear();
 		this.rawBboxCache.clear();
 		// Workerを停止（テクスチャも解放される）
@@ -211,13 +246,33 @@ export class GeoTiffCache {
 		this.numBandsCache.delete(key);
 		this.revokeBlob(key);
 		this.textureTransferredSet.delete(key);
+		this.rawSingleBandCache.delete(key);
 		this.is4326Set.delete(key);
 		this.rawBboxCache.delete(key);
+		DERIVED_RASTER_SUFFIXES.forEach((suffix) => {
+			const derivedKey = getDerivedRasterCacheKey(key, suffix);
+			this.revokeTerrarium(derivedKey);
+			this.dataRangeCache.delete(derivedKey);
+			this.sizeCache.delete(derivedKey);
+			this.bboxCache.delete(derivedKey);
+			this.numBandsCache.delete(derivedKey);
+			this.revokeBlob(derivedKey);
+			this.textureTransferredSet.delete(derivedKey);
+			this.is4326Set.delete(derivedKey);
+			this.rawBboxCache.delete(derivedKey);
+		});
 		if (releaseRenderTexture(key)) {
 			// キャッシュが空になったらWorkerを停止
 			if (this.terrariumCache.size === 0) {
 				terminateRenderWorker();
 			}
+		}
+
+		DERIVED_RASTER_SUFFIXES.forEach((suffix) => {
+			releaseRenderTexture(getDerivedRasterCacheKey(key, suffix));
+		});
+		if (this.terrariumCache.size === 0) {
+			terminateRenderWorker();
 		}
 	}
 }

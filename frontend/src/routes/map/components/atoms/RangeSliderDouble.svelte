@@ -115,82 +115,84 @@
 	});
 </script>
 
-<!-- ラベル表示 -->
-{#if label}
-	<div class="mb-4 text-base">
-		{label}
-		<span class="">
-			{fmt(lowerValue)} - {fmt(upperValue)}
-		</span>
+<div class="w-full">
+	<!-- ラベル表示 -->
+	{#if label}
+		<div class="mb-4 text-base select-none">
+			{label}
+			<span class="">
+				{fmt(lowerValue)} - {fmt(upperValue)}
+			</span>
+		</div>
+	{/if}
+
+	<!-- デュアルスライダー本体 -->
+	<div class="relative grid w-full place-items-center">
+		<!-- スライダー背景 -->
+
+		<!-- スライダーコンテナ -->
+		<!-- スライダーコンテナ -->
+		<div class="pointer-events-none absolute grid w-[90%] place-items-center">
+			<!-- 最小範囲の色付きバー（左側） -->
+			<div
+				class="pointer-events-none absolute -z-10 h-3 rounded-full"
+				style="background: {minRangeColor}; left: 0; width: calc({rangeBarStyle.left});"
+			></div>
+
+			<!-- 選択範囲の色付きバー（中間） -->
+			<div
+				class="pointer-events-none absolute -z-10 h-3 rounded-full"
+				style="background: {primaryColor}; left: calc({rangeBarStyle.left}); width: calc({rangeBarStyle.width});"
+			></div>
+
+			<!-- 最大範囲の色付きバー（右側） -->
+			<div
+				class="pointer-events-none absolute -z-10 h-3 rounded-full"
+				style="background: {maxRangeColor}; left: calc({rangeBarStyle.left} + {rangeBarStyle.width}); width: calc(100% - {rangeBarStyle.left} - {rangeBarStyle.width});"
+			></div>
+		</div>
+
+		<div class="pointer-events-none relative grid w-[95%] place-items-center">
+			<!-- 下限スライダー -->
+			<input
+				bind:this={lowerSliderElement}
+				type="range"
+				class="slider w-full"
+				value={lowerValue}
+				{min}
+				{max}
+				{step}
+				{disabled}
+				style="--slider-thumb-border-color: {minRangeColor};"
+				oninput={handleLowerChange}
+				aria-label="下限値"
+			/>
+
+			<!-- 上限スライダー -->
+			<input
+				bind:this={upperSliderElement}
+				type="range"
+				class="slider w-full"
+				value={upperValue}
+				{min}
+				{max}
+				{step}
+				{disabled}
+				style="--slider-thumb-border-color: {maxRangeColor};"
+				oninput={handleUpperChange}
+				aria-label="上限値"
+			/>
+		</div>
 	</div>
-{/if}
 
-<!-- デュアルスライダー本体 -->
-<div class="relative grid w-full place-items-center">
-	<!-- スライダー背景 -->
-
-	<!-- スライダーコンテナ -->
-	<!-- スライダーコンテナ -->
-	<div class="pointer-events-none absolute grid w-[90%] place-items-center">
-		<!-- 最小範囲の色付きバー（左側） -->
-		<div
-			class="pointer-events-none absolute -z-10 h-3 rounded-full"
-			style="background: {minRangeColor}; left: 0; width: calc({rangeBarStyle.left});"
-		></div>
-
-		<!-- 選択範囲の色付きバー（中間） -->
-		<div
-			class="pointer-events-none absolute -z-10 h-3 rounded-full"
-			style="background: {primaryColor}; left: calc({rangeBarStyle.left}); width: calc({rangeBarStyle.width});"
-		></div>
-
-		<!-- 最大範囲の色付きバー（右側） -->
-		<div
-			class="pointer-events-none absolute -z-10 h-3 rounded-full"
-			style="background: {maxRangeColor}; left: calc({rangeBarStyle.left} + {rangeBarStyle.width}); width: calc(100% - {rangeBarStyle.left} - {rangeBarStyle.width});"
-		></div>
-	</div>
-
-	<div class="pointer-events-none relative grid w-[95%] place-items-center">
-		<!-- 下限スライダー -->
-		<input
-			bind:this={lowerSliderElement}
-			type="range"
-			class="slider w-full"
-			value={lowerValue}
-			{min}
-			{max}
-			{step}
-			{disabled}
-			style="--slider-thumb-border-color: {minRangeColor};"
-			oninput={handleLowerChange}
-			aria-label="下限値"
-		/>
-
-		<!-- 上限スライダー -->
-		<input
-			bind:this={upperSliderElement}
-			type="range"
-			class="slider w-full"
-			value={upperValue}
-			{min}
-			{max}
-			{step}
-			{disabled}
-			style="--slider-thumb-border-color: {maxRangeColor};"
-			oninput={handleUpperChange}
-			aria-label="上限値"
-		/>
-	</div>
-</div>
-
-<!-- 値表示（詳細版） -->
-<div class="mt-2 flex justify-between px-2 text-base text-sm">
-	<div class="">
-		<span class="">{fmt(min)}</span>
-	</div>
-	<div class="">
-		<span class="">{fmt(max)}</span>
+	<!-- 値表示（詳細版） -->
+	<div class="mt-3 flex justify-between px-2 text-base text-sm select-none">
+		<div class="">
+			<span class="">{fmt(min)}</span>
+		</div>
+		<div class="">
+			<span class="">{fmt(max)}</span>
+		</div>
 	</div>
 </div>
 

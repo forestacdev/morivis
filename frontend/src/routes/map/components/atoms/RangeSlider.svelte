@@ -28,7 +28,7 @@
 	});
 </script>
 
-<div class="flex flex-col gap-4 pb-4 text-base">
+<div class="flex flex-col gap-3 pb-4 text-base">
 	<div class="flex w-full items-center gap-1">
 		{#if icon}
 			<Icon {icon} width={20} />

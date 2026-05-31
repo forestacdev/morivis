@@ -30,7 +30,11 @@
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { AnyModelTiles3DEntry, ModelPointCloudEntry } from '$routes/map/data/types/model';
+	import type {
+		AnyModelTiles3DEntry,
+		ModelGeoArrowEntry,
+		ModelPointCloudEntry
+	} from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import {
 		type FeatureMenuData,
@@ -42,7 +46,6 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import { createDeckOverlay } from '$routes/map/utils/deck/overlay';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
@@ -144,7 +147,7 @@
 				id: entry.id,
 				// runtime state は style 監視から外して、
 				// 宣言的な style 変更だけを setStyle の対象にする。
-				style: getLayerWatchStyleTarget(entry)
+				style: entry.type === 'model' ? null : getLayerWatchStyleTarget(entry)
 			};
 		});
 	});
@@ -614,14 +617,35 @@
 			pointCloudEntries.push(showDataEntry as ModelPointCloudEntry);
 		}
 
-		const deckOverlayLayers = await createDeckOverlay(tiles3dEntry, pointCloudEntries);
+		const geoArrowEntries = entries.filter(
+			(entry) => entry.type === 'model' && entry.format.type === 'geoarrow'
+		) as ModelGeoArrowEntry[];
+
+		if (
+			showDataEntry &&
+			showDataEntry.type === 'model' &&
+			(showDataEntry as ModelGeoArrowEntry).format.type === 'geoarrow'
+		) {
+			geoArrowEntries.push(showDataEntry as ModelGeoArrowEntry);
+		}
+
+		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries, geoArrowEntries);
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
-		mapStore.setDeckOverlay(deckOverlayLayers);
 
 		const meshEntries = entries.filter(
 			(entry) =>
-				entry.type === 'model' && (entry.format.type === 'gltf' || entry.format.type === 'obj')
+				entry.type === 'model' &&
+				(entry.format.type === 'gltf' ||
+					entry.format.type === 'obj' ||
+					entry.format.type === '3ds' ||
+					entry.format.type === 'dae' ||
+					entry.format.type === '3dm' ||
+					entry.format.type === 'fbx' ||
+					entry.format.type === 'drc' ||
+					entry.format.type === '3mf' ||
+					entry.format.type === 'amf' ||
+					entry.format.type === 'ifc')
 		) as ModelMeshEntry<MeshStyle>[];
 
 		const previewMeshEntry =
@@ -797,12 +821,12 @@
 	>
 		<div
 			bind:this={mapContainer}
-			class="h-full w-full overflow-hidden bg-black saturate-[90%] transition-opacity lg:rounded-lg lg:rounded-tl-[35px] lg:rounded-br-[35px] {!showMapCanvas &&
+			class="h-full w-full overflow-hidden bg-black saturate-[90%] transition-opacity lg:rounded-lg {!showMapCanvas &&
 			$mapMode === 'view'
 				? 'opacity-0'
 				: $isStreetView && $mapMode === 'small'
 					? ''
-					: 'opacity-100'}"
+					: 'opacity-100 lg:rounded-tl-[35px] lg:rounded-br-[35px]'}"
 		>
 			{#if maplibreMap}
 				<HighlightMarkerManager map={maplibreMap} {highlightMarkerState} />

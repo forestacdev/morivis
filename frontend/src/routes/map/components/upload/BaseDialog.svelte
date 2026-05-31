@@ -7,7 +7,9 @@
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
+	import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
+	import GeoParquetForm from '$routes/map/components/upload/form/GeoParquetForm.svelte';
 	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
 	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
@@ -20,9 +22,11 @@
 	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
 	import KmlForm from '$routes/map/components/upload/form/KmlForm.svelte';
 	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
+	import LocationHistoryForm from '$routes/map/components/upload/form/LocationHistoryForm.svelte';
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
 	import MeshModelForm from '$routes/map/components/upload/form/MeshModelForm.svelte';
 	import MfJsonForm from '$routes/map/components/upload/form/MfJsonForm.svelte';
+	import MifForm from '$routes/map/components/upload/form/MifForm.svelte';
 	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import OsmForm from '$routes/map/components/upload/form/OsmForm.svelte';
@@ -217,8 +221,44 @@
 					{selectedEpsgCode}
 				/>
 			{/if}
+			{#if showDialogType === 'geoparquet'}
+				<GeoParquetForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'geoarrow'}
+				<GeoArrowForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'mif'}
+				<MifForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
 			{#if showDialogType === 'mfjson'}
 				<MfJsonForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'locationhistory'}
+				<LocationHistoryForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'topojson'}
 				<TopoJsonForm

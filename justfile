@@ -33,6 +33,9 @@ preview:
 lint:
     cd frontend && pnpm run format && pnpm run check && pnpm run lint
 
+lint-errors:
+    cd frontend && pnpm exec eslint . --quiet
+
 # typedocの更新
 typedoc:
     cd frontend && pnpm run typedoc

@@ -1,4 +1,5 @@
 import { PMTiles } from 'pmtiles';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 type TileImageData = { [position: string]: { tileId: string; image: ImageBitmap } };
 
 // タイル画像の処理
@@ -33,7 +34,7 @@ export class TileImageManager {
 		try {
 			let pmtiles = TileImageManager.pmCache.get(src);
 			if (!pmtiles) {
-				pmtiles = new PMTiles(src);
+				pmtiles = new PMTiles(resolveRequestUrl(src));
 				TileImageManager.pmCache.set(src, pmtiles);
 			}
 
@@ -61,7 +62,7 @@ export class TileImageManager {
 
 	public async loadImage(src: string, signal: AbortSignal): Promise<ImageBitmap> {
 		try {
-			const response = await fetch(src, { signal });
+			const response = await fetch(resolveRequestUrl(src), { signal });
 			if (!response.ok) {
 				throw new Error('Failed to fetch image');
 			}

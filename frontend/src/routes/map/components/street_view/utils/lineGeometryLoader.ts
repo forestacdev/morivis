@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { geojson } from 'flatgeobuf';
 import proj4 from 'proj4';
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 
 proj4.defs(
 	'EPSG:6675',
@@ -45,7 +46,7 @@ export class FGB2DLineLoader {
 			proj: undefined
 		}
 	): Promise<THREE.BufferGeometry> {
-		const response = await fetch(url);
+		const response = await fetchWithDevProxy(url);
 
 		// フィーチャのイテレータを作成
 		const featureIterator = geojson.deserialize(

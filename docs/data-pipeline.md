@@ -42,7 +42,9 @@ graph LR
 | `.pmtiles` | `PmtilesForm` |
 | `.mbtiles` | `MBTilesForm` |
 | `.las` `.laz` `.ply` `.pcd` `.xyz` | `PointCloudForm` |
-| `.glb` `.obj` | `MeshModelForm` |
+| `.txt` | 先頭行を見て点群テキストなら `PointCloudForm` |
+| `.glb` | `MeshModelForm` |
+| `.obj` | 面要素があれば `MeshModelForm`、頂点のみなら `PointCloudForm` |
 | `.nc` `.nc4` | `NetCDFForm` |
 | `.grib2` `.grb2` `.grb` `.bin` | `Grib2Form` |
 | `.landxml` | `LandXmlForm` |
@@ -76,7 +78,7 @@ graph LR
 | OSM XML | `OsmForm` | `osmtogeojson` で GeoJSON 化し、ジオメトリ種別ごとに登録 | `VectorEntry` `format.type: 'geojson'` |
 | CSV | `CsvForm` | 指定列から座標を作って Point 化 | `VectorEntry` `format.type: 'geojson'` |
 | DXF | `DxfForm` | CAD 図面を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
-| DM | `DmForm` | 国土地理院 DM を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| DM | `DmForm` | 数値地形図データ（DM）を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | SIMA | `SimaForm` | SIMA を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | 法務局地図 XML | `MojXmlForm` | XML と内蔵座標系定義から GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | GeoPhoto | `GeoPhotoForm` | EXIF GPS を Point に変換 | `VectorEntry` `format.type: 'geojson'` |
@@ -114,9 +116,9 @@ graph LR
 
 | 入力 | Form | 主な処理 | 結果 |
 |---|---|---|---|
-| GLB / OBJ | `MeshModelForm` | メッシュとして登録する。ローカルファイル時は bbox を計算し、小さいモデルは読み込み基準で拡大する。SkinnedMesh と animation clip も検出する | `ModelEntry` |
+| GLB / OBJ(面あり) | `MeshModelForm` | メッシュとして登録する。ローカルファイル時は bbox を計算し、小さいモデルは読み込み基準で拡大する。SkinnedMesh と animation clip も検出する | `ModelEntry` |
 | 3D Tiles URL | `Tiles3DForm` | `tileset.json` を登録 | `ModelEntry` |
-| LAS / LAZ / PLY / PCD / XYZ | `PointCloudForm` | 点群を読み、必要なら座標変換 | `ModelEntry` |
+| LAS / LAZ / PLY / PCD / XYZ / TXT / OBJ(頂点のみ) | `PointCloudForm` | 点群を読み、必要なら座標変換 | `ModelEntry` |
 
 ## 座標変換と補助フォーム
 

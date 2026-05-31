@@ -33,6 +33,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 			uniformsData: {
 				...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData,
 				relief: {
+					type: 'linear',
 					max: 45,
 					min: 0,
 					colorMap: 'jet'

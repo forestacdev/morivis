@@ -40,6 +40,7 @@
 		type StacAsset
 	} from '$routes/map/utils/formats/stac';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
+	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -459,7 +460,7 @@
 			// 直接アクセスでCORS確認
 			let cogUrl = asset.href;
 			try {
-				const testRes = await fetch(asset.href, { method: 'HEAD' });
+				const testRes = await fetchWithDevProxy(asset.href, { method: 'HEAD' });
 				const contentLength = testRes.headers.get('Content-Length');
 				if (contentLength) {
 					progressText = `COGヘッダーを取得中... (${formatFileSize(Number(contentLength))})`;
