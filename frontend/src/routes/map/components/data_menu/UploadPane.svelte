@@ -340,11 +340,16 @@
 		}
 	];
 
-	const fileDialogGroups: { title: string; groups: { label: string; accept: string }[] }[] = [
+	const fileDialogGroups: {
+		title: string;
+		groups: { label: string; description: string; extensions: string[]; accept: string }[];
+	}[] = [
 		{
 			title: 'ファイル選択',
 			groups: SUPPORTED_FILE_GROUPS.map((group) => ({
 				label: group.label,
+				description: group.description,
+				extensions: group.extensions,
 				accept: group.extensions.join(',')
 			}))
 		}
@@ -533,9 +538,15 @@
 										showFormListDialog = false;
 										await openFilteredFilePicker(fileGroup.accept);
 									}}
-									class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
+									class="bg-base hover:bg-accent group flex min-h-[132px] cursor-pointer flex-col gap-2 rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
 								>
-									{fileGroup.label}
+									<span class="font-semibold">{fileGroup.label}</span>
+									<span class="text-xs leading-5 text-black/70 group-hover:text-white/80">
+										{fileGroup.description}
+									</span>
+									<span class="text-[11px] leading-4 text-black/55 group-hover:text-white/65">
+										対応拡張子: {fileGroup.extensions.join(' ')}
+									</span>
 								</button>
 							{/each}
 						</div>
