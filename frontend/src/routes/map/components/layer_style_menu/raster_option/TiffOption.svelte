@@ -6,14 +6,13 @@
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
 	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
-	import {
-		COLOR_MAP_TYPE,
-		type RasterEntry,
-		type RasterTiffStyle
-	} from '$routes/map/data/types/raster';
+	import { type RasterEntry, type RasterTiffStyle } from '$routes/map/data/types/raster';
+	import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
+	import { MATLAB_COLOR_MAP_NAMES } from '$routes/map/utils/color/matlab-colormaps';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	const colorMapManager = new ColorMapManager();
+	const colorMapOptions = [...SEQUENTIAL_SCHEMES, ...MATLAB_COLOR_MAP_NAMES];
 	interface Props {
 		layerEntry: RasterEntry<RasterTiffStyle>;
 		showColorOption: boolean;
@@ -62,7 +61,7 @@
 	]);
 </script>
 
-<Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
+<Accordion label="色の調整" icon="mdi:paint" bind:value={showColorOption}>
 	<BaseSelectMenu bind:selectedKey={layerEntry.style.visualization.mode} items={tiffStyleModes} />
 	{#if layerEntry.style.visualization.mode === 'single'}
 		{#if numBands > 1}
@@ -87,7 +86,7 @@
 		{/if}
 		<ColorMapSelect
 			bind:isColorMap={layerEntry.style.visualization.uniformsData['single'].colorMap}
-			mutableColorMapType={[...COLOR_MAP_TYPE]}
+			mutableColorMapType={colorMapOptions}
 		>
 			{#snippet children(_isColorMap)}
 				<ColorScaleDem isColorMap={_isColorMap} />

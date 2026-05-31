@@ -11,7 +11,8 @@
 	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
-	import { COLOR_MAP_TYPE } from '$routes/map/data/types/raster';
+	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
+	import { MATLAB_COLOR_MAP_NAMES } from '$routes/map/utils/color/matlab-colormaps';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	import { mapStore } from '$routes/stores/map';
 	interface Props {
@@ -33,6 +34,7 @@
 	let showRotateOption = $state(false);
 
 	const colorMapManager = new ColorMapManager();
+	const colorMapOptions = [...MATLAB_COLOR_MAP_NAMES];
 	const canEditShading = $derived(layerEntry.style.shadingOptions?.enabled ?? true);
 	const canEditScale = $derived(layerEntry.style.transformOptions?.scale ?? true);
 	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);
@@ -83,7 +85,7 @@
 </script>
 
 {#if animationClips.length > 0}
-	<Accordion label={'アニメーション'} icon={'mdi:run-fast'} bind:value={showAnimationOption}>
+	<Accordion label="アニメーション" icon="mdi:run-fast" bind:value={showAnimationOption}>
 		{#if animationClips.length > 0 && layerEntry.state?.animation}
 			<div class="">
 				<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
@@ -114,7 +116,7 @@
 
 <DimensionSelector bind:layerEntry bind:showDimensionOption />
 
-<Accordion label={'マテリアル'} icon={'mdi:format-color-highlight'} bind:value={showMaterialOption}>
+<Accordion label="マテリアル" icon="mdi:format-color-highlight" bind:value={showMaterialOption}>
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
 
 	{#if layerEntry.style.heightColorRamp}
@@ -124,7 +126,7 @@
 			<div transition:slide class="mb-4 flex w-full flex-col gap-2">
 				<ColorMapSelect
 					bind:isColorMap={layerEntry.style.heightColorRamp.colorMap}
-					mutableColorMapType={[...COLOR_MAP_TYPE]}
+					mutableColorMapType={colorMapOptions}
 				>
 					{#snippet children(_isColorMap)}
 						<ColorScaleDem isColorMap={_isColorMap} />
@@ -195,7 +197,7 @@
 	{/if}
 </Accordion>
 
-<Accordion label={'変形・移動'} icon={'gis:cube-3d'} bind:value={showTransformOption}>
+<Accordion label="変形・移動" icon="gis:cube-3d" bind:value={showTransformOption}>
 	{#if canEditScale}
 		<RangeSlider
 			label="スケール"
@@ -232,7 +234,7 @@
 </Accordion>
 
 {#if canEditRotation}
-	<Accordion label={'回転'} icon={'lucide:rotate-3d'} bind:value={showRotateOption}>
+	<Accordion label="回転" icon="lucide:rotate-3d" bind:value={showRotateOption}>
 		<RangeSlider
 			label="X回転 (°)"
 			bind:value={layerEntry.style.transform.rotationX}

@@ -1,17 +1,91 @@
 import type { ColorStepExpression } from '$routes/map/data/types/vector/style';
-import colormap from 'colormap';
 
-import { getSequentSchemeColors } from '$routes/map/utils/color/color-brewer';
+import {
+	getSequentSchemeColors,
+	type SequentialScheme
+} from '$routes/map/utils/color/color-brewer';
+import {
+	MATLAB_COLOR_MAPS,
+	type ColorMapStop,
+	type MatlabColorMapName
+} from '$routes/map/utils/color/matlab-colormaps';
 
 type ColorTuple = [number, number, number, number];
 type ColorOutputFormat = 'hex' | 'rgb' | 'rgba';
 
-const createRgbaColorMap = (colorMapName: string, shades: number): ColorTuple[] => {
-	return colormap({
-		colormap: colorMapName,
-		nshades: shades,
-		format: 'rgba',
-		alpha: 1
+const hexToRgbTuple = (hex: string): [number, number, number] => {
+	return [
+		parseInt(hex.slice(1, 3), 16),
+		parseInt(hex.slice(3, 5), 16),
+		parseInt(hex.slice(5, 7), 16)
+	];
+};
+
+const interpolateChannel = (start: number, end: number, t: number): number => {
+	return Math.round(start + (end - start) * t);
+};
+
+const resampleHexColors = (colors: readonly string[], shades: number): ColorTuple[] => {
+	if (colors.length === 0) {
+		throw new Error('colors must not be empty');
+	}
+
+	if (colors.length === 1) {
+		const [r, g, b] = hexToRgbTuple(colors[0]);
+		return Array.from({ length: shades }, () => [r, g, b, 1]);
+	}
+
+	return Array.from({ length: shades }, (_, index) => {
+		const position = (index / Math.max(shades - 1, 1)) * (colors.length - 1);
+		const lowerIndex = Math.floor(position);
+		const upperIndex = Math.min(Math.ceil(position), colors.length - 1);
+		const t = position - lowerIndex;
+		const [r1, g1, b1] = hexToRgbTuple(colors[lowerIndex]);
+		const [r2, g2, b2] = hexToRgbTuple(colors[upperIndex]);
+
+		return [
+			interpolateChannel(r1, r2, t),
+			interpolateChannel(g1, g2, t),
+			interpolateChannel(b1, b2, t),
+			1
+		];
+	});
+};
+
+const resampleColorStops = (stops: readonly ColorMapStop[], shades: number): ColorTuple[] => {
+	if (stops.length === 0) {
+		throw new Error('stops must not be empty');
+	}
+
+	if (stops.length === 1) {
+		const [r, g, b] = hexToRgbTuple(stops[0].color);
+		return Array.from({ length: shades }, () => [r, g, b, 1]);
+	}
+
+	return Array.from({ length: shades }, (_, index) => {
+		const position = index / Math.max(shades - 1, 1);
+		let lower = stops[0];
+		let upper = stops[stops.length - 1];
+
+		for (let i = 0; i < stops.length - 1; i++) {
+			if (position >= stops[i].index && position <= stops[i + 1].index) {
+				lower = stops[i];
+				upper = stops[i + 1];
+				break;
+			}
+		}
+
+		const span = upper.index - lower.index;
+		const t = span === 0 ? 0 : (position - lower.index) / span;
+		const [r1, g1, b1] = hexToRgbTuple(lower.color);
+		const [r2, g2, b2] = hexToRgbTuple(upper.color);
+
+		return [
+			interpolateChannel(r1, r2, t),
+			interpolateChannel(g1, g2, t),
+			interpolateChannel(b1, b2, t),
+			1
+		];
 	});
 };
 
@@ -22,6 +96,14 @@ const formatColorTuple = (color: ColorTuple, format: ColorOutputFormat): string 
 	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
 		.toString(16)
 		.padStart(2, '0')}`;
+};
+
+const COLOR_MAP_ALIASES = {} as const satisfies Record<string, SequentialScheme>;
+
+const resolveColorMapName = (
+	colorMapName: string
+): SequentialScheme | MatlabColorMapName | string => {
+	return COLOR_MAP_ALIASES[colorMapName as keyof typeof COLOR_MAP_ALIASES] ?? colorMapName;
 };
 
 export const generateNumberAndColorMap = (
@@ -119,8 +201,31 @@ export const generateHueBasedHexColors = (count: number): string[] => {
 // カラーマップデータを作成するクラス
 export class ColorMapManager {
 	private cache: Map<string, Uint8Array>;
+	private readonly sequentialSchemeNames: Set<string>;
+	private readonly matlabColorMapNames: Set<string>;
 	public constructor() {
 		this.cache = new Map();
+		this.sequentialSchemeNames = new Set<string>([
+			'Blues',
+			'Greens',
+			'Greys',
+			'Oranges',
+			'Purples',
+			'Reds',
+			'BuGn',
+			'BuPu',
+			'GnBu',
+			'OrRd',
+			'PuBu',
+			'PuBuGn',
+			'PuRd',
+			'RdPu',
+			'YlGn',
+			'YlGnBu',
+			'YlOrBr',
+			'YlOrRd'
+		]);
+		this.matlabColorMapNames = new Set<string>(Object.keys(MATLAB_COLOR_MAPS));
 		this.registerCustomColorMap(
 			'gsi_relief',
 			[0, 300, 1000, 2000, 4000],
@@ -133,8 +238,39 @@ export class ColorMapManager {
 			'#ff8484' // 尾根（正の曲率）: red
 		);
 	}
+
+	private resolvePaletteColors(colorMapName: string): readonly string[] | readonly ColorMapStop[] {
+		const resolvedName = resolveColorMapName(colorMapName);
+
+		if (this.sequentialSchemeNames.has(resolvedName)) {
+			return getSequentSchemeColors(resolvedName as SequentialScheme, 9);
+		}
+
+		if (this.matlabColorMapNames.has(resolvedName)) {
+			return MATLAB_COLOR_MAPS[resolvedName as MatlabColorMapName];
+		}
+
+		if (this.has(resolvedName)) {
+			const pixels = this.get(resolvedName);
+			if (!pixels) {
+				throw new Error(`Unknown color map: ${colorMapName}`);
+			}
+
+			const colors: string[] = [];
+			for (let i = 0; i < pixels.length; i += 3) {
+				colors.push(
+					`#${pixels[i].toString(16).padStart(2, '0')}${pixels[i + 1].toString(16).padStart(2, '0')}${pixels[i + 2].toString(16).padStart(2, '0')}`
+				);
+			}
+			return colors;
+		}
+
+		throw new Error(`Unknown color map: ${colorMapName}`);
+	}
+
 	public createColorArray(colorMapName: string): Uint8Array {
-		const cacheKey = `${colorMapName}`;
+		const resolvedName = resolveColorMapName(colorMapName);
+		const cacheKey = `${resolvedName}`;
 
 		if (this.has(cacheKey)) {
 			return this.get(cacheKey) as Uint8Array;
@@ -143,7 +279,11 @@ export class ColorMapManager {
 		const width = 256;
 		const pixels = new Uint8Array(width * 3); // RGBのみの3チャンネルデータ
 
-		const colors = createRgbaColorMap(colorMapName, width);
+		const palette = this.resolvePaletteColors(colorMapName);
+		const colors =
+			typeof palette[0] === 'string'
+				? resampleHexColors(palette as readonly string[], width)
+				: resampleColorStops(palette as readonly ColorMapStop[], width);
 
 		// RGBデータの格納
 		let ptr = 0;
@@ -165,12 +305,12 @@ export class ColorMapManager {
 		steps: number = 30,
 		direction: string = 'to right'
 	): string {
-		const colors = colormap({
-			colormap: colorMapName,
-			nshades: steps, // ステップ数を指定
-			format: 'hex', // RGBAからRGBに変更
-			alpha: 1
-		});
+		const palette = this.resolvePaletteColors(colorMapName);
+		const colors = (
+			typeof palette[0] === 'string'
+				? resampleHexColors(palette as readonly string[], steps)
+				: resampleColorStops(palette as readonly ColorMapStop[], steps)
+		).map((color) => formatColorTuple(color, 'hex'));
 
 		const gradient = `linear-gradient(${direction}, ${colors.join(', ')})`;
 		return gradient;
@@ -183,7 +323,11 @@ export class ColorMapManager {
 	 * @returns 最小値の色
 	 */
 	public getMinColor(colorMapName: string, format: ColorOutputFormat = 'hex'): string {
-		const colors = createRgbaColorMap(colorMapName, 16);
+		const palette = this.resolvePaletteColors(colorMapName);
+		const colors =
+			typeof palette[0] === 'string'
+				? resampleHexColors(palette as readonly string[], 16)
+				: resampleColorStops(palette as readonly ColorMapStop[], 16);
 		return formatColorTuple(colors[0], format); // 最初の色（最小値）
 	}
 
@@ -194,7 +338,11 @@ export class ColorMapManager {
 	 * @returns 最大値の色
 	 */
 	public getMaxColor(colorMapName: string, format: ColorOutputFormat = 'hex'): string {
-		const colors = createRgbaColorMap(colorMapName, 16);
+		const palette = this.resolvePaletteColors(colorMapName);
+		const colors =
+			typeof palette[0] === 'string'
+				? resampleHexColors(palette as readonly string[], 16)
+				: resampleColorStops(palette as readonly ColorMapStop[], 16);
 		return formatColorTuple(colors[colors.length - 1], format); // 最後の色（最大値）
 	}
 

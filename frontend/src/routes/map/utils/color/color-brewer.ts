@@ -929,7 +929,7 @@ const COLOR_BREWER = {
 } as const;
 
 export type ColorBrewer = typeof COLOR_BREWER;
-type ColorBrewerScheme = keyof ColorBrewer;
+export type ColorBrewerScheme = keyof ColorBrewer;
 
 const SEQUENTIAL_SINGLE_HUE = ['Blues', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'] as const;
 const SEQUENTIAL_MULTI_HUE = [
@@ -947,8 +947,10 @@ const SEQUENTIAL_MULTI_HUE = [
 	'YlOrRd'
 ] as const;
 
+export const SEQUENTIAL_SCHEMES = [...SEQUENTIAL_SINGLE_HUE, ...SEQUENTIAL_MULTI_HUE] as const;
+
 export const COLOR_BREWER_SCHEME_COUNT = {
-	sequential: { '9': [...SEQUENTIAL_SINGLE_HUE, ...SEQUENTIAL_MULTI_HUE] },
+	sequential: { '9': [...SEQUENTIAL_SCHEMES] },
 	diverging: {
 		'11': ['BrBG', 'PiYG', 'PRGn', 'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral']
 	},
@@ -974,6 +976,15 @@ export const getSequentSchemeColors = (
 	count: SequentialCount
 ): readonly string[] => {
 	return COLOR_BREWER[scheme][count];
+};
+
+export const getColorBrewerSchemeColors = (scheme: ColorBrewerScheme): readonly string[] => {
+	const counts = Object.keys(COLOR_BREWER[scheme])
+		.map((count) => Number(count))
+		.sort((a, b) => b - a);
+
+	const maxCount = counts[0] as keyof ColorBrewer[typeof scheme];
+	return COLOR_BREWER[scheme][maxCount];
 };
 // 単色の基準にする色
 export type BaseSingleColor = ColorBrewer['Paired'][12][number] | ColorBrewer['Set3'][12][number];
