@@ -118,7 +118,7 @@
 <div class="w-full">
 	<!-- ラベル表示 -->
 	{#if label}
-		<div class="mb-4 text-base">
+		<div class="mb-4 text-base select-none">
 			{label}
 			<span class="">
 				{fmt(lowerValue)} - {fmt(upperValue)}
@@ -186,7 +186,7 @@
 	</div>
 
 	<!-- 値表示（詳細版） -->
-	<div class="mt-3 flex justify-between px-2 text-base text-sm">
+	<div class="mt-3 flex justify-between px-2 text-base text-sm select-none">
 		<div class="">
 			<span class="">{fmt(min)}</span>
 		</div>

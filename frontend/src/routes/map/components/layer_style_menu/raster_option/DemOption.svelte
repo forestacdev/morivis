@@ -111,7 +111,7 @@
 
 		{#if layerEntry.style.visualization.mode === 'relief'}
 			<div class="flex items-center justify-between">
-				<div class="text-base">カラーランプ</div>
+				<div class="text-base select-none">カラーランプ</div>
 				<div class="flex gap-2">
 					<button
 						onclick={() => setRangeStyleType('relief', 'linear')}
@@ -195,7 +195,7 @@
 
 		{#if layerEntry.style?.visualization.uniformsData.slope && layerEntry.style.visualization.mode === 'slope'}
 			<div class="flex items-center justify-between">
-				<div class="text-base">カラーランプ</div>
+				<div class="text-base select-none">カラーランプ</div>
 				<div class="flex gap-2">
 					<button
 						onclick={() => setRangeStyleType('slope', 'linear')}

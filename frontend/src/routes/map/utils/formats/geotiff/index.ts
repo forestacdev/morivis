@@ -9,7 +9,10 @@ import {
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { encodeBandsToTerrariumUrls } from '$routes/map/utils/formats/raster/terrarium';
 import { renderTerrarium } from '$routes/map/utils/formats/raster/terrarium-render';
-import { computeTerrainDerivatives, terminateTerrainDerivativesWorker } from './terrain-derivatives';
+import {
+	computeTerrainDerivatives,
+	terminateTerrainDerivativesWorker
+} from './terrain-derivatives';
 import { computeTwiBand, terminateTwiWorker } from './twi';
 
 /** バンドごとのTypedArray配列 */
@@ -18,7 +21,8 @@ export const TWI_CACHE_SUFFIX = 'twi';
 export const SLOPE_CACHE_SUFFIX = 'slope';
 export const ASPECT_CACHE_SUFFIX = 'aspect';
 export const TPI_CACHE_SUFFIX = 'tpi';
-export const getTwiCacheKey = (id: string): string => getDerivedRasterCacheKey(id, TWI_CACHE_SUFFIX);
+export const getTwiCacheKey = (id: string): string =>
+	getDerivedRasterCacheKey(id, TWI_CACHE_SUFFIX);
 export const getSlopeCacheKey = (id: string): string =>
 	getDerivedRasterCacheKey(id, SLOPE_CACHE_SUFFIX);
 export const getAspectCacheKey = (id: string): string =>
@@ -264,23 +268,21 @@ export const loadRasterData = async (
 			mode === 'single'
 				? uniformsData.single.colorMap
 				: mode === 'twi'
-					? uniformsData.twi?.colorMap ?? 'hsv'
+					? (uniformsData.twi?.colorMap ?? 'hsv')
 					: mode === 'slope'
-						? uniformsData.slope?.colorMap ?? 'salinity'
+						? (uniformsData.slope?.colorMap ?? 'salinity')
 						: mode === 'aspect'
-							? uniformsData.aspect?.colorMap ?? 'rainbow-soft'
+							? (uniformsData.aspect?.colorMap ?? 'rainbow-soft')
 							: mode === 'tpi'
-								? uniformsData.tpi?.colorMap ?? 'rdbu'
-					: uniformsData.single.colorMap;
+								? (uniformsData.tpi?.colorMap ?? 'rdbu')
+								: uniformsData.single.colorMap;
 		const colorArray = colorMapManager.createColorArray(colorMap || 'bone');
 
 		// Worker メッセージ構築
 		const workerMessage: Record<string, unknown> = {
 			entryId: cacheKey,
 			type:
-				mode === 'twi' || mode === 'slope' || mode === 'aspect' || mode === 'tpi'
-					? 'single'
-					: mode,
+				mode === 'twi' || mode === 'slope' || mode === 'aspect' || mode === 'tpi' ? 'single' : mode,
 			width: size.width,
 			height: size.height
 		};
@@ -346,12 +348,7 @@ export const loadRasterData = async (
 			workerMessage.min = (uniformsData.single.min - dMin) * invRange;
 			workerMessage.max = (uniformsData.single.max - dMin) * invRange;
 			workerMessage.colorArray = new Uint8Array(colorArray);
-		} else if (
-			mode === 'twi' ||
-			mode === 'slope' ||
-			mode === 'aspect' ||
-			mode === 'tpi'
-		) {
+		} else if (mode === 'twi' || mode === 'slope' || mode === 'aspect' || mode === 'tpi') {
 			const range = dataRanges[0];
 			const derivedData =
 				mode === 'twi'

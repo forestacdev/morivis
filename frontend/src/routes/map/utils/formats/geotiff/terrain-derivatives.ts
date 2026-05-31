@@ -49,12 +49,7 @@ export const computeTerrainDerivatives = (
 		});
 
 		worker.onmessage = (event) => {
-			const {
-				slope,
-				aspect,
-				tpi,
-				error
-			} = event.data as {
+			const { slope, aspect, tpi, error } = event.data as {
 				slope?: DerivedBandResult;
 				aspect?: DerivedBandResult;
 				tpi?: DerivedBandResult;

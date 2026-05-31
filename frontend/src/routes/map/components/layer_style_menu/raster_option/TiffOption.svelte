@@ -303,131 +303,131 @@
 		/>
 	{:else if layerEntry.style.visualization.mode === 'twi'}
 		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
-		{#if layerEntry.style.visualization.uniformsData.twi}
-			<ColorMapSelect
-				bind:isColorMap={layerEntry.style.visualization.uniformsData.twi.colorMap}
-				mutableColorMapType={colorMapOptions}
-			>
-				{#snippet children(_isColorMap)}
-					<ColorScaleDem isColorMap={_isColorMap} />
-				{/snippet}
-			</ColorMapSelect>
-			<RangeSliderDouble
-				label="数値範囲"
-				bind:lowerValue={layerEntry.style.visualization.uniformsData.twi.min}
-				bind:upperValue={layerEntry.style.visualization.uniformsData.twi.max}
-				min={twiRange?.min ?? 0}
-				max={twiRange?.max ?? 1}
-				step={calcStep(twiRange?.min ?? 0, twiRange?.max ?? 1)}
-				primaryColor={colorMapManager.createSimpleCSSGradient(
-					layerEntry.style.visualization.uniformsData.twi.colorMap
-				)}
-				minRangeColor={colorMapManager.getMinColor(
-					layerEntry.style.visualization.uniformsData.twi.colorMap
-				)}
-				maxRangeColor={colorMapManager.getMaxColor(
-					layerEntry.style.visualization.uniformsData.twi.colorMap
-				)}
-			/>
-		{:else}
-			<div class="py-3 text-sm text-gray-300">地形湿潤指数を計算中です。</div>
-		{/if}
+			{#if layerEntry.style.visualization.uniformsData.twi}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.twi.colorMap}
+					mutableColorMapType={colorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.twi.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.twi.max}
+					min={twiRange?.min ?? 0}
+					max={twiRange?.max ?? 1}
+					step={calcStep(twiRange?.min ?? 0, twiRange?.max ?? 1)}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.visualization.uniformsData.twi.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(
+						layerEntry.style.visualization.uniformsData.twi.colorMap
+					)}
+					maxRangeColor={colorMapManager.getMaxColor(
+						layerEntry.style.visualization.uniformsData.twi.colorMap
+					)}
+				/>
+			{:else}
+				<div class="py-3 text-sm text-gray-300">地形湿潤指数を計算中です。</div>
+			{/if}
 		</div>
 	{:else if layerEntry.style.visualization.mode === 'slope'}
 		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
-		{#if layerEntry.style.visualization.uniformsData.slope}
-			<ColorMapSelect
-				bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
-				mutableColorMapType={colorMapOptions}
-			>
-				{#snippet children(_isColorMap)}
-					<ColorScaleDem isColorMap={_isColorMap} />
-				{/snippet}
-			</ColorMapSelect>
-			<RangeSliderDouble
-				label="数値範囲"
-				bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
-				bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
-				min={slopeRange?.min ?? 0}
-				max={slopeRange?.max ?? 90}
-				step={calcStep(slopeRange?.min ?? 0, slopeRange?.max ?? 90)}
-				primaryColor={colorMapManager.createSimpleCSSGradient(
-					layerEntry.style.visualization.uniformsData.slope.colorMap
-				)}
-				minRangeColor={colorMapManager.getMinColor(
-					layerEntry.style.visualization.uniformsData.slope.colorMap
-				)}
-				maxRangeColor={colorMapManager.getMaxColor(
-					layerEntry.style.visualization.uniformsData.slope.colorMap
-				)}
-			/>
-		{:else}
-			<div class="py-3 text-sm text-gray-300">傾斜量を計算中です。</div>
-		{/if}
+			{#if layerEntry.style.visualization.uniformsData.slope}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
+					mutableColorMapType={colorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
+					min={slopeRange?.min ?? 0}
+					max={slopeRange?.max ?? 90}
+					step={calcStep(slopeRange?.min ?? 0, slopeRange?.max ?? 90)}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.visualization.uniformsData.slope.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(
+						layerEntry.style.visualization.uniformsData.slope.colorMap
+					)}
+					maxRangeColor={colorMapManager.getMaxColor(
+						layerEntry.style.visualization.uniformsData.slope.colorMap
+					)}
+				/>
+			{:else}
+				<div class="py-3 text-sm text-gray-300">傾斜量を計算中です。</div>
+			{/if}
 		</div>
 	{:else if layerEntry.style.visualization.mode === 'aspect'}
 		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
-		{#if layerEntry.style.visualization.uniformsData.aspect}
-			<ColorMapSelect
-				bind:isColorMap={layerEntry.style.visualization.uniformsData.aspect.colorMap}
-				mutableColorMapType={colorMapOptions}
-			>
-				{#snippet children(_isColorMap)}
-					<ColorScaleDem isColorMap={_isColorMap} />
-				{/snippet}
-			</ColorMapSelect>
-			<RangeSliderDouble
-				label="数値範囲"
-				bind:lowerValue={layerEntry.style.visualization.uniformsData.aspect.min}
-				bind:upperValue={layerEntry.style.visualization.uniformsData.aspect.max}
-				min={aspectRange?.min ?? 0}
-				max={aspectRange?.max ?? 360}
-				step={calcStep(aspectRange?.min ?? 0, aspectRange?.max ?? 360)}
-				primaryColor={colorMapManager.createSimpleCSSGradient(
-					layerEntry.style.visualization.uniformsData.aspect.colorMap
-				)}
-				minRangeColor={colorMapManager.getMinColor(
-					layerEntry.style.visualization.uniformsData.aspect.colorMap
-				)}
-				maxRangeColor={colorMapManager.getMaxColor(
-					layerEntry.style.visualization.uniformsData.aspect.colorMap
-				)}
-			/>
-		{:else}
-			<div class="py-3 text-sm text-gray-300">傾斜方位を計算中です。</div>
-		{/if}
+			{#if layerEntry.style.visualization.uniformsData.aspect}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.aspect.colorMap}
+					mutableColorMapType={colorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.aspect.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.aspect.max}
+					min={aspectRange?.min ?? 0}
+					max={aspectRange?.max ?? 360}
+					step={calcStep(aspectRange?.min ?? 0, aspectRange?.max ?? 360)}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.visualization.uniformsData.aspect.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(
+						layerEntry.style.visualization.uniformsData.aspect.colorMap
+					)}
+					maxRangeColor={colorMapManager.getMaxColor(
+						layerEntry.style.visualization.uniformsData.aspect.colorMap
+					)}
+				/>
+			{:else}
+				<div class="py-3 text-sm text-gray-300">傾斜方位を計算中です。</div>
+			{/if}
 		</div>
 	{:else if layerEntry.style.visualization.mode === 'tpi'}
 		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
-		{#if layerEntry.style.visualization.uniformsData.tpi}
-			<ColorMapSelect
-				bind:isColorMap={layerEntry.style.visualization.uniformsData.tpi.colorMap}
-				mutableColorMapType={colorMapOptions}
-			>
-				{#snippet children(_isColorMap)}
-					<ColorScaleDem isColorMap={_isColorMap} />
-				{/snippet}
-			</ColorMapSelect>
-			<RangeSliderDouble
-				label="数値範囲"
-				bind:lowerValue={layerEntry.style.visualization.uniformsData.tpi.min}
-				bind:upperValue={layerEntry.style.visualization.uniformsData.tpi.max}
-				min={tpiRange?.min ?? -1}
-				max={tpiRange?.max ?? 1}
-				step={calcStep(tpiRange?.min ?? -1, tpiRange?.max ?? 1)}
-				primaryColor={colorMapManager.createSimpleCSSGradient(
-					layerEntry.style.visualization.uniformsData.tpi.colorMap
-				)}
-				minRangeColor={colorMapManager.getMinColor(
-					layerEntry.style.visualization.uniformsData.tpi.colorMap
-				)}
-				maxRangeColor={colorMapManager.getMaxColor(
-					layerEntry.style.visualization.uniformsData.tpi.colorMap
-				)}
-			/>
-		{:else}
-			<div class="py-3 text-sm text-gray-300">地形位置指数を計算中です。</div>
-		{/if}
+			{#if layerEntry.style.visualization.uniformsData.tpi}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.tpi.colorMap}
+					mutableColorMapType={colorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.tpi.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.tpi.max}
+					min={tpiRange?.min ?? -1}
+					max={tpiRange?.max ?? 1}
+					step={calcStep(tpiRange?.min ?? -1, tpiRange?.max ?? 1)}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.visualization.uniformsData.tpi.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(
+						layerEntry.style.visualization.uniformsData.tpi.colorMap
+					)}
+					maxRangeColor={colorMapManager.getMaxColor(
+						layerEntry.style.visualization.uniformsData.tpi.colorMap
+					)}
+				/>
+			{:else}
+				<div class="py-3 text-sm text-gray-300">地形位置指数を計算中です。</div>
+			{/if}
 		</div>
 	{:else if layerEntry.style.visualization.mode === 'multi'}
 		<div class="flex flex-col gap-3 py-2">

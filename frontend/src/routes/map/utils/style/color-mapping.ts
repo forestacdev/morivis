@@ -154,13 +154,11 @@ export const generateStepGradient = (colors: readonly string[]): string => {
 	return `linear-gradient(to right, ${stops.join(', ')})`;
 };
 
-export const isDemStepColorStyle = (
-	style: DemRangeColorStyle
-): style is DemStepColorStyle => style.type === 'step';
+export const isDemStepColorStyle = (style: DemRangeColorStyle): style is DemStepColorStyle =>
+	style.type === 'step';
 
-export const isDemLinearColorStyle = (
-	style: DemRangeColorStyle
-): style is DemLinearColorStyle => style.type !== 'step';
+export const isDemLinearColorStyle = (style: DemRangeColorStyle): style is DemLinearColorStyle =>
+	style.type !== 'step';
 
 export const getDemStyleColorMapName = (style: DemRangeColorStyle): ColorMapType => {
 	return style.colorMap;
@@ -200,11 +198,7 @@ export const toDemStepColorStyle = (
 	};
 };
 
-const getFormattedScaleValues = (
-	min: number,
-	max: number,
-	divisions: number
-): number[] => {
+const getFormattedScaleValues = (min: number, max: number, divisions: number): number[] => {
 	const dataRange = max - min;
 	const decimalPlaces = dataRange >= 100 ? 0 : dataRange >= 10 ? 1 : dataRange >= 1 ? 2 : 3;
 

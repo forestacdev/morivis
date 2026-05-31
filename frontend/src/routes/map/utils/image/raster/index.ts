@@ -24,10 +24,7 @@ import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runt
 import { replaceDimensionPlaceholder } from '$routes/map/utils/dimension';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { createClientId } from '$routes/utils/id';
-import {
-	getDemStyleRange,
-	isDemStepColorStyle
-} from '$routes/map/utils/style/color-mapping';
+import { getDemStyleRange, isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 
 /** Worker応答からObject URLを生成する（ImageBitmap / Blob 両対応） */
 const createObjectURLFromWorkerResult = async (data: {

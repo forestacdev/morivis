@@ -96,7 +96,8 @@
 		const seen = new Set<string>();
 
 		const pushFile = (file: File) => {
-			const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath ?? '';
+			const relativePath =
+				(file as File & { morivisRelativePath?: string }).morivisRelativePath ?? '';
 			const key = `${relativePath}:${file.name}:${file.size}:${file.lastModified}`;
 			if (seen.has(key)) return;
 			seen.add(key);
@@ -140,7 +141,9 @@
 		if (disabled) return;
 
 		const items = dataTransfer.items;
-		const hasDirectoryEntry = Array.from(items ?? []).some((item) => item.webkitGetAsEntry?.()?.isDirectory);
+		const hasDirectoryEntry = Array.from(items ?? []).some(
+			(item) => item.webkitGetAsEntry?.()?.isDirectory
+		);
 
 		if (!hasDirectoryEntry) {
 			const files = dataTransfer.files;

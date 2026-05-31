@@ -62,7 +62,8 @@ export const findGeoReferencedImageFile = (files: Iterable<File>): File | null =
 			(imageFile) =>
 				isRasterImageMainFile(imageFile) &&
 				fileArray.some(
-					(sidecarFile) => sidecarFile !== imageFile && hasMatchingRasterSidecar(imageFile, sidecarFile)
+					(sidecarFile) =>
+						sidecarFile !== imageFile && hasMatchingRasterSidecar(imageFile, sidecarFile)
 				)
 		) ?? null
 	);
@@ -71,7 +72,9 @@ export const findGeoReferencedImageFile = (files: Iterable<File>): File | null =
 export const findMatchingWorldFile = (files: Iterable<File>, imageFile: File): File | null => {
 	return (
 		Array.from(files).find(
-			(file) => isRasterWorldFileName(getRasterPathLikeName(file)) && hasMatchingRasterSidecar(imageFile, file)
+			(file) =>
+				isRasterWorldFileName(getRasterPathLikeName(file)) &&
+				hasMatchingRasterSidecar(imageFile, file)
 		) ?? null
 	);
 };
@@ -79,7 +82,8 @@ export const findMatchingWorldFile = (files: Iterable<File>, imageFile: File): F
 export const findMatchingAuxXmlFile = (files: Iterable<File>, imageFile: File): File | null => {
 	return (
 		Array.from(files).find(
-			(file) => isRasterAuxXmlName(getRasterPathLikeName(file)) && hasMatchingRasterSidecar(imageFile, file)
+			(file) =>
+				isRasterAuxXmlName(getRasterPathLikeName(file)) && hasMatchingRasterSidecar(imageFile, file)
 		) ?? null
 	);
 };

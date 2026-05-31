@@ -34,7 +34,12 @@ export const computeTwiBand = (
 		});
 
 		worker.onmessage = (event) => {
-			const { band: twiBand, min, max, error } = event.data as {
+			const {
+				band: twiBand,
+				min,
+				max,
+				error
+			} = event.data as {
 				band?: Float32Array;
 				min?: number;
 				max?: number;

@@ -518,7 +518,7 @@
 				</button>
 			</div>
 			<div class="marquee-container overflow-hidden">
-				<div class="marquee-track flex w-max gap-2">
+				<div class="marquee-track flex w-max gap-2 select-none">
 					{#each Array.from({ length: 2 }) as _, index (index)}
 						{#each SUPPORTED_FILE_GROUPS as group (group.label)}
 							<span class="bg-sub rounded-full p-1 px-3 text-xs whitespace-nowrap text-gray-300">

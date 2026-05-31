@@ -76,11 +76,11 @@ const sample3x3 = (
 };
 
 const computeHornDx = (h: number[][], ewres: number): number => {
-	return ((h[0][0] + 2 * h[1][0] + h[2][0]) - (h[0][2] + 2 * h[1][2] + h[2][2])) / (8 * ewres);
+	return (h[0][0] + 2 * h[1][0] + h[2][0] - (h[0][2] + 2 * h[1][2] + h[2][2])) / (8 * ewres);
 };
 
 const computeHornDy = (h: number[][], nsres: number): number => {
-	return ((h[2][0] + 2 * h[2][1] + h[2][2]) - (h[0][0] + 2 * h[0][1] + h[0][2])) / (8 * nsres);
+	return (h[2][0] + 2 * h[2][1] + h[2][2] - (h[0][0] + 2 * h[0][1] + h[0][2])) / (8 * nsres);
 };
 
 const computeSlope = (h: number[][], ewres: number, nsres: number): number => {

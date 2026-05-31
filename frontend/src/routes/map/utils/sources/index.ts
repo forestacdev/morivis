@@ -67,10 +67,7 @@ import {
 	getRasterDimensionCurrentIndex,
 	getRasterDimensionValue
 } from '$routes/map/utils/raster/dimension-runtime';
-import {
-	getDemStyleRange,
-	isDemStepColorStyle
-} from '$routes/map/utils/style/color-mapping';
+import { getDemStyleRange, isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
@@ -129,7 +126,10 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 	if (mode === 'twi') {
 		const uniformsData =
 			visualization.uniformsData.twi ??
-			getRasterDerivedDefaultStyle('twi', GeoTiffCache.getDataRanges(getTwiCacheKey(entry.id))?.[0]);
+			getRasterDerivedDefaultStyle(
+				'twi',
+				GeoTiffCache.getDataRanges(getTwiCacheKey(entry.id))?.[0]
+			);
 		return `${entry.id}_${mode}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
 	}
 

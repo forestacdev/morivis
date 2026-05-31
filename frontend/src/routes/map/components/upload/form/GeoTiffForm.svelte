@@ -605,11 +605,7 @@
 					parsedBands[0] instanceof Float32Array
 						? parsedBands[0]
 						: new Float32Array(parsedBands[0]);
-				const { ewres, nsres } = getRasterResolutionMeters(
-					resolvedBbox,
-					imageWidth,
-					imageHeight
-				);
+				const { ewres, nsres } = getRasterResolutionMeters(resolvedBbox, imageWidth, imageHeight);
 				GeoTiffCache.setRawSingleBand(entryId, {
 					band: sourceBand,
 					nodata: parsedNodata,
@@ -660,7 +656,7 @@
 								max: bandMinMax.max,
 								colorMap: 'jet'
 							},
-								multi: {
+							multi: {
 								r: { index: 0, min: multiBandMinMax.r.min, max: multiBandMinMax.r.max },
 								g: {
 									index: numBands >= 2 ? 1 : 0,
