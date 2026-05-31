@@ -1,3 +1,5 @@
+export {};
+
 const workerScope = self as unknown as {
 	onmessage: ((event: MessageEvent<TWIWorkerMessage>) => void) | null;
 	postMessage: (message: unknown, transfer?: Transferable[]) => void;

@@ -47,7 +47,14 @@ import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { objectToUrlParams } from '$routes/map/utils/platform/url-params';
 
 import { getBoundingBoxCorners } from '$routes/map/utils/map/bbox';
-import { getTwiCacheKey, loadRasterData } from '$routes/map/utils/formats/geotiff';
+import {
+	ensureRasterDerivedCache,
+	getAspectCacheKey,
+	getSlopeCacheKey,
+	getTpiCacheKey,
+	getTwiCacheKey,
+	loadRasterData
+} from '$routes/map/utils/formats/geotiff';
 import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -87,6 +94,24 @@ const toDemStyleUrlParams = (style: DemRangeColorStyle): string => {
 	return params.toString();
 };
 
+const getRasterDerivedDefaultStyle = (
+	mode: 'twi' | 'slope' | 'aspect' | 'tpi',
+	range?: { min: number; max: number }
+) => {
+	return {
+		colorMap:
+			mode === 'twi'
+				? 'hsv'
+				: mode === 'slope'
+					? 'salinity'
+					: mode === 'aspect'
+						? 'rainbow-soft'
+						: 'rdbu',
+		min: range?.min ?? (mode === 'aspect' ? 0 : mode === 'slope' ? 0 : -1),
+		max: range?.max ?? (mode === 'aspect' ? 360 : mode === 'slope' ? 90 : 1)
+	};
+};
+
 export const convertTmsToXyz = (url: string): string => {
 	return url.replace('{-y}', '{y}');
 };
@@ -102,8 +127,22 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 	}
 
 	if (mode === 'twi') {
-		const uniformsData = visualization.uniformsData.twi;
-		if (!uniformsData) return;
+		const uniformsData =
+			visualization.uniformsData.twi ??
+			getRasterDerivedDefaultStyle('twi', GeoTiffCache.getDataRanges(getTwiCacheKey(entry.id))?.[0]);
+		return `${entry.id}_${mode}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
+	}
+
+	if (mode === 'slope' || mode === 'aspect' || mode === 'tpi') {
+		const cacheKey =
+			mode === 'slope'
+				? getSlopeCacheKey(entry.id)
+				: mode === 'aspect'
+					? getAspectCacheKey(entry.id)
+					: getTpiCacheKey(entry.id);
+		const uniformsData =
+			visualization.uniformsData[mode] ??
+			getRasterDerivedDefaultStyle(mode, GeoTiffCache.getDataRanges(cacheKey)?.[0]);
 		return `${entry.id}_${mode}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
 	}
 
@@ -137,6 +176,31 @@ const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiff
 		return;
 	}
 
+	if (
+		entry.style.visualization.mode === 'slope' ||
+		entry.style.visualization.mode === 'aspect' ||
+		entry.style.visualization.mode === 'tpi'
+	) {
+		const mode = entry.style.visualization.mode;
+		const cacheKey =
+			mode === 'slope'
+				? getSlopeCacheKey(entry.id)
+				: mode === 'aspect'
+					? getAspectCacheKey(entry.id)
+					: getTpiCacheKey(entry.id);
+		const currentRange = GeoTiffCache.getDataRanges(cacheKey)?.[0];
+		if (!currentRange) return;
+		const current = entry.style.visualization.uniformsData[mode];
+		entry.style.visualization.uniformsData[mode] = {
+			colorMap:
+				current?.colorMap ??
+				(mode === 'slope' ? 'salinity' : mode === 'aspect' ? 'rainbow-soft' : 'rdbu'),
+			min: currentRange.min,
+			max: currentRange.max
+		};
+		return;
+	}
+
 	if (entry.style.visualization.mode === 'multi') {
 		const uniforms = entry.style.visualization.uniformsData.multi;
 		const nextRanges = [uniforms.r, uniforms.g, uniforms.b];
@@ -156,6 +220,17 @@ export const getRasterTiffImageSource = async (
 	if (timeIdx >= 0 && NetCDFDataCache.has(entry.id)) {
 		await NetCDFDataCache.updateTimeStep(entry.id, timeIdx);
 		syncTemporalRasterVisualizationRange(entry);
+	}
+
+	if (
+		entry.style.visualization.mode === 'twi' ||
+		entry.style.visualization.mode === 'slope' ||
+		entry.style.visualization.mode === 'aspect' ||
+		entry.style.visualization.mode === 'tpi'
+	) {
+		const mode = entry.style.visualization.mode;
+		const range = await ensureRasterDerivedCache(entry.id, mode);
+		if (!range) return;
 	}
 
 	const styleID = getRasterTiffStyleId(entry);

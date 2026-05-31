@@ -19,7 +19,12 @@
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import { getTwiCacheKey } from '$routes/map/utils/formats/geotiff';
+	import {
+		getAspectCacheKey,
+		getSlopeCacheKey,
+		getTpiCacheKey,
+		getTwiCacheKey
+	} from '$routes/map/utils/formats/geotiff';
 	import {
 		getRasterDimension,
 		getRasterDimensionRuntimeUpdates
@@ -130,6 +135,32 @@
 			if (currentRange) {
 				layerEntry.style.visualization.uniformsData.twi = {
 					colorMap: layerEntry.style.visualization.uniformsData.twi?.colorMap ?? 'hsv',
+					min: currentRange.min,
+					max: currentRange.max
+				};
+			}
+		}
+
+		if (
+			layerEntry.style.type === 'tiff' &&
+			layerEntry.format.type === 'image' &&
+			(layerEntry.style.visualization.mode === 'slope' ||
+				layerEntry.style.visualization.mode === 'aspect' ||
+				layerEntry.style.visualization.mode === 'tpi')
+		) {
+			const mode = layerEntry.style.visualization.mode;
+			const currentRange = GeoTiffCache.getDataRanges(
+				mode === 'slope'
+					? getSlopeCacheKey(layerEntry.id)
+					: mode === 'aspect'
+						? getAspectCacheKey(layerEntry.id)
+						: getTpiCacheKey(layerEntry.id)
+			)?.[0];
+			if (currentRange) {
+				layerEntry.style.visualization.uniformsData[mode] = {
+					colorMap:
+						layerEntry.style.visualization.uniformsData[mode]?.colorMap ??
+						(mode === 'slope' ? 'salinity' : mode === 'aspect' ? 'rainbow-soft' : 'rdbu'),
 					min: currentRange.min,
 					max: currentRange.max
 				};

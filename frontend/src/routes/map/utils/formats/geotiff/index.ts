@@ -9,11 +9,22 @@ import {
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { encodeBandsToTerrariumUrls } from '$routes/map/utils/formats/raster/terrarium';
 import { renderTerrarium } from '$routes/map/utils/formats/raster/terrarium-render';
+import { computeTerrainDerivatives, terminateTerrainDerivativesWorker } from './terrain-derivatives';
+import { computeTwiBand, terminateTwiWorker } from './twi';
 
 /** バンドごとのTypedArray配列 */
 export type RasterBands = TypedArray[];
 export const TWI_CACHE_SUFFIX = 'twi';
+export const SLOPE_CACHE_SUFFIX = 'slope';
+export const ASPECT_CACHE_SUFFIX = 'aspect';
+export const TPI_CACHE_SUFFIX = 'tpi';
 export const getTwiCacheKey = (id: string): string => getDerivedRasterCacheKey(id, TWI_CACHE_SUFFIX);
+export const getSlopeCacheKey = (id: string): string =>
+	getDerivedRasterCacheKey(id, SLOPE_CACHE_SUFFIX);
+export const getAspectCacheKey = (id: string): string =>
+	getDerivedRasterCacheKey(id, ASPECT_CACHE_SUFFIX);
+export const getTpiCacheKey = (id: string): string =>
+	getDerivedRasterCacheKey(id, TPI_CACHE_SUFFIX);
 
 // --- Utilities ---
 
@@ -100,6 +111,107 @@ export const cacheDerivedSingleBand = async (
 	}
 };
 
+export const ensureRasterDerivedCache = async (
+	id: string,
+	mode: RasterTiffStyle['visualization']['mode']
+): Promise<BandDataRange | undefined> => {
+	if (mode !== 'twi' && mode !== 'slope' && mode !== 'aspect' && mode !== 'tpi') {
+		return undefined;
+	}
+
+	const cacheKey =
+		mode === 'twi'
+			? getTwiCacheKey(id)
+			: mode === 'slope'
+				? getSlopeCacheKey(id)
+				: mode === 'aspect'
+					? getAspectCacheKey(id)
+					: getTpiCacheKey(id);
+	const existingRange = GeoTiffCache.getDataRanges(cacheKey)?.[0];
+	if (existingRange) return existingRange;
+
+	const rawSingleBand = GeoTiffCache.getRawSingleBand(id);
+	const size = GeoTiffCache.getSize(id);
+	if (!rawSingleBand || !size) return undefined;
+
+	if (mode === 'twi') {
+		try {
+			const result = await computeTwiBand(
+				rawSingleBand.band,
+				size.width,
+				size.height,
+				rawSingleBand.nodata
+			);
+			const range = { min: result.min, max: result.max };
+			await cacheDerivedSingleBand(
+				id,
+				TWI_CACHE_SUFFIX,
+				result.band,
+				size.width,
+				size.height,
+				null,
+				range
+			);
+			return range;
+		} finally {
+			terminateTwiWorker();
+		}
+	}
+
+	try {
+		const derivatives = await computeTerrainDerivatives(
+			rawSingleBand.band,
+			size.width,
+			size.height,
+			rawSingleBand.nodata,
+			rawSingleBand.ewres,
+			rawSingleBand.nsres
+		);
+
+		if (mode === 'slope') {
+			const range = { min: 0, max: 90 };
+			await cacheDerivedSingleBand(
+				id,
+				SLOPE_CACHE_SUFFIX,
+				derivatives.slope.band,
+				size.width,
+				size.height,
+				null,
+				range
+			);
+			return range;
+		}
+
+		if (mode === 'aspect') {
+			const range = { min: 0, max: 360 };
+			await cacheDerivedSingleBand(
+				id,
+				ASPECT_CACHE_SUFFIX,
+				derivatives.aspect.band,
+				size.width,
+				size.height,
+				null,
+				range
+			);
+			return range;
+		}
+
+		const range = { min: derivatives.tpi.min, max: derivatives.tpi.max };
+		await cacheDerivedSingleBand(
+			id,
+			TPI_CACHE_SUFFIX,
+			derivatives.tpi.band,
+			size.width,
+			size.height,
+			null,
+			range
+		);
+		return range;
+	} finally {
+		terminateTerrainDerivativesWorker();
+	}
+};
+
 // --- Rendering ---
 
 /**
@@ -113,7 +225,16 @@ export const loadRasterData = async (
 ): Promise<string | undefined> => {
 	try {
 		const mode = visualization.mode;
-		const cacheKey = mode === 'twi' ? getTwiCacheKey(id) : id;
+		const cacheKey =
+			mode === 'twi'
+				? getTwiCacheKey(id)
+				: mode === 'slope'
+					? getSlopeCacheKey(id)
+					: mode === 'aspect'
+						? getAspectCacheKey(id)
+						: mode === 'tpi'
+							? getTpiCacheKey(id)
+							: id;
 
 		if (!GeoTiffCache.hasTerrarium(cacheKey)) {
 			throw new Error('Terrarium data not found in cache');
@@ -131,13 +252,22 @@ export const loadRasterData = async (
 				? uniformsData.single.colorMap
 				: mode === 'twi'
 					? uniformsData.twi?.colorMap ?? 'hsv'
+					: mode === 'slope'
+						? uniformsData.slope?.colorMap ?? 'salinity'
+						: mode === 'aspect'
+							? uniformsData.aspect?.colorMap ?? 'rainbow-soft'
+							: mode === 'tpi'
+								? uniformsData.tpi?.colorMap ?? 'rdbu'
 					: uniformsData.single.colorMap;
 		const colorArray = colorMapManager.createColorArray(colorMap || 'bone');
 
 		// Worker メッセージ構築
 		const workerMessage: Record<string, unknown> = {
 			entryId: cacheKey,
-			type: mode === 'twi' ? 'single' : mode,
+			type:
+				mode === 'twi' || mode === 'slope' || mode === 'aspect' || mode === 'tpi'
+					? 'single'
+					: mode,
 			width: size.width,
 			height: size.height
 		};
@@ -203,16 +333,28 @@ export const loadRasterData = async (
 			workerMessage.min = (uniformsData.single.min - dMin) * invRange;
 			workerMessage.max = (uniformsData.single.max - dMin) * invRange;
 			workerMessage.colorArray = new Uint8Array(colorArray);
-		} else if (mode === 'twi') {
+		} else if (
+			mode === 'twi' ||
+			mode === 'slope' ||
+			mode === 'aspect' ||
+			mode === 'tpi'
+		) {
 			const range = dataRanges[0];
-			const twiData = uniformsData.twi;
+			const derivedData =
+				mode === 'twi'
+					? uniformsData.twi
+					: mode === 'slope'
+						? uniformsData.slope
+						: mode === 'aspect'
+							? uniformsData.aspect
+							: uniformsData.tpi;
 			const dMin = range?.min ?? 0;
 			const dMax = range?.max ?? 1;
 			const invRange = dMax !== dMin ? 1 / (dMax - dMin) : 0;
 
 			workerMessage.bandIndex = 0;
-			workerMessage.min = ((twiData?.min ?? dMin) - dMin) * invRange;
-			workerMessage.max = ((twiData?.max ?? dMax) - dMin) * invRange;
+			workerMessage.min = ((derivedData?.min ?? dMin) - dMin) * invRange;
+			workerMessage.max = ((derivedData?.max ?? dMax) - dMin) * invRange;
 			workerMessage.colorArray = new Uint8Array(colorArray);
 		} else if (mode === 'multi') {
 			const normalize = (val: number, dMin: number, dMax: number) =>

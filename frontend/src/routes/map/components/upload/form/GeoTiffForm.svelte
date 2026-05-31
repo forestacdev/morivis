@@ -24,11 +24,9 @@
 		parseRasterBands,
 		getMinMax,
 		encodeAllBandsToTerrarium,
-		cacheDerivedSingleBand,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
-	import { computeTwiBand, terminateTwiWorker } from '$routes/map/utils/formats/geotiff/twi';
 	import {
 		parseEpsgFromAuxXml,
 		parseBboxFromAuxXml
@@ -111,6 +109,22 @@
 				]
 			: [{ key: 'raster', name: 'ラスター' }]
 	);
+
+	const getRasterResolutionMeters = (
+		bbox: [number, number, number, number],
+		width: number,
+		height: number
+	): { ewres: number; nsres: number } => {
+		const [west, south, east, north] = bbox;
+		const centerLat = (south + north) / 2;
+		const latMeters = 111320;
+		const lonMeters = 111320 * Math.cos((centerLat * Math.PI) / 180);
+
+		return {
+			ewres: Math.max(((east - west) * lonMeters) / Math.max(width, 1), 0.01),
+			nsres: Math.max(((north - south) * latMeters) / Math.max(height, 1), 0.01)
+		};
+	};
 
 	/**
 	 * ワールドファイル(.tfw/.tifw/.tiffw)からbboxを計算する
@@ -587,34 +601,22 @@
 				dataRanges
 			);
 
-			let twiRange: BandDataRange | null = null;
 			if (numBands === 1) {
-				try {
-					const sourceBand =
-						parsedBands[0] instanceof Float32Array
-							? parsedBands[0]
-							: new Float32Array(parsedBands[0]);
-					const twiResult = await computeTwiBand(
-						sourceBand,
-						imageWidth,
-						imageHeight,
-						parsedNodata
-					);
-					twiRange = { min: twiResult.min, max: twiResult.max };
-					await cacheDerivedSingleBand(
-						entryId,
-						'twi',
-						twiResult.band,
-						imageWidth,
-						imageHeight,
-						null,
-						twiRange
-					);
-				} catch (error) {
-					console.warn('TWI の事前計算に失敗しました', error);
-				} finally {
-					terminateTwiWorker();
-				}
+				const sourceBand =
+					parsedBands[0] instanceof Float32Array
+						? parsedBands[0]
+						: new Float32Array(parsedBands[0]);
+				const { ewres, nsres } = getRasterResolutionMeters(
+					resolvedBbox,
+					imageWidth,
+					imageHeight
+				);
+				GeoTiffCache.setRawSingleBand(entryId, {
+					band: sourceBand,
+					nodata: parsedNodata,
+					ewres,
+					nsres
+				});
 			}
 
 			// 生データを解放（メモリ節約）
@@ -659,14 +661,7 @@
 								max: bandMinMax.max,
 								colorMap: 'jet'
 							},
-							twi: twiRange
-								? {
-										min: twiRange.min,
-										max: twiRange.max,
-										colorMap: 'hsv'
-									}
-								: undefined,
-							multi: {
+								multi: {
 								r: { index: 0, min: multiBandMinMax.r.min, max: multiBandMinMax.r.max },
 								g: {
 									index: numBands >= 2 ? 1 : 0,
