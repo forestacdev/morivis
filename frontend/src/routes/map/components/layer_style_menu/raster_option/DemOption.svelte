@@ -1,9 +1,9 @@
 <script lang="ts">
+	import DemColorLegend from './DemColorLegend.svelte';
 	import Accordion from '../../atoms/Accordion.svelte';
 	import RangeSlider from '../../atoms/RangeSlider.svelte';
 	import RangeSliderDouble from '../../atoms/RangeSliderDouble.svelte';
 	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
-	import DemColorLegend from './DemColorLegend.svelte';
 
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
@@ -106,189 +106,194 @@
 </script>
 
 <Accordion label="描画の調整" icon="material-symbols:image" bind:value={showColorOption}>
-	<DemStyleModePulldownBox bind:isMode={layerEntry.style.visualization.mode} {layerEntry} />
-	{#if layerEntry.style.visualization.mode === 'relief'}
-		<div class="my-2 flex gap-2">
-			<button
-				onclick={() => setRangeStyleType('relief', 'linear')}
-				class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.relief, 'linear')}`}
-			>
-				連続
-			</button>
-			<button
-				onclick={() => setRangeStyleType('relief', 'step')}
-				class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.relief, 'step')}`}
-			>
-				段階
-			</button>
-		</div>
-		{#if isDemStepColorStyle(layerEntry.style.visualization.uniformsData.relief)}
+	<div class="flex w-full flex-col gap-2">
+		<DemStyleModePulldownBox bind:isMode={layerEntry.style.visualization.mode} {layerEntry} />
+
+		{#if layerEntry.style.visualization.mode === 'relief'}
+			<div class="my-2 flex gap-2">
+				<button
+					onclick={() => setRangeStyleType('relief', 'linear')}
+					class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.relief, 'linear')}`}
+				>
+					連続
+				</button>
+				<button
+					onclick={() => setRangeStyleType('relief', 'step')}
+					class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.relief, 'step')}`}
+				>
+					段階
+				</button>
+			</div>
+			{#if isDemStepColorStyle(layerEntry.style.visualization.uniformsData.relief)}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.relief.colorMap}
+					mutableColorMapType={stepColorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="標高数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.relief.max}
+					max={reliefSliderBounds.max}
+					min={reliefSliderBounds.min}
+					step={0.01}
+					primaryColor={colorMapManager.createDemCSSGradient(
+						layerEntry.style.visualization.uniformsData.relief
+					)}
+					minRangeColor={colorMapManager.getDemMinColor(
+						layerEntry.style.visualization.uniformsData.relief
+					)}
+					maxRangeColor={colorMapManager.getDemMaxColor(
+						layerEntry.style.visualization.uniformsData.relief
+					)}
+				/>
+				<RangeSlider
+					label="分類数"
+					bind:value={layerEntry.style.visualization.uniformsData.relief.divisions}
+					min={3}
+					max={9}
+					step={1}
+					isInt={true}
+				/>
+				<DemColorLegend style={layerEntry.style.visualization.uniformsData.relief} />
+			{:else}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.relief.colorMap}
+					mutableColorMapType={linearColorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="標高数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.relief.max}
+					max={reliefSliderBounds.max}
+					min={reliefSliderBounds.min}
+					step={0.01}
+					primaryColor={colorMapManager.createDemCSSGradient(
+						layerEntry.style.visualization.uniformsData.relief
+					)}
+					minRangeColor={colorMapManager.getDemMinColor(
+						layerEntry.style.visualization.uniformsData.relief
+					)}
+					maxRangeColor={colorMapManager.getDemMaxColor(
+						layerEntry.style.visualization.uniformsData.relief
+					)}
+				/>
+			{/if}
+		{/if}
+
+		{#if layerEntry.style?.visualization.uniformsData.slope && layerEntry.style.visualization.mode === 'slope'}
+			<div class="my-2 flex gap-2">
+				<button
+					onclick={() => setRangeStyleType('slope', 'linear')}
+					class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'linear')}`}
+				>
+					連続
+				</button>
+				<button
+					onclick={() => setRangeStyleType('slope', 'step')}
+					class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'step')}`}
+				>
+					段階
+				</button>
+			</div>
+			{#if isDemStepColorStyle(layerEntry.style.visualization.uniformsData.slope)}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
+					mutableColorMapType={stepColorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+
+				<RangeSliderDouble
+					label="傾斜量数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
+					max={slopeSliderBounds.max}
+					min={slopeSliderBounds.min}
+					step={0.01}
+					primaryColor={colorMapManager.createDemCSSGradient(
+						layerEntry.style.visualization.uniformsData.slope
+					)}
+					minRangeColor={colorMapManager.getDemMinColor(
+						layerEntry.style.visualization.uniformsData.slope
+					)}
+					maxRangeColor={colorMapManager.getDemMaxColor(
+						layerEntry.style.visualization.uniformsData.slope
+					)}
+				/>
+				<div class="my-3">
+					<RangeSlider
+						label="分類数"
+						bind:value={layerEntry.style.visualization.uniformsData.slope.divisions}
+						min={3}
+						max={9}
+						step={1}
+						isInt={true}
+					/>
+				</div>
+				<DemColorLegend style={layerEntry.style.visualization.uniformsData.slope} />
+			{:else}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
+					mutableColorMapType={linearColorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+
+				<RangeSliderDouble
+					label="傾斜量数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
+					max={slopeSliderBounds.max}
+					min={slopeSliderBounds.min}
+					step={0.01}
+					primaryColor={colorMapManager.createDemCSSGradient(
+						layerEntry.style.visualization.uniformsData.slope
+					)}
+					minRangeColor={colorMapManager.getDemMinColor(
+						layerEntry.style.visualization.uniformsData.slope
+					)}
+					maxRangeColor={colorMapManager.getDemMaxColor(
+						layerEntry.style.visualization.uniformsData.slope
+					)}
+				/>
+			{/if}
+		{/if}
+
+		{#if layerEntry.style?.visualization.uniformsData.aspect && layerEntry.style.visualization.mode === 'aspect'}
 			<ColorMapSelect
-				bind:isColorMap={layerEntry.style.visualization.uniformsData.relief.colorMap}
-				mutableColorMapType={stepColorMapOptions}
-			>
-				{#snippet children(_isColorMap)}
-					<ColorScaleDem isColorMap={_isColorMap} />
-				{/snippet}
-			</ColorMapSelect>
-			<RangeSliderDouble
-				label="標高数値範囲"
-				bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.min}
-				bind:upperValue={layerEntry.style.visualization.uniformsData.relief.max}
-				max={reliefSliderBounds.max}
-				min={reliefSliderBounds.min}
-				step={0.01}
-				primaryColor={colorMapManager.createDemCSSGradient(
-					layerEntry.style.visualization.uniformsData.relief
-				)}
-				minRangeColor={colorMapManager.getDemMinColor(
-					layerEntry.style.visualization.uniformsData.relief
-				)}
-				maxRangeColor={colorMapManager.getDemMaxColor(
-					layerEntry.style.visualization.uniformsData.relief
-				)}
-			/>
-			<RangeSlider
-				label="分類数"
-				bind:value={layerEntry.style.visualization.uniformsData.relief.divisions}
-				min={3}
-				max={9}
-				step={1}
-				isInt={true}
-			/>
-			<DemColorLegend style={layerEntry.style.visualization.uniformsData.relief} />
-		{:else}
-			<ColorMapSelect
-				bind:isColorMap={layerEntry.style.visualization.uniformsData.relief.colorMap}
+				bind:isColorMap={layerEntry.style.visualization.uniformsData.aspect.colorMap}
 				mutableColorMapType={linearColorMapOptions}
 			>
 				{#snippet children(_isColorMap)}
 					<ColorScaleDem isColorMap={_isColorMap} />
 				{/snippet}
 			</ColorMapSelect>
-			<RangeSliderDouble
-				label="標高数値範囲"
-				bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.min}
-				bind:upperValue={layerEntry.style.visualization.uniformsData.relief.max}
-				max={reliefSliderBounds.max}
-				min={reliefSliderBounds.min}
-				step={0.01}
-				primaryColor={colorMapManager.createDemCSSGradient(
-					layerEntry.style.visualization.uniformsData.relief
-				)}
-				minRangeColor={colorMapManager.getDemMinColor(
-					layerEntry.style.visualization.uniformsData.relief
-				)}
-				maxRangeColor={colorMapManager.getDemMaxColor(
-					layerEntry.style.visualization.uniformsData.relief
-				)}
-			/>
 		{/if}
-	{/if}
 
-	{#if layerEntry.style?.visualization.uniformsData.slope && layerEntry.style.visualization.mode === 'slope'}
-		<div class="my-2 flex gap-2">
-			<button
-				onclick={() => setRangeStyleType('slope', 'linear')}
-				class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'linear')}`}
-			>
-				連続
-			</button>
-			<button
-				onclick={() => setRangeStyleType('slope', 'step')}
-				class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'step')}`}
-			>
-				段階
-			</button>
-		</div>
-		{#if isDemStepColorStyle(layerEntry.style.visualization.uniformsData.slope)}
+		{#if layerEntry.style?.visualization.uniformsData.curvature && layerEntry.style.visualization.mode === 'curvature'}
 			<ColorMapSelect
-				bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
-				mutableColorMapType={stepColorMapOptions}
-			>
-				{#snippet children(_isColorMap)}
-					<ColorScaleDem isColorMap={_isColorMap} />
-				{/snippet}
-			</ColorMapSelect>
-
-			<RangeSliderDouble
-				label="傾斜量数値範囲"
-				bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
-				bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
-				max={slopeSliderBounds.max}
-				min={slopeSliderBounds.min}
-				step={0.01}
-				primaryColor={colorMapManager.createDemCSSGradient(
-					layerEntry.style.visualization.uniformsData.slope
-				)}
-				minRangeColor={colorMapManager.getDemMinColor(
-					layerEntry.style.visualization.uniformsData.slope
-				)}
-				maxRangeColor={colorMapManager.getDemMaxColor(
-					layerEntry.style.visualization.uniformsData.slope
-				)}
-			/>
-			<RangeSlider
-				label="分類数"
-				bind:value={layerEntry.style.visualization.uniformsData.slope.divisions}
-				min={3}
-				max={9}
-				step={1}
-				isInt={true}
-			/>
-			<DemColorLegend style={layerEntry.style.visualization.uniformsData.slope} />
-		{:else}
-			<ColorMapSelect
-				bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
+				bind:isColorMap={layerEntry.style.visualization.uniformsData.curvature.colorMap}
 				mutableColorMapType={linearColorMapOptions}
 			>
 				{#snippet children(_isColorMap)}
 					<ColorScaleDem isColorMap={_isColorMap} />
 				{/snippet}
 			</ColorMapSelect>
-
-			<RangeSliderDouble
-				label="傾斜量数値範囲"
-				bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
-				bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
-				max={slopeSliderBounds.max}
-				min={slopeSliderBounds.min}
-				step={0.01}
-				primaryColor={colorMapManager.createDemCSSGradient(
-					layerEntry.style.visualization.uniformsData.slope
-				)}
-				minRangeColor={colorMapManager.getDemMinColor(
-					layerEntry.style.visualization.uniformsData.slope
-				)}
-				maxRangeColor={colorMapManager.getDemMaxColor(
-					layerEntry.style.visualization.uniformsData.slope
-				)}
-			/>
 		{/if}
-	{/if}
-
-	{#if layerEntry.style?.visualization.uniformsData.aspect && layerEntry.style.visualization.mode === 'aspect'}
-		<ColorMapSelect
-			bind:isColorMap={layerEntry.style.visualization.uniformsData.aspect.colorMap}
-			mutableColorMapType={linearColorMapOptions}
-		>
-			{#snippet children(_isColorMap)}
-				<ColorScaleDem isColorMap={_isColorMap} />
-			{/snippet}
-		</ColorMapSelect>
-	{/if}
-
-	{#if layerEntry.style?.visualization.uniformsData.curvature && layerEntry.style.visualization.mode === 'curvature'}
-		<ColorMapSelect
-			bind:isColorMap={layerEntry.style.visualization.uniformsData.curvature.colorMap}
-			mutableColorMapType={linearColorMapOptions}
-		>
-			{#snippet children(_isColorMap)}
-				<ColorScaleDem isColorMap={_isColorMap} />
-			{/snippet}
-		</ColorMapSelect>
-	{/if}
-</Accordion>
+	</div></Accordion
+>
 
 <style>
 </style>

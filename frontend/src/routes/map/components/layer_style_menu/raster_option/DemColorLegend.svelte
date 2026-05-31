@@ -11,15 +11,17 @@
 	let legend = $derived.by(() => generateDemLegend(style));
 </script>
 
-{#each legend.categories as _, index}
-	<div class="flex w-full items-center justify-center gap-2 text-base select-none">
-		<div
-			class="h-[20px] w-[20px] flex-none rounded-full"
-			style="background-color: {legend.values[index]};"
-		></div>
-		<div class="w-full">{legend.categories[index]}</div>
-	</div>
-{/each}
+<div class="flex flex-col gap-1">
+	{#each legend.categories as _, index}
+		<div class="flex w-full items-center justify-center gap-2 text-base select-none">
+			<div
+				class="h-[20px] w-[20px] flex-none rounded-md border border-black"
+				style="background-color: {legend.values[index]};"
+			></div>
+			<div class="w-full">{legend.categories[index]}</div>
+		</div>
+	{/each}
+</div>
 
 <style>
 </style>
