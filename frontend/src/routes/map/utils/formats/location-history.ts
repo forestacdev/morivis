@@ -376,9 +376,7 @@ export const isLocationHistoryFile = async (file: File): Promise<boolean> => {
 	return isLocationHistoryText(await file.text());
 };
 
-export const inspectLocationHistoryFile = async (
-	file: File
-): Promise<LocationHistorySummary> => {
+export const inspectLocationHistoryFile = async (file: File): Promise<LocationHistorySummary> => {
 	return getLocationHistorySummary(parseLocationHistoryText(await file.text()));
 };
 

@@ -36,18 +36,21 @@ const DRACO_DECODER_PATH = asset('/draco/gltf/');
 const IFC_WASM_PATH = asset('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
 const dracoLoader = new DRACOLoader();
-let rhino3dmLoaderModulePromise: Promise<typeof import('three/addons/loaders/3DMLoader.js')> | null =
-	null;
+let rhino3dmLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/3DMLoader.js')
+> | null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
-let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null = null;
-let colladaLoaderModulePromise:
-	| Promise<typeof import('three/addons/loaders/ColladaLoader.js')>
-	| null = null;
-let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null = null;
-let threeMfLoaderModulePromise:
-	| Promise<typeof import('three/addons/loaders/3MFLoader.js')>
-	| null = null;
-let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null = null;
+let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
+	null;
+let colladaLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/ColladaLoader.js')
+> | null = null;
+let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
+	null;
+let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
+	null;
+let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null =
+	null;
 
 dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
 gltfLoader.setDRACOLoader(dracoLoader);
@@ -269,7 +272,8 @@ const parseFbxObject = async (
 		if (normalizeToLocalOrigin) {
 			normalizeObjectToLocalOrigin(object);
 		}
-		const animations = (object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? [];
+		const animations =
+			(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? [];
 		return {
 			object,
 			animationNames: animations.map((clip, index) => clip.name || `Animation ${index + 1}`)

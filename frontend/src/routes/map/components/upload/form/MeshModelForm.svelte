@@ -41,7 +41,11 @@
 	const glbFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(glb|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc)$/i.test(getPathLikeName(f))) ?? null;
+			return (
+				Array.from(dropFile).find((f) =>
+					/\.(glb|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc)$/i.test(getPathLikeName(f))
+				) ?? null
+			);
 		}
 		return dropFile;
 	});
@@ -135,9 +139,9 @@
 												? '3mf'
 												: isAmf
 													? 'amf'
-												: isIfc
-													? 'ifc'
-													: 'gltf',
+													: isIfc
+														? 'ifc'
+														: 'gltf',
 					resolvedMtlUrl,
 					isObj || is3ds || isDae || is3dm || isFbx ? resourceUrls : undefined,
 					isIfc
@@ -151,10 +155,7 @@
 						fileName: glbFile.name,
 						transform: entry.style.transform
 					});
-					showNotification(
-						'IFCの地理配置は行わず、ローカル原点に寄せて表示します',
-						'info'
-					);
+					showNotification('IFCの地理配置は行わず、ローカル原点に寄せて表示します', 'info');
 				}
 
 				try {
@@ -208,8 +209,8 @@
 						};
 					}
 					if (uploadedModelMeta.scaleMultiplier !== 1) {
-							entry.style.transform.baseScale =
-								(entry.style.transform.baseScale ?? 1) * uploadedModelMeta.scaleMultiplier;
+						entry.style.transform.baseScale =
+							(entry.style.transform.baseScale ?? 1) * uploadedModelMeta.scaleMultiplier;
 						showNotification('小さいモデルのため拡大して表示します', 'info');
 					}
 					entry.metaData.bounds = uploadedModelMeta.bounds;
@@ -291,7 +292,7 @@
 										? 'amf'
 										: normalizedUrl.endsWith('.ifc')
 											? 'ifc'
-								: 'gltf';
+											: 'gltf';
 		const entry = createGlbEntry(
 			forms.name,
 			forms.url.trim(),
@@ -323,7 +324,11 @@
 		class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 	>
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
-		<TextForm bind:value={forms.url} label="3Dモデル URL (GLB / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC)" error={errors.url} />
+		<TextForm
+			bind:value={forms.url}
+			label="3Dモデル URL (GLB / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC)"
+			error={errors.url}
+		/>
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">

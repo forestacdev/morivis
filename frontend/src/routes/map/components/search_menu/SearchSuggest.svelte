@@ -62,12 +62,12 @@
 
 	onMount(async () => {
 		// 検索データの初期化
-		searchData = await fetchJsonWithDevProxy<SearchData[]>(
-			`${DATA_PATH}/search_data.json`
-		).catch((error) => {
-			console.error('Error fetching search data:', error);
-			return [];
-		});
+		searchData = await fetchJsonWithDevProxy<SearchData[]>(`${DATA_PATH}/search_data.json`).catch(
+			(error) => {
+				console.error('Error fetching search data:', error);
+				return [];
+			}
+		);
 
 		featureDataFuse = new Fuse(searchData, {
 			keys: ['search_values'],

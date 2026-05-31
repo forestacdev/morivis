@@ -83,7 +83,9 @@ const parseFolderTemporalText = (text: string) => {
 	const normalized = text.trim();
 	if (!normalized) return null;
 
-	const yearMonthMatch = normalized.match(/(?:^|[^\d])((?:19|20)?\d{2})年\s*(\d{1,2})月(?:$|[^\d])/);
+	const yearMonthMatch = normalized.match(
+		/(?:^|[^\d])((?:19|20)?\d{2})年\s*(\d{1,2})月(?:$|[^\d])/
+	);
 	if (yearMonthMatch) {
 		let year = Number(yearMonthMatch[1]);
 		const month = Number(yearMonthMatch[2]);
@@ -130,7 +132,7 @@ const extractPlacemarkTime = (placemark: Element): string | null => {
 
 	const timeStamp = placemark.getElementsByTagNameNS(KML_NS, 'TimeStamp')[0];
 	const timeStampWhen = timeStamp
-		? getFirstChildText(timeStamp, KML_NS, 'when') ?? getFirstChildText(timeStamp, GX_NS, 'when')
+		? (getFirstChildText(timeStamp, KML_NS, 'when') ?? getFirstChildText(timeStamp, GX_NS, 'when'))
 		: null;
 	if (timeStampWhen) return timeStampWhen;
 
@@ -586,7 +588,10 @@ export const extractModelFromKmz = async (file: File): Promise<KmzModelResult | 
 	const href = link ? getFirstChildText(link, KML_NS, 'href') : null;
 	if (!href) return null;
 
-	const mainModelPathCandidates = [resolveKmzEntryPath(kmlFileName, href), href.replace(/^\/+/, '')];
+	const mainModelPathCandidates = [
+		resolveKmzEntryPath(kmlFileName, href),
+		href.replace(/^\/+/, '')
+	];
 	const mainModelPath = mainModelPathCandidates.find((path) => Boolean(zip.files[path]));
 	if (!mainModelPath) {
 		throw new Error(`Model file not found in KMZ: ${href}`);
@@ -602,7 +607,11 @@ export const extractModelFromKmz = async (file: File): Promise<KmzModelResult | 
 		const blob = await entry.async('blob');
 		const fileName = path.split('/').pop() ?? path;
 		const extractedFile = setRelativePath(new File([blob], fileName, { type: blob.type }), path);
-		modelFiles.push(path === mainModelPath && placement ? setModelPlacement(extractedFile, placement) : extractedFile);
+		modelFiles.push(
+			path === mainModelPath && placement
+				? setModelPlacement(extractedFile, placement)
+				: extractedFile
+		);
 	}
 
 	return {
@@ -634,10 +643,7 @@ export const extractGroundOverlayFromKmz = async (
 		return null;
 	}
 
-	const imagePathCandidates = [
-		resolveKmzEntryPath(kmlFileName, href),
-		href.replace(/^\/+/, '')
-	];
+	const imagePathCandidates = [resolveKmzEntryPath(kmlFileName, href), href.replace(/^\/+/, '')];
 	const imagePath = imagePathCandidates.find((path) => Boolean(zip.files[path]));
 	if (!imagePath) {
 		throw new Error(`GroundOverlay image not found in KMZ: ${href}`);

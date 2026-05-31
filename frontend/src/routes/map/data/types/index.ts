@@ -52,11 +52,7 @@ export interface BaseMetaData {
 }
 
 export type AnyRasterEntry = RasterEntry<
-	| RasterCategoricalStyle
-	| RasterBaseMapStyle
-	| RasterDemStyle
-	| RasterTiffStyle
-	| RasterCadStyle
+	RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
 >;
 
 export type AnyVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;

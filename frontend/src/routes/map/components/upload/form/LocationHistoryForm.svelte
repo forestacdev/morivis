@@ -342,7 +342,7 @@
 >
 	<div class="w-full space-y-4 p-2 text-sm">
 		{#if summary}
-			<div class="space-y-1 text-sub">
+			<div class="text-sub space-y-1">
 				<p>滞在地点: {summary.visitCount}件</p>
 				<p>移動区間: {summary.activityCount}件</p>
 				<p>タイムライン区間: {summary.timelineSegmentCount}件</p>
@@ -364,11 +364,14 @@
 			<p class="text-sub">各滞在記録をポイントとして読み込みます。時刻は開始時刻で扱います。</p>
 		{/if}
 		{#if dataType === 'activities'}
-			<p class="text-sub">各移動記録を始点と終点を結ぶラインとして読み込みます。時刻は開始時刻で扱います。</p>
+			<p class="text-sub">
+				各移動記録を始点と終点を結ぶラインとして読み込みます。時刻は開始時刻で扱います。
+			</p>
 		{/if}
 		{#if dataType === 'timeline_points'}
 			<p class="text-sub">
-				`timelinePath` の各点をポイントとして読み込みます。開始時刻とオフセットから各点の時刻を作ります。
+				`timelinePath`
+				の各点をポイントとして読み込みます。開始時刻とオフセットから各点の時刻を作ります。
 			</p>
 		{/if}
 	</div>

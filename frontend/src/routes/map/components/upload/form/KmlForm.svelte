@@ -307,10 +307,9 @@
 						showNotification('KMLファイルの読み込みに失敗しました', 'error');
 						console.error(e);
 					});
-			})()
-				.finally(() => {
-					isProcessing.set(false);
-				});
+			})().finally(() => {
+				isProcessing.set(false);
+			});
 		}
 	});
 

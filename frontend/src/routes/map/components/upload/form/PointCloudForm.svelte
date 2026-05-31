@@ -51,7 +51,9 @@
 	const pointCloudFile = $derived.by(() => {
 		if (!dropFile) return null;
 		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.(las|laz|ply|pcd|xyz|txt|obj)$/i.test(f.name)) ?? null;
+			return (
+				Array.from(dropFile).find((f) => /\.(las|laz|ply|pcd|xyz|txt|obj)$/i.test(f.name)) ?? null
+			);
 		}
 		return dropFile;
 	});

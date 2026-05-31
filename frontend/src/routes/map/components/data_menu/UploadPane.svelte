@@ -507,31 +507,31 @@
 				</button>
 			</div>
 
-				<div class="c-scroll flex flex-col gap-5 overflow-y-auto pr-1">
-					{#each urlDialogGroups as group (group.title)}
-						<div class="flex flex-col gap-3">
-							<span class="text-sm font-bold text-gray-300">{group.title}</span>
-							<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
-								{#each group.dialogs as dialog (dialog.type)}
-									<button
-										onclick={() => showUploadDialog(dialog.type)}
-										class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
-									>
+			<div class="c-scroll flex flex-col gap-5 overflow-y-auto pr-1">
+				{#each urlDialogGroups as group (group.title)}
+					<div class="flex flex-col gap-3">
+						<span class="text-sm font-bold text-gray-300">{group.title}</span>
+						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+							{#each group.dialogs as dialog (dialog.type)}
+								<button
+									onclick={() => showUploadDialog(dialog.type)}
+									class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
+								>
 									{dialog.label}
 								</button>
 							{/each}
-							</div>
 						</div>
-					{/each}
-					{#each fileDialogGroups as group (group.title)}
-						<div class="flex flex-col gap-3">
-							<span class="text-sm font-bold text-gray-300">{group.title}</span>
-							<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
-								{#each group.groups as fileGroup (fileGroup.label)}
-									<button
-										onclick={async () => {
-											showFormListDialog = false;
-											await openFilteredFilePicker(fileGroup.accept);
+					</div>
+				{/each}
+				{#each fileDialogGroups as group (group.title)}
+					<div class="flex flex-col gap-3">
+						<span class="text-sm font-bold text-gray-300">{group.title}</span>
+						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+							{#each group.groups as fileGroup (fileGroup.label)}
+								<button
+									onclick={async () => {
+										showFormListDialog = false;
+										await openFilteredFilePicker(fileGroup.accept);
 									}}
 									class="bg-base hover:bg-accent cursor-pointer rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
 								>

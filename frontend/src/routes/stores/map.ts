@@ -69,10 +69,7 @@ import {
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
-import {
-	clearPointCloudDataCache,
-	createDeckOverlay
-} from '$routes/map/utils/deck/overlay';
+import { clearPointCloudDataCache, createDeckOverlay } from '$routes/map/utils/deck/overlay';
 import {
 	handleStyleImageMissing,
 	isGeneratedPoiIconId,

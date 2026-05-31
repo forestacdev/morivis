@@ -85,7 +85,10 @@ const getGeometryColumnsFromSchema = (metadata: FileMetaData): string[] => {
 		.map((element) => element.name);
 };
 
-const getGeometryColumns = (metadata: FileMetaData, geoMetadata: GeoParquetMetadata | null): string[] => {
+const getGeometryColumns = (
+	metadata: FileMetaData,
+	geoMetadata: GeoParquetMetadata | null
+): string[] => {
 	const metadataColumns = Object.keys(geoMetadata?.columns ?? {});
 
 	return metadataColumns.length > 0 ? metadataColumns : getGeometryColumnsFromSchema(metadata);
@@ -238,7 +241,9 @@ const decodeGeoArrowGeometry = (
 	}
 };
 
-const fallbackGeoArrowWithLoaders = async (buffer: ArrayBuffer): Promise<FeatureCollection | null> => {
+const fallbackGeoArrowWithLoaders = async (
+	buffer: ArrayBuffer
+): Promise<FeatureCollection | null> => {
 	try {
 		const parsed = (await parse(buffer, GeoParquetLoader, {
 			parquet: {
@@ -327,7 +332,9 @@ export const geoParquetFileToGeoJson = async (file: File): Promise<GeoParquetRea
 			const geometryValue = row[primaryGeometryColumn];
 			const geometry =
 				geometryEncoding === 'wkb' || geometryEncoding === 'geoarrow.wkb'
-					? (isGeometry(geometryValue) ? geometryValue : null)
+					? isGeometry(geometryValue)
+						? geometryValue
+						: null
 					: decodeGeoArrowGeometry(geometryValue, geometryEncoding);
 
 			if (!isGeometry(geometry)) return null;

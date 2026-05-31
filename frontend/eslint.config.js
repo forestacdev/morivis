@@ -40,7 +40,10 @@ export default [
 		}
 	},
 	{
-		files: ['src/routes/stores/**/*.{js,ts,svelte}', 'src/routes/map/components/**/*.{js,ts,svelte}'],
+		files: [
+			'src/routes/stores/**/*.{js,ts,svelte}',
+			'src/routes/map/components/**/*.{js,ts,svelte}'
+		],
 		rules: {
 			'no-restricted-globals': [
 				'error',

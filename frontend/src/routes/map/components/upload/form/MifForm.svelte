@@ -138,7 +138,10 @@
 			return;
 		}
 
-		const filtered = filterByGeometryType(rawGeojson, selectedGeometryType as VectorEntryGeometryType);
+		const filtered = filterByGeometryType(
+			rawGeojson,
+			selectedGeometryType as VectorEntryGeometryType
+		);
 		if (!filtered || filtered.features.length === 0) {
 			showNotification('選択したジオメトリタイプのフィーチャが見つかりませんでした', 'error');
 			return;
@@ -241,11 +244,7 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-4 overflow-x-hidden overflow-y-auto"
 >
-	<DropContainer
-		class="w-full"
-		bind:isDragover
-		onDropFile={(files) => setFiles(files, true)}
-	>
+	<DropContainer class="w-full" bind:isDragover onDropFile={(files) => setFiles(files, true)}>
 		<div
 			class="w-full rounded-2xl border p-4 text-sm transition-colors {isDragover
 				? 'border-main-accent bg-main-accent/10'

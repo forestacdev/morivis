@@ -377,23 +377,23 @@
 				}
 				const inspection = await inspectObjFile(objFile);
 				showDialogType = inspection.isPointCloud ? 'pointcloud' : 'glb';
-				} else if (files.some((f) => hasExtension(f, '.3ds'))) {
-					showDialogType = 'glb';
-				} else if (files.some((f) => hasExtension(f, '.dae'))) {
-					showDialogType = 'glb';
-				} else if (files.some((f) => hasExtension(f, '.3dm'))) {
-					showDialogType = 'glb';
-				} else if (files.some((f) => hasExtension(f, '.fbx'))) {
-					showDialogType = 'glb';
-				} else if (files.some((f) => hasExtension(f, '.drc'))) {
-					showDialogType = 'glb';
-				} else if (files.some((f) => hasExtension(f, '.3mf'))) {
-					showDialogType = 'glb';
-				} else if (files.some((f) => hasExtension(f, '.amf'))) {
-					showDialogType = 'glb';
-				} else if (files.some((f) => hasExtension(f, '.ifc'))) {
-					showDialogType = 'glb';
-				} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
+			} else if (files.some((f) => hasExtension(f, '.3ds'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.dae'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.3dm'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.fbx'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.drc'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.3mf'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.amf'))) {
+				showDialogType = 'glb';
+			} else if (files.some((f) => hasExtension(f, '.ifc'))) {
+				showDialogType = 'glb';
+			} else if (files.every((f) => /\.(jpe?g|heic|heif)$/i.test(f.name))) {
 				// 全ファイルがJPEG/HEIC → 1枚でもGPS付きなら位置情報付き写真
 				const hasGps = await hasExifGps(files[0]);
 				if (hasGps) {

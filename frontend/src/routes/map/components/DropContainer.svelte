@@ -30,10 +30,7 @@
 		return file;
 	};
 
-	const entryToFile = (
-		entry: FileSystemFileEntry,
-		relativePath: string
-	): Promise<File> =>
+	const entryToFile = (entry: FileSystemFileEntry, relativePath: string): Promise<File> =>
 		new Promise((resolve, reject) =>
 			entry.file((file) => resolve(setRelativePath(file, relativePath)), reject)
 		);
@@ -74,7 +71,9 @@
 		for (const item of Array.from(items)) {
 			const entry = item.webkitGetAsEntry?.();
 			if (entry?.isDirectory) {
-				files.push(...(await readDirectoryRecursive(entry as FileSystemDirectoryEntry, entry.name)));
+				files.push(
+					...(await readDirectoryRecursive(entry as FileSystemDirectoryEntry, entry.name))
+				);
 				continue;
 			}
 

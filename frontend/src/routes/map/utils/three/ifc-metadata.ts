@@ -209,7 +209,9 @@ export const resolveIfcPlacementWithEpsg = (
 	}
 };
 
-export const readIfcPlacementMetadata = async (file: File): Promise<IfcPlacementMetadata | undefined> => {
+export const readIfcPlacementMetadata = async (
+	file: File
+): Promise<IfcPlacementMetadata | undefined> => {
 	const [{ IFCLoader }, webIfc] = await Promise.all([loadIfcLoaderModule(), loadWebIfcModule()]);
 	const loader = new IFCLoader();
 	await loader.ifcManager.setWasmPath(IFC_WASM_PATH);

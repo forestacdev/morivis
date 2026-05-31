@@ -28,13 +28,13 @@
 
 	let {
 		showDataEntry = $bindable(),
-			showDialogType = $bindable(),
-			dropFile = $bindable(),
-			showZoneForm = $bindable(),
-			selectedEpsgCode = $bindable(),
-			focusBbox = $bindable(),
-			zoneConfirmedEpsg = $bindable()
-		}: Props = $props();
+		showDialogType = $bindable(),
+		dropFile = $bindable(),
+		showZoneForm = $bindable(),
+		selectedEpsgCode = $bindable(),
+		focusBbox = $bindable(),
+		zoneConfirmedEpsg = $bindable()
+	}: Props = $props();
 
 	void selectedEpsgCode;
 	void zoneConfirmedEpsg;
@@ -136,13 +136,13 @@
 		showNotification('ファイルを読み込みました', 'success');
 	};
 
-		const cancel = () => {
-			dropFile = null;
-			showDialogType = null;
-			showZoneForm = false;
-			focusBbox = null;
-		};
-	</script>
+	const cancel = () => {
+		dropFile = null;
+		showDialogType = null;
+		showZoneForm = false;
+		focusBbox = null;
+	};
+</script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
 	<span class="text-2xl font-bold">Arrowファイルの登録</span>

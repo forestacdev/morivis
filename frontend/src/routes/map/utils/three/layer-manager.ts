@@ -21,18 +21,21 @@ import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 const DRACO_DECODER_PATH = asset('/draco/gltf/');
 const IFC_WASM_PATH = asset('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
-let rhino3dmLoaderModulePromise: Promise<typeof import('three/addons/loaders/3DMLoader.js')> | null =
-	null;
+let rhino3dmLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/3DMLoader.js')
+> | null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
-let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null = null;
-let colladaLoaderModulePromise:
-	| Promise<typeof import('three/addons/loaders/ColladaLoader.js')>
-	| null = null;
-let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null = null;
-let threeMfLoaderModulePromise:
-	| Promise<typeof import('three/addons/loaders/3MFLoader.js')>
-	| null = null;
-let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null = null;
+let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
+	null;
+let colladaLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/ColladaLoader.js')
+> | null = null;
+let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
+	null;
+let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
+	null;
+let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null =
+	null;
 
 const loadRhino3dmLoaderModule = async () => {
 	if (!rhino3dmLoaderModulePromise) {
@@ -482,8 +485,7 @@ export class ThreeJsLayerManager {
 					this.modelGroup!.traverse((child) => {
 						if (child.userData.entryId) {
 							child.visible =
-								child.userData.entryId === loaded.entry.id &&
-								(loaded.entry.style.visible ?? true);
+								child.userData.entryId === loaded.entry.id && (loaded.entry.style.visible ?? true);
 						}
 					});
 
@@ -746,10 +748,7 @@ export class ThreeJsLayerManager {
 							geometry.computeVertexNormals();
 						}
 						onModelLoaded(
-							new THREE.Mesh(
-								geometry,
-								new THREE.MeshStandardMaterial({ color: '#ffffff' })
-							)
+							new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#ffffff' }))
 						);
 					},
 					undefined,

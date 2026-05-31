@@ -119,10 +119,7 @@ const createEllipseRing = (
 
 	for (let i = 0; i < segments; i += 1) {
 		const angle = (Math.PI * 2 * i) / segments;
-		coordinates.push([
-			centerX + radiusX * Math.cos(angle),
-			centerY + radiusY * Math.sin(angle)
-		]);
+		coordinates.push([centerX + radiusX * Math.cos(angle), centerY + radiusY * Math.sin(angle)]);
 	}
 
 	return closeRing(coordinates);
@@ -162,10 +159,7 @@ const createRoundedRectRing = (
 		const coordinates: Coordinate[] = [];
 		for (let i = 0; i <= segmentsPerCorner; i += 1) {
 			const angle = startAngle + ((endAngle - startAngle) * i) / segmentsPerCorner;
-			coordinates.push([
-				centerX + radius * Math.cos(angle),
-				centerY + radius * Math.sin(angle)
-			]);
+			coordinates.push([centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle)]);
 		}
 		return coordinates;
 	};
@@ -221,7 +215,9 @@ const createArcLine = (
 		return normalized;
 	};
 
-	const startAngle = normalizeAngle(Math.atan2((startY - centerY) / radiusY, (startX - centerX) / radiusX));
+	const startAngle = normalizeAngle(
+		Math.atan2((startY - centerY) / radiusY, (startX - centerX) / radiusX)
+	);
 	let endAngle = normalizeAngle(Math.atan2((endY - centerY) / radiusY, (endX - centerX) / radiusX));
 	if (endAngle <= startAngle) {
 		endAngle += Math.PI * 2;
@@ -230,10 +226,7 @@ const createArcLine = (
 	const coordinates: Coordinate[] = [];
 	for (let i = 0; i <= segments; i += 1) {
 		const angle = startAngle + ((endAngle - startAngle) * i) / segments;
-		coordinates.push([
-			centerX + radiusX * Math.cos(angle),
-			centerY + radiusY * Math.sin(angle)
-		]);
+		coordinates.push([centerX + radiusX * Math.cos(angle), centerY + radiusY * Math.sin(angle)]);
 	}
 
 	return coordinates;
@@ -300,7 +293,10 @@ class MifLineReader {
 		return cursor;
 	}
 
-	readCoordinateBlock(index: number, vertexCount: number): { coordinates: Coordinate[]; nextIndex: number } {
+	readCoordinateBlock(
+		index: number,
+		vertexCount: number
+	): { coordinates: Coordinate[]; nextIndex: number } {
 		const coordinates: Coordinate[] = [];
 		let cursor = index;
 
@@ -357,13 +353,15 @@ const parseRect = (line: string): Geometry => {
 	const [x1, y1, x2, y2] = coordinates;
 	return {
 		type: 'Polygon',
-		coordinates: [[
-			[x1, y1],
-			[x2, y1],
-			[x2, y2],
-			[x1, y2],
-			[x1, y1]
-		]]
+		coordinates: [
+			[
+				[x1, y1],
+				[x2, y1],
+				[x2, y2],
+				[x1, y2],
+				[x1, y1]
+			]
+		]
 	};
 };
 
@@ -411,7 +409,9 @@ const parseArc = (reader: MifLineReader, index: number): ParsedGeometry => {
 	const coords = [...boundsTokens.slice(1), ...pointsTokens].map(Number);
 
 	if (coords.length < 8 || coords.some((value) => !Number.isFinite(value))) {
-		throw new Error(`Arc の解析に失敗しました: ${reader.getLine(index)} / ${reader.getLine(index + 1)}`);
+		throw new Error(
+			`Arc の解析に失敗しました: ${reader.getLine(index)} / ${reader.getLine(index + 1)}`
+		);
 	}
 
 	const [x1, y1, x2, y2, startX, startY, endX, endY] = coords;
@@ -499,10 +499,19 @@ const parseText = (
 ): ParsedGeometry => {
 	const header = reader.getTrimmedLine(index);
 	const textMatch = header.match(/^Text\s+"([\s\S]*)"$/i);
-	const boundsTokens = reader.getTrimmedLine(index + 1).split(/\s+/).map(Number);
+	const boundsTokens = reader
+		.getTrimmedLine(index + 1)
+		.split(/\s+/)
+		.map(Number);
 
-	if (!textMatch || boundsTokens.length < 4 || boundsTokens.some((value) => !Number.isFinite(value))) {
-		throw new Error(`Text の解析に失敗しました: ${reader.getLine(index)} / ${reader.getLine(index + 1)}`);
+	if (
+		!textMatch ||
+		boundsTokens.length < 4 ||
+		boundsTokens.some((value) => !Number.isFinite(value))
+	) {
+		throw new Error(
+			`Text の解析に失敗しました: ${reader.getLine(index)} / ${reader.getLine(index + 1)}`
+		);
 	}
 
 	const [x1, y1, x2, y2] = boundsTokens;
@@ -603,7 +612,11 @@ const parseRegion = (reader: MifLineReader, index: number): ParsedGeometry => {
 	};
 };
 
-const parseCollection = (reader: MifLineReader, index: number, properties: FeatureProp): ParsedGeometry => {
+const parseCollection = (
+	reader: MifLineReader,
+	index: number,
+	properties: FeatureProp
+): ParsedGeometry => {
 	const header = reader.getTrimmedLine(index);
 	const match = header.match(/^Collection\s+(\d+)$/i);
 	if (!match) {
@@ -631,7 +644,11 @@ const parseCollection = (reader: MifLineReader, index: number, properties: Featu
 	};
 };
 
-const parseGeometryAt = (reader: MifLineReader, index: number, properties: FeatureProp): ParsedGeometry => {
+const parseGeometryAt = (
+	reader: MifLineReader,
+	index: number,
+	properties: FeatureProp
+): ParsedGeometry => {
 	const line = reader.getLine(index);
 	const keyword = getLineKeyword(line);
 

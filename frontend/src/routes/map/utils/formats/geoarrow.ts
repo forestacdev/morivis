@@ -41,7 +41,8 @@ const ensureArrowCompressionCodecs = async () => {
 			const lz4Compression = new LZ4Compression({ modules: { lz4js } });
 			await lz4Compression.preload({ modules: { lz4js } });
 			compressionRegistry.set(CompressionType.LZ4_FRAME, {
-				decode: (bytes: Uint8Array) => new Uint8Array(lz4Compression.decompressSync(toArrayBuffer(bytes)))
+				decode: (bytes: Uint8Array) =>
+					new Uint8Array(lz4Compression.decompressSync(toArrayBuffer(bytes)))
 			});
 		}
 
@@ -189,7 +190,12 @@ const normalizeCoordinateStructure = (value: unknown): unknown => {
 		return values.length > 0 ? values : null;
 	}
 
-	if (typeof value === 'object' && value !== null && 'toJSON' in value && typeof value.toJSON === 'function') {
+	if (
+		typeof value === 'object' &&
+		value !== null &&
+		'toJSON' in value &&
+		typeof value.toJSON === 'function'
+	) {
 		return normalizeCoordinateStructure(value.toJSON());
 	}
 
