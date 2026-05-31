@@ -106,26 +106,30 @@
 </script>
 
 <Accordion label="描画の調整" icon="material-symbols:image" bind:value={showColorOption}>
-	<div class="flex w-full flex-col gap-2">
+	<div class="flex w-full flex-col gap-3">
 		<DemStyleModePulldownBox bind:isMode={layerEntry.style.visualization.mode} {layerEntry} />
 
 		{#if layerEntry.style.visualization.mode === 'relief'}
-			<div class="my-2 flex gap-2">
-				<button
-					onclick={() => setRangeStyleType('relief', 'linear')}
-					class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.relief, 'linear')}`}
-				>
-					連続
-				</button>
-				<button
-					onclick={() => setRangeStyleType('relief', 'step')}
-					class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.relief, 'step')}`}
-				>
-					段階
-				</button>
+			<div class="flex items-center justify-between">
+				<div class="text-base">カラーランプ</div>
+				<div class="flex gap-2">
+					<button
+						onclick={() => setRangeStyleType('relief', 'linear')}
+						class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.relief, 'linear')}`}
+					>
+						連続
+					</button>
+					<button
+						onclick={() => setRangeStyleType('relief', 'step')}
+						class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.relief, 'step')}`}
+					>
+						段階
+					</button>
+				</div>
 			</div>
 			{#if isDemStepColorStyle(layerEntry.style.visualization.uniformsData.relief)}
 				<ColorMapSelect
+					showLabel={false}
 					bind:isColorMap={layerEntry.style.visualization.uniformsData.relief.colorMap}
 					mutableColorMapType={stepColorMapOptions}
 				>
@@ -161,6 +165,7 @@
 				<DemColorLegend style={layerEntry.style.visualization.uniformsData.relief} />
 			{:else}
 				<ColorMapSelect
+					showLabel={false}
 					bind:isColorMap={layerEntry.style.visualization.uniformsData.relief.colorMap}
 					mutableColorMapType={linearColorMapOptions}
 				>
@@ -189,22 +194,26 @@
 		{/if}
 
 		{#if layerEntry.style?.visualization.uniformsData.slope && layerEntry.style.visualization.mode === 'slope'}
-			<div class="my-2 flex gap-2">
-				<button
-					onclick={() => setRangeStyleType('slope', 'linear')}
-					class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'linear')}`}
-				>
-					連続
-				</button>
-				<button
-					onclick={() => setRangeStyleType('slope', 'step')}
-					class={`rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'step')}`}
-				>
-					段階
-				</button>
+			<div class="flex items-center justify-between">
+				<div class="text-base">カラーランプ</div>
+				<div class="flex gap-2">
+					<button
+						onclick={() => setRangeStyleType('slope', 'linear')}
+						class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'linear')}`}
+					>
+						連続
+					</button>
+					<button
+						onclick={() => setRangeStyleType('slope', 'step')}
+						class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'step')}`}
+					>
+						段階
+					</button>
+				</div>
 			</div>
 			{#if isDemStepColorStyle(layerEntry.style.visualization.uniformsData.slope)}
 				<ColorMapSelect
+					showLabel={false}
 					bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
 					mutableColorMapType={stepColorMapOptions}
 				>
@@ -243,6 +252,7 @@
 				<DemColorLegend style={layerEntry.style.visualization.uniformsData.slope} />
 			{:else}
 				<ColorMapSelect
+					showLabel={false}
 					bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
 					mutableColorMapType={linearColorMapOptions}
 				>
@@ -273,6 +283,7 @@
 
 		{#if layerEntry.style?.visualization.uniformsData.aspect && layerEntry.style.visualization.mode === 'aspect'}
 			<ColorMapSelect
+				showLabel={false}
 				bind:isColorMap={layerEntry.style.visualization.uniformsData.aspect.colorMap}
 				mutableColorMapType={linearColorMapOptions}
 			>
