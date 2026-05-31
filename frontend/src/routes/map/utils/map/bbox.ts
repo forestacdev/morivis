@@ -11,6 +11,10 @@ import {
 export type BBox = [number, number, number, number];
 export type BBox3D = [number, number, number, number, number, number];
 
+const isFiniteNumber = (num: number): boolean => {
+	return Number.isFinite(num) && !Number.isNaN(num);
+};
+
 /**
  * Check if a BBox is 2D (4 elements).
  * @param bbox - The bounding box from GeoJSON.
@@ -89,11 +93,6 @@ export const isBboxValid = (bbox: BBox | BBox3D): boolean => {
 	const latOrderValid = minLat <= maxLat;
 	const lngOrderValid = minLng <= maxLng;
 
-	// NaNや無限大でないかチェック
-	const isFiniteNumber = (num: number): boolean => {
-		return isFinite(num) && !isNaN(num);
-	};
-
 	const allFinite = [minLng, minLat, maxLng, maxLat].every(isFiniteNumber);
 
 	return (
@@ -104,6 +103,17 @@ export const isBboxValid = (bbox: BBox | BBox3D): boolean => {
 		latOrderValid &&
 		lngOrderValid &&
 		allFinite
+	);
+};
+
+export const isFiniteBbox = (bbox: BBox | BBox3D | null | undefined): bbox is BBox | BBox3D => {
+	if (!bbox) return false;
+
+	const bbox2d: BBox = bbox.length === 6 ? [bbox[0], bbox[1], bbox[3], bbox[4]] : bbox;
+	const [minLng, minLat, maxLng, maxLat] = bbox2d;
+
+	return (
+		[minLng, minLat, maxLng, maxLat].every(isFiniteNumber) && minLng <= maxLng && minLat <= maxLat
 	);
 };
 

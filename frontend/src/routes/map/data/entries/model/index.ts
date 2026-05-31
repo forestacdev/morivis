@@ -1,13 +1,16 @@
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
+import type { Table } from 'apache-arrow';
+import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type {
 	ModelMeshEntry,
 	MeshStyle,
 	MeshFormatType,
 	ModelTiles3DEntry,
 	ModelPointCloudEntry,
-	PointCloudStyle
+	PointCloudStyle,
+	ModelGeoArrowEntry
 } from '$routes/map/data/types/model';
 
 export const createTiles3DEntry = (
@@ -75,6 +78,33 @@ export const createPointCloudEntry = (
 		type: 'point-cloud',
 		opacity: 0.7,
 		pointSize: 1
+	}
+});
+
+export const createGeoArrowEntry = (
+	name: string,
+	table: Table,
+	geometryType: VectorEntryGeometryType,
+	bounds?: [number, number, number, number]
+): ModelGeoArrowEntry => ({
+	id: 'geoarrow_' + crypto.randomUUID(),
+	type: 'model',
+	format: {
+		type: 'geoarrow',
+		table,
+		geometryType
+	},
+	metaData: {
+		...DEFAULT_CUSTOM_META_DATA,
+		attribution: 'GeoArrow',
+		name,
+		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
+	},
+	interaction: { clickable: false },
+	style: {
+		visible: true,
+		type: 'geoarrow',
+		opacity: 0.7
 	}
 });
 

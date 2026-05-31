@@ -8,6 +8,7 @@
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
+	import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
 	import GeoParquetForm from '$routes/map/components/upload/form/GeoParquetForm.svelte';
 	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
 	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
@@ -221,6 +222,17 @@
 			{/if}
 			{#if showDialogType === 'geoparquet'}
 				<GeoParquetForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'geoarrow'}
+				<GeoArrowForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile

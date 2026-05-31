@@ -30,7 +30,11 @@
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { AnyModelTiles3DEntry, ModelPointCloudEntry } from '$routes/map/data/types/model';
+	import type {
+		AnyModelTiles3DEntry,
+		ModelGeoArrowEntry,
+		ModelPointCloudEntry
+	} from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import {
 		type FeatureMenuData,
@@ -613,7 +617,19 @@
 			pointCloudEntries.push(showDataEntry as ModelPointCloudEntry);
 		}
 
-		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries);
+		const geoArrowEntries = entries.filter(
+			(entry) => entry.type === 'model' && entry.format.type === 'geoarrow'
+		) as ModelGeoArrowEntry[];
+
+		if (
+			showDataEntry &&
+			showDataEntry.type === 'model' &&
+			(showDataEntry as ModelGeoArrowEntry).format.type === 'geoarrow'
+		) {
+			geoArrowEntries.push(showDataEntry as ModelGeoArrowEntry);
+		}
+
+		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries, geoArrowEntries);
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
 

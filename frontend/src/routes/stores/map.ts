@@ -63,7 +63,8 @@ import {
 	type AnyModelTiles3DEntry,
 	type ModelMeshEntry,
 	type MeshStyle,
-	type ModelPointCloudEntry
+	type ModelPointCloudEntry,
+	type ModelGeoArrowEntry
 } from '$routes/map/data/types/model';
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
@@ -668,6 +669,7 @@ const createMapStore = () => {
 			}
 			currentDeckTiles3dEntries.clear();
 			currentDeckPointCloudEntries.clear();
+			currentDeckGeoArrowEntries.clear();
 			clearPointCloudDataCache();
 			return;
 		}
@@ -717,21 +719,25 @@ const createMapStore = () => {
 	let currentThreeModelIds: Set<string> = new Set();
 	let currentDeckTiles3dEntries = new Map<string, AnyModelTiles3DEntry>();
 	let currentDeckPointCloudEntries = new Map<string, ModelPointCloudEntry>();
+	let currentDeckGeoArrowEntries = new Map<string, ModelGeoArrowEntry>();
 
 	const syncDeckOverlay = async (
 		tiles3dEntries: AnyModelTiles3DEntry[],
-		pointCloudEntries: ModelPointCloudEntry[] = []
+		pointCloudEntries: ModelPointCloudEntry[] = [],
+		geoArrowEntries: ModelGeoArrowEntry[] = []
 	) => {
 		currentDeckTiles3dEntries = new Map(tiles3dEntries.map((entry) => [entry.id, entry]));
 		currentDeckPointCloudEntries = new Map(pointCloudEntries.map((entry) => [entry.id, entry]));
-		const layers = await createDeckOverlay(tiles3dEntries, pointCloudEntries);
+		currentDeckGeoArrowEntries = new Map(geoArrowEntries.map((entry) => [entry.id, entry]));
+		const layers = await createDeckOverlay(tiles3dEntries, pointCloudEntries, geoArrowEntries);
 		setDeckOverlay(layers);
 	};
 
 	const refreshCurrentDeckOverlay = async () => {
 		await syncDeckOverlay(
 			Array.from(currentDeckTiles3dEntries.values()),
-			Array.from(currentDeckPointCloudEntries.values())
+			Array.from(currentDeckPointCloudEntries.values()),
+			Array.from(currentDeckGeoArrowEntries.values())
 		);
 		if (map && isMapValid(map)) {
 			map.triggerRepaint();
@@ -873,9 +879,10 @@ const createMapStore = () => {
 
 	const setDeckModelStyleEntries = async (
 		tiles3dEntries: AnyModelTiles3DEntry[],
-		pointCloudEntries: ModelPointCloudEntry[] = []
+		pointCloudEntries: ModelPointCloudEntry[] = [],
+		geoArrowEntries: ModelGeoArrowEntry[] = []
 	) => {
-		await syncDeckOverlay(tiles3dEntries, pointCloudEntries);
+		await syncDeckOverlay(tiles3dEntries, pointCloudEntries, geoArrowEntries);
 	};
 
 	const setDeckModelVisibility = async (entryId: string, visible: boolean) => {
@@ -887,8 +894,15 @@ const createMapStore = () => {
 		}
 
 		const pointCloudEntry = currentDeckPointCloudEntries.get(entryId);
-		if (!pointCloudEntry) return;
-		pointCloudEntry.style.visible = visible;
+		if (pointCloudEntry) {
+			pointCloudEntry.style.visible = visible;
+			await refreshCurrentDeckOverlay();
+			return;
+		}
+
+		const geoArrowEntry = currentDeckGeoArrowEntries.get(entryId);
+		if (!geoArrowEntry) return;
+		geoArrowEntry.style.visible = visible;
 		await refreshCurrentDeckOverlay();
 	};
 
@@ -901,8 +915,15 @@ const createMapStore = () => {
 		}
 
 		const pointCloudEntry = currentDeckPointCloudEntries.get(entryId);
-		if (!pointCloudEntry) return;
-		pointCloudEntry.style.opacity = opacity;
+		if (pointCloudEntry) {
+			pointCloudEntry.style.opacity = opacity;
+			await refreshCurrentDeckOverlay();
+			return;
+		}
+
+		const geoArrowEntry = currentDeckGeoArrowEntries.get(entryId);
+		if (!geoArrowEntry) return;
+		geoArrowEntry.style.opacity = opacity;
 		await refreshCurrentDeckOverlay();
 	};
 

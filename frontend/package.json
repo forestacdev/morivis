@@ -76,6 +76,7 @@
 		"@deck.gl/layers": "^9.2.11",
 		"@deck.gl/mapbox": "^9.2.5",
 		"@devantic/diaper": "^2.2.2",
+		"@geoarrow/deck.gl-layers": "0.3.0",
 		"@iconify-json/akar-icons": "^1.2.7",
 		"@iconify-json/bx": "^1.2.3",
 		"@iconify-json/circum": "^1.2.2",
@@ -90,8 +91,11 @@
 		"@iconify-json/streamline-ultimate": "^1.2.2",
 		"@iconify-json/uil": "^1.2.3",
 		"@iconify/utils": "^3.1.0",
+		"@loaders.gl/arrow": "4.3.4",
+		"@loaders.gl/compression": "4.3.4",
 		"@loaders.gl/core": "^4.3.4",
 		"@loaders.gl/las": "^4.3.4",
+		"@loaders.gl/parquet": "4.3.4",
 		"@loaders.gl/pcd": "^4.3.4",
 		"@loaders.gl/ply": "^4.3.4",
 		"@mapbox/tilebelt": "^2.0.3",
@@ -116,6 +120,7 @@
 		"@types/geojson": "^7946.0.15",
 		"@types/mapbox__tilebelt": "^1.0.4",
 		"@types/proj4": "^2.5.6",
+		"apache-arrow": "21.1.0",
 		"arcgis-pbf-parser": "^0.0.4",
 		"chroma-js": "^3.1.2",
 		"colormap": "^2.3.2",
@@ -149,6 +154,7 @@
 		"jspdf": "^4.2.1",
 		"jszip": "^3.10.1",
 		"landxml": "^0.8.1",
+		"lz4js": "0.2.0",
 		"maplibre-gl": "^5.22.0",
 		"moji": "^0.5.1",
 		"netcdfjs": "^4.0.0",
@@ -174,7 +180,8 @@
 		"web-ifc-three": "^0.0.126",
 		"wkt": "^0.1.1",
 		"wkt-parser": "^1.4.0",
-		"yup": "^1.6.1"
+		"yup": "^1.6.1",
+		"zstd-codec": "0.1.5"
 	},
 	"packageManager": "pnpm@10.12.4+sha256.cadfd9e6c9fcc2cb76fe7c0779a5250b632898aea5f53d833a73690c77a778d9"
 }

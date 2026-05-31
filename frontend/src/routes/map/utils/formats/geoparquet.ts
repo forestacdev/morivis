@@ -1,3 +1,5 @@
+import { parse } from '@loaders.gl/core';
+import { GeoParquetLoader } from '@loaders.gl/parquet';
 import { parquetMetadata, parquetReadObjects, type FileMetaData } from 'hyparquet';
 import { compressors } from 'hyparquet-compressors';
 
@@ -19,6 +21,16 @@ type GeoParquetColumnMetadata = {
 		}[];
 	} | null;
 };
+
+type GeoParquetGeometryEncoding =
+	| 'wkb'
+	| 'geoarrow.wkb'
+	| 'geoarrow.point'
+	| 'geoarrow.multipoint'
+	| 'geoarrow.linestring'
+	| 'geoarrow.multilinestring'
+	| 'geoarrow.polygon'
+	| 'geoarrow.multipolygon';
 
 type GeoParquetMetadata = {
 	primary_column?: string;
@@ -74,9 +86,7 @@ const getGeometryColumnsFromSchema = (metadata: FileMetaData): string[] => {
 };
 
 const getGeometryColumns = (metadata: FileMetaData, geoMetadata: GeoParquetMetadata | null): string[] => {
-	const metadataColumns = Object.entries(geoMetadata?.columns ?? {})
-		.filter(([, column]) => column.encoding === 'WKB')
-		.map(([name]) => name);
+	const metadataColumns = Object.keys(geoMetadata?.columns ?? {});
 
 	return metadataColumns.length > 0 ? metadataColumns : getGeometryColumnsFromSchema(metadata);
 };
@@ -127,6 +137,126 @@ const isGeometry = (value: unknown): value is Geometry => {
 	if (!value || typeof value !== 'object') return false;
 	const geometryType = (value as { type?: string }).type;
 	return typeof geometryType === 'string' && GEOMETRY_TYPES.has(geometryType);
+};
+
+const getGeometryEncoding = (
+	geoMetadata: GeoParquetMetadata | null,
+	geometryColumn: string
+): GeoParquetGeometryEncoding => {
+	const rawEncoding = geoMetadata?.columns?.[geometryColumn]?.encoding?.toLowerCase();
+
+	switch (rawEncoding) {
+		case 'wkb':
+		case 'geoarrow.wkb':
+		case 'geoarrow.point':
+		case 'geoarrow.multipoint':
+		case 'geoarrow.linestring':
+		case 'geoarrow.multilinestring':
+		case 'geoarrow.polygon':
+		case 'geoarrow.multipolygon':
+			return rawEncoding;
+		default:
+			return 'wkb';
+	}
+};
+
+const toCoordinate = (value: unknown): [number, number] | null => {
+	if (Array.isArray(value) && value.length >= 2) {
+		const x = Number(value[0]);
+		const y = Number(value[1]);
+		return Number.isFinite(x) && Number.isFinite(y) ? [x, y] : null;
+	}
+
+	if (value && typeof value === 'object') {
+		const candidate = value as Record<string, unknown>;
+		const x = Number(candidate.x);
+		const y = Number(candidate.y);
+		return Number.isFinite(x) && Number.isFinite(y) ? [x, y] : null;
+	}
+
+	return null;
+};
+
+const toCoordinateArray = (value: unknown): [number, number][] | null => {
+	if (!Array.isArray(value)) return null;
+	const coordinates = value
+		.map((item) => toCoordinate(item))
+		.filter((coordinate): coordinate is [number, number] => coordinate !== null);
+
+	return coordinates.length > 0 ? coordinates : null;
+};
+
+const toCoordinateArray2 = (value: unknown): [number, number][][] | null => {
+	if (!Array.isArray(value)) return null;
+	const coordinates = value
+		.map((item) => toCoordinateArray(item))
+		.filter((coordinate): coordinate is [number, number][] => coordinate !== null);
+
+	return coordinates.length > 0 ? coordinates : null;
+};
+
+const toCoordinateArray3 = (value: unknown): [number, number][][][] | null => {
+	if (!Array.isArray(value)) return null;
+	const coordinates = value
+		.map((item) => toCoordinateArray2(item))
+		.filter((coordinate): coordinate is [number, number][][] => coordinate !== null);
+
+	return coordinates.length > 0 ? coordinates : null;
+};
+
+const decodeGeoArrowGeometry = (
+	value: unknown,
+	encoding: GeoParquetGeometryEncoding
+): Geometry | null => {
+	switch (encoding) {
+		case 'geoarrow.point': {
+			const coordinates = toCoordinate(value);
+			return coordinates ? { type: 'Point', coordinates } : null;
+		}
+		case 'geoarrow.multipoint': {
+			const coordinates = toCoordinateArray(value);
+			return coordinates ? { type: 'MultiPoint', coordinates } : null;
+		}
+		case 'geoarrow.linestring': {
+			const coordinates = toCoordinateArray(value);
+			return coordinates ? { type: 'LineString', coordinates } : null;
+		}
+		case 'geoarrow.multilinestring': {
+			const coordinates = toCoordinateArray2(value);
+			return coordinates ? { type: 'MultiLineString', coordinates } : null;
+		}
+		case 'geoarrow.polygon': {
+			const coordinates = toCoordinateArray2(value);
+			return coordinates ? { type: 'Polygon', coordinates } : null;
+		}
+		case 'geoarrow.multipolygon': {
+			const coordinates = toCoordinateArray3(value);
+			return coordinates ? { type: 'MultiPolygon', coordinates } : null;
+		}
+		default:
+			return isGeometry(value) ? value : null;
+	}
+};
+
+const fallbackGeoArrowWithLoaders = async (buffer: ArrayBuffer): Promise<FeatureCollection | null> => {
+	try {
+		const parsed = (await parse(buffer, GeoParquetLoader, {
+			parquet: {
+				shape: 'geojson-table'
+			}
+		})) as { shape?: string; type?: string; features?: Feature[] };
+
+		if (parsed?.shape === 'geojson-table' && parsed.type === 'FeatureCollection') {
+			return {
+				type: 'FeatureCollection',
+				features: parsed.features ?? []
+			} as unknown as FeatureCollection;
+		}
+	} catch (error) {
+		console.error('GeoParquetLoader fallback error:', error);
+	}
+
+	return null;
 };
 
 const toFeaturePropValue = (value: unknown): FeatureProp[string] | null => {
@@ -184,15 +314,22 @@ export const geoParquetFileToGeoJson = async (file: File): Promise<GeoParquetRea
 
 	const sourceCrsName = extractCrsName(metadata, geoMetadata, primaryGeometryColumn);
 	const sourceEpsgCode = extractEpsgCode(sourceCrsName);
+	const geometryEncoding = getGeometryEncoding(geoMetadata, primaryGeometryColumn);
 
 	const rows = (await parquetReadObjects({
 		file: buffer,
-		compressors
+		compressors,
+		geoparquet: geometryEncoding === 'wkb' || geometryEncoding === 'geoarrow.wkb'
 	})) as Record<string, unknown>[];
 
 	const features = rows
 		.map((row, index): Feature<Geometry> | null => {
-			const geometry = row[primaryGeometryColumn];
+			const geometryValue = row[primaryGeometryColumn];
+			const geometry =
+				geometryEncoding === 'wkb' || geometryEncoding === 'geoarrow.wkb'
+					? (isGeometry(geometryValue) ? geometryValue : null)
+					: decodeGeoArrowGeometry(geometryValue, geometryEncoding);
+
 			if (!isGeometry(geometry)) return null;
 
 			return {
@@ -205,6 +342,19 @@ export const geoParquetFileToGeoJson = async (file: File): Promise<GeoParquetRea
 		.filter((feature): feature is Feature<Geometry> => feature !== null);
 
 	if (features.length === 0) {
+		if (geometryEncoding !== 'wkb' && geometryEncoding !== 'geoarrow.wkb') {
+			const fallbackGeojson = await fallbackGeoArrowWithLoaders(buffer);
+			if (fallbackGeojson && fallbackGeojson.features.length > 0) {
+				return {
+					geojson: fallbackGeojson,
+					geometryColumns,
+					primaryGeometryColumn,
+					sourceEpsgCode,
+					sourceCrsName
+				};
+			}
+		}
+
 		throw new Error('GeoParquetのフィーチャが見つかりませんでした');
 	}
 

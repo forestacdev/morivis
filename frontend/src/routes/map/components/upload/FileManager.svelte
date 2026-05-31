@@ -191,6 +191,10 @@
 				case 'geoparquet':
 					showDialogType = 'geoparquet';
 					return;
+				case 'arrow':
+				case 'feather':
+					showDialogType = 'geoarrow';
+					return;
 				case 'gpx':
 					showDialogType = 'gpx';
 					return;
