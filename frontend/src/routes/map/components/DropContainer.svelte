@@ -91,6 +91,24 @@
 		return files;
 	};
 
+	const mergeDroppedFiles = (primaryFiles: File[], fallbackFiles: FileList): FileList => {
+		const dt = new DataTransfer();
+		const seen = new Set<string>();
+
+		const pushFile = (file: File) => {
+			const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath ?? '';
+			const key = `${relativePath}:${file.name}:${file.size}:${file.lastModified}`;
+			if (seen.has(key)) return;
+			seen.add(key);
+			dt.items.add(file);
+		};
+
+		primaryFiles.forEach(pushFile);
+		Array.from(fallbackFiles).forEach(pushFile);
+
+		return dt.files;
+	};
+
 	// ドラッグ中のイベント
 	const dragover: (e: DragEvent) => void = (e) => {
 		const isEntryDrag = e.dataTransfer?.types.includes('application/x-entry-id');
@@ -122,12 +140,20 @@
 		if (disabled) return;
 
 		const items = dataTransfer.items;
+		const hasDirectoryEntry = Array.from(items ?? []).some((item) => item.webkitGetAsEntry?.()?.isDirectory);
+
+		if (!hasDirectoryEntry) {
+			const files = dataTransfer.files;
+			if (!files || files.length === 0) return;
+			onDropFile?.(files);
+			return;
+		}
+
 		if (items && items.length > 0) {
 			const collectedFiles = await collectDroppedItemFiles(items);
-			if (collectedFiles.length > 0) {
-				const dt = new DataTransfer();
-				collectedFiles.forEach((file) => dt.items.add(file));
-				onDropFile?.(dt.files);
+			const mergedFiles = mergeDroppedFiles(collectedFiles, dataTransfer.files);
+			if (mergedFiles.length > 0) {
+				onDropFile?.(mergedFiles);
 				return;
 			}
 		}
