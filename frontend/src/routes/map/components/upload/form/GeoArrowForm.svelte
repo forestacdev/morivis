@@ -1,9 +1,10 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
+	import type { Table } from 'apache-arrow';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
-	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import { createGeoArrowEntry } from '$routes/map/data/entries/model';
+	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
@@ -14,7 +15,6 @@
 	} from '$routes/map/utils/formats/geoarrow';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
-	import type { Table } from 'apache-arrow';
 
 	interface Props {
 		showDataEntry: GeoDataEntry | null;

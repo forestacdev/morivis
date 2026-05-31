@@ -106,6 +106,7 @@ export type DialogType =
 	| 'stac'
 	| 'geoparquet'
 	| 'geoarrow'
+	| 'mif'
 	| 'geopdf'
 	| 'mojxml'
 	| 'geophoto'
@@ -120,6 +121,7 @@ export const SUPPORTED_FILE_GROUPS: { label: string; extensions: string[] }[] = 
 	{ label: 'FlatGeobuf', extensions: ['.fgb'] },
 	{ label: 'GeoParquet', extensions: ['.parquet', '.geoparquet'] },
 	{ label: 'GeoArrow / Feather', extensions: ['.arrow', '.feather'] },
+	{ label: 'MapInfo MIF/MID', extensions: ['.mif', '.mid'] },
 	{ label: 'GeoPackage', extensions: ['.gpkg'] },
 	{ label: 'Shapefile', extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg'] },
 	{ label: 'GPX', extensions: ['.gpx'] },

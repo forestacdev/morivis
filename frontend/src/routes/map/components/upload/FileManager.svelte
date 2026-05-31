@@ -195,6 +195,10 @@
 				case 'feather':
 					showDialogType = 'geoarrow';
 					return;
+				case 'mif':
+				case 'mid':
+					showDialogType = 'mif';
+					return;
 				case 'gpx':
 					showDialogType = 'gpx';
 					return;

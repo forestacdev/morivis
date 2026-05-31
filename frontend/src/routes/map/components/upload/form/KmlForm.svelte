@@ -23,16 +23,16 @@
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
+		getMinMax,
+		encodeAllBandsToTerrarium,
+		type RasterBands
+	} from '$routes/map/utils/formats/geotiff';
+	import {
 		extractGroundOverlayFromKmz,
 		kmlFileToGeoJson,
 		getKmlDefaultColor,
 		type KmlParseResult
 	} from '$routes/map/utils/formats/kml';
-	import {
-		getMinMax,
-		encodeAllBandsToTerrarium,
-		type RasterBands
-	} from '$routes/map/utils/formats/geotiff';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';

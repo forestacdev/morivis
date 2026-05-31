@@ -7,8 +7,8 @@
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 	import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
-	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
 	import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
+	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
 	import GeoParquetForm from '$routes/map/components/upload/form/GeoParquetForm.svelte';
 	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
 	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
@@ -26,6 +26,7 @@
 	import MBTilesForm from '$routes/map/components/upload/form/MBTilesForm.svelte';
 	import MeshModelForm from '$routes/map/components/upload/form/MeshModelForm.svelte';
 	import MfJsonForm from '$routes/map/components/upload/form/MfJsonForm.svelte';
+	import MifForm from '$routes/map/components/upload/form/MifForm.svelte';
 	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import OsmForm from '$routes/map/components/upload/form/OsmForm.svelte';
@@ -233,6 +234,17 @@
 			{/if}
 			{#if showDialogType === 'geoarrow'}
 				<GeoArrowForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'mif'}
+				<MifForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
