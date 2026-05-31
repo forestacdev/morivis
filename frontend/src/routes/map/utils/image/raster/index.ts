@@ -8,6 +8,7 @@ import type { AnyRasterEntry } from '$routes/map/data/types';
 import {
 	DEM_DATA_TYPE,
 	type DemDataTypeKey,
+	type DemRangeColorStyle,
 	type RasterDemEntry,
 	type RasterDemStyle
 } from '$routes/map/data/types/raster';
@@ -23,6 +24,10 @@ import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runt
 import { replaceDimensionPlaceholder } from '$routes/map/utils/dimension';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { createClientId } from '$routes/utils/id';
+import {
+	getDemStyleRange,
+	isDemStepColorStyle
+} from '$routes/map/utils/style/color-mapping';
 
 /** Worker応答からObject URLを生成する（ImageBitmap / Blob 両対応） */
 const createObjectURLFromWorkerResult = async (data: {
@@ -108,6 +113,14 @@ const validateRasterPreviewUrl = async (imageUrl?: string): Promise<string | und
 	if (!imageUrl) return undefined;
 	if (!shouldInspectRasterPreview(imageUrl)) return imageUrl;
 	return (await isRasterPreviewReadable(imageUrl)) ? imageUrl : undefined;
+};
+
+const normalizeDemCoverStyleRange = (style: DemRangeColorStyle): DemRangeColorStyle => {
+	return {
+		...style,
+		min: 0,
+		max: 0
+	};
 };
 
 /**
@@ -196,17 +209,9 @@ const normalizeDemStyleForCoverCache = (style: RasterDemStyle): RasterDemStyle =
 			...style.visualization,
 			uniformsData: {
 				...style.visualization.uniformsData,
-				relief: {
-					...style.visualization.uniformsData.relief,
-					min: 0,
-					max: 0
-				},
+				relief: normalizeDemCoverStyleRange(style.visualization.uniformsData.relief),
 				slope: style.visualization.uniformsData.slope
-					? {
-							...style.visualization.uniformsData.slope,
-							min: 0,
-							max: 0
-						}
+					? normalizeDemCoverStyleRange(style.visualization.uniformsData.slope)
 					: undefined
 			}
 		}
@@ -426,11 +431,9 @@ export const generateDemCoverImage = async (
 		};
 
 		if (mode === 'relief') {
-			const elevationColorArray = colorMapCache.createColorArray(
-				visualization.uniformsData.relief.colorMap || 'bone'
-			);
-			const max = visualization.uniformsData.relief.max;
-			const min = visualization.uniformsData.relief.min;
+			const reliefStyle = visualization.uniformsData.relief;
+			const elevationColorArray = colorMapCache.createDemColorArray(reliefStyle);
+			const [min, max] = getDemStyleRange(reliefStyle);
 			return waitForResult({
 				tileId,
 				center: image,
@@ -444,9 +447,14 @@ export const generateDemCoverImage = async (
 				encodeType
 			});
 		} else if (mode === 'slope' || mode === 'aspect' || mode === 'curvature') {
-			const elevationColorArray = colorMapCache.createColorArray(
-				visualization.uniformsData[mode]?.colorMap || 'bone'
-			);
+			const elevationColorArray =
+				mode === 'slope' && visualization.uniformsData.slope
+					? colorMapCache.createDemColorArray(visualization.uniformsData.slope)
+					: colorMapCache.createColorArray(
+							(mode === 'aspect'
+								? visualization.uniformsData.aspect?.colorMap
+								: visualization.uniformsData.curvature?.colorMap) || 'bone'
+						);
 
 			let min = 0;
 			let max = 0;
@@ -454,8 +462,7 @@ export const generateDemCoverImage = async (
 			const emptyImage = await createImageBitmap(new ImageData(1, 1));
 
 			if (mode === 'slope' && visualization.uniformsData.slope) {
-				min = visualization.uniformsData.slope.min;
-				max = visualization.uniformsData.slope.max;
+				[min, max] = getDemStyleRange(visualization.uniformsData.slope);
 			}
 
 			return waitForResult({

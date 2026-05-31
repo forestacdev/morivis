@@ -33,6 +33,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 			uniformsData: {
 				relief: {
 					...DEFAULT_RASTER_DEM_STYLE.visualization.uniformsData.relief,
+					type: 'linear',
 					max: 90,
 					min: 0,
 					colorMap: 'hot'

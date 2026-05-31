@@ -1,11 +1,16 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fly } from 'svelte/transition';
+	import { fade, fly } from 'svelte/transition';
 
 	import DemStyleModePulldownBoxImage from './DemStyleModePulldownBoxImage.svelte';
 
-	import type { DemStyleMode, RasterDemEntry } from '$routes/map/data/types/raster';
+	import type {
+		DemRangeColorStyle,
+		DemStyleMode,
+		RasterDemEntry
+	} from '$routes/map/data/types/raster';
 	import { getLayerImage, type ImageResult } from '$routes/map/utils/image';
+	import { isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 
 	interface Props {
 		isMode: DemStyleMode;
@@ -75,8 +80,39 @@
 	let promise = $state<Promise<ImageResult | undefined>>();
 	let isImageError = $state<boolean>(false);
 
+	const normalizePreviewRangeStyle = (style: DemRangeColorStyle): DemRangeColorStyle => {
+		return isDemStepColorStyle(style)
+			? {
+					...style,
+					min: 0,
+					max: 0
+				}
+			: {
+					...style,
+					min: 0,
+					max: 0
+				};
+	};
+
+	const getDemPreviewKey = (entry: RasterDemEntry): string => {
+		return JSON.stringify({
+			id: entry.id,
+			mode: entry.style.visualization.mode,
+			uniformsData: {
+				...entry.style.visualization.uniformsData,
+				relief: normalizePreviewRangeStyle(entry.style.visualization.uniformsData.relief),
+				slope: entry.style.visualization.uniformsData.slope
+					? normalizePreviewRangeStyle(entry.style.visualization.uniformsData.slope)
+					: undefined
+			}
+		});
+	};
+
+	const previewKey = $derived.by(() => getDemPreviewKey(layerEntry));
+
 	$effect(() => {
 		try {
+			void previewKey;
 			promise = getLayerImage(layerEntry);
 		} catch (error) {
 			isImageError = true;
@@ -107,17 +143,20 @@
 			class="bg-main-accent flex w-full cursor-pointer items-center justify-between gap-2 rounded-full p-1 text-base transition-colors duration-150 lg:hover:bg-white lg:hover:text-black"
 		>
 			<div class="flex items-center gap-2">
-				{#await promise then imageResult}
-					{#if imageResult}
-						<img
-							src={imageResult.url}
-							alt={availableDemStyleModes.find((mode) => mode.key === isMode)?.name}
-							class="c-no-drag-icon aspect-square h-16 rounded-full bg-black object-cover"
-						/>
-					{/if}
-				{:catch}
-					<div>画像の取得に失敗</div>
-				{/await}
+				<div class="c-no-drag-icon aspect-square h-16 rounded-full bg-black">
+					{#await promise then imageResult}
+						{#if imageResult}
+							<img
+								transition:fade={{ duration: 500 }}
+								src={imageResult.url}
+								alt={availableDemStyleModes.find((mode) => mode.key === isMode)?.name}
+								class="c-no-drag-icon aspect-square h-full rounded-full object-cover"
+							/>
+						{/if}
+					{:catch}
+						<div>画像の取得に失敗</div>
+					{/await}
+				</div>
 
 				<span>{availableDemStyleModes.find((mode) => mode.key === isMode)?.name}</span>
 			</div>

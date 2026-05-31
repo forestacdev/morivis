@@ -1,7 +1,7 @@
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
 import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
 import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
-import type { SequentialScheme } from '$routes/map/utils/color/color-brewer';
+import type { SequentialCount, SequentialScheme } from '$routes/map/utils/color/color-brewer';
 import type { ColormapPresetName } from '$routes/map/utils/color/colormap-presets';
 
 export const DEM_DATA_TYPE = {
@@ -118,22 +118,31 @@ export const DEM_STYLE_TYPE = {
 export type DemStyleMode = keyof typeof DEM_STYLE_TYPE;
 export type DemStyleModeNum = (typeof DEM_STYLE_TYPE)[keyof typeof DEM_STYLE_TYPE];
 
+export interface DemLinearColorStyle {
+	type: 'linear';
+	colorMap: ColormapPresetName;
+	max: number;
+	min: number;
+}
+
+export interface DemStepColorStyle {
+	type: 'step';
+	colorMap: SequentialScheme;
+	divisions: SequentialCount;
+	max: number;
+	min: number;
+}
+
+export type DemRangeColorStyle = DemLinearColorStyle | DemStepColorStyle;
+
 export interface RasterDemStyle extends BaseRasterStyle {
 	type: 'dem';
 	visualization: {
 		demType: DemDataTypeKey;
 		mode: DemStyleMode;
 		uniformsData: {
-			relief: {
-				max: number;
-				min: number;
-				colorMap: ColorMapType;
-			};
-			slope?: {
-				max: number;
-				min: number;
-				colorMap: ColorMapType;
-			};
+			relief: DemRangeColorStyle;
+			slope?: DemRangeColorStyle;
 			aspect?: {
 				colorMap: ColorMapType;
 			};

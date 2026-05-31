@@ -39,6 +39,7 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 			mode: 'relief',
 			uniformsData: {
 				relief: {
+					type: 'linear',
 					max: 29,
 					min: 0,
 					colorMap: 'hsv'

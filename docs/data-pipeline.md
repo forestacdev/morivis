@@ -78,7 +78,7 @@ graph LR
 | OSM XML | `OsmForm` | `osmtogeojson` で GeoJSON 化し、ジオメトリ種別ごとに登録 | `VectorEntry` `format.type: 'geojson'` |
 | CSV | `CsvForm` | 指定列から座標を作って Point 化 | `VectorEntry` `format.type: 'geojson'` |
 | DXF | `DxfForm` | CAD 図面を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
-| DM | `DmForm` | 国土地理院 DM を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| DM | `DmForm` | 数値地形図データ（DM）を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | SIMA | `SimaForm` | SIMA を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | 法務局地図 XML | `MojXmlForm` | XML と内蔵座標系定義から GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | GeoPhoto | `GeoPhotoForm` | EXIF GPS を Point に変換 | `VectorEntry` `format.type: 'geojson'` |

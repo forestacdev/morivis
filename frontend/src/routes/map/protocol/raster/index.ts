@@ -3,6 +3,20 @@ import { TileImageManager } from '../image';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { DEM_STYLE_TYPE } from '$routes/map/data/types/raster';
 
+const getDemProtocolColorArray = (
+	colorMapCache: ColorMapManager,
+	searchParams: URLSearchParams
+): Uint8Array => {
+	const styleType = searchParams.get('type');
+	if (styleType === 'step') {
+		const colorMap = searchParams.get('colorMap') || 'YlOrRd';
+		const divisions = parseInt(searchParams.get('divisions') || '5', 10);
+		return colorMapCache.createStepColorArray(colorMap, divisions);
+	}
+
+	return colorMapCache.createColorArray(searchParams.get('colorMap') || 'bone');
+};
+
 class WorkerProtocol {
 	private worker: Worker;
 	private pendingRequests: Map<
@@ -55,9 +69,7 @@ class WorkerProtocol {
 				formatType,
 				controller
 			);
-			const elevationColorArray = this.colorMapCache.createColorArray(
-				url.searchParams.get('colorMap') || 'bone'
-			);
+			const elevationColorArray = getDemProtocolColorArray(this.colorMapCache, url.searchParams);
 			const max = parseFloat(url.searchParams.get('max') || '10000');
 			const min = parseFloat(url.searchParams.get('min') || '0');
 			return new Promise((resolve, reject) => {
@@ -87,9 +99,7 @@ class WorkerProtocol {
 				controller
 			);
 
-			const elevationColorArray = this.colorMapCache.createColorArray(
-				url.searchParams.get('colorMap') || 'bone'
-			);
+			const elevationColorArray = getDemProtocolColorArray(this.colorMapCache, url.searchParams);
 
 			const center = images.center; // 中央のタイル
 			const left = images.left; // 左のタイル

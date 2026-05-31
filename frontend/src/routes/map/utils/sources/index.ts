@@ -7,7 +7,11 @@ import {
 	type RasterDEMSourceSpecification
 } from 'maplibre-gl';
 
-import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+import type {
+	DemRangeColorStyle,
+	RasterEntry,
+	RasterDemStyle
+} from '$routes/map/data/types/raster';
 import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 
 import type { GeoDataEntry } from '$routes/map/data/types';
@@ -56,9 +60,31 @@ import {
 	getRasterDimensionCurrentIndex,
 	getRasterDimensionValue
 } from '$routes/map/utils/raster/dimension-runtime';
+import {
+	getDemStyleRange,
+	isDemStepColorStyle
+} from '$routes/map/utils/style/color-mapping';
 
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
+};
+
+const toDemStyleUrlParams = (style: DemRangeColorStyle): string => {
+	const [min, max] = getDemStyleRange(style);
+	const params = new URLSearchParams({
+		type: isDemStepColorStyle(style) ? 'step' : 'linear',
+		min: String(min),
+		max: String(max)
+	});
+
+	if (isDemStepColorStyle(style)) {
+		params.set('colorMap', style.colorMap);
+		params.set('divisions', String(style.divisions));
+	} else {
+		params.set('colorMap', style.colorMap);
+	}
+
+	return params.toString();
 };
 
 export const convertTmsToXyz = (url: string): string => {
@@ -161,11 +187,23 @@ export const createSourcesItems = async (
 						} else if (style.type === 'dem') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
-							if (mode !== 'default') {
+							if (
+								mode === 'relief' ||
+								mode === 'slope' ||
+								mode === 'aspect' ||
+								mode === 'curvature'
+							) {
 								const demType = visualization.demType;
-								const uniformsDataParam = objectToUrlParams(
-									(visualization.uniformsData as Record<string, Record<string, unknown>>)?.[mode]
-								);
+								const uniformsDataParam =
+									mode === 'relief'
+										? toDemStyleUrlParams(visualization.uniformsData.relief)
+										: mode === 'slope' && visualization.uniformsData.slope
+											? toDemStyleUrlParams(visualization.uniformsData.slope)
+											: objectToUrlParams(
+													(mode === 'aspect'
+														? visualization.uniformsData.aspect
+														: visualization.uniformsData.curvature) as Record<string, unknown>
+												);
 								items[sourceId] = {
 									type: 'raster',
 									tiles: [
@@ -212,11 +250,23 @@ export const createSourcesItems = async (
 						if (style.type === 'dem') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
-							if (mode !== 'default') {
+							if (
+								mode === 'relief' ||
+								mode === 'slope' ||
+								mode === 'aspect' ||
+								mode === 'curvature'
+							) {
 								const demType = visualization.demType;
-								const uniformsDataParam = objectToUrlParams(
-									(visualization.uniformsData as Record<string, Record<string, unknown>>)?.[mode]
-								);
+								const uniformsDataParam =
+									mode === 'relief'
+										? toDemStyleUrlParams(visualization.uniformsData.relief)
+										: mode === 'slope' && visualization.uniformsData.slope
+											? toDemStyleUrlParams(visualization.uniformsData.slope)
+											: objectToUrlParams(
+													(mode === 'aspect'
+														? visualization.uniformsData.aspect
+														: visualization.uniformsData.curvature) as Record<string, unknown>
+												);
 
 								items[sourceId] = {
 									type: 'raster',
