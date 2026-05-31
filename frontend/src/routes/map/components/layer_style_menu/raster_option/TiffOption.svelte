@@ -85,6 +85,14 @@
 
 		return items;
 	});
+	const isDerivedModeLoading = $derived(
+		layerEntry.style.visualization.mode === 'twi' ||
+			layerEntry.style.visualization.mode === 'slope' ||
+			layerEntry.style.visualization.mode === 'aspect' ||
+			layerEntry.style.visualization.mode === 'tpi'
+			? generatingDerivedMode === layerEntry.style.visualization.mode
+			: false
+	);
 
 	const ensureDerivedData = () => {
 		if (
@@ -242,6 +250,11 @@
 
 <Accordion label="色の調整" icon="mdi:paint" bind:value={showColorOption}>
 	<BaseSelectMenu bind:selectedKey={layerEntry.style.visualization.mode} items={tiffStyleModes} />
+	{#if isDerivedModeLoading}
+		<div class="bg-sub/60 mb-2 rounded-2xl px-3 py-2 text-sm text-gray-200">
+			地形解析を計算中です...
+		</div>
+	{/if}
 	{#if layerEntry.style.visualization.mode === 'single'}
 		{#if numBands > 1}
 			<div class="flex items-center gap-2 py-2">
@@ -289,6 +302,7 @@
 			)}
 		/>
 	{:else if layerEntry.style.visualization.mode === 'twi'}
+		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
 		{#if layerEntry.style.visualization.uniformsData.twi}
 			<ColorMapSelect
 				bind:isColorMap={layerEntry.style.visualization.uniformsData.twi.colorMap}
@@ -318,7 +332,9 @@
 		{:else}
 			<div class="py-3 text-sm text-gray-300">地形湿潤指数を計算中です。</div>
 		{/if}
+		</div>
 	{:else if layerEntry.style.visualization.mode === 'slope'}
+		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
 		{#if layerEntry.style.visualization.uniformsData.slope}
 			<ColorMapSelect
 				bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
@@ -348,7 +364,9 @@
 		{:else}
 			<div class="py-3 text-sm text-gray-300">傾斜量を計算中です。</div>
 		{/if}
+		</div>
 	{:else if layerEntry.style.visualization.mode === 'aspect'}
+		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
 		{#if layerEntry.style.visualization.uniformsData.aspect}
 			<ColorMapSelect
 				bind:isColorMap={layerEntry.style.visualization.uniformsData.aspect.colorMap}
@@ -378,7 +396,9 @@
 		{:else}
 			<div class="py-3 text-sm text-gray-300">傾斜方位を計算中です。</div>
 		{/if}
+		</div>
 	{:else if layerEntry.style.visualization.mode === 'tpi'}
+		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
 		{#if layerEntry.style.visualization.uniformsData.tpi}
 			<ColorMapSelect
 				bind:isColorMap={layerEntry.style.visualization.uniformsData.tpi.colorMap}
@@ -408,6 +428,7 @@
 		{:else}
 			<div class="py-3 text-sm text-gray-300">地形位置指数を計算中です。</div>
 		{/if}
+		</div>
 	{:else if layerEntry.style.visualization.mode === 'multi'}
 		<div class="flex flex-col gap-3 py-2">
 			{#each BAND_CHANNELS as { key, label, color } (key)}

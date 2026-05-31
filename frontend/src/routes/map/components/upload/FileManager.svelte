@@ -10,6 +10,12 @@
 	import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
 	import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
 	import { inspectObjFile } from '$routes/map/utils/formats/obj';
+	import {
+		findGeoReferencedImageFile,
+		findRasterImageFile,
+		isRasterImageMainFile,
+		isRasterImageSidecarFile
+	} from '$routes/map/utils/formats/raster/sidecar';
 	import { isPointCloudTextFile } from '$routes/map/utils/formats/xyz';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
@@ -37,9 +43,6 @@
 	}: Props = $props();
 
 	const isShapeFileRelated = (file: File): boolean => /\.(shp|dbf|prj|shx|cpg)$/i.test(file.name);
-	const isGeoImageMain = (file: File): boolean => /\.(png|jpe?g|webp|tiff?)$/i.test(file.name);
-	const isGeoImageRelated = (file: File): boolean =>
-		/\.(png|jpe?g|webp|tiff?|tfw|tifw|tiffw|pgw|jgw|wld|aux\.xml)$/i.test(file.name);
 	const getPathLikeName = (file: File) => {
 		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
 		return (relativePath ?? file.name).toLowerCase();
@@ -286,6 +289,8 @@
 					return;
 				case 'tiff':
 				case 'tif':
+					showDialogType = 'geotiff';
+					return;
 				case 'png':
 				case 'webp':
 				case 'pdf':
@@ -405,35 +410,45 @@
 				}
 			} else if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';
-			} else if (files.some(isGeoImageRelated)) {
-				if (!files.some(isGeoImageMain)) {
-					showNotification('画像ファイル(.tif/.png/.jpg)と一緒にドロップしてください', 'error');
-					return;
-				}
-				showDialogType = 'geotiff';
-			} else if (files.every((f) => /\.xml$/i.test(f.name))) {
-				// 複数XMLファイル → 先頭ファイルでDEM/GML判定
-				if (await isDemXml(files[0])) {
-					showDialogType = 'demxml';
-				} else if (await isGmlXml(files[0])) {
-					showDialogType = 'gml';
-				} else if (await isLandXml(files[0])) {
-					showDialogType = 'landxml';
-				} else if (await isMojXml(files[0])) {
-					showDialogType = 'mojxml';
-				} else {
-					showNotification('対応していないXMLファイルです', 'error');
-				}
 			} else {
-				// 対応ファイルを探して最初にマッチしたものを処理
-				const supportedFile = files.find((f) => {
-					const ext = '.' + (f.name.split('.').pop()?.toLowerCase() ?? '');
-					return SUPPORTED_FILE_EXTENSIONS.includes(ext);
-				});
-				if (supportedFile) {
-					setFile(supportedFile);
+				const geoReferencedImageFile = findGeoReferencedImageFile(files);
+				if (geoReferencedImageFile) {
+					showDialogType = 'geotiff';
+				} else if (files.some(isRasterImageSidecarFile)) {
+					if (!findRasterImageFile(files) && !files.some(isRasterImageMainFile)) {
+						showNotification('画像ファイル(.tif/.png/.jpg)と一緒にドロップしてください', 'error');
+						return;
+					}
+
+					showNotification(
+						'画像ファイルと補助ファイルの組み合わせが一致しません。同じ名前の .tfw または .aux.xml を一緒にドロップしてください',
+						'error'
+					);
+					return;
+				} else if (files.every((f) => /\.xml$/i.test(f.name))) {
+					// 複数XMLファイル → 先頭ファイルでDEM/GML判定
+					if (await isDemXml(files[0])) {
+						showDialogType = 'demxml';
+					} else if (await isGmlXml(files[0])) {
+						showDialogType = 'gml';
+					} else if (await isLandXml(files[0])) {
+						showDialogType = 'landxml';
+					} else if (await isMojXml(files[0])) {
+						showDialogType = 'mojxml';
+					} else {
+						showNotification('対応していないXMLファイルです', 'error');
+					}
 				} else {
-					showNotification('対応していないファイル形式です', 'error');
+					// 対応ファイルを探して最初にマッチしたものを処理
+					const supportedFile = files.find((f) => {
+						const ext = '.' + (f.name.split('.').pop()?.toLowerCase() ?? '');
+						return SUPPORTED_FILE_EXTENSIONS.includes(ext);
+					});
+					if (supportedFile) {
+						setFile(supportedFile);
+					} else {
+						showNotification('対応していないファイル形式です', 'error');
+					}
 				}
 			}
 		}

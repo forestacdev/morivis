@@ -34,15 +34,40 @@
 	let reliefSliderBoundsKey = $state('');
 	let slopeSliderBoundsKey = $state('');
 
+	const syncSliderBounds = (
+		bounds: { min: number; max: number },
+		boundsKey: string,
+		nextKey: string,
+		min: number,
+		max: number
+	): { bounds: { min: number; max: number }; boundsKey: string } => {
+		if (boundsKey !== nextKey) {
+			return {
+				bounds: { min, max },
+				boundsKey: nextKey
+			};
+		}
+
+		if (min < bounds.min || max > bounds.max) {
+			return {
+				bounds: {
+					min: Math.min(bounds.min, min),
+					max: Math.max(bounds.max, max)
+				},
+				boundsKey
+			};
+		}
+
+		return { bounds, boundsKey };
+	};
+
 	$effect(() => {
 		const reliefStyle = layerEntry.style.visualization.uniformsData.relief;
 		const [min, max] = getDemStyleRange(reliefStyle);
-		const nextKey = `${layerEntry.id}:relief:${reliefStyle.type}`;
-
-		if (reliefSliderBoundsKey !== nextKey) {
-			reliefSliderBounds = { min, max };
-			reliefSliderBoundsKey = nextKey;
-		}
+		const nextKey = `${layerEntry.id}:relief`;
+		const next = syncSliderBounds(reliefSliderBounds, reliefSliderBoundsKey, nextKey, min, max);
+		reliefSliderBounds = next.bounds;
+		reliefSliderBoundsKey = next.boundsKey;
 	});
 
 	$effect(() => {
@@ -50,12 +75,10 @@
 		if (!slopeStyle) return;
 
 		const [min, max] = getDemStyleRange(slopeStyle);
-		const nextKey = `${layerEntry.id}:slope:${slopeStyle.type}`;
-
-		if (slopeSliderBoundsKey !== nextKey) {
-			slopeSliderBounds = { min, max };
-			slopeSliderBoundsKey = nextKey;
-		}
+		const nextKey = `${layerEntry.id}:slope`;
+		const next = syncSliderBounds(slopeSliderBounds, slopeSliderBoundsKey, nextKey, min, max);
+		slopeSliderBounds = next.bounds;
+		slopeSliderBoundsKey = next.boundsKey;
 	});
 
 	const setRangeStyleType = (

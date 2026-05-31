@@ -62,6 +62,7 @@ export const parseRasterBands = (rasterData: ReadRasterResult): RasterBands => {
 };
 
 const colorMapManager = new ColorMapManager();
+const derivedRasterGenerationMap = new Map<string, Promise<BandDataRange | undefined>>();
 
 /**
  * 全バンドを Terrarium PNG にエンコードしてキャッシュする
@@ -130,23 +131,81 @@ export const ensureRasterDerivedCache = async (
 	const existingRange = GeoTiffCache.getDataRanges(cacheKey)?.[0];
 	if (existingRange) return existingRange;
 
+	const inFlight = derivedRasterGenerationMap.get(cacheKey);
+	if (inFlight) return inFlight;
+
 	const rawSingleBand = GeoTiffCache.getRawSingleBand(id);
 	const size = GeoTiffCache.getSize(id);
 	if (!rawSingleBand || !size) return undefined;
 
-	if (mode === 'twi') {
+	const generationPromise = (async () => {
+		if (mode === 'twi') {
+			try {
+				const result = await computeTwiBand(
+					rawSingleBand.band,
+					size.width,
+					size.height,
+					rawSingleBand.nodata
+				);
+				const range = { min: result.min, max: result.max };
+				await cacheDerivedSingleBand(
+					id,
+					TWI_CACHE_SUFFIX,
+					result.band,
+					size.width,
+					size.height,
+					null,
+					range
+				);
+				return range;
+			} finally {
+				terminateTwiWorker();
+			}
+		}
+
 		try {
-			const result = await computeTwiBand(
+			const derivatives = await computeTerrainDerivatives(
 				rawSingleBand.band,
 				size.width,
 				size.height,
-				rawSingleBand.nodata
+				rawSingleBand.nodata,
+				rawSingleBand.ewres,
+				rawSingleBand.nsres
 			);
-			const range = { min: result.min, max: result.max };
+
+			if (mode === 'slope') {
+				const range = { min: 0, max: 90 };
+				await cacheDerivedSingleBand(
+					id,
+					SLOPE_CACHE_SUFFIX,
+					derivatives.slope.band,
+					size.width,
+					size.height,
+					null,
+					range
+				);
+				return range;
+			}
+
+			if (mode === 'aspect') {
+				const range = { min: 0, max: 360 };
+				await cacheDerivedSingleBand(
+					id,
+					ASPECT_CACHE_SUFFIX,
+					derivatives.aspect.band,
+					size.width,
+					size.height,
+					null,
+					range
+				);
+				return range;
+			}
+
+			const range = { min: derivatives.tpi.min, max: derivatives.tpi.max };
 			await cacheDerivedSingleBand(
 				id,
-				TWI_CACHE_SUFFIX,
-				result.band,
+				TPI_CACHE_SUFFIX,
+				derivatives.tpi.band,
 				size.width,
 				size.height,
 				null,
@@ -154,61 +213,15 @@ export const ensureRasterDerivedCache = async (
 			);
 			return range;
 		} finally {
-			terminateTwiWorker();
+			terminateTerrainDerivativesWorker();
 		}
-	}
+	})();
 
+	derivedRasterGenerationMap.set(cacheKey, generationPromise);
 	try {
-		const derivatives = await computeTerrainDerivatives(
-			rawSingleBand.band,
-			size.width,
-			size.height,
-			rawSingleBand.nodata,
-			rawSingleBand.ewres,
-			rawSingleBand.nsres
-		);
-
-		if (mode === 'slope') {
-			const range = { min: 0, max: 90 };
-			await cacheDerivedSingleBand(
-				id,
-				SLOPE_CACHE_SUFFIX,
-				derivatives.slope.band,
-				size.width,
-				size.height,
-				null,
-				range
-			);
-			return range;
-		}
-
-		if (mode === 'aspect') {
-			const range = { min: 0, max: 360 };
-			await cacheDerivedSingleBand(
-				id,
-				ASPECT_CACHE_SUFFIX,
-				derivatives.aspect.band,
-				size.width,
-				size.height,
-				null,
-				range
-			);
-			return range;
-		}
-
-		const range = { min: derivatives.tpi.min, max: derivatives.tpi.max };
-		await cacheDerivedSingleBand(
-			id,
-			TPI_CACHE_SUFFIX,
-			derivatives.tpi.band,
-			size.width,
-			size.height,
-			null,
-			range
-		);
-		return range;
+		return await generationPromise;
 	} finally {
-		terminateTerrainDerivativesWorker();
+		derivedRasterGenerationMap.delete(cacheKey);
 	}
 };
 

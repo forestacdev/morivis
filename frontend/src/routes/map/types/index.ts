@@ -365,9 +365,12 @@ export const SUPPORTED_FILE_EXTENSIONS = SUPPORTED_FILE_GROUPS.flatMap((g) => g.
 export const SUPPORTED_FILE_ACCEPT = [
 	...SUPPORTED_FILE_EXTENSIONS,
 	'.tfw',
+	'.tifw',
+	'.tiffw',
 	'.pgw',
 	'.jgw',
 	'.wld', // ワールドファイル
+	'.aux.xml',
 	'.mtl'
 ].join(',');
 
