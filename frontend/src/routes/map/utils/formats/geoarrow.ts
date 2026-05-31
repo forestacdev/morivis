@@ -6,6 +6,9 @@ import lz4js from 'lz4js';
 import { ZstdCodec } from 'zstd-codec';
 
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
+import type { AnyGeometry } from '$routes/map/types/geometry';
+import type { FeatureProp } from '$routes/map/types/properties';
 
 export interface GeoArrowReadResult {
 	table: Table;
@@ -158,6 +161,128 @@ const getGeometryFieldNames = (table: Table, geometryType: VectorEntryGeometryTy
 		})
 		.map((field) => field.name);
 
+const getPosition = (value: unknown): [number, number] | null => {
+	if (Array.isArray(value) || ArrayBuffer.isView(value)) {
+		const values = Array.from(value as unknown as Iterable<unknown>);
+		if (values.length >= 2 && isFiniteNumber(values[0]) && isFiniteNumber(values[1])) {
+			return [values[0], values[1]];
+		}
+	}
+
+	if (typeof value === 'object' && value !== null) {
+		return getObjectCoordinate(value as Record<string, unknown>);
+	}
+
+	return null;
+};
+
+const normalizeCoordinateStructure = (value: unknown): unknown => {
+	const position = getPosition(value);
+	if (position) {
+		return position;
+	}
+
+	if (Array.isArray(value) || ArrayBuffer.isView(value)) {
+		const values = Array.from(value as unknown as Iterable<unknown>)
+			.map((item) => normalizeCoordinateStructure(item))
+			.filter((item) => item !== null);
+		return values.length > 0 ? values : null;
+	}
+
+	if (typeof value === 'object' && value !== null && 'toJSON' in value && typeof value.toJSON === 'function') {
+		return normalizeCoordinateStructure(value.toJSON());
+	}
+
+	return null;
+};
+
+const getCoordinateDepth = (value: unknown): number => {
+	if (!Array.isArray(value)) return 0;
+	if (value.length === 0) return 1;
+	return 1 + Math.max(...value.map((item) => getCoordinateDepth(item)));
+};
+
+const geometryFromCoordinates = (
+	coordinates: unknown,
+	geometryType: VectorEntryGeometryType
+): AnyGeometry | null => {
+	if (!Array.isArray(coordinates)) return null;
+
+	const depth = getCoordinateDepth(coordinates);
+
+	if (geometryType === 'Point') {
+		if (depth === 1 && coordinates.length >= 2) {
+			return { type: 'Point', coordinates: coordinates as [number, number] };
+		}
+		if (depth === 2) {
+			return { type: 'MultiPoint', coordinates: coordinates as [number, number][] };
+		}
+		return null;
+	}
+
+	if (geometryType === 'LineString') {
+		if (depth === 2) {
+			return { type: 'LineString', coordinates: coordinates as [number, number][] };
+		}
+		if (depth === 3) {
+			return { type: 'MultiLineString', coordinates: coordinates as [number, number][][] };
+		}
+		return null;
+	}
+
+	if (depth === 3) {
+		return { type: 'Polygon', coordinates: coordinates as [number, number][][] };
+	}
+	if (depth === 4) {
+		return { type: 'MultiPolygon', coordinates: coordinates as [number, number][][][] };
+	}
+
+	return null;
+};
+
+const normalizePropertyValue = (value: unknown): string | number | boolean | null => {
+	if (value == null) return null;
+	if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+		return value;
+	}
+	if (typeof value === 'bigint') {
+		return value.toString();
+	}
+	if (value instanceof Date) {
+		return value.toISOString();
+	}
+
+	try {
+		return JSON.stringify(value);
+	} catch {
+		return String(value);
+	}
+};
+
+const getRowObject = (row: unknown): Record<string, unknown> | null => {
+	if (!row || typeof row !== 'object') return null;
+	if ('toJSON' in row && typeof row.toJSON === 'function') {
+		return row.toJSON() as Record<string, unknown>;
+	}
+	return row as Record<string, unknown>;
+};
+
+const getGeoArrowProperties = (
+	rowObject: Record<string, unknown>,
+	geometryFieldNames: Set<string>
+): FeatureProp => {
+	const properties: FeatureProp = {};
+
+	for (const [key, value] of Object.entries(rowObject)) {
+		if (geometryFieldNames.has(key)) continue;
+		const normalized = normalizePropertyValue(value);
+		if (normalized == null) continue;
+		properties[key] = normalized;
+	}
+
+	return properties;
+};
+
 export const getGeoArrowBounds = (
 	table: Table,
 	geometryType: VectorEntryGeometryType
@@ -179,6 +304,44 @@ export const getGeoArrowBounds = (
 	}
 
 	return bbox.every(Number.isFinite) ? bbox : null;
+};
+
+export const geoArrowTableToGeoJson = (
+	table: Table,
+	geometryType: VectorEntryGeometryType
+): FeatureCollection => {
+	const geometryFieldNames = getGeometryFieldNames(table, geometryType);
+	const primaryGeometryFieldName = geometryFieldNames[0];
+	const geometryFieldNameSet = new Set(geometryFieldNames);
+	const features: Feature<AnyGeometry, FeatureProp>[] = [];
+
+	if (!primaryGeometryFieldName) {
+		return {
+			type: 'FeatureCollection',
+			features
+		};
+	}
+
+	for (let rowIndex = 0; rowIndex < table.numRows; rowIndex += 1) {
+		const rowObject = getRowObject(table.get(rowIndex));
+		if (!rowObject) continue;
+
+		const coordinates = normalizeCoordinateStructure(rowObject[primaryGeometryFieldName]);
+		const geometry = geometryFromCoordinates(coordinates, geometryType);
+		if (!geometry) continue;
+
+		features.push({
+			type: 'Feature',
+			id: rowIndex,
+			geometry,
+			properties: getGeoArrowProperties(rowObject, geometryFieldNameSet)
+		});
+	}
+
+	return {
+		type: 'FeatureCollection',
+		features
+	};
 };
 
 export const geoArrowFileToTable = async (file: File): Promise<GeoArrowReadResult> => {

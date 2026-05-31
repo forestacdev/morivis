@@ -1,10 +1,17 @@
 <script lang="ts">
+	import turfBbox from '@turf/bbox';
+
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import { createGeoArrowEntry } from '$routes/map/data/entries/model';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
-	import { geoArrowFileToTable, getGeoArrowBounds } from '$routes/map/utils/formats/geoarrow';
+	import {
+		geoArrowFileToTable,
+		getGeoArrowBounds,
+		geoArrowTableToGeoJson
+	} from '$routes/map/utils/formats/geoarrow';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 	import type { Table } from 'apache-arrow';
@@ -38,9 +45,15 @@
 		Polygon: 'ポリゴン'
 	};
 
+	const RENDER_MODE_OPTIONS = [
+		{ key: 'deck', name: 'deck.gl' },
+		{ key: 'geojson', name: 'GeoJSON' }
+	] as const;
+
 	let geoArrowTable = $state<Table | null>(null);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
+	let selectedRenderMode = $state<'deck' | 'geojson'>('deck');
 
 	const geoArrowFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -64,10 +77,9 @@
 						return;
 					}
 
-						if (types.length === 1) {
-							selectedGeometryType = types[0];
-							geometryTypeOptions = [];
-							processGeoArrow();
+					if (types.length === 1) {
+						selectedGeometryType = types[0];
+						geometryTypeOptions = [];
 					} else {
 						geometryTypeOptions = types.map((type) => ({
 							key: type,
@@ -89,19 +101,36 @@
 		}
 	});
 
-	const processGeoArrow = () => {
+	const processGeoArrow = async () => {
 		if (!geoArrowTable || !selectedGeometryType) {
 			showNotification('GeoArrow テーブルの読み込みに失敗しました', 'error');
 			return;
 		}
 
-		const bounds = getGeoArrowBounds(geoArrowTable, selectedGeometryType as VectorEntryGeometryType);
-		const entry = createGeoArrowEntry(
-			entryName,
-			geoArrowTable,
-			selectedGeometryType as VectorEntryGeometryType,
-			bounds ?? undefined
-		);
+		const geometryType = selectedGeometryType as VectorEntryGeometryType;
+		const bounds = getGeoArrowBounds(geoArrowTable, geometryType);
+		let entry: GeoDataEntry | undefined;
+
+		if (selectedRenderMode === 'deck') {
+			entry = createGeoArrowEntry(entryName, geoArrowTable, geometryType, bounds ?? undefined);
+		} else {
+			const geojson = geoArrowTableToGeoJson(geoArrowTable, geometryType);
+			if (geojson.features.length === 0) {
+				showNotification('GeoJSON に変換できるジオメトリが見つかりませんでした', 'error');
+				return;
+			}
+
+			const bbox = turfBbox(geojson) as [number, number, number, number];
+			entry = await createGeoJsonEntry(geojson, geometryType, entryName, bbox, undefined, {
+				attribution: 'GeoArrow'
+			});
+		}
+
+		if (!entry) {
+			showNotification('Arrowファイルの登録に失敗しました', 'error');
+			return;
+		}
+
 		showDataEntry = entry;
 		showDialogType = null;
 		showNotification('ファイルを読み込みました', 'success');
@@ -131,6 +160,14 @@
 			/>
 		</div>
 	{/if}
+
+	<div class="w-full p-2">
+		<HorizontalSelectBox
+			label="描画方式を選択"
+			bind:group={selectedRenderMode}
+			options={[...RENDER_MODE_OPTIONS]}
+		/>
+	</div>
 </div>
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
