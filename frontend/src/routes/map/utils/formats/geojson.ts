@@ -20,7 +20,7 @@ export const getGeojson = async (url: string): Promise<FeatureCollection> => {
 	try {
 		const response = await fetchWithDevProxy(url);
 		const geojson = await response.json();
-		return normalizeGeometryCollections(geojson);
+		return normalizeGeoJsonGeometryCollections(geojson);
 	} catch (error) {
 		console.error(error);
 		throw new Error('Failed to fetch GeoJSON');
@@ -87,7 +87,7 @@ const toFeatureCollection = (
 	};
 };
 
-const normalizeGeometryCollections = (
+export const normalizeGeoJsonGeometryCollections = (
 	geojson: RootGeoJsonWithGeometryCollection
 ): FeatureCollection => {
 	const featureCollection = toFeatureCollection(geojson);
@@ -229,7 +229,7 @@ export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollectio
 			throw new GeoJsonParseError('GeoJSONの構造が不正です');
 		}
 
-		return normalizeGeometryCollections(geojson);
+		return normalizeGeoJsonGeometryCollections(geojson);
 	} catch (error) {
 		console.error('GeoJSON parsing error:', error);
 		if (error instanceof GeoJsonParseError) {

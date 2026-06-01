@@ -25,6 +25,8 @@
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
 		remoteWmtsUrl: string | null;
+		remoteWfsUrl: string | null;
+		remoteOgcApiFeaturesUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -37,6 +39,8 @@
 		remoteVectorUrl = $bindable(),
 		remoteTiles3dUrl = $bindable(),
 		remoteWmtsUrl = $bindable(),
+		remoteWfsUrl = $bindable(),
+		remoteOgcApiFeaturesUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -341,6 +345,8 @@
 				bind:remoteVectorUrl
 				bind:remoteTiles3dUrl
 				bind:remoteWmtsUrl
+				bind:remoteWfsUrl
+				bind:remoteOgcApiFeaturesUrl
 				bind:pendingTileUrl
 			/>
 		{/if}

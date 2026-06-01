@@ -10,6 +10,8 @@
 		SUPPORTED_FILE_GROUPS,
 		type DialogType
 	} from '$routes/map/types';
+	import { parseOgcApiFeaturesService } from '$routes/map/utils/formats/ogc-api-features';
+	import { parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
 	import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
 	import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
 	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
@@ -25,6 +27,8 @@
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
 		remoteWmtsUrl: string | null;
+		remoteWfsUrl: string | null;
+		remoteOgcApiFeaturesUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -37,6 +41,8 @@
 		remoteVectorUrl = $bindable(),
 		remoteTiles3dUrl = $bindable(),
 		remoteWmtsUrl = $bindable(),
+		remoteWfsUrl = $bindable(),
+		remoteOgcApiFeaturesUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -178,6 +184,16 @@
 		return !!(wmsResult && wmsResult.length > 0);
 	};
 
+	const isWfsUrl = async (urlValue: string): Promise<boolean> => {
+		const result = await parseWfsCapabilities(urlValue);
+		return !!(result && result.featureTypes.length > 0);
+	};
+
+	const isOgcApiFeaturesUrl = async (urlValue: string): Promise<boolean> => {
+		const result = await parseOgcApiFeaturesService(urlValue);
+		return !!(result && result.collections.length > 0);
+	};
+
 	const RASTER_TILE_EXTENSIONS = new Set([
 		'.png',
 		'.jpg',
@@ -255,6 +271,22 @@
 			if (await isWmsOrWmtsUrl(trimmedUrl)) {
 				remoteWmtsUrl = trimmedUrl;
 				showDialogType = 'wmts';
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
+
+			if (await isOgcApiFeaturesUrl(trimmedUrl)) {
+				remoteOgcApiFeaturesUrl = trimmedUrl;
+				showDialogType = 'ogcapifeatures';
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
+
+			if (await isWfsUrl(trimmedUrl)) {
+				remoteWfsUrl = trimmedUrl;
+				showDialogType = 'wfs';
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
@@ -354,6 +386,18 @@
 					label: 'WCS',
 					description:
 						'カバレッジ配信サービスのURLです。ラスターデータを範囲指定で取得するときに使います。'
+				},
+				{
+					type: 'wfs',
+					label: 'WFS',
+					description:
+						'地物配信サービスのURLです。点・線・面と属性を持つベクターデータを取得するときに使います。'
+				},
+				{
+					type: 'ogcapifeatures',
+					label: 'OGC API - Features',
+					description:
+						'OGC API - Features のURLです。collection や items を持つベクターAPIを開くときに使います。'
 				},
 				{
 					type: 'arcgis',

@@ -46,7 +46,7 @@
 			.required('ファイルを選択してください')
 			.test('fileType', '対応していないファイル形式です (許可: .shp)', (value) => {
 				if (value instanceof File) {
-					return value.name.endsWith('.shp');
+					return value.name.toLowerCase().endsWith('.shp');
 				}
 				return true; // ファイルが選択されていない場合はバリデーションをパス
 			}),
@@ -55,7 +55,7 @@
 			.required('ファイルを選択してください')
 			.test('fileType', '対応していないファイル形式です (許可: .dbf)', (value) => {
 				if (value instanceof File) {
-					return value.name.endsWith('.dbf');
+					return value.name.toLowerCase().endsWith('.dbf');
 				}
 				return true; // ファイルが選択されていない場合はバリデーションをパス
 			}),
@@ -65,7 +65,7 @@
 			.optional()
 			.test('fileType', '対応していないファイル形式です (許可: .prj)', (value) => {
 				if (value instanceof File) {
-					return value.name.endsWith('.prj');
+					return value.name.toLowerCase().endsWith('.prj');
 				}
 				return true; // ファイルが選択されていない場合はバリデーションをパス
 			}),
@@ -74,7 +74,7 @@
 			.required('ファイルを選択してください')
 			.test('fileType', '対応していないファイル形式です (許可: .shx)', (value) => {
 				if (value instanceof File) {
-					return value.name.endsWith('.shx');
+					return value.name.toLowerCase().endsWith('.shx');
 				}
 				return true; // ファイルが選択されていない場合はバリデーションをパス
 			}),
@@ -121,34 +121,36 @@
 		cpgName = '';
 	};
 
-	const setFiles = (dropFile: File | FileList | null) => {
-		if (!dropFile) return;
-
-		if (dropFile instanceof File) {
-			setFile(dropFile);
-		} else if (dropFile instanceof FileList) {
-			for (let i = 0; i < dropFile.length; i++) {
-				setFile(dropFile[i]);
-			}
+	const toFiles = (value: File | FileList | null): File[] => {
+		if (!value) return [];
+		if (value instanceof File) return [value];
+		if (typeof value === 'object' && 'length' in value) {
+			return Array.from(value as ArrayLike<File>).filter((file): file is File => file instanceof File);
 		}
+		return [];
+	};
+
+	const setFiles = (dropFile: File | FileList | null) => {
+		toFiles(dropFile).forEach((file) => setFile(file));
 	};
 
 	const setFile = (file: File) => {
 		const fileName = file.name;
+		const lowerFileName = fileName.toLowerCase();
 
-		if (fileName.endsWith('.shp')) {
+		if (lowerFileName.endsWith('.shp')) {
 			forms.shpFile = file;
 			forms.shpName = fileName;
-		} else if (fileName.endsWith('.dbf')) {
+		} else if (lowerFileName.endsWith('.dbf')) {
 			forms.dbfFile = file;
 			forms.dbfName = fileName;
-		} else if (fileName.endsWith('.prj')) {
+		} else if (lowerFileName.endsWith('.prj')) {
 			forms.prjFile = file;
 			forms.prjName = fileName;
-		} else if (fileName.endsWith('.shx')) {
+		} else if (lowerFileName.endsWith('.shx')) {
 			forms.shxFile = file;
 			forms.shxName = fileName;
-		} else if (fileName.endsWith('.cpg')) {
+		} else if (lowerFileName.endsWith('.cpg')) {
 			cpgFile = file;
 			cpgName = fileName;
 		} else {
@@ -157,8 +159,7 @@
 	};
 
 	const isShapeFileRelated = (file: File | FileList): boolean => {
-		const files = file instanceof FileList ? Array.from(file) : [file];
-		return files.some((f) => /\.(shp|dbf|prj|shx|cpg)$/i.test(f.name));
+		return toFiles(file).some((targetFile) => /\.(shp|dbf|prj|shx|cpg)$/i.test(targetFile.name));
 	};
 
 	$effect(() => {
