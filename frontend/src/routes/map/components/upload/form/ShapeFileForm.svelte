@@ -163,10 +163,11 @@
 	};
 
 	$effect(() => {
-		if (dropFile && isShapeFileRelated(dropFile)) {
-			setFiles(dropFile);
-			dropFile = null; // ドロップ後はnullにリセット
-		}
+		if (showDialogType !== 'shp' || !dropFile || !isShapeFileRelated(dropFile)) return;
+
+		resetForms();
+		setFiles(dropFile);
+		dropFile = null; // ドロップ後はnullにリセット
 	});
 
 	let isDisabled = $state<boolean>(true);

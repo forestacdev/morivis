@@ -27,8 +27,7 @@
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
 		remoteWmtsUrl: string | null;
-		remoteWfsUrl: string | null;
-		remoteOgcApiFeaturesUrl: string | null;
+		remoteFeatureServiceUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -41,8 +40,7 @@
 		remoteVectorUrl = $bindable(),
 		remoteTiles3dUrl = $bindable(),
 		remoteWmtsUrl = $bindable(),
-		remoteWfsUrl = $bindable(),
-		remoteOgcApiFeaturesUrl = $bindable(),
+		remoteFeatureServiceUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -277,16 +275,16 @@
 			}
 
 			if (await isOgcApiFeaturesUrl(trimmedUrl)) {
-				remoteOgcApiFeaturesUrl = trimmedUrl;
-				showDialogType = 'ogcapifeatures';
+				remoteFeatureServiceUrl = trimmedUrl;
+				showDialogType = 'featureservice';
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
 			}
 
 			if (await isWfsUrl(trimmedUrl)) {
-				remoteWfsUrl = trimmedUrl;
-				showDialogType = 'wfs';
+				remoteFeatureServiceUrl = trimmedUrl;
+				showDialogType = 'featureservice';
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
@@ -388,16 +386,10 @@
 						'カバレッジ配信サービスのURLです。ラスターデータを範囲指定で取得するときに使います。'
 				},
 				{
-					type: 'wfs',
-					label: 'WFS',
+					type: 'featureservice',
+					label: 'WFS / OGC API',
 					description:
-						'地物配信サービスのURLです。点・線・面と属性を持つベクターデータを取得するときに使います。'
-				},
-				{
-					type: 'ogcapifeatures',
-					label: 'OGC API - Features',
-					description:
-						'OGC API - Features のURLです。collection や items を持つベクターAPIを開くときに使います。'
+						'地物配信サービスのURLです。WFS と OGC API - Features のどちらも同じフォームから開けます。'
 				},
 				{
 					type: 'arcgis',

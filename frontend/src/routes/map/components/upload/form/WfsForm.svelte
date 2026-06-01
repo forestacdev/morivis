@@ -22,6 +22,7 @@
 		type WfsCapabilitiesInfo
 	} from '$routes/map/utils/formats/wfs';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
@@ -59,15 +60,7 @@
 			.string()
 			.required('URLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
-				if (!value) return false;
-				try {
-					const normalized = value.trim();
-					if (!normalized) return false;
-					const parsed = new URL(normalized);
-					return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-				} catch {
-					return false;
-				}
+				return !!value && !!normalizeHttpUrlInput(value);
 			})
 	});
 
@@ -146,7 +139,13 @@
 		resetLoadedFeature();
 
 		try {
-			const result = await parseWfsCapabilities(forms.url.trim());
+			const normalizedUrl = normalizeHttpUrlInput(forms.url);
+			if (!normalizedUrl) {
+				showNotification('URLの形式が正しくありません', 'error');
+				return;
+			}
+			forms.url = normalizedUrl;
+			const result = await parseWfsCapabilities(normalizedUrl);
 			if (!result || result.featureTypes.length === 0) {
 				showNotification('WFS の FeatureType が見つかりませんでした', 'error');
 				return;
@@ -192,7 +191,7 @@
 			bbox,
 			undefined,
 			{
-				attribution: `WFS: ${forms.url.trim()}`
+					attribution: `WFS: ${forms.url.trim()}`
 			}
 		);
 
@@ -410,6 +409,16 @@
 	{#if hasPendingGeometrySelection}
 		<button onclick={confirmGeometrySelection} class="c-btn-confirm min-w-[200px] p-4 text-lg">
 			決定
+		</button>
+	{:else if !capabilities}
+		<button
+			onclick={fetchCapabilities}
+			disabled={isUrlDisabled || $isProcessing}
+			class="c-btn-confirm min-w-[200px] p-4 text-lg {isUrlDisabled || $isProcessing
+				? 'cursor-not-allowed opacity-50'
+				: 'cursor-pointer'}"
+		>
+			サービスを取得
 		</button>
 	{:else}
 		<button

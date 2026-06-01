@@ -6,6 +6,7 @@
 	import DemXmlForm from '$routes/map/components/upload/form/DemXmlForm.svelte';
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
+	import FeatureServiceForm from '$routes/map/components/upload/form/FeatureServiceForm.svelte';
 	import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
 	import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
@@ -29,7 +30,6 @@
 	import MifForm from '$routes/map/components/upload/form/MifForm.svelte';
 	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
-	import OgcApiFeaturesForm from '$routes/map/components/upload/form/OgcApiFeaturesForm.svelte';
 	import OsmForm from '$routes/map/components/upload/form/OsmForm.svelte';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 	import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.svelte';
@@ -44,7 +44,6 @@
 	import TsvForm from '$routes/map/components/upload/form/TsvForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';
-	import WfsForm from '$routes/map/components/upload/form/WfsForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
@@ -63,8 +62,7 @@
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
 		remoteWmtsUrl: string | null;
-		remoteWfsUrl: string | null;
-		remoteOgcApiFeaturesUrl: string | null;
+		remoteFeatureServiceUrl: string | null;
 		pendingTileUrl: string | null;
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
@@ -85,8 +83,7 @@
 		remoteVectorUrl = $bindable(),
 		remoteTiles3dUrl = $bindable(),
 		remoteWmtsUrl = $bindable(),
-		remoteWfsUrl = $bindable(),
-		remoteOgcApiFeaturesUrl = $bindable(),
+		remoteFeatureServiceUrl = $bindable(),
 		pendingTileUrl = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
@@ -117,22 +114,11 @@
 			{#if showDialogType === 'wcs'}
 				<WcsForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
-			{#if showDialogType === 'wfs'}
-				<WfsForm
+			{#if showDialogType === 'featureservice' || showDialogType === 'wfs' || showDialogType === 'ogcapifeatures'}
+				<FeatureServiceForm
 					bind:showDataEntry
 					bind:showDialogType
-					bind:remoteWfsUrl
-					bind:showZoneForm
-					bind:focusBbox
-					bind:zoneConfirmedEpsg
-					{selectedEpsgCode}
-				/>
-			{/if}
-			{#if showDialogType === 'ogcapifeatures'}
-				<OgcApiFeaturesForm
-					bind:showDataEntry
-					bind:showDialogType
-					bind:remoteOgcApiFeaturesUrl
+					bind:remoteFeatureServiceUrl
 					bind:showZoneForm
 					bind:focusBbox
 					bind:zoneConfirmedEpsg

@@ -136,8 +136,7 @@
 	let remoteVectorUrl = $state<string | null>(null);
 	let remoteTiles3dUrl = $state<string | null>(null);
 	let remoteWmtsUrl = $state<string | null>(null);
-	let remoteWfsUrl = $state<string | null>(null);
-	let remoteOgcApiFeaturesUrl = $state<string | null>(null);
+	let remoteFeatureServiceUrl = $state<string | null>(null);
 	let pendingTileUrl = $state<string | null>(null);
 
 	let isStyleEditEntry = $derived.by(() => {
@@ -832,8 +831,7 @@
 					bind:remoteVectorUrl
 					bind:remoteTiles3dUrl
 					bind:remoteWmtsUrl
-					bind:remoteWfsUrl
-					bind:remoteOgcApiFeaturesUrl
+					bind:remoteFeatureServiceUrl
 					bind:pendingTileUrl
 				/>
 			{/if}
@@ -872,8 +870,7 @@
 		bind:remoteVectorUrl
 		bind:remoteTiles3dUrl
 		bind:remoteWmtsUrl
-		bind:remoteWfsUrl
-		bind:remoteOgcApiFeaturesUrl
+		bind:remoteFeatureServiceUrl
 		bind:pendingTileUrl
 		bind:showZoneForm
 		bind:focusBbox

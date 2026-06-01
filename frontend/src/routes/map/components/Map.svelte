@@ -782,8 +782,50 @@
 		e.preventDefault();
 		isDragover = false;
 	};
+
+	const setRelativePath = (file: File, relativePath: string) => {
+		Object.defineProperty(file, 'morivisRelativePath', {
+			value: relativePath,
+			configurable: true
+		});
+		return file;
+	};
+
+	const extractZipFiles = async (zipFile: File): Promise<File[]> => {
+		const JSZip = (await import('jszip')).default;
+		const zip = await JSZip.loadAsync(zipFile);
+		const files: File[] = [];
+		const entries: [string, import('jszip').JSZipObject][] = [];
+
+		zip.forEach((path, entry) => {
+			if (!entry.dir) entries.push([path, entry]);
+		});
+
+		for (const [path, entry] of entries) {
+			const blob = await entry.async('blob');
+			const fileName = path.split('/').pop() ?? path;
+			files.push(setRelativePath(new File([blob], fileName, { type: blob.type }), path));
+		}
+
+		return files;
+	};
+
 	// ドロップ完了時にファイルを取得
 	const onDropFile: (files: FileList) => void = async (files) => {
+		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
+			try {
+				const extracted = await extractZipFiles(files[0]);
+				if (extracted.length > 0) {
+					const dt = new DataTransfer();
+					extracted.forEach((file) => dt.items.add(file));
+					dropFile = dt.files;
+					return;
+				}
+			} catch {
+				// 展開失敗時は通常フローへ
+			}
+		}
+
 		dropFile = files;
 	};
 

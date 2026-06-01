@@ -81,6 +81,7 @@ export type DialogType =
 	| 'geotiff'
 	| 'wmts'
 	| 'wcs'
+	| 'featureservice'
 	| 'wfs'
 	| 'ogcapifeatures'
 	| 'dm'

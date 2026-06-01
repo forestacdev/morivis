@@ -31,6 +31,23 @@ const toAbsoluteUrl = (url: string): string => {
 	return new URL(url, baseUrl).toString();
 };
 
+export const normalizeHttpUrlInput = (value: string): string | null => {
+	const normalized = value.trim();
+	if (!normalized) return null;
+
+	const withProtocol = /^[a-z][a-z0-9+.-]*:\/\//iu.test(normalized)
+		? normalized
+		: `https://${normalized}`;
+
+	try {
+		const parsed = new URL(withProtocol);
+		if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+		return parsed.toString();
+	} catch {
+		return null;
+	}
+};
+
 export const resolveMapLibreRequest = (
 	url: string,
 	resourceType?: ResourceType

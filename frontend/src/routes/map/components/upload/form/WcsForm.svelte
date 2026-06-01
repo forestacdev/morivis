@@ -14,7 +14,7 @@
 		type WcsCoverageDescription,
 		type WcsCoverageSummary
 	} from '$routes/map/utils/formats/wcs';
-	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+	import { fetchWithDevProxy, normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -35,8 +35,7 @@
 			.string()
 			.required('URLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
-				if (!value) return false;
-				return value.startsWith('http://') || value.startsWith('https://');
+				return !!value && !!normalizeHttpUrlInput(value);
 			})
 	});
 
@@ -113,7 +112,13 @@
 		selectedCoverageId = '';
 
 		try {
-			const result = await parseWcsCapabilities(forms.url.trim());
+			const normalizedUrl = normalizeHttpUrlInput(forms.url);
+			if (!normalizedUrl) {
+				showNotification('URLの形式が正しくありません', 'error');
+				return;
+			}
+			forms.url = normalizedUrl;
+			const result = await parseWcsCapabilities(normalizedUrl);
 			if (!result || result.coverages.length === 0) {
 				showNotification('WCS 2.0 の Coverage が見つかりませんでした', 'error');
 				return;
