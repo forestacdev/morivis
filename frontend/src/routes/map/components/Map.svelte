@@ -529,6 +529,32 @@
 			mapStore.releaseEsriProtocol();
 		}
 
+		const isOgcFeatureEntry = (e: GeoDataEntry) =>
+			e.type === 'vector' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'ogc-feature';
+		const hasOgcFeatureLayer =
+			entries.some(isOgcFeatureEntry) || (showDataEntry && isOgcFeatureEntry(showDataEntry));
+
+		if (hasOgcFeatureLayer) {
+			mapStore.ensureOgcFeatureProtocol();
+		} else {
+			mapStore.releaseOgcFeatureProtocol();
+		}
+
+		const isWfsFeatureEntry = (e: GeoDataEntry) =>
+			e.type === 'vector' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'wfs-feature';
+		const hasWfsFeatureLayer =
+			entries.some(isWfsFeatureEntry) || (showDataEntry && isWfsFeatureEntry(showDataEntry));
+
+		if (hasWfsFeatureLayer) {
+			mapStore.ensureWfsFeatureProtocol();
+		} else {
+			mapStore.releaseWfsFeatureProtocol();
+		}
+
 		const isCogEntry = (e: GeoDataEntry) =>
 			e.type === 'raster' &&
 			'format' in e &&

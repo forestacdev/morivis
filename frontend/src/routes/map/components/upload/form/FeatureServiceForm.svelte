@@ -8,6 +8,8 @@
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import {
 		createGeoJsonEntry,
+		createOgcFeatureTileEntry,
+		createWfsFeatureTileEntry,
 		filterByGeometryType,
 		getGeometryTypes
 	} from '$routes/map/data/entries/vector';
@@ -16,17 +18,21 @@
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import {
+		buildOgcApiFeaturesItemsUrl,
 		fetchOgcApiFeaturesFeatureCollection,
 		parseOgcApiFeaturesService,
 		type OgcApiFeaturesServiceInfo
 	} from '$routes/map/utils/formats/ogc-api-features';
+	import { getUniquePropertyKeys } from '$routes/map/utils/data/properties';
 	import {
+		buildWfsGetFeatureUrl,
 		fetchWfsFeatureCollection,
 		getWfsPreferredOutputFormat,
+		looksLikeWfsUrl,
 		parseWfsCapabilities,
 		type WfsCapabilitiesInfo
 	} from '$routes/map/utils/formats/wfs';
-	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { isFiniteBbox } from '$routes/map/utils/map/bbox';
 	import { normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -167,6 +173,23 @@
 		}
 	};
 
+	const logWfsBoundsDebug = (
+		stage: 'fetch' | 'zone-form' | 'entry-create',
+		payload: Record<string, unknown>
+	) => {
+		if (serviceType !== 'wfs') return;
+		console.debug('[WFS bounds debug]', {
+			stage,
+			url: forms.url,
+			featureTypeName: selectedFeatureType?.name ?? null,
+			featureTypeTitle: selectedFeatureType?.title ?? null,
+			featureTypeBbox: selectedFeatureType?.bbox ?? null,
+			defaultCrs: selectedFeatureType?.defaultCrs ?? null,
+			selectedOutputFormat,
+			...payload
+		});
+	};
+
 	const loadService = async () => {
 		isProcessing.set(true);
 		resetServiceState();
@@ -180,6 +203,20 @@
 			}
 
 			forms.url = normalizedUrl;
+
+			if (looksLikeWfsUrl(normalizedUrl)) {
+				const wfsResult = await parseWfsCapabilities(normalizedUrl);
+				if (wfsResult && wfsResult.featureTypes.length > 0) {
+					serviceType = 'wfs';
+					wfsCapabilities = wfsResult;
+					selectedFeatureTypeName = wfsResult.featureTypes[0].name;
+					selectedOutputFormat = getWfsPreferredOutputFormat([
+						...wfsResult.featureTypes[0].outputFormats,
+						...wfsResult.outputFormats
+					]);
+					return;
+				}
+			}
 
 			const ogcResult = await parseOgcApiFeaturesService(normalizedUrl);
 			if (ogcResult && ogcResult.collections.length > 0) {
@@ -236,6 +273,75 @@
 		}
 
 		const bbox = turfBbox(filtered) as [number, number, number, number];
+		if (serviceType === 'wfs' && wfsCapabilities && selectedFeatureType) {
+			logWfsBoundsDebug('entry-create', {
+				filteredFeatureCount: filtered.features.length,
+				filteredBbox: bbox,
+				entryBounds: selectedFeatureType.bbox ?? bbox
+			});
+
+			const entry = createWfsFeatureTileEntry(
+				entryName,
+				wfsCapabilities.serviceUrl,
+				selectedGeometryType,
+				{
+					bounds: selectedFeatureType.bbox ?? bbox
+				}
+			);
+
+			if (!entry) {
+				showNotification('WFS レイヤーの登録に失敗しました', 'error');
+				return;
+			}
+
+			const propKeys = getUniquePropertyKeys(filtered);
+			entry.metaData.attribution = getServiceAttribution();
+			entry.metaData.sourceLayer = selectedFeatureType.name;
+			(entry.metaData as typeof entry.metaData & { version: string }).version =
+				wfsCapabilities.version;
+			(entry.metaData as typeof entry.metaData & { outputFormat: string }).outputFormat =
+				selectedOutputFormat;
+			entry.properties.fields = propKeys.map((key) => ({ key, label: key }));
+			entry.properties.attributeView.popupKeys = propKeys;
+
+			showDataEntry = entry;
+			showDialogType = null;
+			remoteFeatureServiceUrl = null;
+			showNotification('WFS レイヤーを登録しました', 'success');
+			return;
+		}
+
+		if (serviceType === 'ogcapifeatures' && ogcServiceInfo && selectedCollection) {
+			const entry = createOgcFeatureTileEntry(
+				entryName,
+				buildOgcApiFeaturesItemsUrl({
+					collectionsUrl: ogcServiceInfo.collectionsUrl,
+					collectionId: selectedCollection.id,
+					limit: Number.parseInt(maxFeatures, 10)
+				}),
+				selectedGeometryType,
+				{
+					bounds: selectedCollection.bbox ?? bbox
+				}
+			);
+
+			if (!entry) {
+				showNotification('OGC API - Features レイヤーの登録に失敗しました', 'error');
+				return;
+			}
+
+			const propKeys = getUniquePropertyKeys(filtered);
+			entry.metaData.attribution = getServiceAttribution();
+			entry.properties.fields = propKeys.map((key) => ({ key, label: key }));
+			entry.properties.attributeView.popupKeys = propKeys;
+
+			showDataEntry = entry;
+			showDialogType = null;
+			remoteFeatureServiceUrl = null;
+			showNotification('OGC API - Features レイヤーを登録しました', 'success');
+			return;
+		}
+
 		const entry = await createGeoJsonEntry(
 			filtered,
 			selectedGeometryType,
@@ -274,7 +380,16 @@
 		selectedGeometryType = types[0];
 
 		const bbox = turfBbox(geojson) as [number, number, number, number];
-		if (!bbox || !isBboxValid(bbox)) {
+		logWfsBoundsDebug('fetch', {
+			featureCount: geojson.features.length,
+			fetchedBbox: bbox
+		});
+		if (!bbox || !isFiniteBbox(bbox)) {
+			logWfsBoundsDebug('zone-form', {
+				featureCount: geojson.features.length,
+				fetchedBbox: bbox,
+				reason: 'bbox contains non-finite values or invalid ordering'
+			});
 			showZoneForm = true;
 			focusBbox = bbox;
 			return;
@@ -302,7 +417,8 @@
 					version: wfsCapabilities.version,
 					typeName: selectedFeatureType.name,
 					outputFormat: selectedOutputFormat,
-					count
+					count,
+					srsName: 'EPSG:4326'
 				});
 				await prepareGeojson(geojson);
 				return;
@@ -348,10 +464,10 @@
 
 			rawGeojson = transformedGeojson;
 			const bbox = turfBbox(transformedGeojson) as [number, number, number, number];
-			if (!bbox || !isBboxValid(bbox)) {
-				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
-				return;
-			}
+				if (!bbox || !isFiniteBbox(bbox)) {
+					showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
+					return;
+				}
 
 			if (geometryTypeOptions.length === 1 && selectedGeometryType) {
 				await completeEntryCreation(transformedGeojson);

@@ -148,6 +148,20 @@ export const getWfsPreferredOutputFormat = (formats: string[]): string => {
 	return normalizedFormats[0] ?? 'application/json';
 };
 
+export const looksLikeWfsUrl = (url: string): boolean => {
+	try {
+		const parsedUrl = new URL(url);
+		const service = parsedUrl.searchParams.get('service')?.toLowerCase();
+		const request = parsedUrl.searchParams.get('request')?.toLowerCase();
+
+		if (service === 'wfs') return true;
+		if (request === 'getcapabilities' || request === 'getfeature') return true;
+		return /\/wfs\/?$/i.test(parsedUrl.pathname);
+	} catch {
+		return false;
+	}
+};
+
 export const parseWfsCapabilities = async (url: string): Promise<WfsCapabilitiesInfo | null> => {
 	try {
 		const capsUrl = new URL(url);
@@ -301,4 +315,32 @@ export const fetchWfsFeatureCollection = async ({
 	}
 
 	return gmlTextToGeoJson(text);
+};
+
+export const buildWfsBboxGetFeatureUrl = ({
+	serviceUrl,
+	version,
+	typeName,
+	outputFormat,
+	bbox,
+	srsName = 'EPSG:4326'
+}: {
+	serviceUrl: string;
+	version: string;
+	typeName: string;
+	outputFormat: string;
+	bbox: [number, number, number, number];
+	srsName?: string;
+}): string => {
+	const requestUrl = new URL(
+		buildWfsGetFeatureUrl({
+			serviceUrl,
+			version,
+			typeName,
+			outputFormat,
+			srsName
+		})
+	);
+	requestUrl.searchParams.set('bbox', `${bbox.join(',')},${srsName}`);
+	return requestUrl.toString();
 };

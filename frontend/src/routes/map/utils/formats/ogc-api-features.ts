@@ -278,6 +278,19 @@ export const buildOgcApiFeaturesItemsUrl = ({
 	return itemsUrl.toString();
 };
 
+export const buildOgcApiFeaturesBboxUrl = ({
+	itemsUrl,
+	bbox
+}: {
+	itemsUrl: string;
+	bbox: [number, number, number, number];
+}): string => {
+	const url = new URL(itemsUrl);
+	url.searchParams.set('f', 'json');
+	url.searchParams.set('bbox', bbox.join(','));
+	return url.toString();
+};
+
 export const fetchOgcApiFeaturesFeatureCollection = async ({
 	collectionsUrl,
 	collectionId,

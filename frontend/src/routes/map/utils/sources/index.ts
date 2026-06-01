@@ -520,6 +520,51 @@ export const createSourcesItems = async (
 							attribution: metaData.attribution,
 							bounds: metaData.bounds
 						} as VectorSourceSpecification;
+					} else if (format.type === 'ogc-feature') {
+						const sourceLayer =
+							'sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer';
+						items[sourceId] = {
+							type: 'vector',
+							tiles: [
+								`ogc-feature://request?src=${encodeURIComponent(format.url)}&sourceLayer=${sourceLayer}&x={x}&y={y}&z={z}&entryId=${entry.id}`
+							],
+							maxzoom: metaData.maxZoom,
+							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
+							attribution: metaData.attribution,
+							bounds: metaData.bounds
+						} as VectorSourceSpecification;
+					} else if (format.type === 'wfs-feature') {
+						const sourceLayer =
+							'sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer';
+						const version =
+							'version' in entry.metaData ? String(entry.metaData.version ?? '') : '';
+						const outputFormat =
+							'outputFormat' in entry.metaData
+								? String(entry.metaData.outputFormat ?? 'application/json')
+								: 'application/json';
+						const requestQuery = [
+							`serviceUrl=${encodeURIComponent(format.url)}`,
+							`version=${encodeURIComponent(version)}`,
+							`typeName=${encodeURIComponent('sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer')}`,
+							`outputFormat=${encodeURIComponent(outputFormat)}`,
+							`srsName=${encodeURIComponent('EPSG:4326')}`,
+							`sourceLayer=${encodeURIComponent(sourceLayer)}`,
+							'x={x}',
+							'y={y}',
+							'z={z}',
+							`entryId=${encodeURIComponent(entry.id)}`
+						].join('&');
+
+						items[sourceId] = {
+							type: 'vector',
+							tiles: [`wfs-feature://request?${requestQuery}`],
+							maxzoom: metaData.maxZoom,
+							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
+							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
+							attribution: metaData.attribution,
+							bounds: metaData.bounds
+						} as VectorSourceSpecification;
 					}
 					break;
 				}

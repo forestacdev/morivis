@@ -55,6 +55,14 @@ import {
 	esriFeatureProtocol,
 	terminateEsriFeatureWorker
 } from '$routes/map/protocol/vector/esri-feature';
+import {
+	ogcFeatureProtocol,
+	terminateOgcFeatureWorker
+} from '$routes/map/protocol/vector/ogc-feature';
+import {
+	wfsFeatureProtocol,
+	terminateWfsFeatureWorker
+} from '$routes/map/protocol/vector/wfs-feature';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
@@ -183,6 +191,42 @@ const releaseEsriProtocol = () => {
 		maplibregl.removeProtocol(esriFeatureProt.protocolName);
 		terminateEsriFeatureWorker();
 		_esriProtocolRegistered = false;
+	}
+};
+
+const ogcFeatureProt = ogcFeatureProtocol('ogc-feature');
+let _ogcFeatureProtocolRegistered = false;
+
+const ensureOgcFeatureProtocol = () => {
+	if (!_ogcFeatureProtocolRegistered) {
+		maplibregl.addProtocol(ogcFeatureProt.protocolName, ogcFeatureProt.request);
+		_ogcFeatureProtocolRegistered = true;
+	}
+};
+
+const releaseOgcFeatureProtocol = () => {
+	if (_ogcFeatureProtocolRegistered) {
+		maplibregl.removeProtocol(ogcFeatureProt.protocolName);
+		terminateOgcFeatureWorker();
+		_ogcFeatureProtocolRegistered = false;
+	}
+};
+
+const wfsFeatureProt = wfsFeatureProtocol('wfs-feature');
+let _wfsFeatureProtocolRegistered = false;
+
+const ensureWfsFeatureProtocol = () => {
+	if (!_wfsFeatureProtocolRegistered) {
+		maplibregl.addProtocol(wfsFeatureProt.protocolName, wfsFeatureProt.request);
+		_wfsFeatureProtocolRegistered = true;
+	}
+};
+
+const releaseWfsFeatureProtocol = () => {
+	if (_wfsFeatureProtocolRegistered) {
+		maplibregl.removeProtocol(wfsFeatureProt.protocolName);
+		terminateWfsFeatureWorker();
+		_wfsFeatureProtocolRegistered = false;
 	}
 };
 
@@ -1595,8 +1639,12 @@ const createMapStore = () => {
 		// プロトコル管理
 		ensureGeojsonProtocol,
 		releaseGeojsonProtocol,
-		ensureEsriProtocol,
-		releaseEsriProtocol,
+	ensureEsriProtocol,
+	releaseEsriProtocol,
+	ensureOgcFeatureProtocol,
+	releaseOgcFeatureProtocol,
+	ensureWfsFeatureProtocol,
+	releaseWfsFeatureProtocol,
 		ensureCogProtocol,
 		releaseCogProtocol,
 		ensureDemProtocol,

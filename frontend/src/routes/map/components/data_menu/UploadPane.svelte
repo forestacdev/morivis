@@ -11,7 +11,7 @@
 		type DialogType
 	} from '$routes/map/types';
 	import { parseOgcApiFeaturesService } from '$routes/map/utils/formats/ogc-api-features';
-	import { parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
+	import { looksLikeWfsUrl, parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
 	import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
 	import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
 	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
@@ -274,21 +274,29 @@
 				return;
 			}
 
-			if (await isOgcApiFeaturesUrl(trimmedUrl)) {
-				remoteFeatureServiceUrl = trimmedUrl;
-				showDialogType = 'featureservice';
-				inputUrl = '';
-				hasTouchedUrlInput = false;
-				return;
-			}
+				if (looksLikeWfsUrl(trimmedUrl) && (await isWfsUrl(trimmedUrl))) {
+					remoteFeatureServiceUrl = trimmedUrl;
+					showDialogType = 'featureservice';
+					inputUrl = '';
+					hasTouchedUrlInput = false;
+					return;
+				}
 
-			if (await isWfsUrl(trimmedUrl)) {
-				remoteFeatureServiceUrl = trimmedUrl;
-				showDialogType = 'featureservice';
-				inputUrl = '';
-				hasTouchedUrlInput = false;
-				return;
-			}
+				if (await isOgcApiFeaturesUrl(trimmedUrl)) {
+					remoteFeatureServiceUrl = trimmedUrl;
+					showDialogType = 'featureservice';
+					inputUrl = '';
+					hasTouchedUrlInput = false;
+					return;
+				}
+
+				if (await isWfsUrl(trimmedUrl)) {
+					remoteFeatureServiceUrl = trimmedUrl;
+					showDialogType = 'featureservice';
+					inputUrl = '';
+					hasTouchedUrlInput = false;
+					return;
+				}
 
 			const response = await fetchWithDevProxy(trimmedUrl);
 			if (!response.ok) {

@@ -16,7 +16,9 @@ export type VectorFormatType =
 	| 'mbtiles'
 	| 'fgb'
 	| 'geojsontile'
-	| 'esri-feature';
+	| 'esri-feature'
+	| 'ogc-feature'
+	| 'wfs-feature';
 
 export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon';
 

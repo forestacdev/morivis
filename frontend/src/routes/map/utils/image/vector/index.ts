@@ -10,6 +10,8 @@ import { CoverImageManager } from '../index';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 import { esriFeatureProtocol } from '$routes/map/protocol/vector/esri-feature';
+import { ogcFeatureProtocol } from '$routes/map/protocol/vector/ogc-feature';
+import { wfsFeatureProtocol } from '$routes/map/protocol/vector/wfs-feature';
 import { resolveAbsoluteRequestUrl, resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 export interface MapImageOptions {
@@ -35,6 +37,8 @@ const previewPmtilesProtocol = new Protocol();
 const previewMbtilesProtocol = mbtilesProtocol();
 const previewGeojsonProtocol = geojsonProtocol('geojson');
 const previewEsriFeatureProtocol = esriFeatureProtocol('esri-feature');
+const previewOgcFeatureProtocol = ogcFeatureProtocol('ogc-feature');
+const previewWfsFeatureProtocol = wfsFeatureProtocol('wfs-feature');
 let previewProtocolsRegistered = false;
 
 const ensurePreviewProtocols = () => {
@@ -45,6 +49,14 @@ const ensurePreviewProtocols = () => {
 	maplibregl.addProtocol(
 		previewEsriFeatureProtocol.protocolName,
 		previewEsriFeatureProtocol.request
+	);
+	maplibregl.addProtocol(
+		previewOgcFeatureProtocol.protocolName,
+		previewOgcFeatureProtocol.request
+	);
+	maplibregl.addProtocol(
+		previewWfsFeatureProtocol.protocolName,
+		previewWfsFeatureProtocol.request
 	);
 	previewProtocolsRegistered = true;
 };
