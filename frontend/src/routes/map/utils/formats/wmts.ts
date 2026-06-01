@@ -45,7 +45,7 @@ export const parseWmtsCapabilities = async (
 		const contents = result?.Contents;
 
 		if (!contents || !contents.Layer || !contents.TileMatrixSet) {
-			console.error(
+			console.warn(
 				'Invalid WMTS Capabilities document structure. Missing Contents, Layer, or TileMatrixSet.'
 			);
 			return null;
@@ -204,7 +204,7 @@ export const parseWmtsCapabilities = async (
 
 		return layersInfo;
 	} catch (error) {
-		console.error('Failed to fetch or parse WMTS Capabilities:', error);
+		console.warn('Failed to fetch or parse WMTS Capabilities:', error);
 		return null;
 	}
 };

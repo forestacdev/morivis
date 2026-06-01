@@ -243,7 +243,7 @@
 			.string()
 			.required('3DモデルのURLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
-				if (!value) return false;
+				if (!value) return true;
 				return value.startsWith('http://') || value.startsWith('https://');
 			})
 	});

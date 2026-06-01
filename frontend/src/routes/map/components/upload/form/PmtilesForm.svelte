@@ -115,24 +115,22 @@
 	});
 
 	$effect(() => {
-		urlValidation
-			.validate(forms, { abortEarly: false })
-			.then(() => {
-				isDisabled = false;
-				errors = {};
-			})
-			.catch((error) => {
-				isDisabled = true;
-				const newErrors: Record<string, string> = {};
-				if (error.inner && Array.isArray(error.inner)) {
-					error.inner.forEach((err: yup.ValidationError) => {
-						if (err.path) {
-							newErrors[err.path] = err.message;
-						}
-					});
-				}
-				errors = newErrors;
-			});
+		try {
+			urlValidation.validateSync(forms, { abortEarly: false });
+			isDisabled = false;
+			errors = {};
+		} catch (error) {
+			isDisabled = true;
+			const newErrors: Record<string, string> = {};
+			if (error instanceof yup.ValidationError && error.inner && Array.isArray(error.inner)) {
+				error.inner.forEach((err: yup.ValidationError) => {
+					if (err.path) {
+						newErrors[err.path] = err.message;
+					}
+				});
+			}
+			errors = newErrors;
+		}
 	});
 
 	const analyzePmtiles = async (url: string) => {

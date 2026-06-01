@@ -26,7 +26,7 @@
 			.string()
 			.required('タイルセットのURLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
-				if (!value) return false;
+				if (!value) return true;
 				return value.startsWith('http://') || value.startsWith('https://');
 			})
 	});
@@ -68,24 +68,22 @@
 	});
 
 	$effect(() => {
-		validation
-			.validate(forms, { abortEarly: false })
-			.then(() => {
-				isDisabled = false;
-				errors = {};
-			})
-			.catch((error) => {
-				isDisabled = true;
-				const newErrors: Record<string, string> = {};
-				if (error.inner && Array.isArray(error.inner)) {
-					error.inner.forEach((err: yup.ValidationError) => {
-						if (err.path) {
-							newErrors[err.path] = err.message;
-						}
-					});
-				}
-				errors = newErrors;
-			});
+		try {
+			validation.validateSync(forms, { abortEarly: false });
+			isDisabled = false;
+			errors = {};
+		} catch (error) {
+			isDisabled = true;
+			const newErrors: Record<string, string> = {};
+			if (error instanceof yup.ValidationError && error.inner && Array.isArray(error.inner)) {
+				error.inner.forEach((err: yup.ValidationError) => {
+					if (err.path) {
+						newErrors[err.path] = err.message;
+					}
+				});
+			}
+			errors = newErrors;
+		}
 	});
 
 	const registration = async () => {

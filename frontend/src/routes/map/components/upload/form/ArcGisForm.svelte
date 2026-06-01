@@ -38,7 +38,7 @@
 			.string()
 			.required('URLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
-				if (!value) return false;
+				if (!value) return true;
 				// WebMap アイテムID (32文字hex)
 				if (/^[0-9a-f]{32}$/i.test(value.trim())) return true;
 				return value.startsWith('http://') || value.startsWith('https://');
@@ -88,24 +88,22 @@
 	);
 
 	$effect(() => {
-		urlValidation
-			.validate(forms, { abortEarly: false })
-			.then(() => {
-				isUrlDisabled = false;
-				urlErrors = {};
-			})
-			.catch((error) => {
-				isUrlDisabled = true;
-				const newErrors: Record<string, string> = {};
-				if (error.inner && Array.isArray(error.inner)) {
-					error.inner.forEach((err: yup.ValidationError) => {
-						if (err.path) {
-							newErrors[err.path] = err.message;
-						}
-					});
-				}
-				urlErrors = newErrors;
-			});
+		try {
+			urlValidation.validateSync(forms, { abortEarly: false });
+			isUrlDisabled = false;
+			urlErrors = {};
+		} catch (error) {
+			isUrlDisabled = true;
+			const newErrors: Record<string, string> = {};
+			if (error instanceof yup.ValidationError && error.inner && Array.isArray(error.inner)) {
+				error.inner.forEach((err: yup.ValidationError) => {
+					if (err.path) {
+						newErrors[err.path] = err.message;
+					}
+				});
+			}
+			urlErrors = newErrors;
+		}
 	});
 
 	const resetState = () => {

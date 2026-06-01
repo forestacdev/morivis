@@ -35,7 +35,7 @@
 			.string()
 			.required('URLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
-				return !!value && !!normalizeHttpUrlInput(value);
+				return !value || !!normalizeHttpUrlInput(value);
 			})
 	});
 
@@ -75,22 +75,20 @@
 	});
 
 	$effect(() => {
-		urlValidation
-			.validate(forms, { abortEarly: false })
-			.then(() => {
-				isUrlDisabled = false;
-				urlErrors = {};
-			})
-			.catch((error) => {
-				isUrlDisabled = true;
-				const newErrors: Record<string, string> = {};
-				if (error.inner && Array.isArray(error.inner)) {
-					error.inner.forEach((err: yup.ValidationError) => {
-						if (err.path) newErrors[err.path] = err.message;
-					});
-				}
-				urlErrors = newErrors;
-			});
+		try {
+			urlValidation.validateSync(forms, { abortEarly: false });
+			isUrlDisabled = false;
+			urlErrors = {};
+		} catch (error) {
+			isUrlDisabled = true;
+			const newErrors: Record<string, string> = {};
+			if (error instanceof yup.ValidationError && error.inner && Array.isArray(error.inner)) {
+				error.inner.forEach((err: yup.ValidationError) => {
+					if (err.path) newErrors[err.path] = err.message;
+				});
+			}
+			urlErrors = newErrors;
+		}
 	});
 
 	const updateBboxInputs = (bbox: [number, number, number, number] | null) => {

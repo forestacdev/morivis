@@ -196,7 +196,7 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 		const result = parser.read(xmlString);
 
 		if (!result?.Capability?.Layer) {
-			console.error('Invalid WMS Capabilities document');
+			console.warn('Invalid WMS Capabilities document');
 			return null;
 		}
 
@@ -204,7 +204,7 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 		const getMapUrl = result.Capability?.Request?.GetMap?.DCPType?.[0]?.HTTP?.Get?.OnlineResource;
 
 		if (!getMapUrl) {
-			console.error('GetMap URL not found in Capabilities');
+			console.warn('GetMap URL not found in Capabilities');
 			return null;
 		}
 
@@ -255,7 +255,7 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 			};
 		});
 	} catch (error) {
-		console.error('Failed to fetch or parse WMS Capabilities:', error);
+		console.warn('Failed to fetch or parse WMS Capabilities:', error);
 		return null;
 	}
 };
