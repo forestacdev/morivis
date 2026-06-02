@@ -102,14 +102,29 @@
 	const selectedCollection = $derived(
 		ogcServiceInfo?.collections.find((collection) => collection.id === selectedCollectionId) ?? null
 	);
+	const isSupportedWfsOutputFormat = (outputFormat: string): boolean => {
+		return /application\/geo\+json|application\/json|geojson|json|gml|xml/i.test(outputFormat);
+	};
 	const outputFormatOptions = $derived.by(() => {
 		if (serviceType !== 'wfs') return [];
 		const formats = [
 			...(selectedFeatureType?.outputFormats ?? []),
 			...(wfsCapabilities?.outputFormats ?? [])
 		];
-		return [...new Set(formats.filter(Boolean))];
+		return [...new Set(formats.filter((format) => format && isSupportedWfsOutputFormat(format)))];
 	});
+	const getOutputFormatLabel = (outputFormat: string): string => {
+		if (/application\/geo\+json/i.test(outputFormat)) {
+			return `${outputFormat} (JSON 推奨)`;
+		}
+		if (/application\/json/i.test(outputFormat) || /geojson|json/i.test(outputFormat)) {
+			return `${outputFormat} (JSON)`;
+		}
+		if (/gml|xml/i.test(outputFormat)) {
+			return `${outputFormat} (GML fallback)`;
+		}
+		return outputFormat;
+	};
 	const hasPendingGeometrySelection = $derived(
 		!!rawGeojson && geometryTypeOptions.length > 1 && !!selectedGeometryType
 	);
@@ -545,17 +560,20 @@
 				</select>
 			</label>
 
-			<label class="flex w-full flex-col gap-2">
-				<span class="text-base font-bold select-none">出力形式</span>
-				<select
-					bind:value={selectedOutputFormat}
-					class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
-				>
-					{#each outputFormatOptions as outputFormat (outputFormat)}
-						<option value={outputFormat}>{outputFormat}</option>
-					{/each}
-				</select>
-			</label>
+				<label class="flex w-full flex-col gap-2">
+					<span class="text-base font-bold select-none">出力形式</span>
+					<select
+						bind:value={selectedOutputFormat}
+						class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
+					>
+						{#each outputFormatOptions as outputFormat (outputFormat)}
+							<option value={outputFormat}>{getOutputFormatLabel(outputFormat)}</option>
+						{/each}
+					</select>
+					<p class="text-sm text-gray-400">
+						JSON を優先して選びます。JSON が無いサーバーでは GML を使います。
+					</p>
+				</label>
 
 			<label class="flex w-full flex-col gap-2">
 				<span class="text-base font-bold select-none">取得件数</span>
