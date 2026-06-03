@@ -274,29 +274,29 @@
 				return;
 			}
 
-				if (looksLikeWfsUrl(trimmedUrl) && (await isWfsUrl(trimmedUrl))) {
-					remoteFeatureServiceUrl = trimmedUrl;
-					showDialogType = 'featureservice';
-					inputUrl = '';
-					hasTouchedUrlInput = false;
-					return;
-				}
+			if (looksLikeWfsUrl(trimmedUrl) && (await isWfsUrl(trimmedUrl))) {
+				remoteFeatureServiceUrl = trimmedUrl;
+				showDialogType = 'featureservice';
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
 
-				if (await isOgcApiFeaturesUrl(trimmedUrl)) {
-					remoteFeatureServiceUrl = trimmedUrl;
-					showDialogType = 'featureservice';
-					inputUrl = '';
-					hasTouchedUrlInput = false;
-					return;
-				}
+			if (await isOgcApiFeaturesUrl(trimmedUrl)) {
+				remoteFeatureServiceUrl = trimmedUrl;
+				showDialogType = 'featureservice';
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
 
-				if (await isWfsUrl(trimmedUrl)) {
-					remoteFeatureServiceUrl = trimmedUrl;
-					showDialogType = 'featureservice';
-					inputUrl = '';
-					hasTouchedUrlInput = false;
-					return;
-				}
+			if (await isWfsUrl(trimmedUrl)) {
+				remoteFeatureServiceUrl = trimmedUrl;
+				showDialogType = 'featureservice';
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
 
 			const response = await fetchWithDevProxy(trimmedUrl);
 			if (!response.ok) {
@@ -439,6 +439,29 @@
 				extensions: group.extensions,
 				accept: group.extensions.join(',')
 			}))
+		}
+	];
+
+	const directFileDialogGroups: {
+		title: string;
+		dialogs: { type: DialogType; label: string; description: string }[];
+	}[] = [
+		{
+			title: 'ファイルフォーム',
+			dialogs: [
+				{
+					type: 'shp',
+					label: 'Shapefile',
+					description:
+						'Shapefile の登録フォームです。.shp .dbf .shx などの構成ファイルをまとめて指定するときに使います。'
+				},
+				{
+					type: 'demxml',
+					label: '基盤地図情報 DEM XML',
+					description:
+						'基盤地図情報の標高 XML を読み込むフォームです。複数 XML をまとめてドロップするときにも使えます。'
+				}
+			]
 		}
 	];
 
@@ -601,6 +624,24 @@
 
 			<div class="c-scroll flex flex-col gap-5 overflow-y-auto pr-1">
 				{#each urlDialogGroups as group (group.title)}
+					<div class="flex flex-col gap-3">
+						<span class="text-sm font-bold text-gray-300">{group.title}</span>
+						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+							{#each group.dialogs as dialog (dialog.type)}
+								<button
+									onclick={() => showUploadDialog(dialog.type)}
+									class="bg-base hover:bg-accent group flex min-h-[112px] cursor-pointer flex-col gap-2 rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
+								>
+									<span class="font-semibold">{dialog.label}</span>
+									<span class="text-xs leading-5 text-black/70 group-hover:text-white/80">
+										{dialog.description}
+									</span>
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/each}
+				{#each directFileDialogGroups as group (group.title)}
 					<div class="flex flex-col gap-3">
 						<span class="text-sm font-bold text-gray-300">{group.title}</span>
 						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
