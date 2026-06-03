@@ -4,8 +4,10 @@
 	import { geoDataEntries, registerInitialEntryStyle } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import { getLayerType } from '$routes/map/utils/entries';
+	import { resetWcsViewportReady } from '$routes/map/utils/formats/wcs/runtime';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
+	import { mapStore } from '$routes/stores/map';
 	import { showNotification, showLayerAddedNotification } from '$routes/stores/notification';
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
@@ -15,6 +17,11 @@
 	}
 
 	let { showDataEntry = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
+
+	const isWcsEntry = (
+		entry: GeoDataEntry
+	): entry is Extract<GeoDataEntry, { type: 'raster'; format: { type: 'wcs' } }> =>
+		entry.type === 'raster' && entry.format.type === 'wcs';
 
 	const addData = () => {
 		if (showDataEntry) {
@@ -31,6 +38,13 @@
 			}
 			activeLayerIdsStore.addType(copy.id, layerType);
 			activeLayerIdsStore.add(copy.id);
+			if (isWcsEntry(copy)) {
+				resetWcsViewportReady(copy.id);
+				mapStore.fitBounds(copy.metaData.bounds, {
+					padding: 20,
+					duration: 500
+				});
+			}
 			showLayerAddedNotification(copy);
 			showDataMenu.set(false);
 			if (checkMobile()) {

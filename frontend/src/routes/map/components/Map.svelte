@@ -12,6 +12,7 @@
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import type { Unsubscriber } from 'svelte/store';
 
 	import DropContainer from './DropContainer.svelte';
@@ -30,6 +31,7 @@
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { RasterBaseMapStyle, RasterWcsEntry } from '$routes/map/data/types/raster';
 	import type {
 		AnyModelTiles3DEntry,
 		ModelGeoArrowEntry,
@@ -47,6 +49,12 @@
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import {
+		fetchWcsViewportImage,
+		clearAllWcsViewportImages,
+		markWcsViewportReady,
+		WcsViewportTooBroadError
+	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
@@ -71,7 +79,7 @@
 		activeLayerIdsStore
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
-	import { showLayerAddedNotification } from '$routes/stores/notification';
+	import { showLayerAddedNotification, showNotification } from '$routes/stores/notification';
 	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -162,6 +170,7 @@
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
+	const wcsTooBroadEntryIds = new SvelteSet<string>();
 
 	// let mapPaneFilter = $derived(
 	// 	$mapPaneScale < 1
@@ -479,11 +488,26 @@
 		if (!mapContainer) return;
 
 		mapStore.init(mapContainer);
+
+		styleUpdateUnsubscribers.push(
+			mapStore.onMoveEnd(async () => {
+				layerEntries.filter(isWcsEntry).forEach((entry) => {
+					markWcsViewportReady(entry.id);
+				});
+				await refreshWcsEntries(layerEntries);
+			})
+		);
+		styleUpdateUnsubscribers.push(
+			mapStore.onStyleLoad(async () => {
+				await refreshWcsEntries(layerEntries);
+			})
+		);
 	});
 
 	onDestroy(() => {
 		// Svelte storeの購読は明示的に解除しないと、画面破棄後もcallbackが残る。
 		styleUpdateUnsubscribers.forEach((unsubscribe) => unsubscribe());
+		clearAllWcsViewportImages();
 		if (maplibreMap) {
 			maplibreMap.remove();
 			maplibreMap = null;
@@ -497,6 +521,39 @@
 
 	const getMapStyleEntries = (entries: GeoDataEntry[]) => {
 		return entries.filter((entry) => entry.type !== 'model');
+	};
+
+	const isWcsEntry = (entry: GeoDataEntry): entry is RasterWcsEntry<RasterBaseMapStyle> => {
+		return entry.type === 'raster' && entry.format.type === 'wcs';
+	};
+
+	const refreshWcsEntries = async (entries: GeoDataEntry[]) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+
+		const wcsEntries = entries.filter(isWcsEntry);
+		await Promise.all(
+			wcsEntries.map(async (entry) => {
+				try {
+					const image = await fetchWcsViewportImage(entry, map);
+					if (!image) return;
+					mapStore.setImage(`${entry.id}_source`, image);
+					wcsTooBroadEntryIds.delete(entry.id);
+				} catch (error) {
+					if (error instanceof WcsViewportTooBroadError) {
+						if (!wcsTooBroadEntryIds.has(entry.id)) {
+							showNotification(
+								'WCS の表示範囲が広すぎます。ズームインして再表示してください。',
+								'warning'
+							);
+							wcsTooBroadEntryIds.add(entry.id);
+						}
+						return;
+					}
+					console.error(error);
+				}
+			})
+		);
 	};
 
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
@@ -616,6 +673,7 @@
 		if (updateId !== styleUpdateId) return;
 
 		mapStore.setStyle(mapStyle);
+		await refreshWcsEntries(entries);
 
 		const tiles3dEntry = entries.filter(
 			(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'

@@ -1,3 +1,6 @@
+import { fromArrayBuffer } from 'geotiff';
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+
 export interface WcsCoverageSummary {
 	id: string;
 	title: string;
@@ -17,6 +20,11 @@ export interface WcsCapabilitiesInfo {
 	serviceUrl: string;
 	supportedFormats: string[];
 	coverages: WcsCoverageSummary[];
+}
+
+export interface WcsCoverageRangeSummary {
+	numBands: number;
+	sampleRanges: { min: number; max: number }[];
 }
 
 const parseXml = (xmlString: string): XMLDocument =>
@@ -95,7 +103,45 @@ const stripKnownParams = (url: URL): URL => {
 };
 
 const getPreferredFormat = (formats: string[]): string =>
-	formats.find((format) => /image\/tiff|geotiff|tif/i.test(format)) ?? formats[0] ?? 'GeoTIFF';
+	formats.find((format) => /image\/(png|webp|jpeg|jpg|gif)/i.test(format)) ??
+	formats.find((format) => /image\/tiff|geotiff|tif/i.test(format)) ??
+	formats[0] ??
+	'GeoTIFF';
+
+const findPreferredCrs = (crsList: string[]): string | null => {
+	const normalized = crsList
+		.map((crs) => crs.trim())
+		.filter(Boolean);
+
+	return (
+		normalized.find((crs) => crs.toUpperCase() === 'OGC:CRS84') ??
+		normalized.find((crs) => crs.toUpperCase() === 'EPSG:4326') ??
+		normalized[0] ??
+		null
+	);
+};
+
+const getAxisSubsetRange = (
+	axisLabel: string,
+	bbox: [number, number, number, number],
+	index: number
+): [number, number] => {
+	const normalized = axisLabel.trim().toLowerCase();
+	if (
+		/^(lon|long|longitude|x|e|east|easting)$/.test(normalized) ||
+		normalized.includes('lon') ||
+		normalized.includes('long')
+	) {
+		return [bbox[0], bbox[2]];
+	}
+	if (
+		/^(lat|latitude|y|n|north|northing)$/.test(normalized) ||
+		normalized.includes('lat')
+	) {
+		return [bbox[1], bbox[3]];
+	}
+	return index === 0 ? [bbox[0], bbox[2]] : [bbox[1], bbox[3]];
+};
 
 export const parseWcsCapabilities = async (url: string): Promise<WcsCapabilitiesInfo | null> => {
 	try {
@@ -284,8 +330,10 @@ export const buildWcsGetCoverageUrl = ({
 		coverageUrl.searchParams.set('coverageId', coverageId);
 		const validAxisLabels = axisLabels?.slice(0, 2).filter(Boolean) ?? [];
 		if (bbox && validAxisLabels.length >= 2) {
-			coverageUrl.searchParams.append('subset', `${validAxisLabels[0]}(${bbox[0]},${bbox[2]})`);
-			coverageUrl.searchParams.append('subset', `${validAxisLabels[1]}(${bbox[1]},${bbox[3]})`);
+			validAxisLabels.forEach((axisLabel, index) => {
+				const [min, max] = getAxisSubsetRange(axisLabel, bbox, index);
+				coverageUrl.searchParams.append('subset', `${axisLabel}(${min},${max})`);
+			});
 		}
 	} else {
 		coverageUrl.searchParams.set('coverage', coverageId);
@@ -307,3 +355,79 @@ export const buildWcsGetCoverageUrl = ({
 };
 
 export const getWcsPreferredFormat = (formats: string[]): string => getPreferredFormat(formats);
+
+export const getWcsPreferredCrs = (crsList: string[]): string =>
+	findPreferredCrs(crsList) ?? 'OGC:CRS84';
+
+const getFiniteMinMax = (data: ArrayLike<number>, nodata: number | null): { min: number; max: number } => {
+	let min = Number.POSITIVE_INFINITY;
+	let max = Number.NEGATIVE_INFINITY;
+
+	for (let i = 0; i < data.length; i++) {
+		const value = data[i];
+		if (!Number.isFinite(value)) continue;
+		if (nodata !== null && value === nodata) continue;
+		if (value < min) min = value;
+		if (value > max) max = value;
+	}
+
+	if (!Number.isFinite(min) || !Number.isFinite(max) || min === max) {
+		return { min: 0, max: 1 };
+	}
+
+	return { min, max };
+};
+
+export const estimateWcsCoverageRange = async ({
+	serviceUrl,
+	version,
+	coverageId,
+	format,
+	axisLabels,
+	bbox,
+	crs,
+	width = 128,
+	height = 128
+}: {
+	serviceUrl: string;
+	version: string;
+	coverageId: string;
+	format: string;
+	axisLabels?: string[];
+	bbox: [number, number, number, number];
+	crs?: string;
+	width?: number;
+	height?: number;
+}): Promise<WcsCoverageRangeSummary | null> => {
+	const coverageUrl = buildWcsGetCoverageUrl({
+		serviceUrl,
+		version,
+		coverageId,
+		format,
+		axisLabels,
+		bbox,
+		crs,
+		width,
+		height
+	});
+
+	const response = await fetchWithDevProxy(coverageUrl);
+	if (!response.ok) {
+		throw new Error(`HTTP ${response.status}`);
+	}
+
+	const tiff = await fromArrayBuffer(await response.arrayBuffer());
+	const image = await tiff.getImage();
+	const nodata = image.getGDALNoData();
+	const numBands = image.getSamplesPerPixel();
+	const sampleIndexes = Array.from({ length: numBands }, (_, index) => index);
+	const rasters = (await image.readRasters({
+		interleave: false,
+		samples: sampleIndexes
+	})) as ArrayLike<number>[];
+
+	return {
+		numBands,
+		sampleRanges: rasters.map((band) => getFiniteMinMax(band, nodata))
+	};
+};

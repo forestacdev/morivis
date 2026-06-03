@@ -69,6 +69,9 @@ import {
 } from '$routes/map/utils/raster/dimension-runtime';
 import { getDemStyleRange, isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 
+const EMPTY_IMAGE_DATA_URL =
+	'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+
 const detectTileScheme = (url: string): 'tms' | 'xyz' => {
 	return url.includes('{-y}') ? 'tms' : 'xyz';
 };
@@ -439,6 +442,12 @@ export const createSourcesItems = async (
 								bounds: metaData.bounds
 							} as RasterSourceSpecification;
 						}
+					} else if (format.type === 'wcs') {
+						items[sourceId] = {
+							type: 'image',
+							url: EMPTY_IMAGE_DATA_URL,
+							coordinates: getBoundingBoxCorners(metaData.bounds)
+						} satisfies ImageSourceSpecification;
 					}
 					break;
 				}

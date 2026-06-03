@@ -70,7 +70,7 @@ export interface TileXYZ {
 	z: ZoomLevel;
 }
 
-export type RasterFormatType = 'image' | 'pmtiles' | 'mbtiles' | 'cog' | 'tiff';
+export type RasterFormatType = 'image' | 'pmtiles' | 'mbtiles' | 'cog' | 'tiff' | 'wcs';
 
 export type TileSize = 512 | 256;
 
@@ -223,6 +223,7 @@ export interface RasterTemporalProperties {
 
 export interface RasterBandProperties {
 	numBands: number;
+	sampleRanges?: { min: number; max: number }[];
 }
 
 export interface RasterProperties {
@@ -277,6 +278,20 @@ export interface RasterCogEntry<T> extends BaseRasterEntry {
 	style: T;
 }
 
+export interface RasterWcsEntry<T> extends BaseRasterEntry {
+	format: {
+		type: 'wcs';
+		url: string;
+		serviceUrl: string;
+		version: string;
+		coverageId: string;
+		outputFormat: string;
+		crs?: string;
+		axisLabels?: string[];
+	};
+	style: T;
+}
+
 // TODO グループ化したスタイルの型を定義する
 export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	format: {
@@ -288,6 +303,7 @@ export type RasterEntry<T> =
 	| RasterImageEntry<T>
 	| RasterPMTilesEntry<T>
 	| RasterMBTilesEntry<T>
-	| RasterCogEntry<T>;
+	| RasterCogEntry<T>
+	| RasterWcsEntry<T>;
 export type RasterDemEntry = RasterEntry<RasterDemStyle>;
 export type RasterCadEntry = RasterEntry<RasterCadStyle>;
