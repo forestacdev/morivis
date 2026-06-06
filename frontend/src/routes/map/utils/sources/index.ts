@@ -9,12 +9,17 @@ import {
 
 import type {
 	DemRangeColorStyle,
+	DerivedBandData,
 	RasterEntry,
 	RasterDemStyle
 } from '$routes/map/data/types/raster';
 import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 
-import type { GeoDataEntry } from '$routes/map/data/types';
+import {
+	type GeoDataEntry,
+	createAdjustableRange,
+	getAdjustableRangeValue
+} from '$routes/map/data/types';
 import {
 	showLabelLayer,
 	showBoundaryLayer,
@@ -97,7 +102,7 @@ const toDemStyleUrlParams = (style: DemRangeColorStyle): string => {
 const getRasterDerivedDefaultStyle = (
 	mode: 'twi' | 'slope' | 'aspect' | 'tpi',
 	range?: { min: number; max: number }
-) => {
+): DerivedBandData => {
 	return {
 		colorMap:
 			mode === 'twi'
@@ -107,8 +112,10 @@ const getRasterDerivedDefaultStyle = (
 					: mode === 'aspect'
 						? 'rainbow-soft'
 						: 'rdbu',
-		min: range?.min ?? (mode === 'aspect' ? 0 : mode === 'slope' ? 0 : -1),
-		max: range?.max ?? (mode === 'aspect' ? 360 : mode === 'slope' ? 90 : 1)
+		range: createAdjustableRange(
+			range?.min ?? (mode === 'aspect' ? 0 : mode === 'slope' ? 0 : -1),
+			range?.max ?? (mode === 'aspect' ? 360 : mode === 'slope' ? 90 : 1)
+		)
 	};
 };
 
@@ -123,7 +130,12 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 
 	if (mode === 'single') {
 		const uniformsData = visualization.uniformsData[mode];
-		return `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
+		const [valueMin, valueMax] = getAdjustableRangeValue(
+			uniformsData.range,
+			uniformsData.min,
+			uniformsData.max
+		);
+		return `${entry.id}_${mode}_${uniformsData.index}_${uniformsData.colorMap}_${valueMin}_${valueMax}_t${timeIdx}`;
 	}
 
 	if (mode === 'twi') {
@@ -133,7 +145,12 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 				'twi',
 				GeoTiffCache.getDataRanges(getTwiCacheKey(entry.id))?.[0]
 			);
-		return `${entry.id}_${mode}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
+		const [valueMin, valueMax] = getAdjustableRangeValue(
+			uniformsData.range,
+			uniformsData.min,
+			uniformsData.max
+		);
+		return `${entry.id}_${mode}_${uniformsData.colorMap}_${valueMin}_${valueMax}_t${timeIdx}`;
 	}
 
 	if (mode === 'slope' || mode === 'aspect' || mode === 'tpi') {
@@ -146,12 +163,32 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 		const uniformsData =
 			visualization.uniformsData[mode] ??
 			getRasterDerivedDefaultStyle(mode, GeoTiffCache.getDataRanges(cacheKey)?.[0]);
-		return `${entry.id}_${mode}_${uniformsData.colorMap}_${uniformsData.min}_${uniformsData.max}_t${timeIdx}`;
+		const [valueMin, valueMax] = getAdjustableRangeValue(
+			uniformsData.range,
+			uniformsData.min,
+			uniformsData.max
+		);
+		return `${entry.id}_${mode}_${uniformsData.colorMap}_${valueMin}_${valueMax}_t${timeIdx}`;
 	}
 
 	if (mode === 'multi') {
 		const uniformsData = visualization.uniformsData[mode];
-		return `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${uniformsData.r.min}_${uniformsData.r.max}_${uniformsData.g.min}_${uniformsData.g.max}_${uniformsData.b.min}_${uniformsData.b.max}_t${timeIdx}`;
+		const [rMin, rMax] = getAdjustableRangeValue(
+			uniformsData.r.range,
+			uniformsData.r.min,
+			uniformsData.r.max
+		);
+		const [gMin, gMax] = getAdjustableRangeValue(
+			uniformsData.g.range,
+			uniformsData.g.min,
+			uniformsData.g.max
+		);
+		const [bMin, bMax] = getAdjustableRangeValue(
+			uniformsData.b.range,
+			uniformsData.b.min,
+			uniformsData.b.max
+		);
+		return `${entry.id}_${mode}_${uniformsData.r.index}_${uniformsData.g.index}_${uniformsData.b.index}_${rMin}_${rMax}_${gMin}_${gMax}_${bMin}_${bMax}_t${timeIdx}`;
 	}
 };
 
@@ -163,8 +200,10 @@ const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiff
 		const currentRange = dataRanges[0];
 		if (!currentRange) return;
 		entry.style.visualization.uniformsData.single.index = 0;
-		entry.style.visualization.uniformsData.single.min = currentRange.min;
-		entry.style.visualization.uniformsData.single.max = currentRange.max;
+		entry.style.visualization.uniformsData.single.range = createAdjustableRange(
+			currentRange.min,
+			currentRange.max
+		);
 		return;
 	}
 
@@ -173,8 +212,7 @@ const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiff
 		if (!currentRange) return;
 		entry.style.visualization.uniformsData.twi = {
 			colorMap: entry.style.visualization.uniformsData.twi?.colorMap ?? 'hsv',
-			min: currentRange.min,
-			max: currentRange.max
+			range: createAdjustableRange(currentRange.min, currentRange.max)
 		};
 		return;
 	}
@@ -198,8 +236,7 @@ const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiff
 			colorMap:
 				current?.colorMap ??
 				(mode === 'slope' ? 'salinity' : mode === 'aspect' ? 'rainbow-soft' : 'rdbu'),
-			min: currentRange.min,
-			max: currentRange.max
+			range: createAdjustableRange(currentRange.min, currentRange.max)
 		};
 		return;
 	}
@@ -210,8 +247,7 @@ const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiff
 		nextRanges.forEach((uniform, index) => {
 			const currentRange = dataRanges[index];
 			if (!currentRange) return;
-			uniform.min = currentRange.min;
-			uniform.max = currentRange.max;
+			uniform.range = createAdjustableRange(currentRange.min, currentRange.max);
 		});
 	}
 };
@@ -426,10 +462,14 @@ export const createSourcesItems = async (
 
 							if (mode === 'single') {
 								const u = visualization.uniformsData.single;
-								tileUrl = `cog://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${u.min}&max=${u.max}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
+								const [uMin, uMax] = getAdjustableRangeValue(u.range, u.min, u.max);
+								tileUrl = `cog://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${uMin}&max=${uMax}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
 							} else {
 								const u = visualization.uniformsData.multi;
-								tileUrl = `cog://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${u.r.min}&rMax=${u.r.max}&gMin=${u.g.min}&gMax=${u.g.max}&bMin=${u.b.min}&bMax=${u.b.max}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
+								const [rMin, rMax] = getAdjustableRangeValue(u.r.range, u.r.min, u.r.max);
+								const [gMin, gMax] = getAdjustableRangeValue(u.g.range, u.g.min, u.g.max);
+								const [bMin, bMax] = getAdjustableRangeValue(u.b.range, u.b.min, u.b.max);
+								tileUrl = `cog://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${rMin}&rMax=${rMax}&gMin=${gMin}&gMax=${gMax}&bMin=${bMin}&bMax=${bMax}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
 							}
 
 							items[sourceId] = {

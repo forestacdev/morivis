@@ -369,7 +369,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '材積による色分け',
 					mapping: {
 						scheme: 'RdPu',
-						range: [0, 5000],
+						range: { value: [0, 5000], domain: [0, 5000] },
 						divisions: 9
 					}
 				},
@@ -379,7 +379,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '面積による色分け',
 					mapping: {
 						scheme: 'RdPu',
-						range: [0, 100],
+						range: { value: [0, 100], domain: [0, 100] },
 						divisions: 9
 					}
 				},
@@ -389,7 +389,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '第一樹種樹立林齢による色分け',
 					mapping: {
 						scheme: 'RdPu',
-						range: [0, 200],
+						range: { value: [0, 200], domain: [0, 200] },
 						divisions: 9
 					}
 				},
@@ -399,7 +399,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '第二樹種樹立林齢による色分け',
 					mapping: {
 						scheme: 'BuGn',
-						range: [0, 200.0],
+						range: { value: [0, 200.0], domain: [0, 200.0] },
 						divisions: 9
 					}
 				},
@@ -409,7 +409,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '第三樹種樹立林齢による色分け',
 					mapping: {
 						scheme: 'BuGn',
-						range: [0, 415.0],
+						range: { value: [0, 415.0], domain: [0, 415.0] },
 						divisions: 9
 					}
 				}

@@ -11,6 +11,7 @@ import {
 	type ModelMeshEntry,
 	type MeshStyle
 } from '$routes/map/data/types/model';
+import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import {
 	calculateModelTransform,
 	type ModelTransform
@@ -151,6 +152,20 @@ export class ThreeJsLayerManager {
 				? sourceMaterial.map
 				: null;
 		const colorRamp = style.heightColorRamp;
+		const [colorRampMin, colorRampMax] = getAdjustableRangeValue(
+			colorRamp?.range,
+			colorRamp?.min,
+			colorRamp?.max,
+			0,
+			1
+		);
+		const [colorRampSourceMin, colorRampSourceMax] = getAdjustableRangeDomain(
+			colorRamp?.range,
+			colorRamp?.sourceMin ?? colorRamp?.min,
+			colorRamp?.sourceMax ?? colorRamp?.max,
+			0,
+			1
+		);
 		const colorRampArray = colorRamp?.enabled
 			? this.colorMapManager.createColorArray(colorRamp.colorMap)
 			: null;
@@ -166,7 +181,7 @@ export class ThreeJsLayerManager {
 					)
 				: null;
 		const colorRampTexture =
-			colorRamp?.enabled && colorRamp.max > colorRamp.min
+			colorRamp?.enabled && colorRampMax > colorRampMin
 				? new THREE.DataTexture(
 						colorRampRgbaArray,
 						1,
@@ -198,10 +213,10 @@ export class ThreeJsLayerManager {
 				uUseMap: { value: Boolean(map) },
 				uColorRamp: { value: colorRampTexture },
 				uUseHeightColorRamp: { value: Boolean(colorRampTexture) },
-				uHeightRampMin: { value: colorRamp?.min ?? 0 },
-				uHeightRampMax: { value: colorRamp?.max ?? 1 },
-				uHeightRampSourceMin: { value: colorRamp?.sourceMin ?? colorRamp?.min ?? 0 },
-				uHeightRampSourceMax: { value: colorRamp?.sourceMax ?? colorRamp?.max ?? 1 }
+				uHeightRampMin: { value: colorRampMin },
+				uHeightRampMax: { value: colorRampMax },
+				uHeightRampSourceMin: { value: colorRampSourceMin },
+				uHeightRampSourceMax: { value: colorRampSourceMax }
 			},
 			vertexShader: `
 				varying vec3 vNormal;

@@ -105,7 +105,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '立木本数による色分け',
 					mapping: {
 						scheme: 'OrRd',
-						range: [0, 100],
+						range: { value: [0, 100], domain: [0, 100] },
 						divisions: 5
 					}
 				}

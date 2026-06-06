@@ -1,4 +1,5 @@
 import type { NumberStepExpression } from '$routes/map/data/types/vector/style';
+import { getAdjustableRangeValue } from '$routes/map/data/types';
 
 export const generateNumberToNumberMap = (
 	mapping: NumberStepExpression['mapping']
@@ -19,7 +20,9 @@ export const generateNumberToNumberMap = (
 	// 	throw new Error(`values.length (${values.length}) must match divisions (${divisions})`);
 	// }
 
-	const [min, max] = range;
+	const [min, max] = Array.isArray(range)
+		? range
+		: getAdjustableRangeValue(range, undefined, undefined);
 	const step = (max - min) / divisions;
 
 	// 境界値：min から max まで等間隔に (divisions + 1) 個

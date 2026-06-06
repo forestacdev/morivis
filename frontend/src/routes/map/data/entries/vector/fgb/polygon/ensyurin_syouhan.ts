@@ -107,7 +107,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '林齢の範囲による色分け',
 					mapping: {
 						scheme: 'BuGn',
-						range: [0, 100],
+						range: { value: [0, 100], domain: [0, 100] },
 						divisions: 5
 					}
 				},
@@ -117,7 +117,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '面積の範囲による色分け',
 					mapping: {
 						scheme: 'Oranges',
-						range: [0, 1],
+						range: { value: [0, 1], domain: [0, 1] },
 						divisions: 5
 					}
 				}

@@ -565,7 +565,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '樹高ごとの色分け',
 					mapping: {
 						scheme: 'YlGn',
-						range: [0, 10],
+						range: { value: [0, 10], domain: [0, 10] },
 						divisions: 5
 					}
 				}

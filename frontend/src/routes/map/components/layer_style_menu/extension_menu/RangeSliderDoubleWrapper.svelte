@@ -1,5 +1,6 @@
 <script lang="ts">
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
+	import type { AdjustableRange } from '$routes/map/data/types';
 	import type { ColorStepExpression } from '$routes/map/data/types/vector/style';
 	import { getSequentSchemeColors } from '$routes/map/utils/color/color-brewer';
 	import { generateStepGradient } from '$routes/map/utils/style/color-mapping';
@@ -9,16 +10,17 @@
 	}
 
 	let { setStepExpression = $bindable() }: Props = $props();
+	const range = setStepExpression.mapping.range as AdjustableRange;
 
-	const rangeMax = $state.raw(setStepExpression.mapping.range[1]);
+	const rangeMax = $state.raw(range.domain[1]);
 
-	const rangeMin = $state.raw(setStepExpression.mapping.range[0]);
+	const rangeMin = $state.raw(range.domain[0]);
 </script>
 
 <RangeSliderDouble
 	label="範囲"
-	bind:lowerValue={setStepExpression.mapping.range[0]}
-	bind:upperValue={setStepExpression.mapping.range[1]}
+	bind:lowerValue={range.value[0]}
+	bind:upperValue={range.value[1]}
 	max={rangeMax}
 	min={rangeMin}
 	step={0.01}

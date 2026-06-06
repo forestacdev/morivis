@@ -1,4 +1,4 @@
-import type { BaseMetaData, Opacity } from '$routes/map/data/types';
+import type { BaseMetaData, Opacity, AdjustableRange } from '$routes/map/data/types';
 import type { Table } from 'apache-arrow';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -64,8 +64,9 @@ export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
 export interface MeshHeightColorRampStyle {
 	enabled: boolean;
 	colorMap: ColorMapType;
-	min: number;
-	max: number;
+	range?: AdjustableRange;
+	min?: number;
+	max?: number;
 	sourceMin?: number;
 	sourceMax?: number;
 	sourceSign?: 1 | -1;

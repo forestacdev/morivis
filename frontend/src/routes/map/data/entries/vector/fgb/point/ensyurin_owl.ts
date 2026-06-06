@@ -163,7 +163,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					name: '樹高の範囲による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [4.0, 20],
+						range: { value: [4.0, 20], domain: [4.0, 20] },
 						divisions: 6
 					}
 				}
@@ -185,7 +185,7 @@ const entry: PointEntry<GeoJsonMetaData> = {
 					key: '胸高直径cm',
 					name: '胸高直径',
 					mapping: {
-						range: [7, 42.5],
+						range: { value: [7, 42.5], domain: [7, 42.5] },
 						values: [5, 10]
 					}
 				}

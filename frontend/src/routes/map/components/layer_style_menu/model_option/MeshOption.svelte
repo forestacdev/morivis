@@ -10,6 +10,7 @@
 	import ColorScaleDem from '$routes/map/components/layer_style_menu/extension_menu/ColorScaleDem.svelte';
 	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
+	import { createAdjustableRange } from '$routes/map/data/types';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
@@ -43,6 +44,14 @@
 
 	const ensureShading = () => {
 		layerEntry.style.shading ??= { ...DEFAULT_MESH_SHADING };
+		if (layerEntry.style.heightColorRamp) {
+			layerEntry.style.heightColorRamp.range ??= createAdjustableRange(
+				layerEntry.style.heightColorRamp.min ?? 0,
+				layerEntry.style.heightColorRamp.max ?? 0,
+				layerEntry.style.heightColorRamp.sourceMin ?? layerEntry.style.heightColorRamp.min ?? 0,
+				layerEntry.style.heightColorRamp.sourceMax ?? layerEntry.style.heightColorRamp.max ?? 0
+			);
+		}
 	};
 
 	ensureShading();
@@ -135,12 +144,10 @@
 
 				<RangeSliderDouble
 					label="高さ範囲"
-					bind:lowerValue={layerEntry.style.heightColorRamp.min}
-					bind:upperValue={layerEntry.style.heightColorRamp.max}
-					min={layerEntry.style.heightColorRamp.sourceMin ??
-						Math.min(layerEntry.style.heightColorRamp.min, layerEntry.style.heightColorRamp.max)}
-					max={layerEntry.style.heightColorRamp.sourceMax ??
-						Math.max(layerEntry.style.heightColorRamp.min, layerEntry.style.heightColorRamp.max)}
+					bind:lowerValue={layerEntry.style.heightColorRamp.range!.value[0]}
+					bind:upperValue={layerEntry.style.heightColorRamp.range!.value[1]}
+					min={layerEntry.style.heightColorRamp.range!.domain[0]}
+					max={layerEntry.style.heightColorRamp.range!.domain[1]}
 					step={0.01}
 					primaryColor={colorMapManager.createSimpleCSSGradient(
 						layerEntry.style.heightColorRamp.colorMap

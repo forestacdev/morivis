@@ -17,6 +17,44 @@ import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
 
 export type GeoDataType = 'raster' | 'vector' | 'model' | 'stylejson';
 export type Opacity = 1 | 0.7 | 0.5 | 0.3;
+export type RangeTuple = [min: number, max: number];
+
+export interface AdjustableRange {
+	value: RangeTuple;
+	domain: RangeTuple;
+}
+
+export const createAdjustableRange = (
+	min: number,
+	max: number,
+	domainMin = min,
+	domainMax = max
+): AdjustableRange => ({
+	value: [min, max],
+	domain: [domainMin, domainMax]
+});
+
+export const getAdjustableRangeValue = (
+	range: AdjustableRange | undefined,
+	legacyMin: number | undefined,
+	legacyMax: number | undefined,
+	fallbackMin = 0,
+	fallbackMax = 0
+): RangeTuple => {
+	if (range) return range.value;
+	return [legacyMin ?? fallbackMin, legacyMax ?? fallbackMax];
+};
+
+export const getAdjustableRangeDomain = (
+	range: AdjustableRange | undefined,
+	legacyMin: number | undefined,
+	legacyMax: number | undefined,
+	fallbackMin = 0,
+	fallbackMax = 0
+): RangeTuple => {
+	if (range) return range.domain;
+	return [legacyMin ?? fallbackMin, legacyMax ?? fallbackMax];
+};
 
 export type AuxiliaryLayerSpecification = LayerSpecification & {
 	clickable?: boolean;

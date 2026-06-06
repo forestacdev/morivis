@@ -1,4 +1,5 @@
 import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
+import { getAdjustableRangeValue } from '$routes/map/data/types';
 
 import type {
 	NumbersStyle,
@@ -36,7 +37,9 @@ export const generateNumberStepExpression = (
 ): DataDrivenPropertyValueSpecification<number> => {
 	const key = expressionData.key;
 	const { range, divisions, values } = expressionData.mapping;
-	const [min, max] = range;
+	const [min, max] = Array.isArray(range)
+		? range
+		: getAdjustableRangeValue(range, undefined, undefined);
 
 	// 'coalesce' を使用して数値以外の場合のデフォルト値を設定
 	const expression: unknown[] = [
@@ -82,7 +85,9 @@ export const generateNumberLinearExpression = (
 	expr: NumberLinearExpression
 ): DataDrivenPropertyValueSpecification<number> => {
 	const { key, mapping } = expr;
-	const [inputMin, inputMax] = mapping.range;
+	const [inputMin, inputMax] = Array.isArray(mapping.range)
+		? mapping.range
+		: getAdjustableRangeValue(mapping.range, undefined, undefined);
 	const [outputMin, outputMax] = mapping.values;
 
 	return [

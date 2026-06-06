@@ -1,4 +1,4 @@
-import type { BaseMetaData, Opacity } from '$routes/map/data/types';
+import type { BaseMetaData, Opacity, AdjustableRange } from '$routes/map/data/types';
 import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
 import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 import type { SequentialCount, SequentialScheme } from '$routes/map/utils/color/color-brewer';
@@ -121,16 +121,18 @@ export type DemStyleModeNum = (typeof DEM_STYLE_TYPE)[keyof typeof DEM_STYLE_TYP
 export interface DemLinearColorStyle {
 	type: 'linear';
 	colorMap: ColormapPresetName;
-	max: number;
-	min: number;
+	range?: AdjustableRange;
+	max?: number;
+	min?: number;
 }
 
 export interface DemStepColorStyle {
 	type: 'step';
 	colorMap: SequentialScheme;
 	divisions: SequentialCount;
-	max: number;
-	min: number;
+	range?: AdjustableRange;
+	max?: number;
+	min?: number;
 }
 
 export type DemRangeColorStyle = DemLinearColorStyle | DemStepColorStyle;
@@ -162,21 +164,23 @@ export type BandTypeKey = 'single' | 'multi' | 'twi' | 'slope' | 'aspect' | 'tpi
 
 export interface ShingleBandData {
 	index: number;
-	min: number;
-	max: number;
+	range?: AdjustableRange;
+	min?: number;
+	max?: number;
 	colorMap: ColorMapType;
 }
 
 export interface DerivedBandData {
-	min: number;
-	max: number;
+	range?: AdjustableRange;
+	min?: number;
+	max?: number;
 	colorMap: ColorMapType;
 }
 
 export interface MultiBandData {
-	r: { index: number; min: number; max: number }; // R
-	g: { index: number; min: number; max: number }; // G
-	b: { index: number; min: number; max: number }; // B
+	r: { index: number; range?: AdjustableRange; min?: number; max?: number }; // R
+	g: { index: number; range?: AdjustableRange; min?: number; max?: number }; // G
+	b: { index: number; range?: AdjustableRange; min?: number; max?: number }; // B
 }
 
 export interface RasterTiffStyle extends BaseRasterStyle {
