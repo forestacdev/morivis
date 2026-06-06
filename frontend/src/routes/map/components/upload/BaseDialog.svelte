@@ -21,6 +21,7 @@
 	import Grib2Form from '$routes/map/components/upload/form/Grib2Form.svelte';
 	import GtfsForm from '$routes/map/components/upload/form/GtfsForm.svelte';
 	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
+	import HritForm from '$routes/map/components/upload/form/HritForm.svelte';
 	import KmlForm from '$routes/map/components/upload/form/KmlForm.svelte';
 	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
 	import LocationHistoryForm from '$routes/map/components/upload/form/LocationHistoryForm.svelte';
@@ -186,6 +187,9 @@
 			{/if}
 			{#if showDialogType === 'grib2'}
 				<Grib2Form bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'hrit'}
+				<HritForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'demxml'}
 				<DemXmlForm bind:showDataEntry bind:showDialogType bind:dropFile />

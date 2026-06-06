@@ -115,6 +115,7 @@ export type DialogType =
 	| 'geophoto'
 	| 'locationhistory'
 	| 'gtfs'
+	| 'hrit'
 	| null;
 
 export interface SupportedFileGroup {
@@ -260,6 +261,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'公共交通の停留所や路線、時刻表のデータです。交通ネットワークや運行情報を地図化するときに使います。',
 		extensions: ['.zip']
+	},
+	{
+		label: 'HRIT/LRIT',
+		description:
+			'気象衛星のHRIT/LRIT配信画像です。静止気象衛星の観測画像をラスターとして読み込むときに使います。',
+		extensions: ['.bz2', '.lrit', '.hrit']
 	},
 	{
 		label: 'DXF',
