@@ -52,8 +52,20 @@
 	};
 
 	const RENDER_MODE_OPTIONS = [
-		{ key: 'geojson', name: 'GeoJSON' },
-		{ key: 'deck', name: 'deck.gl' }
+		{
+			key: 'geojson',
+			name: '2Dで読み込む',
+			description: '通常のGeoJSONレイヤーとして読み込みます。'
+		},
+		{ key: 'deck', name: '3Dで読み込む', description: 'deck.glを使用して3Dで表示します。' }
+	] as const;
+
+	const RENDER_MODE_DESCRIPTIONS = [
+		{
+			key: 'geojson',
+			description: '通常のGeoJSONレイヤーとして読み込みます。'
+		},
+		{ key: 'deck', description: 'deck.glを使用して3Dで表示します。' }
 	] as const;
 
 	let rawGeojson: FeatureCollection | null = null;
@@ -266,6 +278,10 @@
 				bind:group={selectedRenderMode}
 				options={[...RENDER_MODE_OPTIONS]}
 			/>
+
+			<div class="mt-2 text-sm text-gray-500">
+				{RENDER_MODE_DESCRIPTIONS.find((opt) => opt.key === selectedRenderMode)?.description}
+			</div>
 		</div>
 	{/if}
 </div>
