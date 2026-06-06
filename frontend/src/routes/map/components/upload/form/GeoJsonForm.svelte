@@ -18,7 +18,7 @@
 	import {
 		canRender3dGeoJsonWithDeck,
 		has3dGeometryForType
-	} from '$routes/map/utils/formats/geojson-3d';
+	} from '$routes/map/utils/formats/geojson/3d';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
