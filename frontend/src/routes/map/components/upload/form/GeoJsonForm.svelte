@@ -3,6 +3,7 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import { createGeoJson3DEntry } from '$routes/map/data/entries/model';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
@@ -14,6 +15,10 @@
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { fgbFileToGeojson } from '$routes/map/utils/formats/fgb';
 	import { GeoJsonParseError, geoJsonFileToGeoJson } from '$routes/map/utils/formats/geojson';
+	import {
+		canRender3dGeoJsonWithDeck,
+		has3dGeometryForType
+	} from '$routes/map/utils/formats/geojson-3d';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -46,9 +51,15 @@
 		Polygon: 'ポリゴン'
 	};
 
+	const RENDER_MODE_OPTIONS = [
+		{ key: 'geojson', name: 'GeoJSON' },
+		{ key: 'deck', name: 'deck.gl' }
+	] as const;
+
 	let rawGeojson: FeatureCollection | null = null;
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
+	let selectedRenderMode = $state<'deck' | 'geojson'>('geojson');
 
 	const geojsonFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -58,9 +69,36 @@
 	const fileExt = $derived(geojsonFile?.name.split('.').pop()?.toLowerCase() ?? '');
 	const isFgb = $derived(fileExt === 'fgb');
 	const entryName = $derived(geojsonFile?.name.replace(/\.[^.]+$/, '') ?? 'GeoJSONデータ');
+	const selectedGeometryHasZ = $derived.by(() => {
+		if (!rawGeojson || !selectedGeometryType) return false;
+		return has3dGeometryForType(rawGeojson, selectedGeometryType as VectorEntryGeometryType);
+	});
+	const canUseDeckRender = $derived.by(() => {
+		if (!selectedGeometryType || !selectedGeometryHasZ) return false;
+		return canRender3dGeoJsonWithDeck(selectedGeometryType as VectorEntryGeometryType);
+	});
 
 	const readFile = (file: File): Promise<FeatureCollection> =>
 		isFgb ? fgbFileToGeojson(file) : (geoJsonFileToGeoJson(file) as Promise<FeatureCollection>);
+
+	const shouldUseDeckRender = (geojson: FeatureCollection, geometryType: VectorEntryGeometryType) =>
+		selectedRenderMode === 'deck' &&
+		canRender3dGeoJsonWithDeck(geometryType) &&
+		has3dGeometryForType(geojson, geometryType);
+
+	const createEntry = async (
+		geojson: FeatureCollection,
+		geometryType: VectorEntryGeometryType,
+		bbox: [number, number, number, number]
+	) => {
+		if (shouldUseDeckRender(geojson, geometryType)) {
+			return createGeoJson3DEntry(entryName, geojson, geometryType, bbox);
+		}
+
+		return createGeoJsonEntry(geojson, geometryType, entryName, bbox, undefined, {
+			attribution: 'GeoJSON'
+		});
+	};
 
 	// ファイルドロップ時: GeoJSON/FGB → ジオメトリタイプ確認
 	$effect(() => {
@@ -74,7 +112,12 @@
 					if (types.length === 1) {
 						selectedGeometryType = types[0];
 						geometryTypeOptions = [];
-						processGeojson();
+						if (
+							!has3dGeometryForType(rawGeojson, types[0]) ||
+							!canRender3dGeoJsonWithDeck(types[0])
+						) {
+							processGeojson();
+						}
 					} else {
 						geometryTypeOptions = types.map((t) => ({
 							key: t,
@@ -96,6 +139,12 @@
 		}
 	});
 
+	$effect(() => {
+		if (!canUseDeckRender && selectedRenderMode !== 'geojson') {
+			selectedRenderMode = 'geojson';
+		}
+	});
+
 	const processGeojson = async () => {
 		let filtered = rawGeojson;
 		if (rawGeojson && selectedGeometryType) {
@@ -113,13 +162,10 @@
 			showZoneForm = true;
 			focusBbox = bbox as [number, number, number, number];
 		} else {
-			const entry = await createGeoJsonEntry(
+			const entry = await createEntry(
 				filtered,
 				selectedGeometryType as VectorEntryGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				undefined,
-				{ attribution: 'GeoJSON' }
+				bbox as [number, number, number, number]
 			);
 
 			if (entry) {
@@ -161,13 +207,10 @@
 				return;
 			}
 
-			const entry = await createGeoJsonEntry(
+			const entry = await createEntry(
 				geojsonData,
 				selectedGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				undefined,
-				{ attribution: 'GeoJSON' }
+				bbox as [number, number, number, number]
 			);
 
 			if (entry) {
@@ -212,6 +255,16 @@
 				label="ジオメトリタイプを選択"
 				bind:group={selectedGeometryType}
 				bind:options={geometryTypeOptions}
+			/>
+		</div>
+	{/if}
+
+	{#if canUseDeckRender}
+		<div class="w-full p-2">
+			<HorizontalSelectBox
+				label="描画方式を選択"
+				bind:group={selectedRenderMode}
+				options={[...RENDER_MODE_OPTIONS]}
 			/>
 		</div>
 	{/if}

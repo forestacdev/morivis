@@ -1,6 +1,7 @@
 import type { BaseMetaData, Opacity } from '$routes/map/data/types';
 import type { Table } from 'apache-arrow';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 import type {
 	ColorMapType,
 	RasterDiscreteDimension,
@@ -181,6 +182,17 @@ export interface ModelGeoArrowEntry extends BaseModelEntry {
 	style: GeoArrowStyle;
 }
 
+export interface ModelGeoJson3DEntry extends BaseModelEntry {
+	format: {
+		type: 'geojson-3d';
+		data: FeatureCollection;
+		geometryType: VectorEntryGeometryType;
+	};
+	style: GeoArrowStyle;
+}
+
+export type ModelDeckVectorEntry = ModelGeoArrowEntry | ModelGeoJson3DEntry;
+
 export type AnyModelMeshEntry = ModelMeshEntry<MeshStyle> | ModelMeshEntry<PointCloudStyle>;
 
 export type AnyModelTiles3DEntry =
@@ -197,4 +209,4 @@ export type AnyModelEntry =
 	| AnyModelMeshEntry
 	| AnyModelTiles3DEntry
 	| ModelPointCloudEntry
-	| ModelGeoArrowEntry;
+	| ModelDeckVectorEntry;

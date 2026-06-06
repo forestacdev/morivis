@@ -1,10 +1,10 @@
 <script lang="ts">
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
-	import type { ModelGeoArrowEntry } from '$routes/map/data/types/model';
+	import type { ModelDeckVectorEntry } from '$routes/map/data/types/model';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
-		layerEntry: ModelGeoArrowEntry;
+		layerEntry: ModelDeckVectorEntry;
 		showColorOption: boolean;
 	}
 
@@ -14,7 +14,7 @@
 
 	$effect(() => {
 		$state.snapshot(layerEntry.style.color);
-		mapStore.setDeckGeoArrowColor(layerEntry.id, layerEntry.style.color);
+		mapStore.setDeckVectorColor(layerEntry.id, layerEntry.style.color);
 	});
 </script>
 

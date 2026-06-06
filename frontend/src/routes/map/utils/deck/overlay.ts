@@ -1,5 +1,5 @@
 import { Tile3DLayer } from '@deck.gl/geo-layers';
-import { PointCloudLayer } from '@deck.gl/layers';
+import { GeoJsonLayer, PointCloudLayer } from '@deck.gl/layers';
 import {
 	GeoArrowPathLayer,
 	GeoArrowPolygonLayer,
@@ -8,7 +8,9 @@ import {
 
 import type {
 	AnyModelTiles3DEntry,
+	ModelDeckVectorEntry,
 	ModelGeoArrowEntry,
+	ModelGeoJson3DEntry,
 	ModelPointCloudEntry
 } from '$routes/map/data/types/model';
 
@@ -139,7 +141,10 @@ export const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
 	});
 };
 
-export const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
+const isGeoArrowEntry = (dataEntry: ModelDeckVectorEntry): dataEntry is ModelGeoArrowEntry =>
+	dataEntry.format.type === 'geoarrow';
+
+const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
 	dataEntry.format.geometryType === 'Point'
 		? new GeoArrowScatterplotLayer({
 				id: `geoarrow-layer-${dataEntry.id}`,
@@ -183,16 +188,44 @@ export const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
 					beforeId: 'deck-reference-layer'
 				});
 
+const createGeoJson3DLayer = (dataEntry: ModelGeoJson3DEntry) =>
+	new GeoJsonLayer({
+		id: `geojson-3d-layer-${dataEntry.id}`,
+		data: dataEntry.format.data,
+		pickable: dataEntry.interaction.clickable,
+		opacity: dataEntry.style.opacity,
+		visible: dataEntry.style.visible ?? true,
+		pointType: 'circle',
+		stroked: true,
+		filled: true,
+		extruded: false,
+		_full3d: true,
+		lineWidthMinPixels: dataEntry.format.geometryType === 'LineString' ? 2 : 1,
+		pointRadiusMinPixels: 4,
+		getFillColor: hexToRgba(dataEntry.style.color, 180),
+		getLineColor: hexToRgba(dataEntry.style.color, 220),
+		parameters: { depthTest: dataEntry.format.geometryType === 'Polygon' },
+		beforeId: 'deck-reference-layer'
+	});
+
+export const createDeckVectorLayer = (dataEntry: ModelDeckVectorEntry) => {
+	if (isGeoArrowEntry(dataEntry)) {
+		return createGeoArrowLayer(dataEntry);
+	}
+
+	return createGeoJson3DLayer(dataEntry);
+};
+
 export const createDeckOverlay = async (
 	tiles3dEntries: AnyModelTiles3DEntry[],
 	pointCloudEntries: ModelPointCloudEntry[] = [],
-	geoArrowEntries: ModelGeoArrowEntry[] = []
+	deckVectorEntries: ModelDeckVectorEntry[] = []
 ) => {
 	const tiles3dLayers = tiles3dEntries.map((entry) => createTiles3DLayer(entry));
 	const pointCloudLayers = pointCloudEntries
 		.map((entry) => createPointCloudLayer(entry))
 		.filter((layer) => layer !== null);
-	const geoArrowLayers = geoArrowEntries.map((entry) => createGeoArrowLayer(entry));
+	const deckVectorLayers = deckVectorEntries.map((entry) => createDeckVectorLayer(entry));
 
-	return [...tiles3dLayers, ...pointCloudLayers, ...geoArrowLayers];
+	return [...tiles3dLayers, ...pointCloudLayers, ...deckVectorLayers];
 };

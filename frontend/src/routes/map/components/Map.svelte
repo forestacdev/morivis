@@ -31,13 +31,13 @@
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { RasterBaseMapStyle, RasterWcsEntry } from '$routes/map/data/types/raster';
 	import type {
 		AnyModelTiles3DEntry,
-		ModelGeoArrowEntry,
+		ModelDeckVectorEntry,
 		ModelPointCloudEntry
 	} from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import type { RasterBaseMapStyle, RasterWcsEntry } from '$routes/map/data/types/raster';
 	import {
 		type FeatureMenuData,
 		type ClickedLayerFeaturesData,
@@ -701,19 +701,22 @@
 			pointCloudEntries.push(showDataEntry as ModelPointCloudEntry);
 		}
 
-		const geoArrowEntries = entries.filter(
-			(entry) => entry.type === 'model' && entry.format.type === 'geoarrow'
-		) as ModelGeoArrowEntry[];
+		const deckVectorEntries = entries.filter(
+			(entry) =>
+				entry.type === 'model' &&
+				(entry.format.type === 'geoarrow' || entry.format.type === 'geojson-3d')
+		) as ModelDeckVectorEntry[];
 
 		if (
 			showDataEntry &&
 			showDataEntry.type === 'model' &&
-			(showDataEntry as ModelGeoArrowEntry).format.type === 'geoarrow'
+			((showDataEntry as ModelDeckVectorEntry).format.type === 'geoarrow' ||
+				(showDataEntry as ModelDeckVectorEntry).format.type === 'geojson-3d')
 		) {
-			geoArrowEntries.push(showDataEntry as ModelGeoArrowEntry);
+			deckVectorEntries.push(showDataEntry as ModelDeckVectorEntry);
 		}
 
-		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries, geoArrowEntries);
+		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries, deckVectorEntries);
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
 
