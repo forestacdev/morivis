@@ -27,8 +27,28 @@ export interface JmaNowcastConfig {
 	downloadUrl?: string;
 }
 
-const NOWCAST_FALLBACK_BASETIME = '20260517030000';
 let jmaTileUrlsPromise: Promise<TileInfo[]> | null = null;
+
+const getCurrentNowcastFallbackBasetime = () => {
+	const formatter = new Intl.DateTimeFormat('ja-JP', {
+		timeZone: 'Asia/Tokyo',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		hourCycle: 'h23'
+	});
+
+	const parts = formatter.formatToParts(new Date());
+	const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+		parts.find((part) => part.type === type)?.value ?? '';
+
+	const minute = getPart('minute');
+	const roundedMinute = String(Math.floor(Number(minute) / 5) * 5).padStart(2, '0');
+
+	return `${getPart('year')}${getPart('month')}${getPart('day')}${getPart('hour')}${roundedMinute}00`;
+};
 
 /**
  * basetimeを日時に変換する関数
@@ -217,14 +237,15 @@ export const createJmaNowcastRasterEntry = async (
 export const createJmaNowcastFallbackEntry = (
 	config: JmaNowcastConfig
 ): RasterEntry<RasterBaseMapStyle> => {
+	const fallbackBasetime = getCurrentNowcastFallbackBasetime();
 	const entry = createRasterEntry(config.name, createNowcastTileUrl('{morivis:dimension}'), {
 		tileSize: 256,
 		minZoom: 4,
 		maxZoom: 9,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		timeDimension: {
-			values: [NOWCAST_FALLBACK_BASETIME],
-			labels: [formatNowcastTimeLabel(NOWCAST_FALLBACK_BASETIME)]
+			values: [fallbackBasetime],
+			labels: [formatNowcastTimeLabel(fallbackBasetime)]
 		}
 	});
 
