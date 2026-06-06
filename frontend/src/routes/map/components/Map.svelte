@@ -675,11 +675,13 @@
 		mapStore.setStyle(mapStyle);
 		await refreshWcsEntries(entries);
 
-		const tiles3dEntry = entries.filter(
-			(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
-		) as AnyModelTiles3DEntry[];
+		const tiles3dEntry =
+			showDataEntry || showZoneForm
+				? []
+				: (entries.filter(
+						(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
+					) as AnyModelTiles3DEntry[]);
 
-		// プレビュー中の3D Tilesエントリも含める
 		if (
 			showDataEntry &&
 			showDataEntry.type === 'model' &&
@@ -688,10 +690,12 @@
 			tiles3dEntry.push(showDataEntry as AnyModelTiles3DEntry);
 		}
 
-		// LAS/LAZ点群エントリ
-		const pointCloudEntries = entries.filter(
-			(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
-		) as ModelPointCloudEntry[];
+		const pointCloudEntries =
+			showDataEntry || showZoneForm
+				? []
+				: (entries.filter(
+						(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
+					) as ModelPointCloudEntry[]);
 
 		if (
 			showDataEntry &&
@@ -701,11 +705,14 @@
 			pointCloudEntries.push(showDataEntry as ModelPointCloudEntry);
 		}
 
-		const deckVectorEntries = entries.filter(
-			(entry) =>
-				entry.type === 'model' &&
-				(entry.format.type === 'geoarrow' || entry.format.type === 'geojson-3d')
-		) as ModelDeckVectorEntry[];
+		const deckVectorEntries =
+			showDataEntry || showZoneForm
+				? []
+				: (entries.filter(
+						(entry) =>
+							entry.type === 'model' &&
+							(entry.format.type === 'geoarrow' || entry.format.type === 'geojson-3d')
+					) as ModelDeckVectorEntry[]);
 
 		if (
 			showDataEntry &&
@@ -720,20 +727,23 @@
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
 
-		const meshEntries = entries.filter(
-			(entry) =>
-				entry.type === 'model' &&
-				(entry.format.type === 'gltf' ||
-					entry.format.type === 'obj' ||
-					entry.format.type === '3ds' ||
-					entry.format.type === 'dae' ||
-					entry.format.type === '3dm' ||
-					entry.format.type === 'fbx' ||
-					entry.format.type === 'drc' ||
-					entry.format.type === '3mf' ||
-					entry.format.type === 'amf' ||
-					entry.format.type === 'ifc')
-		) as ModelMeshEntry<MeshStyle>[];
+		const meshEntries =
+			showDataEntry || showZoneForm
+				? []
+				: (entries.filter(
+						(entry) =>
+							entry.type === 'model' &&
+							(entry.format.type === 'gltf' ||
+								entry.format.type === 'obj' ||
+								entry.format.type === '3ds' ||
+								entry.format.type === 'dae' ||
+								entry.format.type === '3dm' ||
+								entry.format.type === 'fbx' ||
+								entry.format.type === 'drc' ||
+								entry.format.type === '3mf' ||
+								entry.format.type === 'amf' ||
+								entry.format.type === 'ifc')
+					) as ModelMeshEntry<MeshStyle>[]);
 
 		const previewMeshEntry =
 			showDataEntry && showDataEntry.type === 'model' && showDataEntry.style.type === 'mesh'
