@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { GeoDataEntry, GeoDataEntryCatalogItem } from '$routes/map/data/types';
 import { activeLayerIdsStore } from '$routes/stores/layers';
 
 import type { LayerType } from '$routes/map/utils/entries';
@@ -24,28 +24,50 @@ const initData = (data: GeoDataEntry[]) => {
 const isDev = !import.meta.env.PROD;
 
 type EntryModule = { default: GeoDataEntry };
+type CatalogModule = { default: GeoDataEntryCatalogItem };
 
 const allModules = import.meta.glob<EntryModule>(
-	['$routes/map/data/entries/**/[!_]*.ts', '!**/index.ts', '!**/_*/**'],
+	[
+		'$routes/map/data/entries/**/[!_]*.ts',
+		'!$routes/map/data/entries/lazy/**',
+		'!**/index.ts',
+		'!**/_*/**'
+	],
 	{ eager: true }
 );
 
-const allEntries = Object.values(allModules).map((mod) => mod.default);
+const lazyEntryModules = import.meta.glob<CatalogModule>(
+	['$routes/map/data/entries/lazy/**/[!_]*.ts', '!**/index.ts', '!**/_*/**'],
+	{ eager: true }
+);
+
+const staticEntries = Object.values(allModules).map((mod) => mod.default);
+const lazyCatalogItems = Object.values(lazyEntryModules).map((mod) => mod.default);
+const lazyEntries = lazyCatalogItems.map((item) => item.entry);
+const allEntries = [...staticEntries, ...lazyEntries];
 const debugEntries = isDev ? allEntries.filter((entry) => entry.id.startsWith('!')) : [];
 const hasDebugEntries = debugEntries.length > 0;
 
-const entryModules = hasDebugEntries
-	? Object.fromEntries(
-			Object.entries(allModules).filter(([, mod]) => mod.default.id.startsWith('!'))
-		)
-	: allModules;
+const entryCatalogItems: GeoDataEntryCatalogItem[] = hasDebugEntries
+	? [
+			...Object.values(allModules)
+				.filter((mod) => mod.default.id.startsWith('!'))
+				.map((mod) => ({ entry: mod.default })),
+			...lazyCatalogItems.filter((item) => item.entry.id.startsWith('!'))
+		]
+	: [...Object.values(allModules).map((mod) => ({ entry: mod.default })), ...lazyCatalogItems];
+
+const entryCatalogMap = new Map(entryCatalogItems.map((item) => [item.entry.id, item]));
+const lazyEntryIdSet = new Set(
+	entryCatalogItems.filter((item) => item.loadEntry).map((item) => item.entry.id)
+);
 
 if (hasDebugEntries) {
 	console.warn('デバッグ用データエントリが読み込まれました。');
 	activeLayerIdsStore.setLayers(debugEntries.map((entry) => entry.id));
 }
-export const entries: GeoDataEntry[] = Object.values(entryModules)
-	.map((mod) => mod.default)
+export const entries: GeoDataEntry[] = entryCatalogItems
+	.map((item) => item.entry)
 	.sort((a, b) => a.metaData.name.localeCompare(b.metaData.name, 'ja'));
 
 export const geoDataEntries = (() => {
@@ -71,6 +93,9 @@ const initialEntryStyleMap = new Map<string, GeoDataEntry['style']>(
 	entries.map((entry) => [entry.id, cloneStyle(entry.style)])
 );
 
+const resolvedLazyEntryMap = new Map<string, GeoDataEntry>();
+const inflightLazyEntryMap = new Map<string, Promise<GeoDataEntry>>();
+
 export const registerInitialEntryStyle = (entry: GeoDataEntry) => {
 	if (initialEntryStyleMap.has(entry.id)) return;
 	initialEntryStyleMap.set(entry.id, cloneStyle(entry.style));
@@ -84,6 +109,42 @@ export const getInitialEntryStyle = (entryId: string): GeoDataEntry['style'] | u
 	const style = initialEntryStyleMap.get(entryId);
 	if (!style) return undefined;
 	return cloneStyle(style);
+};
+
+export const findCatalogEntry = (entryId: string): GeoDataEntry | undefined => {
+	return entryCatalogMap.get(entryId)?.entry;
+};
+
+export const isLazyCatalogEntry = (entryId: string): boolean => {
+	return lazyEntryIdSet.has(entryId);
+};
+
+export const resolveGeoDataEntry = async (entryId: string): Promise<GeoDataEntry | null> => {
+	const catalogItem = entryCatalogMap.get(entryId);
+	if (!catalogItem) return null;
+
+	if (!catalogItem.loadEntry) {
+		return catalogItem.entry;
+	}
+
+	const cachedEntry = resolvedLazyEntryMap.get(entryId);
+	if (cachedEntry) return cachedEntry;
+
+	const inflightEntry = inflightLazyEntryMap.get(entryId);
+	if (inflightEntry) return inflightEntry;
+
+	const loadPromise = catalogItem
+		.loadEntry()
+		.then((entry: GeoDataEntry) => {
+			resolvedLazyEntryMap.set(entryId, entry);
+			return entry;
+		})
+		.finally(() => {
+			inflightLazyEntryMap.delete(entryId);
+		});
+
+	inflightLazyEntryMap.set(entryId, loadPromise);
+	return loadPromise;
 };
 
 export const layerDataFuse = new Fuse(geoDataEntries, {

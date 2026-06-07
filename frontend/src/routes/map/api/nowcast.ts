@@ -25,6 +25,7 @@ export interface JmaNowcastConfig {
 	tags?: Tag[];
 	xyzImageTile?: TileXYZ;
 	downloadUrl?: string;
+	mapImage?: string;
 }
 
 let jmaTileUrlsPromise: Promise<TileInfo[]> | null = null;
@@ -230,6 +231,7 @@ export const createJmaNowcastRasterEntry = async (
 	entry.metaData.tags = config.tags ?? ['地図'];
 	entry.metaData.xyzImageTile = config.xyzImageTile ?? { x: 7, y: 3, z: 4 };
 	entry.metaData.downloadUrl = config.downloadUrl;
+	entry.metaData.mapImage = config.mapImage;
 
 	return entry;
 };
@@ -257,6 +259,7 @@ export const createJmaNowcastFallbackEntry = (
 	entry.metaData.tags = config.tags ?? ['地図'];
 	entry.metaData.xyzImageTile = config.xyzImageTile ?? { x: 7, y: 3, z: 4 };
 	entry.metaData.downloadUrl = config.downloadUrl;
+	entry.metaData.mapImage = config.mapImage;
 
 	return entry;
 };

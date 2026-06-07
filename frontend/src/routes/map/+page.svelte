@@ -4,6 +4,7 @@
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat } from 'maplibre-gl';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 
@@ -52,7 +53,12 @@
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
-	import { geoDataEntries } from '$routes/map/data/entries';
+	import {
+		findCatalogEntry,
+		geoDataEntries,
+		isLazyCatalogEntry,
+		resolveGeoDataEntry
+	} from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import type { GeoJsonMetaData, PointEntry, TileMetaData } from '$routes/map/data/types/vector';
@@ -513,9 +519,81 @@
 		}
 	});
 
+	const mergeResolvedLayerEntry = (
+		currentEntry: GeoDataEntry,
+		resolvedEntry: GeoDataEntry
+	): GeoDataEntry => {
+		if (currentEntry.id !== resolvedEntry.id || currentEntry.type !== resolvedEntry.type) {
+			return resolvedEntry;
+		}
+
+		return {
+			...resolvedEntry,
+			style: currentEntry.style,
+			interaction: currentEntry.interaction,
+			...('state' in currentEntry ? { state: currentEntry.state } : {})
+		} as GeoDataEntry;
+	};
+
+	const replaceLayerEntry = (entryId: string, resolvedEntry: GeoDataEntry) => {
+		if (!$activeLayerIdsStore.includes(entryId)) return;
+
+		layerEntries = layerEntries.map((entry) => {
+			if (entry.id !== entryId) return entry;
+			return mergeResolvedLayerEntry(entry, resolvedEntry);
+		});
+	};
+
+	const replaceShowDataEntry = (resolvedEntry: GeoDataEntry) => {
+		if (!showDataEntry || showDataEntry.id !== resolvedEntry.id) return;
+		showDataEntry = mergeResolvedLayerEntry(showDataEntry, resolvedEntry);
+	};
+
+	const pendingLazyEntryIds = new SvelteSet<string>();
+
+	const hydrateLazyLayerEntry = (entryId: string) => {
+		if (!isLazyCatalogEntry(entryId) || pendingLazyEntryIds.has(entryId)) return;
+
+		pendingLazyEntryIds.add(entryId);
+		void resolveGeoDataEntry(entryId)
+			.then((resolvedEntry) => {
+				if (!resolvedEntry) return;
+				replaceLayerEntry(entryId, resolvedEntry);
+			})
+			.catch((error) => {
+				console.error(`レイヤー ${entryId} の遅延読み込みに失敗しました`, error);
+			})
+			.finally(() => {
+				pendingLazyEntryIds.delete(entryId);
+			});
+	};
+
+	$effect(() => {
+		const previewEntry = showDataEntry;
+		const entryId = previewEntry?.id;
+		if (!entryId || !isLazyCatalogEntry(entryId)) return;
+		if (
+			previewEntry?.type !== 'raster' ||
+			previewEntry.properties?.temporal?.dimension.values.length !== 1
+		) {
+			return;
+		}
+
+		void resolveGeoDataEntry(entryId)
+			.then((resolvedEntry) => {
+				if (!resolvedEntry) return;
+				replaceShowDataEntry(resolvedEntry);
+			})
+			.catch((error) => {
+				console.error(`プレビュー用レイヤー ${entryId} の遅延読み込みに失敗しました`, error);
+			});
+	});
+
 	// レイヤーの追加、削除、並び替えを行う
 	activeLayerIdsStore.subscribe((newOrderedIds) => {
 		const currentLayerEntries = [...layerEntries];
+		const currentLayerIds = new Set(currentLayerEntries.map((entry) => entry.id));
+		const dataEntriesMap = new Map(getLayerEntriesData().map((entry) => [entry.id, entry]));
 
 		// 現在の layerEntries をIDをキーとしたマップに変換し、既存のレイヤーオブジェクトを素早く参照できるようにする
 		const currentLayersMap = new Map(currentLayerEntries.map((entry) => [entry.id, entry]));
@@ -531,7 +609,7 @@
 				newLayerEntries.push(layer);
 			} else {
 				// 新しく orderedLayerIds に追加されたレイヤーであれば、layerEntriesData から取得する
-				layer = getLayerEntriesData().find((entry) => entry.id === id);
+				layer = dataEntriesMap.get(id) ?? findCatalogEntry(id);
 
 				if (layer) {
 					// layerEntriesData から取得したオブジェクトを、初期状態として追加
@@ -543,6 +621,12 @@
 
 		// 新しいデータで再レンダリング。
 		layerEntries = newLayerEntries;
+
+		newOrderedIds
+			.filter((id) => !currentLayerIds.has(id))
+			.forEach((id) => {
+				hydrateLazyLayerEntry(id);
+			});
 	});
 
 	const streetViewNodeId = $derived(page.url.searchParams.get('sv'));

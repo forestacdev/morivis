@@ -96,3 +96,8 @@ export type AnyRasterEntry = RasterEntry<
 export type AnyVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;
 
 export type GeoDataEntry = AnyRasterEntry | AnyVectorEntry | AnyModelEntry | StyleJsonEntry;
+
+export interface GeoDataEntryCatalogItem {
+	entry: GeoDataEntry;
+	loadEntry?: () => Promise<GeoDataEntry>;
+}

@@ -17,6 +17,7 @@ export interface HimawariProductConfig {
 	tags?: Tag[];
 	xyzImageTile?: TileXYZ;
 	downloadUrl?: string;
+	mapImage?: string;
 }
 
 const HIMAWARI_FALLBACK_BASETIME = '20260515150000';
@@ -116,6 +117,7 @@ export const createHimawariRasterEntry = async (
 	entry.metaData.tags = config.tags ?? ['写真'];
 	entry.metaData.xyzImageTile = config.xyzImageTile ?? { x: 7, y: 3, z: 3 };
 	entry.metaData.downloadUrl = config.downloadUrl;
+	entry.metaData.mapImage = config.mapImage;
 
 	return entry;
 };
@@ -146,6 +148,7 @@ export const createHimawariFallbackEntry = (
 	entry.metaData.tags = config.tags ?? ['写真'];
 	entry.metaData.xyzImageTile = config.xyzImageTile ?? { x: 7, y: 3, z: 3 };
 	entry.metaData.downloadUrl = config.downloadUrl;
+	entry.metaData.mapImage = config.mapImage;
 
 	return entry;
 };
