@@ -87,6 +87,11 @@ const STATIC_PROXY_RULES: ProxyRule[] = [
 		proxyPath: '/api/ecoris'
 	},
 	{
+		match: 'objects.eodc.eu',
+		target: 'https://objects.eodc.eu',
+		proxyPath: '/api/eodc-objects'
+	},
+	{
 		match: 'ahocevar.com',
 		target: 'https://ahocevar.com',
 		proxyPath: '/api/ahocevar'

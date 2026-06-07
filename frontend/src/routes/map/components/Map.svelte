@@ -37,7 +37,12 @@
 		ModelPointCloudEntry
 	} from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
-	import type { RasterBaseMapStyle, RasterWcsEntry } from '$routes/map/data/types/raster';
+	import type {
+		RasterBaseMapStyle,
+		RasterCogEntry,
+		RasterTiffStyle,
+		RasterWcsEntry
+	} from '$routes/map/data/types/raster';
 	import {
 		type FeatureMenuData,
 		type ClickedLayerFeaturesData,
@@ -49,6 +54,12 @@
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import {
+		clearAllCogViewportImages,
+		fetchCogViewportImage,
+		markCogViewportReady,
+		terminateCogViewportRuntime
+	} from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import {
 		fetchWcsViewportImage,
 		clearAllWcsViewportImages,
@@ -494,12 +505,17 @@
 				layerEntries.filter(isWcsEntry).forEach((entry) => {
 					markWcsViewportReady(entry.id);
 				});
+				layerEntries.filter(isViewportCogEntry).forEach((entry) => {
+					markCogViewportReady(entry.id);
+				});
 				await refreshWcsEntries(layerEntries);
+				await refreshCogEntries(layerEntries);
 			})
 		);
 		styleUpdateUnsubscribers.push(
 			mapStore.onStyleLoad(async () => {
 				await refreshWcsEntries(layerEntries);
+				await refreshCogEntries(layerEntries);
 			})
 		);
 	});
@@ -507,7 +523,9 @@
 	onDestroy(() => {
 		// Svelte storeの購読は明示的に解除しないと、画面破棄後もcallbackが残る。
 		styleUpdateUnsubscribers.forEach((unsubscribe) => unsubscribe());
+		clearAllCogViewportImages();
 		clearAllWcsViewportImages();
+		terminateCogViewportRuntime();
 		if (maplibreMap) {
 			maplibreMap.remove();
 			maplibreMap = null;
@@ -525,6 +543,12 @@
 
 	const isWcsEntry = (entry: GeoDataEntry): entry is RasterWcsEntry<RasterBaseMapStyle> => {
 		return entry.type === 'raster' && entry.format.type === 'wcs';
+	};
+
+	const isViewportCogEntry = (
+		entry: GeoDataEntry
+	): entry is RasterCogEntry<RasterTiffStyle> => {
+		return entry.type === 'raster' && entry.format.type === 'cog' && entry.format.mode !== 'tile';
 	};
 
 	const refreshWcsEntries = async (entries: GeoDataEntry[]) => {
@@ -550,6 +574,24 @@
 						}
 						return;
 					}
+					console.error(error);
+				}
+			})
+		);
+	};
+
+	const refreshCogEntries = async (entries: GeoDataEntry[]) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+
+		const cogEntries = entries.filter(isViewportCogEntry);
+		await Promise.all(
+			cogEntries.map(async (entry) => {
+				try {
+					const image = await fetchCogViewportImage(entry, map);
+					if (!image) return;
+					mapStore.setImage(`${entry.id}_source`, image);
+				} catch (error) {
 					console.error(error);
 				}
 			})
@@ -616,10 +658,20 @@
 			e.type === 'raster' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'cog';
+		const isCogTileEntry = (e: GeoDataEntry) =>
+			isCogEntry(e) &&
+			(e as { format: { mode?: 'tile' | 'viewport' } }).format.mode === 'tile';
 		const hasCogLayer = entries.some(isCogEntry) || (showDataEntry && isCogEntry(showDataEntry));
+		const hasCogTileLayer =
+			entries.some(isCogTileEntry) || (showDataEntry && isCogTileEntry(showDataEntry));
+
+		if (hasCogTileLayer) {
+			mapStore.ensureCogProtocol();
+		} else {
+			mapStore.releaseCogProtocol();
+		}
 
 		if (hasCogLayer) {
-			mapStore.ensureCogProtocol();
 			// 定義済みCOGエントリをCogTileManagerに登録（タイル要求前に完了させる）
 			const cogEntries = [
 				...entries.filter(isCogEntry),
@@ -634,8 +686,6 @@
 					}
 				})
 			);
-		} else {
-			mapStore.releaseCogProtocol();
 		}
 
 		const isMbtilesEntry = (e: GeoDataEntry) =>
@@ -673,7 +723,11 @@
 		if (updateId !== styleUpdateId) return;
 
 		mapStore.setStyle(mapStyle);
+		entries.filter(isViewportCogEntry).forEach((entry) => {
+			markCogViewportReady(entry.id);
+		});
 		await refreshWcsEntries(entries);
+		await refreshCogEntries(entries);
 
 		const tiles3dEntry =
 			showDataEntry || showZoneForm

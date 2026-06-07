@@ -279,6 +279,7 @@ export interface RasterCogEntry<T> extends BaseRasterEntry {
 	format: {
 		type: 'cog';
 		url: string;
+		mode?: 'tile' | 'viewport';
 	};
 	style: T;
 }

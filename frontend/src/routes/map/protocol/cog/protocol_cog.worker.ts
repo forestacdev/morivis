@@ -17,7 +17,7 @@ interface GLContext {
 	texturePool: Map<number, WebGLTexture>;
 }
 
-const glContexts = new Map<number, GLContext>();
+const glContexts = new Map<string, GLContext>();
 
 const loadShader = (
 	gl: WebGL2RenderingContext,
@@ -53,11 +53,12 @@ const createProgram = (gl: WebGL2RenderingContext, vs: string, fs: string): WebG
 	return program;
 };
 
-const getOrCreateContext = (tileSize: number): GLContext => {
-	let ctx = glContexts.get(tileSize);
+const getOrCreateContext = (targetWidth: number, targetHeight: number): GLContext => {
+	const contextKey = `${targetWidth}x${targetHeight}`;
+	let ctx = glContexts.get(contextKey);
 	if (ctx) return ctx;
 
-	const canvas = new OffscreenCanvas(tileSize, tileSize);
+	const canvas = new OffscreenCanvas(targetWidth, targetHeight);
 	const gl = canvas.getContext('webgl2');
 	if (!gl) throw new Error('WebGL2 not supported');
 
@@ -65,7 +66,7 @@ const getOrCreateContext = (tileSize: number): GLContext => {
 	const multiProgram = createProgram(gl, vsSource, fsMulti);
 
 	ctx = { canvas, gl, singleProgram, multiProgram, texturePool: new Map() };
-	glContexts.set(tileSize, ctx);
+	glContexts.set(contextKey, ctx);
 	return ctx;
 };
 
@@ -238,6 +239,9 @@ async function processMessage(e: MessageEvent) {
 		tileId,
 		mode,
 		tileSize = 256,
+		targetWidth = tileSize,
+		targetHeight = tileSize,
+		preferBlob = false,
 		triangles,
 		srcWidth,
 		srcHeight,
@@ -268,9 +272,9 @@ async function processMessage(e: MessageEvent) {
 	} = e.data;
 
 	try {
-		const ctx = getOrCreateContext(tileSize);
+		const ctx = getOrCreateContext(targetWidth, targetHeight);
 		const { canvas, gl } = ctx;
-		gl.viewport(0, 0, tileSize, tileSize);
+		gl.viewport(0, 0, targetWidth, targetHeight);
 		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -313,12 +317,16 @@ async function processMessage(e: MessageEvent) {
 			drawMesh(gl, program, triangles);
 		}
 
-		const result = await convertCanvasToResult(canvas);
+		const result = preferBlob
+			? await canvas.convertToBlob({ type: 'image/png' })
+			: await convertCanvasToResult(canvas);
 
-		if (result instanceof ImageBitmap) {
+		if (!preferBlob && result instanceof ImageBitmap) {
 			self.postMessage({ id: tileId, imageBitmap: result }, { transfer: [result] });
 		} else {
-			const buffer = await result.arrayBuffer();
+			const blob =
+				result instanceof Blob ? result : await canvas.convertToBlob({ type: 'image/png' });
+			const buffer = await blob.arrayBuffer();
 			self.postMessage({ id: tileId, buffer });
 		}
 	} catch (error) {

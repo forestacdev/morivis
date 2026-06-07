@@ -454,6 +454,15 @@ export const createSourcesItems = async (
 						} as RasterSourceSpecification;
 					} else if (format.type === 'cog') {
 						if (style.type === 'tiff') {
+							if (format.mode !== 'tile') {
+								items[sourceId] = {
+									type: 'image',
+									url: EMPTY_IMAGE_DATA_URL,
+									coordinates: getBoundingBoxCorners(metaData.bounds)
+								} satisfies ImageSourceSpecification;
+								break;
+							}
+
 							const cogMeta = CogTileManager.getMetadata(entry.id);
 							const tileSize = cogMeta?.tileSize ?? metaData.tileSize;
 							const visualization = style.visualization;

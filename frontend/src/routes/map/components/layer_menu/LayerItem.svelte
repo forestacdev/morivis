@@ -15,6 +15,7 @@
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import { clearCogViewportImage } from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
@@ -196,6 +197,13 @@
 		}
 		if (layerEntry.type === 'raster' && layerEntry.format.type === 'wcs') {
 			clearWcsViewportImage(layerEntry.id);
+		}
+		if (
+			layerEntry.type === 'raster' &&
+			layerEntry.format.type === 'cog' &&
+			layerEntry.format.mode !== 'tile'
+		) {
+			clearCogViewportImage(layerEntry.id);
 		}
 
 		activeLayerIdsStore.remove(layerEntry.id);

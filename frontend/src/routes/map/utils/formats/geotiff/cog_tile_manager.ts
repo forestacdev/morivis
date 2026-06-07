@@ -7,6 +7,7 @@
 import { fromUrl, type GeoTIFF, type GeoTIFFImage } from 'geotiff';
 import proj4 from 'proj4';
 import { buildTriangulation, type Triangle } from './triangulation';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 export interface CogMetadata {
 	/** フル解像度の幅 */
@@ -93,6 +94,10 @@ const cogDegreesPerPixel = (bbox: [number, number, number, number], width: numbe
 /** ズームレベルに最適なオーバービューを選択 */
 const selectOverviewForZoom = (conn: CogConnection, z: number, tileSize: number): GeoTIFFImage => {
 	const targetDpp = degreesPerPixel(z, tileSize);
+	return selectOverviewForResolution(conn, targetDpp);
+};
+
+const selectOverviewForResolution = (conn: CogConnection, targetDpp: number): GeoTIFFImage => {
 	const { overviews, bbox, fullWidth } = conn.metadata;
 
 	// フル解像度のdpp
@@ -207,7 +212,7 @@ export const CogTileManager = {
 		if (existing)
 			return { metadata: existing.metadata, sampleBands: [], sampleWidth: 0, sampleHeight: 0 };
 
-		const tiff = await fromUrl(url);
+		const tiff = await fromUrl(resolveRequestUrl(url));
 		const fullImage = await tiff.getImage();
 		const fullWidth = fullImage.getWidth();
 		const fullHeight = fullImage.getHeight();
@@ -439,6 +444,116 @@ export const CogTileManager = {
 
 		tileCacheSet(cacheKey, result);
 		return result;
+	},
+
+	readViewport: async (
+		entryId: string,
+		targetExtent: [number, number, number, number],
+		targetWidth: number,
+		targetHeight: number
+	): Promise<TileResult | null> => {
+		const conn = connections.get(entryId);
+		if (!conn) return null;
+
+		const { bbox } = conn.metadata;
+		const { nativeBbox, projName } = conn;
+
+		if (
+			targetExtent[2] <= bbox[0] ||
+			targetExtent[0] >= bbox[2] ||
+			targetExtent[3] <= bbox[1] ||
+			targetExtent[1] >= bbox[3]
+		) {
+			return null;
+		}
+
+		const lonSpan = Math.max(1e-9, targetExtent[2] - targetExtent[0]);
+		const latSpan = Math.max(1e-9, targetExtent[3] - targetExtent[1]);
+		const targetDpp = Math.max(lonSpan / Math.max(targetWidth, 1), latSpan / Math.max(targetHeight, 1));
+		const image = selectOverviewForResolution(conn, targetDpp);
+		const imgWidth = image.getWidth();
+		const imgHeight = image.getHeight();
+
+		if (projName) {
+			const { triangles, sourceExtent } = buildTriangulation(targetExtent, projName);
+			const cogXRange = nativeBbox[2] - nativeBbox[0];
+			const cogYRange = nativeBbox[3] - nativeBbox[1];
+
+			const pxLeft = Math.floor(((sourceExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth);
+			const pxRight = Math.ceil(((sourceExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth);
+			const pxTop = Math.floor(((nativeBbox[3] - sourceExtent[3]) / cogYRange) * imgHeight);
+			const pxBottom = Math.ceil(((nativeBbox[3] - sourceExtent[1]) / cogYRange) * imgHeight);
+
+			const winLeft = Math.max(0, pxLeft);
+			const winTop = Math.max(0, pxTop);
+			const winRight = Math.min(imgWidth, pxRight);
+			const winBottom = Math.min(imgHeight, pxBottom);
+			const winWidth = winRight - winLeft;
+			const winHeight = winBottom - winTop;
+			if (winWidth <= 0 || winHeight <= 0) return null;
+
+			const rasters = await image.readRasters({
+				window: [winLeft, winTop, winRight, winBottom],
+				width: targetWidth,
+				height: targetHeight
+			});
+
+			const bands: (Float32Array | Uint8Array | Uint16Array)[] = [];
+			for (let i = 0; i < rasters.length; i++) {
+				bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
+			}
+
+			const actualLeft = nativeBbox[0] + (winLeft / imgWidth) * cogXRange;
+			const actualRight = nativeBbox[0] + (winRight / imgWidth) * cogXRange;
+			const actualTop = nativeBbox[3] - (winTop / imgHeight) * cogYRange;
+			const actualBottom = nativeBbox[3] - (winBottom / imgHeight) * cogYRange;
+			const actXRange = Math.max(1e-9, actualRight - actualLeft);
+			const actYRange = Math.max(1e-9, actualTop - actualBottom);
+
+			const uvTriangles: Triangle[] = triangles.map((tri) => ({
+				target: tri.target,
+				source: tri.source.map(([sx, sy]) => [
+					(sx - actualLeft) / actXRange,
+					(actualTop - sy) / actYRange
+				]) as [number, number][]
+			}));
+
+			return {
+				bands,
+				srcWidth: targetWidth,
+				srcHeight: targetHeight,
+				triangles: uvTriangles
+			};
+		}
+
+		const cogXRange = nativeBbox[2] - nativeBbox[0];
+		const cogYRange = nativeBbox[3] - nativeBbox[1];
+
+		const pxLeft = Math.floor(((targetExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth);
+		const pxRight = Math.ceil(((targetExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth);
+		const pxTop = Math.floor(((nativeBbox[3] - targetExtent[3]) / cogYRange) * imgHeight);
+		const pxBottom = Math.ceil(((nativeBbox[3] - targetExtent[1]) / cogYRange) * imgHeight);
+
+		const winLeft = Math.max(0, pxLeft);
+		const winTop = Math.max(0, pxTop);
+		const winRight = Math.min(imgWidth, pxRight);
+		const winBottom = Math.min(imgHeight, pxBottom);
+		const winWidth = winRight - winLeft;
+		const winHeight = winBottom - winTop;
+		if (winWidth <= 0 || winHeight <= 0) return null;
+
+		const rasters = await image.readRasters({
+			window: [winLeft, winTop, winRight, winBottom],
+			width: targetWidth,
+			height: targetHeight
+		});
+
+		const bands: (Float32Array | Uint8Array | Uint16Array)[] = [];
+		for (let i = 0; i < rasters.length; i++) {
+			bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
+		}
+
+		return { bands, srcWidth: targetWidth, srcHeight: targetHeight, triangles: null };
 	},
 
 	/** メタデータを取得 */
