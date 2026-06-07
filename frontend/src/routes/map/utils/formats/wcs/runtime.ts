@@ -20,7 +20,10 @@ export class WcsViewportTooBroadError extends Error {
 	}
 }
 
-const getFiniteMinMax = (data: ArrayLike<number>, nodata: number | null): { min: number; max: number } => {
+const getFiniteMinMax = (
+	data: ArrayLike<number>,
+	nodata: number | null
+): { min: number; max: number } => {
 	let min = Number.POSITIVE_INFINITY;
 	let max = Number.NEGATIVE_INFINITY;
 
@@ -75,7 +78,9 @@ const bboxToCoordinates = (bbox: [number, number, number, number]): Coordinates 
 const extractServiceException = (text: string): string | null => {
 	const xml = new DOMParser().parseFromString(text, 'text/xml');
 	return (
-		xml.querySelector('ExceptionText, ows\\:ExceptionText, ServiceException')?.textContent?.trim() ??
+		xml
+			.querySelector('ExceptionText, ows\\:ExceptionText, ServiceException')
+			?.textContent?.trim() ??
 		xml.documentElement.textContent?.trim() ??
 		null
 	);
@@ -145,8 +150,7 @@ const renderTiffToBlob = async (
 		for (let i = 0; i < width * height; i++) {
 			const offset = i * 4;
 			const value = band[i];
-			const isTransparent =
-				(nodata !== null && value === nodata) || !Number.isFinite(value);
+			const isTransparent = (nodata !== null && value === nodata) || !Number.isFinite(value);
 
 			if (isTransparent) {
 				rgba[offset + 3] = 0;
@@ -221,7 +225,8 @@ export const fetchWcsViewportImage = async (
 	if (!response.ok) {
 		const errorText = await response.text().catch(() => '');
 		const serviceException =
-			extractServiceException(errorText) ?? `WCS GetCoverage に失敗しました (HTTP ${response.status})`;
+			extractServiceException(errorText) ??
+			`WCS GetCoverage に失敗しました (HTTP ${response.status})`;
 		console.warn('[WCS request failed]', {
 			status: response.status,
 			requestUrl,
@@ -241,7 +246,10 @@ export const fetchWcsViewportImage = async (
 		throw new Error(extractServiceException(text) ?? 'WCS が画像ではなく XML/HTML を返しました');
 	}
 
-	if (TIFF_CONTENT_TYPE_RE.test(contentType) || TIFF_CONTENT_TYPE_RE.test(entry.format.outputFormat)) {
+	if (
+		TIFF_CONTENT_TYPE_RE.test(contentType) ||
+		TIFF_CONTENT_TYPE_RE.test(entry.format.outputFormat)
+	) {
 		blob = await renderTiffToBlob(
 			await response.arrayBuffer(),
 			width,

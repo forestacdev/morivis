@@ -37,7 +37,10 @@ const splitLines = (text: string): string[] =>
 	text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
 
 const mapMifCharsetToEncoding = (charset: string): string | null => {
-	const normalized = charset.trim().toLowerCase().replace(/[-_\s]/g, '');
+	const normalized = charset
+		.trim()
+		.toLowerCase()
+		.replace(/[-_\s]/g, '');
 
 	if (
 		normalized === 'shiftjis' ||
@@ -833,9 +836,7 @@ export const mifFilesToGeoJson = async (
 	const mifText = await readFileAsText(mifFile);
 	const lines = splitLines(mifText);
 	const { delimiter, columns, dataIndex } = readHeader(lines);
-	const propertiesList = midFile
-		? parseMid(await readFileAsText(midFile), delimiter, columns)
-		: [];
+	const propertiesList = midFile ? parseMid(await readFileAsText(midFile), delimiter, columns) : [];
 	const reader = new MifLineReader(lines);
 
 	const features: Feature<Geometry, FeatureProp>[] = [];

@@ -30,12 +30,13 @@ export const getTemporalFilter = (entry: GeoDataEntry): FilterSpecification | un
 			: undefined);
 	if (!temporalConfig) return undefined;
 
-	const filterBehavior = 'behaviors' in temporalConfig
-		? getVectorTemporalFilterBehavior(temporalConfig)
-		: {
-				key: temporalConfig.key,
-				alternateKeys: []
-			};
+	const filterBehavior =
+		'behaviors' in temporalConfig
+			? getVectorTemporalFilterBehavior(temporalConfig)
+			: {
+					key: temporalConfig.key,
+					alternateKeys: []
+				};
 	if (!filterBehavior) return undefined;
 
 	const temporalKeys = [filterBehavior.key, ...(filterBehavior.alternateKeys ?? [])].filter(

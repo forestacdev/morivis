@@ -274,7 +274,9 @@
 			await prepareGeojson(readText());
 		} catch (error) {
 			showNotification(
-				error instanceof GeoJsonParseError ? error.message : 'GeoJSONテキストの読み込みに失敗しました',
+				error instanceof GeoJsonParseError
+					? error.message
+					: 'GeoJSONテキストの読み込みに失敗しました',
 				'error'
 			);
 			console.error(error);

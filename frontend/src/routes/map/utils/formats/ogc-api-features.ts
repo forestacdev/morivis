@@ -110,7 +110,12 @@ const getLinkHref = (json: JsonObject, rels: string[]): string | null => {
 
 const normalizeServiceUrls = (
 	inputUrl: string
-): { rootUrl: string; collectionsUrl: string; selectedCollectionId: string | null; itemsUrl: string | null } => {
+): {
+	rootUrl: string;
+	collectionsUrl: string;
+	selectedCollectionId: string | null;
+	itemsUrl: string | null;
+} => {
 	const url = new URL(inputUrl);
 	const segments = url.pathname.split('/').filter(Boolean);
 	const collectionsIndex = segments.findIndex((segment) => segment === 'collections');
@@ -167,8 +172,9 @@ const fetchCollectionsFromLandingPage = async (
 					: null
 			)
 			.filter(
-				(collection: OgcApiFeaturesCollectionSummary | null): collection is OgcApiFeaturesCollectionSummary =>
-					collection !== null
+				(
+					collection: OgcApiFeaturesCollectionSummary | null
+				): collection is OgcApiFeaturesCollectionSummary => collection !== null
 			)
 	};
 };
@@ -231,8 +237,9 @@ export const parseOgcApiFeaturesService = async (
 							: null
 					)
 					.filter(
-						(collection: OgcApiFeaturesCollectionSummary | null): collection is OgcApiFeaturesCollectionSummary =>
-							collection !== null
+						(
+							collection: OgcApiFeaturesCollectionSummary | null
+						): collection is OgcApiFeaturesCollectionSummary => collection !== null
 					);
 
 				return {
@@ -313,7 +320,7 @@ export const fetchOgcApiFeaturesFeatureCollection = async ({
 		throw new Error('Items response is not a FeatureCollection');
 	}
 
-	return normalizeGeoJsonGeometryCollections(json as Parameters<
-		typeof normalizeGeoJsonGeometryCollections
-	>[0]);
+	return normalizeGeoJsonGeometryCollections(
+		json as Parameters<typeof normalizeGeoJsonGeometryCollections>[0]
+	);
 };

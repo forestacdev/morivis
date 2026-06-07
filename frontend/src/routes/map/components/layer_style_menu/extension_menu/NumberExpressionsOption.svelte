@@ -17,12 +17,8 @@
 	});
 	const linearRange =
 		setExpression.type === 'linear' ? (setExpression.mapping.range as AdjustableRange) : null;
-	const rangeMin = $state.raw(
-		setExpression.type === 'linear' ? linearRange!.domain[0] : 0
-	);
-	const rangeMax = $state.raw(
-		setExpression.type === 'linear' ? linearRange!.domain[1] : 0
-	);
+	const rangeMin = $state.raw(setExpression.type === 'linear' ? linearRange!.domain[0] : 0);
+	const rangeMax = $state.raw(setExpression.type === 'linear' ? linearRange!.domain[1] : 0);
 </script>
 
 {#if setExpression}

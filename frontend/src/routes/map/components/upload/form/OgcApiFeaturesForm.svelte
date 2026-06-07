@@ -83,7 +83,9 @@
 	const hasPendingGeometrySelection = $derived(
 		!!rawGeojson && geometryTypeOptions.length > 1 && !!selectedGeometryType
 	);
-	const entryName = $derived(selectedCollection?.title || selectedCollectionId || 'OGC API - Features');
+	const entryName = $derived(
+		selectedCollection?.title || selectedCollectionId || 'OGC API - Features'
+	);
 
 	$effect(() => {
 		try {
@@ -309,7 +311,11 @@
 		}}
 	>
 		<div class="grow">
-			<TextForm bind:value={forms.url} label="API URL / collections URL / items URL" error={urlErrors.url} />
+			<TextForm
+				bind:value={forms.url}
+				label="API URL / collections URL / items URL"
+				error={urlErrors.url}
+			/>
 		</div>
 	</form>
 

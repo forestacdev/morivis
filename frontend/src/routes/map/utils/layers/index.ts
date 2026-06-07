@@ -450,8 +450,7 @@ export const createLayersItems = (
 											'raster-opacity':
 												layerWithoutClickable.paint?.['raster-opacity'] ?? rasterStyle.opacity,
 											'raster-hue-rotate':
-												layerWithoutClickable.paint?.['raster-hue-rotate'] ??
-												rasterStyle.hueRotate,
+												layerWithoutClickable.paint?.['raster-hue-rotate'] ?? rasterStyle.hueRotate,
 											'raster-brightness-max':
 												layerWithoutClickable.paint?.['raster-brightness-max'] ??
 												rasterStyle.brightnessMax,
@@ -468,17 +467,16 @@ export const createLayersItems = (
 										? {
 												...layerWithoutClickable.paint,
 												'raster-opacity':
-													layerWithoutClickable.paint?.['raster-opacity'] ??
-													rasterStyle.opacity,
+													layerWithoutClickable.paint?.['raster-opacity'] ?? rasterStyle.opacity,
 												'raster-resampling':
 													layerWithoutClickable.paint?.['raster-resampling'] ??
-													(rasterStyle.resampling ?? 'linear')
+													rasterStyle.resampling ??
+													'linear'
 											}
 										: {
 												...layerWithoutClickable.paint,
 												'raster-opacity':
-													layerWithoutClickable.paint?.['raster-opacity'] ??
-													rasterStyle.opacity
+													layerWithoutClickable.paint?.['raster-opacity'] ?? rasterStyle.opacity
 											}
 						};
 						rasterLayerItems.push(layerItem);

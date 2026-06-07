@@ -469,7 +469,10 @@ export const CogTileManager = {
 
 		const lonSpan = Math.max(1e-9, targetExtent[2] - targetExtent[0]);
 		const latSpan = Math.max(1e-9, targetExtent[3] - targetExtent[1]);
-		const targetDpp = Math.max(lonSpan / Math.max(targetWidth, 1), latSpan / Math.max(targetHeight, 1));
+		const targetDpp = Math.max(
+			lonSpan / Math.max(targetWidth, 1),
+			latSpan / Math.max(targetHeight, 1)
+		);
 		const image = selectOverviewForResolution(conn, targetDpp);
 		const imgWidth = image.getWidth();
 		const imgHeight = image.getHeight();

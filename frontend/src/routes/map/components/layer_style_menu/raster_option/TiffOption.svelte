@@ -148,9 +148,7 @@
 		}
 	};
 
-	const createDerivedDefaultStyle = (
-		mode: 'twi' | 'slope' | 'aspect' | 'tpi'
-	): DerivedBandData => {
+	const createDerivedDefaultStyle = (mode: 'twi' | 'slope' | 'aspect' | 'tpi'): DerivedBandData => {
 		if (mode === 'twi') {
 			return {
 				colorMap: 'hsv',
@@ -461,8 +459,10 @@
 								const newIdx = layerEntry.style.visualization.uniformsData.multi[key].index;
 								const newRange = dataRanges?.[newIdx];
 								if (newRange) {
-									layerEntry.style.visualization.uniformsData.multi[key].range =
-										toAdjustableRange(newRange.min, newRange.max);
+									layerEntry.style.visualization.uniformsData.multi[key].range = toAdjustableRange(
+										newRange.min,
+										newRange.max
+									);
 								}
 							}}
 						>
@@ -475,8 +475,10 @@
 					<div class="">
 						<RangeSliderDouble
 							label="範囲"
-							bind:lowerValue={layerEntry.style.visualization.uniformsData.multi[key].range!.value[0]}
-							bind:upperValue={layerEntry.style.visualization.uniformsData.multi[key].range!.value[1]}
+							bind:lowerValue={layerEntry.style.visualization.uniformsData.multi[key].range!
+								.value[0]}
+							bind:upperValue={layerEntry.style.visualization.uniformsData.multi[key].range!
+								.value[1]}
 							min={layerEntry.style.visualization.uniformsData.multi[key].range!.domain[0]}
 							max={layerEntry.style.visualization.uniformsData.multi[key].range!.domain[1]}
 							step={calcStep(range?.min ?? 0, range?.max ?? 65535)}

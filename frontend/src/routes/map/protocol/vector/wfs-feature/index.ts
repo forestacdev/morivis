@@ -65,9 +65,9 @@ class WorkerProtocol {
 		const text = await response.text();
 		const contentType = response.headers.get('content-type') ?? '';
 		if (isGeoJsonContent(contentType, text, outputFormat)) {
-			return normalizeGeoJsonGeometryCollections(JSON.parse(text) as Parameters<
-				typeof normalizeGeoJsonGeometryCollections
-			>[0]);
+			return normalizeGeoJsonGeometryCollections(
+				JSON.parse(text) as Parameters<typeof normalizeGeoJsonGeometryCollections>[0]
+			);
 		}
 
 		return gmlTextToGeoJson(text);
@@ -108,11 +108,7 @@ class WorkerProtocol {
 				srsName: decodeURIComponent(srsName)
 			});
 			const { signal } = abortController;
-			const geojson = await this.fetchGeojson(
-				requestUrl,
-				decodeURIComponent(outputFormat),
-				signal
-			);
+			const geojson = await this.fetchGeojson(requestUrl, decodeURIComponent(outputFormat), signal);
 
 			if (!geojson.features || geojson.features.length === 0) {
 				const empty = new Uint8Array();

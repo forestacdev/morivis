@@ -579,8 +579,7 @@ export const createSourcesItems = async (
 							bounds: metaData.bounds
 						} as VectorSourceSpecification;
 					} else if (format.type === 'ogc-feature') {
-						const sourceLayer =
-							'sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer';
+						const sourceLayer = 'sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer';
 						items[sourceId] = {
 							type: 'vector',
 							tiles: [
@@ -593,10 +592,8 @@ export const createSourcesItems = async (
 							bounds: metaData.bounds
 						} as VectorSourceSpecification;
 					} else if (format.type === 'wfs-feature') {
-						const sourceLayer =
-							'sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer';
-						const version =
-							'version' in entry.metaData ? String(entry.metaData.version ?? '') : '';
+						const sourceLayer = 'sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer';
+						const version = 'version' in entry.metaData ? String(entry.metaData.version ?? '') : '';
 						const outputFormat =
 							'outputFormat' in entry.metaData
 								? String(entry.metaData.outputFormat ?? 'application/json')

@@ -274,9 +274,7 @@ const parseHritMetadata = (buffer: ArrayBufferLike): HritMetadata => {
 				loff = view.getInt32(offset + 47, false);
 				break;
 			case 3:
-				dataDefinitionText = decoder.decode(
-					new Uint8Array(buffer, offset + 3, headerLength - 3)
-				);
+				dataDefinitionText = decoder.decode(new Uint8Array(buffer, offset + 3, headerLength - 3));
 				break;
 			case 4:
 				annotation = decoder.decode(new Uint8Array(buffer, offset + 3, headerLength - 3));
@@ -396,7 +394,8 @@ const pixelToLonLat = (column: number, row: number, metadata: HritMetadata): Lon
 	const sinY = Math.sin(y);
 	const a = cosY * cosY + EARTH_EQUATORIAL_OVER_POLAR * sinY * sinY;
 	const b = -2 * SATELLITE_DISTANCE_KM * cosX * cosY;
-	const c = SATELLITE_DISTANCE_KM * SATELLITE_DISTANCE_KM -
+	const c =
+		SATELLITE_DISTANCE_KM * SATELLITE_DISTANCE_KM -
 		EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM;
 	const discriminant = b * b - 4 * a * c;
 
@@ -409,9 +408,7 @@ const pixelToLonLat = (column: number, row: number, metadata: HritMetadata): Lon
 	const s3 = -sn * sinY;
 	const lon = normalizeLon((subLonRad + Math.atan2(s2, s1)) * RAD2DEG);
 	const lat =
-		Math.atan(
-			EARTH_EQUATORIAL_OVER_POLAR * (s3 / Math.sqrt(s1 * s1 + s2 * s2))
-		) * RAD2DEG;
+		Math.atan(EARTH_EQUATORIAL_OVER_POLAR * (s3 / Math.sqrt(s1 * s1 + s2 * s2))) * RAD2DEG;
 
 	return { lon, lat };
 };
@@ -554,7 +551,10 @@ const readHritSegment = async (file: File): Promise<ParsedHritSegment> => {
 	const input = new Uint8Array(await file.arrayBuffer());
 	const isBz2 = /\.bz2$/i.test(file.name);
 	const payload = isBz2 ? decompressBz2(input) : input;
-	const hritBuffer = payload.buffer.slice(payload.byteOffset, payload.byteOffset + payload.byteLength);
+	const hritBuffer = payload.buffer.slice(
+		payload.byteOffset,
+		payload.byteOffset + payload.byteLength
+	);
 	const metadata = parseHritMetadata(hritBuffer);
 
 	if (metadata.fileTypeCode !== 0) {

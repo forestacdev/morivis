@@ -33,7 +33,10 @@ const toUint8Array = async (blob: Blob): Promise<Uint8Array> => {
 	return new Uint8Array(await blob.arrayBuffer());
 };
 
-const getFiniteMinMax = (data: ArrayLike<number>, nodata: number | null): { min: number; max: number } => {
+const getFiniteMinMax = (
+	data: ArrayLike<number>,
+	nodata: number | null
+): { min: number; max: number } => {
 	let min = Number.POSITIVE_INFINITY;
 	let max = Number.NEGATIVE_INFINITY;
 
@@ -82,10 +85,7 @@ const renderTiffToPngBytes = async (
 		resampleMethod: 'bilinear' as const
 	};
 
-	const sampleIndexes =
-		samplesPerPixel >= 3
-			? [0, 1, 2]
-			: [0];
+	const sampleIndexes = samplesPerPixel >= 3 ? [0, 1, 2] : [0];
 	const rasters = (await image.readRasters({
 		...readOptions,
 		samples: sampleIndexes
@@ -139,8 +139,7 @@ const renderTiffToPngBytes = async (
 		for (let i = 0; i < tileSize * tileSize; i++) {
 			const offset = i * 4;
 			const value = band[i];
-			const isTransparent =
-				(nodata !== null && value === nodata) || !Number.isFinite(value);
+			const isTransparent = (nodata !== null && value === nodata) || !Number.isFinite(value);
 
 			if (isTransparent) {
 				rgba[offset + 3] = 0;
@@ -180,7 +179,9 @@ const renderTiffToPngBytes = async (
 const extractServiceException = (text: string): string | null => {
 	const xml = new DOMParser().parseFromString(text, 'text/xml');
 	return (
-		xml.querySelector('ExceptionText, ows\\:ExceptionText, ServiceException')?.textContent?.trim() ??
+		xml
+			.querySelector('ExceptionText, ows\\:ExceptionText, ServiceException')
+			?.textContent?.trim() ??
 		xml.documentElement.textContent?.trim() ??
 		null
 	);
@@ -248,16 +249,24 @@ class WcsProtocolHandler {
 			const contentType = response.headers.get('content-type') ?? outputFormat;
 			let data: Uint8Array;
 
-			if (DIRECT_IMAGE_CONTENT_TYPE_RE.test(contentType) && !TIFF_CONTENT_TYPE_RE.test(contentType)) {
+			if (
+				DIRECT_IMAGE_CONTENT_TYPE_RE.test(contentType) &&
+				!TIFF_CONTENT_TYPE_RE.test(contentType)
+			) {
 				data = new Uint8Array(await response.arrayBuffer());
-			} else if (TIFF_CONTENT_TYPE_RE.test(contentType) || TIFF_CONTENT_TYPE_RE.test(outputFormat)) {
+			} else if (
+				TIFF_CONTENT_TYPE_RE.test(contentType) ||
+				TIFF_CONTENT_TYPE_RE.test(outputFormat)
+			) {
 				data = await renderTiffToPngBytes(await response.arrayBuffer(), tileSize, {
 					mins: bandMins,
 					maxs: bandMaxs
 				});
 			} else if (XML_CONTENT_TYPE_RE.test(contentType)) {
 				const text = await response.text();
-				throw new Error(extractServiceException(text) ?? 'WCS が画像ではなく XML/HTML を返しました');
+				throw new Error(
+					extractServiceException(text) ?? 'WCS が画像ではなく XML/HTML を返しました'
+				);
 			} else {
 				data = new Uint8Array(await response.arrayBuffer());
 			}

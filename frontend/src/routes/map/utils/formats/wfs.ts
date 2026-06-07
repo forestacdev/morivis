@@ -122,7 +122,9 @@ const parseOutputFormats = (xml: XMLDocument): string[] => {
 
 const getFeatureTypeOutputFormats = (featureType: Element): string[] => {
 	return normalizeOutputFormats(
-		Array.from(featureType.querySelectorAll('OutputFormats > Format, wfs\\:OutputFormats > wfs\\:Format'))
+		Array.from(
+			featureType.querySelectorAll('OutputFormats > Format, wfs\\:OutputFormats > wfs\\:Format')
+		)
 			.map((element) => element.textContent?.trim() ?? '')
 			.filter(Boolean)
 	);
@@ -191,7 +193,9 @@ export const parseWfsCapabilities = async (url: string): Promise<WfsCapabilities
 			stripKnownParams(capsUrl).toString();
 
 		const featureTypes = Array.from(
-			xml.querySelectorAll('FeatureTypeList > FeatureType, wfs\\:FeatureTypeList > wfs\\:FeatureType')
+			xml.querySelectorAll(
+				'FeatureTypeList > FeatureType, wfs\\:FeatureTypeList > wfs\\:FeatureType'
+			)
 		).map((featureType) => {
 			const name = getElementText(featureType, ['Name', 'wfs\\:Name']);
 			if (!name) return null;
@@ -309,9 +313,9 @@ export const fetchWfsFeatureCollection = async ({
 	const contentType = response.headers.get('content-type') ?? '';
 
 	if (isGeoJsonContent(contentType, text, outputFormat)) {
-		return normalizeGeoJsonGeometryCollections(JSON.parse(text) as Parameters<
-			typeof normalizeGeoJsonGeometryCollections
-		>[0]);
+		return normalizeGeoJsonGeometryCollections(
+			JSON.parse(text) as Parameters<typeof normalizeGeoJsonGeometryCollections>[0]
+		);
 	}
 
 	return gmlTextToGeoJson(text);

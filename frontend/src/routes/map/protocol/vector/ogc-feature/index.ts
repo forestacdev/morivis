@@ -1,9 +1,7 @@
 import * as tilebelt from '@mapbox/tilebelt';
 
 import type { FeatureCollection } from '$routes/map/types/geojson';
-import {
-	buildOgcApiFeaturesBboxUrl
-} from '$routes/map/utils/formats/ogc-api-features';
+import { buildOgcApiFeaturesBboxUrl } from '$routes/map/utils/formats/ogc-api-features';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 import { normalizeGeoJsonGeometryCollections } from '$routes/map/utils/formats/geojson';
 
@@ -61,9 +59,9 @@ class WorkerProtocol {
 		}
 
 		const json = (await response.json()) as FeatureCollection;
-		return normalizeGeoJsonGeometryCollections(json as Parameters<
-			typeof normalizeGeoJsonGeometryCollections
-		>[0]);
+		return normalizeGeoJsonGeometryCollections(
+			json as Parameters<typeof normalizeGeoJsonGeometryCollections>[0]
+		);
 	}
 
 	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array }> {

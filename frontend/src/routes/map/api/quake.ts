@@ -482,7 +482,9 @@ export const loadEarthquakePointEntry = async (
 ): Promise<PointEntry<GeoJsonMetaData>> => {
 	try {
 		const geojson = await fetchEarthquakeGeoJson();
-		const temporalItems = Array.from(new Set(geojson.features.map((feature) => feature.properties.time)))
+		const temporalItems = Array.from(
+			new Set(geojson.features.map((feature) => feature.properties.time))
+		)
 			.map(toTemporalItem)
 			.filter((item) => !Number.isNaN(item.timestamp))
 			.sort((a, b) => a.timestamp - b.timestamp);

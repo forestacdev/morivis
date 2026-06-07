@@ -50,7 +50,8 @@
 	$effect(() => {
 		if (hritFile) {
 			if (Array.isArray(hritFile)) {
-				entryName = hritFile[0]?.name.replace(/\.(bz2|lrit|hrit)$/i, '').replace(/_\d{3}$/, '') ?? '';
+				entryName =
+					hritFile[0]?.name.replace(/\.(bz2|lrit|hrit)$/i, '').replace(/_\d{3}$/, '') ?? '';
 			} else {
 				entryName = hritFile.name.replace(/\.(bz2|lrit|hrit)$/i, '');
 			}
@@ -75,7 +76,9 @@
 		preview = null;
 
 		try {
-			const parsed = Array.isArray(file) ? await parseHritRasterFiles(file) : await parseHritRaster(file);
+			const parsed = Array.isArray(file)
+				? await parseHritRasterFiles(file)
+				: await parseHritRaster(file);
 			metadata = parsed.metadata;
 			preview = parsed;
 		} catch (error) {
@@ -227,7 +230,9 @@
 				<div>
 					観測時刻: {mjdToJstLabel(metadata.observationTimes[0].timeMjd)}
 					{#if metadata.observationTimes.length > 1}
-						〜 {mjdToJstLabel(metadata.observationTimes[metadata.observationTimes.length - 1].timeMjd)}
+						〜 {mjdToJstLabel(
+							metadata.observationTimes[metadata.observationTimes.length - 1].timeMjd
+						)}
 					{/if}
 				</div>
 			{/if}

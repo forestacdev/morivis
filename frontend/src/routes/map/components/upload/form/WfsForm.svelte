@@ -189,7 +189,7 @@
 			bbox,
 			undefined,
 			{
-					attribution: `WFS: ${forms.url.trim()}`
+				attribution: `WFS: ${forms.url.trim()}`
 			}
 		);
 

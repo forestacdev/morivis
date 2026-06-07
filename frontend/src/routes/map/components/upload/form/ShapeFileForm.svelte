@@ -125,7 +125,9 @@
 		if (!value) return [];
 		if (value instanceof File) return [value];
 		if (typeof value === 'object' && 'length' in value) {
-			return Array.from(value as ArrayLike<File>).filter((file): file is File => file instanceof File);
+			return Array.from(value as ArrayLike<File>).filter(
+				(file): file is File => file instanceof File
+			);
 		}
 		return [];
 	};

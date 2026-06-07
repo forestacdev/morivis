@@ -50,14 +50,8 @@ const ensurePreviewProtocols = () => {
 		previewEsriFeatureProtocol.protocolName,
 		previewEsriFeatureProtocol.request
 	);
-	maplibregl.addProtocol(
-		previewOgcFeatureProtocol.protocolName,
-		previewOgcFeatureProtocol.request
-	);
-	maplibregl.addProtocol(
-		previewWfsFeatureProtocol.protocolName,
-		previewWfsFeatureProtocol.request
-	);
+	maplibregl.addProtocol(previewOgcFeatureProtocol.protocolName, previewOgcFeatureProtocol.request);
+	maplibregl.addProtocol(previewWfsFeatureProtocol.protocolName, previewWfsFeatureProtocol.request);
 	previewProtocolsRegistered = true;
 };
 

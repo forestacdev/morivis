@@ -109,9 +109,7 @@ const getPreferredFormat = (formats: string[]): string =>
 	'GeoTIFF';
 
 const findPreferredCrs = (crsList: string[]): string | null => {
-	const normalized = crsList
-		.map((crs) => crs.trim())
-		.filter(Boolean);
+	const normalized = crsList.map((crs) => crs.trim()).filter(Boolean);
 
 	return (
 		normalized.find((crs) => crs.toUpperCase() === 'OGC:CRS84') ??
@@ -134,10 +132,7 @@ const getAxisSubsetRange = (
 	) {
 		return [bbox[0], bbox[2]];
 	}
-	if (
-		/^(lat|latitude|y|n|north|northing)$/.test(normalized) ||
-		normalized.includes('lat')
-	) {
+	if (/^(lat|latitude|y|n|north|northing)$/.test(normalized) || normalized.includes('lat')) {
 		return [bbox[1], bbox[3]];
 	}
 	return index === 0 ? [bbox[0], bbox[2]] : [bbox[1], bbox[3]];
@@ -359,7 +354,10 @@ export const getWcsPreferredFormat = (formats: string[]): string => getPreferred
 export const getWcsPreferredCrs = (crsList: string[]): string =>
 	findPreferredCrs(crsList) ?? 'OGC:CRS84';
 
-const getFiniteMinMax = (data: ArrayLike<number>, nodata: number | null): { min: number; max: number } => {
+const getFiniteMinMax = (
+	data: ArrayLike<number>,
+	nodata: number | null
+): { min: number; max: number } => {
 	let min = Number.POSITIVE_INFINITY;
 	let max = Number.NEGATIVE_INFINITY;
 
