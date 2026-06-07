@@ -299,7 +299,8 @@
 								type: 'time' as const,
 								values: temporalSeriesInfo.values,
 								labels: temporalSeriesInfo.labels
-							}
+							},
+							behaviors: [{ type: 'source' as const }]
 						}
 					})
 				},

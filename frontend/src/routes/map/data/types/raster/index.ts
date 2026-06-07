@@ -1,4 +1,11 @@
-import type { BaseMetaData, Opacity, AdjustableRange } from '$routes/map/data/types';
+import type {
+	BaseMetaData,
+	Opacity,
+	AdjustableRange,
+	SharedDiscreteDimension,
+	SharedDimensionState,
+	SourceTemporalBehavior
+} from '$routes/map/data/types';
 import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
 import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 import type { SequentialCount, SequentialScheme } from '$routes/map/utils/color/color-brewer';
@@ -206,16 +213,9 @@ interface RasterMetaData extends BaseMetaData {
 	imageCorners?: [[number, number], [number, number], [number, number], [number, number]];
 }
 
-export interface RasterDiscreteDimension {
-	type: 'time' | 'variant';
-	values: string[];
-	labels?: string[];
-	placeholder?: string;
-}
+export type RasterDiscreteDimension = SharedDiscreteDimension;
 
-export interface RasterDimensionState {
-	currentIndex: number;
-}
+export type RasterDimensionState = SharedDimensionState;
 
 export interface RasterEntryState {
 	dimension?: RasterDimensionState;
@@ -223,6 +223,7 @@ export interface RasterEntryState {
 
 export interface RasterTemporalProperties {
 	dimension: RasterDiscreteDimension;
+	behaviors?: SourceTemporalBehavior[];
 }
 
 export interface RasterBandProperties {

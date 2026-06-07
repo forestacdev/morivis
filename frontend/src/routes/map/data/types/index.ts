@@ -19,6 +19,31 @@ export type GeoDataType = 'raster' | 'vector' | 'model' | 'stylejson';
 export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 export type RangeTuple = [min: number, max: number];
 
+export interface SharedDiscreteDimension {
+	type: 'time' | 'variant';
+	values: string[];
+	labels?: string[];
+	placeholder?: string;
+}
+
+export interface SharedDimensionState {
+	currentIndex: number;
+}
+
+export interface SourceTemporalBehavior {
+	type: 'source';
+}
+
+export interface FilterTemporalBehavior {
+	type: 'filter';
+	key?: string;
+	alternateKeys?: string[];
+	startKey?: string;
+	endKey?: string;
+}
+
+export type TemporalBehavior = SourceTemporalBehavior | FilterTemporalBehavior;
+
 export interface AdjustableRange {
 	value: RangeTuple;
 	domain: RangeTuple;

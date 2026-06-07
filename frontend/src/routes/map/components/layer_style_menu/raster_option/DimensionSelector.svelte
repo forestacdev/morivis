@@ -10,6 +10,11 @@
 	import { ICONS } from '$lib/icons';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
+		VectorEntry,
+		GeoJsonMetaData,
+		TileMetaData
+	} from '$routes/map/data/types/vector';
+	import type {
 		RasterEntry,
 		RasterImageEntry,
 		RasterCategoricalStyle,
@@ -31,12 +36,21 @@
 	} from '$routes/map/utils/raster/dimension-runtime';
 	import { getRasterTiffImageSource } from '$routes/map/utils/sources';
 	import { mapStore } from '$routes/stores/map';
+	import {
+		getVectorDimension,
+		getVectorDimensionRuntimeUpdates
+	} from '$routes/map/utils/vector/dimension-runtime';
 
 	type DimensionEnabledRasterEntry = RasterEntry<
 		RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
 	>;
 
-	type DimensionEnabledEntry = DimensionEnabledRasterEntry | ModelMeshEntry<MeshStyle>;
+	type DimensionEnabledVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;
+
+	type DimensionEnabledEntry =
+		| DimensionEnabledRasterEntry
+		| DimensionEnabledVectorEntry
+		| ModelMeshEntry<MeshStyle>;
 
 	interface Props {
 		layerEntry: DimensionEnabledEntry;
@@ -48,6 +62,10 @@
 	const isRasterEntry = (entry: DimensionEnabledEntry): entry is DimensionEnabledRasterEntry =>
 		entry.type === 'raster';
 
+	const isSourceTemporalVectorEntry = (
+		entry: DimensionEnabledEntry
+	): entry is DimensionEnabledVectorEntry => entry.type === 'vector' && Boolean(getVectorDimension(entry));
+
 	const isTemporalMeshEntry = (entry: DimensionEnabledEntry): entry is ModelMeshEntry<MeshStyle> =>
 		entry.type === 'model' &&
 		entry.style.type === 'mesh' &&
@@ -55,6 +73,7 @@
 
 	const getDimension = (entry: DimensionEnabledEntry) => {
 		if (isRasterEntry(entry)) return getRasterDimension(entry);
+		if (isSourceTemporalVectorEntry(entry)) return getVectorDimension(entry);
 		if (isTemporalMeshEntry(entry)) return entry.properties?.temporal?.dimension;
 		return undefined;
 	};
@@ -111,6 +130,14 @@
 				currentIndex
 			}
 		};
+		if (isSourceTemporalVectorEntry(layerEntry)) {
+			const runtimeUpdates = await getVectorDimensionRuntimeUpdates(layerEntry);
+			runtimeUpdates.forEach((update) => {
+				mapStore.setData(update.sourceId, update.data);
+			});
+			return;
+		}
+
 		if (!isRasterEntry(layerEntry)) return;
 
 		if (

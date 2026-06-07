@@ -1,5 +1,9 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
+import {
+	getVectorTemporalFilterBehavior,
+	getVectorTemporalItems
+} from '$routes/map/data/types/vector/properties';
 
 export const combineFilters = (
 	...filters: Array<FilterSpecification | undefined>
@@ -26,12 +30,23 @@ export const getTemporalFilter = (entry: GeoDataEntry): FilterSpecification | un
 			: undefined);
 	if (!temporalConfig) return undefined;
 
-	const temporalKeys = [temporalConfig.key, ...(temporalConfig.alternateKeys ?? [])].filter(
+	const filterBehavior = 'behaviors' in temporalConfig
+		? getVectorTemporalFilterBehavior(temporalConfig)
+		: {
+				key: temporalConfig.key,
+				alternateKeys: []
+			};
+	if (!filterBehavior) return undefined;
+
+	const temporalKeys = [filterBehavior.key, ...(filterBehavior.alternateKeys ?? [])].filter(
 		(key): key is string => Boolean(key)
 	);
 	if (temporalKeys.length === 0) return undefined;
 
-	const temporalValues = (temporalConfig.items ?? []).map((item) => item.raw);
+	const temporalValues =
+		'behaviors' in temporalConfig
+			? getVectorTemporalItems(temporalConfig).map((item) => item.raw)
+			: [];
 	if (temporalValues.length === 0) return undefined;
 
 	const startIndex = Math.min(temporalFilterState.startIndex, temporalValues.length - 1);

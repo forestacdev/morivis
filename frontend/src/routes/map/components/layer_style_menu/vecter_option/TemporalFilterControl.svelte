@@ -13,7 +13,11 @@
 		TileMetaData,
 		VectorTemporalFilterState
 	} from '$routes/map/data/types/vector';
-	import type { VectorTemporalItem } from '$routes/map/data/types/vector/properties';
+	import {
+		getVectorTemporalFilterBehavior,
+		getVectorTemporalItems,
+		type VectorTemporalItem
+	} from '$routes/map/data/types/vector/properties';
 	import type { Feature } from '$routes/map/types/geojson';
 	import type { AnyGeometry } from '$routes/map/types/geometry';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
@@ -76,9 +80,13 @@
 				: undefined)) as typeof layerEntry.properties.temporal | undefined
 	);
 
+	const filterBehavior = $derived(
+		temporalConfig ? getVectorTemporalFilterBehavior(temporalConfig) : undefined
+	);
+
 	// 複数の時間キー候補がある場合でも、比較用の参照順をここで一本化する。
 	const temporalKeys = $derived.by(() => {
-		const keys = [temporalConfig?.key, ...(temporalConfig?.alternateKeys ?? [])].filter(
+		const keys = [filterBehavior?.key, ...(filterBehavior?.alternateKeys ?? [])].filter(
 			(key): key is string => Boolean(key)
 		);
 		return Array.from(new Set(keys));
@@ -86,7 +94,7 @@
 
 	// スライダーの目盛りは、読み込み時に作った時刻一覧をそのまま使う。
 	const temporalItems = $derived.by(() => {
-		return (layerEntry.properties.temporal?.items ?? []) as VectorTemporalItem[];
+		return getVectorTemporalItems(layerEntry.properties.temporal) as VectorTemporalItem[];
 	});
 	const isSingleStartFilterMode = $derived(singleStartFilterMode);
 	const activeTemporalIndex = $derived(

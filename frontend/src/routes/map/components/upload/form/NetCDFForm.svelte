@@ -352,7 +352,8 @@
 				properties: {
 					...(dimension && {
 						temporal: {
-							dimension
+							dimension,
+							behaviors: [{ type: 'source' as const }]
 						}
 					}),
 					bands: {

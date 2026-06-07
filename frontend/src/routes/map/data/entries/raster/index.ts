@@ -64,7 +64,8 @@ export const createRasterEntry = (
 		...(timeDimension && {
 			properties: {
 				temporal: {
-					dimension: timeDimension
+					dimension: timeDimension,
+					behaviors: [{ type: 'source' }]
 				}
 			}
 		}),
