@@ -9,8 +9,8 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import ColorScaleDem from '$routes/map/components/layer_style_menu/extension_menu/ColorScaleDem.svelte';
 	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
-	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 	import { createAdjustableRange } from '$routes/map/data/types';
+	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';

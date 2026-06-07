@@ -4,8 +4,8 @@
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat } from 'maplibre-gl';
-	import { SvelteSet } from 'svelte/reactivity';
 	import { onMount, onDestroy } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { slide } from 'svelte/transition';
 
 	import Processing from './Processing.svelte';

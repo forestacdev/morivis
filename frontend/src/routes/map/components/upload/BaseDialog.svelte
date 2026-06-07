@@ -10,7 +10,6 @@
 	import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
 	import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
-	import WktForm from '$routes/map/components/upload/form/WktForm.svelte';
 	import GeoParquetForm from '$routes/map/components/upload/form/GeoParquetForm.svelte';
 	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
 	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
@@ -46,6 +45,7 @@
 	import TsvForm from '$routes/map/components/upload/form/TsvForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';
+	import WktForm from '$routes/map/components/upload/form/WktForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';

@@ -53,13 +53,13 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import {
 		clearAllCogViewportImages,
 		fetchCogViewportImage,
 		markCogViewportReady,
 		terminateCogViewportRuntime
 	} from '$routes/map/utils/formats/geotiff/cog-runtime';
+	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import {
 		fetchWcsViewportImage,
 		clearAllWcsViewportImages,
@@ -545,9 +545,7 @@
 		return entry.type === 'raster' && entry.format.type === 'wcs';
 	};
 
-	const isViewportCogEntry = (
-		entry: GeoDataEntry
-	): entry is RasterCogEntry<RasterTiffStyle> => {
+	const isViewportCogEntry = (entry: GeoDataEntry): entry is RasterCogEntry<RasterTiffStyle> => {
 		return entry.type === 'raster' && entry.format.type === 'cog' && entry.format.mode !== 'tile';
 	};
 
@@ -659,8 +657,7 @@
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'cog';
 		const isCogTileEntry = (e: GeoDataEntry) =>
-			isCogEntry(e) &&
-			(e as { format: { mode?: 'tile' | 'viewport' } }).format.mode === 'tile';
+			isCogEntry(e) && (e as { format: { mode?: 'tile' | 'viewport' } }).format.mode === 'tile';
 		const hasCogLayer = entries.some(isCogEntry) || (showDataEntry && isCogEntry(showDataEntry));
 		const hasCogTileLayer =
 			entries.some(isCogTileEntry) || (showDataEntry && isCogTileEntry(showDataEntry));

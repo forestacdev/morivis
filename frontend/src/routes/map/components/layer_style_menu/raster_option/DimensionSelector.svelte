@@ -10,11 +10,6 @@
 	import { ICONS } from '$lib/icons';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
-		VectorEntry,
-		GeoJsonMetaData,
-		TileMetaData
-	} from '$routes/map/data/types/vector';
-	import type {
 		RasterEntry,
 		RasterImageEntry,
 		RasterCategoricalStyle,
@@ -23,6 +18,7 @@
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
+	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
 		getAspectCacheKey,
@@ -35,11 +31,11 @@
 		getRasterDimensionRuntimeUpdates
 	} from '$routes/map/utils/raster/dimension-runtime';
 	import { getRasterTiffImageSource } from '$routes/map/utils/sources';
-	import { mapStore } from '$routes/stores/map';
 	import {
 		getVectorDimension,
 		getVectorDimensionRuntimeUpdates
 	} from '$routes/map/utils/vector/dimension-runtime';
+	import { mapStore } from '$routes/stores/map';
 
 	type DimensionEnabledRasterEntry = RasterEntry<
 		RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
@@ -64,7 +60,8 @@
 
 	const isSourceTemporalVectorEntry = (
 		entry: DimensionEnabledEntry
-	): entry is DimensionEnabledVectorEntry => entry.type === 'vector' && Boolean(getVectorDimension(entry));
+	): entry is DimensionEnabledVectorEntry =>
+		entry.type === 'vector' && Boolean(getVectorDimension(entry));
 
 	const isTemporalMeshEntry = (entry: DimensionEnabledEntry): entry is ModelMeshEntry<MeshStyle> =>
 		entry.type === 'model' &&

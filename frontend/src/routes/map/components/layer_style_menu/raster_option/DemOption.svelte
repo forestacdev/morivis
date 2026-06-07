@@ -7,8 +7,8 @@
 
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
-	import type { DemRangeColorStyle, RasterDemEntry } from '$routes/map/data/types/raster';
 	import { createAdjustableRange } from '$routes/map/data/types';
+	import type { DemRangeColorStyle, RasterDemEntry } from '$routes/map/data/types/raster';
 	import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import {

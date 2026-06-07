@@ -14,10 +14,10 @@
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
-	import { clearCogViewportImage } from '$routes/map/utils/formats/geotiff/cog-runtime';
-	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
+	import { clearCogViewportImage } from '$routes/map/utils/formats/geotiff/cog-runtime';
+	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
@@ -163,17 +163,17 @@
 			}
 		}
 		// GLB/OBJ/MTLのBlobURL解放
-			if (layerEntry.type === 'model' && 'url' in layerEntry.format) {
-				const url = (layerEntry.format as { url?: string }).url;
-				if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
-				const mtlUrl = (layerEntry.format as { mtlUrl?: string }).mtlUrl;
-				if (mtlUrl?.startsWith('blob:')) URL.revokeObjectURL(mtlUrl);
-			}
-			if (layerEntry.type === 'raster' && 'url' in layerEntry.format) {
-				const url = (layerEntry.format as { url?: string }).url;
-				if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
-			}
-		};
+		if (layerEntry.type === 'model' && 'url' in layerEntry.format) {
+			const url = (layerEntry.format as { url?: string }).url;
+			if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+			const mtlUrl = (layerEntry.format as { mtlUrl?: string }).mtlUrl;
+			if (mtlUrl?.startsWith('blob:')) URL.revokeObjectURL(mtlUrl);
+		}
+		if (layerEntry.type === 'raster' && 'url' in layerEntry.format) {
+			const url = (layerEntry.format as { url?: string }).url;
+			if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+		}
+	};
 
 	const removeLayer = () => {
 		$isStyleEdit = false;
@@ -182,15 +182,15 @@
 		// BlobURLの解放
 		revokeBlobUrls();
 
-			// キャッシュの解放
-			if (isTiffCustomLayer) {
-				GeoTiffCache.release(layerEntry.id);
-				if (layerEntry.type === 'raster' && layerEntry.format.type === 'cog') {
-					CogTileManager.unregister(layerEntry.id);
-				}
-			} else if (isGeojsonCustomLayer) {
-				GeojsonCache.remove(layerEntry.id);
-			} else if (layerEntry.type === 'model' && layerEntry.format.type === 'point-cloud') {
+		// キャッシュの解放
+		if (isTiffCustomLayer) {
+			GeoTiffCache.release(layerEntry.id);
+			if (layerEntry.type === 'raster' && layerEntry.format.type === 'cog') {
+				CogTileManager.unregister(layerEntry.id);
+			}
+		} else if (isGeojsonCustomLayer) {
+			GeojsonCache.remove(layerEntry.id);
+		} else if (layerEntry.type === 'model' && layerEntry.format.type === 'point-cloud') {
 			// 点群データの明示的な解放
 			layerEntry.format.positions = undefined;
 			layerEntry.format.colors = undefined;

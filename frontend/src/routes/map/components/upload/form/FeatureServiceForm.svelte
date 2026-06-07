@@ -17,13 +17,13 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import { getUniquePropertyKeys } from '$routes/map/utils/data/properties';
 	import {
 		buildOgcApiFeaturesItemsUrl,
 		fetchOgcApiFeaturesFeatureCollection,
 		parseOgcApiFeaturesService,
 		type OgcApiFeaturesServiceInfo
 	} from '$routes/map/utils/formats/ogc-api-features';
-	import { getUniquePropertyKeys } from '$routes/map/utils/data/properties';
 	import {
 		buildWfsGetFeatureUrl,
 		fetchWfsFeatureCollection,
@@ -96,8 +96,9 @@
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 
 	const selectedFeatureType = $derived(
-		wfsCapabilities?.featureTypes.find((featureType) => featureType.name === selectedFeatureTypeName) ??
-			null
+		wfsCapabilities?.featureTypes.find(
+			(featureType) => featureType.name === selectedFeatureTypeName
+		) ?? null
 	);
 	const selectedCollection = $derived(
 		ogcServiceInfo?.collections.find((collection) => collection.id === selectedCollectionId) ?? null
@@ -479,10 +480,10 @@
 
 			rawGeojson = transformedGeojson;
 			const bbox = turfBbox(transformedGeojson) as [number, number, number, number];
-				if (!bbox || !isFiniteBbox(bbox)) {
-					showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
-					return;
-				}
+			if (!bbox || !isFiniteBbox(bbox)) {
+				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
+				return;
+			}
 
 			if (geometryTypeOptions.length === 1 && selectedGeometryType) {
 				await completeEntryCreation(transformedGeojson);
@@ -531,11 +532,7 @@
 		}}
 	>
 		<div class="grow">
-			<TextForm
-				bind:value={forms.url}
-				label="WFS / OGC API - Features URL"
-				error={urlErrors.url}
-			/>
+			<TextForm bind:value={forms.url} label="WFS / OGC API - Features URL" error={urlErrors.url} />
 		</div>
 	</form>
 
@@ -560,20 +557,20 @@
 				</select>
 			</label>
 
-				<label class="flex w-full flex-col gap-2">
-					<span class="text-base font-bold select-none">出力形式</span>
-					<select
-						bind:value={selectedOutputFormat}
-						class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
-					>
-						{#each outputFormatOptions as outputFormat (outputFormat)}
-							<option value={outputFormat}>{getOutputFormatLabel(outputFormat)}</option>
-						{/each}
-					</select>
-					<p class="text-sm text-gray-400">
-						JSON を優先して選びます。JSON が無いサーバーでは GML を使います。
-					</p>
-				</label>
+			<label class="flex w-full flex-col gap-2">
+				<span class="text-base font-bold select-none">出力形式</span>
+				<select
+					bind:value={selectedOutputFormat}
+					class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
+				>
+					{#each outputFormatOptions as outputFormat (outputFormat)}
+						<option value={outputFormat}>{getOutputFormatLabel(outputFormat)}</option>
+					{/each}
+				</select>
+				<p class="text-sm text-gray-400">
+					JSON を優先して選びます。JSON が無いサーバーでは GML を使います。
+				</p>
+			</label>
 
 			<label class="flex w-full flex-col gap-2">
 				<span class="text-base font-bold select-none">取得件数</span>
@@ -672,11 +669,10 @@
 	{:else}
 		<button
 			onclick={fetchSelectedServiceData}
-			disabled={
-				(serviceType === 'wfs' && !selectedFeatureType) ||
-				(serviceType === 'ogcapifeatures' && !selectedCollection)
-			}
-			class="c-btn-confirm min-w-[200px] p-4 text-lg {(serviceType === 'wfs' && selectedFeatureType) ||
+			disabled={(serviceType === 'wfs' && !selectedFeatureType) ||
+				(serviceType === 'ogcapifeatures' && !selectedCollection)}
+			class="c-btn-confirm min-w-[200px] p-4 text-lg {(serviceType === 'wfs' &&
+				selectedFeatureType) ||
 			(serviceType === 'ogcapifeatures' && selectedCollection)
 				? 'cursor-pointer'
 				: 'cursor-not-allowed opacity-50'}"
