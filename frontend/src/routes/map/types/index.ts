@@ -78,6 +78,7 @@ export type DialogType =
 	| 'tcx'
 	| 'osm'
 	| 'geojson'
+	| 'wkt'
 	| 'geotiff'
 	| 'wmts'
 	| 'wcs'
@@ -131,6 +132,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'地物をJSONで記述したベクターデータです。属性付きの点・線・面を読み込むときに使います。',
 		extensions: ['.geojson', '.json']
+	},
+	{
+		label: 'WKT',
+		description:
+			'Well-Known Text 形式のベクターデータです。点・線・面のジオメトリをテキストで持ち込むときに使います。',
+		extensions: ['.wkt', '.ewkt']
 	},
 	{
 		label: 'TopoJSON',

@@ -223,13 +223,7 @@ export const downloadGeojson = (
 export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
 	try {
 		const text = await file.text();
-		const geojson = JSON.parse(text) as RootGeoJsonWithGeometryCollection;
-
-		if (!geojson || typeof geojson !== 'object' || typeof geojson.type !== 'string') {
-			throw new GeoJsonParseError('GeoJSONの構造が不正です');
-		}
-
-		return normalizeGeoJsonGeometryCollections(geojson);
+		return geoJsonTextToGeoJson(text);
 	} catch (error) {
 		console.error('GeoJSON parsing error:', error);
 		if (error instanceof GeoJsonParseError) {
@@ -239,5 +233,25 @@ export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollectio
 			throw new GeoJsonParseError('GeoJSONのJSON構文が壊れています');
 		}
 		throw new GeoJsonParseError('GeoJSONファイルの読み込みに失敗しました');
+	}
+};
+
+export const geoJsonTextToGeoJson = (text: string): FeatureCollection => {
+	try {
+		const geojson = JSON.parse(text) as RootGeoJsonWithGeometryCollection;
+
+		if (!geojson || typeof geojson !== 'object' || typeof geojson.type !== 'string') {
+			throw new GeoJsonParseError('GeoJSONの構造が不正です');
+		}
+
+		return normalizeGeoJsonGeometryCollections(geojson);
+	} catch (error) {
+		if (error instanceof GeoJsonParseError) {
+			throw error;
+		}
+		if (error instanceof SyntaxError) {
+			throw new GeoJsonParseError('GeoJSONのJSON構文が壊れています');
+		}
+		throw new GeoJsonParseError('GeoJSONの読み込みに失敗しました');
 	}
 };

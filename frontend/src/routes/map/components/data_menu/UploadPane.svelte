@@ -433,7 +433,7 @@
 	}[] = [
 		{
 			title: 'ファイル選択',
-			groups: SUPPORTED_FILE_GROUPS.map((group) => ({
+			groups: SUPPORTED_FILE_GROUPS.filter((group) => group.label !== 'GeoJSON' && group.label !== 'WKT').map((group) => ({
 				label: group.label,
 				description: group.description,
 				extensions: group.extensions,
@@ -446,6 +446,23 @@
 		title: string;
 		dialogs: { type: DialogType; label: string; description: string }[];
 	}[] = [
+		{
+			title: 'テキスト入力',
+			dialogs: [
+				{
+					type: 'geojson',
+					label: 'GeoJSON入力',
+					description:
+						'GeoJSONファイルの読み込みや、GeoJSONテキストの直接入力を行うフォームです。'
+				},
+				{
+					type: 'wkt',
+					label: 'WKT入力',
+					description:
+						'WKTファイルの読み込みや、WKTテキストの直接入力を行うフォームです。'
+				}
+			]
+		},
 		{
 			title: 'ファイルフォーム',
 			dialogs: [

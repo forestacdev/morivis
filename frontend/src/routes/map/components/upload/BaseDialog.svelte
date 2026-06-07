@@ -10,6 +10,7 @@
 	import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
 	import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
+	import WktForm from '$routes/map/components/upload/form/WktForm.svelte';
 	import GeoParquetForm from '$routes/map/components/upload/form/GeoParquetForm.svelte';
 	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
 	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
@@ -230,6 +231,17 @@
 			{/if}
 			{#if showDialogType === 'geojson'}
 				<GeoJsonForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'wkt'}
+				<WktForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile

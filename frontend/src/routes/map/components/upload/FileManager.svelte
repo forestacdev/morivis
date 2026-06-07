@@ -193,6 +193,10 @@
 					}
 					showDialogType = 'geojson';
 					return;
+				case 'wkt':
+				case 'ewkt':
+					showDialogType = 'wkt';
+					return;
 				case 'topojson':
 					showDialogType = 'topojson';
 					return;
