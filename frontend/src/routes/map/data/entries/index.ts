@@ -41,8 +41,16 @@ const lazyEntryModules = import.meta.glob<CatalogModule>(
 	{ eager: true }
 );
 
+const markEntryNeedsLazyHydration = (entry: GeoDataEntry, value: boolean): GeoDataEntry => {
+	entry.metaData.needsLazyHydration = value;
+	return entry;
+};
+
 const staticEntries = Object.values(allModules).map((mod) => mod.default);
-const lazyCatalogItems = Object.values(lazyEntryModules).map((mod) => mod.default);
+const lazyCatalogItems = Object.values(lazyEntryModules).map((mod) => ({
+	...mod.default,
+	entry: markEntryNeedsLazyHydration(mod.default.entry, true)
+}));
 const lazyEntries = lazyCatalogItems.map((item) => item.entry);
 const allEntries = [...staticEntries, ...lazyEntries];
 const debugEntries = isDev ? allEntries.filter((entry) => entry.id.startsWith('!')) : [];
@@ -119,6 +127,10 @@ export const isLazyCatalogEntry = (entryId: string): boolean => {
 	return lazyEntryIdSet.has(entryId);
 };
 
+export const needsLazyHydration = (entry: GeoDataEntry): boolean => {
+	return entry.metaData.needsLazyHydration === true;
+};
+
 export const resolveGeoDataEntry = async (entryId: string): Promise<GeoDataEntry | null> => {
 	const catalogItem = entryCatalogMap.get(entryId);
 	if (!catalogItem) return null;
@@ -136,6 +148,7 @@ export const resolveGeoDataEntry = async (entryId: string): Promise<GeoDataEntry
 	const loadPromise = catalogItem
 		.loadEntry()
 		.then((entry: GeoDataEntry) => {
+			markEntryNeedsLazyHydration(entry, false);
 			resolvedLazyEntryMap.set(entryId, entry);
 			return entry;
 		})

@@ -57,6 +57,7 @@
 		findCatalogEntry,
 		geoDataEntries,
 		isLazyCatalogEntry,
+		needsLazyHydration,
 		resolveGeoDataEntry
 	} from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
@@ -572,12 +573,7 @@
 		const previewEntry = showDataEntry;
 		const entryId = previewEntry?.id;
 		if (!entryId || !isLazyCatalogEntry(entryId)) return;
-		if (
-			previewEntry?.type !== 'raster' ||
-			previewEntry.properties?.temporal?.dimension.values.length !== 1
-		) {
-			return;
-		}
+		if (!needsLazyHydration(previewEntry)) return;
 
 		void resolveGeoDataEntry(entryId)
 			.then((resolvedEntry) => {

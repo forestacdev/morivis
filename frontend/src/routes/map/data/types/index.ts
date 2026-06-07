@@ -87,6 +87,8 @@ export interface BaseMetaData {
 	center?: [number, number];
 	/** ユーザーがアップロードしたデータかどうか */
 	isUserUploaded?: boolean;
+	/** lazy entry の fallback など、まだ追加の解決処理が必要な状態かどうか */
+	needsLazyHydration?: boolean;
 }
 
 export type AnyRasterEntry = RasterEntry<

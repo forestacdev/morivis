@@ -205,6 +205,7 @@ const createNowcastTileUrl = (basetime: string) =>
 const createFixedNowcastTileUrl = (basetime: string, tileZoom: number) =>
 	`https://www.jma.go.jp/bosai/jmatile/data/nowc/${basetime}/none/${basetime}/surf/hrpns/${tileZoom}/{x}/{y}.png`;
 
+//　NOTE:高解像度降水ナウキャストは、ズームレベル4,6,8でタイルが提供されている
 const attachNowcastZoomSplitLayers = (entry: RasterEntry<RasterBaseMapStyle>) => {
 	entry.format.url = createFixedNowcastTileUrl('{morivis:dimension}', 8);
 	entry.metaData.minZoom = 8;
