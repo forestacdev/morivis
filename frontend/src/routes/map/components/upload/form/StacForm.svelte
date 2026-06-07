@@ -318,6 +318,17 @@
 				selectedCollectionId = collections[0].id;
 				statusText = `STAC API (${collections.length}コレクション)`;
 				step = 'collection';
+			} else if (result.type === 'items-endpoint') {
+				const foundItems = (result.data as { features?: StacItem[] }).features ?? [];
+				if (foundItems.length === 0) {
+					showNotification('アイテムが見つかりません', 'error');
+					return;
+				}
+				items = foundItems;
+				selectedItemIndex = 0;
+				updateCogAssets(0);
+				statusText = `${foundItems.length}件のアイテム`;
+				step = 'items';
 			} else {
 				// Static Catalog / Collection → childリンクをブラウズ
 				const links = await fetchChildLinks(apiUrl);

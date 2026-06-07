@@ -5,6 +5,7 @@
  * - STAC仕様: https://stacspec.org/
  * - STAC API仕様: https://github.com/radiantearth/stac-api-spec
  */
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 
 export interface StacLink {
 	href: string;
@@ -64,7 +65,7 @@ export interface StacCatalog {
 }
 
 /** STAC APIかStatic Catalogかの判定結果 */
-export type StacSourceType = 'api' | 'static-collection' | 'static-catalog';
+export type StacSourceType = 'api' | 'static-collection' | 'static-catalog' | 'items-endpoint';
 
 // ---- URLユーティリティ ----
 
@@ -85,9 +86,13 @@ const resolveUrl = (base: string, relative: string): string => {
 export const detectStacSourceType = async (
 	url: string
 ): Promise<{ type: StacSourceType; data: unknown }> => {
-	const res = await fetch(url);
+	const res = await fetchWithDevProxy(url);
 	if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 	const data = await res.json();
+
+	if (data.type === 'FeatureCollection' && Array.isArray(data.features)) {
+		return { type: 'items-endpoint', data };
+	}
 
 	// STAC API判定を先に行う（APIのランディングページもtype=Catalogを持つため）
 	if (data.conformsTo || data.links?.some((l: StacLink) => l.rel === 'search')) {
@@ -104,7 +109,7 @@ export const detectStacSourceType = async (
 
 	// fallback: /collectionsエンドポイントを試す
 	try {
-		const collectionsRes = await fetch(`${normalizeUrl(url)}/collections`);
+		const collectionsRes = await fetchWithDevProxy(`${normalizeUrl(url)}/collections`);
 		if (collectionsRes.ok) {
 			return { type: 'api', data };
 		}
@@ -119,7 +124,7 @@ export const detectStacSourceType = async (
 
 /** コレクション一覧を取得（API） */
 export const fetchCollections = async (apiUrl: string): Promise<StacCollection[]> => {
-	const res = await fetch(`${normalizeUrl(apiUrl)}/collections`);
+	const res = await fetchWithDevProxy(`${normalizeUrl(apiUrl)}/collections`);
 	if (!res.ok) throw new Error(`Failed to fetch collections: ${res.status}`);
 	const data = await res.json();
 	return data.collections ?? [];
@@ -136,7 +141,7 @@ export const searchItems = async (
 	}
 ): Promise<StacSearchResult> => {
 	const url = `${normalizeUrl(apiUrl)}/search`;
-	const res = await fetch(url, {
+	const res = await fetchWithDevProxy(url, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({
@@ -152,7 +157,7 @@ export const searchItems = async (
 
 /** 静的カタログ/コレクションのchildリンクを取得 */
 export const fetchChildLinks = async (url: string): Promise<{ title: string; href: string }[]> => {
-	const res = await fetch(url);
+	const res = await fetchWithDevProxy(url);
 	if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 	const data = await res.json();
 
@@ -173,11 +178,22 @@ const resolveItemAssets = (item: StacItem, itemUrl: string): StacItem => {
 	return resolved;
 };
 
+const resolveSearchResultAssets = (result: StacSearchResult, url: string): StacSearchResult => {
+	return {
+		...result,
+		features: result.features.map((item) => resolveItemAssets(item, url))
+	};
+};
+
 /** 静的カタログからアイテムを再帰的に取得（深さ制限付き） */
 export const fetchStaticItems = async (url: string, limit: number = 20): Promise<StacItem[]> => {
-	const res = await fetch(url);
+	const res = await fetchWithDevProxy(url);
 	if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 	const data = await res.json();
+
+	if (data.type === 'FeatureCollection' && Array.isArray(data.features)) {
+		return resolveSearchResultAssets(data as StacSearchResult, url).features.slice(0, limit);
+	}
 
 	// これ自体がItemの場合
 	if (data.type === 'Feature' && data.assets) {
@@ -193,7 +209,7 @@ export const fetchStaticItems = async (url: string, limit: number = 20): Promise
 		for (const link of itemLinks.slice(0, limit)) {
 			const itemUrl = resolveUrl(url, link.href);
 			try {
-				const itemRes = await fetch(itemUrl);
+				const itemRes = await fetchWithDevProxy(itemUrl);
 				if (itemRes.ok) {
 					const item = await itemRes.json();
 					if (item.type === 'Feature') items.push(resolveItemAssets(item, itemUrl));
