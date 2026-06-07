@@ -202,6 +202,53 @@ const formatNowcastTimeLabel = (basetime: string) => {
 const createNowcastTileUrl = (basetime: string) =>
 	`https://www.jma.go.jp/bosai/jmatile/data/nowc/${basetime}/none/${basetime}/surf/hrpns/{z}/{x}/{y}.png`;
 
+const createFixedNowcastTileUrl = (basetime: string, tileZoom: number) =>
+	`https://www.jma.go.jp/bosai/jmatile/data/nowc/${basetime}/none/${basetime}/surf/hrpns/${tileZoom}/{x}/{y}.png`;
+
+const attachNowcastZoomSplitLayers = (entry: RasterEntry<RasterBaseMapStyle>) => {
+	entry.format.url = createFixedNowcastTileUrl('{morivis:dimension}', 8);
+	entry.metaData.minZoom = 8;
+	entry.metaData.maxZoom = 8;
+	entry.style.minZoom = 8;
+	entry.style.maxZoom = 24;
+	entry.auxiliaryLayers = {
+		sources: {
+			[`${entry.id}:::z4_source`]: {
+				type: 'raster',
+				tiles: [createFixedNowcastTileUrl('{morivis:dimension}', 4)],
+				tileSize: 256,
+				minzoom: 4,
+				maxzoom: 4,
+				bounds: WEB_MERCATOR_JAPAN_BOUNDS
+			},
+			[`${entry.id}:::z6_source`]: {
+				type: 'raster',
+				tiles: [createFixedNowcastTileUrl('{morivis:dimension}', 6)],
+				tileSize: 256,
+				minzoom: 6,
+				maxzoom: 6,
+				bounds: WEB_MERCATOR_JAPAN_BOUNDS
+			}
+		},
+		layers: [
+			{
+				id: `${entry.id}:::z4_layer`,
+				type: 'raster',
+				source: `${entry.id}:::z4_source`,
+				minzoom: 4,
+				maxzoom: 6
+			},
+			{
+				id: `${entry.id}:::z6_layer`,
+				type: 'raster',
+				source: `${entry.id}:::z6_source`,
+				minzoom: 6,
+				maxzoom: 8
+			}
+		]
+	};
+};
+
 export const createJmaNowcastRasterEntry = async (
 	config: JmaNowcastConfig
 ): Promise<RasterEntry<RasterBaseMapStyle>> => {
@@ -215,7 +262,7 @@ export const createJmaNowcastRasterEntry = async (
 	const entry = createRasterEntry(config.name, createNowcastTileUrl('{morivis:dimension}'), {
 		tileSize: 256,
 		minZoom: 4,
-		maxZoom: 10,
+		maxZoom: 8,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		timeDimension: {
 			values: basetimes,
@@ -228,10 +275,11 @@ export const createJmaNowcastRasterEntry = async (
 	entry.metaData.description = config.description;
 	entry.metaData.attribution = '気象庁';
 	entry.metaData.location = '全国';
-	entry.metaData.tags = config.tags ?? ['地図'];
+	entry.metaData.tags = config.tags ?? ['気象', '雨雲'];
 	entry.metaData.xyzImageTile = config.xyzImageTile ?? { x: 7, y: 3, z: 4 };
 	entry.metaData.downloadUrl = config.downloadUrl;
 	entry.metaData.mapImage = config.mapImage;
+	attachNowcastZoomSplitLayers(entry);
 
 	return entry;
 };
@@ -260,6 +308,7 @@ export const createJmaNowcastFallbackEntry = (
 	entry.metaData.xyzImageTile = config.xyzImageTile ?? { x: 7, y: 3, z: 4 };
 	entry.metaData.downloadUrl = config.downloadUrl;
 	entry.metaData.mapImage = config.mapImage;
+	attachNowcastZoomSplitLayers(entry);
 
 	return entry;
 };
