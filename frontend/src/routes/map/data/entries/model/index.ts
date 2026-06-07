@@ -3,6 +3,7 @@ import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bo
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type { Table } from 'apache-arrow';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 import type {
 	ModelMeshEntry,
 	MeshStyle,
@@ -10,7 +11,8 @@ import type {
 	ModelTiles3DEntry,
 	ModelPointCloudEntry,
 	PointCloudStyle,
-	ModelGeoArrowEntry
+	ModelGeoArrowEntry,
+	ModelGeoJson3DEntry
 } from '$routes/map/data/types/model';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
@@ -99,6 +101,34 @@ export const createGeoArrowEntry = (
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
 		attribution: 'GeoArrow',
+		name,
+		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
+	},
+	interaction: { clickable: false },
+	style: {
+		visible: true,
+		type: 'geoarrow',
+		opacity: 0.7,
+		color: getRandomColor()
+	}
+});
+
+export const createGeoJson3DEntry = (
+	name: string,
+	data: FeatureCollection,
+	geometryType: VectorEntryGeometryType,
+	bounds?: [number, number, number, number]
+): ModelGeoJson3DEntry => ({
+	id: 'geojson3d_' + crypto.randomUUID(),
+	type: 'model',
+	format: {
+		type: 'geojson-3d',
+		data,
+		geometryType
+	},
+	metaData: {
+		...DEFAULT_CUSTOM_META_DATA,
+		attribution: 'GeoJSON 3D',
 		name,
 		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
 	},

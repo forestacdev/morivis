@@ -438,6 +438,48 @@ export const createLayersItems = (
 						};
 						symbolLayerItems.push(layerItem);
 						if (clickable) clickableVecter.push(layerItem.id);
+					} else if (type === 'raster' && entry.type === 'raster') {
+						const rasterStyle = entry.style;
+						const layerItem = {
+							...layerWithoutClickable,
+							metadata,
+							paint:
+								rasterStyle.type === 'basemap'
+									? {
+											...layerWithoutClickable.paint,
+											'raster-opacity':
+												layerWithoutClickable.paint?.['raster-opacity'] ?? rasterStyle.opacity,
+											'raster-hue-rotate':
+												layerWithoutClickable.paint?.['raster-hue-rotate'] ?? rasterStyle.hueRotate,
+											'raster-brightness-max':
+												layerWithoutClickable.paint?.['raster-brightness-max'] ??
+												rasterStyle.brightnessMax,
+											'raster-brightness-min':
+												layerWithoutClickable.paint?.['raster-brightness-min'] ??
+												rasterStyle.brightnessMin,
+											'raster-saturation':
+												layerWithoutClickable.paint?.['raster-saturation'] ??
+												rasterStyle.saturation,
+											'raster-contrast':
+												layerWithoutClickable.paint?.['raster-contrast'] ?? rasterStyle.contrast
+										}
+									: rasterStyle.type === 'categorical'
+										? {
+												...layerWithoutClickable.paint,
+												'raster-opacity':
+													layerWithoutClickable.paint?.['raster-opacity'] ?? rasterStyle.opacity,
+												'raster-resampling':
+													layerWithoutClickable.paint?.['raster-resampling'] ??
+													rasterStyle.resampling ??
+													'linear'
+											}
+										: {
+												...layerWithoutClickable.paint,
+												'raster-opacity':
+													layerWithoutClickable.paint?.['raster-opacity'] ?? rasterStyle.opacity
+											}
+						};
+						rasterLayerItems.push(layerItem);
 					}
 				});
 			}

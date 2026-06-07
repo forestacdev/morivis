@@ -36,6 +36,72 @@ const STYLE_KEYWORDS = new Set([
 const splitLines = (text: string): string[] =>
 	text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
 
+const mapMifCharsetToEncoding = (charset: string): string | null => {
+	const normalized = charset
+		.trim()
+		.toLowerCase()
+		.replace(/[-_\s]/g, '');
+
+	if (
+		normalized === 'shiftjis' ||
+		normalized === 'shift_jis' ||
+		normalized === 'sjis' ||
+		normalized === 'cp932' ||
+		normalized === 'ms932' ||
+		normalized === 'windowsjapanese' ||
+		normalized === 'japanese'
+	) {
+		return 'shift-jis';
+	}
+
+	if (normalized === 'utf8' || normalized === 'unicodeutf8') {
+		return 'utf-8';
+	}
+
+	return null;
+};
+
+const detectMifCharset = (buffer: ArrayBuffer): string | null => {
+	const sample = new TextDecoder('latin1').decode(buffer.slice(0, 4096));
+	const match = sample.match(/^\s*charset\s+"([^"]+)"/im);
+	return match?.[1] ? mapMifCharsetToEncoding(match[1]) : null;
+};
+
+const readFileAsText = async (file: File): Promise<string> => {
+	const buffer = await file.arrayBuffer();
+	const declaredEncoding = detectMifCharset(buffer);
+
+	if (declaredEncoding) {
+		try {
+			return new TextDecoder(declaredEncoding).decode(buffer);
+		} catch {
+			if (declaredEncoding === 'shift-jis') {
+				try {
+					return new TextDecoder('sjis').decode(buffer);
+				} catch {
+					// fall through to heuristic decoding
+				}
+			}
+		}
+	}
+
+	const utf8Text = new TextDecoder('utf-8').decode(buffer);
+
+	if (!utf8Text.includes('\uFFFD')) {
+		return utf8Text;
+	}
+
+	try {
+		return new TextDecoder('shift-jis').decode(buffer);
+	} catch {
+		try {
+			return new TextDecoder('sjis').decode(buffer);
+		} catch {
+			return utf8Text;
+		}
+	}
+};
+
 const getLineKeyword = (line: string): string => line.trim().split(/\s+/)[0]?.toLowerCase() ?? '';
 
 const isValidFeatureLine = (line: string): boolean => FEATURE_KEYWORDS.has(getLineKeyword(line));
@@ -767,10 +833,10 @@ export const mifFilesToGeoJson = async (
 	mifFile: File,
 	midFile?: File | null
 ): Promise<FeatureCollection<Geometry, FeatureProp>> => {
-	const mifText = await mifFile.text();
+	const mifText = await readFileAsText(mifFile);
 	const lines = splitLines(mifText);
 	const { delimiter, columns, dataIndex } = readHeader(lines);
-	const propertiesList = midFile ? parseMid(await midFile.text(), delimiter, columns) : [];
+	const propertiesList = midFile ? parseMid(await readFileAsText(midFile), delimiter, columns) : [];
 	const reader = new MifLineReader(lines);
 
 	const features: Feature<Geometry, FeatureProp>[] = [];

@@ -55,16 +55,24 @@ import {
 	esriFeatureProtocol,
 	terminateEsriFeatureWorker
 } from '$routes/map/protocol/vector/esri-feature';
+import {
+	ogcFeatureProtocol,
+	terminateOgcFeatureWorker
+} from '$routes/map/protocol/vector/ogc-feature';
+import {
+	wfsFeatureProtocol,
+	terminateWfsFeatureWorker
+} from '$routes/map/protocol/vector/wfs-feature';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { MapboxOverlay } from '@deck.gl/mapbox';
 import type { LayersList } from '@deck.gl/core';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import {
 	type AnyModelTiles3DEntry,
+	type ModelDeckVectorEntry,
 	type ModelMeshEntry,
 	type MeshStyle,
-	type ModelPointCloudEntry,
-	type ModelGeoArrowEntry
+	type ModelPointCloudEntry
 } from '$routes/map/data/types/model';
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
@@ -183,6 +191,42 @@ const releaseEsriProtocol = () => {
 		maplibregl.removeProtocol(esriFeatureProt.protocolName);
 		terminateEsriFeatureWorker();
 		_esriProtocolRegistered = false;
+	}
+};
+
+const ogcFeatureProt = ogcFeatureProtocol('ogc-feature');
+let _ogcFeatureProtocolRegistered = false;
+
+const ensureOgcFeatureProtocol = () => {
+	if (!_ogcFeatureProtocolRegistered) {
+		maplibregl.addProtocol(ogcFeatureProt.protocolName, ogcFeatureProt.request);
+		_ogcFeatureProtocolRegistered = true;
+	}
+};
+
+const releaseOgcFeatureProtocol = () => {
+	if (_ogcFeatureProtocolRegistered) {
+		maplibregl.removeProtocol(ogcFeatureProt.protocolName);
+		terminateOgcFeatureWorker();
+		_ogcFeatureProtocolRegistered = false;
+	}
+};
+
+const wfsFeatureProt = wfsFeatureProtocol('wfs-feature');
+let _wfsFeatureProtocolRegistered = false;
+
+const ensureWfsFeatureProtocol = () => {
+	if (!_wfsFeatureProtocolRegistered) {
+		maplibregl.addProtocol(wfsFeatureProt.protocolName, wfsFeatureProt.request);
+		_wfsFeatureProtocolRegistered = true;
+	}
+};
+
+const releaseWfsFeatureProtocol = () => {
+	if (_wfsFeatureProtocolRegistered) {
+		maplibregl.removeProtocol(wfsFeatureProt.protocolName);
+		terminateWfsFeatureWorker();
+		_wfsFeatureProtocolRegistered = false;
 	}
 };
 
@@ -666,7 +710,7 @@ const createMapStore = () => {
 			}
 			currentDeckTiles3dEntries.clear();
 			currentDeckPointCloudEntries.clear();
-			currentDeckGeoArrowEntries.clear();
+			currentDeckVectorEntries.clear();
 			clearPointCloudDataCache();
 			return;
 		}
@@ -716,17 +760,17 @@ const createMapStore = () => {
 	let currentThreeModelIds: Set<string> = new Set();
 	let currentDeckTiles3dEntries = new Map<string, AnyModelTiles3DEntry>();
 	let currentDeckPointCloudEntries = new Map<string, ModelPointCloudEntry>();
-	let currentDeckGeoArrowEntries = new Map<string, ModelGeoArrowEntry>();
+	let currentDeckVectorEntries = new Map<string, ModelDeckVectorEntry>();
 
 	const syncDeckOverlay = async (
 		tiles3dEntries: AnyModelTiles3DEntry[],
 		pointCloudEntries: ModelPointCloudEntry[] = [],
-		geoArrowEntries: ModelGeoArrowEntry[] = []
+		deckVectorEntries: ModelDeckVectorEntry[] = []
 	) => {
 		currentDeckTiles3dEntries = new Map(tiles3dEntries.map((entry) => [entry.id, entry]));
 		currentDeckPointCloudEntries = new Map(pointCloudEntries.map((entry) => [entry.id, entry]));
-		currentDeckGeoArrowEntries = new Map(geoArrowEntries.map((entry) => [entry.id, entry]));
-		const layers = await createDeckOverlay(tiles3dEntries, pointCloudEntries, geoArrowEntries);
+		currentDeckVectorEntries = new Map(deckVectorEntries.map((entry) => [entry.id, entry]));
+		const layers = await createDeckOverlay(tiles3dEntries, pointCloudEntries, deckVectorEntries);
 		setDeckOverlay(layers);
 	};
 
@@ -734,7 +778,7 @@ const createMapStore = () => {
 		await syncDeckOverlay(
 			Array.from(currentDeckTiles3dEntries.values()),
 			Array.from(currentDeckPointCloudEntries.values()),
-			Array.from(currentDeckGeoArrowEntries.values())
+			Array.from(currentDeckVectorEntries.values())
 		);
 		if (map && isMapValid(map)) {
 			map.triggerRepaint();
@@ -877,9 +921,9 @@ const createMapStore = () => {
 	const setDeckModelStyleEntries = async (
 		tiles3dEntries: AnyModelTiles3DEntry[],
 		pointCloudEntries: ModelPointCloudEntry[] = [],
-		geoArrowEntries: ModelGeoArrowEntry[] = []
+		deckVectorEntries: ModelDeckVectorEntry[] = []
 	) => {
-		await syncDeckOverlay(tiles3dEntries, pointCloudEntries, geoArrowEntries);
+		await syncDeckOverlay(tiles3dEntries, pointCloudEntries, deckVectorEntries);
 	};
 
 	const setDeckModelVisibility = async (entryId: string, visible: boolean) => {
@@ -897,9 +941,9 @@ const createMapStore = () => {
 			return;
 		}
 
-		const geoArrowEntry = currentDeckGeoArrowEntries.get(entryId);
-		if (!geoArrowEntry) return;
-		geoArrowEntry.style.visible = visible;
+		const deckVectorEntry = currentDeckVectorEntries.get(entryId);
+		if (!deckVectorEntry) return;
+		deckVectorEntry.style.visible = visible;
 		await refreshCurrentDeckOverlay();
 	};
 
@@ -918,9 +962,9 @@ const createMapStore = () => {
 			return;
 		}
 
-		const geoArrowEntry = currentDeckGeoArrowEntries.get(entryId);
-		if (!geoArrowEntry) return;
-		geoArrowEntry.style.opacity = opacity;
+		const deckVectorEntry = currentDeckVectorEntries.get(entryId);
+		if (!deckVectorEntry) return;
+		deckVectorEntry.style.opacity = opacity;
 		await refreshCurrentDeckOverlay();
 	};
 
@@ -938,10 +982,10 @@ const createMapStore = () => {
 		await refreshCurrentDeckOverlay();
 	};
 
-	const setDeckGeoArrowColor = async (entryId: string, color: string) => {
-		const geoArrowEntry = currentDeckGeoArrowEntries.get(entryId);
-		if (!geoArrowEntry) return;
-		geoArrowEntry.style.color = color;
+	const setDeckVectorColor = async (entryId: string, color: string) => {
+		const deckVectorEntry = currentDeckVectorEntries.get(entryId);
+		if (!deckVectorEntry) return;
+		deckVectorEntry.style.color = color;
 		await refreshCurrentDeckOverlay();
 	};
 
@@ -1525,7 +1569,7 @@ const createMapStore = () => {
 		setDeckModelVisibility,
 		setDeckModelOpacity,
 		setDeckPointCloudPointSize,
-		setDeckGeoArrowColor,
+		setDeckVectorColor,
 		setModelAnimationState,
 		setHighlightLayers,
 		clearHighlightLayers,
@@ -1597,6 +1641,10 @@ const createMapStore = () => {
 		releaseGeojsonProtocol,
 		ensureEsriProtocol,
 		releaseEsriProtocol,
+		ensureOgcFeatureProtocol,
+		releaseOgcFeatureProtocol,
+		ensureWfsFeatureProtocol,
+		releaseWfsFeatureProtocol,
 		ensureCogProtocol,
 		releaseCogProtocol,
 		ensureDemProtocol,

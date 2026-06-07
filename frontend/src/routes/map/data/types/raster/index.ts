@@ -1,4 +1,11 @@
-import type { BaseMetaData, Opacity } from '$routes/map/data/types';
+import type {
+	BaseMetaData,
+	Opacity,
+	AdjustableRange,
+	SharedDiscreteDimension,
+	SharedDimensionState,
+	SourceTemporalBehavior
+} from '$routes/map/data/types';
 import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
 import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 import type { SequentialCount, SequentialScheme } from '$routes/map/utils/color/color-brewer';
@@ -70,7 +77,7 @@ export interface TileXYZ {
 	z: ZoomLevel;
 }
 
-export type RasterFormatType = 'image' | 'pmtiles' | 'mbtiles' | 'cog' | 'tiff';
+export type RasterFormatType = 'image' | 'pmtiles' | 'mbtiles' | 'cog' | 'tiff' | 'wcs';
 
 export type TileSize = 512 | 256;
 
@@ -121,16 +128,18 @@ export type DemStyleModeNum = (typeof DEM_STYLE_TYPE)[keyof typeof DEM_STYLE_TYP
 export interface DemLinearColorStyle {
 	type: 'linear';
 	colorMap: ColormapPresetName;
-	max: number;
-	min: number;
+	range?: AdjustableRange;
+	max?: number;
+	min?: number;
 }
 
 export interface DemStepColorStyle {
 	type: 'step';
 	colorMap: SequentialScheme;
 	divisions: SequentialCount;
-	max: number;
-	min: number;
+	range?: AdjustableRange;
+	max?: number;
+	min?: number;
 }
 
 export type DemRangeColorStyle = DemLinearColorStyle | DemStepColorStyle;
@@ -162,21 +171,23 @@ export type BandTypeKey = 'single' | 'multi' | 'twi' | 'slope' | 'aspect' | 'tpi
 
 export interface ShingleBandData {
 	index: number;
-	min: number;
-	max: number;
+	range?: AdjustableRange;
+	min?: number;
+	max?: number;
 	colorMap: ColorMapType;
 }
 
 export interface DerivedBandData {
-	min: number;
-	max: number;
+	range?: AdjustableRange;
+	min?: number;
+	max?: number;
 	colorMap: ColorMapType;
 }
 
 export interface MultiBandData {
-	r: { index: number; min: number; max: number }; // R
-	g: { index: number; min: number; max: number }; // G
-	b: { index: number; min: number; max: number }; // B
+	r: { index: number; range?: AdjustableRange; min?: number; max?: number }; // R
+	g: { index: number; range?: AdjustableRange; min?: number; max?: number }; // G
+	b: { index: number; range?: AdjustableRange; min?: number; max?: number }; // B
 }
 
 export interface RasterTiffStyle extends BaseRasterStyle {
@@ -202,16 +213,9 @@ interface RasterMetaData extends BaseMetaData {
 	imageCorners?: [[number, number], [number, number], [number, number], [number, number]];
 }
 
-export interface RasterDiscreteDimension {
-	type: 'time' | 'variant';
-	values: string[];
-	labels?: string[];
-	placeholder?: string;
-}
+export type RasterDiscreteDimension = SharedDiscreteDimension;
 
-export interface RasterDimensionState {
-	currentIndex: number;
-}
+export type RasterDimensionState = SharedDimensionState;
 
 export interface RasterEntryState {
 	dimension?: RasterDimensionState;
@@ -219,10 +223,12 @@ export interface RasterEntryState {
 
 export interface RasterTemporalProperties {
 	dimension: RasterDiscreteDimension;
+	behaviors?: SourceTemporalBehavior[];
 }
 
 export interface RasterBandProperties {
 	numBands: number;
+	sampleRanges?: { min: number; max: number }[];
 }
 
 export interface RasterProperties {
@@ -273,6 +279,21 @@ export interface RasterCogEntry<T> extends BaseRasterEntry {
 	format: {
 		type: 'cog';
 		url: string;
+		mode?: 'tile' | 'viewport';
+	};
+	style: T;
+}
+
+export interface RasterWcsEntry<T> extends BaseRasterEntry {
+	format: {
+		type: 'wcs';
+		url: string;
+		serviceUrl: string;
+		version: string;
+		coverageId: string;
+		outputFormat: string;
+		crs?: string;
+		axisLabels?: string[];
 	};
 	style: T;
 }
@@ -288,6 +309,7 @@ export type RasterEntry<T> =
 	| RasterImageEntry<T>
 	| RasterPMTilesEntry<T>
 	| RasterMBTilesEntry<T>
-	| RasterCogEntry<T>;
+	| RasterCogEntry<T>
+	| RasterWcsEntry<T>;
 export type RasterDemEntry = RasterEntry<RasterDemStyle>;
 export type RasterCadEntry = RasterEntry<RasterCadStyle>;

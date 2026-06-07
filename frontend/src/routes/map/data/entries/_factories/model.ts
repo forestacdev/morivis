@@ -105,6 +105,13 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): ModelMeshEnt
 				heightColorRamp: {
 					enabled: heightColorRamp.enabled ?? true,
 					colorMap: 'jet',
+					range: {
+						value: [heightColorRamp.min, heightColorRamp.max],
+						domain: [
+							heightColorRamp.sourceMin ?? heightColorRamp.min,
+							heightColorRamp.sourceMax ?? heightColorRamp.max
+						]
+					},
 					min: heightColorRamp.min,
 					max: heightColorRamp.max,
 					sourceMin: heightColorRamp.sourceMin ?? heightColorRamp.min,

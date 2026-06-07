@@ -6,6 +6,7 @@
 	import DemXmlForm from '$routes/map/components/upload/form/DemXmlForm.svelte';
 	import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
 	import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
+	import FeatureServiceForm from '$routes/map/components/upload/form/FeatureServiceForm.svelte';
 	import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
 	import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
 	import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
@@ -20,6 +21,7 @@
 	import Grib2Form from '$routes/map/components/upload/form/Grib2Form.svelte';
 	import GtfsForm from '$routes/map/components/upload/form/GtfsForm.svelte';
 	import Hdf5Form from '$routes/map/components/upload/form/Hdf5Form.svelte';
+	import HritForm from '$routes/map/components/upload/form/HritForm.svelte';
 	import KmlForm from '$routes/map/components/upload/form/KmlForm.svelte';
 	import LandXmlForm from '$routes/map/components/upload/form/LandXmlForm.svelte';
 	import LocationHistoryForm from '$routes/map/components/upload/form/LocationHistoryForm.svelte';
@@ -43,6 +45,7 @@
 	import TsvForm from '$routes/map/components/upload/form/TsvForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';
+	import WktForm from '$routes/map/components/upload/form/WktForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
@@ -61,6 +64,7 @@
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
 		remoteWmtsUrl: string | null;
+		remoteFeatureServiceUrl: string | null;
 		pendingTileUrl: string | null;
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
@@ -81,6 +85,7 @@
 		remoteVectorUrl = $bindable(),
 		remoteTiles3dUrl = $bindable(),
 		remoteWmtsUrl = $bindable(),
+		remoteFeatureServiceUrl = $bindable(),
 		pendingTileUrl = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
@@ -110,6 +115,17 @@
 			{/if}
 			{#if showDialogType === 'wcs'}
 				<WcsForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'featureservice' || showDialogType === 'wfs' || showDialogType === 'ogcapifeatures'}
+				<FeatureServiceForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:remoteFeatureServiceUrl
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
 			{/if}
 			{#if showDialogType === 'stac'}
 				<StacForm bind:showDataEntry bind:showDialogType />
@@ -173,6 +189,9 @@
 			{#if showDialogType === 'grib2'}
 				<Grib2Form bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
+			{#if showDialogType === 'hrit'}
+				<HritForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
 			{#if showDialogType === 'demxml'}
 				<DemXmlForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
@@ -212,6 +231,17 @@
 			{/if}
 			{#if showDialogType === 'geojson'}
 				<GeoJsonForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:showZoneForm
+					bind:focusBbox
+					bind:zoneConfirmedEpsg
+					{selectedEpsgCode}
+				/>
+			{/if}
+			{#if showDialogType === 'wkt'}
+				<WktForm
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile

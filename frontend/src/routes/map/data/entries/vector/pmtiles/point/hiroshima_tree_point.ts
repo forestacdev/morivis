@@ -171,7 +171,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '樹高の範囲による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [7, 40],
+						range: { value: [7, 40], domain: [7, 40] },
 						divisions: 6
 					}
 				},
@@ -181,7 +181,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '胸高直径の範囲による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 100],
+						range: { value: [0, 100], domain: [0, 100] },
 						divisions: 6
 					}
 				},
@@ -191,7 +191,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '単木材積の範囲による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 5],
+						range: { value: [0, 5], domain: [0, 5] },
 						divisions: 6
 					}
 				}
@@ -213,7 +213,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '胸高直径',
 					name: '胸高直径',
 					mapping: {
-						range: [7, 40],
+						range: { value: [7, 40], domain: [7, 40] },
 						values: [5, 10]
 					}
 				},
@@ -222,7 +222,7 @@ const entry: VectorEntry<TileMetaData> = {
 					key: '樹高',
 					name: '樹高',
 					mapping: {
-						range: [7, 40],
+						range: { value: [7, 40], domain: [7, 40] },
 						values: [5, 10]
 					}
 				}

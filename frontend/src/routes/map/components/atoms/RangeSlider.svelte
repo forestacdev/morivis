@@ -9,6 +9,8 @@
 		icon?: string;
 		isInt?: boolean;
 		showValue?: boolean;
+		disabled?: boolean;
+		onInput?: (value: number) => void;
 	}
 	let {
 		label,
@@ -18,7 +20,9 @@
 		step = 0.01,
 		icon,
 		isInt = false,
-		showValue = true
+		showValue = true,
+		disabled = false,
+		onInput
 	}: Props = $props();
 
 	let progressPercent = $derived.by(() => {
@@ -26,6 +30,10 @@
 		const clampedValue = Math.min(Math.max(value, min), max);
 		return ((clampedValue - min) / (max - min)) * 100;
 	});
+
+	const handleInput = () => {
+		onInput?.(value);
+	};
 </script>
 
 <div class="flex flex-col gap-3 pb-4 text-base">
@@ -47,6 +55,8 @@
 		{min}
 		{max}
 		{step}
+		{disabled}
+		oninput={handleInput}
 		style="background: linear-gradient(to right, var(--color-main-accent) 0%, var(--color-accent) {progressPercent}%, var(--color-sub) {progressPercent}%, var(--color-sub) 100%);"
 	/>
 </div>

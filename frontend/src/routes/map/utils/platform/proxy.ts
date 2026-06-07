@@ -87,6 +87,16 @@ const STATIC_PROXY_RULES: ProxyRule[] = [
 		proxyPath: '/api/ecoris'
 	},
 	{
+		match: 'objects.eodc.eu',
+		target: 'https://objects.eodc.eu',
+		proxyPath: '/api/eodc-objects'
+	},
+	{
+		match: 'ahocevar.com',
+		target: 'https://ahocevar.com',
+		proxyPath: '/api/ahocevar'
+	},
+	{
 		match: 'localhost:9000',
 		target: 'http://localhost:9000',
 		proxyPath: '/api/font-server'
@@ -139,7 +149,7 @@ export const buildRuntimeProxyRules = (publicEnvValues: PublicEnvValues = {}): P
 
 /**
  * MapLibre の transformRequest に渡す関数。
- * mobile モードのみ動作し、実行時の proxy ルールに従って URL を書き換える。
+ * development のみ動作し、実行時の proxy ルールに従って URL を書き換える。
  */
 export const devProxyTransform = (
 	url: string,

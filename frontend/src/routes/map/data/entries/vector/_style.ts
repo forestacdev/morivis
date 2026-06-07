@@ -338,7 +338,7 @@ export const TREE_STEP_COLOR_STYLE: ColorStepExpression = {
 	name: '面積ごとの色分け',
 	mapping: {
 		scheme: 'RdPu',
-		range: [0, 9380],
+		range: { value: [0, 9380], domain: [0, 9380] },
 		divisions: 5
 	}
 };
@@ -471,7 +471,7 @@ export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression[] = [
 		name: '立木本数による色分け',
 		mapping: {
 			scheme: 'YlOrRd',
-			range: [0, 50],
+			range: { value: [0, 50], domain: [0, 50] },
 			divisions: 5
 		}
 	},
@@ -481,7 +481,7 @@ export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression[] = [
 		name: '立木密度による色分け',
 		mapping: {
 			scheme: 'YlOrRd',
-			range: [0, 1500],
+			range: { value: [0, 1500], domain: [0, 1500] },
 			divisions: 5
 		}
 	},
@@ -491,7 +491,7 @@ export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression[] = [
 		name: '平均樹高による色分け',
 		mapping: {
 			scheme: 'YlOrRd',
-			range: [0, 30],
+			range: { value: [0, 30], domain: [0, 30] },
 			divisions: 5
 		}
 	},
@@ -501,7 +501,7 @@ export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression[] = [
 		name: '平均直径による色分け',
 		mapping: {
 			scheme: 'YlOrRd',
-			range: [0, 50],
+			range: { value: [0, 50], domain: [0, 50] },
 			divisions: 5
 		}
 	},
@@ -511,7 +511,7 @@ export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression[] = [
 		name: '合計材積による色分け',
 		mapping: {
 			scheme: 'YlOrRd',
-			range: [0, 50],
+			range: { value: [0, 50], domain: [0, 50] },
 			divisions: 5
 		}
 	},
@@ -521,7 +521,7 @@ export const FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS: ColorStepExpression[] = [
 		name: '平均傾斜による色分け',
 		mapping: {
 			scheme: 'YlOrRd',
-			range: [0, 90],
+			range: { value: [0, 90], domain: [0, 90] },
 			divisions: 5
 		}
 	}

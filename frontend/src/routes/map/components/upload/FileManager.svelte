@@ -6,6 +6,7 @@
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
 	import { hasExifGps } from '$routes/map/utils/formats/exif';
 	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
+	import { isLikelyHritFile } from '$routes/map/utils/formats/hrit';
 	import { extractModelFromKmz } from '$routes/map/utils/formats/kml';
 	import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
 	import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
@@ -48,6 +49,11 @@
 		return (relativePath ?? file.name).toLowerCase();
 	};
 	const hasExtension = (file: File, extension: string) => getPathLikeName(file).endsWith(extension);
+	const hasKnownExtension = (file: File) => {
+		const name = file.name;
+		const dotIndex = name.lastIndexOf('.');
+		return dotIndex > 0 && dotIndex < name.length - 1;
+	};
 	const logDroppedFiles = (files: File[]) => {
 		console.log(
 			'[FileManager] dropped files',
@@ -187,6 +193,10 @@
 					}
 					showDialogType = 'geojson';
 					return;
+				case 'wkt':
+				case 'ewkt':
+					showDialogType = 'wkt';
+					return;
 				case 'topojson':
 					showDialogType = 'topojson';
 					return;
@@ -231,6 +241,11 @@
 				}
 				case 'landxml':
 					showDialogType = 'landxml';
+					return;
+				case 'bz2':
+				case 'lrit':
+				case 'hrit':
+					showDialogType = 'hrit';
 					return;
 				case 'dm':
 					showDialogType = 'dm';
@@ -364,6 +379,10 @@
 					showNotification('対応していないXMLファイルです', 'error');
 					return;
 				default:
+					if (!hasKnownExtension(file) && (await isLikelyHritFile(file))) {
+						showDialogType = 'hrit';
+						return;
+					}
 					showNotification('対応していないファイル形式です', 'error');
 					return;
 			}
@@ -439,6 +458,18 @@
 						showNotification('対応していないXMLファイルです', 'error');
 					}
 				} else {
+					const hritFiles = await Promise.all(
+						files.map(async (candidate) => ({
+							file: candidate,
+							isHrit: !hasKnownExtension(candidate) && (await isLikelyHritFile(candidate))
+						}))
+					);
+					if (hritFiles.some((candidate) => candidate.isHrit)) {
+						dropFile = file;
+						showDialogType = 'hrit';
+						return;
+					}
+
 					// 対応ファイルを探して最初にマッチしたものを処理
 					const supportedFile = files.find((f) => {
 						const ext = '.' + (f.name.split('.').pop()?.toLowerCase() ?? '');

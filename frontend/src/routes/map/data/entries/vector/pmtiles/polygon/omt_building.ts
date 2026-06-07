@@ -1,5 +1,4 @@
-import { TOKYO_23KU_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 
@@ -24,8 +23,8 @@ const entry: VectorEntry<TileMetaData> = {
 		maxZoom: 14,
 		sourceLayer: 'building',
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
-		xyzImageTile: { x: 14550, y: 6452, z: 14 }
-		// mapImage: `${MAP_IMAGE_BASE_PATH}/plateau_lod2_mvt.webp`
+		xyzImageTile: { x: 14550, y: 6452, z: 14 },
+		mapImage: `${MAP_IMAGE_BASE_PATH}/omt_building.webp`
 	},
 	properties: {
 		attributeView: {
@@ -87,7 +86,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '高さごとの色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 100],
+						range: { value: [0, 100], domain: [0, 100] },
 						divisions: 5
 					}
 				}

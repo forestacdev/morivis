@@ -6,7 +6,8 @@ const entry: RasterCogEntry<RasterTiffStyle> = {
 	type: 'raster',
 	format: {
 		type: 'cog',
-		url: `${ENTRY_COG_DATA_PATH}/fr_mesh20m_07.tif`
+		url: `${ENTRY_COG_DATA_PATH}/fr_mesh20m_07.tif`,
+		mode: 'viewport'
 	},
 	metaData: {
 		name: '森林資源メッシュ20m　7系',

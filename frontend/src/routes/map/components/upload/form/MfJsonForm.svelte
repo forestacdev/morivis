@@ -96,7 +96,12 @@
 		if (temporalItems.length === 0) return;
 
 		entry.properties.temporal = {
-			key: 'time',
+			dimension: {
+				type: 'time',
+				values: temporalItems.map((item) => item.raw),
+				labels: temporalItems.map((item) => item.label)
+			},
+			behaviors: [{ type: 'filter', key: 'time' }],
 			items: temporalItems
 		};
 		entry.properties.attributeView.timeKey = 'time';

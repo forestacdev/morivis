@@ -5,7 +5,7 @@
 
 	import type {
 		AnyModelEntry,
-		ModelGeoArrowEntry,
+		ModelDeckVectorEntry,
 		ModelMeshEntry,
 		MeshStyle,
 		PointCloudStyleEntry
@@ -38,7 +38,7 @@
 	{/if}
 
 	{#if layerEntry.style.type === 'geoarrow'}
-		<GeoArrowOption bind:layerEntry={layerEntry as ModelGeoArrowEntry} bind:showColorOption />
+		<GeoArrowOption bind:layerEntry={layerEntry as ModelDeckVectorEntry} bind:showColorOption />
 	{/if}
 
 	{#if layerEntry.style.type === 'mesh'}

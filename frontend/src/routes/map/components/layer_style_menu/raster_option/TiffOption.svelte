@@ -6,6 +6,7 @@
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
 	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
+	import { createAdjustableRange } from '$routes/map/data/types';
 	import {
 		type ColorMapType,
 		type DerivedBandData,
@@ -59,6 +60,10 @@
 	const hasDerivedModes = $derived(numBands === 1 && GeoTiffCache.hasRawSingleBand(layerEntry.id));
 	let generatingDerivedMode = $state<string | null>(null);
 	let lastHandledMode = $state<string | null>(null);
+	const toAdjustableRange = (min: number, max: number) => ({
+		value: [min, max] as [number, number],
+		domain: [min, max] as [number, number]
+	});
 	/** min/maxからスライダーのstepを動的に算出 */
 	const calcStep = (min: number, max: number): number => {
 		const range = Math.abs(max - min);
@@ -102,8 +107,7 @@
 		) {
 			layerEntry.style.visualization.uniformsData.twi = {
 				colorMap: 'hsv',
-				min: twiRange.min,
-				max: twiRange.max
+				range: toAdjustableRange(twiRange.min, twiRange.max)
 			};
 			return;
 		}
@@ -115,8 +119,7 @@
 		) {
 			layerEntry.style.visualization.uniformsData.slope = {
 				colorMap: 'salinity',
-				min: slopeRange.min,
-				max: slopeRange.max
+				range: toAdjustableRange(slopeRange.min, slopeRange.max)
 			};
 			return;
 		}
@@ -128,8 +131,7 @@
 		) {
 			layerEntry.style.visualization.uniformsData.aspect = {
 				colorMap: 'rainbow-soft',
-				min: aspectRange.min,
-				max: aspectRange.max
+				range: toAdjustableRange(aspectRange.min, aspectRange.max)
 			};
 			return;
 		}
@@ -141,40 +143,33 @@
 		) {
 			layerEntry.style.visualization.uniformsData.tpi = {
 				colorMap: 'rdbu',
-				min: tpiRange.min,
-				max: tpiRange.max
+				range: toAdjustableRange(tpiRange.min, tpiRange.max)
 			};
 		}
 	};
 
-	const createDerivedDefaultStyle = (
-		mode: 'twi' | 'slope' | 'aspect' | 'tpi'
-	): { colorMap: ColorMapType; min: number; max: number } => {
+	const createDerivedDefaultStyle = (mode: 'twi' | 'slope' | 'aspect' | 'tpi'): DerivedBandData => {
 		if (mode === 'twi') {
 			return {
 				colorMap: 'hsv',
-				min: twiRange?.min ?? 0,
-				max: twiRange?.max ?? 1
+				range: toAdjustableRange(twiRange?.min ?? 0, twiRange?.max ?? 1)
 			};
 		}
 		if (mode === 'slope') {
 			return {
 				colorMap: 'salinity',
-				min: slopeRange?.min ?? 0,
-				max: slopeRange?.max ?? 90
+				range: toAdjustableRange(slopeRange?.min ?? 0, slopeRange?.max ?? 90)
 			};
 		}
 		if (mode === 'aspect') {
 			return {
 				colorMap: 'rainbow-soft',
-				min: aspectRange?.min ?? 0,
-				max: aspectRange?.max ?? 360
+				range: toAdjustableRange(aspectRange?.min ?? 0, aspectRange?.max ?? 360)
 			};
 		}
 		return {
 			colorMap: 'rdbu',
-			min: tpiRange?.min ?? -1,
-			max: tpiRange?.max ?? 1
+			range: toAdjustableRange(tpiRange?.min ?? -1, tpiRange?.max ?? 1)
 		};
 	};
 
@@ -223,6 +218,24 @@
 	};
 
 	$effect(() => {
+		const single = layerEntry.style.visualization.uniformsData.single;
+		single.range ??= createAdjustableRange(single.min ?? rangeMin, single.max ?? rangeMax);
+		const { twi, slope, aspect, tpi } = layerEntry.style.visualization.uniformsData;
+		if (twi) twi.range ??= createAdjustableRange(twi.min ?? 0, twi.max ?? 1);
+		if (slope) slope.range ??= createAdjustableRange(slope.min ?? 0, slope.max ?? 90);
+		if (aspect) aspect.range ??= createAdjustableRange(aspect.min ?? 0, aspect.max ?? 360);
+		if (tpi) tpi.range ??= createAdjustableRange(tpi.min ?? -1, tpi.max ?? 1);
+		for (const key of ['r', 'g', 'b'] as const) {
+			const channel = layerEntry.style.visualization.uniformsData.multi[key];
+			const channelRange = dataRanges?.[channel.index];
+			channel.range ??= createAdjustableRange(
+				channel.min ?? channelRange?.min ?? 0,
+				channel.max ?? channelRange?.max ?? 65535
+			);
+		}
+	});
+
+	$effect(() => {
 		if (layerEntry.style.visualization.mode === 'twi' && !hasDerivedModes) {
 			layerEntry.style.visualization.mode = 'single';
 		}
@@ -265,8 +278,10 @@
 					onchange={() => {
 						const newRange = dataRanges?.[layerEntry.style.visualization.uniformsData.single.index];
 						if (newRange) {
-							layerEntry.style.visualization.uniformsData.single.min = newRange.min;
-							layerEntry.style.visualization.uniformsData.single.max = newRange.max;
+							layerEntry.style.visualization.uniformsData.single.range = toAdjustableRange(
+								newRange.min,
+								newRange.max
+							);
 						}
 					}}
 				>
@@ -286,10 +301,10 @@
 		</ColorMapSelect>
 		<RangeSliderDouble
 			label="数値範囲"
-			bind:lowerValue={layerEntry.style.visualization.uniformsData['single'].min}
-			bind:upperValue={layerEntry.style.visualization.uniformsData['single'].max}
-			max={rangeMax}
-			min={rangeMin}
+			bind:lowerValue={layerEntry.style.visualization.uniformsData['single'].range!.value[0]}
+			bind:upperValue={layerEntry.style.visualization.uniformsData['single'].range!.value[1]}
+			max={layerEntry.style.visualization.uniformsData['single'].range!.domain[1]}
+			min={layerEntry.style.visualization.uniformsData['single'].range!.domain[0]}
 			step={calcStep(rangeMin, rangeMax)}
 			primaryColor={colorMapManager.createSimpleCSSGradient(
 				layerEntry.style.visualization.uniformsData['single'].colorMap
@@ -314,10 +329,10 @@
 				</ColorMapSelect>
 				<RangeSliderDouble
 					label="数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.twi.min}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.twi.max}
-					min={twiRange?.min ?? 0}
-					max={twiRange?.max ?? 1}
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.twi.range!.value[0]}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.twi.range!.value[1]}
+					min={layerEntry.style.visualization.uniformsData.twi.range!.domain[0]}
+					max={layerEntry.style.visualization.uniformsData.twi.range!.domain[1]}
 					step={calcStep(twiRange?.min ?? 0, twiRange?.max ?? 1)}
 					primaryColor={colorMapManager.createSimpleCSSGradient(
 						layerEntry.style.visualization.uniformsData.twi.colorMap
@@ -346,10 +361,10 @@
 				</ColorMapSelect>
 				<RangeSliderDouble
 					label="数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
-					min={slopeRange?.min ?? 0}
-					max={slopeRange?.max ?? 90}
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.range!.value[0]}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.range!.value[1]}
+					min={layerEntry.style.visualization.uniformsData.slope.range!.domain[0]}
+					max={layerEntry.style.visualization.uniformsData.slope.range!.domain[1]}
 					step={calcStep(slopeRange?.min ?? 0, slopeRange?.max ?? 90)}
 					primaryColor={colorMapManager.createSimpleCSSGradient(
 						layerEntry.style.visualization.uniformsData.slope.colorMap
@@ -378,10 +393,10 @@
 				</ColorMapSelect>
 				<RangeSliderDouble
 					label="数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.aspect.min}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.aspect.max}
-					min={aspectRange?.min ?? 0}
-					max={aspectRange?.max ?? 360}
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.aspect.range!.value[0]}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.aspect.range!.value[1]}
+					min={layerEntry.style.visualization.uniformsData.aspect.range!.domain[0]}
+					max={layerEntry.style.visualization.uniformsData.aspect.range!.domain[1]}
 					step={calcStep(aspectRange?.min ?? 0, aspectRange?.max ?? 360)}
 					primaryColor={colorMapManager.createSimpleCSSGradient(
 						layerEntry.style.visualization.uniformsData.aspect.colorMap
@@ -410,10 +425,10 @@
 				</ColorMapSelect>
 				<RangeSliderDouble
 					label="数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.tpi.min}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.tpi.max}
-					min={tpiRange?.min ?? -1}
-					max={tpiRange?.max ?? 1}
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.tpi.range!.value[0]}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.tpi.range!.value[1]}
+					min={layerEntry.style.visualization.uniformsData.tpi.range!.domain[0]}
+					max={layerEntry.style.visualization.uniformsData.tpi.range!.domain[1]}
 					step={calcStep(tpiRange?.min ?? -1, tpiRange?.max ?? 1)}
 					primaryColor={colorMapManager.createSimpleCSSGradient(
 						layerEntry.style.visualization.uniformsData.tpi.colorMap
@@ -444,8 +459,10 @@
 								const newIdx = layerEntry.style.visualization.uniformsData.multi[key].index;
 								const newRange = dataRanges?.[newIdx];
 								if (newRange) {
-									layerEntry.style.visualization.uniformsData.multi[key].min = newRange.min;
-									layerEntry.style.visualization.uniformsData.multi[key].max = newRange.max;
+									layerEntry.style.visualization.uniformsData.multi[key].range = toAdjustableRange(
+										newRange.min,
+										newRange.max
+									);
 								}
 							}}
 						>
@@ -458,10 +475,12 @@
 					<div class="">
 						<RangeSliderDouble
 							label="範囲"
-							bind:lowerValue={layerEntry.style.visualization.uniformsData.multi[key].min}
-							bind:upperValue={layerEntry.style.visualization.uniformsData.multi[key].max}
-							min={range?.min ?? 0}
-							max={range?.max ?? 65535}
+							bind:lowerValue={layerEntry.style.visualization.uniformsData.multi[key].range!
+								.value[0]}
+							bind:upperValue={layerEntry.style.visualization.uniformsData.multi[key].range!
+								.value[1]}
+							min={layerEntry.style.visualization.uniformsData.multi[key].range!.domain[0]}
+							max={layerEntry.style.visualization.uniformsData.multi[key].range!.domain[1]}
 							step={calcStep(range?.min ?? 0, range?.max ?? 65535)}
 							primaryColor={color}
 						/>

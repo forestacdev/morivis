@@ -6,6 +6,10 @@
 		label?: string;
 		lowerValue?: number;
 		upperValue?: number;
+		lowerLabel?: string;
+		upperLabel?: string;
+		lowerDisplayValue?: string;
+		upperDisplayValue?: string;
 		min?: number;
 		max?: number;
 		primaryColor?: string;
@@ -21,6 +25,10 @@
 		label = 'デュアルレンジスライダー',
 		lowerValue = $bindable(20),
 		upperValue = $bindable(80),
+		lowerLabel = '下限',
+		upperLabel = '上限',
+		lowerDisplayValue,
+		upperDisplayValue,
 		min = 0,
 		max = 100,
 		step = 1,
@@ -121,7 +129,7 @@
 		<div class="mb-4 text-base select-none">
 			{label}
 			<span class="">
-				{fmt(lowerValue)} - {fmt(upperValue)}
+				{lowerDisplayValue ?? fmt(lowerValue)} - {upperDisplayValue ?? fmt(upperValue)}
 			</span>
 		</div>
 	{/if}
@@ -186,12 +194,14 @@
 	</div>
 
 	<!-- 値表示（詳細版） -->
-	<div class="mt-3 flex justify-between px-2 text-base text-sm select-none">
-		<div class="">
-			<span class="">{fmt(min)}</span>
+	<div class="mt-3 flex justify-between gap-3 px-2 text-base text-sm select-none">
+		<div class="min-w-0">
+			<div class="text-base/80 text-sm">{lowerLabel}</div>
+			<div class="truncate text-white">{lowerDisplayValue ?? fmt(lowerValue)}</div>
 		</div>
-		<div class="">
-			<span class="">{fmt(max)}</span>
+		<div class="min-w-0 text-right">
+			<div class="text-base/80 text-sm">{upperLabel}</div>
+			<div class="truncate text-white">{upperDisplayValue ?? fmt(upperValue)}</div>
 		</div>
 	</div>
 </div>

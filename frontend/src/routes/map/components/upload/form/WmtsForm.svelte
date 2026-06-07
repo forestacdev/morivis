@@ -15,6 +15,7 @@
 		parseWmtsCapabilities,
 		type MapLibreRasterSourceInfo
 	} from '$routes/map/utils/formats/wmts';
+	import { normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -35,15 +36,7 @@
 			.string()
 			.required('URLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
-				if (!value) return false;
-				try {
-					const normalized = value.trim();
-					if (!normalized) return false;
-					const parsed = new URL(normalized);
-					return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-				} catch {
-					return false;
-				}
+				return !value || !!normalizeHttpUrlInput(value);
 			})
 	});
 
@@ -104,24 +97,22 @@
 	});
 
 	$effect(() => {
-		urlValidation
-			.validate(forms, { abortEarly: false })
-			.then(() => {
-				isUrlDisabled = false;
-				urlErrors = {};
-			})
-			.catch((error) => {
-				isUrlDisabled = true;
-				const newErrors: Record<string, string> = {};
-				if (error.inner && Array.isArray(error.inner)) {
-					error.inner.forEach((err: yup.ValidationError) => {
-						if (err.path) {
-							newErrors[err.path] = err.message;
-						}
-					});
-				}
-				urlErrors = newErrors;
-			});
+		try {
+			urlValidation.validateSync(forms, { abortEarly: false });
+			isUrlDisabled = false;
+			urlErrors = {};
+		} catch (error) {
+			isUrlDisabled = true;
+			const newErrors: Record<string, string> = {};
+			if (error instanceof yup.ValidationError && error.inner && Array.isArray(error.inner)) {
+				error.inner.forEach((err: yup.ValidationError) => {
+					if (err.path) {
+						newErrors[err.path] = err.message;
+					}
+				});
+			}
+			urlErrors = newErrors;
+		}
 	});
 
 	$effect(() => {
@@ -163,15 +154,19 @@
 		filterTimeOnly = false;
 
 		try {
-			const url = forms.url.trim();
-			forms.url = url;
+			const normalizedUrl = normalizeHttpUrlInput(forms.url);
+			if (!normalizedUrl) {
+				showNotification('URLの形式が正しくありません', 'error');
+				return;
+			}
+			forms.url = normalizedUrl;
 
 			// まずWMTSを試行
-			let wmtsResult = await parseWmtsCapabilities(url);
+			let wmtsResult = await parseWmtsCapabilities(normalizedUrl);
 
 			// EPSG:4326のみのCapabilitiesで結果が空の場合、epsg3857版にリトライ
-			if ((!wmtsResult || wmtsResult.length === 0) && /epsg4326/i.test(url)) {
-				const mercatorUrl = url.replace(/epsg4326/gi, 'epsg3857');
+			if ((!wmtsResult || wmtsResult.length === 0) && /epsg4326/i.test(normalizedUrl)) {
+				const mercatorUrl = normalizedUrl.replace(/epsg4326/gi, 'epsg3857');
 				wmtsResult = await parseWmtsCapabilities(mercatorUrl);
 			}
 
@@ -180,7 +175,7 @@
 				layers = wmtsResult.map(wmtsToLayerItem);
 			} else {
 				// WMTSで失敗したらWMSを試行
-				const wmsResult = await parseWmsCapabilities(url);
+				const wmsResult = await parseWmsCapabilities(normalizedUrl);
 				if (wmsResult && wmsResult.length > 0) {
 					serviceType = 'wms';
 					layers = wmsResult.map(wmsToLayerItem);

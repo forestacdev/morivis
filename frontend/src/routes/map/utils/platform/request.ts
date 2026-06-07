@@ -16,10 +16,8 @@ const runtimePublicEnvValues = {
 	PUBLIC_DISASTER_LORE_ALL_PATH
 };
 
-const isMobileMode = import.meta.env.MODE === 'mobile';
-
 const resolveRuntimeUrl = (url: string): string => {
-	return isMobileMode ? devProxyTransform(url, runtimePublicEnvValues).url : url;
+	return import.meta.env.PROD ? url : devProxyTransform(url, runtimePublicEnvValues).url;
 };
 
 const toAbsoluteUrl = (url: string): string => {
@@ -29,6 +27,23 @@ const toAbsoluteUrl = (url: string): string => {
 		return `${baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
 	}
 	return new URL(url, baseUrl).toString();
+};
+
+export const normalizeHttpUrlInput = (value: string): string | null => {
+	const normalized = value.trim();
+	if (!normalized) return null;
+
+	const withProtocol = /^[a-z][a-z0-9+.-]*:\/\//iu.test(normalized)
+		? normalized
+		: `https://${normalized}`;
+
+	try {
+		const parsed = new URL(withProtocol);
+		if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+		return parsed.toString();
+	} catch {
+		return null;
+	}
 };
 
 export const resolveMapLibreRequest = (

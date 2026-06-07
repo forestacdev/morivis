@@ -161,14 +161,18 @@ export function createDemEntry(
 			uniformsData: {
 				relief: {
 					type: 'linear',
-					max: reliefRange.max,
-					min: reliefRange.min,
+					range: {
+						value: [reliefRange.min, reliefRange.max],
+						domain: [reliefRange.min, reliefRange.max]
+					},
 					colorMap
 				},
 				slope: {
 					type: 'linear',
-					max: 90,
-					min: 0,
+					range: {
+						value: [0, 90],
+						domain: [0, 90]
+					},
 					colorMap: 'salinity'
 				},
 				aspect: {

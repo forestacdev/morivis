@@ -11,7 +11,7 @@ import type {
 	ResolvedImageSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
-import type { Opacity } from '$routes/map/data/types';
+import type { Opacity, AdjustableRange, RangeTuple } from '$routes/map/data/types';
 import type {
 	SequentialScheme,
 	SequentialCount,
@@ -114,7 +114,7 @@ export interface ColorStepExpression {
 	name: string;
 	mapping: {
 		scheme: SequentialScheme;
-		range: [number, number]; // min, max
+		range: AdjustableRange | RangeTuple;
 		divisions: SequentialCount;
 	};
 }
@@ -124,7 +124,7 @@ export interface ColorLinearExpression {
 	key: string;
 	name: string;
 	mapping: {
-		range: [number, number]; // min, max
+		range: AdjustableRange | RangeTuple;
 		values: [string, string];
 	};
 }
@@ -165,7 +165,7 @@ export interface NumberStepExpression {
 	key: string;
 	name: string;
 	mapping: {
-		range: [number, number]; // min, max
+		range: AdjustableRange | RangeTuple;
 		divisions: number;
 		values: number[];
 	};
@@ -176,7 +176,7 @@ export interface NumberLinearExpression {
 	key: string;
 	name: string;
 	mapping: {
-		range: [number, number]; // min, max
+		range: AdjustableRange | RangeTuple;
 		values: [number, number];
 	};
 }

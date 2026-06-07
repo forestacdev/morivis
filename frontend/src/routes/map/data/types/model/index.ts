@@ -1,6 +1,7 @@
-import type { BaseMetaData, Opacity } from '$routes/map/data/types';
+import type { BaseMetaData, Opacity, AdjustableRange } from '$routes/map/data/types';
 import type { Table } from 'apache-arrow';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 import type {
 	ColorMapType,
 	RasterDiscreteDimension,
@@ -63,8 +64,9 @@ export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
 export interface MeshHeightColorRampStyle {
 	enabled: boolean;
 	colorMap: ColorMapType;
-	min: number;
-	max: number;
+	range?: AdjustableRange;
+	min?: number;
+	max?: number;
 	sourceMin?: number;
 	sourceMax?: number;
 	sourceSign?: 1 | -1;
@@ -181,6 +183,17 @@ export interface ModelGeoArrowEntry extends BaseModelEntry {
 	style: GeoArrowStyle;
 }
 
+export interface ModelGeoJson3DEntry extends BaseModelEntry {
+	format: {
+		type: 'geojson-3d';
+		data: FeatureCollection;
+		geometryType: VectorEntryGeometryType;
+	};
+	style: GeoArrowStyle;
+}
+
+export type ModelDeckVectorEntry = ModelGeoArrowEntry | ModelGeoJson3DEntry;
+
 export type AnyModelMeshEntry = ModelMeshEntry<MeshStyle> | ModelMeshEntry<PointCloudStyle>;
 
 export type AnyModelTiles3DEntry =
@@ -197,4 +210,4 @@ export type AnyModelEntry =
 	| AnyModelMeshEntry
 	| AnyModelTiles3DEntry
 	| ModelPointCloudEntry
-	| ModelGeoArrowEntry;
+	| ModelDeckVectorEntry;

@@ -21,7 +21,6 @@ const diaperCssOverridePlugin: Plugin = {
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
-	const isMobileMode = mode === 'mobile';
 
 	return {
 		plugins: [
@@ -118,7 +117,7 @@ export default defineConfig(({ mode }) => {
 		},
 		server: {
 			allowedHosts: true,
-			proxy: isMobileMode ? buildViteProxyConfig(env) : undefined
+			proxy: buildViteProxyConfig(env)
 		},
 		test: {
 			include: ['src/**/*.{test,spec}.{js,ts}']

@@ -682,6 +682,46 @@ export const createGeoJsonTileEntry = (
 	} as VectorEntry<TileMetaData>;
 };
 
+export const createOgcFeatureTileEntry = (
+	name: string,
+	url: string,
+	entryGeometryType: VectorEntryGeometryType,
+	options?: { bounds?: [number, number, number, number] },
+	color: string = getRandomColor()
+): VectorEntry<TileMetaData> | undefined => {
+	const entry = createVectorTileEntry(name, url, 'geojsonLayer', entryGeometryType, color, options);
+	if (!entry) return undefined;
+
+	return {
+		...entry,
+		id: 'ogc_feature_' + crypto.randomUUID(),
+		format: {
+			...entry.format,
+			type: 'ogc-feature' as const
+		}
+	} as VectorEntry<TileMetaData>;
+};
+
+export const createWfsFeatureTileEntry = (
+	name: string,
+	url: string,
+	entryGeometryType: VectorEntryGeometryType,
+	options?: { bounds?: [number, number, number, number] },
+	color: string = getRandomColor()
+): VectorEntry<TileMetaData> | undefined => {
+	const entry = createVectorTileEntry(name, url, 'geojsonLayer', entryGeometryType, color, options);
+	if (!entry) return undefined;
+
+	return {
+		...entry,
+		id: 'wfs_feature_' + crypto.randomUUID(),
+		format: {
+			...entry.format,
+			type: 'wfs-feature' as const
+		}
+	} as VectorEntry<TileMetaData>;
+};
+
 // --- PMTiles ベクターエントリ作成 ---
 
 export const createVectorPmtilesEntry = (

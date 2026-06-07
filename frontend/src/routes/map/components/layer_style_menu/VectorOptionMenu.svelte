@@ -1,4 +1,5 @@
 <script lang="ts">
+	import DimensionSelector from './raster_option/DimensionSelector.svelte';
 	import LineStringOption from './vecter_option/LineStringOption.svelte';
 	import PointOption from './vecter_option/PointOption.svelte';
 	import PolygonOption from './vecter_option/PolygonOption.svelte';
@@ -12,6 +13,10 @@
 		GeoJsonMetaData,
 		TileMetaData
 	} from '$routes/map/data/types/vector';
+	import {
+		getVectorTemporalFilterBehavior,
+		hasVectorTemporalSourceBehavior
+	} from '$routes/map/data/types/vector/properties';
 
 	interface Props {
 		layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData>;
@@ -27,7 +32,13 @@
 </script>
 
 {#if layerEntry && layerEntry.type === 'vector'}
-	<TemporalFilterControl bind:layerEntry bind:showDimensionOption />
+	{#if hasVectorTemporalSourceBehavior(layerEntry.properties.temporal)}
+		<DimensionSelector bind:layerEntry bind:showDimensionOption />
+	{/if}
+
+	{#if getVectorTemporalFilterBehavior(layerEntry.properties.temporal)}
+		<TemporalFilterControl bind:layerEntry bind:showDimensionOption />
+	{/if}
 
 	{#if layerEntry.format.geometryType === 'Point'}
 		<PointOption

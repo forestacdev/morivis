@@ -564,6 +564,8 @@ export const TAXON_IDS = {
 
 /**
  * 和名の正規化設定
+ *
+ * iNaturalist の和名検索前に除外語や不要語を落とすための設定。
  */
 export const NAME_NORMALIZE_CONFIG = {
 	/** これらの文字を含む場合は除外（nullを返す） */
@@ -578,7 +580,7 @@ export const NAME_NORMALIZE_CONFIG = {
  * 和名の別名→正式名への変換辞書
  *
  * 植生図や文献で使われる略称・俗称・古名を
- * iNaturalistで検索可能な正式和名に変換するための辞書。
+ * iNaturalist で検索可能な正式和名に変換するための辞書。
  * キーは正規化後の名前（スペース・記号除去済み）で照合される。
  */
 export const NAME_ALIAS_MAP: Record<string, string> = {

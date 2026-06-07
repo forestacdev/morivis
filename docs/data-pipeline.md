@@ -33,12 +33,17 @@ graph LR
 |---|---|
 | `.geojson` `.json` `.fgb` | `GeoJsonForm` |
 | `.topojson` | `TopoJsonForm` |
+| `.parquet` `.geoparquet` | `GeoParquetForm` |
+| `.arrow` `.feather` | `GeoArrowForm` |
+| `.mif` `.mid` | `MifForm` |
 | `.gpx` | `GpxForm` |
+| `.tcx` | `TcxForm` |
 | `.osm` | `OsmForm` |
 | `.gml` | `GmlForm` |
 | `.kml` `.kmz` | `KmlForm` |
 | `.csv` | `CsvForm` |
 | `.gpkg` | `GpkgForm` |
+| `.gdb` | `GarminGDBForm` |
 | `.pmtiles` | `PmtilesForm` |
 | `.mbtiles` | `MBTilesForm` |
 | `.las` `.laz` `.ply` `.pcd` `.xyz` | `PointCloudForm` |
@@ -50,16 +55,19 @@ graph LR
 | `.landxml` | `LandXmlForm` |
 | `.dm` `.dxf` `.sim` | 専用 Form |
 | `.pdf` | `GeoPdfForm` |
-| `.tif` `.tiff` `.png` `.webp` | `GeoTiffForm` |
+| `.tif` `.tiff` | `GeoTiffForm` |
+| `.png` `.webp` | `GeoPdfForm` |
 | `.jpg` `.jpeg` `.heic` `.heif` | EXIF GPS があれば `GeoPhotoForm`、なければ `GeoPdfForm` |
+| `.h5` | `Hdf5Form` |
 
 ### 特殊判定
 
 | 判定 | 内容 |
 |---|---|
 | `.zip` | 先に GTFS ZIP を判定し、該当すれば `GtfsForm`。違う場合は展開して中のファイルを再判定する |
+| `.json` | Location History なら `LocationHistoryForm`、MF-JSON なら `MfJsonForm`、それ以外は `GeoJsonForm` |
 | `.xml` | 先頭を読んで `DEM XML` → `GML` → `LandXML` → `法務局地図XML` の順で判定する |
-| 複数ファイル | Shapefile 一式、GeoTIFF + ワールドファイル / `.aux.xml`、OBJ + MTL + テクスチャのまとまりとして扱う |
+| 複数ファイル | Shapefile 一式、同名の GeoTIFF / 画像 + ワールドファイル / `.aux.xml`、OBJ + MTL + テクスチャのまとまりとして扱う |
 
 ## 形式別パイプライン
 
@@ -68,11 +76,18 @@ graph LR
 | 入力 | Form | 主な処理 | 結果 |
 |---|---|---|---|
 | GeoJSON / JSON | `GeoJsonForm` | JSON 解析 | `VectorEntry` `format.type: 'geojson'` |
+| Location History JSON | `LocationHistoryForm` | 位置履歴 JSON を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| MF-JSON | `MfJsonForm` | 国土地理院系の MF-JSON を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | FlatGeobuf | `GeoJsonForm` | FlatGeobuf 読み込み | `VectorEntry` `format.type: 'fgb'` |
 | TopoJSON | `TopoJsonForm` | TopoJSON を GeoJSON に変換 | `VectorEntry` `format.type: 'geojson'` |
+| GeoParquet | `GeoParquetForm` | Parquet から地物列と属性を読む | `VectorEntry` `format.type: 'geojson'` |
+| GeoArrow / Feather | `GeoArrowForm` | Arrow / Feather から地物列と属性を読む | `VectorEntry` `format.type: 'geojson'` |
+| MapInfo MIF/MID | `MifForm` | MIF と MID を組で読み、GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | Shapefile | `ShapeFileForm` | `.shp` `.dbf` `.shx` を結合して GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | GeoPackage | `GpkgForm` | SQLite を worker で解析 | `VectorEntry` `format.type: 'geojson'` |
 | GPX | `GpxForm` | track / route / waypoint を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| TCX | `TcxForm` | トレーニングログを GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
+| Garmin GDB | `GarminGDBForm` | Garmin の GDB を GeoJSON 化 | `VectorEntry` `format.type: 'geojson'` |
 | GML | `GmlForm` | 基盤地図情報系は自前処理、汎用 GML は OpenLayers ベースで変換 | `VectorEntry` `format.type: 'geojson'` |
 | KML / KMZ | `KmlForm` | KML 解析、KMZ は展開後に処理 | `VectorEntry` `format.type: 'geojson'` |
 | OSM XML | `OsmForm` | `osmtogeojson` で GeoJSON 化し、ジオメトリ種別ごとに登録 | `VectorEntry` `format.type: 'geojson'` |
@@ -89,8 +104,8 @@ graph LR
 
 | 入力 | Form | 主な処理 | 結果 |
 |---|---|---|---|
-| GeoTIFF | `GeoTiffForm` | geotiff.js で読み、Terrarium 化する。1バンド時は `ラスター / 3Dメッシュ` を選べる | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` または `ModelEntry` |
-| PNG / JPEG / WebP + ワールドファイル | `GeoTiffForm` | ワールドファイルや `aux.xml` を使ってジオリファレンスする。必要なら `GeoRefForm` に進む | `RasterEntry` `format.type: 'image'` |
+| GeoTIFF | `GeoTiffForm` | geotiff.js で読み、Terrarium 化する。1バンド時は元バンド配列も保持し、`ラスター / 3Dメッシュ` を選べる | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` または `ModelEntry` |
+| TIFF / PNG / JPEG / WebP + ワールドファイル / `.aux.xml` | `GeoTiffForm` | 同名 sidecar から bbox や座標系を補う。必要なら `GeoRefForm` に進む | `RasterEntry` `format.type: 'image'` |
 | GeoPDF 画像 | `GeoPdfForm` | 画像化し、必要なら手動ジオリファレンスする | `RasterEntry` `format.type: 'image'` |
 | NetCDF | `NetCDFForm` | 指定変数を Terrarium 化する。`ラスター / 3Dメッシュ` を選べる。時間次元があれば保持する | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` または `ModelEntry` |
 | DEM XML | `DemXmlForm` | XML を worker 並列解析して標高配列を作る。`ラスター / 3Dメッシュ` を選べる | `RasterEntry` `format.type: 'image'` + `style.type: 'tiff'` または `ModelEntry` |
@@ -140,7 +155,8 @@ GeoPDF や画像系で空間参照が足りない場合は `GeoRefForm` を使�
 ここで確定したコーナー座標や bbox が `metaData.imageCorners` や bounds に入る。
 
 `GeoRefForm` は単純な画像登録だけでなく、1バンド画像なら `ラスター / 3Dメッシュ` の分岐も持つ。  
-GeoTIFF 系で bbox 自体が取れなかった場合は、ここで 4 コーナーを決めてから Terrarium ラスターまたは GLB メッシュを作る。
+GeoTIFF 系で bbox 自体が取れなかった場合は、ここで 4 コーナーを決めてから Terrarium ラスターまたは GLB メッシュを作る。  
+GeoTIFF / 画像 sidecar 系では、`.tfw` 系ワールドファイルを優先し、無ければ `.aux.xml` の `GeoTransform` と EPSG を使う。
 
 ## ラスターから 3D メッシュへの分岐
 
@@ -169,6 +185,30 @@ GeoTIFF 系で bbox 自体が取れなかった場合は、ここで 4 コーナ
 - 高さ倍率と高さオフセットは保持する
 - 高さカラーランプを持てる
 - NetCDF の 3D メッシュは初期状態で `陰影オフ / カラーランプオン`
+
+## GeoTIFF の派生ラスタ
+
+1バンド GeoTIFF をラスターとして登録した場合は、元の `Float32Array` を `GeoTiffCache.setRawSingleBand()` に保持する。  
+この元バンドから、派生量は登録時にまとめて作らず、UI で選ばれたときに初回だけ worker で生成する。
+
+### lazy 生成の対象
+
+| mode | 内容 | 実装 |
+|---|---|---|
+| `slope` | Horn 法の傾斜量 | `terrain-derivatives.worker.ts` |
+| `aspect` | Horn 法の傾斜方位 | `terrain-derivatives.worker.ts` |
+| `tpi` | 8近傍平均との差による地形位置指数 | `terrain-derivatives.worker.ts` |
+| `twi` | D8 ベースの近似 TWI | `twi.worker.ts` |
+
+### 生成とキャッシュの流れ
+
+1. `TiffOption.svelte` で `slope / aspect / tpi / twi` が選ばれる
+2. `ensureRasterDerivedCache()` が `GeoTiffCache.getRawSingleBand()` を読む
+3. worker で派生バンドを計算する
+4. 派生バンドを `entryId__slope` などのキーで Terrarium 化して `GeoTiffCache` に保存する
+5. 2回目以降は派生キャッシュをそのまま使う
+
+`ensureRasterDerivedCache()` は in-flight な Promise を共有するので、同じ派生量の初回生成が重複実行されない。
 
 ## 時間軸の扱い
 
@@ -257,6 +297,8 @@ NetCDF を 3D メッシュで登録し、時間次元を持つ場合は `NetCDFD
 | `xml-parser` | `frontend/src/routes/map/utils/formats/dem-xml/xml-parser.worker.ts` | DEM XML 解析 |
 | `terrarium_encode` | `frontend/src/routes/map/utils/formats/geotiff/terrarium_encode.worker.ts` | バンド値から Terrarium PNG を生成 |
 | `terrarium_render` | `frontend/src/routes/map/utils/formats/geotiff/terrarium_render.worker.ts` | Terrarium PNG の描画と再投影 |
+| `terrain-derivatives` | `frontend/src/routes/map/utils/formats/geotiff/terrain-derivatives.worker.ts` | GeoTIFF 1バンドから `slope / aspect / tpi` を計算 |
+| `twi` | `frontend/src/routes/map/utils/formats/geotiff/twi.worker.ts` | GeoTIFF 1バンドから TWI を計算 |
 | `landxml rasterize` | `frontend/src/routes/map/utils/formats/landxml/rasterize.worker.ts` | TIN のラスタライズ |
 | `geopdf vector-parse` | `frontend/src/routes/map/utils/formats/geopdf/vector-parse.worker.ts` | GeoPDF 内蔵ベクター抽出 |
 | `protocol_geojson` | `frontend/src/routes/map/protocol/vector/geojson/protocol_geojson.worker.ts` | GeoJSON のベクタータイル化 |

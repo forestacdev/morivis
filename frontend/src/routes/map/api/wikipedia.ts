@@ -84,17 +84,25 @@ export interface WikiArticle {
 	imageLicense?: ImageLicenseInfo;
 }
 
+// Wikipedia 概要取得の前にタイトルから除外語や不要語を落とすための設定。
 const WIKIPEDIA_TITLE_NORMALIZE_CONFIG = {
 	excludeIfContains: [],
 	excludeIfEndsWith: [],
 	remove: ['？', '?', '天然', 'その他']
 } as const;
 
+// Wikipedia の記事名へ寄せるための別名変換辞書。
 const WIKIPEDIA_TITLE_ALIAS_MAP: Record<string, string> = {
 	// 針葉樹
 	シラベ: 'シラビソ',
 	カンバ: 'シラカンバ',
 	クルメツツジ: 'キリシマツツジ'
+};
+
+// 特定樹種の概要文を Wikipedia 本文の代わりに返すための上書き辞書。
+const WIKIPEDIA_SUMMARY_OVERRIDE_MAP: Record<string, string> = {
+	スギ: `スギ（杉、椙、学名: Cryptomeria japonica）は、裸子植物マツ綱のヒノキ科スギ属に分類される常緑高木になる針葉樹の1種である。スギは、スギ属の唯一の現生種とされることが多い。大きなものは高さ60メートルになり、日本自生の木の中で最も大きくなる種とされる。`,
+	イチョウ: `イチョウ（銀杏、公孫樹、鴨脚樹、学名：Ginkgo biloba）は、裸子植物で落葉性の高木。イチョウ科イチョウ属の唯一の種である。日本では街路樹や公園樹として観賞用に、また寺院や神社の境内に多く植えられ、食用、漢方、材用 としても栽培される。樹木の名としてはほかにギンキョウ（銀杏）、ギンナン（銀杏） やギンナンノキ と呼ばれる。ふつう「ギンナン」は後述する種子を指す ことが多い。`
 };
 
 const normalizeWikipediaTitle = (title: string): string | null => {
@@ -136,6 +144,25 @@ const normalizeWikipediaTitle = (title: string): string | null => {
 	}
 
 	return normalized;
+};
+
+const getWikipediaSummaryOverride = (
+	normalizedTitle: string,
+	pageTitle?: string,
+	originalTitle?: string
+): string | null => {
+	const candidates = [normalizedTitle, pageTitle, originalTitle]
+		.map((value) => (value ? normalizeWikipediaTitle(value) : null))
+		.filter((value): value is string => Boolean(value));
+
+	for (const candidate of candidates) {
+		const summary = WIKIPEDIA_SUMMARY_OVERRIDE_MAP[candidate];
+		if (summary) {
+			return summary;
+		}
+	}
+
+	return null;
 };
 
 const WIKIPEDIA_CACHE_LIMIT = 50;
@@ -264,6 +291,12 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 		const pages = data.query.pages;
 		const pageId = Object.keys(pages)[0];
 		const page = pages[pageId];
+		const overrideExtract = getWikipediaSummaryOverride(
+			normalizedTitle,
+			page.title,
+			redirectInfo?.from
+		);
+		const extract = overrideExtract ?? page.extract;
 
 		// ページが存在しない場合
 		if (page.missing || pageId === '-1') {
@@ -273,7 +306,7 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 		}
 
 		// extractが空の場合（リダイレクトのみで実体がない）
-		if (!page.extract) {
+		if (!extract) {
 			console.warn('記事の内容が空です:', normalizedTitle);
 			setWikipediaCache(normalizedTitle, null);
 			return null;
@@ -290,7 +323,7 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 
 		// 方法2: 本文から（カテゴリで見つからない場合）
 		if (!prefecture) {
-			prefecture = extractPrefectureFromText(page.extract);
+			prefecture = extractPrefectureFromText(extract);
 		}
 
 		// // 方法3: 座標から逆ジオコーディング（他の方法で見つからず、座標がある場合）
@@ -319,7 +352,7 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 		const result = {
 			pageId: page.pageid,
 			title: page.title,
-			extract: page.extract,
+			extract,
 			thumbnail,
 			url: page.fullurl,
 			coordinates: page.coordinates?.[0],

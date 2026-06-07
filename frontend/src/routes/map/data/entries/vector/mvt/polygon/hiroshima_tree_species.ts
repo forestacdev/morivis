@@ -62,7 +62,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '面積ごとの色分け',
 					mapping: {
 						scheme: 'RdPu',
-						range: [0, 9380],
+						range: { value: [0, 9380], domain: [0, 9380] },
 						divisions: 5
 					}
 				}

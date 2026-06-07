@@ -7,12 +7,12 @@
 
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
+	import { createAdjustableRange } from '$routes/map/data/types';
 	import type { DemRangeColorStyle, RasterDemEntry } from '$routes/map/data/types/raster';
 	import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import {
 		ColorMapManager,
-		getDemStyleRange,
 		isDemStepColorStyle,
 		toDemLinearColorStyle,
 		toDemStepColorStyle
@@ -29,56 +29,13 @@
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 
-	let reliefSliderBounds = $state.raw({ min: 0, max: 0 });
-	let slopeSliderBounds = $state.raw({ min: 0, max: 90 });
-	let reliefSliderBoundsKey = $state('');
-	let slopeSliderBoundsKey = $state('');
-
-	const syncSliderBounds = (
-		bounds: { min: number; max: number },
-		boundsKey: string,
-		nextKey: string,
-		min: number,
-		max: number
-	): { bounds: { min: number; max: number }; boundsKey: string } => {
-		if (boundsKey !== nextKey) {
-			return {
-				bounds: { min, max },
-				boundsKey: nextKey
-			};
-		}
-
-		if (min < bounds.min || max > bounds.max) {
-			return {
-				bounds: {
-					min: Math.min(bounds.min, min),
-					max: Math.max(bounds.max, max)
-				},
-				boundsKey
-			};
-		}
-
-		return { bounds, boundsKey };
-	};
-
 	$effect(() => {
-		const reliefStyle = layerEntry.style.visualization.uniformsData.relief;
-		const [min, max] = getDemStyleRange(reliefStyle);
-		const nextKey = `${layerEntry.id}:relief`;
-		const next = syncSliderBounds(reliefSliderBounds, reliefSliderBoundsKey, nextKey, min, max);
-		reliefSliderBounds = next.bounds;
-		reliefSliderBoundsKey = next.boundsKey;
-	});
-
-	$effect(() => {
-		const slopeStyle = layerEntry.style.visualization.uniformsData.slope;
-		if (!slopeStyle) return;
-
-		const [min, max] = getDemStyleRange(slopeStyle);
-		const nextKey = `${layerEntry.id}:slope`;
-		const next = syncSliderBounds(slopeSliderBounds, slopeSliderBoundsKey, nextKey, min, max);
-		slopeSliderBounds = next.bounds;
-		slopeSliderBoundsKey = next.boundsKey;
+		const relief = layerEntry.style.visualization.uniformsData.relief;
+		relief.range ??= createAdjustableRange(relief.min ?? 0, relief.max ?? 0);
+		const slope = layerEntry.style.visualization.uniformsData.slope;
+		if (slope) {
+			slope.range ??= createAdjustableRange(slope.min ?? 0, slope.max ?? 90);
+		}
 	});
 
 	const setRangeStyleType = (
@@ -139,10 +96,10 @@
 				</ColorMapSelect>
 				<RangeSliderDouble
 					label="標高数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.min}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.relief.max}
-					max={reliefSliderBounds.max}
-					min={reliefSliderBounds.min}
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.range!.value[0]}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.relief.range!.value[1]}
+					max={layerEntry.style.visualization.uniformsData.relief.range!.domain[1]}
+					min={layerEntry.style.visualization.uniformsData.relief.range!.domain[0]}
 					step={0.01}
 					primaryColor={colorMapManager.createDemCSSGradient(
 						layerEntry.style.visualization.uniformsData.relief
@@ -175,10 +132,10 @@
 				</ColorMapSelect>
 				<RangeSliderDouble
 					label="標高数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.min}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.relief.max}
-					max={reliefSliderBounds.max}
-					min={reliefSliderBounds.min}
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.range!.value[0]}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.relief.range!.value[1]}
+					max={layerEntry.style.visualization.uniformsData.relief.range!.domain[1]}
+					min={layerEntry.style.visualization.uniformsData.relief.range!.domain[0]}
 					step={0.01}
 					primaryColor={colorMapManager.createDemCSSGradient(
 						layerEntry.style.visualization.uniformsData.relief
@@ -224,10 +181,10 @@
 
 				<RangeSliderDouble
 					label="傾斜量数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
-					max={slopeSliderBounds.max}
-					min={slopeSliderBounds.min}
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.range!.value[0]}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.range!.value[1]}
+					max={layerEntry.style.visualization.uniformsData.slope.range!.domain[1]}
+					min={layerEntry.style.visualization.uniformsData.slope.range!.domain[0]}
 					step={0.01}
 					primaryColor={colorMapManager.createDemCSSGradient(
 						layerEntry.style.visualization.uniformsData.slope
@@ -263,10 +220,10 @@
 
 				<RangeSliderDouble
 					label="傾斜量数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.min}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.max}
-					max={slopeSliderBounds.max}
-					min={slopeSliderBounds.min}
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.range!.value[0]}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.range!.value[1]}
+					max={layerEntry.style.visualization.uniformsData.slope.range!.domain[1]}
+					min={layerEntry.style.visualization.uniformsData.slope.range!.domain[0]}
 					step={0.01}
 					primaryColor={colorMapManager.createDemCSSGradient(
 						layerEntry.style.visualization.uniformsData.slope

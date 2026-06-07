@@ -1,4 +1,5 @@
 import type { ColorStepExpression } from '$routes/map/data/types/vector/style';
+import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import type {
 	ColorMapType,
 	DemLinearColorStyle,
@@ -122,7 +123,9 @@ export const generateNumberAndColorMap = (
 	values: readonly string[];
 } => {
 	const { range, divisions, scheme } = mapping;
-	const [min, max] = range;
+	const [min, max] = Array.isArray(range)
+		? range
+		: getAdjustableRangeValue(range, undefined, undefined);
 
 	// データ範囲に応じた適切な桁数を自動決定
 	const dataRange = max - min;
@@ -165,7 +168,7 @@ export const getDemStyleColorMapName = (style: DemRangeColorStyle): ColorMapType
 };
 
 export const getDemStyleRange = (style: DemRangeColorStyle): [number, number] => {
-	return [style.min, style.max];
+	return getAdjustableRangeValue(style.range, style.min, style.max);
 };
 
 export const toDemLinearColorStyle = (style: DemRangeColorStyle): DemLinearColorStyle => {
@@ -176,8 +179,10 @@ export const toDemLinearColorStyle = (style: DemRangeColorStyle): DemLinearColor
 	return {
 		type: 'linear',
 		colorMap: DEFAULT_DEM_LINEAR_COLOR_MAP,
-		min: style.min,
-		max: style.max
+		range: {
+			value: [...getDemStyleRange(style)] as [number, number],
+			domain: [...getAdjustableRangeDomain(style.range, style.min, style.max)] as [number, number]
+		}
 	};
 };
 
@@ -192,8 +197,10 @@ export const toDemStepColorStyle = (
 	return {
 		type: 'step',
 		colorMap: DEFAULT_DEM_STEP_COLOR_MAP,
-		min: style.min,
-		max: style.max,
+		range: {
+			value: [...getDemStyleRange(style)] as [number, number],
+			domain: [...getAdjustableRangeDomain(style.range, style.min, style.max)] as [number, number]
+		},
 		divisions: defaultDivisions
 	};
 };

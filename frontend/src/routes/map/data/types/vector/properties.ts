@@ -1,4 +1,9 @@
 import type { FeatureProp } from '$routes/map/types/properties';
+import type {
+	SharedDiscreteDimension,
+	TemporalBehavior,
+	FilterTemporalBehavior
+} from '$routes/map/data/types';
 
 /**
  * 属性表示のタイトル表示テンプレート
@@ -106,33 +111,35 @@ export interface VectorTemporalItem {
 }
 
 export interface VectorTemporal {
-	/**
-	 * 時間軸として優先的に使用する属性キー。
-	 * 例: GPX の `time`
-	 */
-	key?: string;
-
-	/**
-	 * データごとに時間属性キーが異なる場合の代替候補。
-	 * key が未設定、または値が空のときに順に参照する。
-	 */
-	alternateKeys?: string[];
-
-	/**
-	 * 期間データの開始時刻キー。
-	 */
-	startKey?: string;
-
-	/**
-	 * 期間データの終了時刻キー。
-	 */
-	endKey?: string;
-
-	/**
-	 * 時間スライダー用の時刻一覧。
-	 */
+	dimension: SharedDiscreteDimension;
+	behaviors: TemporalBehavior[];
 	items?: VectorTemporalItem[];
 }
+
+export const getVectorTemporalItems = (temporal?: VectorTemporal): VectorTemporalItem[] => {
+	if (!temporal) return [];
+	if (temporal.items && temporal.items.length > 0) return temporal.items;
+
+	return temporal.dimension.values.map((raw, index) => ({
+		raw,
+		timestamp: index,
+		label: temporal.dimension.labels?.[index] ?? raw
+	}));
+};
+
+export const getVectorTemporalFilterBehavior = (
+	temporal?: VectorTemporal
+): FilterTemporalBehavior | undefined => {
+	if (!temporal) return undefined;
+	return temporal.behaviors.find(
+		(behavior): behavior is FilterTemporalBehavior => behavior.type === 'filter'
+	);
+};
+
+export const hasVectorTemporalSourceBehavior = (temporal?: VectorTemporal): boolean => {
+	if (!temporal) return false;
+	return temporal.behaviors.some((behavior) => behavior.type === 'source');
+};
 
 /**
  * 無効値（欠損値・非有効値）として扱う条件と表示文字列

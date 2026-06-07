@@ -4,10 +4,11 @@ import type {
 	PointStyle
 } from '$routes/map/data/types/vector/style';
 
-import type { BaseMetaData } from '$routes/map/data/types';
+import type { BaseMetaData, SharedDimensionState } from '$routes/map/data/types';
 import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 
 import type { VectorProperties } from '$routes/map/data/types/vector/properties';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 
 export type VectorFormatType =
 	| 'geojson'
@@ -16,12 +17,19 @@ export type VectorFormatType =
 	| 'mbtiles'
 	| 'fgb'
 	| 'geojsontile'
-	| 'esri-feature';
+	| 'esri-feature'
+	| 'ogc-feature'
+	| 'wfs-feature';
 
 export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon';
 
 export interface VectorInteraction {
 	clickable: boolean;
+}
+
+export interface VectorRuntimeSource {
+	type: 'geojson';
+	resolveData: (dimensionValue: string) => Promise<FeatureCollection>;
 }
 
 export interface VectorTemporalFilterState {
@@ -33,6 +41,7 @@ export interface VectorTemporalFilterState {
 
 export interface VectorEntryState {
 	temporalFilter?: VectorTemporalFilterState;
+	dimension?: SharedDimensionState;
 }
 
 export interface TileMetaData extends BaseMetaData {
@@ -56,6 +65,7 @@ export interface PolygonEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'Polygon';
 		url: string;
+		runtimeSource?: VectorRuntimeSource;
 	};
 	style: PolygonStyle;
 	auxiliaryLayers?: AuxiliaryLayersData;
@@ -67,6 +77,7 @@ export interface LineStringEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'LineString';
 		url: string;
+		runtimeSource?: VectorRuntimeSource;
 	};
 	style: LineStringStyle;
 	auxiliaryLayers?: AuxiliaryLayersData;
@@ -78,6 +89,7 @@ export interface PointEntry<T> extends BaseVectorEntry {
 		type: VectorFormatType;
 		geometryType: 'Point';
 		url: string;
+		runtimeSource?: VectorRuntimeSource;
 	};
 	style: PointStyle;
 	auxiliaryLayers?: AuxiliaryLayersData;

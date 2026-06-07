@@ -252,6 +252,14 @@ const parseGenericGml = (text: string): FeatureCollection => {
 
 // ---- エクスポート ----
 
+export const gmlTextToGeoJson = (text: string): FeatureCollection => {
+	if (isFgdGml(text)) {
+		return parseFgdGml(text);
+	}
+
+	return parseGenericGml(text);
+};
+
 /**
  * GMLファイルをパースしてGeoJSONのFeatureCollectionに変換する
  * 基盤地図情報GMLと汎用GMLの両方に対応
@@ -259,12 +267,7 @@ const parseGenericGml = (text: string): FeatureCollection => {
 export const gmlFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
 	try {
 		const text = await file.text();
-
-		if (isFgdGml(text)) {
-			return parseFgdGml(text);
-		}
-
-		return parseGenericGml(text);
+		return gmlTextToGeoJson(text);
 	} catch (error) {
 		console.error('GML parsing error:', error);
 		throw new Error('Failed to parse GML file');

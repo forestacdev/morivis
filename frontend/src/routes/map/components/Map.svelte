@@ -12,6 +12,7 @@
 	} from 'maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import type { Unsubscriber } from 'svelte/store';
 
 	import DropContainer from './DropContainer.svelte';
@@ -32,10 +33,16 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type {
 		AnyModelTiles3DEntry,
-		ModelGeoArrowEntry,
+		ModelDeckVectorEntry,
 		ModelPointCloudEntry
 	} from '$routes/map/data/types/model';
 	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import type {
+		RasterBaseMapStyle,
+		RasterCogEntry,
+		RasterTiffStyle,
+		RasterWcsEntry
+	} from '$routes/map/data/types/raster';
 	import {
 		type FeatureMenuData,
 		type ClickedLayerFeaturesData,
@@ -46,7 +53,19 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import {
+		clearAllCogViewportImages,
+		fetchCogViewportImage,
+		markCogViewportReady,
+		terminateCogViewportRuntime
+	} from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import {
+		fetchWcsViewportImage,
+		clearAllWcsViewportImages,
+		markWcsViewportReady,
+		WcsViewportTooBroadError
+	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
@@ -71,7 +90,7 @@
 		activeLayerIdsStore
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
-	import { showLayerAddedNotification } from '$routes/stores/notification';
+	import { showLayerAddedNotification, showNotification } from '$routes/stores/notification';
 	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -162,6 +181,7 @@
 	let tooltipFeature = $state<MapGeoJSONFeature | null>(null); // ツールチップのフィーチャー
 
 	let clickedLayerFeaturesData = $state<ClickedLayerFeaturesData[] | null>([]); // 選択ポップアップ ハイライト
+	const wcsTooBroadEntryIds = new SvelteSet<string>();
 
 	// let mapPaneFilter = $derived(
 	// 	$mapPaneScale < 1
@@ -479,11 +499,33 @@
 		if (!mapContainer) return;
 
 		mapStore.init(mapContainer);
+
+		styleUpdateUnsubscribers.push(
+			mapStore.onMoveEnd(async () => {
+				layerEntries.filter(isWcsEntry).forEach((entry) => {
+					markWcsViewportReady(entry.id);
+				});
+				layerEntries.filter(isViewportCogEntry).forEach((entry) => {
+					markCogViewportReady(entry.id);
+				});
+				await refreshWcsEntries(layerEntries);
+				await refreshCogEntries(layerEntries);
+			})
+		);
+		styleUpdateUnsubscribers.push(
+			mapStore.onStyleLoad(async () => {
+				await refreshWcsEntries(layerEntries);
+				await refreshCogEntries(layerEntries);
+			})
+		);
 	});
 
 	onDestroy(() => {
 		// Svelte storeの購読は明示的に解除しないと、画面破棄後もcallbackが残る。
 		styleUpdateUnsubscribers.forEach((unsubscribe) => unsubscribe());
+		clearAllCogViewportImages();
+		clearAllWcsViewportImages();
+		terminateCogViewportRuntime();
 		if (maplibreMap) {
 			maplibreMap.remove();
 			maplibreMap = null;
@@ -497,6 +539,61 @@
 
 	const getMapStyleEntries = (entries: GeoDataEntry[]) => {
 		return entries.filter((entry) => entry.type !== 'model');
+	};
+
+	const isWcsEntry = (entry: GeoDataEntry): entry is RasterWcsEntry<RasterBaseMapStyle> => {
+		return entry.type === 'raster' && entry.format.type === 'wcs';
+	};
+
+	const isViewportCogEntry = (entry: GeoDataEntry): entry is RasterCogEntry<RasterTiffStyle> => {
+		return entry.type === 'raster' && entry.format.type === 'cog' && entry.format.mode !== 'tile';
+	};
+
+	const refreshWcsEntries = async (entries: GeoDataEntry[]) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+
+		const wcsEntries = entries.filter(isWcsEntry);
+		await Promise.all(
+			wcsEntries.map(async (entry) => {
+				try {
+					const image = await fetchWcsViewportImage(entry, map);
+					if (!image) return;
+					mapStore.setImage(`${entry.id}_source`, image);
+					wcsTooBroadEntryIds.delete(entry.id);
+				} catch (error) {
+					if (error instanceof WcsViewportTooBroadError) {
+						if (!wcsTooBroadEntryIds.has(entry.id)) {
+							showNotification(
+								'WCS の表示範囲が広すぎます。ズームインして再表示してください。',
+								'warning'
+							);
+							wcsTooBroadEntryIds.add(entry.id);
+						}
+						return;
+					}
+					console.error(error);
+				}
+			})
+		);
+	};
+
+	const refreshCogEntries = async (entries: GeoDataEntry[]) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+
+		const cogEntries = entries.filter(isViewportCogEntry);
+		await Promise.all(
+			cogEntries.map(async (entry) => {
+				try {
+					const image = await fetchCogViewportImage(entry, map);
+					if (!image) return;
+					mapStore.setImage(`${entry.id}_source`, image);
+				} catch (error) {
+					console.error(error);
+				}
+			})
+		);
 	};
 
 	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
@@ -529,14 +626,49 @@
 			mapStore.releaseEsriProtocol();
 		}
 
+		const isOgcFeatureEntry = (e: GeoDataEntry) =>
+			e.type === 'vector' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'ogc-feature';
+		const hasOgcFeatureLayer =
+			entries.some(isOgcFeatureEntry) || (showDataEntry && isOgcFeatureEntry(showDataEntry));
+
+		if (hasOgcFeatureLayer) {
+			mapStore.ensureOgcFeatureProtocol();
+		} else {
+			mapStore.releaseOgcFeatureProtocol();
+		}
+
+		const isWfsFeatureEntry = (e: GeoDataEntry) =>
+			e.type === 'vector' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'wfs-feature';
+		const hasWfsFeatureLayer =
+			entries.some(isWfsFeatureEntry) || (showDataEntry && isWfsFeatureEntry(showDataEntry));
+
+		if (hasWfsFeatureLayer) {
+			mapStore.ensureWfsFeatureProtocol();
+		} else {
+			mapStore.releaseWfsFeatureProtocol();
+		}
+
 		const isCogEntry = (e: GeoDataEntry) =>
 			e.type === 'raster' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'cog';
+		const isCogTileEntry = (e: GeoDataEntry) =>
+			isCogEntry(e) && (e as { format: { mode?: 'tile' | 'viewport' } }).format.mode === 'tile';
 		const hasCogLayer = entries.some(isCogEntry) || (showDataEntry && isCogEntry(showDataEntry));
+		const hasCogTileLayer =
+			entries.some(isCogTileEntry) || (showDataEntry && isCogTileEntry(showDataEntry));
+
+		if (hasCogTileLayer) {
+			mapStore.ensureCogProtocol();
+		} else {
+			mapStore.releaseCogProtocol();
+		}
 
 		if (hasCogLayer) {
-			mapStore.ensureCogProtocol();
 			// 定義済みCOGエントリをCogTileManagerに登録（タイル要求前に完了させる）
 			const cogEntries = [
 				...entries.filter(isCogEntry),
@@ -551,8 +683,6 @@
 					}
 				})
 			);
-		} else {
-			mapStore.releaseCogProtocol();
 		}
 
 		const isMbtilesEntry = (e: GeoDataEntry) =>
@@ -590,12 +720,19 @@
 		if (updateId !== styleUpdateId) return;
 
 		mapStore.setStyle(mapStyle);
+		entries.filter(isViewportCogEntry).forEach((entry) => {
+			markCogViewportReady(entry.id);
+		});
+		await refreshWcsEntries(entries);
+		await refreshCogEntries(entries);
 
-		const tiles3dEntry = entries.filter(
-			(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
-		) as AnyModelTiles3DEntry[];
+		const tiles3dEntry =
+			showDataEntry || showZoneForm
+				? []
+				: (entries.filter(
+						(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
+					) as AnyModelTiles3DEntry[]);
 
-		// プレビュー中の3D Tilesエントリも含める
 		if (
 			showDataEntry &&
 			showDataEntry.type === 'model' &&
@@ -604,10 +741,12 @@
 			tiles3dEntry.push(showDataEntry as AnyModelTiles3DEntry);
 		}
 
-		// LAS/LAZ点群エントリ
-		const pointCloudEntries = entries.filter(
-			(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
-		) as ModelPointCloudEntry[];
+		const pointCloudEntries =
+			showDataEntry || showZoneForm
+				? []
+				: (entries.filter(
+						(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
+					) as ModelPointCloudEntry[]);
 
 		if (
 			showDataEntry &&
@@ -617,36 +756,45 @@
 			pointCloudEntries.push(showDataEntry as ModelPointCloudEntry);
 		}
 
-		const geoArrowEntries = entries.filter(
-			(entry) => entry.type === 'model' && entry.format.type === 'geoarrow'
-		) as ModelGeoArrowEntry[];
+		const deckVectorEntries =
+			showDataEntry || showZoneForm
+				? []
+				: (entries.filter(
+						(entry) =>
+							entry.type === 'model' &&
+							(entry.format.type === 'geoarrow' || entry.format.type === 'geojson-3d')
+					) as ModelDeckVectorEntry[]);
 
 		if (
 			showDataEntry &&
 			showDataEntry.type === 'model' &&
-			(showDataEntry as ModelGeoArrowEntry).format.type === 'geoarrow'
+			((showDataEntry as ModelDeckVectorEntry).format.type === 'geoarrow' ||
+				(showDataEntry as ModelDeckVectorEntry).format.type === 'geojson-3d')
 		) {
-			geoArrowEntries.push(showDataEntry as ModelGeoArrowEntry);
+			deckVectorEntries.push(showDataEntry as ModelDeckVectorEntry);
 		}
 
-		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries, geoArrowEntries);
+		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries, deckVectorEntries);
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
 
-		const meshEntries = entries.filter(
-			(entry) =>
-				entry.type === 'model' &&
-				(entry.format.type === 'gltf' ||
-					entry.format.type === 'obj' ||
-					entry.format.type === '3ds' ||
-					entry.format.type === 'dae' ||
-					entry.format.type === '3dm' ||
-					entry.format.type === 'fbx' ||
-					entry.format.type === 'drc' ||
-					entry.format.type === '3mf' ||
-					entry.format.type === 'amf' ||
-					entry.format.type === 'ifc')
-		) as ModelMeshEntry<MeshStyle>[];
+		const meshEntries =
+			showDataEntry || showZoneForm
+				? []
+				: (entries.filter(
+						(entry) =>
+							entry.type === 'model' &&
+							(entry.format.type === 'gltf' ||
+								entry.format.type === 'obj' ||
+								entry.format.type === '3ds' ||
+								entry.format.type === 'dae' ||
+								entry.format.type === '3dm' ||
+								entry.format.type === 'fbx' ||
+								entry.format.type === 'drc' ||
+								entry.format.type === '3mf' ||
+								entry.format.type === 'amf' ||
+								entry.format.type === 'ifc')
+					) as ModelMeshEntry<MeshStyle>[]);
 
 		const previewMeshEntry =
 			showDataEntry && showDataEntry.type === 'model' && showDataEntry.style.type === 'mesh'
@@ -782,8 +930,50 @@
 		e.preventDefault();
 		isDragover = false;
 	};
+
+	const setRelativePath = (file: File, relativePath: string) => {
+		Object.defineProperty(file, 'morivisRelativePath', {
+			value: relativePath,
+			configurable: true
+		});
+		return file;
+	};
+
+	const extractZipFiles = async (zipFile: File): Promise<File[]> => {
+		const JSZip = (await import('jszip')).default;
+		const zip = await JSZip.loadAsync(zipFile);
+		const files: File[] = [];
+		const entries: [string, import('jszip').JSZipObject][] = [];
+
+		zip.forEach((path, entry) => {
+			if (!entry.dir) entries.push([path, entry]);
+		});
+
+		for (const [path, entry] of entries) {
+			const blob = await entry.async('blob');
+			const fileName = path.split('/').pop() ?? path;
+			files.push(setRelativePath(new File([blob], fileName, { type: blob.type }), path));
+		}
+
+		return files;
+	};
+
 	// ドロップ完了時にファイルを取得
 	const onDropFile: (files: FileList) => void = async (files) => {
+		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
+			try {
+				const extracted = await extractZipFiles(files[0]);
+				if (extracted.length > 0) {
+					const dt = new DataTransfer();
+					extracted.forEach((file) => dt.items.add(file));
+					dropFile = dt.files;
+					return;
+				}
+			} catch {
+				// 展開失敗時は通常フローへ
+			}
+		}
+
 		dropFile = files;
 	};
 

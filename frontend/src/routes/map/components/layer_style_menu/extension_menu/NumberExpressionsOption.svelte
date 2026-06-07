@@ -1,5 +1,6 @@
 <script lang="ts">
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import type { AdjustableRange } from '$routes/map/data/types';
 	import type { NumbersExpression } from '$routes/map/data/types/vector/style';
 	import { generateNumberToNumberMap } from '$routes/map/utils/style/number-mapping';
 
@@ -14,8 +15,10 @@
 			return generateNumberToNumberMap(setExpression.mapping);
 		}
 	});
-	const rangeMin = $state.raw(setExpression.type === 'linear' ? setExpression.mapping.range[0] : 0);
-	const rangeMax = $state.raw(setExpression.type === 'linear' ? setExpression.mapping.range[1] : 0);
+	const linearRange =
+		setExpression.type === 'linear' ? (setExpression.mapping.range as AdjustableRange) : null;
+	const rangeMin = $state.raw(setExpression.type === 'linear' ? linearRange!.domain[0] : 0);
+	const rangeMax = $state.raw(setExpression.type === 'linear' ? linearRange!.domain[1] : 0);
 </script>
 
 {#if setExpression}
@@ -40,7 +43,7 @@
 		{/each}
 	{/if}
 	{#if setExpression.type === 'linear'}
-		{#each setExpression.mapping.range as _, index}
+		{#each linearRange!.value as _, index}
 			<div class="flex w-full flex-col gap-2 select-none">
 				<!-- <div class="text-base">
 					<span>{index === 0 ? '最小' : '最大'}値: {setExpression.mapping.range[index]}</span>

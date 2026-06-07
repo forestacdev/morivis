@@ -1,5 +1,6 @@
 import type { TypedArray, ReadRasterResult } from 'geotiff';
 
+import { getAdjustableRangeValue } from '$routes/map/data/types';
 import type { RasterTiffStyle } from '$routes/map/data/types/raster';
 import {
 	GeoTiffCache,
@@ -343,10 +344,17 @@ export const loadRasterData = async (
 			const dMin = range?.min ?? 0;
 			const dMax = range?.max ?? 1;
 			const invRange = dMax !== dMin ? 1 / (dMax - dMin) : 0;
+			const [valueMin, valueMax] = getAdjustableRangeValue(
+				uniformsData.single.range,
+				uniformsData.single.min,
+				uniformsData.single.max,
+				dMin,
+				dMax
+			);
 
 			workerMessage.bandIndex = uniformsData.single.index;
-			workerMessage.min = (uniformsData.single.min - dMin) * invRange;
-			workerMessage.max = (uniformsData.single.max - dMin) * invRange;
+			workerMessage.min = (valueMin - dMin) * invRange;
+			workerMessage.max = (valueMax - dMin) * invRange;
 			workerMessage.colorArray = new Uint8Array(colorArray);
 		} else if (mode === 'twi' || mode === 'slope' || mode === 'aspect' || mode === 'tpi') {
 			const range = dataRanges[0];
@@ -361,10 +369,17 @@ export const loadRasterData = async (
 			const dMin = range?.min ?? 0;
 			const dMax = range?.max ?? 1;
 			const invRange = dMax !== dMin ? 1 / (dMax - dMin) : 0;
+			const [valueMin, valueMax] = getAdjustableRangeValue(
+				derivedData?.range,
+				derivedData?.min,
+				derivedData?.max,
+				dMin,
+				dMax
+			);
 
 			workerMessage.bandIndex = 0;
-			workerMessage.min = ((derivedData?.min ?? dMin) - dMin) * invRange;
-			workerMessage.max = ((derivedData?.max ?? dMax) - dMin) * invRange;
+			workerMessage.min = (valueMin - dMin) * invRange;
+			workerMessage.max = (valueMax - dMin) * invRange;
 			workerMessage.colorArray = new Uint8Array(colorArray);
 		} else if (mode === 'multi') {
 			const normalize = (val: number, dMin: number, dMax: number) =>
@@ -373,17 +388,38 @@ export const loadRasterData = async (
 			const rRange = dataRanges[uniformsData.multi.r.index];
 			const gRange = dataRanges[uniformsData.multi.g.index];
 			const bRange = dataRanges[uniformsData.multi.b.index];
+			const [rMin, rMax] = getAdjustableRangeValue(
+				uniformsData.multi.r.range,
+				uniformsData.multi.r.min,
+				uniformsData.multi.r.max,
+				rRange.min,
+				rRange.max
+			);
+			const [gMin, gMax] = getAdjustableRangeValue(
+				uniformsData.multi.g.range,
+				uniformsData.multi.g.min,
+				uniformsData.multi.g.max,
+				gRange.min,
+				gRange.max
+			);
+			const [bMin, bMax] = getAdjustableRangeValue(
+				uniformsData.multi.b.range,
+				uniformsData.multi.b.min,
+				uniformsData.multi.b.max,
+				bRange.min,
+				bRange.max
+			);
 
 			workerMessage.redIndex = uniformsData.multi.r.index;
 			workerMessage.greenIndex = uniformsData.multi.g.index;
 			workerMessage.blueIndex = uniformsData.multi.b.index;
 
-			workerMessage.redMin = normalize(uniformsData.multi.r.min, rRange.min, rRange.max);
-			workerMessage.redMax = normalize(uniformsData.multi.r.max, rRange.min, rRange.max);
-			workerMessage.greenMin = normalize(uniformsData.multi.g.min, gRange.min, gRange.max);
-			workerMessage.greenMax = normalize(uniformsData.multi.g.max, gRange.min, gRange.max);
-			workerMessage.blueMin = normalize(uniformsData.multi.b.min, bRange.min, bRange.max);
-			workerMessage.blueMax = normalize(uniformsData.multi.b.max, bRange.min, bRange.max);
+			workerMessage.redMin = normalize(rMin, rRange.min, rRange.max);
+			workerMessage.redMax = normalize(rMax, rRange.min, rRange.max);
+			workerMessage.greenMin = normalize(gMin, gRange.min, gRange.max);
+			workerMessage.greenMax = normalize(gMax, gRange.min, gRange.max);
+			workerMessage.blueMin = normalize(bMin, bRange.min, bRange.max);
+			workerMessage.blueMax = normalize(bMax, bRange.min, bRange.max);
 		}
 
 		const blob = await renderTerrarium(workerMessage);

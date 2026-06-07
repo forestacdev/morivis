@@ -103,7 +103,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '立木本数による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 50],
+						range: { value: [0, 50], domain: [0, 50] },
 						divisions: 5
 					}
 				},
@@ -113,7 +113,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '立木密度による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 1500],
+						range: { value: [0, 1500], domain: [0, 1500] },
 						divisions: 5
 					}
 				},
@@ -123,7 +123,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '平均樹高による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 30],
+						range: { value: [0, 30], domain: [0, 30] },
 						divisions: 5
 					}
 				},
@@ -133,7 +133,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '平均直径による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 50],
+						range: { value: [0, 50], domain: [0, 50] },
 						divisions: 5
 					}
 				},
@@ -143,7 +143,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '合計材積による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 50],
+						range: { value: [0, 50], domain: [0, 50] },
 						divisions: 5
 					}
 				},
@@ -154,7 +154,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '平均標高による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 1000],
+						range: { value: [0, 1000], domain: [0, 1000] },
 						divisions: 5
 					}
 				},
@@ -164,7 +164,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '平均傾斜による色分け',
 					mapping: {
 						scheme: 'YlOrRd',
-						range: [0, 90],
+						range: { value: [0, 90], domain: [0, 90] },
 						divisions: 5
 					}
 				},
@@ -174,7 +174,7 @@ const entry: VectorEntry<TileMetaData> = {
 					name: '道からの距離による色分け',
 					mapping: {
 						scheme: 'BuGn',
-						range: [0, 500],
+						range: { value: [0, 500], domain: [0, 500] },
 						divisions: 5
 					}
 				}

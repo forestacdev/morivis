@@ -25,10 +25,31 @@ export interface JmaNowcastConfig {
 	tags?: Tag[];
 	xyzImageTile?: TileXYZ;
 	downloadUrl?: string;
+	mapImage?: string;
 }
 
-const NOWCAST_FALLBACK_BASETIME = '20260517030000';
 let jmaTileUrlsPromise: Promise<TileInfo[]> | null = null;
+
+const getCurrentNowcastFallbackBasetime = () => {
+	const formatter = new Intl.DateTimeFormat('ja-JP', {
+		timeZone: 'Asia/Tokyo',
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		hourCycle: 'h23'
+	});
+
+	const parts = formatter.formatToParts(new Date());
+	const getPart = (type: Intl.DateTimeFormatPartTypes) =>
+		parts.find((part) => part.type === type)?.value ?? '';
+
+	const minute = getPart('minute');
+	const roundedMinute = String(Math.floor(Number(minute) / 5) * 5).padStart(2, '0');
+
+	return `${getPart('year')}${getPart('month')}${getPart('day')}${getPart('hour')}${roundedMinute}00`;
+};
 
 /**
  * basetimeを日時に変換する関数
@@ -181,6 +202,54 @@ const formatNowcastTimeLabel = (basetime: string) => {
 const createNowcastTileUrl = (basetime: string) =>
 	`https://www.jma.go.jp/bosai/jmatile/data/nowc/${basetime}/none/${basetime}/surf/hrpns/{z}/{x}/{y}.png`;
 
+const createFixedNowcastTileUrl = (basetime: string, tileZoom: number) =>
+	`https://www.jma.go.jp/bosai/jmatile/data/nowc/${basetime}/none/${basetime}/surf/hrpns/${tileZoom}/{x}/{y}.png`;
+
+// NOTE: 高解像度降水ナウキャストは、ズームレベル 4, 6, 8 でタイルが提供されている
+const attachNowcastZoomSplitLayers = (entry: RasterEntry<RasterBaseMapStyle>) => {
+	entry.format.url = createFixedNowcastTileUrl('{morivis:dimension}', 8);
+	entry.metaData.minZoom = 8;
+	entry.metaData.maxZoom = 8;
+	entry.style.minZoom = 8;
+	entry.style.maxZoom = 24;
+	entry.auxiliaryLayers = {
+		sources: {
+			[`${entry.id}:::z4_source`]: {
+				type: 'raster',
+				tiles: [createFixedNowcastTileUrl('{morivis:dimension}', 4)],
+				tileSize: 256,
+				minzoom: 4,
+				maxzoom: 4,
+				bounds: WEB_MERCATOR_JAPAN_BOUNDS
+			},
+			[`${entry.id}:::z6_source`]: {
+				type: 'raster',
+				tiles: [createFixedNowcastTileUrl('{morivis:dimension}', 6)],
+				tileSize: 256,
+				minzoom: 6,
+				maxzoom: 6,
+				bounds: WEB_MERCATOR_JAPAN_BOUNDS
+			}
+		},
+		layers: [
+			{
+				id: `${entry.id}:::z4_layer`,
+				type: 'raster',
+				source: `${entry.id}:::z4_source`,
+				minzoom: 4,
+				maxzoom: 6
+			},
+			{
+				id: `${entry.id}:::z6_layer`,
+				type: 'raster',
+				source: `${entry.id}:::z6_source`,
+				minzoom: 6,
+				maxzoom: 8
+			}
+		]
+	};
+};
+
 export const createJmaNowcastRasterEntry = async (
 	config: JmaNowcastConfig
 ): Promise<RasterEntry<RasterBaseMapStyle>> => {
@@ -194,7 +263,7 @@ export const createJmaNowcastRasterEntry = async (
 	const entry = createRasterEntry(config.name, createNowcastTileUrl('{morivis:dimension}'), {
 		tileSize: 256,
 		minZoom: 4,
-		maxZoom: 10,
+		maxZoom: 8,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		timeDimension: {
 			values: basetimes,
@@ -207,9 +276,11 @@ export const createJmaNowcastRasterEntry = async (
 	entry.metaData.description = config.description;
 	entry.metaData.attribution = '気象庁';
 	entry.metaData.location = '全国';
-	entry.metaData.tags = config.tags ?? ['地図'];
+	entry.metaData.tags = config.tags ?? ['気象', '雨雲'];
 	entry.metaData.xyzImageTile = config.xyzImageTile ?? { x: 7, y: 3, z: 4 };
 	entry.metaData.downloadUrl = config.downloadUrl;
+	entry.metaData.mapImage = config.mapImage;
+	attachNowcastZoomSplitLayers(entry);
 
 	return entry;
 };
@@ -217,14 +288,15 @@ export const createJmaNowcastRasterEntry = async (
 export const createJmaNowcastFallbackEntry = (
 	config: JmaNowcastConfig
 ): RasterEntry<RasterBaseMapStyle> => {
+	const fallbackBasetime = getCurrentNowcastFallbackBasetime();
 	const entry = createRasterEntry(config.name, createNowcastTileUrl('{morivis:dimension}'), {
 		tileSize: 256,
 		minZoom: 4,
 		maxZoom: 9,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		timeDimension: {
-			values: [NOWCAST_FALLBACK_BASETIME],
-			labels: [formatNowcastTimeLabel(NOWCAST_FALLBACK_BASETIME)]
+			values: [fallbackBasetime],
+			labels: [formatNowcastTimeLabel(fallbackBasetime)]
 		}
 	});
 
@@ -236,6 +308,8 @@ export const createJmaNowcastFallbackEntry = (
 	entry.metaData.tags = config.tags ?? ['地図'];
 	entry.metaData.xyzImageTile = config.xyzImageTile ?? { x: 7, y: 3, z: 4 };
 	entry.metaData.downloadUrl = config.downloadUrl;
+	entry.metaData.mapImage = config.mapImage;
+	attachNowcastZoomSplitLayers(entry);
 
 	return entry;
 };

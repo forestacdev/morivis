@@ -1,3 +1,13 @@
+import { createGeoJsonPointEntry } from '$routes/map/data/entries/_factories/geojson';
+import { createAdjustableRange } from '$routes/map/data/types';
+import type { PointEntry, GeoJsonMetaData } from '$routes/map/data/types/vector';
+import type { ColorsExpression } from '$routes/map/data/types/vector/style';
+import type { VectorTemporalItem } from '$routes/map/data/types/vector/properties';
+import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
+import type { PointGeometry } from '$routes/map/types/geometry';
+import type { Tag } from '$routes/map/data/types/tags';
+import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
+
 // https://www.p2pquake.net/develop/json_api_v2/
 
 // タイムスタンプ情報
@@ -159,6 +169,112 @@ type EventInformation =
 // メインの配列型
 type EventData = EventInformation[];
 
+export interface QuakePointConfig {
+	id: string;
+	name: string;
+	description: string;
+	tags?: Tag[];
+	downloadUrl?: string;
+	mapImage?: string;
+}
+
+type QuakeFeatureProperties = {
+	time: string;
+	hypocenterName: string;
+	magnitude?: number;
+	depth?: number;
+	maxScale?: number;
+	maxScaleLabel: string;
+	domesticTsunami: string;
+	foreignTsunami: string;
+	pointsCount: number;
+	comment?: string;
+};
+
+const EMPTY_GEOJSON: FeatureCollection<PointGeometry, QuakeFeatureProperties> = {
+	type: 'FeatureCollection',
+	features: []
+};
+
+const EMPTY_GEOJSON_DATA_URL = `data:application/json;charset=utf-8,${encodeURIComponent(
+	JSON.stringify(EMPTY_GEOJSON)
+)}`;
+
+const QUAKE_COLOR_EXPRESSIONS: ColorsExpression[] = [
+	{
+		type: 'single',
+		key: '単色',
+		name: '単色',
+		mapping: {
+			value: '#e31a1c',
+			pattern: null
+		}
+	},
+	{
+		type: 'step',
+		key: 'maxScale',
+		name: '最大震度による色分け',
+		mapping: {
+			scheme: 'YlOrRd',
+			range: createAdjustableRange(10, 70),
+			divisions: 7
+		}
+	},
+	{
+		type: 'step',
+		key: 'magnitude',
+		name: 'マグニチュードによる色分け',
+		mapping: {
+			scheme: 'OrRd',
+			range: createAdjustableRange(0, 8),
+			divisions: 6
+		}
+	},
+	{
+		type: 'step',
+		key: 'depth',
+		name: '深さによる色分け',
+		mapping: {
+			scheme: 'BuPu',
+			range: createAdjustableRange(0, 500),
+			divisions: 6
+		}
+	}
+];
+
+const formatScaleLabel = (scale: number) => {
+	if (scale < 0) return '不明';
+	if (scale === 10) return '1';
+	if (scale === 20) return '2';
+	if (scale === 30) return '3';
+	if (scale === 40) return '4';
+	if (scale === 45) return '5弱';
+	if (scale === 50) return '5強';
+	if (scale === 55) return '6弱';
+	if (scale === 60) return '6強';
+	if (scale === 70) return '7';
+	return String(scale);
+};
+
+const formatDepth = (depth: number) => (depth < 0 ? null : depth);
+const formatMagnitude = (magnitude: number) => (magnitude < 0 ? null : magnitude);
+
+const createGeoJsonBlobUrl = (geojson: FeatureCollection) =>
+	URL.createObjectURL(new Blob([JSON.stringify(geojson)], { type: 'application/json' }));
+
+const compactFeatureProperties = (
+	properties: Record<string, string | number | boolean | null | undefined>
+) =>
+	Object.fromEntries(
+		Object.entries(properties).filter(([, value]) => value !== null && value !== undefined)
+	) as QuakeFeatureProperties;
+
+const toTemporalItem = (time: string): VectorTemporalItem => ({
+	raw: time,
+	timestamp: Date.parse(time.replace(/\//g, '-').replace(' ', 'T') + '+09:00'),
+	label: time
+});
+
 // 型ガード関数
 export function isEarthquakeInformation(event: EventInformation): event is EarthquakeInformation {
 	return event.code === 551;
@@ -202,5 +318,181 @@ export const getEarthquakeData = async (): Promise<EventData> => {
 	} catch (error) {
 		console.error('Error fetching earthquake data:', error);
 		throw new Error('Failed to fetch earthquake data');
+	}
+};
+
+const buildEarthquakeFeature = (
+	event: EarthquakeInformation
+): Feature<PointGeometry, QuakeFeatureProperties> => ({
+	type: 'Feature',
+	id: event.id,
+	geometry: {
+		type: 'Point',
+		coordinates: [event.earthquake.hypocenter.longitude, event.earthquake.hypocenter.latitude]
+	},
+	properties: compactFeatureProperties({
+		time: event.time,
+		hypocenterName: event.earthquake.hypocenter.name || '震源不明',
+		magnitude: formatMagnitude(event.earthquake.hypocenter.magnitude),
+		depth: formatDepth(event.earthquake.hypocenter.depth),
+		maxScale: event.earthquake.maxScale < 0 ? null : event.earthquake.maxScale,
+		maxScaleLabel: formatScaleLabel(event.earthquake.maxScale),
+		domesticTsunami: event.earthquake.domesticTsunami,
+		foreignTsunami: event.earthquake.foreignTsunami,
+		pointsCount: event.points.length,
+		comment: event.comments?.freeFormComment || undefined
+	})
+});
+
+export const fetchEarthquakeGeoJson = async (): Promise<
+	FeatureCollection<PointGeometry, QuakeFeatureProperties>
+> => {
+	const data = await getEarthquakeData();
+
+	return {
+		type: 'FeatureCollection',
+		features: data.filter(isEarthquakeInformation).map(buildEarthquakeFeature)
+	};
+};
+
+const createEarthquakePointEntry = (
+	config: QuakePointConfig,
+	url: string,
+	temporalItems?: VectorTemporalItem[]
+): PointEntry<GeoJsonMetaData> => {
+	const entry = createGeoJsonPointEntry({
+		id: config.id,
+		name: config.name,
+		url,
+		format: 'geojson',
+		attribution: 'P2P地震情報',
+		location: '全国',
+		description: config.description,
+		downloadUrl: config.downloadUrl,
+		tags: config.tags ?? ['地震', '気象'],
+		zoom: { min: 3, max: 24 },
+		xyzImageTile: 'zoom_7',
+		mapImage: config.mapImage,
+		fields: [
+			{
+				key: 'time',
+				label: '発生時刻',
+				type: 'datetime',
+				format: {
+					date: {
+						inputPatterns: ['YYYY/MM/DD HH:mm:ss'],
+						displayPattern: 'YYYY年M月D日 HH:mm:ss',
+						invalidText: ''
+					}
+				}
+			},
+			{ key: 'hypocenterName', label: '震源地', type: 'string' },
+			{ key: 'magnitude', label: 'マグニチュード', type: 'number', format: { digits: 1 } },
+			{ key: 'depth', label: '深さ', type: 'number', unit: 'km' },
+			{ key: 'maxScaleLabel', label: '最大震度', type: 'string' },
+			{ key: 'pointsCount', label: '観測点数', type: 'integer' },
+			{ key: 'domesticTsunami', label: '国内津波', type: 'string' },
+			{ key: 'foreignTsunami', label: '海外津波', type: 'string' },
+			{ key: 'comment', label: 'コメント', type: 'string' }
+		],
+		popupKeys: [
+			'time',
+			'hypocenterName',
+			'magnitude',
+			'depth',
+			'maxScaleLabel',
+			'pointsCount',
+			'domesticTsunami',
+			'foreignTsunami',
+			'comment'
+		],
+		titleTemplate: '{hypocenterName}',
+		opacity: 0.7,
+		colors: QUAKE_COLOR_EXPRESSIONS,
+		color: '#e31a1c',
+		radius: 6
+	});
+
+	entry.style.labels = {
+		...entry.style.labels,
+		key: 'hypocenterName',
+		show: false,
+		expressions: [
+			{ key: 'hypocenterName', name: '震源地' },
+			{ key: 'magnitude', name: 'マグニチュード' },
+			{ key: 'maxScaleLabel', name: '最大震度' },
+			{ key: 'time', name: '発生時刻' }
+		]
+	};
+
+	entry.style.radius = {
+		key: 'magnitude',
+		expressions: [
+			{
+				type: 'single',
+				key: '単一',
+				name: '単一',
+				mapping: {
+					value: 6
+				}
+			},
+			{
+				type: 'linear',
+				key: 'magnitude',
+				name: 'マグニチュード',
+				mapping: {
+					range: createAdjustableRange(0, 8),
+					values: [4, 14]
+				}
+			},
+			{
+				type: 'linear',
+				key: 'depth',
+				name: '深さ',
+				mapping: {
+					range: createAdjustableRange(0, 500),
+					values: [12, 4]
+				}
+			}
+		]
+	};
+
+	if (temporalItems && temporalItems.length > 0) {
+		entry.properties.temporal = {
+			dimension: {
+				type: 'time',
+				values: temporalItems.map((item) => item.raw),
+				labels: temporalItems.map((item) => item.label)
+			},
+			behaviors: [{ type: 'filter', key: 'time' }],
+			items: temporalItems
+		};
+		entry.properties.attributeView.timeKey = 'time';
+	}
+
+	return entry;
+};
+
+export const createEarthquakeFallbackEntry = (
+	config: QuakePointConfig
+): PointEntry<GeoJsonMetaData> => createEarthquakePointEntry(config, EMPTY_GEOJSON_DATA_URL);
+
+export const loadEarthquakePointEntry = async (
+	config: QuakePointConfig
+): Promise<PointEntry<GeoJsonMetaData>> => {
+	try {
+		const geojson = await fetchEarthquakeGeoJson();
+		const temporalItems = Array.from(
+			new Set(geojson.features.map((feature) => feature.properties.time))
+		)
+			.map(toTemporalItem)
+			.filter((item) => !Number.isNaN(item.timestamp))
+			.sort((a, b) => a.timestamp - b.timestamp);
+		const entry = createEarthquakePointEntry(config, createGeoJsonBlobUrl(geojson), temporalItems);
+		GeojsonCache.set(entry.id, geojson);
+		return entry;
+	} catch (error) {
+		console.error(`${config.name}エントリの初期化に失敗しました`, error);
+		return createEarthquakeFallbackEntry(config);
 	}
 };

@@ -10,6 +10,8 @@
 		SUPPORTED_FILE_GROUPS,
 		type DialogType
 	} from '$routes/map/types';
+	import { parseOgcApiFeaturesService } from '$routes/map/utils/formats/ogc-api-features';
+	import { looksLikeWfsUrl, parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
 	import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
 	import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
 	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
@@ -25,6 +27,7 @@
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
 		remoteWmtsUrl: string | null;
+		remoteFeatureServiceUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -37,6 +40,7 @@
 		remoteVectorUrl = $bindable(),
 		remoteTiles3dUrl = $bindable(),
 		remoteWmtsUrl = $bindable(),
+		remoteFeatureServiceUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -178,6 +182,16 @@
 		return !!(wmsResult && wmsResult.length > 0);
 	};
 
+	const isWfsUrl = async (urlValue: string): Promise<boolean> => {
+		const result = await parseWfsCapabilities(urlValue);
+		return !!(result && result.featureTypes.length > 0);
+	};
+
+	const isOgcApiFeaturesUrl = async (urlValue: string): Promise<boolean> => {
+		const result = await parseOgcApiFeaturesService(urlValue);
+		return !!(result && result.collections.length > 0);
+	};
+
 	const RASTER_TILE_EXTENSIONS = new Set([
 		'.png',
 		'.jpg',
@@ -255,6 +269,30 @@
 			if (await isWmsOrWmtsUrl(trimmedUrl)) {
 				remoteWmtsUrl = trimmedUrl;
 				showDialogType = 'wmts';
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
+
+			if (looksLikeWfsUrl(trimmedUrl) && (await isWfsUrl(trimmedUrl))) {
+				remoteFeatureServiceUrl = trimmedUrl;
+				showDialogType = 'featureservice';
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
+
+			if (await isOgcApiFeaturesUrl(trimmedUrl)) {
+				remoteFeatureServiceUrl = trimmedUrl;
+				showDialogType = 'featureservice';
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
+
+			if (await isWfsUrl(trimmedUrl)) {
+				remoteFeatureServiceUrl = trimmedUrl;
+				showDialogType = 'featureservice';
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
@@ -356,6 +394,12 @@
 						'カバレッジ配信サービスのURLです。ラスターデータを範囲指定で取得するときに使います。'
 				},
 				{
+					type: 'featureservice',
+					label: 'WFS / OGC API',
+					description:
+						'地物配信サービスのURLです。WFS と OGC API - Features のどちらも同じフォームから開けます。'
+				},
+				{
 					type: 'arcgis',
 					label: 'ArcGIS',
 					description:
@@ -389,12 +433,52 @@
 	}[] = [
 		{
 			title: 'ファイル選択',
-			groups: SUPPORTED_FILE_GROUPS.map((group) => ({
+			groups: SUPPORTED_FILE_GROUPS.filter(
+				(group) => group.label !== 'GeoJSON' && group.label !== 'WKT'
+			).map((group) => ({
 				label: group.label,
 				description: group.description,
 				extensions: group.extensions,
 				accept: group.extensions.join(',')
 			}))
+		}
+	];
+
+	const directFileDialogGroups: {
+		title: string;
+		dialogs: { type: DialogType; label: string; description: string }[];
+	}[] = [
+		{
+			title: 'テキスト入力',
+			dialogs: [
+				{
+					type: 'geojson',
+					label: 'GeoJSON入力',
+					description: 'GeoJSONファイルの読み込みや、GeoJSONテキストの直接入力を行うフォームです。'
+				},
+				{
+					type: 'wkt',
+					label: 'WKT入力',
+					description: 'WKTファイルの読み込みや、WKTテキストの直接入力を行うフォームです。'
+				}
+			]
+		},
+		{
+			title: 'ファイルフォーム',
+			dialogs: [
+				{
+					type: 'shp',
+					label: 'Shapefile',
+					description:
+						'Shapefile の登録フォームです。.shp .dbf .shx などの構成ファイルをまとめて指定するときに使います。'
+				},
+				{
+					type: 'demxml',
+					label: '基盤地図情報 DEM XML',
+					description:
+						'基盤地図情報の標高 XML を読み込むフォームです。複数 XML をまとめてドロップするときにも使えます。'
+				}
+			]
 		}
 	];
 
@@ -557,6 +641,24 @@
 
 			<div class="c-scroll flex flex-col gap-5 overflow-y-auto pr-1">
 				{#each urlDialogGroups as group (group.title)}
+					<div class="flex flex-col gap-3">
+						<span class="text-sm font-bold text-gray-300">{group.title}</span>
+						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+							{#each group.dialogs as dialog (dialog.type)}
+								<button
+									onclick={() => showUploadDialog(dialog.type)}
+									class="bg-base hover:bg-accent group flex min-h-[112px] cursor-pointer flex-col gap-2 rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
+								>
+									<span class="font-semibold">{dialog.label}</span>
+									<span class="text-xs leading-5 text-black/70 group-hover:text-white/80">
+										{dialog.description}
+									</span>
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/each}
+				{#each directFileDialogGroups as group (group.title)}
 					<div class="flex flex-col gap-3">
 						<span class="text-sm font-bold text-gray-300">{group.title}</span>
 						<div class="grid grid-cols-2 gap-3 md:grid-cols-3">

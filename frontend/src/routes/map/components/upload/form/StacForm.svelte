@@ -40,7 +40,7 @@
 		type StacAsset
 	} from '$routes/map/utils/formats/stac';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
-	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+	import { fetchWithDevProxy, resolveRequestUrl } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -60,7 +60,7 @@
 			.string()
 			.required('URLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
-				if (!value) return false;
+				if (!value) return true;
 				return value.startsWith('http://') || value.startsWith('https://');
 			})
 	});
@@ -118,6 +118,7 @@
 	const loadCogDirect = async (cogUrl: string) => {
 		statusText = 'COGメタデータを読み取り中...';
 		const id = `geotiff_${crypto.randomUUID()}`;
+		const requestCogUrl = resolveRequestUrl(cogUrl);
 		const entryName =
 			cogUrl
 				.split('/')
@@ -160,7 +161,7 @@
 			const entry: RasterCogEntry<RasterTiffStyle> = {
 				id,
 				type: 'raster',
-				format: { type: 'cog', url: cogUrl },
+				format: { type: 'cog', url: cogUrl, mode: 'viewport' },
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
 					attribution: 'STAC/COG',
@@ -210,10 +211,10 @@
 			};
 			showDataEntry = entry;
 			showDialogType = null;
-			showNotification('COGをタイル方式で読み込みました', 'success');
+			showNotification('COGをviewport方式で読み込みました', 'success');
 		} else {
 			statusText = `ラスターデータを読み込み中... (${fullWidth}x${fullHeight})`;
-			const tiff = await fromUrl(cogUrl);
+			const tiff = await fromUrl(requestCogUrl);
 			const fullImage = await tiff.getImage();
 			const rasters = await fullImage.readRasters();
 
@@ -317,6 +318,17 @@
 				selectedCollectionId = collections[0].id;
 				statusText = `STAC API (${collections.length}コレクション)`;
 				step = 'collection';
+			} else if (result.type === 'items-endpoint') {
+				const foundItems = (result.data as { features?: StacItem[] }).features ?? [];
+				if (foundItems.length === 0) {
+					showNotification('アイテムが見つかりません', 'error');
+					return;
+				}
+				items = foundItems;
+				selectedItemIndex = 0;
+				updateCogAssets(0);
+				statusText = `${foundItems.length}件のアイテム`;
+				step = 'items';
 			} else {
 				// Static Catalog / Collection → childリンクをブラウズ
 				const links = await fetchChildLinks(apiUrl);
@@ -458,7 +470,8 @@
 		progressText = 'ファイル情報を取得中...';
 		try {
 			// 直接アクセスでCORS確認
-			let cogUrl = asset.href;
+			const cogUrl = asset.href;
+			const requestCogUrl = resolveRequestUrl(cogUrl);
 			try {
 				const testRes = await fetchWithDevProxy(asset.href, { method: 'HEAD' });
 				const contentLength = testRes.headers.get('Content-Length');
@@ -520,7 +533,7 @@
 				const entry: RasterCogEntry<RasterTiffStyle> = {
 					id,
 					type: 'raster',
-					format: { type: 'cog', url: cogUrl },
+					format: { type: 'cog', url: cogUrl, mode: 'viewport' },
 					metaData: {
 						...DEFAULT_CUSTOM_META_DATA,
 						attribution: 'STAC/COG',
@@ -571,10 +584,10 @@
 
 				showDataEntry = entry;
 				showDialogType = null;
-				showNotification('COGをタイル方式で読み込みました', 'success');
+				showNotification('COGをviewport方式で読み込みました', 'success');
 			} else {
 				// 従来方式: 全体をImageSourceとして読み込む
-				const tiff = await fromUrl(cogUrl);
+				const tiff = await fromUrl(requestCogUrl);
 				const fullImage = await tiff.getImage();
 				const width = fullWidth;
 				const height = fullHeight;
