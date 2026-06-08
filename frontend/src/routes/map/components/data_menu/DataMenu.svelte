@@ -5,12 +5,10 @@
 
 	import { ICONS } from '$lib/icons';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
-	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries, layerDataFuse } from '$routes/map/data/entries';
 	import type { GeoDataEntry } from '$routes/map/data/types';
-	import { type Tag } from '$routes/map/data/types/tags';
 	import type { DialogType } from '$routes/map/types';
 	import { encode } from '$routes/map/utils/data/normalize';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
@@ -47,15 +45,7 @@
 
 	let searchWord = $state<string>(''); // 検索ワード
 	let showAddedData = $state<boolean>(false); // 追加済みデータの表示切替
-	let tagList = $derived.by(() => {
-		const tags = new Set<string>();
-		geoDataEntries.forEach((entry) => {
-			entry.metaData.tags.forEach((tag) => tags.add(tag));
-		});
-		return Array.from(tags);
-	});
-
-	let selectedTag = $state<Tag | null>(null); // 選択されたタグ
+	const searchShortcutKeywords = ['森林', '地形', '背景地図', '気象', 'ハザード', 'DEM', '建物'];
 
 	// 文字種を判定して優先度を返す
 	const getCharPriority = (str: string): number => {
@@ -72,11 +62,6 @@
 
 	$effect(() => {
 		let results = [...geoDataEntries];
-
-		// タグでフィルタリング
-		if (selectedTag) {
-			results = results.filter((data) => data.metaData.tags.includes(selectedTag));
-		}
 
 		// 検索ワードでフィルタリング（Fuse.jsを使用）
 		if (searchWord) {
@@ -120,10 +105,6 @@
 			console.log('debug:Filtered Data Entries:', results);
 		}
 	});
-
-	const toggleDataMenu = () => {
-		showDataMenu.set(!showDataMenu);
-	};
 
 	let gridHeight = $state<number>(0);
 	let gridWidth = $state<number>(0);
@@ -244,31 +225,30 @@
 			</div>
 		</div>
 		{#if selected === 'system'}
-			<!-- <div class="flex w-full grow items-center justify-between gap-2 p-2 max-lg:hidden">
-				{#each tagList as tag}
-					<button
-						onclick={() => {
-							if (selectedTag === tag) {
-								selectedTag = null; // 同じタグが選択された場合は解除
-							} else {
-								selectedTag = tag;
-							}
-							// フィルタリング処理をここに追加
-						}}
-						class="shrink-0 cursor-pointer rounded-lg p-2 px-2 transition-colors {selectedTag ===
-						tag
-							? 'bg-base text-black'
-							: 'bg-black text-base'}">{tag}</button
-					>
-				{/each}
-			</div> -->
 			<div
 				class="absolute top-14 z-20 flex w-full grow items-start justify-between gap-4 p-2 transition-colors duration-200 max-lg:hidden {hasScrolledCatalog
 					? 'bg-main'
 					: 'bg-transparent'}"
 			>
-				<div>
+				<!-- <div>
 					<Switch label="追加済みデータの表示" bind:value={showAddedData} />
+				</div> -->
+				<div class="flex w-full grow items-center gap-2 overflow-x-auto p-2 max-lg:hidden">
+					<button
+						onclick={() => (searchWord = '')}
+						class="shrink-0 cursor-pointer rounded-lg p-2 px-2 transition-colors {!searchWord
+							? 'bg-base text-black'
+							: 'bg-black text-base'}">全て</button
+					>
+					{#each searchShortcutKeywords as keyword (keyword)}
+						<button
+							onclick={() => (searchWord = keyword)}
+							class="shrink-0 cursor-pointer rounded-lg p-2 px-2 transition-colors {searchWord ===
+							keyword
+								? 'bg-base text-black'
+								: 'bg-black text-base'}">{keyword}</button
+						>
+					{/each}
 				</div>
 			</div>
 		{/if}
