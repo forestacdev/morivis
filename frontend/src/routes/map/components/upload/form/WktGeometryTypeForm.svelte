@@ -43,12 +43,12 @@
 </div>
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-	<button onclick={onBack} class="c-btn-sub cursor-pointer p-4 text-lg"> 戻る </button>
 	<button onclick={onCancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={onConfirm}
 		disabled={$isProcessing || !selectedGeometryType}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing || !selectedGeometryType
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
+		!selectedGeometryType
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>
