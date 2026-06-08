@@ -236,17 +236,17 @@
 				<div class="flex w-full grow items-center gap-2 overflow-x-auto p-2 max-lg:hidden">
 					<button
 						onclick={() => (searchWord = '')}
-						class="shrink-0 cursor-pointer rounded-lg p-2 px-2 transition-colors {!searchWord
-							? 'bg-base text-black'
-							: 'bg-black text-base'}">全て</button
+						class="shrink-0 cursor-pointer rounded-full px-3 py-1 text-base text-sm transition-colors {!searchWord
+							? 'bg-main-accent'
+							: 'bg-sub'}">全て</button
 					>
 					{#each searchShortcutKeywords as keyword (keyword)}
 						<button
 							onclick={() => (searchWord = keyword)}
-							class="shrink-0 cursor-pointer rounded-lg p-2 px-2 transition-colors {searchWord ===
+							class="shrink-0 cursor-pointer rounded-full px-3 py-1 text-base text-sm transition-colors {searchWord ===
 							keyword
-								? 'bg-base text-black'
-								: 'bg-black text-base'}">{keyword}</button
+								? 'bg-main-accent'
+								: 'bg-sub'}">{keyword}</button
 						>
 					{/each}
 				</div>
