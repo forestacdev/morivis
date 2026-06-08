@@ -463,7 +463,7 @@
 										aria-label={`${color} のアイコンを表示`}
 									></button>
 								{/each}
-								{#if layerType === 'circle'}
+								<!-- {#if layerType === 'circle'}
 									<button
 										class="flex h-7 cursor-pointer items-center rounded-lg border px-2 text-xs transition {selectedPointColor ===
 										'other'
@@ -476,7 +476,7 @@
 									>
 										その他
 									</button>
-								{/if}
+								{/if} -->
 							</div>
 							{#if selectedPointColor !== 'other'}
 								<div class="grid grid-cols-10 gap-1">
