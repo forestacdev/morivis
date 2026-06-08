@@ -16,6 +16,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import type { AnyGeometry, GeometryCollection } from '$routes/map/types/geometry';
 	import { fgbFileToGeojson } from '$routes/map/utils/formats/fgb';
 	import {
 		GeoJsonParseError,
@@ -56,6 +57,58 @@
 		Point: 'ポイント',
 		LineString: 'ライン',
 		Polygon: 'ポリゴン'
+	};
+
+	const to2dPosition = (position: number[]): [number, number] => {
+		return [position[0], position[1]];
+	};
+
+	const stripGeometryZ = (geometry: AnyGeometry | GeometryCollection): AnyGeometry | GeometryCollection => {
+		if (geometry.type === 'Point') {
+			return { ...geometry, coordinates: to2dPosition(geometry.coordinates as unknown as number[]) };
+		}
+
+		if (geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
+			return {
+				...geometry,
+				coordinates: geometry.coordinates.map((position) =>
+					to2dPosition(position as unknown as number[])
+				)
+			};
+		}
+
+		if (geometry.type === 'MultiLineString' || geometry.type === 'Polygon') {
+			return {
+				...geometry,
+				coordinates: geometry.coordinates.map((line) =>
+					line.map((position) => to2dPosition(position as unknown as number[]))
+				)
+			};
+		}
+
+		if (geometry.type === 'MultiPolygon') {
+			return {
+				...geometry,
+				coordinates: geometry.coordinates.map((polygon) =>
+					polygon.map((line) => line.map((position) => to2dPosition(position as unknown as number[])))
+				)
+			};
+		}
+
+		return {
+			type: 'GeometryCollection',
+			geometries: geometry.geometries.map((child) => stripGeometryZ(child))
+		} as unknown as GeometryCollection;
+	};
+
+	const stripGeojsonZ = (geojson: FeatureCollection): FeatureCollection => {
+		return {
+			...geojson,
+			features: geojson.features.map((feature) => ({
+				...feature,
+				geometry: stripGeometryZ(feature.geometry as unknown as AnyGeometry | GeometryCollection)
+			}))
+		} as unknown as FeatureCollection;
 	};
 
 	let rawGeojson = $state<FeatureCollection | null>(null);
@@ -119,7 +172,7 @@
 			return createGeoJson3DEntry(entryName, geojson, geometryType, bbox);
 		}
 
-		return createGeoJsonEntry(geojson, geometryType, entryName, bbox, undefined, {
+		return createGeoJsonEntry(stripGeojsonZ(geojson), geometryType, entryName, bbox, undefined, {
 			attribution: 'GeoJSON'
 		});
 	};
