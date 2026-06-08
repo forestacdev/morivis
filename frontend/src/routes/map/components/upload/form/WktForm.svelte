@@ -3,6 +3,7 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import WktGeometryTypeForm from '$routes/map/components/upload/form/WktGeometryTypeForm.svelte';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
@@ -52,6 +53,7 @@
 	let manualEntryName = $state('WKTデータ');
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let isDragover = $state(false);
+	let showGeometryTypeDialog = $state(false);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 
@@ -79,6 +81,8 @@
 	const setSelectedFile = (file: File) => {
 		dropFile = file;
 		rawGeojson = null;
+		sourceEpsgCode = null;
+		showGeometryTypeDialog = false;
 		geometryTypeOptions = [];
 		selectedGeometryType = '';
 	};
@@ -101,7 +105,15 @@
 			name: GEOMETRY_TYPE_LABELS[type] ?? type
 		}));
 		selectedGeometryType = types[0];
-		await processWkt();
+		showGeometryTypeDialog = false;
+
+		if (types.length === 1) {
+			await processWkt();
+			return;
+		}
+
+		showGeometryTypeDialog = true;
+		showNotification('複数のジオメトリタイプが見つかりました。読み込むタイプを選択してください', 'info');
 	};
 
 	$effect(() => {
@@ -156,6 +168,7 @@
 
 		showDataEntry = entry;
 		dropFile = null;
+		showGeometryTypeDialog = false;
 		showDialogType = null;
 		showNotification('ファイルを読み込みました', 'success');
 	};
@@ -195,6 +208,7 @@
 			if (entry) {
 				showDataEntry = entry;
 				dropFile = null;
+				showGeometryTypeDialog = false;
 				showDialogType = null;
 				showNotification('ファイルを読み込みました', 'success');
 			}
@@ -208,7 +222,12 @@
 
 	const cancel = () => {
 		dropFile = null;
+		showGeometryTypeDialog = false;
 		showDialogType = null;
+	};
+
+	const backToWktInput = () => {
+		showGeometryTypeDialog = false;
 	};
 
 	const loadFromText = async () => {
@@ -233,6 +252,16 @@
 	};
 
 	const submit = async () => {
+		if (showGeometryTypeDialog) {
+			await processWkt();
+			return;
+		}
+
+		if (rawGeojson && selectedGeometryType) {
+			await processWkt();
+			return;
+		}
+
 		if (sourceMode === 'text') {
 			await loadFromText();
 			return;
@@ -271,98 +300,108 @@
 	});
 </script>
 
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">WKTの登録</span>
-</div>
-
-<div class="c-scroll flex h-full w-full grow flex-col gap-3 overflow-auto p-2">
-	<HorizontalSelectBox
-		label="入力方法を選択"
-		bind:group={sourceMode}
-		options={[
-			{ key: 'file', name: 'ファイル' },
-			{ key: 'text', name: 'テキスト' }
-		]}
+{#if showGeometryTypeDialog}
+	<WktGeometryTypeForm
+		bind:selectedGeometryType
+		{geometryTypeOptions}
+		{sourceEpsgCode}
+		onBack={backToWktInput}
+		onCancel={cancel}
+		onConfirm={submit}
 	/>
+{:else}
+	<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+		<span class="text-2xl font-bold">WKTの登録</span>
+	</div>
 
-	{#if sourceMode === 'file'}
-		<div class="flex flex-col gap-4">
-			<div
-				role="region"
-				class="border-sub bg-base/40 flex min-h-[180px] w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors {isDragover
-					? 'border-white bg-black/40'
-					: ''}"
-				ondragover={(event) => {
-					event.preventDefault();
-					isDragover = true;
-				}}
-				ondragleave={() => {
-					isDragover = false;
-				}}
-				ondrop={onDropFile}
-			>
-				<span class="text-base font-bold select-none">ここにWKTファイルをドロップ</span>
-				<button class="c-btn-confirm min-w-[180px] p-3 text-base" onclick={openFilePicker}>
-					ファイルを選択
-				</button>
-				<input
-					bind:this={fileInput}
-					type="file"
-					accept=".wkt,.ewkt,.txt"
-					class="hidden"
-					onchange={onFileChange}
-				/>
-				{#if wktFile}
-					<span class="text-sm text-gray-300">{wktFile.name}</span>
-				{/if}
-			</div>
-		</div>
-	{/if}
-
-	{#if sourceMode === 'text'}
-		<div class="flex flex-col gap-2">
-			<label class="flex flex-col gap-2">
-				<span class="text-base font-bold select-none">データ名</span>
-				<input
-					type="text"
-					class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
-					bind:value={manualEntryName}
-				/>
-			</label>
-			<label class="flex flex-col gap-2">
-				<span class="text-base font-bold select-none">WKTテキスト</span>
-				<textarea
-					class="bg-base text-main min-h-[220px] w-full rounded-lg p-3 font-mono text-sm focus:outline-0"
-					bind:value={inputText}
-					placeholder="SRID=4326;POINT(136.9 35.5)"
-				></textarea>
-			</label>
-		</div>
-	{/if}
-
-	{#if sourceEpsgCode}
-		<p class="text-sm text-gray-300">SRID: EPSG:{sourceEpsgCode}</p>
-	{/if}
-
-	{#if geometryTypeOptions.length > 0}
+	<div class="c-scroll flex h-full w-full grow flex-col gap-3 overflow-auto p-2">
 		<HorizontalSelectBox
-			label="ジオメトリタイプを選択"
-			bind:group={selectedGeometryType}
-			bind:options={geometryTypeOptions}
+			label="入力方法を選択"
+			bind:group={sourceMode}
+			options={[
+				{ key: 'file', name: 'ファイル' },
+				{ key: 'text', name: 'テキスト' }
+			]}
 		/>
-	{/if}
-</div>
 
-<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
-	<button
-		onclick={submit}
-		disabled={$isProcessing || (sourceMode === 'file' && !selectedGeometryType)}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		(sourceMode === 'file' && !selectedGeometryType)
-			? 'cursor-not-allowed opacity-50'
-			: ''}"
-	>
-		決定
-	</button>
-</div>
+		{#if sourceMode === 'file'}
+			<div class="flex flex-col gap-4">
+				<div
+					role="region"
+					class="border-sub bg-base/40 flex min-h-[180px] w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-6 text-center transition-colors {isDragover
+						? 'border-white bg-black/40'
+						: ''}"
+					ondragover={(event) => {
+						event.preventDefault();
+						isDragover = true;
+					}}
+					ondragleave={() => {
+						isDragover = false;
+					}}
+					ondrop={onDropFile}
+				>
+					<span class="text-base font-bold select-none">ここにWKTファイルをドロップ</span>
+					<button class="c-btn-confirm min-w-[180px] p-3 text-base" onclick={openFilePicker}>
+						ファイルを選択
+					</button>
+					<input
+						bind:this={fileInput}
+						type="file"
+						accept=".wkt,.ewkt,.txt"
+						class="hidden"
+						onchange={onFileChange}
+					/>
+					{#if wktFile}
+						<span class="text-sm text-gray-300">{wktFile.name}</span>
+					{/if}
+				</div>
+			</div>
+		{/if}
+
+		{#if sourceMode === 'text'}
+			<div class="flex flex-col gap-2">
+				<label class="flex flex-col gap-2">
+					<span class="text-base font-bold select-none">データ名</span>
+					<input
+						type="text"
+						class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
+						bind:value={manualEntryName}
+					/>
+				</label>
+				<label class="flex flex-col gap-2">
+					<span class="text-base font-bold select-none">WKTテキスト</span>
+					<textarea
+						class="bg-base text-main min-h-[220px] w-full rounded-lg p-3 font-mono text-sm focus:outline-0"
+						bind:value={inputText}
+						oninput={() => {
+							rawGeojson = null;
+							sourceEpsgCode = null;
+							showGeometryTypeDialog = false;
+							geometryTypeOptions = [];
+							selectedGeometryType = '';
+						}}
+						placeholder="SRID=4326;POINT(136.9 35.5)"
+					></textarea>
+				</label>
+			</div>
+		{/if}
+
+		{#if sourceEpsgCode}
+			<p class="text-sm text-gray-300">SRID: EPSG:{sourceEpsgCode}</p>
+		{/if}
+	</div>
+
+	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+		<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
+		<button
+			onclick={submit}
+			disabled={$isProcessing || (sourceMode === 'file' && !wktFile)}
+			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
+			(sourceMode === 'file' && !wktFile)
+				? 'cursor-not-allowed opacity-50'
+				: ''}"
+		>
+			決定
+		</button>
+	</div>
+{/if}
