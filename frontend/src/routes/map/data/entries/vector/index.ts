@@ -20,10 +20,7 @@ import {
 	createMatchColorMapping,
 	createColorStyleDXFMapping
 } from '$routes/map/data/entries/vector/_style';
-import type {
-	SequentialCount,
-	SequentialScheme
-} from '$routes/map/utils/color/color-brewer';
+import type { SequentialCount, SequentialScheme } from '$routes/map/utils/color/color-brewer';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style';

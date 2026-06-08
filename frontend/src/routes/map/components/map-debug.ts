@@ -1,11 +1,20 @@
 import type { MapMouseEvent } from 'maplibre-gl';
 import { mapStore } from '$routes/stores/map';
 
+const DEBUG_HIT_TOLERANCE = 6;
+
 export const clickDebug = (e: MapMouseEvent) => {
 	if (import.meta.env.DEV) {
 		console.log('================================');
 		console.log('debug:Map clicked at', e.lngLat);
-		const features = mapStore.queryRenderedFeatures(e.point);
+		// 点1発だと細かいポリゴンや輪郭線を拾いにくいので、デバッグも本体と同様に小さい矩形で見る。
+		const features = mapStore.queryRenderedFeatures(
+			[
+				[e.point.x - DEBUG_HIT_TOLERANCE, e.point.y - DEBUG_HIT_TOLERANCE],
+				[e.point.x + DEBUG_HIT_TOLERANCE, e.point.y + DEBUG_HIT_TOLERANCE]
+			],
+			undefined
+		);
 
 		if (features.length) {
 			console.log('debug:Clicked features:', features);

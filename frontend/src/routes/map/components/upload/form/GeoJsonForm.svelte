@@ -63,9 +63,14 @@
 		return [position[0], position[1]];
 	};
 
-	const stripGeometryZ = (geometry: AnyGeometry | GeometryCollection): AnyGeometry | GeometryCollection => {
+	const stripGeometryZ = (
+		geometry: AnyGeometry | GeometryCollection
+	): AnyGeometry | GeometryCollection => {
 		if (geometry.type === 'Point') {
-			return { ...geometry, coordinates: to2dPosition(geometry.coordinates as unknown as number[]) };
+			return {
+				...geometry,
+				coordinates: to2dPosition(geometry.coordinates as unknown as number[])
+			};
 		}
 
 		if (geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
@@ -90,7 +95,9 @@
 			return {
 				...geometry,
 				coordinates: geometry.coordinates.map((polygon) =>
-					polygon.map((line) => line.map((position) => to2dPosition(position as unknown as number[])))
+					polygon.map((line) =>
+						line.map((position) => to2dPosition(position as unknown as number[]))
+					)
 				)
 			};
 		}
@@ -215,7 +222,9 @@
 			})
 			.catch((error) => {
 				showNotification(
-					error instanceof GeoJsonParseError ? error.message : 'GeoJSONファイルの読み込みに失敗しました',
+					error instanceof GeoJsonParseError
+						? error.message
+						: 'GeoJSONファイルの読み込みに失敗しました',
 					'error'
 				);
 				console.error(error);
@@ -398,8 +407,8 @@
 
 {#if showRenderModeDialog}
 	<GeoJsonRenderModeForm
-		entryName={entryName}
-		selectedGeometryType={selectedGeometryType}
+		{entryName}
+		{selectedGeometryType}
 		bind:selectedRenderMode
 		onBack={backToGeoJsonInput}
 		onCancel={cancel}
@@ -502,7 +511,9 @@
 		<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 		<button
 			onclick={submit}
-			disabled={$isProcessing || (sourceMode === 'file' && !geojsonFile) || (sourceMode === 'text' && !inputText.trim())}
+			disabled={$isProcessing ||
+				(sourceMode === 'file' && !geojsonFile) ||
+				(sourceMode === 'text' && !inputText.trim())}
 			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
 			(sourceMode === 'file' && !geojsonFile) ||
 			(sourceMode === 'text' && !inputText.trim())

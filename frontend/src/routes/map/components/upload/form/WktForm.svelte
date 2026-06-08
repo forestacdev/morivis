@@ -113,7 +113,10 @@
 		}
 
 		showGeometryTypeDialog = true;
-		showNotification('複数のジオメトリタイプが見つかりました。読み込むタイプを選択してください', 'info');
+		showNotification(
+			'複数のジオメトリタイプが見つかりました。読み込むタイプを選択してください',
+			'info'
+		);
 	};
 
 	$effect(() => {
