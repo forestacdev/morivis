@@ -232,6 +232,15 @@
 		}
 	};
 
+	const submit = async () => {
+		if (sourceMode === 'text') {
+			await loadFromText();
+			return;
+		}
+
+		await processWkt();
+	};
+
 	const openFilePicker = () => {
 		fileInput?.click();
 	};
@@ -328,11 +337,6 @@
 					placeholder="SRID=4326;POINT(136.9 35.5)"
 				></textarea>
 			</label>
-			<div class="flex justify-end">
-				<button class="c-btn-confirm min-w-[180px] p-3 text-base" onclick={loadFromText}>
-					テキストを読み込む
-				</button>
-			</div>
 		</div>
 	{/if}
 
@@ -352,10 +356,10 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
-		onclick={processWkt}
-		disabled={$isProcessing || !selectedGeometryType}
+		onclick={submit}
+		disabled={$isProcessing || (sourceMode === 'file' && !selectedGeometryType)}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		!selectedGeometryType
+		(sourceMode === 'file' && !selectedGeometryType)
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>
