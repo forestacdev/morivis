@@ -11,6 +11,7 @@
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MeshStyle, ModelMeshEntry } from '$routes/map/data/types/model';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
@@ -86,6 +87,21 @@
 			layerEntry?.metaData.isUserUploaded
 		);
 	});
+
+	const toggleLayerVisibility = () => {
+		const visible = !layerEntry.style.visible;
+		layerEntry.style.visible = visible;
+
+		if (layerEntry.type !== 'model') return;
+
+		// モデルは setStyle 再生成の対象外なので、表示切替を描画系へ直接同期する。
+		if (layerEntry.style.type === 'mesh') {
+			mapStore.setModelStyle(layerEntry as ModelMeshEntry<MeshStyle>);
+			return;
+		}
+
+		mapStore.setDeckModelVisibility(layerEntry.id, visible);
+	};
 
 	const selectedLayer = () => {
 		if (!layerEntry) return;
@@ -600,9 +616,7 @@
 						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-2 text-gray-100"
 					>
 						<button
-							onclick={() => {
-								layerEntry.style.visible = !layerEntry.style.visible;
-							}}
+							onclick={toggleLayerVisibility}
 							class="cursor-pointer"
 						>
 							<Icon icon={getVisibilityIconName(layerEntry.style.visible)} class="h-8 w-8" />
@@ -643,7 +657,7 @@
 						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-1 text-gray-100"
 					>
 						<button
-							onclick={() => (layerEntry.style.visible = !layerEntry.style.visible)}
+							onclick={toggleLayerVisibility}
 							class="cursor-pointer"
 						>
 							<Icon icon={getVisibilityIconName(layerEntry.style.visible)} class="h-8 w-8" />
