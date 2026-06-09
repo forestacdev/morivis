@@ -18,8 +18,7 @@
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import {
 		ensureRasterDerivedCache,
-		getAspectCacheKey,
-		getSlopeCacheKey,
+		getTopexCacheKey,
 		getTpiCacheKey,
 		getTwiCacheKey
 	} from '$routes/map/utils/formats/geotiff';
@@ -54,9 +53,10 @@
 	const rangeMin = $derived(singleRange?.min ?? 0);
 	const rangeMax = $derived(singleRange?.max ?? 65535);
 	const twiRange = $derived(GeoTiffCache.getDataRanges(getTwiCacheKey(layerEntry.id))?.[0]);
-	const slopeRange = $derived(GeoTiffCache.getDataRanges(getSlopeCacheKey(layerEntry.id))?.[0]);
-	const aspectRange = $derived(GeoTiffCache.getDataRanges(getAspectCacheKey(layerEntry.id))?.[0]);
+	const slopeRange = $derived({ min: 0, max: 90 });
+	const aspectRange = $derived({ min: 0, max: 360 });
 	const tpiRange = $derived(GeoTiffCache.getDataRanges(getTpiCacheKey(layerEntry.id))?.[0]);
+	const topexRange = $derived(GeoTiffCache.getDataRanges(getTopexCacheKey(layerEntry.id))?.[0]);
 	const hasDerivedModes = $derived(numBands === 1 && GeoTiffCache.hasRawSingleBand(layerEntry.id));
 	let generatingDerivedMode = $state<string | null>(null);
 	let lastHandledMode = $state<string | null>(null);
@@ -81,6 +81,7 @@
 			items.push({ key: 'slope', name: '傾斜量', icon: 'mdi:terrain' });
 			items.push({ key: 'aspect', name: '傾斜方位', icon: 'mdi:compass-outline' });
 			items.push({ key: 'tpi', name: '地形位置指数', icon: 'mdi:chart-bell-curve-cumulative' });
+			items.push({ key: 'topex', name: '地形露出度', icon: 'mdi:image-filter-hdr' });
 			items.push({ key: 'twi', name: '地形湿潤指数', icon: 'mdi:water-percent' });
 		}
 
@@ -92,9 +93,8 @@
 	});
 	const isDerivedModeLoading = $derived(
 		layerEntry.style.visualization.mode === 'twi' ||
-			layerEntry.style.visualization.mode === 'slope' ||
-			layerEntry.style.visualization.mode === 'aspect' ||
-			layerEntry.style.visualization.mode === 'tpi'
+			layerEntry.style.visualization.mode === 'tpi' ||
+			layerEntry.style.visualization.mode === 'topex'
 			? generatingDerivedMode === layerEntry.style.visualization.mode
 			: false
 	);
@@ -112,11 +112,7 @@
 			return;
 		}
 
-		if (
-			layerEntry.style.visualization.mode === 'slope' &&
-			slopeRange &&
-			!layerEntry.style.visualization.uniformsData.slope
-		) {
+		if (layerEntry.style.visualization.mode === 'slope' && !layerEntry.style.visualization.uniformsData.slope) {
 			layerEntry.style.visualization.uniformsData.slope = {
 				colorMap: 'salinity',
 				range: toAdjustableRange(slopeRange.min, slopeRange.max)
@@ -124,11 +120,7 @@
 			return;
 		}
 
-		if (
-			layerEntry.style.visualization.mode === 'aspect' &&
-			aspectRange &&
-			!layerEntry.style.visualization.uniformsData.aspect
-		) {
+		if (layerEntry.style.visualization.mode === 'aspect' && !layerEntry.style.visualization.uniformsData.aspect) {
 			layerEntry.style.visualization.uniformsData.aspect = {
 				colorMap: 'rainbow-soft',
 				range: toAdjustableRange(aspectRange.min, aspectRange.max)
@@ -145,10 +137,24 @@
 				colorMap: 'rdbu',
 				range: toAdjustableRange(tpiRange.min, tpiRange.max)
 			};
+			return;
+		}
+
+		if (
+			layerEntry.style.visualization.mode === 'topex' &&
+			topexRange &&
+			!layerEntry.style.visualization.uniformsData.topex
+		) {
+			layerEntry.style.visualization.uniformsData.topex = {
+				colorMap: 'rdbu',
+				range: toAdjustableRange(topexRange.min, topexRange.max)
+			};
 		}
 	};
 
-	const createDerivedDefaultStyle = (mode: 'twi' | 'slope' | 'aspect' | 'tpi'): DerivedBandData => {
+	const createDerivedDefaultStyle = (
+		mode: 'twi' | 'slope' | 'aspect' | 'tpi' | 'topex'
+	): DerivedBandData => {
 		if (mode === 'twi') {
 			return {
 				colorMap: 'hsv',
@@ -167,13 +173,19 @@
 				range: toAdjustableRange(aspectRange?.min ?? 0, aspectRange?.max ?? 360)
 			};
 		}
+		if (mode === 'topex') {
+			return {
+				colorMap: 'rdbu',
+				range: toAdjustableRange(topexRange?.min ?? -90, topexRange?.max ?? 90)
+			};
+		}
 		return {
 			colorMap: 'rdbu',
 			range: toAdjustableRange(tpiRange?.min ?? -1, tpiRange?.max ?? 1)
 		};
 	};
 
-	const activateDerivedMode = async (mode: 'twi' | 'slope' | 'aspect' | 'tpi') => {
+	const activateDerivedMode = async (mode: 'twi' | 'slope' | 'aspect' | 'tpi' | 'topex') => {
 		if (mode === 'twi' && !layerEntry.style.visualization.uniformsData.twi) {
 			layerEntry.style.visualization.uniformsData.twi = createDerivedDefaultStyle(mode);
 		}
@@ -186,14 +198,19 @@
 		if (mode === 'tpi' && !layerEntry.style.visualization.uniformsData.tpi) {
 			layerEntry.style.visualization.uniformsData.tpi = createDerivedDefaultStyle(mode);
 		}
+		if (mode === 'topex' && !layerEntry.style.visualization.uniformsData.topex) {
+			layerEntry.style.visualization.uniformsData.topex = createDerivedDefaultStyle(mode);
+		}
 
-		await ensureDerivedCacheForMode();
+		if (mode === 'twi' || mode === 'tpi' || mode === 'topex') {
+			await ensureDerivedCacheForMode();
+		}
 		ensureDerivedData();
 	};
 
 	const ensureDerivedCacheForMode = async () => {
 		const mode = layerEntry.style.visualization.mode;
-		if (mode !== 'twi' && mode !== 'slope' && mode !== 'aspect' && mode !== 'tpi') {
+		if (mode !== 'twi' && mode !== 'tpi' && mode !== 'topex') {
 			return;
 		}
 
@@ -202,11 +219,9 @@
 		const currentRange =
 			mode === 'twi'
 				? twiRange
-				: mode === 'slope'
-					? slopeRange
-					: mode === 'aspect'
-						? aspectRange
-						: tpiRange;
+				: mode === 'tpi'
+					? tpiRange
+					: topexRange;
 		if (currentRange) return;
 
 		generatingDerivedMode = mode;
@@ -220,11 +235,12 @@
 	$effect(() => {
 		const single = layerEntry.style.visualization.uniformsData.single;
 		single.range ??= createAdjustableRange(single.min ?? rangeMin, single.max ?? rangeMax);
-		const { twi, slope, aspect, tpi } = layerEntry.style.visualization.uniformsData;
+		const { twi, slope, aspect, tpi, topex } = layerEntry.style.visualization.uniformsData;
 		if (twi) twi.range ??= createAdjustableRange(twi.min ?? 0, twi.max ?? 1);
 		if (slope) slope.range ??= createAdjustableRange(slope.min ?? 0, slope.max ?? 90);
 		if (aspect) aspect.range ??= createAdjustableRange(aspect.min ?? 0, aspect.max ?? 360);
 		if (tpi) tpi.range ??= createAdjustableRange(tpi.min ?? -1, tpi.max ?? 1);
+		if (topex) topex.range ??= createAdjustableRange(topex.min ?? -90, topex.max ?? 90);
 		for (const key of ['r', 'g', 'b'] as const) {
 			const channel = layerEntry.style.visualization.uniformsData.multi[key];
 			const channelRange = dataRanges?.[channel.index];
@@ -248,6 +264,9 @@
 		if (layerEntry.style.visualization.mode === 'tpi' && !hasDerivedModes) {
 			layerEntry.style.visualization.mode = 'single';
 		}
+		if (layerEntry.style.visualization.mode === 'topex' && !hasDerivedModes) {
+			layerEntry.style.visualization.mode = 'single';
+		}
 	});
 
 	$effect(() => {
@@ -255,7 +274,13 @@
 		if (mode === lastHandledMode) return;
 		lastHandledMode = mode;
 
-		if (mode === 'twi' || mode === 'slope' || mode === 'aspect' || mode === 'tpi') {
+		if (
+			mode === 'twi' ||
+			mode === 'slope' ||
+			mode === 'aspect' ||
+			mode === 'tpi' ||
+			mode === 'topex'
+		) {
 			void activateDerivedMode(mode);
 		}
 	});
@@ -442,6 +467,38 @@
 				/>
 			{:else}
 				<div class="py-3 text-sm text-gray-300">地形位置指数を計算中です。</div>
+			{/if}
+		</div>
+	{:else if layerEntry.style.visualization.mode === 'topex'}
+		<div class:opacity-60={isDerivedModeLoading} class:pointer-events-none={isDerivedModeLoading}>
+			{#if layerEntry.style.visualization.uniformsData.topex}
+				<ColorMapSelect
+					bind:isColorMap={layerEntry.style.visualization.uniformsData.topex.colorMap}
+					mutableColorMapType={colorMapOptions}
+				>
+					{#snippet children(_isColorMap)}
+						<ColorScaleDem isColorMap={_isColorMap} />
+					{/snippet}
+				</ColorMapSelect>
+				<RangeSliderDouble
+					label="数値範囲"
+					bind:lowerValue={layerEntry.style.visualization.uniformsData.topex.range!.value[0]}
+					bind:upperValue={layerEntry.style.visualization.uniformsData.topex.range!.value[1]}
+					min={layerEntry.style.visualization.uniformsData.topex.range!.domain[0]}
+					max={layerEntry.style.visualization.uniformsData.topex.range!.domain[1]}
+					step={calcStep(topexRange?.min ?? -90, topexRange?.max ?? 90)}
+					primaryColor={colorMapManager.createSimpleCSSGradient(
+						layerEntry.style.visualization.uniformsData.topex.colorMap
+					)}
+					minRangeColor={colorMapManager.getMinColor(
+						layerEntry.style.visualization.uniformsData.topex.colorMap
+					)}
+					maxRangeColor={colorMapManager.getMaxColor(
+						layerEntry.style.visualization.uniformsData.topex.colorMap
+					)}
+				/>
+			{:else}
+				<div class="py-3 text-sm text-gray-300">地形露出度を計算中です。</div>
 			{/if}
 		</div>
 	{:else if layerEntry.style.visualization.mode === 'multi'}

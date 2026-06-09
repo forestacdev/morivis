@@ -35,6 +35,7 @@ export const computeTerrainDerivatives = (
 	slope: DerivedBandResult;
 	aspect: DerivedBandResult;
 	tpi: DerivedBandResult;
+	topex: DerivedBandResult;
 }> =>
 	new Promise((resolve, reject) => {
 		const worker = getTerrainDerivativesWorker();
@@ -49,19 +50,20 @@ export const computeTerrainDerivatives = (
 		});
 
 		worker.onmessage = (event) => {
-			const { slope, aspect, tpi, error } = event.data as {
+			const { slope, aspect, tpi, topex, error } = event.data as {
 				slope?: DerivedBandResult;
 				aspect?: DerivedBandResult;
 				tpi?: DerivedBandResult;
+				topex?: DerivedBandResult;
 				error?: string;
 			};
 
-			if (error || !slope || !aspect || !tpi) {
+			if (error || !slope || !aspect || !tpi || !topex) {
 				reject(new Error(error ?? '地形派生量の計算に失敗しました'));
 				return;
 			}
 
-			resolve({ slope, aspect, tpi });
+			resolve({ slope, aspect, tpi, topex });
 		};
 
 		worker.onerror = (error) => {

@@ -54,8 +54,7 @@ import { objectToUrlParams } from '$routes/map/utils/platform/url-params';
 import { getBoundingBoxCorners } from '$routes/map/utils/map/bbox';
 import {
 	ensureRasterDerivedCache,
-	getAspectCacheKey,
-	getSlopeCacheKey,
+	getTopexCacheKey,
 	getTpiCacheKey,
 	getTwiCacheKey,
 	loadRasterData
@@ -100,7 +99,7 @@ const toDemStyleUrlParams = (style: DemRangeColorStyle): string => {
 };
 
 const getRasterDerivedDefaultStyle = (
-	mode: 'twi' | 'slope' | 'aspect' | 'tpi',
+	mode: 'twi' | 'slope' | 'aspect' | 'tpi' | 'topex',
 	range?: { min: number; max: number }
 ): DerivedBandData => {
 	return {
@@ -109,12 +108,12 @@ const getRasterDerivedDefaultStyle = (
 				? 'hsv'
 				: mode === 'slope'
 					? 'salinity'
-					: mode === 'aspect'
-						? 'rainbow-soft'
-						: 'rdbu',
+				: mode === 'aspect'
+					? 'rainbow-soft'
+					: 'rdbu',
 		range: createAdjustableRange(
-			range?.min ?? (mode === 'aspect' ? 0 : mode === 'slope' ? 0 : -1),
-			range?.max ?? (mode === 'aspect' ? 360 : mode === 'slope' ? 90 : 1)
+			range?.min ?? (mode === 'aspect' ? 0 : mode === 'slope' ? 0 : mode === 'topex' ? -90 : -1),
+			range?.max ?? (mode === 'aspect' ? 360 : mode === 'slope' ? 90 : mode === 'topex' ? 90 : 1)
 		)
 	};
 };
@@ -153,16 +152,16 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 		return `${entry.id}_${mode}_${uniformsData.colorMap}_${valueMin}_${valueMax}_t${timeIdx}`;
 	}
 
-	if (mode === 'slope' || mode === 'aspect' || mode === 'tpi') {
+	if (mode === 'slope' || mode === 'aspect' || mode === 'tpi' || mode === 'topex') {
 		const cacheKey =
-			mode === 'slope'
-				? getSlopeCacheKey(entry.id)
-				: mode === 'aspect'
-					? getAspectCacheKey(entry.id)
-					: getTpiCacheKey(entry.id);
+			mode === 'tpi'
+				? getTpiCacheKey(entry.id)
+				: mode === 'topex'
+					? getTopexCacheKey(entry.id)
+					: null;
 		const uniformsData =
 			visualization.uniformsData[mode] ??
-			getRasterDerivedDefaultStyle(mode, GeoTiffCache.getDataRanges(cacheKey)?.[0]);
+			getRasterDerivedDefaultStyle(mode, cacheKey ? GeoTiffCache.getDataRanges(cacheKey)?.[0] : undefined);
 		const [valueMin, valueMax] = getAdjustableRangeValue(
 			uniformsData.range,
 			uniformsData.min,
@@ -220,16 +219,18 @@ const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiff
 	if (
 		entry.style.visualization.mode === 'slope' ||
 		entry.style.visualization.mode === 'aspect' ||
-		entry.style.visualization.mode === 'tpi'
+		entry.style.visualization.mode === 'tpi' ||
+		entry.style.visualization.mode === 'topex'
 	) {
 		const mode = entry.style.visualization.mode;
-		const cacheKey =
+		const currentRange =
 			mode === 'slope'
-				? getSlopeCacheKey(entry.id)
+				? { min: 0, max: 90 }
 				: mode === 'aspect'
-					? getAspectCacheKey(entry.id)
-					: getTpiCacheKey(entry.id);
-		const currentRange = GeoTiffCache.getDataRanges(cacheKey)?.[0];
+					? { min: 0, max: 360 }
+					: GeoTiffCache.getDataRanges(
+							mode === 'tpi' ? getTpiCacheKey(entry.id) : getTopexCacheKey(entry.id)
+						)?.[0];
 		if (!currentRange) return;
 		const current = entry.style.visualization.uniformsData[mode];
 		entry.style.visualization.uniformsData[mode] = {
@@ -263,9 +264,8 @@ export const getRasterTiffImageSource = async (
 
 	if (
 		entry.style.visualization.mode === 'twi' ||
-		entry.style.visualization.mode === 'slope' ||
-		entry.style.visualization.mode === 'aspect' ||
-		entry.style.visualization.mode === 'tpi'
+		entry.style.visualization.mode === 'tpi' ||
+		entry.style.visualization.mode === 'topex'
 	) {
 		const mode = entry.style.visualization.mode;
 		const range = await ensureRasterDerivedCache(entry.id, mode);

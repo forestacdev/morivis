@@ -21,6 +21,20 @@ interface DerivedBandResult {
 }
 
 const INVALID_VALUE = NaN;
+// TOPEX は周囲 8 方向の最大仰角を合計する。
+// ブラウザ内計算なので、探索距離は固定しつつステップ数に上限を設けて処理時間を抑える。
+const TOPEX_TARGET_DISTANCE_METERS = 250;
+const TOPEX_MAX_STEPS = 24;
+const TOPEX_DIRECTIONS = [
+	[1, 0],
+	[1, 1],
+	[0, 1],
+	[-1, 1],
+	[-1, 0],
+	[-1, -1],
+	[0, -1],
+	[1, -1]
+] as const;
 
 const isValidValue = (value: number, nodata: number | null): boolean => {
 	if (!Number.isFinite(value)) return false;
@@ -128,6 +142,59 @@ const computeTpi = (
 	return center - sum / count;
 };
 
+const computeTopex = (
+	band: Float32Array,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
+	nodata: number | null,
+	ewres: number,
+	nsres: number
+): number => {
+	const center = band[getIndex(x, y, width)];
+	if (!isValidValue(center, nodata)) return INVALID_VALUE;
+
+	const minResolution = Math.max(1e-6, Math.min(Math.abs(ewres), Math.abs(nsres)));
+	const maxSteps = Math.max(
+		1,
+		Math.min(TOPEX_MAX_STEPS, Math.ceil(TOPEX_TARGET_DISTANCE_METERS / minResolution))
+	);
+	let topex = 0;
+	let sampledDirections = 0;
+
+	for (const [dx, dy] of TOPEX_DIRECTIONS) {
+		let maxAngle = -Infinity;
+		let hasSample = false;
+
+		for (let step = 1; step <= maxSteps; step++) {
+			const sampleX = x + dx * step;
+			const sampleY = y + dy * step;
+
+			if (sampleX < 0 || sampleX >= width || sampleY < 0 || sampleY >= height) break;
+
+			const value = band[getIndex(sampleX, sampleY, width)];
+			if (!isValidValue(value, nodata)) continue;
+
+			const horizontalDistance = Math.hypot(dx * ewres * step, dy * nsres * step);
+			if (horizontalDistance <= 0) continue;
+
+			const angle = (Math.atan((value - center) / horizontalDistance) * 180) / Math.PI;
+			if (angle > maxAngle) {
+				maxAngle = angle;
+			}
+			hasSample = true;
+		}
+
+		if (!hasSample) continue;
+
+		topex += maxAngle;
+		sampledDirections += 1;
+	}
+
+	return sampledDirections > 0 ? topex : INVALID_VALUE;
+};
+
 const computeMinMax = (band: Float32Array): { min: number; max: number } => {
 	let min = Infinity;
 	let max = -Infinity;
@@ -156,11 +223,13 @@ const computeTerrainDerivatives = (
 	slope: DerivedBandResult;
 	aspect: DerivedBandResult;
 	tpi: DerivedBandResult;
+	topex: DerivedBandResult;
 } => {
 	const pixelCount = width * height;
 	const slopeBand = new Float32Array(pixelCount).fill(INVALID_VALUE);
 	const aspectBand = new Float32Array(pixelCount).fill(INVALID_VALUE);
 	const tpiBand = new Float32Array(pixelCount).fill(INVALID_VALUE);
+	const topexBand = new Float32Array(pixelCount).fill(INVALID_VALUE);
 
 	for (let y = 0; y < height; y++) {
 		for (let x = 0; x < width; x++) {
@@ -171,13 +240,15 @@ const computeTerrainDerivatives = (
 			slopeBand[index] = computeSlope(sample, ewres, nsres);
 			aspectBand[index] = computeAspect(sample, ewres, nsres);
 			tpiBand[index] = computeTpi(band, x, y, width, height, nodata);
+			topexBand[index] = computeTopex(band, x, y, width, height, nodata, ewres, nsres);
 		}
 	}
 
 	return {
 		slope: { band: slopeBand, ...computeMinMax(slopeBand) },
 		aspect: { band: aspectBand, ...computeMinMax(aspectBand) },
-		tpi: { band: tpiBand, ...computeMinMax(tpiBand) }
+		tpi: { band: tpiBand, ...computeMinMax(tpiBand) },
+		topex: { band: topexBand, ...computeMinMax(topexBand) }
 	};
 };
 
@@ -190,12 +261,14 @@ workerScope.onmessage = (event: MessageEvent<TerrainDerivativeWorkerMessage>) =>
 			{
 				slope: result.slope,
 				aspect: result.aspect,
-				tpi: result.tpi
+				tpi: result.tpi,
+				topex: result.topex
 			},
 			[
 				result.slope.band.buffer as ArrayBuffer,
 				result.aspect.band.buffer as ArrayBuffer,
-				result.tpi.band.buffer as ArrayBuffer
+				result.tpi.band.buffer as ArrayBuffer,
+				result.topex.band.buffer as ArrayBuffer
 			]
 		);
 	} catch (error) {

@@ -169,6 +169,7 @@ const bindColorMapTexture = (program: WebGLProgram, colorArray: Uint8Array, unit
 interface RenderMessage {
 	entryId: string;
 	type: 'single' | 'multi';
+	derivedMode?: 'none' | 'slope' | 'aspect';
 	// 初回のみ: ImageBitmap 配列
 	images?: ImageBitmap[];
 	width: number;
@@ -179,6 +180,10 @@ interface RenderMessage {
 	bandIndex?: number;
 	min?: number;
 	max?: number;
+	dataMin?: number;
+	dataMax?: number;
+	ewres?: number;
+	nsres?: number;
 	// multi モード（各チャンネルの min/max も正規化済み: 0〜1）
 	redIndex?: number;
 	greenIndex?: number;
@@ -279,6 +284,19 @@ self.onmessage = async (e) => {
 			gl.uniform1i(gl.getUniformLocation(program, 'u_bandIndex'), msg.bandIndex ?? 0);
 			gl.uniform1f(gl.getUniformLocation(program, 'u_min'), msg.min ?? 0);
 			gl.uniform1f(gl.getUniformLocation(program, 'u_max'), msg.max ?? 1);
+			gl.uniform1i(
+				gl.getUniformLocation(program, 'u_derived_mode'),
+				msg.derivedMode === 'slope' ? 1 : msg.derivedMode === 'aspect' ? 2 : 0
+			);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_data_min'), msg.dataMin ?? 0);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_data_max'), msg.dataMax ?? 1);
+			gl.uniform2f(
+				gl.getUniformLocation(program, 'u_texel_size'),
+				cached.width > 0 ? 1 / cached.width : 0,
+				cached.height > 0 ? 1 / cached.height : 0
+			);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_ewres'), msg.ewres ?? 1);
+			gl.uniform1f(gl.getUniformLocation(program, 'u_nsres'), msg.nsres ?? 1);
 			if (msg.colorArray) {
 				bindColorMapTexture(program, msg.colorArray, 1);
 			}

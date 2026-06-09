@@ -9,10 +9,16 @@ uniform sampler2D u_color_map;
 
 // バンド選択
 uniform int u_bandIndex;
+uniform int u_derived_mode;
 
-// 表示範囲（CPU側で正規化済み: 0〜1）
+// 表示範囲（実値）
 uniform float u_min;
 uniform float u_max;
+uniform float u_data_min;
+uniform float u_data_max;
+uniform vec2 u_texel_size;
+uniform float u_ewres;
+uniform float u_nsres;
 
 // 4326→メルカトル再投影
 uniform bool u_reproject4326;
@@ -58,6 +64,56 @@ float decodeTerrariumNormalized(vec4 color) {
     return (rgb.r * 256.0 + rgb.g + rgb.b / 256.0) / 65535.0;
 }
 
+float decodeBandValue(vec4 color) {
+    return mix(u_data_min, u_data_max, decodeTerrariumNormalized(color));
+}
+
+float sampleBandValue(vec2 uv, vec2 offset) {
+    vec4 encoded = texture(u_terrarium_bands, vec3(uv + offset, u_bandIndex));
+    if (encoded.a == 0.0) {
+        return 0.0;
+    }
+    return decodeBandValue(encoded);
+}
+
+float computeSlope(vec2 uv) {
+    float h00 = sampleBandValue(uv, vec2(-u_texel_size.x, -u_texel_size.y));
+    float h01 = sampleBandValue(uv, vec2(0.0, -u_texel_size.y));
+    float h02 = sampleBandValue(uv, vec2(u_texel_size.x, -u_texel_size.y));
+    float h10 = sampleBandValue(uv, vec2(-u_texel_size.x, 0.0));
+    float h12 = sampleBandValue(uv, vec2(u_texel_size.x, 0.0));
+    float h20 = sampleBandValue(uv, vec2(-u_texel_size.x, u_texel_size.y));
+    float h21 = sampleBandValue(uv, vec2(0.0, u_texel_size.y));
+    float h22 = sampleBandValue(uv, vec2(u_texel_size.x, u_texel_size.y));
+
+    float dx = ((h00 + 2.0 * h10 + h20) - (h02 + 2.0 * h12 + h22)) / (8.0 * u_ewres);
+    float dy = ((h20 + 2.0 * h21 + h22) - (h00 + 2.0 * h01 + h02)) / (8.0 * u_nsres);
+    return degrees(atan(sqrt(dx * dx + dy * dy)));
+}
+
+float computeAspect(vec2 uv) {
+    float h00 = sampleBandValue(uv, vec2(-u_texel_size.x, -u_texel_size.y));
+    float h01 = sampleBandValue(uv, vec2(0.0, -u_texel_size.y));
+    float h02 = sampleBandValue(uv, vec2(u_texel_size.x, -u_texel_size.y));
+    float h10 = sampleBandValue(uv, vec2(-u_texel_size.x, 0.0));
+    float h12 = sampleBandValue(uv, vec2(u_texel_size.x, 0.0));
+    float h20 = sampleBandValue(uv, vec2(-u_texel_size.x, u_texel_size.y));
+    float h21 = sampleBandValue(uv, vec2(0.0, u_texel_size.y));
+    float h22 = sampleBandValue(uv, vec2(u_texel_size.x, u_texel_size.y));
+
+    float dx = ((h00 + 2.0 * h10 + h20) - (h02 + 2.0 * h12 + h22)) / (8.0 * u_ewres);
+    float dy = ((h20 + 2.0 * h21 + h22) - (h00 + 2.0 * h01 + h02)) / (8.0 * u_nsres);
+    float aspect = degrees(atan(dy, dx));
+    if (aspect < 0.0) {
+        aspect += 360.0;
+    }
+    aspect = 90.0 - aspect;
+    if (aspect < 0.0) {
+        aspect += 360.0;
+    }
+    return aspect;
+}
+
 void main() {
     vec2 uv = reprojectUV(v_tex_coord);
     vec4 encoded = texture(u_terrarium_bands, vec3(uv, u_bandIndex));
@@ -68,13 +124,15 @@ void main() {
         return;
     }
 
-    // 取り出すのは実値ではなく正規化値。
-    // 実値の復元は行わず、そのまま表示レンジ比較とカラーマップ適用に使う。
-    float decoded = decodeTerrariumNormalized(encoded);
+    float value = decodeBandValue(encoded);
+    if (u_derived_mode == 1) {
+        value = computeSlope(uv);
+    } else if (u_derived_mode == 2) {
+        value = computeAspect(uv);
+    }
 
-    // u_min/u_max も CPU 側で同じ 0〜1 空間へ正規化済みなので、
-    // shader 側では軽いレンジ切り出しだけで済む。
-    float displayNorm = clamp((decoded - u_min) / (u_max - u_min), 0.0, 1.0);
+    float displayRange = max(u_max - u_min, 0.000001);
+    float displayNorm = clamp((value - u_min) / displayRange, 0.0, 1.0);
 
     fragColor = vec4(texture(u_color_map, vec2(displayNorm, 0.5)).rgb, 1.0);
 }
