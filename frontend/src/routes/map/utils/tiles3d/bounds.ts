@@ -1,4 +1,5 @@
 import type { LngLatBoundsLike } from 'maplibre-gl';
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 
 type Tiles3DBoundingVolume = { box?: number[]; region?: number[]; sphere?: number[] };
 
@@ -107,25 +108,60 @@ const rootToBbox = (root: Tiles3DRoot): [number, number, number, number] | null 
 	return null;
 };
 
+export interface FetchTileset3DBboxResult {
+	bbox: [number, number, number, number] | null;
+	error: string | null;
+}
+
+const toFetchTileset3DErrorMessage = (error: unknown): string => {
+	if (error instanceof Error) {
+		if (error.message.startsWith('HTTP ')) {
+			return `tileset.json の取得に失敗しました (${error.message})`;
+		}
+		if (error.message === 'Failed to fetch') {
+			return 'tileset.json の取得に失敗しました。CORS またはネットワーク設定を確認してください';
+		}
+		return `tileset.json の取得に失敗しました (${error.message})`;
+	}
+
+	return 'tileset.json の取得に失敗しました';
+};
+
 /**
  * tileset.json URLからbboxを取得する
  * @param url tileset.jsonのURL
- * @returns [minLng, minLat, maxLng, maxLat] または null
+ * @returns bbox と失敗理由
  */
 export const fetchTileset3DBbox = async (
 	url: string
-): Promise<[number, number, number, number] | null> => {
+): Promise<FetchTileset3DBboxResult> => {
 	try {
-		const res = await fetch(url);
+		const res = await fetchWithDevProxy(url);
 		if (!res.ok) throw new Error(`HTTP ${res.status}`);
 		const tileset = await res.json();
 
-		if (!tileset.root?.boundingVolume) return null;
+		if (!tileset.root?.boundingVolume) {
+			return {
+				bbox: null,
+				error: 'tileset.json に root.boundingVolume がありません'
+			};
+		}
 
-		return rootToBbox(tileset.root);
+		const bbox = rootToBbox(tileset.root);
+		if (!bbox) {
+			return {
+				bbox: null,
+				error: 'tileset.json の boundingVolume から bbox を計算できませんでした'
+			};
+		}
+
+		return { bbox, error: null };
 	} catch (e) {
 		console.error('tileset.json の読み込みに失敗しました:', e);
-		return null;
+		return {
+			bbox: null,
+			error: toFetchTileset3DErrorMessage(e)
+		};
 	}
 };
 

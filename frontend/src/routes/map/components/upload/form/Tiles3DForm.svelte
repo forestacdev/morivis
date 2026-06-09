@@ -6,6 +6,7 @@
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { fetchTileset3DBbox } from '$routes/map/utils/tiles3d/bounds';
+	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
@@ -91,8 +92,13 @@
 		isProcessing.set(true);
 
 		try {
-			const bbox = await fetchTileset3DBbox(url);
-			const entry = createTiles3DEntry(forms.name, url, bbox ?? undefined);
+			const { bbox, error } = await fetchTileset3DBbox(url);
+			if (!bbox) {
+				showNotification(error ?? 'tileset.json を取得できなかったため、3D Tiles を登録しませんでした', 'error');
+				return;
+			}
+
+			const entry = createTiles3DEntry(forms.name, url, bbox);
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
