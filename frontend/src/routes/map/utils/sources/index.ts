@@ -55,7 +55,6 @@ import { getBoundingBoxCorners } from '$routes/map/utils/map/bbox';
 import {
 	ensureRasterDerivedCache,
 	getTopexCacheKey,
-	getTpiCacheKey,
 	getTwiCacheKey,
 	loadRasterData
 } from '$routes/map/utils/formats/geotiff';
@@ -154,9 +153,7 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 
 	if (mode === 'slope' || mode === 'aspect' || mode === 'tpi' || mode === 'topex') {
 		const cacheKey =
-			mode === 'tpi'
-				? getTpiCacheKey(entry.id)
-				: mode === 'topex'
+			mode === 'topex'
 					? getTopexCacheKey(entry.id)
 					: null;
 		const uniformsData =
@@ -228,9 +225,9 @@ const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiff
 				? { min: 0, max: 90 }
 				: mode === 'aspect'
 					? { min: 0, max: 360 }
-					: GeoTiffCache.getDataRanges(
-							mode === 'tpi' ? getTpiCacheKey(entry.id) : getTopexCacheKey(entry.id)
-						)?.[0];
+					: mode === 'tpi'
+						? { min: -1, max: 1 }
+						: GeoTiffCache.getDataRanges(getTopexCacheKey(entry.id))?.[0];
 		if (!currentRange) return;
 		const current = entry.style.visualization.uniformsData[mode];
 		entry.style.visualization.uniformsData[mode] = {
@@ -264,7 +261,6 @@ export const getRasterTiffImageSource = async (
 
 	if (
 		entry.style.visualization.mode === 'twi' ||
-		entry.style.visualization.mode === 'tpi' ||
 		entry.style.visualization.mode === 'topex'
 	) {
 		const mode = entry.style.visualization.mode;

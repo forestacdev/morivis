@@ -114,6 +114,20 @@ float computeAspect(vec2 uv) {
     return aspect;
 }
 
+float computeTpi(vec2 uv) {
+    float center = sampleBandValue(uv, vec2(0.0, 0.0));
+    float sum =
+        sampleBandValue(uv, vec2(-u_texel_size.x, -u_texel_size.y)) +
+        sampleBandValue(uv, vec2(0.0, -u_texel_size.y)) +
+        sampleBandValue(uv, vec2(u_texel_size.x, -u_texel_size.y)) +
+        sampleBandValue(uv, vec2(-u_texel_size.x, 0.0)) +
+        sampleBandValue(uv, vec2(u_texel_size.x, 0.0)) +
+        sampleBandValue(uv, vec2(-u_texel_size.x, u_texel_size.y)) +
+        sampleBandValue(uv, vec2(0.0, u_texel_size.y)) +
+        sampleBandValue(uv, vec2(u_texel_size.x, u_texel_size.y));
+    return center - sum / 8.0;
+}
+
 void main() {
     vec2 uv = reprojectUV(v_tex_coord);
     vec4 encoded = texture(u_terrarium_bands, vec3(uv, u_bandIndex));
@@ -129,6 +143,8 @@ void main() {
         value = computeSlope(uv);
     } else if (u_derived_mode == 2) {
         value = computeAspect(uv);
+    } else if (u_derived_mode == 3) {
+        value = computeTpi(uv);
     }
 
     float displayRange = max(u_max - u_min, 0.000001);

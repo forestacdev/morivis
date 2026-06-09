@@ -169,7 +169,7 @@ const bindColorMapTexture = (program: WebGLProgram, colorArray: Uint8Array, unit
 interface RenderMessage {
 	entryId: string;
 	type: 'single' | 'multi';
-	derivedMode?: 'none' | 'slope' | 'aspect';
+	derivedMode?: 'none' | 'slope' | 'aspect' | 'tpi';
 	// 初回のみ: ImageBitmap 配列
 	images?: ImageBitmap[];
 	width: number;
@@ -286,7 +286,7 @@ self.onmessage = async (e) => {
 			gl.uniform1f(gl.getUniformLocation(program, 'u_max'), msg.max ?? 1);
 			gl.uniform1i(
 				gl.getUniformLocation(program, 'u_derived_mode'),
-				msg.derivedMode === 'slope' ? 1 : msg.derivedMode === 'aspect' ? 2 : 0
+				msg.derivedMode === 'slope' ? 1 : msg.derivedMode === 'aspect' ? 2 : msg.derivedMode === 'tpi' ? 3 : 0
 			);
 			gl.uniform1f(gl.getUniformLocation(program, 'u_data_min'), msg.dataMin ?? 0);
 			gl.uniform1f(gl.getUniformLocation(program, 'u_data_max'), msg.dataMax ?? 1);

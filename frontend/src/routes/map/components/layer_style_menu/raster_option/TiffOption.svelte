@@ -19,7 +19,6 @@
 	import {
 		ensureRasterDerivedCache,
 		getTopexCacheKey,
-		getTpiCacheKey,
 		getTwiCacheKey
 	} from '$routes/map/utils/formats/geotiff';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
@@ -55,7 +54,7 @@
 	const twiRange = $derived(GeoTiffCache.getDataRanges(getTwiCacheKey(layerEntry.id))?.[0]);
 	const slopeRange = $derived({ min: 0, max: 90 });
 	const aspectRange = $derived({ min: 0, max: 360 });
-	const tpiRange = $derived(GeoTiffCache.getDataRanges(getTpiCacheKey(layerEntry.id))?.[0]);
+	const tpiRange = $derived({ min: -1, max: 1 });
 	const topexRange = $derived(GeoTiffCache.getDataRanges(getTopexCacheKey(layerEntry.id))?.[0]);
 	const hasDerivedModes = $derived(numBands === 1 && GeoTiffCache.hasRawSingleBand(layerEntry.id));
 	let generatingDerivedMode = $state<string | null>(null);
@@ -93,7 +92,6 @@
 	});
 	const isDerivedModeLoading = $derived(
 		layerEntry.style.visualization.mode === 'twi' ||
-			layerEntry.style.visualization.mode === 'tpi' ||
 			layerEntry.style.visualization.mode === 'topex'
 			? generatingDerivedMode === layerEntry.style.visualization.mode
 			: false
@@ -128,11 +126,7 @@
 			return;
 		}
 
-		if (
-			layerEntry.style.visualization.mode === 'tpi' &&
-			tpiRange &&
-			!layerEntry.style.visualization.uniformsData.tpi
-		) {
+		if (layerEntry.style.visualization.mode === 'tpi' && !layerEntry.style.visualization.uniformsData.tpi) {
 			layerEntry.style.visualization.uniformsData.tpi = {
 				colorMap: 'rdbu',
 				range: toAdjustableRange(tpiRange.min, tpiRange.max)
@@ -202,7 +196,7 @@
 			layerEntry.style.visualization.uniformsData.topex = createDerivedDefaultStyle(mode);
 		}
 
-		if (mode === 'twi' || mode === 'tpi' || mode === 'topex') {
+		if (mode === 'twi' || mode === 'topex') {
 			await ensureDerivedCacheForMode();
 		}
 		ensureDerivedData();
@@ -210,7 +204,7 @@
 
 	const ensureDerivedCacheForMode = async () => {
 		const mode = layerEntry.style.visualization.mode;
-		if (mode !== 'twi' && mode !== 'tpi' && mode !== 'topex') {
+		if (mode !== 'twi' && mode !== 'topex') {
 			return;
 		}
 
@@ -219,9 +213,7 @@
 		const currentRange =
 			mode === 'twi'
 				? twiRange
-				: mode === 'tpi'
-					? tpiRange
-					: topexRange;
+				: topexRange;
 		if (currentRange) return;
 
 		generatingDerivedMode = mode;

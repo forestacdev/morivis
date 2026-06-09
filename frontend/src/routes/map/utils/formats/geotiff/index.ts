@@ -21,7 +21,6 @@ export type RasterBands = TypedArray[];
 export const TWI_CACHE_SUFFIX = 'twi';
 export const SLOPE_CACHE_SUFFIX = 'slope';
 export const ASPECT_CACHE_SUFFIX = 'aspect';
-export const TPI_CACHE_SUFFIX = 'tpi';
 export const TOPEX_CACHE_SUFFIX = 'topex';
 export const getTwiCacheKey = (id: string): string =>
 	getDerivedRasterCacheKey(id, TWI_CACHE_SUFFIX);
@@ -29,8 +28,6 @@ export const getSlopeCacheKey = (id: string): string =>
 	getDerivedRasterCacheKey(id, SLOPE_CACHE_SUFFIX);
 export const getAspectCacheKey = (id: string): string =>
 	getDerivedRasterCacheKey(id, ASPECT_CACHE_SUFFIX);
-export const getTpiCacheKey = (id: string): string =>
-	getDerivedRasterCacheKey(id, TPI_CACHE_SUFFIX);
 export const getTopexCacheKey = (id: string): string =>
 	getDerivedRasterCacheKey(id, TOPEX_CACHE_SUFFIX);
 
@@ -124,16 +121,14 @@ export const ensureRasterDerivedCache = async (
 	id: string,
 	mode: RasterTiffStyle['visualization']['mode']
 ): Promise<BandDataRange | undefined> => {
-	if (mode !== 'twi' && mode !== 'tpi' && mode !== 'topex') {
+	if (mode !== 'twi' && mode !== 'topex') {
 		return undefined;
 	}
 
 	const cacheKey =
 		mode === 'twi'
 			? getTwiCacheKey(id)
-			: mode === 'tpi'
-				? getTpiCacheKey(id)
-				: getTopexCacheKey(id);
+			: getTopexCacheKey(id);
 	const existingRange = GeoTiffCache.getDataRanges(cacheKey)?.[0];
 	if (existingRange) return existingRange;
 
@@ -179,20 +174,6 @@ export const ensureRasterDerivedCache = async (
 				rawSingleBand.nsres
 			);
 
-			const range = { min: derivatives.tpi.min, max: derivatives.tpi.max };
-			if (mode === 'tpi') {
-				await cacheDerivedSingleBand(
-					id,
-					TPI_CACHE_SUFFIX,
-					derivatives.tpi.band,
-					size.width,
-					size.height,
-					null,
-					range
-				);
-				return range;
-			}
-
 			const topexRange = { min: derivatives.topex.min, max: derivatives.topex.max };
 			await cacheDerivedSingleBand(
 				id,
@@ -233,11 +214,9 @@ export const loadRasterData = async (
 		const cacheKey =
 			mode === 'twi'
 				? getTwiCacheKey(id)
-				: mode === 'tpi'
-					? getTpiCacheKey(id)
-					: mode === 'topex'
-						? getTopexCacheKey(id)
-						: id;
+				: mode === 'topex'
+					? getTopexCacheKey(id)
+					: id;
 
 		if (!GeoTiffCache.hasTerrarium(cacheKey)) {
 			throw new Error('Terrarium data not found in cache');
@@ -329,14 +308,16 @@ export const loadRasterData = async (
 			GeoTiffCache.markTextureTransferred(cacheKey);
 		}
 
-		if (mode === 'single' || mode === 'slope' || mode === 'aspect') {
+		if (mode === 'single' || mode === 'slope' || mode === 'aspect' || mode === 'tpi') {
 			const bandIndex = mode === 'single' ? uniformsData.single.index : 0;
 			const styleData =
 				mode === 'single'
 					? uniformsData.single
 					: mode === 'slope'
 						? (uniformsData.slope ?? { min: 0, max: 90, colorMap: 'salinity' })
-						: (uniformsData.aspect ?? { min: 0, max: 360, colorMap: 'rainbow-soft' });
+						: mode === 'aspect'
+							? (uniformsData.aspect ?? { min: 0, max: 360, colorMap: 'rainbow-soft' })
+							: (uniformsData.tpi ?? { min: -1, max: 1, colorMap: 'rdbu' });
 			const range = dataRanges[bandIndex];
 			const dMin = range?.min ?? 0;
 			const dMax = range?.max ?? 1;
@@ -354,21 +335,19 @@ export const loadRasterData = async (
 			workerMessage.dataMin = dMin;
 			workerMessage.dataMax = dMax;
 			workerMessage.derivedMode =
-				mode === 'slope' ? 'slope' : mode === 'aspect' ? 'aspect' : 'none';
+				mode === 'slope' ? 'slope' : mode === 'aspect' ? 'aspect' : mode === 'tpi' ? 'tpi' : 'none';
 			if (mode !== 'single') {
 				const rawSingleBand = GeoTiffCache.getRawSingleBand(id);
 				workerMessage.ewres = rawSingleBand?.ewres ?? 1;
 				workerMessage.nsres = rawSingleBand?.nsres ?? 1;
 			}
 			workerMessage.colorArray = new Uint8Array(colorArray);
-		} else if (mode === 'twi' || mode === 'tpi' || mode === 'topex') {
+		} else if (mode === 'twi' || mode === 'topex') {
 			const range = dataRanges[0];
 			const derivedData =
 				mode === 'twi'
 					? uniformsData.twi
-					: mode === 'tpi'
-						? uniformsData.tpi
-						: uniformsData.topex;
+					: uniformsData.topex;
 			const dMin = range?.min ?? 0;
 			const dMax = range?.max ?? 1;
 			const invRange = dMax !== dMin ? 1 / (dMax - dMin) : 0;

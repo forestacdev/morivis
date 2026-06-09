@@ -22,7 +22,6 @@
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
 		getTopexCacheKey,
-		getTpiCacheKey,
 		getTwiCacheKey
 	} from '$routes/map/utils/formats/geotiff';
 	import {
@@ -178,9 +177,9 @@
 					? { min: 0, max: 90 }
 					: mode === 'aspect'
 						? { min: 0, max: 360 }
-						: GeoTiffCache.getDataRanges(
-								mode === 'tpi' ? getTpiCacheKey(layerEntry.id) : getTopexCacheKey(layerEntry.id)
-							)?.[0];
+						: mode === 'tpi'
+							? { min: -1, max: 1 }
+							: GeoTiffCache.getDataRanges(getTopexCacheKey(layerEntry.id))?.[0];
 			if (currentRange) {
 				layerEntry.style.visualization.uniformsData[mode] = {
 					colorMap:
