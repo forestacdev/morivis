@@ -107,9 +107,9 @@ const getRasterDerivedDefaultStyle = (
 				? 'hsv'
 				: mode === 'slope'
 					? 'salinity'
-				: mode === 'aspect'
-					? 'rainbow-soft'
-					: 'rdbu',
+					: mode === 'aspect'
+						? 'rainbow-soft'
+						: 'rdbu',
 		range: createAdjustableRange(
 			range?.min ?? (mode === 'aspect' ? 0 : mode === 'slope' ? 0 : mode === 'topex' ? -90 : -1),
 			range?.max ?? (mode === 'aspect' ? 360 : mode === 'slope' ? 90 : mode === 'topex' ? 90 : 1)
@@ -152,13 +152,13 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 	}
 
 	if (mode === 'slope' || mode === 'aspect' || mode === 'tpi' || mode === 'topex') {
-		const cacheKey =
-			mode === 'topex'
-					? getTopexCacheKey(entry.id)
-					: null;
+		const cacheKey = mode === 'topex' ? getTopexCacheKey(entry.id) : null;
 		const uniformsData =
 			visualization.uniformsData[mode] ??
-			getRasterDerivedDefaultStyle(mode, cacheKey ? GeoTiffCache.getDataRanges(cacheKey)?.[0] : undefined);
+			getRasterDerivedDefaultStyle(
+				mode,
+				cacheKey ? GeoTiffCache.getDataRanges(cacheKey)?.[0] : undefined
+			);
 		const [valueMin, valueMax] = getAdjustableRangeValue(
 			uniformsData.range,
 			uniformsData.min,
@@ -259,10 +259,7 @@ export const getRasterTiffImageSource = async (
 		syncTemporalRasterVisualizationRange(entry);
 	}
 
-	if (
-		entry.style.visualization.mode === 'twi' ||
-		entry.style.visualization.mode === 'topex'
-	) {
+	if (entry.style.visualization.mode === 'twi' || entry.style.visualization.mode === 'topex') {
 		const mode = entry.style.visualization.mode;
 		const range = await ensureRasterDerivedCache(entry.id, mode);
 		if (!range) return;

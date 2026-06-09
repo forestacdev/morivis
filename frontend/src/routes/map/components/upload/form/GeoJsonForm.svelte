@@ -3,10 +3,10 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
-	import GeometryTypeForm from '$routes/map/components/upload/form/GeometryTypeForm.svelte';
 	import GeoJsonRenderModeForm, {
 		type GeoJsonRenderMode
 	} from '$routes/map/components/upload/form/GeoJsonRenderModeForm.svelte';
+	import GeometryTypeForm from '$routes/map/components/upload/form/GeometryTypeForm.svelte';
 	import { createGeoJson3DEntry } from '$routes/map/data/entries/model';
 	import {
 		createGeoJsonEntry,
@@ -529,7 +529,6 @@
 				</label>
 			</div>
 		{/if}
-
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">

@@ -615,10 +615,7 @@
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
 						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-2 text-gray-100"
 					>
-						<button
-							onclick={toggleLayerVisibility}
-							class="cursor-pointer"
-						>
+						<button onclick={toggleLayerVisibility} class="cursor-pointer">
 							<Icon icon={getVisibilityIconName(layerEntry.style.visible)} class="h-8 w-8" />
 						</button>
 
@@ -656,10 +653,7 @@
 						transition:fly={{ duration: 200, y: 10, opacity: 0 }}
 						class="absolute flex h-full w-full gap-4 rounded-r-full bg-black pl-1 text-gray-100"
 					>
-						<button
-							onclick={toggleLayerVisibility}
-							class="cursor-pointer"
-						>
+						<button onclick={toggleLayerVisibility} class="cursor-pointer">
 							<Icon icon={getVisibilityIconName(layerEntry.style.visible)} class="h-8 w-8" />
 						</button>
 

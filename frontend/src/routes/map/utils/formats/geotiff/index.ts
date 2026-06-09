@@ -125,10 +125,7 @@ export const ensureRasterDerivedCache = async (
 		return undefined;
 	}
 
-	const cacheKey =
-		mode === 'twi'
-			? getTwiCacheKey(id)
-			: getTopexCacheKey(id);
+	const cacheKey = mode === 'twi' ? getTwiCacheKey(id) : getTopexCacheKey(id);
 	const existingRange = GeoTiffCache.getDataRanges(cacheKey)?.[0];
 	if (existingRange) return existingRange;
 
@@ -212,11 +209,7 @@ export const loadRasterData = async (
 	try {
 		const mode = visualization.mode;
 		const cacheKey =
-			mode === 'twi'
-				? getTwiCacheKey(id)
-				: mode === 'topex'
-					? getTopexCacheKey(id)
-					: id;
+			mode === 'twi' ? getTwiCacheKey(id) : mode === 'topex' ? getTopexCacheKey(id) : id;
 
 		if (!GeoTiffCache.hasTerrarium(cacheKey)) {
 			throw new Error('Terrarium data not found in cache');
@@ -242,7 +235,7 @@ export const loadRasterData = async (
 								? (uniformsData.tpi?.colorMap ?? 'rdbu')
 								: mode === 'topex'
 									? (uniformsData.topex?.colorMap ?? 'rdbu')
-								: uniformsData.single.colorMap;
+									: uniformsData.single.colorMap;
 		const colorArray = colorMapManager.createColorArray(colorMap || 'bone');
 
 		// Worker メッセージ構築
@@ -344,10 +337,7 @@ export const loadRasterData = async (
 			workerMessage.colorArray = new Uint8Array(colorArray);
 		} else if (mode === 'twi' || mode === 'topex') {
 			const range = dataRanges[0];
-			const derivedData =
-				mode === 'twi'
-					? uniformsData.twi
-					: uniformsData.topex;
+			const derivedData = mode === 'twi' ? uniformsData.twi : uniformsData.topex;
 			const dMin = range?.min ?? 0;
 			const dMax = range?.max ?? 1;
 			const invRange = dMax !== dMin ? 1 / (dMax - dMin) : 0;

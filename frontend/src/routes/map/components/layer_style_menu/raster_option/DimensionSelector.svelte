@@ -20,10 +20,7 @@
 	} from '$routes/map/data/types/raster';
 	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import {
-		getTopexCacheKey,
-		getTwiCacheKey
-	} from '$routes/map/utils/formats/geotiff';
+	import { getTopexCacheKey, getTwiCacheKey } from '$routes/map/utils/formats/geotiff';
 	import {
 		getRasterDimension,
 		getRasterDimensionRuntimeUpdates

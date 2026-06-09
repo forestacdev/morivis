@@ -91,8 +91,7 @@
 		return items;
 	});
 	const isDerivedModeLoading = $derived(
-		layerEntry.style.visualization.mode === 'twi' ||
-			layerEntry.style.visualization.mode === 'topex'
+		layerEntry.style.visualization.mode === 'twi' || layerEntry.style.visualization.mode === 'topex'
 			? generatingDerivedMode === layerEntry.style.visualization.mode
 			: false
 	);
@@ -110,7 +109,10 @@
 			return;
 		}
 
-		if (layerEntry.style.visualization.mode === 'slope' && !layerEntry.style.visualization.uniformsData.slope) {
+		if (
+			layerEntry.style.visualization.mode === 'slope' &&
+			!layerEntry.style.visualization.uniformsData.slope
+		) {
 			layerEntry.style.visualization.uniformsData.slope = {
 				colorMap: 'salinity',
 				range: toAdjustableRange(slopeRange.min, slopeRange.max)
@@ -118,7 +120,10 @@
 			return;
 		}
 
-		if (layerEntry.style.visualization.mode === 'aspect' && !layerEntry.style.visualization.uniformsData.aspect) {
+		if (
+			layerEntry.style.visualization.mode === 'aspect' &&
+			!layerEntry.style.visualization.uniformsData.aspect
+		) {
 			layerEntry.style.visualization.uniformsData.aspect = {
 				colorMap: 'rainbow-soft',
 				range: toAdjustableRange(aspectRange.min, aspectRange.max)
@@ -126,7 +131,10 @@
 			return;
 		}
 
-		if (layerEntry.style.visualization.mode === 'tpi' && !layerEntry.style.visualization.uniformsData.tpi) {
+		if (
+			layerEntry.style.visualization.mode === 'tpi' &&
+			!layerEntry.style.visualization.uniformsData.tpi
+		) {
 			layerEntry.style.visualization.uniformsData.tpi = {
 				colorMap: 'rdbu',
 				range: toAdjustableRange(tpiRange.min, tpiRange.max)
@@ -210,10 +218,7 @@
 
 		if (generatingDerivedMode === mode) return;
 
-		const currentRange =
-			mode === 'twi'
-				? twiRange
-				: topexRange;
+		const currentRange = mode === 'twi' ? twiRange : topexRange;
 		if (currentRange) return;
 
 		generatingDerivedMode = mode;

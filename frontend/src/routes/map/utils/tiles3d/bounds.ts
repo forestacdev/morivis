@@ -26,33 +26,42 @@ const ecefToLngLat = (x: number, y: number, z: number): [number, number, number]
 	return [(lon * 180) / Math.PI, (lat * 180) / Math.PI, Math.sqrt(x * x + y * y + z * z) - a];
 };
 
+const transformPoint = (
+	transform: number[] | undefined,
+	[x, y, z]: [number, number, number]
+): [number, number, number] => {
+	if (!transform) return [x, y, z];
+
+	return [
+		transform[0] * x + transform[4] * y + transform[8] * z + transform[12],
+		transform[1] * x + transform[5] * y + transform[9] * z + transform[13],
+		transform[2] * x + transform[6] * y + transform[10] * z + transform[14]
+	];
+};
+
 /** boundingVolume.box + transform からLngLatBoundsを計算 */
 const boxToBbox = (box: number[], transform?: number[]): [number, number, number, number] => {
-	const cx = box[0],
-		cy = box[1],
-		cz = box[2];
-	const halfX = Math.sqrt(box[3] ** 2 + box[4] ** 2 + box[5] ** 2);
-	const halfY = Math.sqrt(box[6] ** 2 + box[7] ** 2 + box[8] ** 2);
-	const halfZ = Math.sqrt(box[9] ** 2 + box[10] ** 2 + box[11] ** 2);
+	const center: [number, number, number] = [box[0], box[1], box[2]];
+	const axisX: [number, number, number] = [box[3], box[4], box[5]];
+	const axisY: [number, number, number] = [box[6], box[7], box[8]];
+	const axisZ: [number, number, number] = [box[9], box[10], box[11]];
 
-	const localCorners = [
-		[cx - halfX, cy - halfY, cz - halfZ],
-		[cx + halfX, cy - halfY, cz - halfZ],
-		[cx - halfX, cy + halfY, cz - halfZ],
-		[cx + halfX, cy + halfY, cz - halfZ],
-		[cx - halfX, cy - halfY, cz + halfZ],
-		[cx + halfX, cy - halfY, cz + halfZ],
-		[cx - halfX, cy + halfY, cz + halfZ],
-		[cx + halfX, cy + halfY, cz + halfZ]
-	];
-
-	const ecefCorners = transform
-		? localCorners.map(([lx, ly, lz]) => [
-				transform[0] * lx + transform[4] * ly + transform[8] * lz + transform[12],
-				transform[1] * lx + transform[5] * ly + transform[9] * lz + transform[13],
-				transform[2] * lx + transform[6] * ly + transform[10] * lz + transform[14]
-			])
-		: localCorners;
+	// 3D Tiles の box は center + 3本の half-axis ベクトルで定義される。
+	// ベクトル長だけに潰すと、回転済みボックスで bbox が大きく崩れる。
+	const ecefCorners: [number, number, number][] = [];
+	for (const signX of [-1, 1] as const) {
+		for (const signY of [-1, 1] as const) {
+			for (const signZ of [-1, 1] as const) {
+				ecefCorners.push(
+					transformPoint(transform, [
+						center[0] + signX * axisX[0] + signY * axisY[0] + signZ * axisZ[0],
+						center[1] + signX * axisX[1] + signY * axisY[1] + signZ * axisZ[1],
+						center[2] + signX * axisX[2] + signY * axisY[2] + signZ * axisZ[2]
+					])
+				);
+			}
+		}
+	}
 
 	const lngLats = ecefCorners.map(([x, y, z]) => ecefToLngLat(x, y, z));
 	const lngs = lngLats.map(([lng]) => lng);
@@ -70,15 +79,7 @@ const regionToBbox = (region: number[]): [number, number, number, number] => {
 /** boundingVolume.sphere + transform からbboxを計算 */
 const sphereToBbox = (sphere: number[], transform?: number[]): [number, number, number, number] => {
 	const [cx, cy, cz, radius] = sphere;
-
-	let ecefX = cx,
-		ecefY = cy,
-		ecefZ = cz;
-	if (transform) {
-		ecefX = transform[0] * cx + transform[4] * cy + transform[8] * cz + transform[12];
-		ecefY = transform[1] * cx + transform[5] * cy + transform[9] * cz + transform[13];
-		ecefZ = transform[2] * cx + transform[6] * cy + transform[10] * cz + transform[14];
-	}
+	const [ecefX, ecefY, ecefZ] = transformPoint(transform, [cx, cy, cz]);
 
 	const corners = [
 		[ecefX - radius, ecefY - radius, ecefZ],
