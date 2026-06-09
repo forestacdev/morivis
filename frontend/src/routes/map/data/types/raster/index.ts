@@ -167,7 +167,7 @@ export interface RasterDemStyle extends BaseRasterStyle {
 	};
 }
 
-export type BandTypeKey = 'single' | 'multi' | 'twi' | 'slope' | 'aspect' | 'tpi';
+export type BandTypeKey = 'single' | 'multi' | 'twi' | 'slope' | 'aspect' | 'tpi' | 'topex';
 
 export interface ShingleBandData {
 	index: number;
@@ -202,6 +202,7 @@ export interface RasterTiffStyle extends BaseRasterStyle {
 			slope?: DerivedBandData;
 			aspect?: DerivedBandData;
 			tpi?: DerivedBandData;
+			topex?: DerivedBandData;
 		};
 	};
 }

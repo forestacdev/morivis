@@ -30,7 +30,7 @@ export const getDerivedRasterCacheKey = (key: string, suffix: string): string =>
 	return `${key}__${suffix}`;
 };
 
-const DERIVED_RASTER_SUFFIXES = ['twi', 'slope', 'aspect', 'tpi'] as const;
+const DERIVED_RASTER_SUFFIXES = ['twi', 'slope', 'aspect', 'tpi', 'topex'] as const;
 
 export class GeoTiffCache {
 	// Terrarium PNG Blob URL（バンドごと）

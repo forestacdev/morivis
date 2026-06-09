@@ -20,12 +20,7 @@
 	} from '$routes/map/data/types/raster';
 	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import {
-		getAspectCacheKey,
-		getSlopeCacheKey,
-		getTpiCacheKey,
-		getTwiCacheKey
-	} from '$routes/map/utils/formats/geotiff';
+	import { getTopexCacheKey, getTwiCacheKey } from '$routes/map/utils/formats/geotiff';
 	import {
 		getRasterDimension,
 		getRasterDimensionRuntimeUpdates
@@ -170,16 +165,18 @@
 			layerEntry.format.type === 'image' &&
 			(layerEntry.style.visualization.mode === 'slope' ||
 				layerEntry.style.visualization.mode === 'aspect' ||
-				layerEntry.style.visualization.mode === 'tpi')
+				layerEntry.style.visualization.mode === 'tpi' ||
+				layerEntry.style.visualization.mode === 'topex')
 		) {
 			const mode = layerEntry.style.visualization.mode;
-			const currentRange = GeoTiffCache.getDataRanges(
+			const currentRange =
 				mode === 'slope'
-					? getSlopeCacheKey(layerEntry.id)
+					? { min: 0, max: 90 }
 					: mode === 'aspect'
-						? getAspectCacheKey(layerEntry.id)
-						: getTpiCacheKey(layerEntry.id)
-			)?.[0];
+						? { min: 0, max: 360 }
+						: mode === 'tpi'
+							? { min: -1, max: 1 }
+							: GeoTiffCache.getDataRanges(getTopexCacheKey(layerEntry.id))?.[0];
 			if (currentRange) {
 				layerEntry.style.visualization.uniformsData[mode] = {
 					colorMap:

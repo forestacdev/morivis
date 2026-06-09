@@ -7,6 +7,7 @@ import type {
 	VectorEntryGeometryType,
 	TileMetaData
 } from '$routes/map/data/types/vector';
+import { createAdjustableRange } from '$routes/map/data/types';
 
 import { getUniquePropertyKeys } from '$routes/map/utils/data/properties';
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
@@ -19,6 +20,7 @@ import {
 	createMatchColorMapping,
 	createColorStyleDXFMapping
 } from '$routes/map/data/entries/vector/_style';
+import type { SequentialCount, SequentialScheme } from '$routes/map/utils/color/color-brewer';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style';
@@ -29,6 +31,7 @@ import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import type {
 	ColorsStyle,
 	ColorMatchExpression,
+	ColorStepExpression,
 	VectorStyle,
 	PolygonStyle,
 	LineStringStyle,
@@ -404,17 +407,34 @@ export const buildCadStyle = (
 
 const MAX_UNIQUE_VALUES = 30;
 const MIN_UNIQUE_VALUES = 2;
+const AUTO_STEP_SCHEME: SequentialScheme = 'YlOrRd';
+const AUTO_STEP_DIVISIONS: SequentialCount = 5;
 
 const isNumericString = (v: string): boolean => {
 	if (v === '') return false;
 	return !isNaN(Number(v)) && isFinite(Number(v));
 };
 
-const buildAutoMatchExpressions = (
+const parseNumericPropertyValue = (value: unknown): number | null => {
+	if (typeof value === 'number') {
+		return Number.isFinite(value) ? value : null;
+	}
+
+	if (typeof value === 'string') {
+		const trimmed = value.trim();
+		if (trimmed === '' || !isNumericString(trimmed)) return null;
+		const numericValue = Number(trimmed);
+		return Number.isFinite(numericValue) ? numericValue : null;
+	}
+
+	return null;
+};
+
+const buildAutoColorExpressions = (
 	data: FeatureCollection,
 	entryGeometryType: VectorEntryGeometryType
-): ColorMatchExpression[] => {
-	const expressions: ColorMatchExpression[] = [];
+): (ColorMatchExpression | ColorStepExpression)[] => {
+	const expressions: (ColorMatchExpression | ColorStepExpression)[] = [];
 	if (data.features.length === 0) return expressions;
 
 	// 全フィーチャのプロパティキーを収集
@@ -427,28 +447,57 @@ const buildAutoMatchExpressions = (
 	}
 
 	for (const key of keyCandidates) {
-		const values = new Set<string>();
-		let allNumeric = true;
+		const stringValues = new Set<string>();
+		const numericValues = new Set<number>();
 		let hasNonNull = false;
+		let hasNumeric = false;
+		let hasNonNumeric = false;
+		let min = Number.POSITIVE_INFINITY;
+		let max = Number.NEGATIVE_INFINITY;
 
 		for (const f of data.features) {
 			const v = (f.properties as Record<string, unknown>)?.[key];
 			if (v == null || v === '') continue;
-			const str = String(v);
 			hasNonNull = true;
-			values.add(str);
-			if (allNumeric && !isNumericString(str)) allNumeric = false;
-			// 早期終了: 上限超え
-			if (values.size > MAX_UNIQUE_VALUES) break;
+
+			const numericValue = parseNumericPropertyValue(v);
+			if (numericValue != null) {
+				hasNumeric = true;
+				numericValues.add(numericValue);
+				if (numericValue < min) min = numericValue;
+				if (numericValue > max) max = numericValue;
+				continue;
+			}
+
+			hasNonNumeric = true;
+			stringValues.add(String(v));
+			if (stringValues.size > MAX_UNIQUE_VALUES) break;
 		}
 
 		// フィルタリング
 		if (!hasNonNull) continue;
-		if (values.size < MIN_UNIQUE_VALUES) continue;
-		if (values.size > MAX_UNIQUE_VALUES) continue;
-		if (allNumeric) continue;
 
-		const categories = Array.from(values).sort();
+		if (hasNumeric && !hasNonNumeric) {
+			if (numericValues.size < MIN_UNIQUE_VALUES) continue;
+			if (!Number.isFinite(min) || !Number.isFinite(max) || min === max) continue;
+
+			expressions.push({
+				type: 'step',
+				key,
+				name: `${key}`,
+				mapping: {
+					scheme: AUTO_STEP_SCHEME,
+					range: createAdjustableRange(min, max),
+					divisions: AUTO_STEP_DIVISIONS
+				}
+			});
+			continue;
+		}
+
+		if (stringValues.size < MIN_UNIQUE_VALUES) continue;
+		if (stringValues.size > MAX_UNIQUE_VALUES) continue;
+
+		const categories = Array.from(stringValues).sort();
 		expressions.push({
 			type: 'match',
 			key,
@@ -511,9 +560,9 @@ export const createGeoJsonEntry = async (
 			options?.defaultColor ?? undefined
 		);
 
-		// 属性から自動match分類を生成
-		const autoMatchExpressions = buildAutoMatchExpressions(normalizedData, entryGeometryType);
-		for (const expr of autoMatchExpressions) {
+		// 属性から自動分類を生成
+		const autoColorExpressions = buildAutoColorExpressions(normalizedData, entryGeometryType);
+		for (const expr of autoColorExpressions) {
 			colorsConfig.expressions.push(expr);
 		}
 

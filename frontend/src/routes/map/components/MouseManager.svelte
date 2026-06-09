@@ -74,6 +74,11 @@
 	}: Props = $props();
 
 	const ADDITIONAL_CLICKABLE_LAYER_IDS = ['@poi_top', '@search_result'] as const;
+	const HIT_TOLERANCE_BY_GEOMETRY = {
+		Point: 4,
+		LineString: 8,
+		Polygon: 6
+	} as const;
 	let highlightedGeneratedPoiLayerId: string | null = $state(null);
 
 	const clearSearchHighlight = () => {
@@ -119,6 +124,29 @@
 		return getClickableTargetLayerIds().filter((layerId) => {
 			return mapStore.getLayer(layerId) !== undefined;
 		});
+	};
+
+	const getHitQueryBox = (
+		point: MapMouseEvent['point'],
+		layerIds: string[],
+		layerHints: GeoDataEntry[]
+	): [[number, number], [number, number]] => {
+		// 点1発の queryRenderedFeatures だと、細かく分割された MultiPolygon や細線を取りこぼす。
+		// クリック周辺を小さい矩形で問い合わせて、見た目に対するヒット率を安定させる。
+		const tolerances = layerIds
+			.map((layerId) => {
+				const entry = layerHints.find((item) => item.id === layerId);
+				if (!entry || entry.type !== 'vector') return HIT_TOLERANCE_BY_GEOMETRY.Polygon;
+				return HIT_TOLERANCE_BY_GEOMETRY[entry.format.geometryType];
+			})
+			.filter((value) => Number.isFinite(value));
+		const tolerance =
+			tolerances.length > 0 ? Math.max(...tolerances) : HIT_TOLERANCE_BY_GEOMETRY.Polygon;
+
+		return [
+			[point.x - tolerance, point.y - tolerance],
+			[point.x + tolerance, point.y + tolerance]
+		];
 	};
 
 	const getSelectedRasterLayerIds = (lngLat: LngLat) => {
@@ -476,8 +504,9 @@
 
 			const existingLayerIds = getExistingClickableLayerIds();
 			if (!existingLayerIds.length) return;
+			const hitQueryBox = getHitQueryBox(e.point, existingLayerIds, layerEntries);
 
-			const features = mapStore.queryRenderedFeatures(e.point, {
+			const features = mapStore.queryRenderedFeatures(hitQueryBox, {
 				layers: existingLayerIds
 			});
 

@@ -114,6 +114,10 @@ const baseAttributions = {
 		name: '防災科学技術研究所',
 		url: 'https://www.bosai.go.jp/'
 	},
+	ハザードマップポータルサイト: {
+		name: 'ハザードマップポータルサイト',
+		url: 'https://disaportal.gsi.go.jp/hazardmapportal/hazardmap/copyright/opendata.html'
+	},
 	P2P地震情報: {
 		name: 'P2P地震情報',
 		url: 'https://www.p2pquake.net/develop/json_api_v2/'
