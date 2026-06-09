@@ -4,32 +4,32 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
+		title: string;
+		description?: string;
 		selectedGeometryType: VectorEntryGeometryType | '';
 		geometryTypeOptions: { key: string; name: string }[];
 		sourceEpsgCode?: string | null;
-		onBack: () => void;
 		onConfirm: () => void;
 		onCancel: () => void;
 	}
 
 	let {
+		title,
+		description = '複数のジオメトリタイプが含まれています。読み込むタイプを1つ選択してください。',
 		selectedGeometryType = $bindable(),
 		geometryTypeOptions,
 		sourceEpsgCode = null,
-		onBack,
 		onConfirm,
 		onCancel
 	}: Props = $props();
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">WKTのジオメトリ選択</span>
+	<span class="text-2xl font-bold">{title}</span>
 </div>
 
 <div class="c-scroll flex h-full w-full grow flex-col gap-4 overflow-auto p-2">
-	<p class="text-sm text-gray-300">
-		複数のジオメトリタイプが含まれています。読み込むタイプを1つ選択してください。
-	</p>
+	<p class="text-sm text-gray-300">{description}</p>
 
 	{#if sourceEpsgCode}
 		<p class="text-sm text-gray-300">SRID: EPSG:{sourceEpsgCode}</p>

@@ -3,7 +3,7 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
-	import WktGeometryTypeForm from '$routes/map/components/upload/form/WktGeometryTypeForm.svelte';
+	import GeometryTypeForm from '$routes/map/components/upload/form/GeometryTypeForm.svelte';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
@@ -304,11 +304,11 @@
 </script>
 
 {#if showGeometryTypeDialog}
-	<WktGeometryTypeForm
+	<GeometryTypeForm
+		title="WKTのジオメトリ選択"
 		bind:selectedGeometryType
 		{geometryTypeOptions}
 		{sourceEpsgCode}
-		onBack={backToWktInput}
 		onCancel={cancel}
 		onConfirm={submit}
 	/>

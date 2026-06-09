@@ -3,6 +3,7 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import GeometryTypeForm from '$routes/map/components/upload/form/GeometryTypeForm.svelte';
 	import GeoJsonRenderModeForm, {
 		type GeoJsonRenderMode
 	} from '$routes/map/components/upload/form/GeoJsonRenderModeForm.svelte';
@@ -124,6 +125,7 @@
 	let manualEntryName = $state('GeoJSONデータ');
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let isDragover = $state(false);
+	let showGeometryTypeDialog = $state(false);
 	let showRenderModeDialog = $state(false);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
@@ -160,6 +162,7 @@
 	const setSelectedFile = (file: File) => {
 		dropFile = file;
 		rawGeojson = null;
+		showGeometryTypeDialog = false;
 		showRenderModeDialog = false;
 		geometryTypeOptions = [];
 		selectedGeometryType = '';
@@ -193,10 +196,12 @@
 			name: GEOMETRY_TYPE_LABELS[type] ?? type
 		}));
 		selectedGeometryType = types[0] ?? '';
+		showGeometryTypeDialog = false;
 		showRenderModeDialog = false;
 
 		const primaryGeometryType = types[0];
 		if (types.length > 1) {
+			showGeometryTypeDialog = true;
 			return;
 		}
 
@@ -271,6 +276,7 @@
 
 		showDataEntry = entry;
 		dropFile = null;
+		showGeometryTypeDialog = false;
 		showRenderModeDialog = false;
 		showDialogType = null;
 		showNotification('ファイルを読み込みました', 'success');
@@ -312,6 +318,7 @@
 
 			showDataEntry = entry;
 			dropFile = null;
+			showGeometryTypeDialog = false;
 			showRenderModeDialog = false;
 			showDialogType = null;
 			showNotification('ファイルを読み込みました', 'success');
@@ -325,12 +332,19 @@
 
 	const cancel = () => {
 		dropFile = null;
+		showGeometryTypeDialog = false;
 		showRenderModeDialog = false;
 		showDialogType = null;
 	};
 
 	const backToGeoJsonInput = () => {
+		showGeometryTypeDialog = false;
 		showRenderModeDialog = false;
+	};
+
+	const backToGeometryTypeSelection = () => {
+		showRenderModeDialog = false;
+		showGeometryTypeDialog = geometryTypeOptions.length > 1;
 	};
 
 	const loadFromText = async () => {
@@ -356,6 +370,17 @@
 	};
 
 	const submit = async () => {
+		if (showGeometryTypeDialog) {
+			showGeometryTypeDialog = false;
+			if (canUseDeckRender) {
+				showRenderModeDialog = true;
+				return;
+			}
+
+			await processGeojson();
+			return;
+		}
+
 		if (showRenderModeDialog) {
 			await processGeojson();
 			return;
@@ -405,12 +430,20 @@
 	});
 </script>
 
-{#if showRenderModeDialog}
+{#if showGeometryTypeDialog}
+	<GeometryTypeForm
+		title="GeoJSONのジオメトリ選択"
+		bind:selectedGeometryType
+		{geometryTypeOptions}
+		onCancel={cancel}
+		onConfirm={submit}
+	/>
+{:else if showRenderModeDialog}
 	<GeoJsonRenderModeForm
 		{entryName}
 		{selectedGeometryType}
 		bind:selectedRenderMode
-		onBack={backToGeoJsonInput}
+		onBack={backToGeometryTypeSelection}
 		onCancel={cancel}
 		onConfirm={submit}
 	/>
@@ -486,6 +519,7 @@
 						bind:value={inputText}
 						oninput={() => {
 							rawGeojson = null;
+							showGeometryTypeDialog = false;
 							showRenderModeDialog = false;
 							geometryTypeOptions = [];
 							selectedGeometryType = '';
@@ -496,15 +530,6 @@
 			</div>
 		{/if}
 
-		{#if geometryTypeOptions.length > 1}
-			<div class="w-full p-2">
-				<HorizontalSelectBox
-					label="ジオメトリタイプを選択"
-					bind:group={selectedGeometryType}
-					bind:options={geometryTypeOptions}
-				/>
-			</div>
-		{/if}
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
