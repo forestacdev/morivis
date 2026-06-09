@@ -281,8 +281,9 @@
 <Accordion label="色の調整" icon="mdi:paint" bind:value={showColorOption}>
 	<BaseSelectMenu bind:selectedKey={layerEntry.style.visualization.mode} items={tiffStyleModes} />
 	{#if isDerivedModeLoading}
-		<div class="bg-sub/60 mb-2 rounded-2xl px-3 py-2 text-sm text-gray-200">
-			地形解析を計算中です...
+		<div class="bg-sub/60 mb-2 flex items-center gap-3 rounded-2xl px-3 py-2 text-sm text-gray-200">
+			<div class="border-t-accent h-4 w-4 animate-spin rounded-full border-2 border-gray-300"></div>
+			<span>地形解析を計算中です...</span>
 		</div>
 	{/if}
 	{#if layerEntry.style.visualization.mode === 'single'}
