@@ -38,7 +38,7 @@
 			property="og:description"
 			content="岐阜県立森林文化アカデミーの森林データを可視化するWebGIS。森林情報をブラウザ上で探索できるオープンなプラットフォームです。"
 		/>
-		<meta property="og:title" content="morivis - 森林文化アカデミー演習林マップ" />
+		<meta property="og:title" content="morivis - 森林文化アカデミー演習林Webマップ" />
 		<meta property="og:site_name" content="morivis" />
 		<meta property="og:locale" content="ja_JP" />
 		<meta property="og:type" content="website" />
@@ -79,9 +79,9 @@
 			{
 				"@context": "https://schema.org",
 				"@type": ["WebApplication", "SoftwareApplication"],
-				"name": "morivis - 森林文化アカデミー演習林Webマップ",
+				"name": "morivis - 森林WebGIS・森林文化アカデミー演習林Webマップ",
 				"alternateName": "morivis",
-				"description": "岐阜県立森林文化アカデミーの森林データを可視化するWebGIS。森林情報をブラウザ上で探索できるオープンなプラットフォームです。",
+				"description": "岐阜県立森林文化アカデミーの森林データを可視化する森林WebGIS。演習林の地形、植生、森林情報、各種オープンデータをブラウザ上で探索できます。",
 				"url": "https://forestacdev.github.io/morivis/",
 				"image": "https://raw.githubusercontent.com/forestacdev/morivis/refs/heads/main/frontend/static/ogp.jpg",
 				"applicationCategory": "EducationalApplication",
@@ -133,12 +133,18 @@
 					},
 					{
 						"@type": "DefinedTerm",
+						"name": "森林WebGIS",
+						"description": "森林情報を地図上で閲覧、重ね合わせ、探索するためのWebGIS"
+					},
+					{
+						"@type": "DefinedTerm",
 						"name": "森林データ可視化",
 						"description": "森林に関するデータの視覚的表現"
 					}
 				],
 				"keywords": [
 					"WebGIS",
+					"森林WebGIS",
 					"森林GIS",
 					"森林データ可視化",
 					"演習林",
@@ -197,11 +203,11 @@
 			}
 		</script>
 		
-		<link rel="modulepreload" href="./_app/immutable/entry/start.CHYvw6XE.js">
-		<link rel="modulepreload" href="./_app/immutable/chunks/C1j_E5nF.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/start.Bv_r2Ywk.js">
+		<link rel="modulepreload" href="./_app/immutable/chunks/a4XyWjmT.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/XSa-KIE0.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/D1gtpGIK.js">
-		<link rel="modulepreload" href="./_app/immutable/entry/app.CGlA6Vlx.js">
+		<link rel="modulepreload" href="./_app/immutable/entry/app.BVmIDQkj.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/C1FmrZbK.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/CWj6FrbW.js">
 		<link rel="modulepreload" href="./_app/immutable/chunks/BIFTRBMz.js">
@@ -212,7 +218,7 @@
 		<div style="display: contents">
 			<script>
 				{
-					__sveltekit_6i7sm4 = {
+					__sveltekit_1cjrfw1 = {
 						base: new URL(".", location).pathname.slice(0, -1),
 						assets: "/morivis"
 					};
@@ -220,8 +226,8 @@
 					const element = document.currentScript.parentElement;
 
 					Promise.all([
-						import("./_app/immutable/entry/start.CHYvw6XE.js"),
-						import("./_app/immutable/entry/app.CGlA6Vlx.js")
+						import("./_app/immutable/entry/start.Bv_r2Ywk.js"),
+						import("./_app/immutable/entry/app.BVmIDQkj.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element);
 					});
