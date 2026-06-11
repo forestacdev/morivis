@@ -1,6 +1,6 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
 import { DEFAULT_POINT_LABEL_STYLE } from '$routes/map/data/entries/vector/_style';
+import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
 
 const entry: PointEntry<GeoJsonMetaData> = {
 	id: 'fac_birds_census_2020',
@@ -19,7 +19,12 @@ const entry: PointEntry<GeoJsonMetaData> = {
 		minZoom: 10,
 		maxZoom: 22,
 		tags: ['鳥類'],
-		bounds: [136.9165610000000015, 35.5507500000000007, 136.9230420000000095, 35.5569050000000004],
+		bounds: [
+			136.9165610000000015,
+			35.5507500000000007,
+			136.9230420000000095,
+			35.5569050000000004
+		],
 		mapImage: `${MAP_IMAGE_BASE_PATH}/fac_birds_census_2020.webp`,
 		xyzImageTile: { x: 115387, y: 51671, z: 17 },
 		coverImage: `${COVER_IMAGE_BASE_PATH}/bird.webp`

@@ -76,7 +76,7 @@ export const DEFAULT_SYMBOL_TEXT_FONT: DataDrivenPropertyValueSpecification<stri
 ];
 
 /** アイコン用画像タイルのXYZ */
-export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
+export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ; } = {
 	zoom_0: {
 		x: 0,
 		y: 0,

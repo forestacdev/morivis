@@ -1,4 +1,5 @@
 import { createGeoJsonPointEntry } from '$routes/map/data/entries/_factories/geojson';
+import { DEFAULT_POINT_LABEL_STYLE } from '$routes/map/data/entries/vector/_style';
 import { createAdjustableRange } from '$routes/map/data/types';
 import type { Tag } from '$routes/map/data/types/tags';
 import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
@@ -7,7 +8,6 @@ import type { ColorsExpression } from '$routes/map/data/types/vector/style';
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { PointGeometry } from '$routes/map/types/geometry';
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
-import { DEFAULT_POINT_LABEL_STYLE } from '$routes/map/data/entries/vector/_style';
 export interface JmaAmedasConfig {
 	id: string;
 	name: string;
@@ -37,9 +37,11 @@ const EMPTY_GEOJSON: FeatureCollection = {
 	features: []
 };
 
-const EMPTY_GEOJSON_DATA_URL = `data:application/json;charset=utf-8,${encodeURIComponent(
-	JSON.stringify(EMPTY_GEOJSON)
-)}`;
+const EMPTY_GEOJSON_DATA_URL = `data:application/json;charset=utf-8,${
+	encodeURIComponent(
+		JSON.stringify(EMPTY_GEOJSON)
+	)
+}`;
 
 const AMEDAS_STATION_TABLE_URL = 'https://www.jma.go.jp/bosai/amedas/const/amedastable.json';
 const AMEDAS_LATEST_TIME_URL = 'https://www.jma.go.jp/bosai/amedas/data/latest_time.txt';
@@ -168,15 +170,13 @@ const AMEDAS_COLOR_EXPRESSIONS: ColorsExpression[] = [
 const getObservationValue = (value: AmedasObservationValue) =>
 	Array.isArray(value) ? value[0] : null;
 
-const getObservationAqc = (value: AmedasObservationValue) =>
-	Array.isArray(value) ? value[1] : null;
+const getObservationAqc = (value: AmedasObservationValue) => Array.isArray(value) ? value[1] : null;
 
 const compactFeatureProperties = (
 	properties: Record<string, string | number | boolean | null | undefined>
-) =>
-	Object.fromEntries(
-		Object.entries(properties).filter(([, value]) => value !== null && value !== undefined)
-	) as Record<string, string | number | boolean>;
+) => Object.fromEntries(
+	Object.entries(properties).filter(([, value]) => value !== null && value !== undefined)
+) as Record<string, string | number | boolean>;
 
 const buildAmedasFeature = (
 	stationId: string,
@@ -260,10 +260,12 @@ export const getRecentAmedasTemporalItems = async (
 		return {
 			raw,
 			timestamp: Date.parse(
-				`${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}T${raw.slice(8, 10)}:${raw.slice(
-					10,
-					12
-				)}:${raw.slice(12, 14)}+09:00`
+				`${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}T${raw.slice(8, 10)}:${
+					raw.slice(
+						10,
+						12
+					)
+				}:${raw.slice(12, 14)}+09:00`
 			),
 			label: formatAmedasTimeLabel(raw)
 		};

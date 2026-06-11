@@ -181,7 +181,9 @@ export const detectStacSourceType = async (
 
 	// fallback: /collectionsエンドポイントを試す
 	try {
-		const collectionsRes = await fetchWithDevProxy(`${normalizeUrl(normalizedUrl)}/collections`);
+		const collectionsRes = await fetchWithDevProxy(
+			`${normalizeUrl(normalizedUrl)}/collections`
+		);
 		if (collectionsRes.ok) {
 			return { type: 'api', data };
 		}
@@ -268,7 +270,8 @@ export const fetchStaticItems = async (url: string, limit: number = 20): Promise
 	const data = await parseStacJsonResponse(res, normalizedUrl);
 
 	if (data.type === 'FeatureCollection' && Array.isArray(data.features)) {
-		return resolveSearchResultAssets(data as unknown as StacSearchResult, normalizedUrl).features.slice(0, limit);
+		return resolveSearchResultAssets(data as unknown as StacSearchResult, normalizedUrl)
+			.features.slice(0, limit);
 	}
 
 	// これ自体がItemの場合

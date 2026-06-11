@@ -85,6 +85,13 @@ export const fetchWithDevProxy = async (input: string, init?: RequestInit): Prom
 	return await fetch(resolveRequestUrl(input), init);
 };
 
+export const fetchResolvedRequestUrl = async (
+	url: string,
+	init?: RequestInit
+): Promise<Response> => {
+	return await fetch(url, init);
+};
+
 export const fetchJsonWithDevProxy = async <T>(input: string, init?: RequestInit): Promise<T> => {
 	const response = await fetchWithDevProxy(input, init);
 	return (await response.json()) as T;

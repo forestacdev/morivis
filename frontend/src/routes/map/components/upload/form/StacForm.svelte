@@ -45,6 +45,7 @@
 	} from '$routes/map/utils/formats/stac';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import {
+		fetchResolvedRequestUrl,
 		fetchWithDevProxy,
 		resolveCogProxyUrl,
 		resolveRequestUrl
@@ -569,7 +570,7 @@
 			const cogUrl = asset.href;
 			const requestCogUrl = resolveCogProxyUrl(cogUrl);
 			try {
-				const testRes = await fetch(requestCogUrl, { method: 'HEAD' });
+				const testRes = await fetchResolvedRequestUrl(requestCogUrl, { method: 'HEAD' });
 				const contentLength = testRes.headers.get('Content-Length');
 				if (contentLength) {
 					progressText = `COGヘッダーを取得中... (${formatFileSize(Number(contentLength))})`;

@@ -12,6 +12,7 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { MeshStyle, ModelMeshEntry } from '$routes/map/data/types/model';
+	import { unregisterGeoZarr } from '$routes/map/protocol/geozarr';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
@@ -19,7 +20,6 @@
 	import { clearCogViewportImage } from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
-	import { unregisterGeoZarr } from '$routes/map/protocol/geozarr';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';

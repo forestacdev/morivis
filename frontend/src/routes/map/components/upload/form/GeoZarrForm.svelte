@@ -7,12 +7,12 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { RasterGeoZarrEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
-	import type { DialogType } from '$routes/map/types';
 	import {
 		inspectGeoZarr,
 		registerGeoZarr,
 		type GeoZarrRegistrationMeta
 	} from '$routes/map/protocol/geozarr';
+	import type { DialogType } from '$routes/map/types';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
@@ -116,7 +116,8 @@
 				arrayPath: forms.arrayPath,
 				bboxText: forms.bbox || null
 			});
-			const sampleRanges = metadata.sampleRanges.length > 0 ? metadata.sampleRanges : [{ min: 0, max: 1 }];
+			const sampleRanges =
+				metadata.sampleRanges.length > 0 ? metadata.sampleRanges : [{ min: 0, max: 1 }];
 			const entry: RasterGeoZarrEntry<RasterTiffStyle> = {
 				id: entryId,
 				type: 'raster',
@@ -128,10 +129,7 @@
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
 					attribution: 'GeoZarr',
-					name:
-						metadata.arrayPath.split('/').pop()
-						|| normalizedUrl.split('/').pop()
-						|| 'GeoZarr',
+					name: metadata.arrayPath.split('/').pop() || normalizedUrl.split('/').pop() || 'GeoZarr',
 					tileSize: 256,
 					bounds: metadata.bbox,
 					minZoom: 0,

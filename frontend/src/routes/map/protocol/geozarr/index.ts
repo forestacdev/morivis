@@ -1,8 +1,8 @@
 import * as tilebelt from '@mapbox/tilebelt';
 import * as zarr from 'zarrita';
 
-import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import { convertCanvasToResult } from '$routes/map/protocol/farbling';
+import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import { resolveAbsoluteRequestUrl } from '$routes/map/utils/platform/request';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
@@ -61,7 +61,8 @@ const createProxyFetchStore = async (url: string): Promise<GeoZarrListableStore>
 	return (await zarr.withMaybeConsolidatedMetadata(baseStore)) as GeoZarrListableStore;
 };
 
-const normalizeArrayPath = (value?: string): string => value?.trim().replace(/^\/+|\/+$/g, '') ?? '';
+const normalizeArrayPath = (value?: string): string =>
+	value?.trim().replace(/^\/+|\/+$/g, '') ?? '';
 
 const getArrayAttrs = (array: GeoZarrArrayNode): Record<string, unknown> => {
 	return array.attrs ?? array.attributes ?? {};
@@ -100,9 +101,10 @@ const inferDimensionNames = (array: GeoZarrArrayNode): string[] => {
 };
 
 const isCoordinateLikePath = (path: string): boolean => {
-	return /(^|\/)(time|valid_time|step|latitude|lat|longitude|lon|level|levels|hybrid|hybrid_sigma_pressure|pressure)$/i.test(
-		path
-	);
+	return /(^|\/)(time|valid_time|step|latitude|lat|longitude|lon|level|levels|hybrid|hybrid_sigma_pressure|pressure)$/i
+		.test(
+			path
+		);
 };
 
 const scoreArrayCandidate = (path: string, array: GeoZarrArrayNode): number => {
@@ -151,7 +153,9 @@ const readCoordinateArray = async (
 		)) as {
 			data: ArrayLike<number>;
 		};
-		return Array.from(values.data, (value) => Number(value)).filter((value) => Number.isFinite(value));
+		return Array.from(values.data, (value) => Number(value)).filter((value) =>
+			Number.isFinite(value)
+		);
 	} catch {
 		return null;
 	}
@@ -167,10 +171,20 @@ const inferBboxFromCoordinateArrays = async (
 	const parentPath = getParentArrayPath(arrayPath);
 
 	const xCandidates = Array.from(
-		new Set([dimensionNames.find((name) => /^(x|lon|longitude)$/i.test(name)), 'longitude', 'lon', 'x'])
+		new Set([
+			dimensionNames.find((name) => /^(x|lon|longitude)$/i.test(name)),
+			'longitude',
+			'lon',
+			'x'
+		])
 	).filter((value): value is string => !!value);
 	const yCandidates = Array.from(
-		new Set([dimensionNames.find((name) => /^(y|lat|latitude)$/i.test(name)), 'latitude', 'lat', 'y'])
+		new Set([
+			dimensionNames.find((name) => /^(y|lat|latitude)$/i.test(name)),
+			'latitude',
+			'lat',
+			'y'
+		])
 	).filter((value): value is string => !!value);
 
 	let xValues: number[] | null = null;
@@ -219,7 +233,8 @@ const openGeoZarrArray = async (
 	const normalizedPath = normalizeArrayPath(arrayPath);
 
 	if (normalizedPath) {
-		const array = (await zarr.open(root.resolve(normalizedPath), { kind: 'array' })) as GeoZarrArrayNode;
+		const array =
+			(await zarr.open(root.resolve(normalizedPath), { kind: 'array' })) as GeoZarrArrayNode;
 		return { array, arrayPath: normalizedPath };
 	}
 
@@ -232,25 +247,25 @@ const openGeoZarrArray = async (
 
 	await zarr.open(root, { kind: 'group' });
 
-	const paths =
-		typeof store.contents === 'function'
-			? store
-					.contents()
-					.filter((entry) => entry.kind === 'array' && entry.path !== '/')
-					.map((entry) => entry.path.replace(/^\/+/, ''))
-			: [];
+	const paths = typeof store.contents === 'function'
+		? store
+			.contents()
+			.filter((entry) => entry.kind === 'array' && entry.path !== '/')
+			.map((entry) => entry.path.replace(/^\/+/, ''))
+		: [];
 
 	let bestCandidate:
 		| {
-				path: string;
-				array: GeoZarrArrayNode;
-				score: number;
-		  }
+			path: string;
+			array: GeoZarrArrayNode;
+			score: number;
+		}
 		| null = null;
 
 	for (const path of paths) {
 		try {
-			const array = (await zarr.open(root.resolve(path), { kind: 'array' })) as GeoZarrArrayNode;
+			const array =
+				(await zarr.open(root.resolve(path), { kind: 'array' })) as GeoZarrArrayNode;
 			const score = scoreArrayCandidate(path, array);
 			if (!bestCandidate || score > bestCandidate.score) {
 				bestCandidate = { path, array, score };
@@ -277,19 +292,22 @@ const matchDimensionIndex = (names: string[], patterns: RegExp[]): number | null
 const inferAxisIndexes = (array: GeoZarrArrayNode, dimensionNames: string[]) => {
 	const xIndex =
 		matchDimensionIndex(dimensionNames, [/^x$/i, /^lon(gitude)?$/i, /^cols?$/i, /^easting$/i])
-		?? Math.max(1, array.shape.length - 1);
+			?? Math.max(1, array.shape.length - 1);
 	const yIndex =
 		matchDimensionIndex(dimensionNames, [/^y$/i, /^lat(itude)?$/i, /^rows?$/i, /^northing$/i])
-		?? Math.max(0, array.shape.length - 2);
+			?? Math.max(0, array.shape.length - 2);
 
-	const bandIndex =
-		matchDimensionIndex(dimensionNames, [/^band(s)?$/i, /^channel(s)?$/i, /rgb/i])
-		?? (array.shape.length >= 3 && array.shape[0] <= 4 && 0 !== xIndex && 0 !== yIndex ? 0 : null);
+	const bandIndex = matchDimensionIndex(dimensionNames, [/^band(s)?$/i, /^channel(s)?$/i, /rgb/i])
+		?? (array.shape.length >= 3 && array.shape[0] <= 4 && 0 !== xIndex && 0 !== yIndex
+			? 0
+			: null);
 
 	return { xIndex, yIndex, bandIndex };
 };
 
-const parseBboxFromAttrs = (attrs: Record<string, unknown>): [number, number, number, number] | null => {
+const parseBboxFromAttrs = (
+	attrs: Record<string, unknown>
+): [number, number, number, number] | null => {
 	const bboxCandidates = [attrs['proj:bbox'], attrs['bbox'], attrs['bounds'], attrs['extent']];
 	for (const candidate of bboxCandidates) {
 		if (!Array.isArray(candidate) || candidate.length < 4) continue;
@@ -396,13 +414,14 @@ const inspectGeoZarrInternal = async (
 	const attrs = getArrayAttrs(array);
 	const dimensionNames = inferDimensionNames(array);
 	const { xIndex, yIndex, bandIndex } = inferAxisIndexes(array, dimensionNames);
-	const bbox =
-		parseBboxText(bboxText)
+	const bbox = parseBboxText(bboxText)
 		?? parseBboxFromAttrs(attrs)
 		?? (await inferBboxFromCoordinateArrays(url, resolvedArrayPath, dimensionNames));
 
 	if (!bbox) {
-		throw new Error('GeoZarr の bbox を判定できませんでした。bbox を minx,miny,maxx,maxy で入力してください。');
+		throw new Error(
+			'GeoZarr の bbox を判定できませんでした。bbox を minx,miny,maxx,maxy で入力してください。'
+		);
 	}
 
 	const width = array.shape[xIndex];
@@ -425,9 +444,9 @@ const inspectGeoZarrInternal = async (
 	for (const index of bandsToSample) {
 		try {
 			const view = await readBandWindow(
-					{
-						url,
-						arrayPath: resolvedArrayPath,
+				{
+					url,
+					arrayPath: resolvedArrayPath,
 					width,
 					height,
 					numBands,
@@ -560,7 +579,11 @@ const renderSingleBandTile = async (
 				continue;
 			}
 
-			const srcX = clamp(Math.floor(((lon - minX) / (maxX - minX)) * state.width), 0, state.width - 1);
+			const srcX = clamp(
+				Math.floor(((lon - minX) / (maxX - minX)) * state.width),
+				0,
+				state.width - 1
+			);
 			const srcY = clamp(
 				Math.floor(((maxY - lat) / (maxY - minY)) * state.height),
 				0,
@@ -574,7 +597,11 @@ const renderSingleBandTile = async (
 				continue;
 			}
 
-			const normalized = clamp((value - style.min) / Math.max(style.max - style.min, 1e-9), 0, 1);
+			const normalized = clamp(
+				(value - style.min) / Math.max(style.max - style.min, 1e-9),
+				0,
+				1
+			);
 			const colorIndex = Math.round(normalized * 255) * 4;
 			data[offset] = colorMap[colorIndex] ?? 0;
 			data[offset + 1] = colorMap[colorIndex + 1] ?? 0;
@@ -630,7 +657,11 @@ const renderMultiBandTile = async (
 				continue;
 			}
 
-			const srcX = clamp(Math.floor(((lon - minX) / (maxX - minX)) * state.width), 0, state.width - 1);
+			const srcX = clamp(
+				Math.floor(((lon - minX) / (maxX - minX)) * state.width),
+				0,
+				state.width - 1
+			);
 			const srcY = clamp(
 				Math.floor(((maxY - lat) / (maxY - minY)) * state.height),
 				0,
@@ -696,8 +727,16 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 			return { data: EMPTY_TILE };
 		}
 
-		const xStart = clamp(Math.floor(((west - minX) / (maxX - minX)) * state.width), 0, state.width - 1);
-		const xEnd = clamp(Math.ceil(((east - minX) / (maxX - minX)) * state.width), xStart + 1, state.width);
+		const xStart = clamp(
+			Math.floor(((west - minX) / (maxX - minX)) * state.width),
+			0,
+			state.width - 1
+		);
+		const xEnd = clamp(
+			Math.ceil(((east - minX) / (maxX - minX)) * state.width),
+			xStart + 1,
+			state.width
+		);
 		const yStart = clamp(
 			Math.floor(((maxY - north) / (maxY - minY)) * state.height),
 			0,
