@@ -394,12 +394,6 @@
 						'カバレッジ配信サービスのURLです。ラスターデータを範囲指定で取得するときに使います。'
 				},
 				{
-					type: 'geozarr',
-					label: 'GeoZarr',
-					description:
-						'GeoZarr の配列URLです。クラウド上の多次元ラスターデータを直接追加するときに使います。'
-				},
-				{
 					type: 'featureservice',
 					label: 'WFS / OGC API',
 					description:
@@ -428,6 +422,12 @@
 					label: 'STAC / COG',
 					description:
 						'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。'
+				},
+				{
+					type: 'geozarr',
+					label: 'GeoZarr',
+					description:
+						'GeoZarr の配列URLです。クラウド上の多次元ラスターデータを直接追加するときに使います。'
 				}
 			]
 		}

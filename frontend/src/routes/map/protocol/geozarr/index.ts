@@ -46,23 +46,22 @@ interface GeoZarrSourceState extends GeoZarrRegistrationMeta {
 const zarrRegistry = new Map<string, GeoZarrSourceState>();
 const colorMapManager = new ColorMapManager();
 
-const createProxyFetchStore = (url: string) => {
-	return new zarr.FetchStore(resolveAbsoluteRequestUrl(url), {
+type GeoZarrListableStore = zarr.FetchStore & {
+	contents?: () => { path: string; kind: 'array' | 'group'; }[];
+};
+
+const createProxyFetchStore = async (url: string): Promise<GeoZarrListableStore> => {
+	const baseStore = new zarr.FetchStore(resolveAbsoluteRequestUrl(url), {
 		fetch: async (request) => {
 			const proxyUrl = new URL('/api/cog-proxy', window.location.origin);
 			proxyUrl.searchParams.set('url', request.url);
 			return fetch(new Request(proxyUrl.toString(), request));
 		}
 	});
+	return (await zarr.withMaybeConsolidatedMetadata(baseStore)) as GeoZarrListableStore;
 };
 
 const normalizeArrayPath = (value?: string): string => value?.trim().replace(/^\/+|\/+$/g, '') ?? '';
-
-const openGeoZarrArray = async (url: string, arrayPath?: string): Promise<GeoZarrArrayNode> => {
-	const root = zarr.root(createProxyFetchStore(url));
-	const location = normalizeArrayPath(arrayPath) ? root.resolve(normalizeArrayPath(arrayPath)) : root;
-	return (await zarr.open(location, { kind: 'array' })) as GeoZarrArrayNode;
-};
 
 const getArrayAttrs = (array: GeoZarrArrayNode): Record<string, unknown> => {
 	return array.attrs ?? array.attributes ?? {};
@@ -98,6 +97,176 @@ const inferDimensionNames = (array: GeoZarrArrayNode): string[] => {
 		if (names.length === array.shape.length) return names;
 	}
 	return array.shape.map((_, index) => `dim_${index}`);
+};
+
+const isCoordinateLikePath = (path: string): boolean => {
+	return /(^|\/)(time|valid_time|step|latitude|lat|longitude|lon|level|levels|hybrid|hybrid_sigma_pressure|pressure)$/i.test(
+		path
+	);
+};
+
+const scoreArrayCandidate = (path: string, array: GeoZarrArrayNode): number => {
+	const dimensionNames = inferDimensionNames(array);
+	const hasX = dimensionNames.some((name) =>
+		[/^x$/i, /^lon(gitude)?$/i, /^cols?$/i, /^easting$/i].some((pattern) => pattern.test(name))
+	);
+	const hasY = dimensionNames.some((name) =>
+		[/^y$/i, /^lat(itude)?$/i, /^rows?$/i, /^northing$/i].some((pattern) => pattern.test(name))
+	);
+
+	let score = 0;
+	if (array.shape.length >= 2) score += 10;
+	if (hasX) score += 30;
+	if (hasY) score += 30;
+	if (hasX && hasY) score += 40;
+	if (array.shape.length >= 3) score += 5;
+	if (!isCoordinateLikePath(path)) score += 10;
+	return score;
+};
+
+const getParentArrayPath = (path: string): string => {
+	const normalizedPath = normalizeArrayPath(path);
+	const index = normalizedPath.lastIndexOf('/');
+	return index >= 0 ? normalizedPath.slice(0, index) : '';
+};
+
+const joinArrayPath = (basePath: string, childPath: string): string => {
+	const normalizedBase = normalizeArrayPath(basePath);
+	const normalizedChild = normalizeArrayPath(childPath);
+	if (!normalizedBase) return normalizedChild;
+	if (!normalizedChild) return normalizedBase;
+	return `${normalizedBase}/${normalizedChild}`;
+};
+
+const readCoordinateArray = async (
+	root: zarr.Location<GeoZarrListableStore>,
+	path: string
+): Promise<number[] | null> => {
+	try {
+		const array = await zarr.open(root.resolve(path), { kind: 'array' });
+		if (array.shape.length !== 1) return null;
+		const values = (await zarr.get(
+			array,
+			[zarr.slice(0, array.shape[0])] as Parameters<typeof zarr.get>[1]
+		)) as {
+			data: ArrayLike<number>;
+		};
+		return Array.from(values.data, (value) => Number(value)).filter((value) => Number.isFinite(value));
+	} catch {
+		return null;
+	}
+};
+
+const inferBboxFromCoordinateArrays = async (
+	url: string,
+	arrayPath: string,
+	dimensionNames: string[]
+): Promise<[number, number, number, number] | null> => {
+	const store = await createProxyFetchStore(url);
+	const root = zarr.root(store);
+	const parentPath = getParentArrayPath(arrayPath);
+
+	const xCandidates = Array.from(
+		new Set([dimensionNames.find((name) => /^(x|lon|longitude)$/i.test(name)), 'longitude', 'lon', 'x'])
+	).filter((value): value is string => !!value);
+	const yCandidates = Array.from(
+		new Set([dimensionNames.find((name) => /^(y|lat|latitude)$/i.test(name)), 'latitude', 'lat', 'y'])
+	).filter((value): value is string => !!value);
+
+	let xValues: number[] | null = null;
+	for (const candidate of xCandidates) {
+		xValues = await readCoordinateArray(root, joinArrayPath(parentPath, candidate));
+		if (xValues?.length) break;
+		xValues = await readCoordinateArray(root, candidate);
+		if (xValues?.length) break;
+	}
+
+	let yValues: number[] | null = null;
+	for (const candidate of yCandidates) {
+		yValues = await readCoordinateArray(root, joinArrayPath(parentPath, candidate));
+		if (yValues?.length) break;
+		yValues = await readCoordinateArray(root, candidate);
+		if (yValues?.length) break;
+	}
+
+	if (!xValues?.length || !yValues?.length) return null;
+
+	let minX = Number.POSITIVE_INFINITY;
+	let maxX = Number.NEGATIVE_INFINITY;
+	for (const value of xValues) {
+		if (value < minX) minX = value;
+		if (value > maxX) maxX = value;
+	}
+
+	let minY = Number.POSITIVE_INFINITY;
+	let maxY = Number.NEGATIVE_INFINITY;
+	for (const value of yValues) {
+		if (value < minY) minY = value;
+		if (value > maxY) maxY = value;
+	}
+
+	if (![minX, minY, maxX, maxY].every((value) => Number.isFinite(value))) return null;
+
+	return [minX, minY, maxX, maxY];
+};
+
+const openGeoZarrArray = async (
+	url: string,
+	arrayPath?: string
+): Promise<{ array: GeoZarrArrayNode; arrayPath: string; }> => {
+	const store = await createProxyFetchStore(url);
+	const root = zarr.root(store);
+	const normalizedPath = normalizeArrayPath(arrayPath);
+
+	if (normalizedPath) {
+		const array = (await zarr.open(root.resolve(normalizedPath), { kind: 'array' })) as GeoZarrArrayNode;
+		return { array, arrayPath: normalizedPath };
+	}
+
+	try {
+		const array = (await zarr.open(root, { kind: 'array' })) as GeoZarrArrayNode;
+		return { array, arrayPath: '' };
+	} catch {
+		// root が group の場合は下位配列を探索する
+	}
+
+	await zarr.open(root, { kind: 'group' });
+
+	const paths =
+		typeof store.contents === 'function'
+			? store
+					.contents()
+					.filter((entry) => entry.kind === 'array' && entry.path !== '/')
+					.map((entry) => entry.path.replace(/^\/+/, ''))
+			: [];
+
+	let bestCandidate:
+		| {
+				path: string;
+				array: GeoZarrArrayNode;
+				score: number;
+		  }
+		| null = null;
+
+	for (const path of paths) {
+		try {
+			const array = (await zarr.open(root.resolve(path), { kind: 'array' })) as GeoZarrArrayNode;
+			const score = scoreArrayCandidate(path, array);
+			if (!bestCandidate || score > bestCandidate.score) {
+				bestCandidate = { path, array, score };
+			}
+		} catch {
+			// skip
+		}
+	}
+
+	if (bestCandidate) {
+		return { array: bestCandidate.array, arrayPath: bestCandidate.path };
+	}
+
+	throw new Error(
+		'GeoZarr の配列を特定できませんでした。group ルートの可能性があります。配列パスを指定してください。'
+	);
 };
 
 const matchDimensionIndex = (names: string[], patterns: RegExp[]): number | null => {
@@ -223,11 +392,14 @@ const inspectGeoZarrInternal = async (
 	arrayPath?: string,
 	bboxText?: string | null
 ): Promise<Omit<GeoZarrSourceState, 'array'>> => {
-	const array = await openGeoZarrArray(url, arrayPath);
+	const { array, arrayPath: resolvedArrayPath } = await openGeoZarrArray(url, arrayPath);
 	const attrs = getArrayAttrs(array);
 	const dimensionNames = inferDimensionNames(array);
 	const { xIndex, yIndex, bandIndex } = inferAxisIndexes(array, dimensionNames);
-	const bbox = parseBboxText(bboxText) ?? parseBboxFromAttrs(attrs);
+	const bbox =
+		parseBboxText(bboxText)
+		?? parseBboxFromAttrs(attrs)
+		?? (await inferBboxFromCoordinateArrays(url, resolvedArrayPath, dimensionNames));
 
 	if (!bbox) {
 		throw new Error('GeoZarr の bbox を判定できませんでした。bbox を minx,miny,maxx,maxy で入力してください。');
@@ -253,9 +425,9 @@ const inspectGeoZarrInternal = async (
 	for (const index of bandsToSample) {
 		try {
 			const view = await readBandWindow(
-				{
-					url,
-					arrayPath: normalizeArrayPath(arrayPath),
+					{
+						url,
+						arrayPath: resolvedArrayPath,
 					width,
 					height,
 					numBands,
@@ -283,7 +455,7 @@ const inspectGeoZarrInternal = async (
 
 	return {
 		url,
-		arrayPath: normalizeArrayPath(arrayPath),
+		arrayPath: resolvedArrayPath,
 		width,
 		height,
 		numBands,
@@ -320,7 +492,7 @@ export const inspectGeoZarr = async (
 export const registerGeoZarr = async (
 	input: GeoZarrRegistrationInput
 ): Promise<GeoZarrRegistrationMeta> => {
-	const array = await openGeoZarrArray(input.url, input.arrayPath);
+	const { array } = await openGeoZarrArray(input.url, input.arrayPath);
 	const inspected = await inspectGeoZarrInternal(input.url, input.arrayPath, input.bboxText);
 	const state: GeoZarrSourceState = {
 		...inspected,
