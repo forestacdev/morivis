@@ -1,9 +1,9 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
-import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import {
 	getVectorTemporalFilterBehavior,
 	getVectorTemporalItems
 } from '$routes/map/data/types/vector/properties';
+import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 
 export const combineFilters = (
 	...filters: Array<FilterSpecification | undefined>
@@ -23,20 +23,18 @@ export const getTemporalFilter = (entry: GeoDataEntry): FilterSpecification | un
 	const temporalFilterState = entry.state?.temporalFilter;
 	if (!temporalFilterState?.enabled) return undefined;
 
-	const temporalConfig =
-		entry.properties.temporal ??
-		(entry.properties.attributeView.timeKey
+	const temporalConfig = entry.properties.temporal
+		?? (entry.properties.attributeView.timeKey
 			? { key: entry.properties.attributeView.timeKey }
 			: undefined);
 	if (!temporalConfig) return undefined;
 
-	const filterBehavior =
-		'behaviors' in temporalConfig
-			? getVectorTemporalFilterBehavior(temporalConfig)
-			: {
-					key: temporalConfig.key,
-					alternateKeys: []
-				};
+	const filterBehavior = 'behaviors' in temporalConfig
+		? getVectorTemporalFilterBehavior(temporalConfig)
+		: {
+			key: temporalConfig.key,
+			alternateKeys: []
+		};
 	if (!filterBehavior) return undefined;
 
 	const temporalKeys = [filterBehavior.key, ...(filterBehavior.alternateKeys ?? [])].filter(
@@ -44,10 +42,9 @@ export const getTemporalFilter = (entry: GeoDataEntry): FilterSpecification | un
 	);
 	if (temporalKeys.length === 0) return undefined;
 
-	const temporalValues =
-		'behaviors' in temporalConfig
-			? getVectorTemporalItems(temporalConfig).map((item) => item.raw)
-			: [];
+	const temporalValues = 'behaviors' in temporalConfig
+		? getVectorTemporalItems(temporalConfig).map((item) => item.raw)
+		: [];
 	if (temporalValues.length === 0) return undefined;
 
 	const startIndex = Math.min(temporalFilterState.startIndex, temporalValues.length - 1);
@@ -57,14 +54,13 @@ export const getTemporalFilter = (entry: GeoDataEntry): FilterSpecification | un
 	if (!startValue || !endValue) return undefined;
 	const isSingleStartMode = temporalFilterState.mode === 'single_start';
 
-	const temporalExpression =
-		temporalKeys.length === 1
-			? (['get', temporalKeys[0]] as ExpressionSpecification)
-			: ([
-					'coalesce',
-					...temporalKeys.map((key) => ['get', key]),
-					''
-				] as unknown as ExpressionSpecification);
+	const temporalExpression = temporalKeys.length === 1
+		? (['get', temporalKeys[0]] as ExpressionSpecification)
+		: ([
+			'coalesce',
+			...temporalKeys.map((key) => ['get', key]),
+			''
+		] as unknown as ExpressionSpecification);
 
 	if (isSingleStartMode) {
 		return ['==', temporalExpression, startValue] as unknown as FilterSpecification;

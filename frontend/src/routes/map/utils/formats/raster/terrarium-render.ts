@@ -2,9 +2,12 @@ let _renderWorker: Worker | null = null;
 
 const getRenderWorker = (): Worker => {
 	if (!_renderWorker) {
-		_renderWorker = new Worker(new URL('../geotiff/terrarium_render.worker.ts', import.meta.url), {
-			type: 'module'
-		});
+		_renderWorker = new Worker(
+			new URL('../geotiff/terrarium_render.worker.ts', import.meta.url),
+			{
+				type: 'module'
+			}
+		);
 	}
 	return _renderWorker;
 };

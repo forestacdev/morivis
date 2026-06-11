@@ -4,24 +4,24 @@ import fs from './shaders/fragment.glsl?raw';
 import vs from './shaders/vertex.glsl?raw';
 
 export interface Uniforms {
-	skybox: { value: THREE.CubeTexture | null };
-	gamma: { value: number }; // ガンマ補正用
-	exposure: { value: number }; // 明度調整用
-	inputGamma: { value: number }; // 入力ガンマ補正
-	outputGamma: { value: number }; // 出力ガンマ補正
-	brightness: { value: number }; // 明るさ調整用
-	contrast: { value: number }; // コントラスト調整用
-	rotationAnglesA: { value: THREE.Vector3 };
-	rotationAnglesB: { value: THREE.Vector3 };
-	rotationAnglesC: { value: THREE.Vector3 };
-	textureA: { value: THREE.Texture | null };
-	textureB: { value: THREE.Texture | null };
-	textureC: { value: THREE.Texture | null };
-	fadeStartTime: { value: number };
-	fadeSpeed: { value: number };
-	time: { value: number };
-	fromTarget: { value: number }; // フェード元 0=A, 1=B, 2=C
-	toTarget: { value: number }; // フェード先 0=A, 1=B, 2=C
+	skybox: { value: THREE.CubeTexture | null; };
+	gamma: { value: number; }; // ガンマ補正用
+	exposure: { value: number; }; // 明度調整用
+	inputGamma: { value: number; }; // 入力ガンマ補正
+	outputGamma: { value: number; }; // 出力ガンマ補正
+	brightness: { value: number; }; // 明るさ調整用
+	contrast: { value: number; }; // コントラスト調整用
+	rotationAnglesA: { value: THREE.Vector3; };
+	rotationAnglesB: { value: THREE.Vector3; };
+	rotationAnglesC: { value: THREE.Vector3; };
+	textureA: { value: THREE.Texture | null; };
+	textureB: { value: THREE.Texture | null; };
+	textureC: { value: THREE.Texture | null; };
+	fadeStartTime: { value: number; };
+	fadeSpeed: { value: number; };
+	time: { value: number; };
+	fromTarget: { value: number; }; // フェード元 0=A, 1=B, 2=C
+	toTarget: { value: number; }; // フェード先 0=A, 1=B, 2=C
 }
 
 export const uniforms: Uniforms = {

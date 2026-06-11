@@ -8,4 +8,4 @@
 
 > `const` **DEFAULT\_MESH\_SHADING**: [`MeshShadingStyle`](../interfaces/MeshShadingStyle.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:53](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L53)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:56](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L56)

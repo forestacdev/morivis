@@ -15,7 +15,7 @@ class CogWorkerProtocol {
 	private pendingRequests: Map<
 		string,
 		{
-			resolve: (value: { data: Uint8Array | ImageBitmap }) => void;
+			resolve: (value: { data: Uint8Array | ImageBitmap; }) => void;
 			reject: (reason?: Error) => void;
 			controller: AbortController;
 		}
@@ -34,7 +34,7 @@ class CogWorkerProtocol {
 	async request(
 		url: URL,
 		controller: AbortController
-	): Promise<{ data: Uint8Array | ImageBitmap }> {
+	): Promise<{ data: Uint8Array | ImageBitmap; }> {
 		const x = parseInt(url.searchParams.get('x') || '0', 10);
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
@@ -104,7 +104,7 @@ class CogWorkerProtocol {
 
 			const copyBand = (
 				bandIdx: number
-			): { band: Float32Array; dataMin: number; dataMax: number } => {
+			): { band: Float32Array; dataMin: number; dataMax: number; } => {
 				const src = tileData.bands[bandIdx] ?? tileData.bands[0];
 				const copy = new Float32Array(src.length);
 				for (let i = 0; i < src.length; i++) copy[i] = src[i];
@@ -225,7 +225,7 @@ class CogWorkerProtocolPool {
 	async request(
 		url: URL,
 		controller: AbortController
-	): Promise<{ data: Uint8Array | ImageBitmap }> {
+	): Promise<{ data: Uint8Array | ImageBitmap; }> {
 		return this.getNextWorker().request(url, controller);
 	}
 
@@ -258,7 +258,7 @@ export const terminateCogWorkerPool = () => {
 
 export const cogProtocol = (protocolName: string) => ({
 	protocolName,
-	request: (params: { url: string }, abortController: AbortController) => {
+	request: (params: { url: string; }, abortController: AbortController) => {
 		const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 		const url = new URL(urlWithoutProtocol, window.location.origin);
 		return getWorkerPool().request(url, abortController);

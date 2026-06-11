@@ -1,6 +1,6 @@
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector';
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 const entry: PolygonEntry<TileMetaData> = {
 	id: 'houmushou_regist',

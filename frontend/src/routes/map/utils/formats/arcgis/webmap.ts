@@ -67,7 +67,7 @@ export interface ArcGisWebMapInfo {
  *   - https://xxx.arcgis.com/sharing/rest/content/items/xxx
  *   - 32文字の16進数ID直接入力
  */
-export const extractWebMapItemId = (url: string): { portalUrl: string; itemId: string } | null => {
+export const extractWebMapItemId = (url: string): { portalUrl: string; itemId: string; } | null => {
 	const trimmed = url.trim();
 
 	// 32文字のhex IDのみの場合
@@ -165,7 +165,9 @@ export const fetchArcGisWebMap = async (
  */
 const rgbaToHex = (rgba: [number, number, number, number]): string => {
 	const [r, g, b] = rgba;
-	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${
+		b.toString(16).padStart(2, '0')
+	}`;
 };
 
 /**
@@ -245,7 +247,8 @@ export const typesToColorsStyle = (
 
 	const allNumeric = types.every(
 		(t) =>
-			typeof t.id === 'number' || (typeof t.id === 'string' && t.id !== '' && !isNaN(Number(t.id)))
+			typeof t.id === 'number'
+			|| (typeof t.id === 'string' && t.id !== '' && !isNaN(Number(t.id)))
 	);
 	const categories: string[] | number[] = allNumeric
 		? types.map((t) => Number(t.id))

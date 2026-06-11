@@ -1,5 +1,5 @@
-import { GSI } from './muni';
 import { gsiLonLatToAddress } from './gsi';
+import { GSI } from './muni';
 
 const hasReverseGeocoderResult = (
 	data: Awaited<ReturnType<typeof gsiLonLatToAddress>>

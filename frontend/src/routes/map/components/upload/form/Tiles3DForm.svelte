@@ -94,7 +94,10 @@
 		try {
 			const { bbox, error } = await fetchTileset3DBbox(url);
 			if (!bbox) {
-				showNotification(error ?? 'tileset.json を取得できなかったため、3D Tiles を登録しませんでした', 'error');
+				showNotification(
+					error ?? 'tileset.json を取得できなかったため、3D Tiles を登録しませんでした',
+					'error'
+				);
 				return;
 			}
 

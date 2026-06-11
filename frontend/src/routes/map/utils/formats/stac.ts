@@ -21,8 +21,8 @@ export interface StacCollection {
 	description: string;
 	links: StacLink[];
 	extent: {
-		spatial: { bbox: number[][] };
-		temporal: { interval: (string | null)[][] };
+		spatial: { bbox: number[][]; };
+		temporal: { interval: (string | null)[][]; };
 	};
 	assets?: Record<string, StacAsset>;
 }
@@ -85,7 +85,7 @@ const resolveUrl = (base: string, relative: string): string => {
 /** URLからSTACソースタイプを自動判定 */
 export const detectStacSourceType = async (
 	url: string
-): Promise<{ type: StacSourceType; data: unknown }> => {
+): Promise<{ type: StacSourceType; data: unknown; }> => {
 	const res = await fetchWithDevProxy(url);
 	if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 	const data = await res.json();
@@ -156,7 +156,7 @@ export const searchItems = async (
 // ---- Static Catalog ----
 
 /** 静的カタログ/コレクションのchildリンクを取得 */
-export const fetchChildLinks = async (url: string): Promise<{ title: string; href: string }[]> => {
+export const fetchChildLinks = async (url: string): Promise<{ title: string; href: string; }[]> => {
 	const res = await fetchWithDevProxy(url);
 	if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
 	const data = await res.json();
@@ -236,28 +236,27 @@ export const fetchStaticItems = async (url: string, limit: number = 20): Promise
 // ---- 共通ユーティリティ ----
 
 /** アイテムからCOG（Cloud Optimized GeoTIFF）アセットを抽出 */
-export const getCogAssets = (item: StacItem): { key: string; asset: StacAsset }[] =>
+export const getCogAssets = (item: StacItem): { key: string; asset: StacAsset; }[] =>
 	Object.entries(item.assets)
 		.filter(([, asset]) => {
 			if (!asset.href || asset.href === 'N/A') return false;
 			const type = asset.type?.toLowerCase() ?? '';
 			const roles = asset.roles ?? [];
 			return (
-				type.includes('geotiff') ||
-				type.includes('tiff') ||
-				roles.includes('data') ||
-				roles.includes('visual') ||
-				asset.href.endsWith('.tif') ||
-				asset.href.endsWith('.tiff')
+				type.includes('geotiff')
+				|| type.includes('tiff')
+				|| roles.includes('data')
+				|| roles.includes('visual')
+				|| asset.href.endsWith('.tif')
+				|| asset.href.endsWith('.tiff')
 			);
 		})
 		.map(([key, asset]) => ({ key, asset }));
 
 /** アイテムからサムネイルURLを取得 */
 export const getThumbnailUrl = (item: StacItem): string | null => {
-	const thumb =
-		item.assets['thumbnail'] ??
-		item.assets['rendered_preview'] ??
-		Object.values(item.assets).find((a) => a.roles?.includes('thumbnail'));
+	const thumb = item.assets['thumbnail']
+		?? item.assets['rendered_preview']
+		?? Object.values(item.assets).find((a) => a.roles?.includes('thumbnail'));
 	return thumb?.href ?? null;
 };

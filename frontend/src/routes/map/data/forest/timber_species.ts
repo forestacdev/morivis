@@ -1,7 +1,7 @@
 import { TIMBER_SPECIES_DATA_PATH } from '$routes/constants';
 import {
-	timberSpecies as timberSpeciesCatalog,
-	type TimberSpecies as TimberSpeciesCatalogItem
+	type TimberSpecies as TimberSpeciesCatalogItem,
+	timberSpecies as timberSpeciesCatalog
 } from '$routes/map/data/forest/timberSpecies';
 
 /**
@@ -362,10 +362,9 @@ export const getTimberSpeciesData = (
 		return null;
 	}
 
-	const detail =
-		timberSpeciesCatalog.find((item) => item.nameJa === name) ??
-		timberSpeciesCatalog.find((item) => name.startsWith(item.nameJa)) ??
-		timberSpeciesCatalog.find((item) => item.nameJa.startsWith(name));
+	const detail = timberSpeciesCatalog.find((item) => item.nameJa === name)
+		?? timberSpeciesCatalog.find((item) => name.startsWith(item.nameJa))
+		?? timberSpeciesCatalog.find((item) => item.nameJa.startsWith(name));
 
 	return {
 		url: `${TIMBER_SPECIES_DATA_PATH}/face_grain/thumb/${timberSpecies.id}.webp`,

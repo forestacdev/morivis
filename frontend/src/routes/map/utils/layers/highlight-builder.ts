@@ -3,24 +3,24 @@ import type { GeoDataEntry } from '$routes/map/data/types';
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { VectorProperties } from '$routes/map/data/types/vector/properties';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
-import { HighlightLayerRegistry, getHighlightLayerId } from '$routes/map/utils/layers/highlight';
+import { getHighlightLayerId, HighlightLayerRegistry } from '$routes/map/utils/layers/highlight';
 import { createMorivisLayerMetadata, getMorivisLogicalLayerId } from '$routes/map/utils/layers/id';
+import { getTemporalFilter } from '$routes/map/utils/layers/vector/filter';
+import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+import { createPointIconLayer } from '$routes/map/utils/layers/vector/point';
 import {
 	createFillExtrusionPatternLayer,
 	createOutLineLayer
 } from '$routes/map/utils/layers/vector/polygon';
-import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
-import { createPointIconLayer } from '$routes/map/utils/layers/vector/point';
-import { getTemporalFilter } from '$routes/map/utils/layers/vector/filter';
 import { clickableVectorIds } from '$routes/stores';
 import type {
-	LayerSpecification,
-	FillLayerSpecification,
-	LineLayerSpecification,
-	SymbolLayerSpecification,
 	CircleLayerSpecification,
 	FillExtrusionLayerSpecification,
-	FilterSpecification
+	FillLayerSpecification,
+	FilterSpecification,
+	LayerSpecification,
+	LineLayerSpecification,
+	SymbolLayerSpecification
 } from 'maplibre-gl';
 
 import { createVectorLayer, type LayerItem } from '$routes/map/utils/layers';
@@ -83,8 +83,9 @@ export const createBaseLayerItem = (entry: GeoDataEntry): LayerItem => {
 		id: `${entry.id}`,
 		source: `${entry.id}_source`,
 		maxzoom: 'maxZoom' in style ? (style.maxZoom ?? 24) : 24,
-		minzoom:
-			'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1),
+		minzoom: 'minZoom' in style
+			? (style.minZoom ?? metaData.minZoom ?? 1)
+			: (metaData.minZoom ?? 1),
 		metadata: createMorivisLayerMetadata(entry.id, 'base')
 	};
 };
@@ -226,24 +227,21 @@ export const registerHighlightLayers = ({
 		layer: baseHighlightLayer,
 		role: 'highlight',
 		selectionKey,
-		patternKind:
-			baseLayer.type === 'fill'
-				? 'fill'
-				: baseLayer.type === 'line' && useLinePattern
-					? 'line'
-					: baseHighlightLayer.type === 'circle'
-						? 'point'
-						: undefined,
-		baseCircleRadius:
-			baseHighlightLayer.type === 'circle' &&
-			typeof baseHighlightLayer.paint?.['circle-radius'] === 'number'
-				? baseHighlightLayer.paint['circle-radius']
-				: undefined,
-		baseCircleStrokeWidth:
-			baseHighlightLayer.type === 'circle' &&
-			typeof baseHighlightLayer.paint?.['circle-stroke-width'] === 'number'
-				? baseHighlightLayer.paint['circle-stroke-width']
-				: undefined
+		patternKind: baseLayer.type === 'fill'
+			? 'fill'
+			: baseLayer.type === 'line' && useLinePattern
+			? 'line'
+			: baseHighlightLayer.type === 'circle'
+			? 'point'
+			: undefined,
+		baseCircleRadius: baseHighlightLayer.type === 'circle'
+				&& typeof baseHighlightLayer.paint?.['circle-radius'] === 'number'
+			? baseHighlightLayer.paint['circle-radius']
+			: undefined,
+		baseCircleStrokeWidth: baseHighlightLayer.type === 'circle'
+				&& typeof baseHighlightLayer.paint?.['circle-stroke-width'] === 'number'
+			? baseHighlightLayer.paint['circle-stroke-width']
+			: undefined
 	});
 
 	return highlightLayer;
@@ -262,7 +260,7 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 
 			const vectorEntry = entry as GeoDataEntry & {
 				style: VectorStyle;
-				properties: VectorProperties & { fields: FieldDef[] };
+				properties: VectorProperties & { fields: FieldDef[]; };
 			};
 			const temporalFilter = getTemporalFilter(vectorEntry);
 			const layer: LayerItem = {
@@ -276,8 +274,9 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 
 			const { style } = vectorEntry;
 			const layerId = `${vectorEntry.id}`;
-			const selectionKey =
-				'sourceLayer' in vectorEntry.metaData ? vectorEntry.metaData.promoteId : undefined;
+			const selectionKey = 'sourceLayer' in vectorEntry.metaData
+				? vectorEntry.metaData.promoteId
+				: undefined;
 			const vectorLayer = createVectorLayer(
 				layer,
 				style,

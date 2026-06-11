@@ -26,7 +26,7 @@ export class WorkerProtocol {
 	private pendingRequests: Map<
 		string,
 		{
-			resolve: (value: { data: Uint8Array } | PromiseLike<{ data: Uint8Array }>) => void;
+			resolve: (value: { data: Uint8Array; } | PromiseLike<{ data: Uint8Array; }>) => void;
 			reject: (reason?: any) => void;
 		}
 	>;
@@ -39,7 +39,7 @@ export class WorkerProtocol {
 		this.worker.addEventListener('error', this.handleError);
 	}
 
-	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array }> {
+	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array; }> {
 		try {
 			const x = parseInt(url.searchParams.get('x') || '0', 10);
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
@@ -141,7 +141,7 @@ export const terminateGeojsonWorker = () => {
 export const geojsonProtocol = (protocolName: 'geojson') => {
 	return {
 		protocolName,
-		request: (params: { url: string }, abortController: AbortController) => {
+		request: (params: { url: string; }, abortController: AbortController) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol);
 			return getWorkerProtocol().request(url, abortController);

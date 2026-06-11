@@ -32,8 +32,9 @@ export const dxfToGeoJson = (dxfText: string): FeatureCollection => {
  */
 const entityToFeature = (entity: any): Feature | null => {
 	let geometry: Geometry | null = null;
-	const colorHex =
-		entity.color != null ? `#${(entity.color as number).toString(16).padStart(6, '0')}` : undefined;
+	const colorHex = entity.color != null
+		? `#${(entity.color as number).toString(16).padStart(6, '0')}`
+		: undefined;
 	const properties: Record<string, any> = {
 		layer: entity.layer,
 		color: colorHex,
@@ -80,7 +81,12 @@ const entityToFeature = (entity: any): Feature | null => {
 		}
 		case 'CIRCLE': {
 			// 円を多角形として近似（36点）
-			const circleCoords = approximateCircle(entity.center.x, entity.center.y, entity.radius, 36);
+			const circleCoords = approximateCircle(
+				entity.center.x,
+				entity.center.y,
+				entity.radius,
+				36
+			);
 			geometry = {
 				type: 'Polygon',
 				coordinates: [circleCoords]

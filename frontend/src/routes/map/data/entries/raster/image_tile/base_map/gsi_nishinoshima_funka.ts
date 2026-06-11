@@ -1,9 +1,12 @@
-import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
 import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import type { RasterBaseMapStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const NISHINOSHIMA_BOUNDS: [number, number, number, number] = [
-	140.8636389, 27.2291667, 140.8969444, 27.2708333
+	140.8636389,
+	27.2291667,
+	140.8969444,
+	27.2708333
 ];
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {

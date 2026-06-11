@@ -37,11 +37,11 @@ export const isWgs84Prj = (prjContent: string): boolean => {
 
 	// WKT 形式の可能性をチェック
 	if (
-		prjContentUpper.includes('GCS_WGS_1984') &&
-		prjContentUpper.includes('D_WGS_1984') &&
-		prjContentUpper.includes('WGS_1984') &&
-		prjContentUpper.includes('PRIMEM["GREENWICH"') &&
-		prjContentUpper.includes('UNIT["DEGREE"')
+		prjContentUpper.includes('GCS_WGS_1984')
+		&& prjContentUpper.includes('D_WGS_1984')
+		&& prjContentUpper.includes('WGS_1984')
+		&& prjContentUpper.includes('PRIMEM["GREENWICH"')
+		&& prjContentUpper.includes('UNIT["DEGREE"')
 	) {
 		return true;
 	}
@@ -103,9 +103,10 @@ export const transformGeoJSONParallel = (
 	const batchSize = Math.ceil(totalFeatures / numWorkers);
 
 	return new Promise((resolve, reject) => {
-		const resultBatches: FeatureCollection<Geometry, GeoJsonProperties>['features'][] = new Array(
-			numWorkers
-		);
+		const resultBatches: FeatureCollection<Geometry, GeoJsonProperties>['features'][] =
+			new Array(
+				numWorkers
+			);
 		const workers: Worker[] = [];
 		let completed = 0;
 		let rejected = false;

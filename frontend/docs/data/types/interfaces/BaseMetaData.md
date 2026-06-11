@@ -6,7 +6,7 @@
 
 # Interface: BaseMetaData
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:33](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L33)
+Defined in: [frontend/src/routes/map/data/types/index.ts:97](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L97)
 
 ## Extended by
 
@@ -18,7 +18,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:33](https://github.com/
 
 > **attribution**: `AttributionKey`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:39](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L39)
+Defined in: [frontend/src/routes/map/data/types/index.ts:103](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L103)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:39](https://github.com/
 
 > **bounds**: \[`number`, `number`, `number`, `number`\]
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:44](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L44)
+Defined in: [frontend/src/routes/map/data/types/index.ts:108](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L108)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:44](https://github.com/
 
 > `optional` **center**: \[`number`, `number`\]
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:48](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L48)
+Defined in: [frontend/src/routes/map/data/types/index.ts:112](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L112)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:48](https://github.com/
 
 > `optional` **coverImage**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:45](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L45)
+Defined in: [frontend/src/routes/map/data/types/index.ts:109](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L109)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:45](https://github.com/
 
 > `optional` **description**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:37](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L37)
+Defined in: [frontend/src/routes/map/data/types/index.ts:101](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L101)
 
 「何のデータか」→「どう使うものか」の順で事実ベースで書く。主観的評価や他データとの比較は書かない
 
@@ -60,7 +60,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:37](https://github.com/
 
 > `optional` **downloadUrl**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:38](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L38)
+Defined in: [frontend/src/routes/map/data/types/index.ts:102](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L102)
 
 ***
 
@@ -68,7 +68,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:38](https://github.com/
 
 > `optional` **isUserUploaded**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:50](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L50)
+Defined in: [frontend/src/routes/map/data/types/index.ts:114](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L114)
 
 ユーザーがアップロードしたデータかどうか
 
@@ -78,7 +78,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:50](https://github.com/
 
 > **location**: [`Region`](../location/type-aliases/Region.md)
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:41](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L41)
+Defined in: [frontend/src/routes/map/data/types/index.ts:105](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L105)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:41](https://github.com/
 
 > `optional` **mapImage**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:46](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L46)
+Defined in: [frontend/src/routes/map/data/types/index.ts:110](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L110)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:46](https://github.com/
 
 > **maxZoom**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:42](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L42)
+Defined in: [frontend/src/routes/map/data/types/index.ts:106](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L106)
 
 ***
 
@@ -102,7 +102,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:42](https://github.com/
 
 > **minZoom**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:43](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L43)
+Defined in: [frontend/src/routes/map/data/types/index.ts:107](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L107)
 
 ***
 
@@ -110,7 +110,17 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:43](https://github.com/
 
 > **name**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:34](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L34)
+Defined in: [frontend/src/routes/map/data/types/index.ts:98](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L98)
+
+***
+
+### needsLazyHydration?
+
+> `optional` **needsLazyHydration**: `boolean`
+
+Defined in: [frontend/src/routes/map/data/types/index.ts:116](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L116)
+
+lazy entry の fallback など、まだ追加の解決処理が必要な状態かどうか
 
 ***
 
@@ -118,15 +128,15 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:34](https://github.com/
 
 > `optional` **sourceDataName**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:35](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L35)
+Defined in: [frontend/src/routes/map/data/types/index.ts:99](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L99)
 
 ***
 
 ### tags
 
-> **tags**: (`"森林"` \| `"森林歩道"` \| `"林道"` \| `"地図"` \| `"地形"` \| `"田んぼ"` \| `"地質図"` \| `"河川"` \| `"鳥獣保護区"` \| `"道路"` \| `"建物"` \| `"国有林"` \| `"街路樹"` \| `"土壌図"` \| `"微地形図"` \| `"赤色立体地図"` \| `"傾斜区分図"` \| `"傾斜量図"` \| `"基本図"` \| `"背景地図"` \| `"植生図"` \| `"林班"` \| `"小班"` \| `"林相図"` \| `"レーザ林相図"` \| `"単木"` \| `"看板"` \| `"写真"` \| `"地すべり"` \| `"フェノロジー"` \| `"DEM"` \| `"DSM"` \| `"DCHM"` \| `"TWI"` \| `"樹冠高"` \| `"メッシュ"` \| `"10m解像度"` \| `"5m解像度"` \| `"2.5m解像度"` \| `"1m解像度"` \| `"0.5m解像度"` \| `"0.25m解像度"` \| `"地形分類"` \| `"磁気図"` \| `"自然災害伝承碑"` \| `"ジオイド高"` \| `"土地被覆"` \| `"樹木被覆率"` \| `"標高段彩図"` \| `"施設平面図"` \| `"CAD"` \| `"点群"` \| `"3Dモデル"` \| `"鳥類"` \| `"登記所備付地図"` \| `"土壌"` \| `"地震"` \| `"曲率"` \| `"樹種"` \| `"気象"` \| `"衛星"`)[]
+> **tags**: (`"森林"` \| `"森林歩道"` \| `"林道"` \| `"地図"` \| `"地形"` \| `"田んぼ"` \| `"地質図"` \| `"河川"` \| `"鳥獣保護区"` \| `"道路"` \| `"建物"` \| `"国有林"` \| `"街路樹"` \| `"土壌図"` \| `"微地形図"` \| `"赤色立体地図"` \| `"傾斜区分図"` \| `"傾斜量図"` \| `"基本図"` \| `"背景地図"` \| `"植生図"` \| `"林班"` \| `"小班"` \| `"林相図"` \| `"レーザ林相図"` \| `"単木"` \| `"看板"` \| `"写真"` \| `"地すべり"` \| `"フェノロジー"` \| `"DEM"` \| `"DSM"` \| `"DCHM"` \| `"TWI"` \| `"樹冠高"` \| `"メッシュ"` \| `"10m解像度"` \| `"5m解像度"` \| `"2.5m解像度"` \| `"1m解像度"` \| `"0.5m解像度"` \| `"0.25m解像度"` \| `"地形分類"` \| `"磁気図"` \| `"自然災害伝承碑"` \| `"ハザード"` \| `"洪水"` \| `"高潮"` \| `"津波"` \| `"浸水"` \| `"土砂災害"` \| `"土石流"` \| `"急傾斜地"` \| `"ジオイド高"` \| `"土地被覆"` \| `"樹木被覆率"` \| `"標高段彩図"` \| `"施設平面図"` \| `"CAD"` \| `"点群"` \| `"3Dモデル"` \| `"鳥類"` \| `"登記所備付地図"` \| `"土壌"` \| `"地震"` \| `"曲率"` \| `"樹種"` \| `"気象"` \| `"衛星"` \| `"雨雲"`)[]
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:40](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L40)
+Defined in: [frontend/src/routes/map/data/types/index.ts:104](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L104)
 
 ***
 
@@ -134,4 +144,4 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:40](https://github.com/
 
 > **xyzImageTile**: [`TileXYZ`](../raster/interfaces/TileXYZ.md)
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:47](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L47)
+Defined in: [frontend/src/routes/map/data/types/index.ts:111](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L111)

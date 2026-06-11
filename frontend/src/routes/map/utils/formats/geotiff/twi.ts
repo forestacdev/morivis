@@ -22,7 +22,7 @@ export const computeTwiBand = (
 	width: number,
 	height: number,
 	nodata: number | null
-): Promise<{ band: Float32Array; min: number; max: number }> =>
+): Promise<{ band: Float32Array; min: number; max: number; }> =>
 	new Promise((resolve, reject) => {
 		const worker = getTwiWorker();
 

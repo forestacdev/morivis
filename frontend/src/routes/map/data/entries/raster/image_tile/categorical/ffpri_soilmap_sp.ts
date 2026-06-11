@@ -1,6 +1,6 @@
-import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
+import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'ffpri_soilmap_sp',

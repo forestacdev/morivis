@@ -6,7 +6,7 @@
 
 # Interface: RasterProperties
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:253](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L253)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:235](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L235)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:253](https://git
 
 > `optional` **bands**: [`RasterBandProperties`](RasterBandProperties.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:255](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L255)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:237](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L237)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:255](https://git
 
 > `optional` **temporal**: [`RasterTemporalProperties`](RasterTemporalProperties.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:254](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L254)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:236](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L236)

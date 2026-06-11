@@ -1,6 +1,6 @@
 import { VectorTile } from '@mapbox/vector-tile';
-import { PMTiles } from 'pmtiles';
 import Pbf from 'pbf';
+import { PMTiles } from 'pmtiles';
 
 import type { FeatureProp } from '$routes/map/types/properties';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';

@@ -1,5 +1,5 @@
-import * as hdf5 from 'jsfive';
 import type { FeatureCollection } from '$routes/map/types/geojson';
+import * as hdf5 from 'jsfive';
 
 /** HDF5データセットの情報 */
 export interface Hdf5DatasetInfo {
@@ -38,7 +38,7 @@ const openHdf5File = async (file: File): Promise<InstanceType<typeof hdf5.File>>
 const collectItems = (
 	group: InstanceType<typeof hdf5.Group>,
 	basePath: string
-): { datasets: Hdf5DatasetInfo[]; groups: string[] } => {
+): { datasets: Hdf5DatasetInfo[]; groups: string[]; } => {
 	const datasets: Hdf5DatasetInfo[] = [];
 	const groups: string[] = [];
 
@@ -89,7 +89,7 @@ export const getHdf5FileInfo = async (file: File): Promise<Hdf5FileInfo> => {
 export const getHdf5Dataset = async (
 	file: File,
 	datasetPath: string
-): Promise<{ value: unknown; shape: number[]; dtype: string; attrs: Record<string, unknown> }> => {
+): Promise<{ value: unknown; shape: number[]; dtype: string; attrs: Record<string, unknown>; }> => {
 	try {
 		const f = await openHdf5File(file);
 		const dataset = f.get(datasetPath);
@@ -218,12 +218,11 @@ export const extractHdf5Raster = async (
 	const attrs = dataset.attrs ?? {};
 
 	// nodata
-	const nodata =
-		attrs['_FillValue'] != null
-			? Number(attrs['_FillValue'])
-			: attrs['missing_value'] != null
-				? Number(attrs['missing_value'])
-				: null;
+	const nodata = attrs['_FillValue'] != null
+		? Number(attrs['_FillValue'])
+		: attrs['missing_value'] != null
+		? Number(attrs['missing_value'])
+		: null;
 
 	// 最後の2次元をY, Xとして扱う
 	const height = shape[shape.length - 2] ?? 0;
@@ -261,8 +260,8 @@ export const extractHdf5Raster = async (
 		datasets.find((d) =>
 			candidates.some(
 				(c) =>
-					d.path.toLowerCase() === c.toLowerCase() ||
-					d.path.toLowerCase().endsWith('/' + c.toLowerCase())
+					d.path.toLowerCase() === c.toLowerCase()
+					|| d.path.toLowerCase().endsWith('/' + c.toLowerCase())
 			)
 		)?.path;
 
@@ -313,7 +312,15 @@ export const extractHdf5Raster = async (
 		const is2DCoords = latShape.length >= 2 && latShape[0] === height && latShape[1] === width;
 
 		if (is2DCoords && bbox) {
-			const resampled = resampleSwathToGrid(data, latData, lonData, width, height, bbox, nodata);
+			const resampled = resampleSwathToGrid(
+				data,
+				latData,
+				lonData,
+				width,
+				height,
+				bbox,
+				nodata
+			);
 			return resampled;
 		}
 	}
@@ -353,10 +360,10 @@ export const detectHdf5SpecialProduct = async (
 	const scienceGeoLon = f.get('ScienceData/Geo/longitude');
 
 	if (
-		fileType?.startsWith('MSI_CLP_') &&
-		productName?.includes('_MSI_CLP_') &&
-		scienceGeoLat instanceof hdf5.Dataset &&
-		scienceGeoLon instanceof hdf5.Dataset
+		fileType?.startsWith('MSI_CLP_')
+		&& productName?.includes('_MSI_CLP_')
+		&& scienceGeoLat instanceof hdf5.Dataset
+		&& scienceGeoLon instanceof hdf5.Dataset
 	) {
 		const shape = scienceGeoLat.shape ?? [];
 		if (shape.length >= 2) {
@@ -369,10 +376,10 @@ export const detectHdf5SpecialProduct = async (
 	}
 
 	if (
-		fileType?.startsWith('CPR_CLP_') &&
-		productName?.includes('_CPR_CLP_') &&
-		scienceGeoLat instanceof hdf5.Dataset &&
-		scienceGeoLon instanceof hdf5.Dataset
+		fileType?.startsWith('CPR_CLP_')
+		&& productName?.includes('_CPR_CLP_')
+		&& scienceGeoLat instanceof hdf5.Dataset
+		&& scienceGeoLon instanceof hdf5.Dataset
 	) {
 		const shape = scienceGeoLat.shape ?? [];
 		if (shape.length === 1) {
@@ -388,10 +395,10 @@ export const detectHdf5SpecialProduct = async (
 	const scienceLon = f.get('ScienceData/longitude');
 
 	if (
-		fileType?.startsWith('CPR_FMR_') &&
-		productName?.includes('_CPR_FMR_') &&
-		scienceLat instanceof hdf5.Dataset &&
-		scienceLon instanceof hdf5.Dataset
+		fileType?.startsWith('CPR_FMR_')
+		&& productName?.includes('_CPR_FMR_')
+		&& scienceLat instanceof hdf5.Dataset
+		&& scienceLon instanceof hdf5.Dataset
 	) {
 		return {
 			type: 'earthcare_cpr_fmr',
@@ -500,7 +507,9 @@ const buildIsoTimeStrings = (f: InstanceType<typeof hdf5.File>): string[] => {
 			const milliSecond = milliSeconds[index] ?? 0;
 			const wholeMilliSeconds = Math.floor(milliSecond);
 
-			return `${padNumber(year, 4)}-${padNumber(month, 2)}-${padNumber(day, 2)}T${padNumber(hour, 2)}:${padNumber(minute, 2)}:${padNumber(second, 2)}.${padNumber(wholeMilliSeconds, 3)}Z`;
+			return `${padNumber(year, 4)}-${padNumber(month, 2)}-${padNumber(day, 2)}T${
+				padNumber(hour, 2)
+			}:${padNumber(minute, 2)}:${padNumber(second, 2)}.${padNumber(wholeMilliSeconds, 3)}Z`;
 		});
 	}
 
@@ -535,8 +544,8 @@ const interpolateAtAntimeridian = (
  * 両方が同じ符号 → same side, 異なる符号で差が180超 → straddle
  */
 const straddlesAntimeridian = (leftLon: number, rightLon: number): boolean =>
-	(leftLon < 0 && rightLon > 0 && rightLon - leftLon > 180) ||
-	(rightLon < 0 && leftLon > 0 && leftLon - rightLon > 180);
+	(leftLon < 0 && rightLon > 0 && rightLon - leftLon > 180)
+	|| (rightLon < 0 && leftLon > 0 && leftLon - rightLon > 180);
 
 /**
  * 左端・右端の座標ペアから日付変更線で分割されたポリゴン群を生成する
@@ -554,8 +563,8 @@ const buildSwathPolygons = (
 	const splitIndices: number[] = [];
 	for (let i = 1; i < left.length; i++) {
 		if (
-			crossesAntimeridian(left[i - 1][0], left[i][0]) ||
-			crossesAntimeridian(right[i - 1][0], right[i][0])
+			crossesAntimeridian(left[i - 1][0], left[i][0])
+			|| crossesAntimeridian(right[i - 1][0], right[i][0])
 		) {
 			splitIndices.push(i);
 		}
@@ -600,11 +609,19 @@ const buildSwathPolygons = (
 			}
 
 			if (westLeft.length >= 2) {
-				const ring: [number, number][] = [...westLeft, ...[...westRight].reverse(), westLeft[0]];
+				const ring: [number, number][] = [
+					...westLeft,
+					...[...westRight].reverse(),
+					westLeft[0]
+				];
 				polygons.push([ring]);
 			}
 			if (eastRight.length >= 2) {
-				const ring: [number, number][] = [...eastLeft, ...[...eastRight].reverse(), eastLeft[0]];
+				const ring: [number, number][] = [
+					...eastLeft,
+					...[...eastRight].reverse(),
+					eastLeft[0]
+				];
 				polygons.push([ring]);
 			}
 		} else {
@@ -637,7 +654,11 @@ const buildSwathPolygons = (
 			}
 
 			if (segLeft.length > 0 && segRight.length > 0) {
-				const ring: [number, number][] = [...segLeft, ...[...segRight].reverse(), segLeft[0]];
+				const ring: [number, number][] = [
+					...segLeft,
+					...[...segRight].reverse(),
+					segLeft[0]
+				];
 				polygons.push([ring]);
 			}
 		}
@@ -654,7 +675,7 @@ const getValidEdges = (
 	lonFlat: ArrayLike<number>,
 	rows: number,
 	cols: number
-): { left: [number, number][]; right: [number, number][] } => {
+): { left: [number, number][]; right: [number, number][]; } => {
 	const left: [number, number][] = [];
 	const right: [number, number][] = [];
 

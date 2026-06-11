@@ -10,6 +10,7 @@
 - [data/types/location](data/types/location/README.md)
 - [data/types/model](data/types/model/README.md)
 - [data/types/raster](data/types/raster/README.md)
+- [data/types/stylejson](data/types/stylejson/README.md)
 - [data/types/tags](data/types/tags/README.md)
 - [data/types/vector](data/types/vector/README.md)
 - [utils/city\_code](utils/city_code/README.md)

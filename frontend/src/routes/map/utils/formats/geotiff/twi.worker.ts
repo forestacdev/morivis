@@ -82,7 +82,7 @@ const computeTwi = (
 	width: number,
 	height: number,
 	nodata: number | null
-): { band: Float32Array; min: number; max: number } => {
+): { band: Float32Array; min: number; max: number; } => {
 	const pixelCount = width * height;
 	const valid = new Uint8Array(pixelCount);
 	const slopes = new Float32Array(pixelCount);
@@ -111,7 +111,9 @@ const computeTwi = (
 
 				const neighborIndex = getIndex(nx, ny, width);
 				const neighborElevation = band[neighborIndex];
-				if (!isValidValue(neighborElevation, nodata) || neighborElevation >= elevation) continue;
+				if (!isValidValue(neighborElevation, nodata) || neighborElevation >= elevation) {
+					continue;
+				}
 
 				const gradient = (elevation - neighborElevation) / neighbor.distance;
 				if (gradient > bestGradient) {

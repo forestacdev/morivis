@@ -1,6 +1,6 @@
 import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
+import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'tokyo_gairoju',

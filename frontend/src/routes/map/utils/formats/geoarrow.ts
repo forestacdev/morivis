@@ -1,12 +1,12 @@
-import { tableFromIPC, type Table } from 'apache-arrow';
 import { LZ4Compression, ZstdCompression } from '@loaders.gl/compression';
-import { compressionRegistry } from 'apache-arrow/ipc/compression/registry';
+import { type Table, tableFromIPC } from 'apache-arrow';
 import { CompressionType } from 'apache-arrow/fb/compression-type';
+import { compressionRegistry } from 'apache-arrow/ipc/compression/registry';
 import lz4js from 'lz4js';
 import { ZstdCodec } from 'zstd-codec';
 
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
+import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 
@@ -191,10 +191,10 @@ const normalizeCoordinateStructure = (value: unknown): unknown => {
 	}
 
 	if (
-		typeof value === 'object' &&
-		value !== null &&
-		'toJSON' in value &&
-		typeof value.toJSON === 'function'
+		typeof value === 'object'
+		&& value !== null
+		&& 'toJSON' in value
+		&& typeof value.toJSON === 'function'
 	) {
 		return normalizeCoordinateStructure(value.toJSON());
 	}

@@ -30,7 +30,9 @@ const getGBIFDetails = async (key: number) => {
 	const data = await response.json();
 
 	// 和名を取得
-	const vernacularResponse = await fetch(`https://api.gbif.org/v1/species/${key}/vernacularNames`);
+	const vernacularResponse = await fetch(
+		`https://api.gbif.org/v1/species/${key}/vernacularNames`
+	);
 	const vernacularData = await vernacularResponse.json();
 
 	// 画像を取得

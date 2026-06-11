@@ -8,7 +8,7 @@
 
 > **getLayerImage**(`_layerEntry`): `Promise`\<[`ImageResult`](../interfaces/ImageResult.md) \| `undefined`\>
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:167](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/utils/image/index.ts#L167)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:163](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/utils/image/index.ts#L163)
 
 レイヤーの画像URLを取得する関数
 

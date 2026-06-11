@@ -3,10 +3,10 @@ import type { AnyGeometry, Geometry, GeometryCollection } from '$routes/map/type
 import type { FeatureProp } from '$routes/map/types/properties';
 import { geojson as fgb } from 'flatgeobuf';
 
-import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type { FeatureMenuData } from '$routes/map/types';
 import type { DrawGeojsonData } from '$routes/map/types/draw';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+import type { MapGeoJSONFeature } from 'maplibre-gl';
 
 export class GeoJsonParseError extends Error {
 	constructor(message: string) {
@@ -102,10 +102,9 @@ export const normalizeGeoJsonGeometryCollections = (
 			return feature.geometry.geometries.map(
 				(geometry, index): Feature => ({
 					...feature,
-					id:
-						feature.id != null
-							? `${String(feature.id)}_${index}`
-							: `${crypto.randomUUID()}_${index}`,
+					id: feature.id != null
+						? `${String(feature.id)}_${index}`
+						: `${crypto.randomUUID()}_${index}`,
 					geometry: geometry as AnyGeometry
 				})
 			);
@@ -171,7 +170,7 @@ export const convertToGeoJSONFeature = (
 ): Feature | null => {
 	const { geometry, properties, id } = feature;
 
-	if (geometry.type !== 'GeometryCollection')
+	if (geometry.type !== 'GeometryCollection') {
 		if (id === featureId) {
 			// 特定のIDに一致するか確認
 			return {
@@ -181,6 +180,7 @@ export const convertToGeoJSONFeature = (
 				id: id
 			};
 		}
+	}
 
 	return null; // 条件に一致しない場合は無効な値を返す
 };

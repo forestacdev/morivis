@@ -51,7 +51,7 @@ const withUnit = (expr: Expr, unit?: string): Expr => {
 /**
  * prefix/suffixを付与する式を生成
  */
-const withAffix = (expr: Expr, affix?: { prefix?: string; suffix?: string }): Expr => {
+const withAffix = (expr: Expr, affix?: { prefix?: string; suffix?: string; }): Expr => {
 	if (!affix) return expr;
 	const { prefix, suffix } = affix;
 	if (prefix && suffix) {
@@ -121,7 +121,9 @@ export const buildFieldExpression = (field: FieldDef): Expr => {
 	// 1. 辞書変換
 	if (field.valueDict) {
 		expr = withValueDict(field.key, field.valueDict);
-	} else if (field.type === 'number' || field.type === 'integer' || field.format?.digits != null) {
+	} else if (
+		field.type === 'number' || field.type === 'integer' || field.format?.digits != null
+	) {
 		// 2. 数値フォーマット
 		expr = numberExpr(field.key, field.format?.digits);
 	} else {
@@ -190,7 +192,6 @@ export const createSymbolLayer = (
 			'text-max-width': 12,
 			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
-
 			// 自動オフセット
 			// 'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
 			// 'text-radial-offset': 0.5,

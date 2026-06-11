@@ -4,9 +4,12 @@ let _encodeWorker: Worker | null = null;
 
 const getEncodeWorker = (): Worker => {
 	if (!_encodeWorker) {
-		_encodeWorker = new Worker(new URL('../geotiff/terrarium_encode.worker.ts', import.meta.url), {
-			type: 'module'
-		});
+		_encodeWorker = new Worker(
+			new URL('../geotiff/terrarium_encode.worker.ts', import.meta.url),
+			{
+				type: 'module'
+			}
+		);
 	}
 	return _encodeWorker;
 };
@@ -59,7 +62,7 @@ export const encodeBandsToTerrariumUrls = async (
 	width: number,
 	height: number,
 	nodata: number | null,
-	dataRanges: { min: number; max: number }[]
+	dataRanges: { min: number; max: number; }[]
 ): Promise<string[]> => {
 	const urls: string[] = [];
 

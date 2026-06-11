@@ -107,21 +107,19 @@ const normalizeAngle = (angle: number): number => {
 
 const calculateCircleCenterAndRadius = (
 	points: Array<[number, number]>
-): { center: [number, number]; radius: number } | null => {
+): { center: [number, number]; radius: number; } | null => {
 	if (points.length < 3) return null;
 
 	const [[x1, y1], [x2, y2], [x3, y3]] = points;
 	const d = 2 * ((y1 - y3) * (x1 - x2) - (y1 - y2) * (x1 - x3));
 	if (Math.abs(d) < 1e-9) return null;
 
-	const x =
-		((y1 - y3) * (y1 ** 2 - y2 ** 2 + x1 ** 2 - x2 ** 2) -
-			(y1 - y2) * (y1 ** 2 - y3 ** 2 + x1 ** 2 - x3 ** 2)) /
-		d;
-	const y =
-		((x1 - x3) * (x1 ** 2 - x2 ** 2 + y1 ** 2 - y2 ** 2) -
-			(x1 - x2) * (x1 ** 2 - x3 ** 2 + y1 ** 2 - y3 ** 2)) /
-		-d;
+	const x = ((y1 - y3) * (y1 ** 2 - y2 ** 2 + x1 ** 2 - x2 ** 2)
+		- (y1 - y2) * (y1 ** 2 - y3 ** 2 + x1 ** 2 - x3 ** 2))
+		/ d;
+	const y = ((x1 - x3) * (x1 ** 2 - x2 ** 2 + y1 ** 2 - y2 ** 2)
+		- (x1 - x2) * (x1 ** 2 - x3 ** 2 + y1 ** 2 - y3 ** 2))
+		/ -d;
 
 	return {
 		center: [x, y],
@@ -196,7 +194,7 @@ const coordKey = ([x, y]: [number, number]): string => `${x},${y}`;
 
 const mergeConnectedLineCoordinates = (
 	lineStrings: Array<Array<[number, number]>>
-): Array<{ coordinates: Array<[number, number]>; segmentCount: number }> => {
+): Array<{ coordinates: Array<[number, number]>; segmentCount: number; }> => {
 	// 同じ標高値・同じ等高線クラスで束ねた折れ線群を、端点一致だけで順次連結する。
 	// 総当たりを避けるため、端点 -> セグメント一覧の索引を先に作る。
 	const segments = lineStrings
@@ -204,7 +202,7 @@ const mergeConnectedLineCoordinates = (
 		.map((coords) => [...coords] as Array<[number, number]>);
 	const endpointMap = new Map<string, number[]>();
 	const used = new Array<boolean>(segments.length).fill(false);
-	const merged: Array<{ coordinates: Array<[number, number]>; segmentCount: number }> = [];
+	const merged: Array<{ coordinates: Array<[number, number]>; segmentCount: number; }> = [];
 
 	const addEndpointIndex = (key: string, segmentIndex: number) => {
 		const bucket = endpointMap.get(key);
@@ -306,9 +304,9 @@ const mergeContourFeatures = (features: DMFeature[]): DMFeature[] => {
 
 	for (const feature of features) {
 		if (
-			feature.geometry.type !== 'LineString' ||
-			feature.properties.dataType !== '線' ||
-			!isContourClassCode(feature.properties.classCode)
+			feature.geometry.type !== 'LineString'
+			|| feature.properties.dataType !== '線'
+			|| !isContourClassCode(feature.properties.classCode)
 		) {
 			mergedFeatures.push(feature);
 			continue;
@@ -353,8 +351,9 @@ const mergeContourFeatures = (features: DMFeature[]): DMFeature[] => {
 			console.debug('[DM] contour merge group', {
 				classCode: sample.properties.classCode,
 				drawingId: sample.properties.drawingId,
-				elevation:
-					typeof sample.properties.elevation === 'number' ? sample.properties.elevation : null,
+				elevation: typeof sample.properties.elevation === 'number'
+					? sample.properties.elevation
+					: null,
 				sourceSegmentCount: group.length,
 				mergedFeatureCount: mergedCoordinates.length,
 				mergedSegmentCounts: mergedCoordinates.map((item) => item.segmentCount)
@@ -460,7 +459,7 @@ type ParsedRecord =
 	| CoordRecord2D
 	| CoordRecord3D
 	| AnnotationRecord
-	| { type: 'UNKNOWN'; raw: string };
+	| { type: 'UNKNOWN'; raw: string; };
 
 // ============================================================
 // 各レコードのパーサー
@@ -564,8 +563,8 @@ const parseGroupHeaderRecord = (line: string): GroupHeaderRecord => {
 	// [54-57] 注記 I4  [58-61] 属性 I4  [62-65] グリッド・TIN I4
 	const classMap = substr(line, 3, 2);
 	const classItem = substr(line, 5, 4);
-	const classCode =
-		classMap.replace(/\s/g, '0').padStart(2, '0') + classItem.replace(/\s/g, '0').padStart(2, '0');
+	const classCode = classMap.replace(/\s/g, '0').padStart(2, '0')
+		+ classItem.replace(/\s/g, '0').padStart(2, '0');
 
 	return {
 		type: 'GROUP_HEADER',
@@ -611,8 +610,8 @@ const parseElementRecord = (line: string): ElementRecord => {
 	// [33-36] 座標数 I4
 	const classMap = substr(line, 3, 2);
 	const classItem = substr(line, 5, 4);
-	const classCode =
-		classMap.replace(/\s/g, '0').padStart(2, '0') + classItem.replace(/\s/g, '0').padStart(2, '0');
+	const classCode = classMap.replace(/\s/g, '0').padStart(2, '0')
+		+ classItem.replace(/\s/g, '0').padStart(2, '0');
 
 	const dataTypeCode = substr(line, 17, 1);
 
@@ -703,7 +702,7 @@ const EXT_DATA_TYPE_MAP: Record<string, string> = {
 
 const parseExtElementRecord = (
 	line: string
-): ElementRecord & { embeddedX?: number; embeddedY?: number } => {
+): ElementRecord & { embeddedX?: number; embeddedY?: number; } => {
 	// 拡張DM 要素レコード
 	// [1]    "E" 固定
 	// [2]    データタイプ (1=面,2=線,3=円,4=円弧,5=点,6=方向,7=注記)
@@ -1142,7 +1141,8 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 				geometry = { type: 'Point', coordinates: coords[0] };
 				if (coords.length >= 2) {
 					baseProps.angle = normalizeAngle(
-						(Math.atan2(coords[1][1] - coords[0][1], coords[1][0] - coords[0][0]) * 180) / Math.PI
+						(Math.atan2(coords[1][1] - coords[0][1], coords[1][0] - coords[0][0]) * 180)
+							/ Math.PI
 					);
 				}
 			}
@@ -1155,7 +1155,9 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 				const arcPoints = createArcPoints(coords as Array<[number, number]>);
 				geometry = {
 					type: 'LineString',
-					coordinates: (arcPoints ?? coords).map(([e, n]) => [roundCoord(e), roundCoord(n)])
+					coordinates: (arcPoints ?? coords).map((
+						[e, n]
+					) => [roundCoord(e), roundCoord(n)])
 				};
 			} else if (coords.length >= 2) {
 				geometry = { type: 'LineString', coordinates: coords };

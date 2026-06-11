@@ -1,6 +1,6 @@
+import terrainRgbUrl from '$lib/terrainrgb.webp';
 import * as THREE from 'three';
 import fragmentShader from './shaders/fragment.glsl?raw';
-import terrainRgbUrl from '$lib/terrainrgb.webp';
 import vertexShader from './shaders/vertex.glsl?raw';
 
 const nextPowerOfTwo = (value: number) => {
@@ -80,11 +80,11 @@ export const uniforms = {
 };
 
 interface BuffarUniforms {
-	screenCenter: { value: THREE.Vector2 };
-	resolution: { value: THREE.Vector2 };
-	screenTexture: { value: THREE.Texture | null };
-	uTexture: { value: THREE.Texture };
-	uTextureResolution: { value: THREE.Vector2 };
+	screenCenter: { value: THREE.Vector2; };
+	resolution: { value: THREE.Vector2; };
+	screenTexture: { value: THREE.Texture | null; };
+	uTexture: { value: THREE.Texture; };
+	uTextureResolution: { value: THREE.Vector2; };
 }
 
 export const buffarUniforms: BuffarUniforms = {

@@ -84,11 +84,8 @@
 	.screen-veil {
 		position: absolute;
 		inset: 0;
-		background: radial-gradient(
-				circle at 50% 50%,
-				rgba(255, 244, 214, 0.14) 0 12%,
-				transparent 42%
-			),
+		background:
+			radial-gradient(circle at 50% 50%, rgba(255, 244, 214, 0.14) 0 12%, transparent 42%),
 			linear-gradient(
 				135deg,
 				rgba(11, 15, 25, 0.98),
@@ -106,13 +103,15 @@
 	}
 
 	.screen-core {
-		background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.26), transparent 26%),
+		background:
+			radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.26), transparent 26%),
 			radial-gradient(circle at 50% 50%, rgba(245, 159, 11, 0.2), transparent 54%);
 		mix-blend-mode: screen;
 	}
 
 	.screen-grid {
-		background-image: linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+		background-image:
+			linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
 			linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
 		background-size: 24px 24px;
 		mask-image: radial-gradient(circle at center, black 28%, transparent 82%);

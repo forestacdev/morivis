@@ -1,5 +1,5 @@
-import { fromArrayBuffer } from 'geotiff';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+import { fromArrayBuffer } from 'geotiff';
 
 export interface WcsCoverageSummary {
 	id: string;
@@ -24,7 +24,7 @@ export interface WcsCapabilitiesInfo {
 
 export interface WcsCoverageRangeSummary {
 	numBands: number;
-	sampleRanges: { min: number; max: number }[];
+	sampleRanges: { min: number; max: number; }[];
 }
 
 const parseXml = (xmlString: string): XMLDocument =>
@@ -103,19 +103,19 @@ const stripKnownParams = (url: URL): URL => {
 };
 
 const getPreferredFormat = (formats: string[]): string =>
-	formats.find((format) => /image\/(png|webp|jpeg|jpg|gif)/i.test(format)) ??
-	formats.find((format) => /image\/tiff|geotiff|tif/i.test(format)) ??
-	formats[0] ??
-	'GeoTIFF';
+	formats.find((format) => /image\/(png|webp|jpeg|jpg|gif)/i.test(format))
+		?? formats.find((format) => /image\/tiff|geotiff|tif/i.test(format))
+		?? formats[0]
+		?? 'GeoTIFF';
 
 const findPreferredCrs = (crsList: string[]): string | null => {
 	const normalized = crsList.map((crs) => crs.trim()).filter(Boolean);
 
 	return (
-		normalized.find((crs) => crs.toUpperCase() === 'OGC:CRS84') ??
-		normalized.find((crs) => crs.toUpperCase() === 'EPSG:4326') ??
-		normalized[0] ??
-		null
+		normalized.find((crs) => crs.toUpperCase() === 'OGC:CRS84')
+			?? normalized.find((crs) => crs.toUpperCase() === 'EPSG:4326')
+			?? normalized[0]
+			?? null
 	);
 };
 
@@ -126,9 +126,9 @@ const getAxisSubsetRange = (
 ): [number, number] => {
 	const normalized = axisLabel.trim().toLowerCase();
 	if (
-		/^(lon|long|longitude|x|e|east|easting)$/.test(normalized) ||
-		normalized.includes('lon') ||
-		normalized.includes('long')
+		/^(lon|long|longitude|x|e|east|easting)$/.test(normalized)
+		|| normalized.includes('lon')
+		|| normalized.includes('long')
 	) {
 		return [bbox[0], bbox[2]];
 	}
@@ -159,59 +159,59 @@ export const parseWcsCapabilities = async (url: string): Promise<WcsCapabilities
 
 		const supportedFormats = isWcs2
 			? Array.from(
-					xml.querySelectorAll(
-						'ServiceMetadata > formatSupported, wcs\\:ServiceMetadata > wcs\\:formatSupported'
-					)
+				xml.querySelectorAll(
+					'ServiceMetadata > formatSupported, wcs\\:ServiceMetadata > wcs\\:formatSupported'
 				)
-					.map((element) => element.textContent?.trim() ?? '')
-					.filter(Boolean)
+			)
+				.map((element) => element.textContent?.trim() ?? '')
+				.filter(Boolean)
 			: Array.from(xml.querySelectorAll('supportedFormats > formats'))
-					.map((element) => element.textContent?.trim() ?? '')
-					.filter(Boolean);
+				.map((element) => element.textContent?.trim() ?? '')
+				.filter(Boolean);
 
 		const serviceUrl = isWcs2
 			? (() => {
-					const operation = xml.querySelector(
-						'ows\\:OperationsMetadata ows\\:Operation[name="GetCoverage"] ows\\:DCP ows\\:HTTP ows\\:Get'
-					);
-					return (
-						operation?.getAttribute('xlink:href') ??
-						operation?.getAttribute('href') ??
-						stripKnownParams(capsUrl).toString()
-					);
-				})()
+				const operation = xml.querySelector(
+					'ows\\:OperationsMetadata ows\\:Operation[name="GetCoverage"] ows\\:DCP ows\\:HTTP ows\\:Get'
+				);
+				return (
+					operation?.getAttribute('xlink:href')
+						?? operation?.getAttribute('href')
+						?? stripKnownParams(capsUrl).toString()
+				);
+			})()
 			: (() => {
-					const onlineResource = xml.querySelector(
-						'Capability > Request > GetCoverage OnlineResource, OnlineResource'
-					);
-					return (
-						onlineResource?.getAttribute('xlink:href') ??
-						onlineResource?.getAttribute('href') ??
-						stripKnownParams(capsUrl).toString()
-					);
-				})();
+				const onlineResource = xml.querySelector(
+					'Capability > Request > GetCoverage OnlineResource, OnlineResource'
+				);
+				return (
+					onlineResource?.getAttribute('xlink:href')
+						?? onlineResource?.getAttribute('href')
+						?? stripKnownParams(capsUrl).toString()
+				);
+			})();
 
 		const coverages = isWcs2
 			? Array.from(xml.querySelectorAll('CoverageSummary, wcs\\:CoverageSummary'))
-					.map((coverage) => {
-						const id = getElementText(coverage, ['CoverageId', 'wcs\\:CoverageId']);
-						if (!id) return null;
+				.map((coverage) => {
+					const id = getElementText(coverage, ['CoverageId', 'wcs\\:CoverageId']);
+					if (!id) return null;
 
-						return {
-							id,
-							title: getElementText(coverage, ['Title', 'ows\\:Title']) ?? id,
-							bbox: parseBoundingBox(coverage)
-						} satisfies WcsCoverageSummary;
-					})
-					.filter((coverage): coverage is WcsCoverageSummary => coverage !== null)
-			: Array.from(xml.querySelectorAll('CoverageOfferingBrief')).map((coverage) => {
-					const id = getElementText(coverage, ['name']) ?? '';
 					return {
 						id,
-						title: getElementText(coverage, ['label']) ?? id,
-						bbox: parseLonLatEnvelope(coverage)
+						title: getElementText(coverage, ['Title', 'ows\\:Title']) ?? id,
+						bbox: parseBoundingBox(coverage)
 					} satisfies WcsCoverageSummary;
-				});
+				})
+				.filter((coverage): coverage is WcsCoverageSummary => coverage !== null)
+			: Array.from(xml.querySelectorAll('CoverageOfferingBrief')).map((coverage) => {
+				const id = getElementText(coverage, ['name']) ?? '';
+				return {
+					id,
+					title: getElementText(coverage, ['label']) ?? id,
+					bbox: parseLonLatEnvelope(coverage)
+				} satisfies WcsCoverageSummary;
+			});
 
 		return {
 			version,
@@ -247,14 +247,14 @@ export const describeWcsCoverage = async (
 		const xmlString = await response.text();
 		const xml = parseXml(xmlString);
 		const coverage =
-			xml.querySelector('CoverageDescription, wcs\\:CoverageDescription, CoverageOffering') ??
-			xml.documentElement;
+			xml.querySelector('CoverageDescription, wcs\\:CoverageDescription, CoverageOffering')
+				?? xml.documentElement;
 		const envelope = coverage.querySelector(
 			'Envelope, gml\\:Envelope, EnvelopeWithTimePeriod, gml\\:EnvelopeWithTimePeriod'
 		);
 
-		const axisLabels =
-			envelope?.getAttribute('axisLabels')?.trim().split(/\s+/).filter(Boolean) ?? [];
+		const axisLabels = envelope?.getAttribute('axisLabels')?.trim().split(/\s+/).filter(Boolean)
+			?? [];
 		const lower = parseCorner(
 			getElementText(envelope ?? coverage, ['LowerCorner', 'gml\\:LowerCorner'])
 		);
@@ -265,22 +265,22 @@ export const describeWcsCoverage = async (
 		const srsName = envelope?.getAttribute('srsName') ?? null;
 		const supportedFormats = version.startsWith('2.')
 			? Array.from(
-					coverage.querySelectorAll(
-						'ServiceParameters > nativeFormat, ServiceParameters > formatSupported'
-					)
+				coverage.querySelectorAll(
+					'ServiceParameters > nativeFormat, ServiceParameters > formatSupported'
 				)
-					.map((element) => element.textContent?.trim() ?? '')
-					.filter(Boolean)
+			)
+				.map((element) => element.textContent?.trim() ?? '')
+				.filter(Boolean)
 			: Array.from(coverage.querySelectorAll('supportedFormats > formats'))
-					.map((element) => element.textContent?.trim() ?? '')
-					.filter(Boolean);
+				.map((element) => element.textContent?.trim() ?? '')
+				.filter(Boolean);
 		const supportedCrs = version.startsWith('2.')
 			? srsName
 				? [srsName]
 				: []
 			: Array.from(coverage.querySelectorAll('supportedCRSs > requestResponseCRSs'))
-					.map((element) => element.textContent?.trim() ?? '')
-					.filter(Boolean);
+				.map((element) => element.textContent?.trim() ?? '')
+				.filter(Boolean);
 
 		return {
 			axisLabels,
@@ -357,7 +357,7 @@ export const getWcsPreferredCrs = (crsList: string[]): string =>
 const getFiniteMinMax = (
 	data: ArrayLike<number>,
 	nodata: number | null
-): { min: number; max: number } => {
+): { min: number; max: number; } => {
 	let min = Number.POSITIVE_INFINITY;
 	let max = Number.NEGATIVE_INFINITY;
 

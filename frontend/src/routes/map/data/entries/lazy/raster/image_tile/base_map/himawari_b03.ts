@@ -1,10 +1,10 @@
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import {
 	createHimawariFallbackEntry,
-	loadHimawariRasterEntry,
-	type HimawariProductConfig
+	type HimawariProductConfig,
+	loadHimawariRasterEntry
 } from '$routes/map/api/himawari';
 import type { GeoDataEntryCatalogItem } from '$routes/map/data/types';
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 const config: HimawariProductConfig = {
 	id: 'himawari_b03',

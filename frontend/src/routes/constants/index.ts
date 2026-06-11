@@ -1,13 +1,13 @@
-import type { PopupOptions, LngLatBoundsLike } from 'maplibre-gl';
 import type { TileXYZ } from '$routes/map/data/types/raster';
+import type { LngLatBoundsLike, PopupOptions } from 'maplibre-gl';
 import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 
 import {
 	PUBLIC_BASE_PATH,
+	PUBLIC_DISASTER_LORE_ALL_PATH,
 	PUBLIC_ENTRY_PATH,
 	PUBLIC_PANORAMA_PATH,
-	PUBLIC_TIMBER_SPECIES_PATH,
-	PUBLIC_DISASTER_LORE_ALL_PATH
+	PUBLIC_TIMBER_SPECIES_PATH
 } from '$env/static/public';
 
 export const BASE_PATH = PUBLIC_BASE_PATH;
@@ -76,7 +76,7 @@ export const DEFAULT_SYMBOL_TEXT_FONT: DataDrivenPropertyValueSpecification<stri
 ];
 
 /** アイコン用画像タイルのXYZ */
-export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
+export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ; } = {
 	zoom_0: {
 		x: 0,
 		y: 0,

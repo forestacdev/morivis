@@ -1,35 +1,35 @@
 import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
-import type {
-	PolygonStyle,
-	LineStringStyle,
-	PointStyle,
-	Labels,
-	ColorMatchExpression,
-	ColorStepExpression,
-	ColorSingleExpression,
-	PolygonDefaultStyle,
-	LineStringDefaultStyle,
-	PointDefaultStyle,
-	LabelDefaultStyle,
-	PolygonOutLine,
-	ColorsStyle
-} from '$routes/map/data/types/vector/style';
-import { getRandomColors, type BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import {
-	matchStyleDicts,
-	type MatchStyleDictName
+	type MatchStyleDictName,
+	matchStyleDicts
 } from '$routes/map/data/entries/vector/_match-style-dicts';
+import type {
+	ColorMatchExpression,
+	ColorSingleExpression,
+	ColorsStyle,
+	ColorStepExpression,
+	LabelDefaultStyle,
+	Labels,
+	LineStringDefaultStyle,
+	LineStringStyle,
+	PointDefaultStyle,
+	PointStyle,
+	PolygonDefaultStyle,
+	PolygonOutLine,
+	PolygonStyle
+} from '$routes/map/data/types/vector/style';
+import { type BaseSingleColor, getRandomColors } from '$routes/map/utils/color/color-brewer';
 
 import type {
-	FillLayerSpecification,
-	LineLayerSpecification,
-	SymbolLayerSpecification,
 	CircleLayerSpecification,
-	HeatmapLayerSpecification,
-	FillExtrusionLayerSpecification,
 	DataDrivenPropertyValueSpecification,
+	ExpressionSpecification,
+	FillExtrusionLayerSpecification,
+	FillLayerSpecification,
 	FormattedSpecification,
-	ExpressionSpecification
+	HeatmapLayerSpecification,
+	LineLayerSpecification,
+	SymbolLayerSpecification
 } from 'maplibre-gl';
 
 /** カテゴリ配列から辞書優先、未定義はランダム色のマッピングを作成する */

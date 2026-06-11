@@ -1,7 +1,7 @@
 import type {
-	PolygonStyle,
 	LineStringStyle,
-	PointStyle
+	PointStyle,
+	PolygonStyle
 } from '$routes/map/data/types/vector/style';
 
 import type { BaseMetaData, SharedDimensionState } from '$routes/map/data/types';

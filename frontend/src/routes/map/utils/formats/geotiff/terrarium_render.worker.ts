@@ -8,9 +8,9 @@
  * 以降のスタイル変更ではユニフォーム値のみ更新して再描画する。
  */
 
-import vertexShaderSource from './shaders/vertex.glsl?raw';
-import fsSingleSource from './shaders/fragment_terrarium_single.glsl?raw';
 import fsMultiSource from './shaders/fragment_terrarium_multi.glsl?raw';
+import fsSingleSource from './shaders/fragment_terrarium_single.glsl?raw';
+import vertexShaderSource from './shaders/vertex.glsl?raw';
 
 // --- WebGL helpers ---
 
@@ -53,7 +53,7 @@ const createProgram = (
 
 let gl: WebGL2RenderingContext | null = null;
 const canvas = new OffscreenCanvas(256, 256);
-let programs: { single: WebGLProgram; multi: WebGLProgram } | null = null;
+let programs: { single: WebGLProgram; multi: WebGLProgram; } | null = null;
 let positionBuffer: WebGLBuffer | null = null;
 
 // エントリごとのテクスチャキャッシュ
@@ -289,10 +289,10 @@ self.onmessage = async (e) => {
 				msg.derivedMode === 'slope'
 					? 1
 					: msg.derivedMode === 'aspect'
-						? 2
-						: msg.derivedMode === 'tpi'
-							? 3
-							: 0
+					? 2
+					: msg.derivedMode === 'tpi'
+					? 3
+					: 0
 			);
 			gl.uniform1f(gl.getUniformLocation(program, 'u_data_min'), msg.dataMin ?? 0);
 			gl.uniform1f(gl.getUniformLocation(program, 'u_data_max'), msg.dataMax ?? 1);

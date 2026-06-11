@@ -190,7 +190,7 @@ const shouldSelectPropertyColumn = (column: string, options: any): boolean => {
 const lookupEpsg = (
 	db: Database,
 	srsId: number
-): { epsg: number | null; definition: string | null } => {
+): { epsg: number | null; definition: string | null; } => {
 	try {
 		const r = db.exec(
 			`SELECT organization, organization_coordsys_id, definition FROM gpkg_spatial_ref_sys WHERE srs_id = ${srsId}`
@@ -234,10 +234,9 @@ const handleGetInfo = (db: Database) => {
 		);
 		const geometryType = geomR.length > 0 ? (geomR[0].values[0][0] as string) : 'GEOMETRY';
 		const srsId = geomR.length > 0 ? (geomR[0].values[0][1] as number) : null;
-		const srs =
-			srsId !== null
-				? { srs_id: srsId, ...lookupEpsg(db, srsId) }
-				: { srs_id: null, epsg: null, definition: null };
+		const srs = srsId !== null
+			? { srs_id: srsId, ...lookupEpsg(db, srsId) }
+			: { srs_id: null, epsg: null, definition: null };
 		tableInfo[t] = { type: 'feature', count, columns, geometryType, srs };
 	}
 
@@ -342,12 +341,11 @@ const handleToGeoJson = (db: Database, options: any) => {
 		const selectedColumns = tableColumns.filter(
 			(column) => column === geomCol || shouldSelectPropertyColumn(column, options)
 		);
-		const columns =
-			selectedColumns.length > 0
-				? selectedColumns
-				: tableColumns.length > 0
-					? tableColumns
-					: [geomCol];
+		const columns = selectedColumns.length > 0
+			? selectedColumns
+			: tableColumns.length > 0
+			? tableColumns
+			: [geomCol];
 		const geomIndex = columns.indexOf(geomCol);
 		let sql = `SELECT ${columns.map(quoteIdentifier).join(', ')} FROM ${quoteIdentifier(t)}`;
 		if (options.maxFeatures) sql += ` LIMIT ${options.maxFeatures}`;
@@ -360,7 +358,9 @@ const handleToGeoJson = (db: Database, options: any) => {
 				try {
 					const gv = row[geomIndex];
 					if (!gv) continue;
-					const gb = gv instanceof Uint8Array ? gv : new Uint8Array(gv as unknown as ArrayBuffer);
+					const gb = gv instanceof Uint8Array
+						? gv
+						: new Uint8Array(gv as unknown as ArrayBuffer);
 					const geometry = parseGpkgBinary(gb);
 					if (!geometry) continue;
 
@@ -393,7 +393,7 @@ const handleToGeoJson = (db: Database, options: any) => {
 const getMinMax = (
 	band: ArrayLike<number>,
 	nodata: number | null
-): { min: number; max: number } => {
+): { min: number; max: number; } => {
 	let min = Infinity;
 	let max = -Infinity;
 	for (let i = 0; i < band.length; i++) {
@@ -476,11 +476,12 @@ const handleToRaster = async (db: Database, tableName: string) => {
 		`SELECT MIN(tile_column), MAX(tile_column), MIN(tile_row), MAX(tile_row) FROM "${tableName}" WHERE zoom_level = ${maxZoom}`
 	);
 	if (
-		tileRangeR.length === 0 ||
-		tileRangeR[0].values.length === 0 ||
-		tileRangeR[0].values[0][0] === null
-	)
+		tileRangeR.length === 0
+		|| tileRangeR[0].values.length === 0
+		|| tileRangeR[0].values[0][0] === null
+	) {
 		throw new Error('タイルデータが見つかりません');
+	}
 
 	// 実際のタイル範囲を取得
 	const minCol = tileRangeR[0].values[0][0] as number;
@@ -597,7 +598,11 @@ const handleToRaster = async (db: Database, tableName: string) => {
 			}
 
 			const nanNodata = NaN;
-			const ranges = [getMinMax(rB, nanNodata), getMinMax(gB, nanNodata), getMinMax(bB, nanNodata)];
+			const ranges = [
+				getMinMax(rB, nanNodata),
+				getMinMax(gB, nanNodata),
+				getMinMax(bB, nanNodata)
+			];
 			transferBuffers.push(
 				rB.buffer as ArrayBuffer,
 				gB.buffer as ArrayBuffer,
@@ -667,10 +672,9 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
 			case 'query': {
 				if (!currentDb) throw new Error('DBが開かれていません');
 				const queryResult = currentDb.exec(e.data.sql!);
-				const rows =
-					queryResult.length > 0
-						? { columns: queryResult[0].columns, values: queryResult[0].values }
-						: { columns: [], values: [] };
+				const rows = queryResult.length > 0
+					? { columns: queryResult[0].columns, values: queryResult[0].values }
+					: { columns: [], values: [] };
 				self.postMessage({ id, result: rows } as WorkerResponse);
 				break;
 			}

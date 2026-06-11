@@ -1,14 +1,14 @@
 import * as tilebelt from '@mapbox/tilebelt';
 
-import type { FeatureCollection } from 'geojson';
 import bboxPolygon from '@turf/bbox-polygon';
+import type { FeatureCollection } from 'geojson';
 
 export class WorkerProtocol {
 	private worker: Worker;
 	private pendingRequests: Map<
 		string,
 		{
-			resolve: (value: { data: Uint8Array } | PromiseLike<{ data: Uint8Array }>) => void;
+			resolve: (value: { data: Uint8Array; } | PromiseLike<{ data: Uint8Array; }>) => void;
 			reject: (reason?: any) => void;
 		}
 	>;
@@ -21,7 +21,7 @@ export class WorkerProtocol {
 		this.worker.addEventListener('error', this.handleError);
 	}
 
-	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array }> {
+	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array; }> {
 		try {
 			const x = parseInt(url.searchParams.get('x') || '0', 10);
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
@@ -115,7 +115,7 @@ export const terminateTileIndexWorker = () => {
 export const tileIndexProtocol = (protocolName: 'tile_index') => {
 	return {
 		protocolName,
-		request: (params: { url: string }, abortController: AbortController) => {
+		request: (params: { url: string; }, abortController: AbortController) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol);
 			return getWorkerProtocol().request(url, abortController);

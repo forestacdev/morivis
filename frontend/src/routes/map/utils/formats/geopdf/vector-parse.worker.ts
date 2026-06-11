@@ -4,7 +4,7 @@
  */
 
 import { parseContentStream } from './vector-parser';
-import type { VectorParseOptions, VectorFeature } from './vector-parser';
+import type { VectorFeature, VectorParseOptions } from './vector-parser';
 
 export interface VectorParseMessage {
 	content: string;
@@ -22,9 +22,11 @@ self.onmessage = (e: MessageEvent<VectorParseMessage>) => {
 		const features = parseContentStream(content, options);
 		self.postMessage({ features } satisfies VectorParseResult);
 	} catch (error) {
-		self.postMessage({
-			features: [],
-			error: error instanceof Error ? error.message : 'Unknown error'
-		} satisfies VectorParseResult);
+		self.postMessage(
+			{
+				features: [],
+				error: error instanceof Error ? error.message : 'Unknown error'
+			} satisfies VectorParseResult
+		);
 	}
 };

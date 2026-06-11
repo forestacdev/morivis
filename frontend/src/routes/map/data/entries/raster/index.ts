@@ -1,20 +1,20 @@
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 import {
 	DEFAULT_RASTER_BASEMAP_STYLE,
 	DEFAULT_RASTER_DEM_STYLE
 } from '$routes/map/data/entries/raster/_style';
-import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 
 import type {
-	RasterEntry,
+	DemDataTypeKey,
 	RasterBaseMapStyle,
 	RasterDemStyle,
-	RasterPMTilesEntry,
-	DemDataTypeKey,
-	RasterDiscreteDimension
+	RasterDiscreteDimension,
+	RasterEntry,
+	RasterPMTilesEntry
 } from '$routes/map/data/types/raster';
 
-import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 
 export const createRasterEntry = (
@@ -25,15 +25,15 @@ export const createRasterEntry = (
 		minZoom?: number;
 		maxZoom?: number;
 		bounds?: [number, number, number, number];
-		timeDimension?: { values: string[]; labels?: string[] };
+		timeDimension?: { values: string[]; labels?: string[]; };
 	}
 ): RasterEntry<RasterBaseMapStyle> => {
 	const timeDimension: RasterDiscreteDimension | undefined = options?.timeDimension
 		? {
-				type: 'time',
-				values: options.timeDimension.values,
-				labels: options.timeDimension.labels
-			}
+			type: 'time',
+			values: options.timeDimension.values,
+			labels: options.timeDimension.labels
+		}
 		: undefined;
 
 	const entry: RasterEntry<RasterBaseMapStyle> = {
@@ -117,7 +117,7 @@ export const createDemRasterEntry = (
 export const createPmtilesRasterEntry = (
 	name: string,
 	url: string,
-	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number }
+	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number; }
 ): RasterPMTilesEntry<RasterBaseMapStyle> => ({
 	id: 'pmtiles_' + crypto.randomUUID(),
 	type: 'raster',

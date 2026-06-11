@@ -86,7 +86,15 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '樹種ごとの色分け',
 					mapping: {
 						...createMatchColorMapping(
-							['スギ', 'ヒノキ', 'アカマツ', 'スラッシュマツ', '広葉樹', '草地', 'その他岩石'],
+							[
+								'スギ',
+								'ヒノキ',
+								'アカマツ',
+								'スラッシュマツ',
+								'広葉樹',
+								'草地',
+								'その他岩石'
+							],
 							'treeSpecies'
 						)
 					}

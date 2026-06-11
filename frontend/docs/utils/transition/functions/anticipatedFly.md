@@ -8,7 +8,7 @@
 
 > **anticipatedFly**(`node`, `__namedParameters`): `object`
 
-Defined in: [frontend/src/routes/map/utils/transition.ts:28](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/utils/transition.ts#L28)
+Defined in: [frontend/src/routes/map/utils/transition.ts:28](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/utils/transition.ts#L28)
 
 ## Parameters
 

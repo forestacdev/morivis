@@ -6,6 +6,6 @@
 
 # Type Alias: GeoDataEntry
 
-> **GeoDataEntry** = [`AnyRasterEntry`](AnyRasterEntry.md) \| [`AnyVectorEntry`](AnyVectorEntry.md) \| [`AnyModelEntry`](../model/type-aliases/AnyModelEntry.md)
+> **GeoDataEntry** = [`AnyRasterEntry`](AnyRasterEntry.md) \| [`AnyVectorEntry`](AnyVectorEntry.md) \| [`AnyModelEntry`](../model/type-aliases/AnyModelEntry.md) \| [`StyleJsonEntry`](../stylejson/interfaces/StyleJsonEntry.md)
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:59](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L59)
+Defined in: [frontend/src/routes/map/data/types/index.ts:125](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L125)

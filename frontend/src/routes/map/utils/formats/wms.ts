@@ -17,12 +17,12 @@ const parseDuration = (dur: string): number | null => {
 	const mins = parseInt(m[5] || '0');
 	const secs = parseFloat(m[6] || '0');
 	return (
-		years * 365.25 * 86400000 +
-		months * 30.4375 * 86400000 +
-		days * 86400000 +
-		hours * 3600000 +
-		mins * 60000 +
-		secs * 1000
+		years * 365.25 * 86400000
+		+ months * 30.4375 * 86400000
+		+ days * 86400000
+		+ hours * 3600000
+		+ mins * 60000
+		+ secs * 1000
 	);
 };
 
@@ -108,7 +108,7 @@ export interface WmsLayerInfo {
 	name: string;
 	bbox: [number, number, number, number] | null;
 	crs: string[];
-	styles: { name: string; title: string }[];
+	styles: { name: string; title: string; }[];
 	formats: string[];
 	timeDimension?: WmsTimeDimensionInfo;
 }
@@ -142,9 +142,10 @@ const flattenLayers = (layers: any[], result: WmsLayerInfo[] = []): WmsLayerInfo
 
 			let timeDimension: WmsTimeDimensionInfo | undefined;
 			if (layer.Dimension) {
-				const timeDim = (Array.isArray(layer.Dimension) ? layer.Dimension : [layer.Dimension]).find(
-					(d: any) => d.name?.toLowerCase() === 'time'
-				);
+				const timeDim =
+					(Array.isArray(layer.Dimension) ? layer.Dimension : [layer.Dimension]).find(
+						(d: any) => d.name?.toLowerCase() === 'time'
+					);
 				if (timeDim?.values) {
 					const values = parseTimeValues(timeDim.values).reverse();
 					if (values.length > 0) {
@@ -186,7 +187,9 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 		// GetCapabilitiesリクエストURLを構築
 		const capUrl = new URL(url);
 		if (!capUrl.searchParams.has('service')) capUrl.searchParams.set('service', 'WMS');
-		if (!capUrl.searchParams.has('request')) capUrl.searchParams.set('request', 'GetCapabilities');
+		if (!capUrl.searchParams.has('request')) {
+			capUrl.searchParams.set('request', 'GetCapabilities');
+		}
 
 		const response = await fetch(capUrl.toString());
 		if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -201,7 +204,8 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 		}
 
 		// GetMap URLのベースを取得
-		const getMapUrl = result.Capability?.Request?.GetMap?.DCPType?.[0]?.HTTP?.Get?.OnlineResource;
+		const getMapUrl = result.Capability?.Request?.GetMap?.DCPType?.[0]?.HTTP?.Get
+			?.OnlineResource;
 
 		if (!getMapUrl) {
 			console.warn('GetMap URL not found in Capabilities');
@@ -210,11 +214,10 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 
 		// 対応フォーマットを取得
 		const formats: string[] = result.Capability?.Request?.GetMap?.Format || [];
-		const preferredFormat =
-			formats.find((f: string) => f === 'image/png') ||
-			formats.find((f: string) => f === 'image/jpeg') ||
-			formats[0] ||
-			'image/png';
+		const preferredFormat = formats.find((f: string) => f === 'image/png')
+			|| formats.find((f: string) => f === 'image/jpeg')
+			|| formats[0]
+			|| 'image/png';
 
 		// WMSバージョンを取得
 		const version = result.version || '1.3.0';
@@ -233,14 +236,13 @@ export const parseWmsCapabilities = async (url: string): Promise<WmsSourceInfo[]
 			const baseUrl = getMapUrl.replace(/[?&]+$/, '');
 			const separator = baseUrl.includes('?') ? '&' : '?';
 
-			let tileUrl =
-				`${baseUrl}${separator}service=WMS&version=${version}&request=GetMap` +
-				`&layers=${encodeURIComponent(layer.name)}` +
-				`&${srsParam}=EPSG:3857` +
-				`&bbox={bbox-epsg-3857}` +
-				`&width=256&height=256` +
-				`&format=${encodeURIComponent(preferredFormat)}` +
-				`&transparent=true`;
+			let tileUrl = `${baseUrl}${separator}service=WMS&version=${version}&request=GetMap`
+				+ `&layers=${encodeURIComponent(layer.name)}`
+				+ `&${srsParam}=EPSG:3857`
+				+ `&bbox={bbox-epsg-3857}`
+				+ `&width=256&height=256`
+				+ `&format=${encodeURIComponent(preferredFormat)}`
+				+ `&transparent=true`;
 
 			if (layer.timeDimension) {
 				tileUrl += '&TIME={morivis:dimension}';

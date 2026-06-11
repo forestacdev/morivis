@@ -154,8 +154,8 @@ export const impact = (options?: ImpactOptions): Promise<void> => {
 					return t === 0
 						? 0
 						: t === 1
-							? 1
-							: Math.pow(2, -8 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+						? 1
+						: Math.pow(2, -8 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
 				}
 			});
 			setTimeout(() => resolve(), duration * 0.8);

@@ -23,7 +23,8 @@ type PointCloudTextSchema = 'xyz' | 'idxyz' | 'xyzrgb' | 'idxyzrgb';
 const splitValues = (line: string): string[] => line.trim().split(/[\s,]+/);
 
 const isNumericColumnSet = (values: string[]): boolean =>
-	values.length > 0 && values.every((value) => value.length > 0 && Number.isFinite(Number(value)));
+	values.length > 0
+	&& values.every((value) => value.length > 0 && Number.isFinite(Number(value)));
 
 const detectSchema = (values: string[]): PointCloudTextSchema | null => {
 	if (!isNumericColumnSet(values)) return null;

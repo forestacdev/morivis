@@ -45,7 +45,7 @@ const findCoordVar = (variables: NetCDFVariableInfo[], candidates: string[]): st
  */
 export const parseNetCDF = (
 	arrayBuffer: ArrayBuffer
-): { reader: NetCDFReader; info: NetCDFInfo } => {
+): { reader: NetCDFReader; info: NetCDFInfo; } => {
 	const reader = new NetCDFReader(arrayBuffer);
 
 	const dimensions: NetCDFDimensionInfo[] = reader.dimensions.map((d: any) => ({
@@ -157,12 +157,11 @@ export const extractRasterData = (
 	const rawData = reader.getDataVariable(variableName);
 
 	// 変数の属性からnodataを取得
-	const nodata =
-		variable.attributes['_FillValue'] != null
-			? Number(variable.attributes['_FillValue'])
-			: variable.attributes['missing_value'] != null
-				? Number(variable.attributes['missing_value'])
-				: null;
+	const nodata = variable.attributes['_FillValue'] != null
+		? Number(variable.attributes['_FillValue'])
+		: variable.attributes['missing_value'] != null
+		? Number(variable.attributes['missing_value'])
+		: null;
 
 	// 次元情報を解析
 	const dims = variable.dimensions;
@@ -281,7 +280,7 @@ export const getDimensionValues = (
  * CF Conventions の時間units文字列をパースする
  * 例: "hours since 1900-01-01 00:00:00", "days since 1970-01-01", "seconds since 2000-1-1 0:0:0"
  */
-const parseTimeUnits = (units: string): { stepMs: number; epoch: Date } | null => {
+const parseTimeUnits = (units: string): { stepMs: number; epoch: Date; } | null => {
 	const match = units.match(
 		/^(second|minute|hour|day|month|year)s?\s+since\s+(\d{4})-?(\d{1,2})-?(\d{1,2})(?:[T\s]+(\d{1,2}):?(\d{1,2})?:?(\d{1,2})?)?/i
 	);

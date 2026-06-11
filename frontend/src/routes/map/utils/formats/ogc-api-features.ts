@@ -17,7 +17,7 @@ export interface OgcApiFeaturesServiceInfo {
 }
 
 type JsonObject = Record<string, unknown>;
-type CollectionListResponse = JsonObject & { collections: unknown[] };
+type CollectionListResponse = JsonObject & { collections: unknown[]; };
 
 const JSON_REQUEST_INIT: RequestInit = {
 	headers: {
@@ -65,9 +65,8 @@ const mapCollectionSummary = (collection: JsonObject): OgcApiFeaturesCollectionS
 
 	return {
 		id,
-		title:
-			(typeof collection.title === 'string' && collection.title.trim()) ||
-			(typeof collection.id === 'string' ? collection.id : 'collection'),
+		title: (typeof collection.title === 'string' && collection.title.trim())
+			|| (typeof collection.id === 'string' ? collection.id : 'collection'),
 		description: typeof collection.description === 'string' ? collection.description : null,
 		bbox: getCollectionBbox(collection)
 	};
@@ -83,10 +82,10 @@ const isCollectionListResponse = (json: unknown): json is CollectionListResponse
 
 const isCollectionResponse = (json: unknown): json is JsonObject => {
 	return (
-		!!json &&
-		typeof json === 'object' &&
-		typeof (json as JsonObject).id === 'string' &&
-		('itemType' in (json as JsonObject) || 'extent' in (json as JsonObject))
+		!!json
+		&& typeof json === 'object'
+		&& typeof (json as JsonObject).id === 'string'
+		&& ('itemType' in (json as JsonObject) || 'extent' in (json as JsonObject))
 	);
 };
 
@@ -135,10 +134,9 @@ const normalizeServiceUrls = (
 	const selectedCollectionId = segments[collectionsIndex + 1]
 		? decodeURIComponent(segments[collectionsIndex + 1])
 		: null;
-	const itemsUrl =
-		selectedCollectionId && segments[collectionsIndex + 2] === 'items'
-			? stripTrailingSlash(`${collectionsUrl}/${encodeURIComponent(selectedCollectionId)}/items`)
-			: null;
+	const itemsUrl = selectedCollectionId && segments[collectionsIndex + 2] === 'items'
+		? stripTrailingSlash(`${collectionsUrl}/${encodeURIComponent(selectedCollectionId)}/items`)
+		: null;
 
 	return { rootUrl, collectionsUrl, selectedCollectionId, itemsUrl };
 };
@@ -153,11 +151,10 @@ const fetchJson = async (url: string): Promise<JsonObject> => {
 
 const fetchCollectionsFromLandingPage = async (
 	rootUrl: string
-): Promise<{ collectionsUrl: string; collections: OgcApiFeaturesCollectionSummary[] }> => {
+): Promise<{ collectionsUrl: string; collections: OgcApiFeaturesCollectionSummary[]; }> => {
 	const landing = await fetchJson(rootUrl);
-	const dataLink =
-		getLinkHref(landing, ['data', 'http://www.opengis.net/def/rel/ogc/1.0/data']) ??
-		`${stripTrailingSlash(rootUrl)}/collections`;
+	const dataLink = getLinkHref(landing, ['data', 'http://www.opengis.net/def/rel/ogc/1.0/data'])
+		?? `${stripTrailingSlash(rootUrl)}/collections`;
 	const collectionsResponse = await fetchJson(dataLink);
 	if (!isCollectionListResponse(collectionsResponse)) {
 		throw new Error('Collections response is invalid');
@@ -187,7 +184,9 @@ export const parseOgcApiFeaturesService = async (
 
 		if (normalized.itemsUrl) {
 			const collectionResponse = await fetchJson(
-				`${normalized.collectionsUrl}/${encodeURIComponent(normalized.selectedCollectionId ?? '')}`
+				`${normalized.collectionsUrl}/${
+					encodeURIComponent(normalized.selectedCollectionId ?? '')
+				}`
 			);
 			if (!isCollectionResponse(collectionResponse)) {
 				throw new Error('Collection response is invalid');
@@ -208,7 +207,9 @@ export const parseOgcApiFeaturesService = async (
 
 		if (normalized.selectedCollectionId) {
 			const collectionResponse = await fetchJson(
-				`${normalized.collectionsUrl}/${encodeURIComponent(normalized.selectedCollectionId)}`
+				`${normalized.collectionsUrl}/${
+					encodeURIComponent(normalized.selectedCollectionId)
+				}`
 			);
 			if (!isCollectionResponse(collectionResponse)) {
 				throw new Error('Collection response is invalid');

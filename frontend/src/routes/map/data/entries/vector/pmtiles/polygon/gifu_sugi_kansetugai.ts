@@ -22,7 +22,12 @@ const entry: PolygonEntry<TileMetaData> = {
 		maxZoom: 14,
 		minZoom: 1,
 		sourceLayer: 'gifu_sugi_kansetugai',
-		bounds: [136.2750000000000057, 35.1333333333333329, 137.6624999999999943, 36.4666666666666686],
+		bounds: [
+			136.2750000000000057,
+			35.1333333333333329,
+			137.6624999999999943,
+			36.4666666666666686
+		],
 		mapImage: `${MAP_IMAGE_BASE_PATH}/gifu_sugi_kansetugai.webp`
 	},
 	properties: {
@@ -65,8 +70,24 @@ const entry: PolygonEntry<TileMetaData> = {
 					key: '20冬期中の危険日判定',
 					name: '20冬期中の危険日判定',
 					mapping: {
-						categories: ['0日', '1~2日', '3~5日', '6~10日', '11〜15日', '16~20日', '21日以上'],
-						values: ['#ffffb2', '#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c', '#b10026'],
+						categories: [
+							'0日',
+							'1~2日',
+							'3~5日',
+							'6~10日',
+							'11〜15日',
+							'16~20日',
+							'21日以上'
+						],
+						values: [
+							'#ffffb2',
+							'#fed976',
+							'#feb24c',
+							'#fd8d3c',
+							'#fc4e2a',
+							'#e31a1c',
+							'#b10026'
+						],
 						patterns: [null, null, null, null, null, null, null]
 					}
 				}

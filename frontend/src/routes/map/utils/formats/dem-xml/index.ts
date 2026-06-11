@@ -13,17 +13,17 @@ import JSZip from 'jszip';
 
 interface MetaData {
 	mesh_code: number;
-	lower_corner: { lat: number; lon: number };
-	upper_corner: { lat: number; lon: number };
-	grid_length: { x: number; y: number };
-	start_point: { x: number; y: number };
-	pixel_size: { x: number; y: number };
+	lower_corner: { lat: number; lon: number; };
+	upper_corner: { lat: number; lon: number; };
+	grid_length: { x: number; y: number; };
+	start_point: { x: number; y: number; };
+	pixel_size: { x: number; y: number; };
 }
 
 interface DemContent {
 	mesh_code: number;
 	meta_data: MetaData;
-	elevation: { mesh_code: number; items: string[] };
+	elevation: { mesh_code: number; items: string[]; };
 }
 
 interface NpArrayData {

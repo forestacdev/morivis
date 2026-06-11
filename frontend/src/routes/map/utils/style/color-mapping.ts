@@ -1,4 +1,3 @@
-import type { ColorStepExpression } from '$routes/map/data/types/vector/style';
 import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import type {
 	ColorMapType,
@@ -6,6 +5,7 @@ import type {
 	DemRangeColorStyle,
 	DemStepColorStyle
 } from '$routes/map/data/types/raster';
+import type { ColorStepExpression } from '$routes/map/data/types/vector/style';
 
 import {
 	getSequentSchemeColors,
@@ -14,8 +14,8 @@ import {
 } from '$routes/map/utils/color/color-brewer';
 import {
 	COLORMAP_PRESETS,
-	type ColorMapStop,
-	type ColormapPresetName
+	type ColormapPresetName,
+	type ColorMapStop
 } from '$routes/map/utils/color/colormap-presets';
 
 type ColorTuple = [number, number, number, number];
@@ -101,9 +101,11 @@ const formatColorTuple = (color: ColorTuple, format: ColorOutputFormat): string 
 	const [r, g, b, a] = color;
 	if (format === 'rgb') return `rgb(${r}, ${g}, ${b})`;
 	if (format === 'rgba') return `rgba(${r}, ${g}, ${b}, ${a})`;
-	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b
-		.toString(16)
-		.padStart(2, '0')}`;
+	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${
+		b
+			.toString(16)
+			.padStart(2, '0')
+	}`;
 };
 
 const COLOR_MAP_ALIASES = {} as const satisfies Record<string, SequentialScheme>;
@@ -181,7 +183,10 @@ export const toDemLinearColorStyle = (style: DemRangeColorStyle): DemLinearColor
 		colorMap: DEFAULT_DEM_LINEAR_COLOR_MAP,
 		range: {
 			value: [...getDemStyleRange(style)] as [number, number],
-			domain: [...getAdjustableRangeDomain(style.range, style.min, style.max)] as [number, number]
+			domain: [...getAdjustableRangeDomain(style.range, style.min, style.max)] as [
+				number,
+				number
+			]
 		}
 	};
 };
@@ -199,7 +204,10 @@ export const toDemStepColorStyle = (
 		colorMap: DEFAULT_DEM_STEP_COLOR_MAP,
 		range: {
 			value: [...getDemStyleRange(style)] as [number, number],
-			domain: [...getAdjustableRangeDomain(style.range, style.min, style.max)] as [number, number]
+			domain: [...getAdjustableRangeDomain(style.range, style.min, style.max)] as [
+				number,
+				number
+			]
 		},
 		divisions: defaultDivisions
 	};
@@ -217,7 +225,7 @@ const getFormattedScaleValues = (min: number, max: number, divisions: number): n
 };
 
 // HSLからRGBへの変換ヘルパー関数
-const hslToRgb = (h: number, s: number, l: number): { r: number; g: number; b: number } => {
+const hslToRgb = (h: number, s: number, l: number): { r: number; g: number; b: number; } => {
 	h = h / 360;
 	s = s / 100;
 	l = l / 100;
@@ -262,7 +270,9 @@ export const generateHueBasedHexColors = (count: number): string[] => {
 
 		// HSLからRGBに変換
 		const rgb = hslToRgb(hue, saturation, lightness);
-		const hex = `#${rgb.r.toString(16).padStart(2, '0')}${rgb.g.toString(16).padStart(2, '0')}${rgb.b.toString(16).padStart(2, '0')}`;
+		const hex = `#${rgb.r.toString(16).padStart(2, '0')}${rgb.g.toString(16).padStart(2, '0')}${
+			rgb.b.toString(16).padStart(2, '0')
+		}`;
 		colors.push(hex);
 	}
 
@@ -310,7 +320,9 @@ export class ColorMapManager {
 		);
 	}
 
-	private resolvePaletteColors(colorMapName: string): readonly string[] | readonly ColorMapStop[] {
+	private resolvePaletteColors(
+		colorMapName: string
+	): readonly string[] | readonly ColorMapStop[] {
 		const resolvedName = resolveColorMapName(colorMapName);
 
 		if (this.sequentialSchemeNames.has(resolvedName)) {
@@ -330,7 +342,9 @@ export class ColorMapManager {
 			const colors: string[] = [];
 			for (let i = 0; i < pixels.length; i += 3) {
 				colors.push(
-					`#${pixels[i].toString(16).padStart(2, '0')}${pixels[i + 1].toString(16).padStart(2, '0')}${pixels[i + 2].toString(16).padStart(2, '0')}`
+					`#${pixels[i].toString(16).padStart(2, '0')}${
+						pixels[i + 1].toString(16).padStart(2, '0')
+					}${pixels[i + 2].toString(16).padStart(2, '0')}`
 				);
 			}
 			return colors;
@@ -373,7 +387,10 @@ export class ColorMapManager {
 		const resolvedName = resolveColorMapName(colorMapName);
 
 		if (this.sequentialSchemeNames.has(resolvedName)) {
-			return getSequentSchemeColors(resolvedName as SequentialScheme, divisions as SequentialCount);
+			return getSequentSchemeColors(
+				resolvedName as SequentialScheme,
+				divisions as SequentialCount
+			);
 		}
 
 		return this.getColorArrayFromMap(colorMapName, 'hex', divisions);
@@ -417,10 +434,9 @@ export class ColorMapManager {
 		const pixels = new Uint8Array(width * 3); // RGBのみの3チャンネルデータ
 
 		const palette = this.resolvePaletteColors(colorMapName);
-		const colors =
-			typeof palette[0] === 'string'
-				? resampleHexColors(palette as readonly string[], width)
-				: resampleColorStops(palette as readonly ColorMapStop[], width);
+		const colors = typeof palette[0] === 'string'
+			? resampleHexColors(palette as readonly string[], width)
+			: resampleColorStops(palette as readonly ColorMapStop[], width);
 
 		// RGBデータの格納
 		let ptr = 0;

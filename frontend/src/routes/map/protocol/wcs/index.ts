@@ -36,7 +36,7 @@ const toUint8Array = async (blob: Blob): Promise<Uint8Array> => {
 const getFiniteMinMax = (
 	data: ArrayLike<number>,
 	nodata: number | null
-): { min: number; max: number } => {
+): { min: number; max: number; } => {
 	let min = Number.POSITIVE_INFINITY;
 	let max = Number.NEGATIVE_INFINITY;
 
@@ -72,7 +72,7 @@ const parseRanges = (value: string | null): number[] => {
 const renderTiffToPngBytes = async (
 	buffer: ArrayBuffer,
 	tileSize: number,
-	requestedRanges?: { mins: number[]; maxs: number[] }
+	requestedRanges?: { mins: number[]; maxs: number[]; }
 ): Promise<Uint8Array> => {
 	const tiff = await fromArrayBuffer(buffer);
 	const image = await tiff.getImage();
@@ -114,10 +114,10 @@ const renderTiffToPngBytes = async (
 			const g = gBand[i];
 			const b = bBand[i];
 			const isTransparent =
-				(nodata !== null && (r === nodata || g === nodata || b === nodata)) ||
-				!Number.isFinite(r) ||
-				!Number.isFinite(g) ||
-				!Number.isFinite(b);
+				(nodata !== null && (r === nodata || g === nodata || b === nodata))
+				|| !Number.isFinite(r)
+				|| !Number.isFinite(g)
+				|| !Number.isFinite(b);
 
 			if (isTransparent) {
 				rgba[offset + 3] = 0;
@@ -181,9 +181,9 @@ const extractServiceException = (text: string): string | null => {
 	return (
 		xml
 			.querySelector('ExceptionText, ows\\:ExceptionText, ServiceException')
-			?.textContent?.trim() ??
-		xml.documentElement.textContent?.trim() ??
-		null
+			?.textContent?.trim()
+			?? xml.documentElement.textContent?.trim()
+			?? null
 	);
 };
 
@@ -195,7 +195,7 @@ class WcsProtocolHandler {
 		}
 	>();
 
-	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array }> {
+	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array; }> {
 		const x = Number.parseInt(url.searchParams.get('x') ?? '0', 10);
 		const y = Number.parseInt(url.searchParams.get('y') ?? '0', 10);
 		const z = Number.parseInt(url.searchParams.get('z') ?? '0', 10);
@@ -241,7 +241,9 @@ class WcsProtocolHandler {
 				height: tileSize
 			});
 
-			const response = await fetchWithDevProxy(requestUrl, { signal: abortController.signal });
+			const response = await fetchWithDevProxy(requestUrl, {
+				signal: abortController.signal
+			});
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}`);
 			}
@@ -250,13 +252,13 @@ class WcsProtocolHandler {
 			let data: Uint8Array;
 
 			if (
-				DIRECT_IMAGE_CONTENT_TYPE_RE.test(contentType) &&
-				!TIFF_CONTENT_TYPE_RE.test(contentType)
+				DIRECT_IMAGE_CONTENT_TYPE_RE.test(contentType)
+				&& !TIFF_CONTENT_TYPE_RE.test(contentType)
 			) {
 				data = new Uint8Array(await response.arrayBuffer());
 			} else if (
-				TIFF_CONTENT_TYPE_RE.test(contentType) ||
-				TIFF_CONTENT_TYPE_RE.test(outputFormat)
+				TIFF_CONTENT_TYPE_RE.test(contentType)
+				|| TIFF_CONTENT_TYPE_RE.test(outputFormat)
 			) {
 				data = await renderTiffToPngBytes(await response.arrayBuffer(), tileSize, {
 					mins: bandMins,
@@ -298,7 +300,7 @@ export const terminateWcsProtocol = () => {
 export const wcsProtocol = (protocolName: 'wcs') => {
 	return {
 		protocolName,
-		request: (params: { url: string }, abortController: AbortController) => {
+		request: (params: { url: string; }, abortController: AbortController) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol, window.location.origin);
 			return handler.request(url, abortController);

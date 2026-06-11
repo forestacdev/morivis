@@ -11,14 +11,9 @@
  * });
  */
 
-import type { Region } from '$routes/map/data/types/location';
-import type { Tag } from '$routes/map/data/types/tags';
-import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
-import type { VectorFormatType, PolygonEntry, TileMetaData } from '$routes/map/data/types/vector';
-import type { FieldDef } from '$routes/map/data/types/vector/properties';
-import type { ColorsExpression, PolygonStyle } from '$routes/map/data/types/vector/style';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
-import { resolveBounds, type Bounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
+import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
+import { type Bounds, resolveBounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
 import {
 	TREE_SPECIES_FIELDS,
 	TREE_SPECIES_POPUP_KEYS,
@@ -27,11 +22,16 @@ import {
 } from '$routes/map/data/entries/vector/_properties';
 import {
 	DEFAULT_POLYGON_STYLE,
-	TREE_SPECIES_LABELS,
-	TREE_SPECIES_OUTLINE,
+	TREE_MATCH_COLOR_STYLE,
 	TREE_SINGLE_COLOR_STYLE,
-	TREE_MATCH_COLOR_STYLE
+	TREE_SPECIES_LABELS,
+	TREE_SPECIES_OUTLINE
 } from '$routes/map/data/entries/vector/_style';
+import type { Region } from '$routes/map/data/types/location';
+import type { Tag } from '$routes/map/data/types/tags';
+import type { PolygonEntry, TileMetaData, VectorFormatType } from '$routes/map/data/types/vector';
+import type { FieldDef } from '$routes/map/data/types/vector/properties';
+import type { ColorsExpression, PolygonStyle } from '$routes/map/data/types/vector/style';
 
 type XYZPresetKey = keyof typeof IMAGE_TILE_XYZ_SETS;
 
@@ -70,7 +70,7 @@ export interface TreeSpeciesEntryConfig {
 	bounds?: Region | Bounds;
 
 	/** ズームレベル */
-	zoom?: { min: number; max: number };
+	zoom?: { min: number; max: number; };
 
 	/** プレビュータイル */
 	xyzImageTile?: XYZPresetKey;

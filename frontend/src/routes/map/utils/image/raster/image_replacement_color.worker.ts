@@ -1,7 +1,7 @@
 import { convertCanvasToResult } from '$routes/map/protocol/farbling';
+import chroma from 'chroma-js';
 import fsSource from './shaders/fragment.glsl?raw';
 import vsSource from './shaders/vertex.glsl?raw';
-import chroma from 'chroma-js';
 
 let gl: WebGL2RenderingContext | null = null;
 let program: WebGLProgram | null = null;
@@ -27,7 +27,9 @@ const initWebGL = (canvas: OffscreenCanvas) => {
 		gl.compileShader(shader);
 
 		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-			console.error('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+			console.error(
+				'An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader)
+			);
 			gl.deleteShader(shader);
 			return null;
 		}

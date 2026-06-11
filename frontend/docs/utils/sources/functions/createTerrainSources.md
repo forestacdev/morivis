@@ -8,7 +8,7 @@
 
 > **createTerrainSources**(`_dataEntries`, `_id`): `Promise`\<\{\[`_`: `string`\]: `RasterDEMSourceSpecification`; \}\>
 
-Defined in: [frontend/src/routes/map/utils/sources/index.ts:423](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/utils/sources/index.ts#L423)
+Defined in: [frontend/src/routes/map/utils/sources/index.ts:725](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/utils/sources/index.ts#L725)
 
 ## Parameters
 

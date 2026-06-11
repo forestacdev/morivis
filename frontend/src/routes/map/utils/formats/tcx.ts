@@ -157,7 +157,7 @@ const findFirstByKeys = (value: unknown, keys: string[]): unknown => {
 };
 
 const getTrackPointAngle = (
-	points: Array<{ lat: number; lon: number }>,
+	points: Array<{ lat: number; lon: number; }>,
 	pointIndex: number
 ): number | undefined => {
 	const currentPoint = points[pointIndex];
@@ -166,14 +166,13 @@ const getTrackPointAngle = (
 
 	const toRadians = (value: number) => (value * Math.PI) / 180;
 	const toDegrees = (value: number) => (value * 180) / Math.PI;
-	const getBearing = (from: { lat: number; lon: number }, to: { lat: number; lon: number }) => {
+	const getBearing = (from: { lat: number; lon: number; }, to: { lat: number; lon: number; }) => {
 		const fromLat = toRadians(from.lat);
 		const toLat = toRadians(to.lat);
 		const deltaLon = toRadians(to.lon - from.lon);
 		const y = Math.sin(deltaLon) * Math.cos(toLat);
-		const x =
-			Math.cos(fromLat) * Math.sin(toLat) -
-			Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLon);
+		const x = Math.cos(fromLat) * Math.sin(toLat)
+			- Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLon);
 		return (toDegrees(Math.atan2(y, x)) + 360) % 360;
 	};
 
@@ -202,7 +201,9 @@ const parseTrackPoint = (value: unknown): TcxTrackPoint | null => {
 		ele: getNumber(node.AltitudeMeters),
 		time: formatTcxTime(node.Time),
 		distanceMeters: getNumber(node.DistanceMeters),
-		heartRateBpm: getNumber(getNestedValue(node, ['HeartRateBpm', 'Value']) ?? node.HeartRateBpm),
+		heartRateBpm: getNumber(
+			getNestedValue(node, ['HeartRateBpm', 'Value']) ?? node.HeartRateBpm
+		),
 		cadence: getNumber(node.Cadence),
 		watts: getNumber(findFirstByKeys(node.Extensions, ['Watts'])),
 		speed: getNumber(findFirstByKeys(node.Extensions, ['Speed']))
@@ -239,8 +240,8 @@ const parseActivityContainer = (
 	waypoints: TcxWaypoint[],
 	kind: 'activity' | 'history'
 ): void => {
-	const activityId =
-		getText(activity.Id) ?? getText(activity.Name) ?? `${kind}-${tracks.length + 1}`;
+	const activityId = getText(activity.Id) ?? getText(activity.Name)
+		?? `${kind}-${tracks.length + 1}`;
 	const sport = getText(activity.Sport);
 	const laps = asArray(activity.Lap ?? getNestedValue(activity, ['Laps', 'Lap']));
 	let lapWaypointIndex = waypoints.filter((waypoint) => waypoint.kind === 'lap').length;
@@ -362,7 +363,7 @@ export const parseTcxText = (text: string): TcxParseResult => {
 
 export const checkTcxFile = async (
 	file: File
-): Promise<{ tracks: boolean; track_points: boolean; waypoints: boolean }> => {
+): Promise<{ tracks: boolean; track_points: boolean; waypoints: boolean; }> => {
 	const parsed = await readTcxFile(file);
 	return {
 		tracks: parsed.tracks.some((track) => track.points.length >= 2),
@@ -386,7 +387,9 @@ export const tcxFileToGeojson = async (
 					type: 'Feature',
 					geometry: {
 						type: 'LineString',
-						coordinates: track.points.map((point) => [point.lon, point.lat] as [number, number])
+						coordinates: track.points.map((point) =>
+							[point.lon, point.lat] as [number, number]
+						)
 					},
 					properties: {
 						name: track.name,

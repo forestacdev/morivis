@@ -42,4 +42,4 @@ const fullExample = createTreeSpeciesEntry({
 	opacity: 0.5
 });
 
-export { minimalExample, fullExample };
+export { fullExample, minimalExample };

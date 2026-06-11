@@ -1,28 +1,28 @@
-import type { Region } from '$routes/map/data/types/location';
-import type { Tag } from '$routes/map/data/types/tags';
-import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
-import type {
-	VectorFormatType,
-	GeoJsonMetaData,
-	PolygonEntry,
-	LineStringEntry,
-	PointEntry
-} from '$routes/map/data/types/vector';
-import type {
-	ColorsStyle,
-	NumbersStyle,
-	Labels,
-	ColorsExpression
-} from '$routes/map/data/types/vector/style';
-import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
-import type { FieldDef, AttributeView } from '$routes/map/data/types/vector/properties';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
-import { resolveBounds, type Bounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
+import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
+import { type Bounds, resolveBounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
 import {
-	DEFAULT_VECTOR_POINT_STYLE,
 	DEFAULT_VECTOR_LINE_STYLE,
+	DEFAULT_VECTOR_POINT_STYLE,
 	DEFAULT_VECTOR_POLYGON_STYLE
 } from '$routes/map/data/entries/vector/_style';
+import type { Region } from '$routes/map/data/types/location';
+import type { Tag } from '$routes/map/data/types/tags';
+import type {
+	GeoJsonMetaData,
+	LineStringEntry,
+	PointEntry,
+	PolygonEntry,
+	VectorFormatType
+} from '$routes/map/data/types/vector';
+import type { AttributeView, FieldDef } from '$routes/map/data/types/vector/properties';
+import type {
+	ColorsExpression,
+	ColorsStyle,
+	Labels,
+	NumbersStyle
+} from '$routes/map/data/types/vector/style';
+import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 
 type XYZPresetKey = keyof typeof IMAGE_TILE_XYZ_SETS;
 
@@ -41,7 +41,7 @@ interface BaseGeoJsonConfig {
 	description?: string;
 	downloadUrl?: string;
 	sourceDataName?: string;
-	zoom?: { min: number; max: number };
+	zoom?: { min: number; max: number; };
 	xyzImageTile?: XYZPresetKey;
 	coverImage?: string;
 	mapImage?: string;
@@ -66,7 +66,9 @@ function createLabelsFromFields(fields: FieldDef[]): Labels {
 	return {
 		key: labelExpressions[0]?.key ?? 'name',
 		show: false,
-		expressions: labelExpressions.length > 0 ? labelExpressions : [{ key: 'name', name: 'name' }]
+		expressions: labelExpressions.length > 0
+			? labelExpressions
+			: [{ key: 'name', name: 'name' }]
 	};
 }
 
@@ -164,9 +166,9 @@ export function createGeoJsonPointEntry(
 	const radiusStyle: NumbersStyle = radiusExpressions
 		? { key: radiusExpressions[0]?.key ?? '単一', expressions: radiusExpressions }
 		: {
-				key: '単一',
-				expressions: [{ type: 'single', key: '単一', name: '単一', mapping: { value: radius } }]
-			};
+			key: '単一',
+			expressions: [{ type: 'single', key: '単一', name: '単一', mapping: { value: radius } }]
+		};
 
 	return {
 		id,
@@ -254,9 +256,9 @@ export function createGeoJsonLineEntry(
 	const widthStyle: NumbersStyle = widthExpressions
 		? { key: widthExpressions[0]?.key ?? '単一', expressions: widthExpressions }
 		: {
-				key: '単一',
-				expressions: [{ type: 'single', key: '単一', name: '単一', mapping: { value: width } }]
-			};
+			key: '単一',
+			expressions: [{ type: 'single', key: '単一', name: '単一', mapping: { value: width } }]
+		};
 
 	return {
 		id,

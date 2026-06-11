@@ -333,10 +333,10 @@ const isWithinRouteBounds = (
 	if (!bounds) return true;
 	const [longitude, latitude] = coordinate;
 	return (
-		latitude >= bounds.minLatitude - margin &&
-		latitude <= bounds.maxLatitude + margin &&
-		longitude >= bounds.minLongitude - margin &&
-		longitude <= bounds.maxLongitude + margin
+		latitude >= bounds.minLatitude - margin
+		&& latitude <= bounds.maxLatitude + margin
+		&& longitude >= bounds.minLongitude - margin
+		&& longitude <= bounds.maxLongitude + margin
 	);
 };
 
@@ -434,8 +434,8 @@ const extractRouteCoordinatesFromInterlinks = (
 	for (const segment of acceptedSegments) {
 		for (const coordinate of segment.coordinates) {
 			if (
-				coordinates.length === 0 ||
-				!areSameCoordinate(coordinates[coordinates.length - 1], coordinate)
+				coordinates.length === 0
+				|| !areSameCoordinate(coordinates[coordinates.length - 1], coordinate)
 			) {
 				coordinates.push(coordinate);
 			}
@@ -465,7 +465,9 @@ const readRouteCommon = (
 		bounds,
 		routePointCount
 	);
-	const coordinates = interlinkCoordinates.length >= 2 ? interlinkCoordinates : fallbackCoordinates;
+	const coordinates = interlinkCoordinates.length >= 2
+		? interlinkCoordinates
+		: fallbackCoordinates;
 	const shapingPointCount = Math.max(coordinates.length - pointNames.length, 0);
 
 	return {
@@ -554,7 +556,8 @@ const readRecordPayload = (
 export const isGarminGdbFile = async (file: File) => {
 	const header = new Uint8Array(await file.slice(0, 6).arrayBuffer());
 	if (header.length < 6) return false;
-	return new TextDecoder('ascii', { fatal: false }).decode(header) === `${GARMIN_GDB_SIGNATURE}\0`;
+	return new TextDecoder('ascii', { fatal: false }).decode(header)
+		=== `${GARMIN_GDB_SIGNATURE}\0`;
 };
 
 export const readGarminGdbFile = async (file: File): Promise<GarminGdbParseResult> => {

@@ -6,7 +6,7 @@
 
 # Interface: ImageLegend
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:19](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L19)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:28](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L28)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:19](https://gith
 
 > **categories**: `ImageLegendCategory`[]
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:21](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L21)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:30](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L30)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:21](https://gith
 
 > **type**: `"image"`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:20](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L20)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:29](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L29)

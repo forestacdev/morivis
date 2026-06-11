@@ -1,8 +1,8 @@
-import { defineConfig, loadEnv, type Plugin } from 'vite';
-import { sveltekit } from '@sveltejs/kit/vite';
 import { enhancedImages } from '@sveltejs/enhanced-img';
-import path from 'path';
+import { sveltekit } from '@sveltejs/kit/vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
+import path from 'path';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { qrcode } from 'vite-plugin-qrcode';
 import { buildViteProxyConfig } from './src/routes/map/utils/platform/proxy';
 
@@ -11,8 +11,8 @@ const diaperCssOverridePlugin: Plugin = {
 	name: 'diaper-css-override',
 	transform(code, id) {
 		if (
-			id.includes('@devantic/diaper') &&
-			(id.endsWith('diaper.css') || id.endsWith('bottomsheet.css'))
+			id.includes('@devantic/diaper')
+			&& (id.endsWith('diaper.css') || id.endsWith('bottomsheet.css'))
 		) {
 			return { code: '', map: null };
 		}
@@ -30,7 +30,11 @@ export default defineConfig(({ mode }) => {
 			enhancedImages(),
 			SvelteKitPWA({
 				// PWA用の設定
-				includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'maskable-icon-512x512.png'],
+				includeAssets: [
+					'favicon.ico',
+					'apple-touch-icon-180x180.png',
+					'maskable-icon-512x512.png'
+				],
 				showMaximumFileSizeToCacheInBytesWarning: true,
 				manifest: {
 					name: 'morivis',

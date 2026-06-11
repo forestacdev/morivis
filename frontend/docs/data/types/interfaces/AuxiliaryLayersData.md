@@ -6,7 +6,7 @@
 
 # Interface: AuxiliaryLayersData
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:24](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L24)
+Defined in: [frontend/src/routes/map/data/types/index.ts:88](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L88)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:24](https://github.com/
 
 > **layers**: [`AuxiliaryLayerSpecification`](../type-aliases/AuxiliaryLayerSpecification.md)[]
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:30](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L30)
+Defined in: [frontend/src/routes/map/data/types/index.ts:94](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L94)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:30](https://github.com/
 
 > `optional` **sources**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:26](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/index.ts#L26)
+Defined in: [frontend/src/routes/map/data/types/index.ts:90](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/index.ts#L90)
 
 #### Index Signature
 

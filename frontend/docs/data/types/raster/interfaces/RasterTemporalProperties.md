@@ -6,12 +6,20 @@
 
 # Interface: RasterTemporalProperties
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:245](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L245)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:225](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L225)
 
 ## Properties
 
+### behaviors?
+
+> `optional` **behaviors**: [`SourceTemporalBehavior`](../../interfaces/SourceTemporalBehavior.md)[]
+
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:227](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L227)
+
+***
+
 ### dimension
 
-> **dimension**: [`RasterDiscreteDimension`](RasterDiscreteDimension.md)
+> **dimension**: [`SharedDiscreteDimension`](../../interfaces/SharedDiscreteDimension.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:246](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L246)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:226](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L226)

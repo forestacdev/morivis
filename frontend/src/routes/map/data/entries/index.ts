@@ -1,10 +1,10 @@
 import type { GeoDataEntry, GeoDataEntryCatalogItem } from '$routes/map/data/types';
 import { activeLayerIdsStore } from '$routes/stores/layers';
 
+import { encode } from '$routes/map/utils/data/normalize';
 import type { LayerType } from '$routes/map/utils/entries';
 import { getLayerType } from '$routes/map/utils/entries';
 import Fuse from 'fuse.js';
-import { encode } from '$routes/map/utils/data/normalize';
 
 // 共通の初期化処理
 // visible を true にする
@@ -23,8 +23,8 @@ const initData = (data: GeoDataEntry[]) => {
 
 const isDev = !import.meta.env.PROD;
 
-type EntryModule = { default: GeoDataEntry };
-type CatalogModule = { default: GeoDataEntryCatalogItem };
+type EntryModule = { default: GeoDataEntry; };
+type CatalogModule = { default: GeoDataEntryCatalogItem; };
 
 const allModules = import.meta.glob<EntryModule>(
 	[
@@ -58,11 +58,11 @@ const hasDebugEntries = debugEntries.length > 0;
 
 const entryCatalogItems: GeoDataEntryCatalogItem[] = hasDebugEntries
 	? [
-			...Object.values(allModules)
-				.filter((mod) => mod.default.id.startsWith('!'))
-				.map((mod) => ({ entry: mod.default })),
-			...lazyCatalogItems.filter((item) => item.entry.id.startsWith('!'))
-		]
+		...Object.values(allModules)
+			.filter((mod) => mod.default.id.startsWith('!'))
+			.map((mod) => ({ entry: mod.default })),
+		...lazyCatalogItems.filter((item) => item.entry.id.startsWith('!'))
+	]
 	: [...Object.values(allModules).map((mod) => ({ entry: mod.default })), ...lazyCatalogItems];
 
 const entryCatalogMap = new Map(entryCatalogItems.map((item) => [item.entry.id, item]));
@@ -180,7 +180,9 @@ export const layerDataFuse = new Fuse(geoDataEntries, {
 // TODO カスタムデータの削除処理
 export class EntryIdToTypeMap {
 	private static map: Map<string, LayerType> = new Map(
-		entries.map((geoDataEntries) => [geoDataEntries.id, getLayerType(geoDataEntries) ?? 'raster'])
+		entries.map((
+			geoDataEntries
+		) => [geoDataEntries.id, getLayerType(geoDataEntries) ?? 'raster'])
 	);
 
 	static get(id: string): LayerType | undefined {

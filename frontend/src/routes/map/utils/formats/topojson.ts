@@ -5,11 +5,11 @@
  * - topojson-client: https://github.com/topojson/topojson-client
  */
 
-import { feature } from 'topojson-client';
-import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { FeatureCollection } from '$routes/map/types/geojson';
-import type { FeatureProp } from '$routes/map/types/properties';
 import type { AnyGeometry } from '$routes/map/types/geometry';
+import type { FeatureProp } from '$routes/map/types/properties';
+import { feature } from 'topojson-client';
+import type { GeometryCollection, Topology } from 'topojson-specification';
 
 /** TopoJSONに含まれるオブジェクト名の一覧を取得 */
 export const getTopoJsonObjectNames = (topology: Topology): string[] =>
@@ -57,7 +57,7 @@ export const topoJsonFileToGeoJson = async (
 /** TopoJSONファイルからオブジェクト名一覧を取得 */
 export const getTopoJsonObjects = async (
 	file: File
-): Promise<{ name: string; count: number }[]> => {
+): Promise<{ name: string; count: number; }[]> => {
 	const text = await file.text();
 	const topology: Topology = JSON.parse(text);
 

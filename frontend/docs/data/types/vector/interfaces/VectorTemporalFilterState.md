@@ -6,7 +6,7 @@
 
 # Interface: VectorTemporalFilterState
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:27](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L27)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:35](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L35)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:27](https://gith
 
 > **enabled**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:28](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L28)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:36](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L36)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:28](https://gith
 
 > **endIndex**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:30](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L30)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:38](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L38)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:30](https://gith
 
 > `optional` **mode**: `"range"` \| `"single_start"`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:31](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L31)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:39](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L39)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:31](https://gith
 
 > **startIndex**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:29](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L29)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:37](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L37)

@@ -8,7 +8,7 @@
 
 > **VectorEntry**\<`T`\> = [`PolygonEntry`](../interfaces/PolygonEntry.md)\<`T`\> \| [`LineStringEntry`](../interfaces/LineStringEntry.md)\<`T`\> \| [`PointEntry`](../interfaces/PointEntry.md)\<`T`\>
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:86](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L86)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:98](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L98)
 
 ## Type Parameters
 

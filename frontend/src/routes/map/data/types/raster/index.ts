@@ -1,15 +1,15 @@
 import type {
+	AdjustableRange,
 	BaseMetaData,
 	Opacity,
-	AdjustableRange,
-	SharedDiscreteDimension,
 	SharedDimensionState,
+	SharedDiscreteDimension,
 	SourceTemporalBehavior
 } from '$routes/map/data/types';
-import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
 import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 import type { SequentialCount, SequentialScheme } from '$routes/map/utils/color/color-brewer';
 import type { ColormapPresetName } from '$routes/map/utils/color/colormap-presets';
+import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
 
 export const DEM_DATA_TYPE = {
 	mapbox: 0.0,
@@ -185,9 +185,9 @@ export interface DerivedBandData {
 }
 
 export interface MultiBandData {
-	r: { index: number; range?: AdjustableRange; min?: number; max?: number }; // R
-	g: { index: number; range?: AdjustableRange; min?: number; max?: number }; // G
-	b: { index: number; range?: AdjustableRange; min?: number; max?: number }; // B
+	r: { index: number; range?: AdjustableRange; min?: number; max?: number; }; // R
+	g: { index: number; range?: AdjustableRange; min?: number; max?: number; }; // G
+	b: { index: number; range?: AdjustableRange; min?: number; max?: number; }; // B
 }
 
 export interface RasterTiffStyle extends BaseRasterStyle {
@@ -229,7 +229,7 @@ export interface RasterTemporalProperties {
 
 export interface RasterBandProperties {
 	numBands: number;
-	sampleRanges?: { min: number; max: number }[];
+	sampleRanges?: { min: number; max: number; }[];
 }
 
 export interface RasterProperties {

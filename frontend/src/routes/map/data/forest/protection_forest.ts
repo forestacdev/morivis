@@ -441,10 +441,10 @@ export function getProtectionForestType(code: ProtectionForestCodeType): Protect
 export function findProtectionForestByName(name: string): ProtectionForestType | undefined {
 	return Object.values(ProtectionForestTypes).find(
 		(type) =>
-			type.name === name ||
-			type.shortName === name ||
-			type.name.includes(name) ||
-			name.includes(type.shortName)
+			type.name === name
+			|| type.shortName === name
+			|| type.name.includes(name)
+			|| name.includes(type.shortName)
 	);
 }
 

@@ -195,7 +195,7 @@ const computeTopex = (
 	return sampledDirections > 0 ? topex : INVALID_VALUE;
 };
 
-const computeMinMax = (band: Float32Array): { min: number; max: number } => {
+const computeMinMax = (band: Float32Array): { min: number; max: number; } => {
 	let min = Infinity;
 	let max = -Infinity;
 

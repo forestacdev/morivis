@@ -267,7 +267,10 @@ self.onmessage = (e) => {
 		}
 
 		if (import.meta.env.DEV) {
-			console.log(`Transition request: ${animationFlag}, current status:`, getAnimationStatus());
+			console.log(
+				`Transition request: ${animationFlag}, current status:`,
+				getAnimationStatus()
+			);
 		}
 
 		gl.useProgram(program);

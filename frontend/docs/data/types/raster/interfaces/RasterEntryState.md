@@ -6,12 +6,12 @@
 
 # Interface: RasterEntryState
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:241](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L241)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:221](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L221)
 
 ## Properties
 
 ### dimension?
 
-> `optional` **dimension**: [`RasterDimensionState`](RasterDimensionState.md)
+> `optional` **dimension**: [`SharedDimensionState`](../../interfaces/SharedDimensionState.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:242](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L242)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:222](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L222)

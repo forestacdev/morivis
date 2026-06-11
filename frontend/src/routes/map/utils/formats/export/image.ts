@@ -218,13 +218,12 @@ export const imageExport = (map: MapLibreMap): Promise<void> => {
 
 						// 現在の日時を取得してフォーマット（YYYYMMDDhhmmss）
 						const now = new Date();
-						const formattedDate =
-							now.getFullYear() +
-							String(now.getMonth() + 1).padStart(2, '0') +
-							String(now.getDate()).padStart(2, '0') +
-							String(now.getHours()).padStart(2, '0') +
-							String(now.getMinutes()).padStart(2, '0') +
-							String(now.getSeconds()).padStart(2, '0');
+						const formattedDate = now.getFullYear()
+							+ String(now.getMonth() + 1).padStart(2, '0')
+							+ String(now.getDate()).padStart(2, '0')
+							+ String(now.getHours()).padStart(2, '0')
+							+ String(now.getMinutes()).padStart(2, '0')
+							+ String(now.getSeconds()).padStart(2, '0');
 
 						// link.download = formattedDate + '.png';
 						// link.click();
@@ -237,9 +236,13 @@ export const imageExport = (map: MapLibreMap): Promise<void> => {
 						const baseName = formattedDate + '_epsg_' + epsg;
 
 						const zip = new JSZip();
-						zip.file(baseName + '.png', finalCanvas.toDataURL('image/png').split(',')[1], {
-							base64: true
-						});
+						zip.file(
+							baseName + '.png',
+							finalCanvas.toDataURL('image/png').split(',')[1],
+							{
+								base64: true
+							}
+						);
 
 						const worldFileContent = await generateWorldFile(
 							map,

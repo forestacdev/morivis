@@ -6,7 +6,7 @@
 
 # Interface: RasterBandProperties
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:249](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L249)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:230](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L230)
 
 ## Properties
 
@@ -14,4 +14,20 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:249](https://git
 
 > **numBands**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:250](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L250)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:231](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L231)
+
+***
+
+### sampleRanges?
+
+> `optional` **sampleRanges**: `object`[]
+
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:232](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L232)
+
+#### max
+
+> **max**: `number`
+
+#### min
+
+> **min**: `number`

@@ -8,15 +8,15 @@ import {
 
 type RuntimeDimensionUpdate =
 	| {
-			type: 'tiles';
-			sourceId: string;
-			tiles: string[];
-	  }
+		type: 'tiles';
+		sourceId: string;
+		tiles: string[];
+	}
 	| {
-			type: 'geojson-data';
-			sourceId: string;
-			data: string;
-	  };
+		type: 'geojson-data';
+		sourceId: string;
+		data: string;
+	};
 
 export const getRasterDimensionCurrentIndex = (entry: GeoDataEntry) => {
 	if (entry.type !== 'raster') return undefined;
@@ -64,12 +64,11 @@ export const canApplyRasterDimensionRuntimeUpdate = (entry: GeoDataEntry) => {
 
 	// 単純な URL 置換で済むラスタだけを runtime update 対象にする。
 	// TIFF / DEM はソース再生成が必要なので setStyle 側に残す。
-	const canUpdateMainSource =
-		entry.format.type === 'image' &&
-		entry.style.type !== 'tiff' &&
-		entry.style.type !== 'dem' &&
-		'url' in entry.format &&
-		entry.format.url.includes('{morivis:dimension}');
+	const canUpdateMainSource = entry.format.type === 'image'
+		&& entry.style.type !== 'tiff'
+		&& entry.style.type !== 'dem'
+		&& 'url' in entry.format
+		&& entry.format.url.includes('{morivis:dimension}');
 
 	const canUpdateAuxiliarySource = Object.values(entry.auxiliaryLayers?.sources ?? {}).some(
 		(source) => hasDimensionPlaceholder(source)
@@ -87,11 +86,11 @@ export const getRasterDimensionRuntimeUpdates = (entry: GeoDataEntry): RuntimeDi
 	const updates: RuntimeDimensionUpdate[] = [];
 
 	if (
-		entry.format.type === 'image' &&
-		entry.style.type !== 'tiff' &&
-		entry.style.type !== 'dem' &&
-		'url' in entry.format &&
-		entry.format.url.includes('{morivis:dimension}')
+		entry.format.type === 'image'
+		&& entry.style.type !== 'tiff'
+		&& entry.style.type !== 'dem'
+		&& 'url' in entry.format
+		&& entry.format.url.includes('{morivis:dimension}')
 	) {
 		updates.push({
 			type: 'tiles',
@@ -118,9 +117,9 @@ export const getRasterDimensionRuntimeUpdates = (entry: GeoDataEntry): RuntimeDi
 		}
 
 		if (
-			resolvedSource.type === 'raster' &&
-			'tiles' in resolvedSource &&
-			Array.isArray(resolvedSource.tiles)
+			resolvedSource.type === 'raster'
+			&& 'tiles' in resolvedSource
+			&& Array.isArray(resolvedSource.tiles)
 		) {
 			updates.push({
 				type: 'tiles',

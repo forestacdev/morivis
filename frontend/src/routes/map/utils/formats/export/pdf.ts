@@ -14,7 +14,9 @@ export const exportPDF = async (map: MapLibreMap): Promise<void> => {
 				// 地図画像のロードが完了したら次の処理へ
 				image.onload = async () => {
 					try {
-						const scaleDiv = document.querySelector('.maplibregl-ctrl-scale') as HTMLElement;
+						const scaleDiv = document.querySelector(
+							'.maplibregl-ctrl-scale'
+						) as HTMLElement;
 						if (!scaleDiv) {
 							throw new Error('スケールバー要素が見つかりません。');
 						}
@@ -53,8 +55,13 @@ export const exportPDF = async (map: MapLibreMap): Promise<void> => {
 								const img = new Image();
 								img.onload = () => imgResolve(img);
 								img.onerror = (e) => {
-									if (e instanceof Error)
-										imgReject(new Error(`方位画像のロードに失敗しました: ${e.message || e}`));
+									if (e instanceof Error) {
+										imgReject(
+											new Error(
+												`方位画像のロードに失敗しました: ${e.message || e}`
+											)
+										);
+									}
 								};
 								img.src = './images/map_connpass.png'; // 画像パスを確認
 							}

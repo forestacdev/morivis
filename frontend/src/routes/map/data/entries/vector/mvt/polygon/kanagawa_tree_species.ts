@@ -1,20 +1,20 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { KANAGAWA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector/index';
 
 import {
 	TREE_SPECIES_FIELDS,
 	TREE_SPECIES_POPUP_KEYS,
+	TREE_SPECIES_PROPERTIES,
 	TREE_SPECIES_RELATIONS,
-	TREE_SPECIES_TITLES,
-	TREE_SPECIES_PROPERTIES
+	TREE_SPECIES_TITLES
 } from '$routes/map/data/entries/vector/_properties';
 import {
 	DEFAULT_POLYGON_STYLE,
+	TREE_SINGLE_COLOR_STYLE,
 	TREE_SPECIES_LABELS,
 	TREE_SPECIES_OUTLINE,
-	TREE_SPECIES_STYLE,
-	TREE_SINGLE_COLOR_STYLE
+	TREE_SPECIES_STYLE
 } from '$routes/map/data/entries/vector/_style';
 
 const entry: VectorEntry<TileMetaData> = {

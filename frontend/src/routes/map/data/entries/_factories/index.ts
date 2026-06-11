@@ -1,32 +1,32 @@
 // Raster factories
 export {
-	createBasemapEntry,
-	createDemEntry,
-	createCategoricalRasterEntry,
-	createCadRasterEntry,
 	type BasemapEntryConfig,
-	type DemEntryConfig,
+	type CadRasterEntryConfig,
 	type CategoricalRasterEntryConfig,
-	type CadRasterEntryConfig
+	createBasemapEntry,
+	createCadRasterEntry,
+	createCategoricalRasterEntry,
+	createDemEntry,
+	type DemEntryConfig
 } from './raster';
 
 // Tile factories (for TileMetaData - MVT/PMTiles)
 export {
-	createTilePointEntry,
 	createTileLineEntry,
+	createTilePointEntry,
 	createTilePolygonEntry,
-	type TilePointEntryConfig,
 	type TileLineEntryConfig,
+	type TilePointEntryConfig,
 	type TilePolygonEntryConfig
 } from './vector';
 
 // GeoJSON factories (for GeoJsonMetaData - GeoJSON/FGB)
 export {
-	createGeoJsonPointEntry,
 	createGeoJsonLineEntry,
+	createGeoJsonPointEntry,
 	createGeoJsonPolygonEntry,
-	type GeoJsonPointEntryConfig,
 	type GeoJsonLineEntryConfig,
+	type GeoJsonPointEntryConfig,
 	type GeoJsonPolygonEntryConfig
 } from './geojson';
 

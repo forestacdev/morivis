@@ -45,7 +45,7 @@ export const pulseZoom = (options?: PulseZoomOptions): Promise<void> => {
 };
 
 /** 呼吸するようなズーム。返り値の関数を呼ぶと停止する */
-export const breathe = (options?: BreathOptions): (() => void) => {
+export const breathe = (options?: BreathOptions): () => void => {
 	const zoomDelta = options?.zoomDelta ?? 0.3;
 	const cycleDuration = options?.cycleDuration ?? 2000;
 	const maxCount = options?.count ?? Infinity;

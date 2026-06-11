@@ -1,4 +1,4 @@
-type PathLikeFile = File & { morivisRelativePath?: string };
+type PathLikeFile = File & { morivisRelativePath?: string; };
 const RASTER_IMAGE_EXTENSION_PATTERN = /\.(?:png|jpe?g|webp|tif|tiff)$/i;
 const RASTER_WORLD_FILE_EXTENSION_PATTERN = /\.(?:tfw|tifw|tiffw|pgw|jgw|wld)$/i;
 const RASTER_AUX_XML_EXTENSION_PATTERN = /\.aux\.xml$/i;
@@ -60,10 +60,11 @@ export const findGeoReferencedImageFile = (files: Iterable<File>): File | null =
 	return (
 		fileArray.find(
 			(imageFile) =>
-				isRasterImageMainFile(imageFile) &&
-				fileArray.some(
+				isRasterImageMainFile(imageFile)
+				&& fileArray.some(
 					(sidecarFile) =>
-						sidecarFile !== imageFile && hasMatchingRasterSidecar(imageFile, sidecarFile)
+						sidecarFile !== imageFile
+						&& hasMatchingRasterSidecar(imageFile, sidecarFile)
 				)
 		) ?? null
 	);
@@ -73,8 +74,8 @@ export const findMatchingWorldFile = (files: Iterable<File>, imageFile: File): F
 	return (
 		Array.from(files).find(
 			(file) =>
-				isRasterWorldFileName(getRasterPathLikeName(file)) &&
-				hasMatchingRasterSidecar(imageFile, file)
+				isRasterWorldFileName(getRasterPathLikeName(file))
+				&& hasMatchingRasterSidecar(imageFile, file)
 		) ?? null
 	);
 };
@@ -83,7 +84,8 @@ export const findMatchingAuxXmlFile = (files: Iterable<File>, imageFile: File): 
 	return (
 		Array.from(files).find(
 			(file) =>
-				isRasterAuxXmlName(getRasterPathLikeName(file)) && hasMatchingRasterSidecar(imageFile, file)
+				isRasterAuxXmlName(getRasterPathLikeName(file))
+				&& hasMatchingRasterSidecar(imageFile, file)
 		) ?? null
 	);
 };

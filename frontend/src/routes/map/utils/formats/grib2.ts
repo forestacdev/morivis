@@ -65,7 +65,7 @@ interface GribMetadata {
 interface GribRecord {
 	metadata: GribMetadata;
 	values: Float32Array;
-	latlons(): { lats: Float32Array; lons: Float32Array };
+	latlons(): { lats: Float32Array; lons: Float32Array; };
 }
 
 export class PureGrib2Parser {
@@ -136,9 +136,13 @@ export class PureGrib2Parser {
 							}
 						}
 					} else if (edition === 1) {
-						console.warn(`Found GRIB header with unsupported edition 1 at position ${i}`);
+						console.warn(
+							`Found GRIB header with unsupported edition 1 at position ${i}`
+						);
 					} else {
-						console.warn(`Found GRIB header with unknown edition ${edition} at position ${i}`);
+						console.warn(
+							`Found GRIB header with unknown edition ${edition} at position ${i}`
+						);
 					}
 				}
 			}
@@ -190,7 +194,9 @@ export class PureGrib2Parser {
 			// メッセージ長の妥当性チェック
 			if (messageLength > this.buffer.byteLength - this.position || messageLength < 16) {
 				console.warn(
-					`Invalid message length: ${messageLength}, remaining buffer: ${this.buffer.byteLength - this.position}`
+					`Invalid message length: ${messageLength}, remaining buffer: ${
+						this.buffer.byteLength - this.position
+					}`
 				);
 				return null;
 			}
@@ -214,15 +220,23 @@ export class PureGrib2Parser {
 				else if (sec.number === 5) currentSec5 = sec;
 				else if (sec.number === 6) currentSec6 = sec;
 				else if (
-					sec.number === 7 &&
-					sec0 &&
-					sec1 &&
-					currentSec3 &&
-					currentSec4 &&
-					currentSec5 &&
-					currentSec6
+					sec.number === 7
+					&& sec0
+					&& sec1
+					&& currentSec3
+					&& currentSec4
+					&& currentSec5
+					&& currentSec6
 				) {
-					const sectionSet = [sec0, sec1, currentSec3, currentSec4, currentSec5, currentSec6, sec];
+					const sectionSet = [
+						sec0,
+						sec1,
+						currentSec3,
+						currentSec4,
+						currentSec5,
+						currentSec6,
+						sec
+					];
 					try {
 						const metadata = this.extractMetadata(sectionSet);
 						const values = this.extractValues(sectionSet, metadata);
@@ -406,7 +420,9 @@ export class PureGrib2Parser {
 		const endMarker = view.getUint32(0, false);
 		if (endMarker !== 0x37373737) {
 			// "7777"
-			console.warn(`End marker not standard: 0x${endMarker.toString(16)} (expected 0x37373737)`);
+			console.warn(
+				`End marker not standard: 0x${endMarker.toString(16)} (expected 0x37373737)`
+			);
 			// エラーで停止せず、警告のみ
 		}
 
@@ -541,7 +557,13 @@ export class PureGrib2Parser {
 				nx = 1;
 				ny = 1;
 			}
-			la1 = lo1 = la2 = lo2 = dx = dy = 0;
+			la1 =
+				lo1 =
+				la2 =
+				lo2 =
+				dx =
+				dy =
+					0;
 		}
 
 		// Section 4からプロダクト情報 - より柔軟なチェック
@@ -611,7 +633,9 @@ export class PureGrib2Parser {
 		try {
 			// Section 5の最小長チェック
 			if (sec5.data.byteLength < 11) {
-				console.warn(`Section 5 too short (${sec5.data.byteLength} bytes), filling with zeros`);
+				console.warn(
+					`Section 5 too short (${sec5.data.byteLength} bytes), filling with zeros`
+				);
 				values.fill(0);
 				return values;
 			}
@@ -620,7 +644,9 @@ export class PureGrib2Parser {
 
 			// Section 7の最小長チェック
 			if (sec7.data.byteLength < 5) {
-				console.warn(`Section 7 too short (${sec7.data.byteLength} bytes), filling with zeros`);
+				console.warn(
+					`Section 7 too short (${sec7.data.byteLength} bytes), filling with zeros`
+				);
 				values.fill(0);
 				return values;
 			}
@@ -643,7 +669,9 @@ export class PureGrib2Parser {
 				if (bitsPerValue === 0) {
 					// 定数値
 					values.fill(referenceValue);
-				} else if (bitsPerValue === 32 && sec7.data.byteLength >= 5 + numberOfDataPoints * 4) {
+				} else if (
+					bitsPerValue === 32 && sec7.data.byteLength >= 5 + numberOfDataPoints * 4
+				) {
 					// 32ビットfloat
 					for (let i = 0; i < numberOfDataPoints; i++) {
 						if (5 + i * 4 + 4 <= sec7.data.byteLength) {
@@ -652,7 +680,9 @@ export class PureGrib2Parser {
 							values[i] = 0; // データが不足している場合は0
 						}
 					}
-				} else if (bitsPerValue === 16 && sec7.data.byteLength >= 5 + numberOfDataPoints * 2) {
+				} else if (
+					bitsPerValue === 16 && sec7.data.byteLength >= 5 + numberOfDataPoints * 2
+				) {
 					// 16ビット整数（簡略化された実装）
 					const E = Math.pow(10, -decimalScaleFactor);
 					const D = Math.pow(2, binaryScaleFactor);
@@ -762,8 +792,8 @@ export class PureGrib2Parser {
 				// --- グループ長を読む ---
 				const groupLengths = new Int32Array(numberOfGroups);
 				for (let i = 0; i < numberOfGroups; i++) {
-					groupLengths[i] =
-						readBits(bitsForScaledGroupLengths) * lengthIncrement + refForGroupLengths;
+					groupLengths[i] = readBits(bitsForScaledGroupLengths) * lengthIncrement
+						+ refForGroupLengths;
 				}
 				if (numberOfGroups > 0) {
 					groupLengths[numberOfGroups - 1] = trueLengthOfLastGroup;
@@ -829,7 +859,7 @@ export class PureGrib2Parser {
 		return values;
 	}
 
-	private generateLatLons(metadata: GribMetadata): { lats: Float32Array; lons: Float32Array } {
+	private generateLatLons(metadata: GribMetadata): { lats: Float32Array; lons: Float32Array; } {
 		const { nx, ny, la1, lo1, dx, dy } = metadata;
 		const totalPoints = nx * ny;
 

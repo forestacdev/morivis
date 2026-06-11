@@ -1,8 +1,8 @@
 import type { GeoDataEntry } from '$routes/map/data/types';
 
-import { generateVectorImageUrl } from './vector';
-import { getRasterImageUrl, generatePmtilesImageUrl } from './raster';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
+import { generatePmtilesImageUrl, getRasterImageUrl } from './raster';
+import { generateVectorImageUrl } from './vector';
 
 /** BlobURLかどうかを判定 */
 const isBlobUrl = (url: string): boolean => url.startsWith('blob:');
@@ -168,7 +168,9 @@ export const getLayerImage = async (
 			const url = getMapImageUrl(_layerEntry);
 			return url ? { url } : undefined;
 		} else if ('format' in _layerEntry && _layerEntry.format.type === 'mbtiles') {
-			return { url: generatePlaceholderImage(getMbtilesPreviewLabel(_layerEntry), '#3d5a4f') };
+			return {
+				url: generatePlaceholderImage(getMbtilesPreviewLabel(_layerEntry), '#3d5a4f')
+			};
 		} else if (_layerEntry.type === 'raster') {
 			if (_layerEntry.format.type === 'image') {
 				const url = await getRasterImageUrl(_layerEntry);
@@ -190,14 +192,13 @@ export const getLayerImage = async (
 		return undefined;
 	} catch (error) {
 		console.error('Error getting layer image:', error);
-		const label =
-			_layerEntry.type === 'raster'
-				? 'Raster'
-				: _layerEntry.type === 'vector'
-					? 'Vector'
-					: _layerEntry.type === 'model'
-						? '3D'
-						: 'Data';
+		const label = _layerEntry.type === 'raster'
+			? 'Raster'
+			: _layerEntry.type === 'vector'
+			? 'Vector'
+			: _layerEntry.type === 'model'
+			? '3D'
+			: 'Data';
 		return { url: generatePlaceholderImage(label) };
 	}
 };

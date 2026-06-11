@@ -1,5 +1,5 @@
-import type { MapMouseEvent } from 'maplibre-gl';
 import { mapStore } from '$routes/stores/map';
+import type { MapMouseEvent } from 'maplibre-gl';
 
 const DEBUG_HIT_TOLERANCE = 6;
 
@@ -53,7 +53,7 @@ export const clickDebug = (e: MapMouseEvent) => {
 
 				console.log(xyz);
 
-				//クリップボードにコピー
+				// クリップボードにコピー
 			}
 		}
 		console.log('================================');

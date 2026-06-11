@@ -1,8 +1,8 @@
 import type {
-	SymbolLayerSpecification,
+	ExpressionSpecification,
 	LineLayerSpecification,
-	VectorSourceSpecification,
-	ExpressionSpecification
+	SymbolLayerSpecification,
+	VectorSourceSpecification
 } from 'maplibre-gl';
 
 import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
@@ -114,7 +114,11 @@ const roadLineOpacity: ExpressionSpecification = [
 		'case',
 		[
 			'all',
-			['!', ['in', ['get', 'vt_rdctg'], ['literal', ['国道', '都道府県道', '高速自動車国道等']]]],
+			['!', ['in', ['get', 'vt_rdctg'], ['literal', [
+				'国道',
+				'都道府県道',
+				'高速自動車国道等'
+			]]]],
 			['==', ['get', 'vt_rnkwidth'], '3m-5.5m未満']
 		],
 		0,
@@ -248,9 +252,24 @@ export const roadLabelLayers: SymbolLayerSpecification[] = [
 				'let',
 				'size',
 				['match', ['get', 'vt_code'], 7701, 1.4, 1.0],
-				['interpolate', ['linear'], ['zoom'], 15, ['var', 'size'], 17, ['*', 2, ['var', 'size']]]
+				['interpolate', ['linear'], ['zoom'], 15, ['var', 'size'], 17, ['*', 2, [
+					'var',
+					'size'
+				]]]
 			],
-			'symbol-sort-key': ['match', ['get', 'vt_code'], 2901, 88, 2903, 50, 2904, 49, 7701, 111, 0],
+			'symbol-sort-key': [
+				'match',
+				['get', 'vt_code'],
+				2901,
+				88,
+				2903,
+				50,
+				2904,
+				49,
+				7701,
+				111,
+				0
+			],
 			'text-allow-overlap': false,
 			'text-font': DEFAULT_SYMBOL_TEXT_FONT,
 			'text-justify': 'auto',
@@ -258,13 +277,22 @@ export const roadLabelLayers: SymbolLayerSpecification[] = [
 				'let',
 				'size',
 				['match', ['get', 'vt_code'], 2901, 10, 7701, 12, 8],
-				['interpolate', ['linear'], ['zoom'], 15, ['var', 'size'], 17, ['*', 2, ['var', 'size']]]
+				['interpolate', ['linear'], ['zoom'], 15, ['var', 'size'], 17, ['*', 2, [
+					'var',
+					'size'
+				]]]
 			],
 			'text-field': ['get', 'vt_text'],
 			'text-max-width': 100
 		},
 		paint: {
-			'text-color': ['match', ['get', 'vt_code'], 7701, 'rgba(0,0,0,1)', 'rgba(255,255,255,1)']
+			'text-color': [
+				'match',
+				['get', 'vt_code'],
+				7701,
+				'rgba(0,0,0,1)',
+				'rgba(255,255,255,1)'
+			]
 		}
 	}
 ];
@@ -288,14 +316,31 @@ export const roadLineLayers: LineLayerSpecification[] = [
 					[
 						'in',
 						['get', 'vt_code'],
-						['literal', [2703, 2704, 2713, 2714, 2721, 2722, 2723, 2724, 2731, 2732, 2733, 2734]]
+						['literal', [
+							2703,
+							2704,
+							2713,
+							2714,
+							2721,
+							2722,
+							2723,
+							2724,
+							2731,
+							2732,
+							2733,
+							2734
+						]]
 					]
 				],
 				[
 					'!',
 					[
 						'all',
-						['in', ['get', 'vt_rdctg'], ['literal', ['市区町村道等', 'その他', '不明']]],
+						['in', ['get', 'vt_rdctg'], ['literal', [
+							'市区町村道等',
+							'その他',
+							'不明'
+						]]],
 						['==', ['get', 'vt_rnkwidth'], '3m-5.5m未満']
 					]
 				]
@@ -309,7 +354,20 @@ export const roadLineLayers: LineLayerSpecification[] = [
 					[
 						'in',
 						['get', 'vt_code'],
-						['literal', [2703, 2704, 2713, 2714, 2721, 2722, 2723, 2724, 2731, 2732, 2733, 2734]]
+						['literal', [
+							2703,
+							2704,
+							2713,
+							2714,
+							2721,
+							2722,
+							2723,
+							2724,
+							2731,
+							2732,
+							2733,
+							2734
+						]]
 					]
 				]
 			]

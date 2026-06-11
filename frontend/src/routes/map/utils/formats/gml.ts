@@ -1,9 +1,9 @@
-import GML from 'ol/format/GML.js';
-import GML2 from 'ol/format/GML2.js';
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 import { geometryToGeoJSON } from '$routes/map/utils/formats/transformers/geometry';
+import GML from 'ol/format/GML.js';
+import GML2 from 'ol/format/GML2.js';
 
 /**
  * 基盤地図情報（FGD）GML パーサー
@@ -56,8 +56,8 @@ const parsePosText = (text: string): [number, number] => {
 
 /** Point ジオメトリを抽出: <pos> → gml:Point → gml:pos */
 const parsePointGeometry = (featureEl: Element): AnyGeometry | null => {
-	const posEl =
-		featureEl.getElementsByTagNameNS(FGD_NS, 'pos')[0] ?? featureEl.getElementsByTagName('pos')[0];
+	const posEl = featureEl.getElementsByTagNameNS(FGD_NS, 'pos')[0]
+		?? featureEl.getElementsByTagName('pos')[0];
 	if (!posEl) return null;
 
 	const gmlPos = posEl.getElementsByTagNameNS(GML_NS, 'pos')[0];
@@ -68,8 +68,8 @@ const parsePointGeometry = (featureEl: Element): AnyGeometry | null => {
 
 /** Line ジオメトリを抽出: <loc> → gml:Curve → gml:posList */
 const parseLineGeometry = (featureEl: Element): AnyGeometry | null => {
-	const locEl =
-		featureEl.getElementsByTagNameNS(FGD_NS, 'loc')[0] ?? featureEl.getElementsByTagName('loc')[0];
+	const locEl = featureEl.getElementsByTagNameNS(FGD_NS, 'loc')[0]
+		?? featureEl.getElementsByTagName('loc')[0];
 	if (!locEl) return null;
 
 	const posLists = locEl.getElementsByTagNameNS(GML_NS, 'posList');
@@ -89,9 +89,8 @@ const parseLineGeometry = (featureEl: Element): AnyGeometry | null => {
 
 /** Polygon ジオメトリを抽出: <area> → gml:Surface → gml:PolygonPatch → gml:posList */
 const parsePolygonGeometry = (featureEl: Element): AnyGeometry | null => {
-	const areaEl =
-		featureEl.getElementsByTagNameNS(FGD_NS, 'area')[0] ??
-		featureEl.getElementsByTagName('area')[0];
+	const areaEl = featureEl.getElementsByTagNameNS(FGD_NS, 'area')[0]
+		?? featureEl.getElementsByTagName('area')[0];
 	if (!areaEl) return null;
 
 	const patches = areaEl.getElementsByTagNameNS(GML_NS, 'PolygonPatch');
@@ -133,7 +132,8 @@ const parsePolygonGeometry = (featureEl: Element): AnyGeometry | null => {
 
 /** FGDフィーチャー要素からジオメトリを抽出 */
 const parseFgdGeometry = (featureEl: Element): AnyGeometry | null =>
-	parsePointGeometry(featureEl) ?? parseLineGeometry(featureEl) ?? parsePolygonGeometry(featureEl);
+	parsePointGeometry(featureEl) ?? parseLineGeometry(featureEl)
+		?? parsePolygonGeometry(featureEl);
 
 /** 既知のジオメトリ/メタ要素（プロパティから除外） */
 const SKIP_PROPERTY_TAGS = new Set([
@@ -177,10 +177,9 @@ const parseFgdGml = (text: string): FeatureCollection => {
 	const features: Feature[] = [];
 
 	for (const tag of FGD_FEATURE_TAGS) {
-		const elements =
-			doc.getElementsByTagNameNS(FGD_NS, tag).length > 0
-				? doc.getElementsByTagNameNS(FGD_NS, tag)
-				: doc.getElementsByTagName(tag);
+		const elements = doc.getElementsByTagNameNS(FGD_NS, tag).length > 0
+			? doc.getElementsByTagNameNS(FGD_NS, tag)
+			: doc.getElementsByTagName(tag);
 
 		for (const el of elements) {
 			const geometry = parseFgdGeometry(el);

@@ -1,18 +1,18 @@
-import { MAP_SPRITE_DATA_PATH, MAP_FONT_DATA_PATH } from '$routes/constants';
+import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { TileXYZ } from '$routes/map/data/types/raster';
+import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
+import { esriFeatureProtocol } from '$routes/map/protocol/vector/esri-feature';
+import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
+import { ogcFeatureProtocol } from '$routes/map/protocol/vector/ogc-feature';
+import { wfsFeatureProtocol } from '$routes/map/protocol/vector/wfs-feature';
+import { createLayersItems } from '$routes/map/utils/layers';
+import { resolveAbsoluteRequestUrl, resolveRequestUrl } from '$routes/map/utils/platform/request';
+import { createSourcesItems } from '$routes/map/utils/sources';
 import * as tilebelt from '@mapbox/tilebelt';
 import maplibregl from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
-import { createLayersItems } from '$routes/map/utils/layers';
-import { createSourcesItems } from '$routes/map/utils/sources';
 import { CoverImageManager } from '../index';
-import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
-import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
-import { esriFeatureProtocol } from '$routes/map/protocol/vector/esri-feature';
-import { ogcFeatureProtocol } from '$routes/map/protocol/vector/ogc-feature';
-import { wfsFeatureProtocol } from '$routes/map/protocol/vector/wfs-feature';
-import { resolveAbsoluteRequestUrl, resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 export interface MapImageOptions {
 	name: string;
@@ -50,8 +50,14 @@ const ensurePreviewProtocols = () => {
 		previewEsriFeatureProtocol.protocolName,
 		previewEsriFeatureProtocol.request
 	);
-	maplibregl.addProtocol(previewOgcFeatureProtocol.protocolName, previewOgcFeatureProtocol.request);
-	maplibregl.addProtocol(previewWfsFeatureProtocol.protocolName, previewWfsFeatureProtocol.request);
+	maplibregl.addProtocol(
+		previewOgcFeatureProtocol.protocolName,
+		previewOgcFeatureProtocol.request
+	);
+	maplibregl.addProtocol(
+		previewWfsFeatureProtocol.protocolName,
+		previewWfsFeatureProtocol.request
+	);
 	previewProtocolsRegistered = true;
 };
 
@@ -316,11 +322,13 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 	const url = CoverImageManager.get(_layerEntry.id);
 	if (url) return url;
 
-	const formatUrl = 'url' in _layerEntry.format ? (_layerEntry.format as { url: string }).url : '';
+	const formatUrl = 'url' in _layerEntry.format
+		? (_layerEntry.format as { url: string; }).url
+		: '';
 	if (
-		_layerEntry.metaData.xyzImageTile &&
-		_layerEntry.format.type === 'mvt' &&
-		formatUrl.startsWith('http')
+		_layerEntry.metaData.xyzImageTile
+		&& _layerEntry.format.type === 'mvt'
+		&& formatUrl.startsWith('http')
 	) {
 		const checkUrl = formatUrl
 			.replace('{z}', _layerEntry.metaData.xyzImageTile.z.toString())
@@ -368,8 +376,8 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 			..._layerEntry.metaData,
 			bounds: _layerEntry.metaData.xyzImageTile
 				? tilebelt.tileToBBOX(
-						Object.values(_layerEntry.metaData.xyzImageTile) as [number, number, number]
-					)
+					Object.values(_layerEntry.metaData.xyzImageTile) as [number, number, number]
+				)
 				: _layerEntry.metaData.bounds,
 			maxZoom: _layerEntry.metaData.xyzImageTile?.z ?? _layerEntry.metaData.maxZoom
 		}
@@ -435,7 +443,7 @@ export const destroyMapPool = () => {
 };
 
 /** 背景用画像のURLを取得 */
-export const getBaseMapImageUrl = (_xyzImageTile: { x: number; y: number; z: number }) => {
+export const getBaseMapImageUrl = (_xyzImageTile: { x: number; y: number; z: number; }) => {
 	return 'https://tile.openstreetmap.jp/styles/maptiler-toner-ja/512/{z}/{x}/{y}.png'
 		.replace('{z}', _xyzImageTile.z.toString())
 		.replace('{x}', _xyzImageTile.x.toString())

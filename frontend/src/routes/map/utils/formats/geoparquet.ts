@@ -1,12 +1,12 @@
 import { parse } from '@loaders.gl/core';
 import { GeoParquetLoader } from '@loaders.gl/parquet';
-import { parquetMetadata, parquetReadObjects, type FileMetaData } from 'hyparquet';
+import { type FileMetaData, parquetMetadata, parquetReadObjects } from 'hyparquet';
 import { compressors } from 'hyparquet-compressors';
 
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { Geometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
-import { isValidEpsg, type EpsgCode } from '$routes/map/utils/proj/dict';
+import { type EpsgCode, isValidEpsg } from '$routes/map/utils/proj/dict';
 
 type GeoParquetColumnMetadata = {
 	encoding?: string;
@@ -78,8 +78,8 @@ const getGeometryColumnsFromSchema = (metadata: FileMetaData): string[] => {
 	return metadata.schema
 		.filter((element): element is HyparquetSchemaElement => {
 			return (
-				(element as HyparquetSchemaElement).logical_type?.type === 'GEOMETRY' ||
-				(element as HyparquetSchemaElement).logical_type?.type === 'GEOGRAPHY'
+				(element as HyparquetSchemaElement).logical_type?.type === 'GEOMETRY'
+				|| (element as HyparquetSchemaElement).logical_type?.type === 'GEOGRAPHY'
 			);
 		})
 		.map((element) => element.name);
@@ -138,7 +138,7 @@ const extractEpsgCode = (crsName: string | null): EpsgCode | null => {
 
 const isGeometry = (value: unknown): value is Geometry => {
 	if (!value || typeof value !== 'object') return false;
-	const geometryType = (value as { type?: string }).type;
+	const geometryType = (value as { type?: string; }).type;
 	return typeof geometryType === 'string' && GEOMETRY_TYPES.has(geometryType);
 };
 
@@ -249,7 +249,7 @@ const fallbackGeoArrowWithLoaders = async (
 			parquet: {
 				shape: 'geojson-table'
 			}
-		})) as { shape?: string; type?: string; features?: Feature[] };
+		})) as { shape?: string; type?: string; features?: Feature[]; };
 
 		if (parsed?.shape === 'geojson-table' && parsed.type === 'FeatureCollection') {
 			return {
@@ -330,12 +330,11 @@ export const geoParquetFileToGeoJson = async (file: File): Promise<GeoParquetRea
 	const features = rows
 		.map((row, index): Feature<Geometry> | null => {
 			const geometryValue = row[primaryGeometryColumn];
-			const geometry =
-				geometryEncoding === 'wkb' || geometryEncoding === 'geoarrow.wkb'
-					? isGeometry(geometryValue)
-						? geometryValue
-						: null
-					: decodeGeoArrowGeometry(geometryValue, geometryEncoding);
+			const geometry = geometryEncoding === 'wkb' || geometryEncoding === 'geoarrow.wkb'
+				? isGeometry(geometryValue)
+					? geometryValue
+					: null
+				: decodeGeoArrowGeometry(geometryValue, geometryEncoding);
 
 			if (!isGeometry(geometry)) return null;
 

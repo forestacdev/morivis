@@ -6,15 +6,15 @@
  */
 
 import {
-	PDFDocument,
-	PDFName,
-	PDFRef,
-	PDFDict as PdfLibDict,
 	PDFArray as PdfLibArray,
-	PDFString,
+	PDFBool,
+	PDFDict as PdfLibDict,
+	PDFDocument,
 	PDFHexString,
+	PDFName,
 	PDFNumber,
-	PDFBool
+	PDFRef,
+	PDFString
 } from 'pdf-lib';
 
 export interface FeatureAttributes {
@@ -49,8 +49,9 @@ export const extractFeatureAttributes = async (
 	const structTreeRef = catalog.get(PDFName.of('StructTreeRoot'));
 	if (!structTreeRef) return new Map();
 
-	const structTree =
-		structTreeRef instanceof PDFRef ? context.lookup(structTreeRef) : structTreeRef;
+	const structTree = structTreeRef instanceof PDFRef
+		? context.lookup(structTreeRef)
+		: structTreeRef;
 	if (!(structTree instanceof PdfLibDict)) return new Map();
 
 	const result = new Map<number, Record<string, string | number | boolean>>();
@@ -77,12 +78,11 @@ export const extractFeatureAttributes = async (
 		if (sName === '/feature' || sName === 'feature') {
 			// フィーチャーノード — MCIDと属性を抽出
 			const mcidVal = getVal(obj.get(PDFName.of('K')), context);
-			const mcid =
-				typeof mcidVal === 'number'
-					? mcidVal
-					: typeof mcidVal === 'string'
-						? parseInt(mcidVal)
-						: NaN;
+			const mcid = typeof mcidVal === 'number'
+				? mcidVal
+				: typeof mcidVal === 'string'
+				? parseInt(mcidVal)
+				: NaN;
 			if (isNaN(mcid)) return;
 
 			const properties: Record<string, string | number | boolean> = {};

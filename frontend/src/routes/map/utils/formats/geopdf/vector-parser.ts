@@ -182,13 +182,13 @@ function roundIfClose(v: number): number {
 function tokenize(content: string): string[] {
 	// Match: numbers, operators/keywords, names, strings, dict/array delimiters
 	const re = new RegExp(
-		'([+-]?(?:\\d+\\.?\\d*|\\.\\d+))' + // numbers
-			'|(\\/[^\\s/<>(){}\\[\\]%]+)' + // names /xxx
-			'|(\\((?:[^()\\\\]|\\\\.)*\\))' + // string literals (...)
-			'|(<[0-9A-Fa-f\\s]*>)' + // hex strings <...>
-			'|(<<|>>)' + // dict delimiters
-			'|([\\[\\]])' + // array delimiters
-			'|([a-zA-Z][a-zA-Z0-9*\'"]*\\*?)', // operators
+		'([+-]?(?:\\d+\\.?\\d*|\\.\\d+))' // numbers
+			+ '|(\\/[^\\s/<>(){}\\[\\]%]+)' // names /xxx
+			+ '|(\\((?:[^()\\\\]|\\\\.)*\\))' // string literals (...)
+			+ '|(<[0-9A-Fa-f\\s]*>)' // hex strings <...>
+			+ '|(<<|>>)' // dict delimiters
+			+ '|([\\[\\]])' // array delimiters
+			+ '|([a-zA-Z][a-zA-Z0-9*\'"]*\\*?)', // operators
 		'g'
 	);
 	const tokens: string[] = [];
@@ -251,10 +251,10 @@ export function parseContentStream(
 					],
 					fillColor: hasFill
 						? [
-								Math.round(gs.fillColor[0] * 255),
-								Math.round(gs.fillColor[1] * 255),
-								Math.round(gs.fillColor[2] * 255)
-							]
+							Math.round(gs.fillColor[0] * 255),
+							Math.round(gs.fillColor[1] * 255),
+							Math.round(gs.fillColor[2] * 255)
+						]
 						: undefined,
 					lineWidth: gs.lineWidth
 				},
@@ -477,9 +477,9 @@ export function parseContentStream(
 				// close subpath
 				if (
 					!(
-						coords.length >= 2 &&
-						coords[coords.length - 2] === CLOSE_SUBPATH &&
-						coords[coords.length - 1] === CLOSE_SUBPATH
+						coords.length >= 2
+						&& coords[coords.length - 2] === CLOSE_SUBPATH
+						&& coords[coords.length - 1] === CLOSE_SUBPATH
 					)
 				) {
 					coords.push(CLOSE_SUBPATH, CLOSE_SUBPATH);
@@ -500,9 +500,9 @@ export function parseContentStream(
 				// close + stroke
 				if (
 					!(
-						coords.length >= 2 &&
-						coords[coords.length - 2] === CLOSE_SUBPATH &&
-						coords[coords.length - 1] === CLOSE_SUBPATH
+						coords.length >= 2
+						&& coords[coords.length - 2] === CLOSE_SUBPATH
+						&& coords[coords.length - 1] === CLOSE_SUBPATH
 					)
 				) {
 					coords.push(CLOSE_SUBPATH, CLOSE_SUBPATH);
@@ -526,9 +526,9 @@ export function parseContentStream(
 				// close + fill + stroke
 				if (
 					!(
-						coords.length >= 2 &&
-						coords[coords.length - 2] === CLOSE_SUBPATH &&
-						coords[coords.length - 1] === CLOSE_SUBPATH
+						coords.length >= 2
+						&& coords[coords.length - 2] === CLOSE_SUBPATH
+						&& coords[coords.length - 1] === CLOSE_SUBPATH
 					)
 				) {
 					coords.push(CLOSE_SUBPATH, CLOSE_SUBPATH);
@@ -663,8 +663,11 @@ function coordsBboxArea(coords: number[]): number {
 		maxY = -Infinity;
 	let pointCount = 0;
 	for (let i = 0; i < coords.length; i += 2) {
-		if (coords[i] === NEW_SUBPATH || coords[i] === CLOSE_SUBPATH || coords[i] === FILL_SUBPATH)
+		if (
+			coords[i] === NEW_SUBPATH || coords[i] === CLOSE_SUBPATH || coords[i] === FILL_SUBPATH
+		) {
 			continue;
+		}
 		if (coords[i] < minX) minX = coords[i];
 		if (coords[i] > maxX) maxX = coords[i];
 		if (coords[i + 1] < minY) minY = coords[i + 1];
@@ -684,8 +687,11 @@ function coordsCentroid(coords: number[]): [number, number] {
 		maxX = -Infinity,
 		maxY = -Infinity;
 	for (let i = 0; i < coords.length; i += 2) {
-		if (coords[i] === NEW_SUBPATH || coords[i] === CLOSE_SUBPATH || coords[i] === FILL_SUBPATH)
+		if (
+			coords[i] === NEW_SUBPATH || coords[i] === CLOSE_SUBPATH || coords[i] === FILL_SUBPATH
+		) {
 			continue;
+		}
 		if (coords[i] < minX) minX = coords[i];
 		if (coords[i] > maxX) maxX = coords[i];
 		if (coords[i + 1] < minY) minY = coords[i + 1];
@@ -742,9 +748,9 @@ function buildLineGeometry(
 		} else if (coords[i] === CLOSE_SUBPATH && coords[i + 1] === CLOSE_SUBPATH) {
 			// Close: add first point to end if not already closed
 			if (
-				currentLine.length >= 2 &&
-				(currentLine[0][0] !== currentLine[currentLine.length - 1][0] ||
-					currentLine[0][1] !== currentLine[currentLine.length - 1][1])
+				currentLine.length >= 2
+				&& (currentLine[0][0] !== currentLine[currentLine.length - 1][0]
+					|| currentLine[0][1] !== currentLine[currentLine.length - 1][1])
 			) {
 				currentLine.push(currentLine[0]);
 			}
@@ -780,8 +786,8 @@ function buildPolygonGeometry(coords: number[], opts: VectorParseOptions): Geome
 			if (currentRing.length >= 3) {
 				// Close ring
 				if (
-					currentRing[0][0] !== currentRing[currentRing.length - 1][0] ||
-					currentRing[0][1] !== currentRing[currentRing.length - 1][1]
+					currentRing[0][0] !== currentRing[currentRing.length - 1][0]
+					|| currentRing[0][1] !== currentRing[currentRing.length - 1][1]
 				) {
 					currentRing.push([...currentRing[0]]);
 				}
@@ -789,14 +795,14 @@ function buildPolygonGeometry(coords: number[], opts: VectorParseOptions): Geome
 			}
 			currentRing = [];
 		} else if (
-			(coords[i] === CLOSE_SUBPATH && coords[i + 1] === CLOSE_SUBPATH) ||
-			(coords[i] === FILL_SUBPATH && coords[i + 1] === FILL_SUBPATH)
+			(coords[i] === CLOSE_SUBPATH && coords[i + 1] === CLOSE_SUBPATH)
+			|| (coords[i] === FILL_SUBPATH && coords[i + 1] === FILL_SUBPATH)
 		) {
 			if (currentRing.length >= 3) {
 				// Close ring
 				if (
-					currentRing[0][0] !== currentRing[currentRing.length - 1][0] ||
-					currentRing[0][1] !== currentRing[currentRing.length - 1][1]
+					currentRing[0][0] !== currentRing[currentRing.length - 1][0]
+					|| currentRing[0][1] !== currentRing[currentRing.length - 1][1]
 				) {
 					currentRing.push([...currentRing[0]]);
 				}
@@ -811,8 +817,8 @@ function buildPolygonGeometry(coords: number[], opts: VectorParseOptions): Geome
 
 	if (currentRing.length >= 3) {
 		if (
-			currentRing[0][0] !== currentRing[currentRing.length - 1][0] ||
-			currentRing[0][1] !== currentRing[currentRing.length - 1][1]
+			currentRing[0][0] !== currentRing[currentRing.length - 1][0]
+			|| currentRing[0][1] !== currentRing[currentRing.length - 1][1]
 		) {
 			currentRing.push([...currentRing[0]]);
 		}
@@ -855,7 +861,7 @@ function organizePolygons(rings: [number, number][][]): [number, number][][][] {
 
 	// Rings with positive area (CCW in screen coords) are exterior
 	// Rings with negative area (CW) are holes
-	const exteriors: { ring: [number, number][]; holes: [number, number][][] }[] = [];
+	const exteriors: { ring: [number, number][]; holes: [number, number][][]; }[] = [];
 
 	for (let i = 0; i < rings.length; i++) {
 		if (Math.abs(areas[i]) < 1e-10) continue;

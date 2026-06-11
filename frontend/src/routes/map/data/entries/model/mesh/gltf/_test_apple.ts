@@ -1,5 +1,5 @@
 import { ENTRY_GLTF_PATH } from '$routes/constants';
-import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+import type { MeshStyle, ModelMeshEntry } from '$routes/map/data/types/model';
 
 const entry: ModelMeshEntry<MeshStyle> = {
 	id: 'test_apple',
@@ -16,7 +16,12 @@ const entry: ModelMeshEntry<MeshStyle> = {
 		minZoom: 10,
 		maxZoom: 22,
 		tags: ['3Dモデル', '建物'],
-		bounds: [136.919310634999988, 35.5537624600000015, 136.9200659429999973, 35.5544524530000032],
+		bounds: [
+			136.919310634999988,
+			35.5537624600000015,
+			136.9200659429999973,
+			35.5544524530000032
+		],
 		altitude: 116,
 		xyzImageTile: { x: 923099, y: 413380, z: 20 }
 	},

@@ -36,8 +36,7 @@ const detectAmbiguousOrder = (
 		lng = second;
 		order = 'lat_lng';
 		confidence = 0.7;
-	}
-	// 2. 日本付近の座標パターン（北緯30-45度、東経130-145度）
+	} // 2. 日本付近の座標パターン（北緯30-45度、東経130-145度）
 	else if (first >= 30 && first <= 45 && second >= 130 && second <= 145) {
 		// 日本の典型的な緯度,経度パターン
 		lat = first;
@@ -50,8 +49,7 @@ const detectAmbiguousOrder = (
 		lng = first;
 		order = 'lng_lat';
 		confidence = 0.8;
-	}
-	// 3. 一般的な慣習: 緯度が先（Google Maps等）
+	} // 3. 一般的な慣習: 緯度が先（Google Maps等）
 	else {
 		lat = first;
 		lng = second;
@@ -106,16 +104,14 @@ export const detectCoordinateOrder = (input: string): CoordinateResult => {
 		lng = second;
 		order = 'lat_lng';
 		confidence = 0.95;
-	}
-	// ケース2: 最初が明らかに経度の範囲で、2番目が緯度の範囲
+	} // ケース2: 最初が明らかに経度の範囲で、2番目が緯度の範囲
 	else if (!isFirstLat && isFirstLng && isSecondLat) {
 		// 経度, 緯度の順序
 		lat = second;
 		lng = first;
 		order = 'lng_lat';
 		confidence = 0.95;
-	}
-	// ケース3: 両方とも緯度の範囲内（-90〜90）の場合
+	} // ケース3: 両方とも緯度の範囲内（-90〜90）の場合
 	else if (isFirstLat && isSecondLat) {
 		// より詳細な判定が必要
 		const result = detectAmbiguousOrder(first, second);
@@ -123,8 +119,7 @@ export const detectCoordinateOrder = (input: string): CoordinateResult => {
 		lng = result.lng;
 		order = result.order;
 		confidence = result.confidence;
-	}
-	// ケース4: 両方とも有効だが判定困難
+	} // ケース4: 両方とも有効だが判定困難
 	else {
 		// デフォルトで緯度, 経度として扱う
 		lat = first;

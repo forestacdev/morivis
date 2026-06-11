@@ -1,25 +1,25 @@
-import type { Region } from '$routes/map/data/types/location';
-import type { Tag } from '$routes/map/data/types/tags';
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
+import { type Bounds, resolveBounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import type { Region } from '$routes/map/data/types/location';
 import type {
-	RasterImageEntry,
-	RasterPMTilesEntry,
-	RasterBaseMapStyle,
-	RasterDemStyle,
-	RasterCategoricalStyle,
-	RasterCadStyle,
-	TileSize,
 	CategoryLegend,
+	DemDataTypeKey,
 	GradientLegend,
 	ImageLegend,
-	DemDataTypeKey,
+	RasterBaseMapStyle,
+	RasterCadStyle,
+	RasterCategoricalStyle,
+	RasterDemStyle,
+	RasterImageEntry,
+	RasterPMTilesEntry,
+	TileSize,
 	TileXYZ
 } from '$routes/map/data/types/raster';
+import type { Tag } from '$routes/map/data/types/tags';
 import type { ColormapPresetName } from '$routes/map/utils/color/colormap-presets';
-import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
-import { resolveBounds, type Bounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
-import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
-import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 
 // ヘルパー関数: xyzImageTileの解決
 function resolveXyzImageTile(input: keyof typeof IMAGE_TILE_XYZ_SETS): TileXYZ {
@@ -40,7 +40,7 @@ export interface BasemapEntryConfig {
 	bounds?: Region | Bounds;
 	tags?: Tag[];
 	downloadUrl?: string;
-	zoom?: { min: number; max: number };
+	zoom?: { min: number; max: number; };
 	tileSize?: TileSize;
 	xyzImageTile?: XYZPresetKey;
 }
@@ -103,18 +103,18 @@ export interface DemEntryConfig {
 	tags?: Tag[];
 	downloadUrl?: string;
 	sourceDataName?: string;
-	zoom?: { min: number; max: number };
+	zoom?: { min: number; max: number; };
 	tileSize?: TileSize;
 	xyzImageTile?: XYZPresetKey;
 	demType?: DemDataTypeKey;
-	reliefRange?: { min: number; max: number };
+	reliefRange?: { min: number; max: number; };
 	colorMap?: ColormapPresetName;
 	format?: 'image' | 'pmtiles';
 }
 
 export function createDemEntry(config: DemEntryConfig): RasterImageEntry<RasterDemStyle>;
 export function createDemEntry(
-	config: DemEntryConfig & { format: 'pmtiles' }
+	config: DemEntryConfig & { format: 'pmtiles'; }
 ): RasterPMTilesEntry<RasterDemStyle>;
 export function createDemEntry(
 	config: DemEntryConfig
@@ -216,7 +216,7 @@ export interface CategoricalRasterEntryConfig {
 	tags?: Tag[];
 	downloadUrl?: string;
 	sourceDataName?: string;
-	zoom?: { min: number; max: number };
+	zoom?: { min: number; max: number; };
 	tileSize?: TileSize;
 	xyzImageTile?: XYZPresetKey;
 	legend: CategoryLegend | GradientLegend | ImageLegend;
@@ -229,7 +229,7 @@ export function createCategoricalRasterEntry(
 	config: CategoricalRasterEntryConfig
 ): RasterImageEntry<RasterCategoricalStyle>;
 export function createCategoricalRasterEntry(
-	config: CategoricalRasterEntryConfig & { format: 'pmtiles' }
+	config: CategoricalRasterEntryConfig & { format: 'pmtiles'; }
 ): RasterPMTilesEntry<RasterCategoricalStyle>;
 export function createCategoricalRasterEntry(
 	config: CategoricalRasterEntryConfig
@@ -308,7 +308,7 @@ export interface CadRasterEntryConfig {
 	bounds?: Region | Bounds;
 	tags?: Tag[];
 	downloadUrl?: string;
-	zoom?: { min: number; max: number };
+	zoom?: { min: number; max: number; };
 	tileSize?: TileSize;
 	xyzImageTile?: XYZPresetKey;
 	color?: string;

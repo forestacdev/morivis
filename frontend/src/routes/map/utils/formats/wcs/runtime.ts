@@ -23,7 +23,7 @@ export class WcsViewportTooBroadError extends Error {
 const getFiniteMinMax = (
 	data: ArrayLike<number>,
 	nodata: number | null
-): { min: number; max: number } => {
+): { min: number; max: number; } => {
 	let min = Number.POSITIVE_INFINITY;
 	let max = Number.NEGATIVE_INFINITY;
 
@@ -80,18 +80,18 @@ const extractServiceException = (text: string): string | null => {
 	return (
 		xml
 			.querySelector('ExceptionText, ows\\:ExceptionText, ServiceException')
-			?.textContent?.trim() ??
-		xml.documentElement.textContent?.trim() ??
-		null
+			?.textContent?.trim()
+			?? xml.documentElement.textContent?.trim()
+			?? null
 	);
 };
 
 const isTooBroadCoverageError = (message: string): boolean => {
 	const normalized = message.toLowerCase();
 	return (
-		normalized.includes('too many datasets') ||
-		normalized.includes('reduce the bounds of your request') ||
-		normalized.includes('processes too much data')
+		normalized.includes('too many datasets')
+		|| normalized.includes('reduce the bounds of your request')
+		|| normalized.includes('processes too much data')
 	);
 };
 
@@ -99,7 +99,7 @@ const renderTiffToBlob = async (
 	buffer: ArrayBuffer,
 	width: number,
 	height: number,
-	ranges?: { min: number; max: number }[]
+	ranges?: { min: number; max: number; }[]
 ): Promise<Blob> => {
 	const tiff = await fromArrayBuffer(buffer);
 	const image = await tiff.getImage();
@@ -128,10 +128,10 @@ const renderTiffToBlob = async (
 			const g = gBand[i];
 			const b = bBand[i];
 			const isTransparent =
-				(nodata !== null && (r === nodata || g === nodata || b === nodata)) ||
-				!Number.isFinite(r) ||
-				!Number.isFinite(g) ||
-				!Number.isFinite(b);
+				(nodata !== null && (r === nodata || g === nodata || b === nodata))
+				|| !Number.isFinite(r)
+				|| !Number.isFinite(g)
+				|| !Number.isFinite(b);
 
 			if (isTransparent) {
 				rgba[offset + 3] = 0;
@@ -202,7 +202,7 @@ export const resetWcsViewportReady = (entryId: string) => {
 export const fetchWcsViewportImage = async (
 	entry: RasterWcsEntry<unknown>,
 	map: maplibregl.Map
-): Promise<{ url: string; coordinates: Coordinates } | null> => {
+): Promise<{ url: string; coordinates: Coordinates; } | null> => {
 	if (!readyWcsViewportEntryIds.has(entry.id)) {
 		return null;
 	}
@@ -224,9 +224,8 @@ export const fetchWcsViewportImage = async (
 	const response = await fetchWithDevProxy(requestUrl);
 	if (!response.ok) {
 		const errorText = await response.text().catch(() => '');
-		const serviceException =
-			extractServiceException(errorText) ??
-			`WCS GetCoverage に失敗しました (HTTP ${response.status})`;
+		const serviceException = extractServiceException(errorText)
+			?? `WCS GetCoverage に失敗しました (HTTP ${response.status})`;
 		console.warn('[WCS request failed]', {
 			status: response.status,
 			requestUrl,
@@ -243,12 +242,14 @@ export const fetchWcsViewportImage = async (
 
 	if (XML_CONTENT_TYPE_RE.test(contentType)) {
 		const text = await response.text();
-		throw new Error(extractServiceException(text) ?? 'WCS が画像ではなく XML/HTML を返しました');
+		throw new Error(
+			extractServiceException(text) ?? 'WCS が画像ではなく XML/HTML を返しました'
+		);
 	}
 
 	if (
-		TIFF_CONTENT_TYPE_RE.test(contentType) ||
-		TIFF_CONTENT_TYPE_RE.test(entry.format.outputFormat)
+		TIFF_CONTENT_TYPE_RE.test(contentType)
+		|| TIFF_CONTENT_TYPE_RE.test(entry.format.outputFormat)
 	) {
 		blob = await renderTiffToBlob(
 			await response.arrayBuffer(),

@@ -1,10 +1,10 @@
 import { get } from 'svelte/store';
 import { queryParameters, ssp } from 'sveltekit-search-params';
 
+import { browser } from '$app/environment';
 import { MAP_POSITION, type MapPosition } from '$routes/constants';
 import { isStreetView } from '$routes/stores';
 import { isTerrain3d } from '$routes/stores/map';
-import { browser } from '$app/environment';
 import { debounce } from 'es-toolkit';
 
 // URLパラメータの保留中の更新を管理（競合を防ぐためのdebounce機構）
@@ -80,9 +80,9 @@ const isValidBearing = (bearing: number): boolean => {
 };
 
 /* urlパラメーターの取得 **/
-export const getParams = (params: string): { [key: string]: string } => {
+export const getParams = (params: string): { [key: string]: string; } => {
 	const paramsArray = params.slice(1).split('&');
-	const paramsObject: { [key: string]: string } = {};
+	const paramsObject: { [key: string]: string; } = {};
 	paramsArray.forEach((param) => {
 		paramsObject[param.split('=')[0]] = param.split('=')[1];
 	});
@@ -104,14 +104,14 @@ export const getMapParams = (): MapPosition => {
 	);
 
 	if (
-		params.c === null ||
-		params.c === undefined ||
-		params.z === null ||
-		params.z === undefined ||
-		params.p === null ||
-		params.p === undefined ||
-		params.b === null ||
-		params.b === undefined
+		params.c === null
+		|| params.c === undefined
+		|| params.z === null
+		|| params.z === undefined
+		|| params.p === null
+		|| params.p === undefined
+		|| params.b === null
+		|| params.b === undefined
 	) {
 		return MAP_POSITION;
 	}
@@ -187,12 +187,12 @@ export const getStreetViewParams = (): string | null => {
 };
 
 /** streetviewカメラパラメータのセット */
-export const setStreetViewCameraParams = ({ x, y }: { x: number; y: number }) => {
+export const setStreetViewCameraParams = ({ x, y }: { x: number; y: number; }) => {
 	scheduleUrlUpdate('cr', `${x.toFixed(2)}_${y.toFixed(2)}`);
 };
 
 /** streetviewカメラパラメータの取得 */
-export const getStreetViewCameraParams = (): { x: number; y: number } | null => {
+export const getStreetViewCameraParams = (): { x: number; y: number; } | null => {
 	const params = get(queryParameters({}, { pushHistory: false }));
 	const cr = params.cr as string;
 

@@ -5,8 +5,8 @@
  * Terrariumエンコード + WebGL2でカラーマップ適用/リプロジェクションして返す。
  */
 import { convertCanvasToResult } from '../farbling';
-import fsSingle from './shader/fragment_single.glsl?raw';
 import fsMulti from './shader/fragment_multi.glsl?raw';
+import fsSingle from './shader/fragment_single.glsl?raw';
 import vsSource from './shader/vertex.glsl?raw';
 
 interface GLContext {
@@ -173,7 +173,7 @@ const bindColorMapTexture = (
 const drawMesh = (
 	gl: WebGL2RenderingContext,
 	program: WebGLProgram,
-	triangles: { target: number[][]; source: number[][] }[] | null
+	triangles: { target: number[][]; source: number[][]; }[] | null
 ) => {
 	const posLoc = gl.getAttribLocation(program, 'a_position');
 	const texLoc = gl.getAttribLocation(program, 'a_texcoord');
@@ -207,7 +207,22 @@ const drawMesh = (
 		// フルスクリーンquad (0,0)-(1,1)
 		const quadData = new Float32Array([
 			// pos(x,y), tex(u,v)
-			0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1
+			0,
+			0,
+			0,
+			0,
+			1,
+			0,
+			1,
+			0,
+			0,
+			1,
+			0,
+			1,
+			1,
+			1,
+			1,
+			1
 		]);
 
 		const buffer = gl.createBuffer()!;
@@ -305,9 +320,30 @@ async function processMessage(e: MessageEvent) {
 			gl.uniform1f(gl.getUniformLocation(program, 'u_b_max'), bMax);
 
 			// Worker内でTerrariumエンコード（3バンド）
-			const rgbaR = encodeBandToTerrarium(bandR, srcWidth, srcHeight, dataMinR, dataMaxR, nodata);
-			const rgbaG = encodeBandToTerrarium(bandG, srcWidth, srcHeight, dataMinG, dataMaxG, nodata);
-			const rgbaB = encodeBandToTerrarium(bandB, srcWidth, srcHeight, dataMinB, dataMaxB, nodata);
+			const rgbaR = encodeBandToTerrarium(
+				bandR,
+				srcWidth,
+				srcHeight,
+				dataMinR,
+				dataMaxR,
+				nodata
+			);
+			const rgbaG = encodeBandToTerrarium(
+				bandG,
+				srcWidth,
+				srcHeight,
+				dataMinG,
+				dataMaxG,
+				nodata
+			);
+			const rgbaB = encodeBandToTerrarium(
+				bandB,
+				srcWidth,
+				srcHeight,
+				dataMinB,
+				dataMaxB,
+				nodata
+			);
 
 			let unit = 0;
 			bindTextureFromRGBA(ctx, unit++, 'u_band_r', program, rgbaR, srcWidth, srcHeight);
@@ -324,8 +360,9 @@ async function processMessage(e: MessageEvent) {
 		if (!preferBlob && result instanceof ImageBitmap) {
 			self.postMessage({ id: tileId, imageBitmap: result }, { transfer: [result] });
 		} else {
-			const blob =
-				result instanceof Blob ? result : await canvas.convertToBlob({ type: 'image/png' });
+			const blob = result instanceof Blob
+				? result
+				: await canvas.convertToBlob({ type: 'image/png' });
 			const buffer = await blob.arrayBuffer();
 			self.postMessage({ id: tileId, buffer });
 		}

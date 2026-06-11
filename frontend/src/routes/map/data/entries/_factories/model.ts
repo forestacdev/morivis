@@ -1,16 +1,16 @@
-import type { Region } from '$routes/map/data/types/location';
-import type { Tag } from '$routes/map/data/types/tags';
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
+import { type Bounds, resolveBounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
 import type { Opacity } from '$routes/map/data/types';
+import type { Region } from '$routes/map/data/types/location';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
+	MeshStyle,
 	ModelMeshEntry,
 	ModelTiles3DEntry,
-	MeshStyle,
 	PointCloudStyle
 } from '$routes/map/data/types/model';
-import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
-import { resolveBounds, type Bounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
+import type { Tag } from '$routes/map/data/types/tags';
 
 type XYZPresetKey = keyof typeof IMAGE_TILE_XYZ_SETS;
 

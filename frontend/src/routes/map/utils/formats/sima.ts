@@ -8,7 +8,7 @@ export const simaCsvToGeoJson = (simaText: string): FeatureCollection => {
 		.map((l) => l.trim())
 		.filter((l) => l);
 
-	const points = new Map<string, { x: number; y: number }>();
+	const points = new Map<string, { x: number; y: number; }>();
 	const features: Feature[] = [];
 
 	// Phase 1: 座標点を収集
@@ -28,7 +28,7 @@ export const simaCsvToGeoJson = (simaText: string): FeatureCollection => {
 	}
 
 	// Phase 2: 筆（区画）を構築
-	let currentParcel: { id: string; name: string; pointIds: string[] } | null = null;
+	let currentParcel: { id: string; name: string; pointIds: string[]; } | null = null;
 
 	for (const line of lines) {
 		if (line.startsWith('D00,')) {
@@ -47,7 +47,7 @@ export const simaCsvToGeoJson = (simaText: string): FeatureCollection => {
 		} else if (line.startsWith('D99') && currentParcel) {
 			const coordinates = currentParcel.pointIds
 				.map((id) => points.get(id))
-				.filter((p): p is { x: number; y: number } => !!p)
+				.filter((p): p is { x: number; y: number; } => !!p)
 				.map((p) => [p.x, p.y]);
 
 			if (coordinates.length >= 3) {

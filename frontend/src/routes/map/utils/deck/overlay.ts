@@ -29,13 +29,12 @@ type PointCloudDatum = {
 
 const hexToRgba = (color: string, alpha = 255): [number, number, number, number] => {
 	const normalized = color.replace('#', '');
-	const hex =
-		normalized.length === 3
-			? normalized
-					.split('')
-					.map((char) => char + char)
-					.join('')
-			: normalized;
+	const hex = normalized.length === 3
+		? normalized
+			.split('')
+			.map((char) => char + char)
+			.join('')
+		: normalized;
 
 	if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
 		return [64, 140, 255, alpha];
@@ -60,8 +59,9 @@ export const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
 		pickable: dataEntry.interaction.clickable,
 		opacity: dataEntry.style.opacity,
 		visible: dataEntry.style.visible ?? true,
-		pointSize:
-			dataEntry.style.type === 'point-cloud' ? (dataEntry.style.pointSize ?? 1) : undefined,
+		pointSize: dataEntry.style.type === 'point-cloud'
+			? (dataEntry.style.pointSize ?? 1)
+			: undefined,
 		parameters: { depthTest: false },
 		beforeId: 'deck-reference-layer',
 		loadOptions: {
@@ -96,17 +96,17 @@ const getPointCloudData = (dataEntry: ModelPointCloudEntry) => {
 			color: colors
 				? colorChannels === 4
 					? ([colors[i * 4], colors[i * 4 + 1], colors[i * 4 + 2], colors[i * 4 + 3]] as [
-							number,
-							number,
-							number,
-							number
-						])
+						number,
+						number,
+						number,
+						number
+					])
 					: ([colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2], 255] as [
-							number,
-							number,
-							number,
-							number
-						])
+						number,
+						number,
+						number,
+						number
+					])
 				: ([255, 255, 255, 255] as [number, number, number, number])
 		};
 	}
@@ -130,8 +130,8 @@ export const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
 	return new PointCloudLayer({
 		id: `point-cloud-layer-${dataEntry.id}`,
 		data,
-		getPosition: (d: { position: [number, number, number] }) => d.position,
-		getColor: (d: { color: [number, number, number, number] }) => d.color,
+		getPosition: (d: { position: [number, number, number]; }) => d.position,
+		getColor: (d: { color: [number, number, number, number]; }) => d.color,
 		getNormal: [0, 0, 1],
 		opacity: dataEntry.style.opacity,
 		visible: dataEntry.style.visible ?? true,
@@ -147,46 +147,46 @@ const isGeoArrowEntry = (dataEntry: ModelDeckVectorEntry): dataEntry is ModelGeo
 const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
 	dataEntry.format.geometryType === 'Point'
 		? new GeoArrowScatterplotLayer({
-				id: `geoarrow-layer-${dataEntry.id}`,
-				data: dataEntry.format.table,
-				pickable: dataEntry.interaction.clickable,
-				opacity: dataEntry.style.opacity,
-				visible: dataEntry.style.visible ?? true,
-				filled: true,
-				stroked: true,
-				radiusMinPixels: 4,
-				lineWidthMinPixels: 1,
-				getFillColor: hexToRgba(dataEntry.style.color, 180),
-				getLineColor: hexToRgba(dataEntry.style.color, 220),
-				parameters: { depthTest: false },
-				beforeId: 'deck-reference-layer'
-			})
+			id: `geoarrow-layer-${dataEntry.id}`,
+			data: dataEntry.format.table,
+			pickable: dataEntry.interaction.clickable,
+			opacity: dataEntry.style.opacity,
+			visible: dataEntry.style.visible ?? true,
+			filled: true,
+			stroked: true,
+			radiusMinPixels: 4,
+			lineWidthMinPixels: 1,
+			getFillColor: hexToRgba(dataEntry.style.color, 180),
+			getLineColor: hexToRgba(dataEntry.style.color, 220),
+			parameters: { depthTest: false },
+			beforeId: 'deck-reference-layer'
+		})
 		: dataEntry.format.geometryType === 'LineString'
-			? new GeoArrowPathLayer({
-					id: `geoarrow-layer-${dataEntry.id}`,
-					data: dataEntry.format.table,
-					pickable: dataEntry.interaction.clickable,
-					opacity: dataEntry.style.opacity,
-					visible: dataEntry.style.visible ?? true,
-					widthMinPixels: 2,
-					getColor: hexToRgba(dataEntry.style.color, 220),
-					parameters: { depthTest: false },
-					beforeId: 'deck-reference-layer'
-				})
-			: new GeoArrowPolygonLayer({
-					id: `geoarrow-layer-${dataEntry.id}`,
-					data: dataEntry.format.table,
-					pickable: dataEntry.interaction.clickable,
-					opacity: dataEntry.style.opacity,
-					visible: dataEntry.style.visible ?? true,
-					filled: true,
-					stroked: true,
-					lineWidthMinPixels: 2,
-					getFillColor: hexToRgba(dataEntry.style.color, 96),
-					getLineColor: hexToRgba(dataEntry.style.color, 220),
-					parameters: { depthTest: false },
-					beforeId: 'deck-reference-layer'
-				});
+		? new GeoArrowPathLayer({
+			id: `geoarrow-layer-${dataEntry.id}`,
+			data: dataEntry.format.table,
+			pickable: dataEntry.interaction.clickable,
+			opacity: dataEntry.style.opacity,
+			visible: dataEntry.style.visible ?? true,
+			widthMinPixels: 2,
+			getColor: hexToRgba(dataEntry.style.color, 220),
+			parameters: { depthTest: false },
+			beforeId: 'deck-reference-layer'
+		})
+		: new GeoArrowPolygonLayer({
+			id: `geoarrow-layer-${dataEntry.id}`,
+			data: dataEntry.format.table,
+			pickable: dataEntry.interaction.clickable,
+			opacity: dataEntry.style.opacity,
+			visible: dataEntry.style.visible ?? true,
+			filled: true,
+			stroked: true,
+			lineWidthMinPixels: 2,
+			getFillColor: hexToRgba(dataEntry.style.color, 96),
+			getLineColor: hexToRgba(dataEntry.style.color, 220),
+			parameters: { depthTest: false },
+			beforeId: 'deck-reference-layer'
+		});
 
 const createGeoJson3DLayer = (dataEntry: ModelGeoJson3DEntry) =>
 	new GeoJsonLayer({

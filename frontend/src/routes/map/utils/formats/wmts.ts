@@ -68,15 +68,17 @@ export const parseWmtsCapabilities = async (
 				const layerTitle = layer.Title || layerId; // Titleがない場合はIdentifierを使用
 
 				// タイルURLテンプレートを取得
-				const tileResource = layer.ResourceURL?.find((res: any) => res.resourceType === 'tile');
+				const tileResource = layer.ResourceURL?.find((res: any) =>
+					res.resourceType === 'tile'
+				);
 
 				if (tileResource && tileResource.template) {
 					let templateUrl = tileResource.template;
 
 					// 使用するスタイルを取得 (デフォルトスタイル優先)
 					const defaultStyle = layer.Style?.find((s: any) => s.isDefault === true);
-					const selectedStyleIdentifier =
-						defaultStyle?.Identifier || layer.Style?.[0]?.Identifier || 'default'; // デフォルトが見つからない場合は最初のスタイル、それもなければ'default'
+					const selectedStyleIdentifier = defaultStyle?.Identifier
+						|| layer.Style?.[0]?.Identifier || 'default'; // デフォルトが見つからない場合は最初のスタイル、それもなければ'default'
 
 					// 使用するTileMatrixSetのIdentifierを取得
 					// MapLibreはWeb Mercator (EPSG:3857) なので、互換性のあるTileMatrixSetを優先する
@@ -98,14 +100,19 @@ export const parseWmtsCapabilities = async (
 					const selectedTileMatrixSetIdentifier = tileMatrixSetLink?.TileMatrixSet;
 
 					if (!selectedTileMatrixSetIdentifier) {
-						console.warn(`Layer "${layerTitle}" (${layerId}) does not have a TileMatrixSetLink.`);
+						console.warn(
+							`Layer "${layerTitle}" (${layerId}) does not have a TileMatrixSetLink.`
+						);
 						return; // このレイヤーはスキップ
 					}
 
 					// 選択されたTileMatrixSetがWeb Mercatorでない場合、スキップ
 					// （EPSG:4326のタイルグリッドはMapLibreと互換性がない）
 					const selectedTms = tileMatrixSetsMap.get(selectedTileMatrixSetIdentifier);
-					if (selectedTms?.SupportedCRS && !WEB_MERCATOR_CRSS.includes(selectedTms.SupportedCRS)) {
+					if (
+						selectedTms?.SupportedCRS
+						&& !WEB_MERCATOR_CRSS.includes(selectedTms.SupportedCRS)
+					) {
 						console.warn(
 							`Layer "${layerTitle}" (${layerId}): TileMatrixSet "${selectedTileMatrixSetIdentifier}" uses ${selectedTms.SupportedCRS} which is not Web Mercator. Skipping.`
 						);
@@ -119,14 +126,20 @@ export const parseWmtsCapabilities = async (
 							const dimId = dim.Identifier;
 							const dimDefault = dim.Default;
 							if (dimId?.toLowerCase() === 'time' && dim.Value) {
-								const rawValues: string[] = Array.isArray(dim.Value) ? dim.Value : [dim.Value];
-								const values = rawValues.flatMap((v: string) => parseTimeValues(v)).reverse();
+								const rawValues: string[] = Array.isArray(dim.Value)
+									? dim.Value
+									: [dim.Value];
+								const values = rawValues.flatMap((v: string) => parseTimeValues(v))
+									.reverse();
 								if (values.length > 0) {
 									timeDimension = {
 										values
 									};
 									// {Time} → {morivis:dimension} に統一（ソース生成時にcurrent値で置換）
-									templateUrl = templateUrl.replace(`{${dimId}}`, '{morivis:dimension}');
+									templateUrl = templateUrl.replace(
+										`{${dimId}}`,
+										'{morivis:dimension}'
+									);
 								}
 							} else if (dimId && dimDefault) {
 								templateUrl = templateUrl.replace(`{${dimId}}`, dimDefault);
@@ -195,7 +208,9 @@ export const parseWmtsCapabilities = async (
 						timeDimension
 					});
 				} else {
-					console.warn(`Layer "${layerTitle}" (${layerId}) does not have a tile ResourceURL.`);
+					console.warn(
+						`Layer "${layerTitle}" (${layerId}) does not have a tile ResourceURL.`
+					);
 				}
 			});
 		} else {

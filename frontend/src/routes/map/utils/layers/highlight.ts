@@ -1,7 +1,7 @@
-import type { FilterSpecification, ExpressionSpecification, Map as MapLibreMap } from 'maplibre-gl';
+import type { ExpressionSpecification, FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
 
-import type { SelectedHighlightData } from '$routes/stores';
 import { getMorivisLogicalLayerId, getSublayerBaseId } from '$routes/map/utils/layers/id';
+import type { SelectedHighlightData } from '$routes/stores';
 // import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 
 export const HIGHLIGHT_LAYER_PREFIX = '@highlight_';
@@ -57,7 +57,7 @@ export const getBaseLayerId = (layerId: string) => {
 	return getSublayerBaseId(resolvedLayerId);
 };
 
-export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unknown }) => {
+export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unknown; }) => {
 	return getMorivisLogicalLayerId(layer.metadata) ?? getBaseLayerId(layer.id);
 };
 
@@ -245,20 +245,19 @@ class HighlightLayerRegistry {
 		return this.items.map((item) => {
 			const baseFilter = mergeFilter(item.defaultFilter, item.runtimeFilter);
 			const isSelectedLayer = selected?.layerId === item.logicalLayerId;
-			const filter =
-				item.role === 'highlight'
-					? mergeFilter(
-							baseFilter ?? undefined,
-							isSelectedLayer
-								? createSelectedOnlyFilter(selected.featureId, item.selectionKey)
-								: HIDDEN_FILTER
-						)
-					: mergeFilter(
-							baseFilter ?? undefined,
-							isSelectedLayer
-								? createSelectedExcludeFilter(selected.featureId, item.selectionKey)
-								: undefined
-						);
+			const filter = item.role === 'highlight'
+				? mergeFilter(
+					baseFilter ?? undefined,
+					isSelectedLayer
+						? createSelectedOnlyFilter(selected.featureId, item.selectionKey)
+						: HIDDEN_FILTER
+				)
+				: mergeFilter(
+					baseFilter ?? undefined,
+					isSelectedLayer
+						? createSelectedExcludeFilter(selected.featureId, item.selectionKey)
+						: undefined
+				);
 
 			return {
 				layerId: item.actualLayerId,

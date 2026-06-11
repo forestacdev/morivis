@@ -1,9 +1,9 @@
 import {
 	PUBLIC_BASE_PATH,
+	PUBLIC_DISASTER_LORE_ALL_PATH,
 	PUBLIC_ENTRY_PATH,
 	PUBLIC_PANORAMA_PATH,
-	PUBLIC_TIMBER_SPECIES_PATH,
-	PUBLIC_DISASTER_LORE_ALL_PATH
+	PUBLIC_TIMBER_SPECIES_PATH
 } from '$env/static/public';
 import type { ResourceType } from 'maplibre-gl';
 import { devProxyTransform } from './proxy';
@@ -49,7 +49,7 @@ export const normalizeHttpUrlInput = (value: string): string | null => {
 export const resolveMapLibreRequest = (
 	url: string,
 	resourceType?: ResourceType
-): { url: string } => {
+): { url: string; } => {
 	void resourceType;
 	return { url: resolveRuntimeUrl(url) };
 };

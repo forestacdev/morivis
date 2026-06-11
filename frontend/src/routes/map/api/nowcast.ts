@@ -1,7 +1,7 @@
 // https://www.jma.go.jp/jma/kishou/know/kurashi/highres_nowcast.html
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import { createRasterEntry } from '$routes/map/data/entries/raster';
-import type { RasterEntry, RasterBaseMapStyle, TileXYZ } from '$routes/map/data/types/raster';
+import type { RasterBaseMapStyle, RasterEntry, TileXYZ } from '$routes/map/data/types/raster';
 import type { Tag } from '$routes/map/data/types/tags';
 
 /**
@@ -48,7 +48,9 @@ const getCurrentNowcastFallbackBasetime = () => {
 	const minute = getPart('minute');
 	const roundedMinute = String(Math.floor(Number(minute) / 5) * 5).padStart(2, '0');
 
-	return `${getPart('year')}${getPart('month')}${getPart('day')}${getPart('hour')}${roundedMinute}00`;
+	return `${getPart('year')}${getPart('month')}${getPart('day')}${
+		getPart('hour')
+	}${roundedMinute}00`;
 };
 
 /**
@@ -100,7 +102,7 @@ export async function getJmaTileUrls(maxAge: number = 300000): Promise<TileInfo[
 				const tileInfos: TileInfo[] = data
 					.map((item) => {
 						if (!item || typeof item !== 'object') return null;
-						const basetime = (item as { basetime?: unknown }).basetime;
+						const basetime = (item as { basetime?: unknown; }).basetime;
 						return typeof basetime === 'string' ? basetime : null;
 					})
 					.filter((basetime): basetime is string => basetime !== null)
@@ -124,7 +126,9 @@ export async function getJmaTileUrls(maxAge: number = 300000): Promise<TileInfo[
 				jmaTileUrlsPromise = null;
 				console.error('Failed to fetch JMA tile URLs:', error);
 				throw new Error(
-					`Failed to fetch JMA tile URLs: ${error instanceof Error ? error.message : 'Unknown error'}`
+					`Failed to fetch JMA tile URLs: ${
+						error instanceof Error ? error.message : 'Unknown error'
+					}`
 				);
 			}
 		})();

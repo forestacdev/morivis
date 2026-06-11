@@ -6,15 +6,15 @@
 
 # Interface: MeshHeightColorRampStyle
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:61](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L61)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:64](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L64)
 
 ## Properties
 
 ### colorMap
 
-> **colorMap**: `"jet"` \| `"hsv"` \| `"hot"` \| `"spring"` \| `"summer"` \| `"autumn"` \| `"winter"` \| `"bone"` \| `"copper"` \| `"greys"` \| `"yignbu"` \| `"greens"` \| `"yiorrd"` \| `"bluered"` \| `"rdbu"` \| `"picnic"` \| `"rainbow"` \| `"portland"` \| `"blackbody"` \| `"earth"` \| `"electric"` \| `"viridis"` \| `"inferno"` \| `"magma"` \| `"plasma"` \| `"warm"` \| `"cool"` \| `"rainbow-soft"` \| `"bathymetry"` \| `"cdom"` \| `"chlorophyll"` \| `"density"` \| `"freesurface-blue"` \| `"freesurface-red"` \| `"oxygen"` \| `"par"` \| `"phase"` \| `"salinity"` \| `"temperature"` \| `"turbidity"` \| `"velocity-blue"` \| `"velocity-green"` \| `"cubehelix"`
+> **colorMap**: [`ColorMapType`](../../raster/type-aliases/ColorMapType.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:63](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L63)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:66](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L66)
 
 ***
 
@@ -22,23 +22,31 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:63](https://githu
 
 > **enabled**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:62](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L62)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:65](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L65)
 
 ***
 
-### max
+### max?
 
-> **max**: `number`
+> `optional` **max**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:65](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L65)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:69](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L69)
 
 ***
 
-### min
+### min?
 
-> **min**: `number`
+> `optional` **min**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:64](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L64)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:68](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L68)
+
+***
+
+### range?
+
+> `optional` **range**: [`AdjustableRange`](../../interfaces/AdjustableRange.md)
+
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:67](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L67)
 
 ***
 
@@ -46,7 +54,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:64](https://githu
 
 > `optional` **sourceMax**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:67](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L67)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:71](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L71)
 
 ***
 
@@ -54,7 +62,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:67](https://githu
 
 > `optional` **sourceMin**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:66](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L66)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:70](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L70)
 
 ***
 
@@ -62,4 +70,4 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:66](https://githu
 
 > `optional` **sourceSign**: `1` \| `-1`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:68](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L68)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:72](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L72)

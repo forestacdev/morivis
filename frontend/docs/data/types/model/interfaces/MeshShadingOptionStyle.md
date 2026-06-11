@@ -6,7 +6,7 @@
 
 # Interface: MeshShadingOptionStyle
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:78](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L78)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:82](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L82)
 
 ## Properties
 
@@ -14,4 +14,4 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:78](https://githu
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:79](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L79)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:83](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L83)

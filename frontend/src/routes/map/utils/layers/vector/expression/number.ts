@@ -1,10 +1,10 @@
-import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 import { getAdjustableRangeValue } from '$routes/map/data/types';
+import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 
 import type {
-	NumbersStyle,
 	NumberLinearExpression,
 	NumberMatchExpression,
+	NumbersStyle,
 	NumberStepExpression
 } from '$routes/map/data/types/vector/style';
 

@@ -1,8 +1,7 @@
+import { xyzToWMSXYZ } from '$routes/map/utils/map/tile-coordinate';
 import { getImagePmtiles } from '$routes/map/utils/raster/tile-query';
 import { convertTmsToXyz } from '$routes/map/utils/sources';
-import { xyzToWMSXYZ } from '$routes/map/utils/map/tile-coordinate';
 
-import { CoverImageManager } from '../index';
 import { IMAGE_TILE_XYZ } from '$routes/constants';
 import type { AnyRasterEntry } from '$routes/map/data/types';
 import {
@@ -12,19 +11,20 @@ import {
 	type RasterDemEntry,
 	type RasterDemStyle
 } from '$routes/map/data/types/raster';
-import { TileProxy } from '$routes/map/utils/image';
 import {
-	type RasterCadEntry,
 	DEM_STYLE_TYPE,
-	type DemStyleMode
+	type DemStyleMode,
+	type RasterCadEntry
 } from '$routes/map/data/types/raster';
-import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
-import { PMTiles } from 'pmtiles';
-import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
 import { replaceDimensionPlaceholder } from '$routes/map/utils/dimension';
+import { TileProxy } from '$routes/map/utils/image';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
-import { createClientId } from '$routes/utils/id';
+import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
+import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { getDemStyleRange, isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
+import { createClientId } from '$routes/utils/id';
+import { PMTiles } from 'pmtiles';
+import { CoverImageManager } from '../index';
 
 /** Worker応答からObject URLを生成する（ImageBitmap / Blob 両対応） */
 const createObjectURLFromWorkerResult = async (data: {
@@ -185,10 +185,9 @@ export const getRasterImageUrl = async (
 };
 
 const getPmtilesCoverCacheKey = (_layerEntry: AnyRasterEntry): string => {
-	const normalizedStyle =
-		_layerEntry.style.type === 'dem'
-			? normalizeDemStyleForCoverCache(_layerEntry.style as RasterDemStyle)
-			: _layerEntry.style;
+	const normalizedStyle = _layerEntry.style.type === 'dem'
+		? normalizeDemStyleForCoverCache(_layerEntry.style as RasterDemStyle)
+		: _layerEntry.style;
 
 	return JSON.stringify({
 		id: _layerEntry.id,
@@ -216,10 +215,9 @@ const normalizeDemStyleForCoverCache = (style: RasterDemStyle): RasterDemStyle =
 };
 
 const getRasterCoverCacheKey = (_layerEntry: AnyRasterEntry, imageUrl?: string): string => {
-	const normalizedStyle =
-		_layerEntry.style.type === 'dem'
-			? normalizeDemStyleForCoverCache(_layerEntry.style as RasterDemStyle)
-			: _layerEntry.style;
+	const normalizedStyle = _layerEntry.style.type === 'dem'
+		? normalizeDemStyleForCoverCache(_layerEntry.style as RasterDemStyle)
+		: _layerEntry.style;
 
 	return JSON.stringify({
 		id: _layerEntry.id,
@@ -279,7 +277,10 @@ export const generatePmtilesImageUrl = async (
 				convertUrl = await generateDemCoverImage('none', _layerEntry as RasterDemEntry);
 			}
 		} else if (_layerEntry.style.type === 'cad') {
-			convertUrl = await replaceColorInImage(_layerEntry.format.url, _layerEntry as RasterCadEntry);
+			convertUrl = await replaceColorInImage(
+				_layerEntry.format.url,
+				_layerEntry as RasterCadEntry
+			);
 		} else {
 			const tile = _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
 			convertUrl = await getImagePmtiles(_layerEntry.format.url, tile);
@@ -294,7 +295,7 @@ const loadImageToBitmap = async (
 	context?: {
 		layerId?: string;
 		layerName?: string;
-		xyz?: { x: number; y: number; z: number };
+		xyz?: { x: number; y: number; z: number; };
 	}
 ): Promise<ImageBitmap> => {
 	try {
@@ -326,7 +327,7 @@ const loadImageToBitmap = async (
 
 const loadImagePmtiles = async (
 	src: string,
-	tile: { x: number; y: number; z: number }
+	tile: { x: number; y: number; z: number; }
 ): Promise<ImageBitmap> => {
 	try {
 		const pmtiles = new PMTiles(resolveRequestUrl(src));
@@ -444,14 +445,13 @@ export const generateDemCoverImage = async (
 				encodeType
 			});
 		} else if (mode === 'slope' || mode === 'aspect' || mode === 'curvature') {
-			const elevationColorArray =
-				mode === 'slope' && visualization.uniformsData.slope
-					? colorMapCache.createDemColorArray(visualization.uniformsData.slope)
-					: colorMapCache.createColorArray(
-							(mode === 'aspect'
-								? visualization.uniformsData.aspect?.colorMap
-								: visualization.uniformsData.curvature?.colorMap) || 'bone'
-						);
+			const elevationColorArray = mode === 'slope' && visualization.uniformsData.slope
+				? colorMapCache.createDemColorArray(visualization.uniformsData.slope)
+				: colorMapCache.createColorArray(
+					(mode === 'aspect'
+						? visualization.uniformsData.aspect?.colorMap
+						: visualization.uniformsData.curvature?.colorMap) || 'bone'
+				);
 
 			let min = 0;
 			let max = 0;

@@ -1,5 +1,5 @@
-import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
 import { COVER_IMAGE_BASE_PATH, ENTRY_FGB_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
 
 const entry: PointEntry<GeoJsonMetaData> = {
 	id: 'fac_sisetuannaitou',

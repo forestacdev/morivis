@@ -1,5 +1,5 @@
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { RasterImageEntry, RasterCategoricalStyle } from '$routes/map/data/types/raster';
+import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const NDVI_TIME_VALUES = (() => {
 	const values: string[] = [];

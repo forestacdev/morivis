@@ -1,15 +1,15 @@
-import { MAP_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { HIROSHIMA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import { TREE_SPECIES_PROPERTIES } from '$routes/map/data/entries/vector/_properties';
 import {
+	createMatchColorMapping,
 	DEFAULT_POLYGON_STYLE,
+	TREE_SINGLE_COLOR_STYLE,
 	TREE_SPECIES_LABELS,
 	TREE_SPECIES_OUTLINE,
-	TREE_SPECIES_STYLE,
-	TREE_SINGLE_COLOR_STYLE,
-	createMatchColorMapping
+	TREE_SPECIES_STYLE
 } from '$routes/map/data/entries/vector/_style';
+import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: PolygonEntry<TileMetaData> = {
 	id: 'hiroshima_tree_species',

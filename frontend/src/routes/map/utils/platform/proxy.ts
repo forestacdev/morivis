@@ -154,7 +154,7 @@ export const buildRuntimeProxyRules = (publicEnvValues: PublicEnvValues = {}): P
 export const devProxyTransform = (
 	url: string,
 	publicEnvValues: PublicEnvValues = {}
-): { url: string } => {
+): { url: string; } => {
 	for (const rule of buildRuntimeProxyRules(publicEnvValues)) {
 		if (!url.includes(rule.match)) continue;
 		if (rule.excludeExt?.some((ext) => url.endsWith(ext))) return { url };
@@ -171,7 +171,7 @@ export const buildViteProxyConfig = (publicEnv: Record<string, string | undefine
 	const proxyRules = buildRuntimeProxyRules(publicEnv);
 	const config: Record<
 		string,
-		{ target: string; changeOrigin: boolean; rewrite: (path: string) => string }
+		{ target: string; changeOrigin: boolean; rewrite: (path: string) => string; }
 	> = {};
 
 	for (const rule of proxyRules) {

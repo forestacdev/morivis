@@ -1,4 +1,4 @@
-import type { Feature, FeatureCollection, Point, MultiLineString, Position } from 'geojson';
+import type { Feature, FeatureCollection, MultiLineString, Point, Position } from 'geojson';
 import type { GTFS } from './index';
 
 // --- Stops ---
@@ -52,7 +52,7 @@ const normalizeGtfsColor = (value: string | undefined): string | null => {
  */
 export const readStops = (
 	gtfs: GTFS,
-	options: { ignoreNoRoute?: boolean } = {}
+	options: { ignoreNoRoute?: boolean; } = {}
 ): FeatureCollection<Point, StopProperties> => {
 	// trip_id → route_id の高速ルックアップ
 	const tripRouteMap = new Map<string, string>();
@@ -87,12 +87,14 @@ export const readStops = (
 		const routeNames = orderedRouteIds
 			.map((routeId) => routeNameMap.get(routeId) ?? '')
 			.filter((routeName) => routeName !== '');
-		const representativeRouteName =
-			routeNames.length === 0 ? '' : routeNames.length === 1 ? routeNames[0] : '複数路線';
-		const representativeRouteColor =
-			orderedRouteIds.length === 1
-				? normalizeGtfsColor(routeMap.get(orderedRouteIds[0])?.route_color)
-				: null;
+		const representativeRouteName = routeNames.length === 0
+			? ''
+			: routeNames.length === 1
+			? routeNames[0]
+			: '複数路線';
+		const representativeRouteColor = orderedRouteIds.length === 1
+			? normalizeGtfsColor(routeMap.get(orderedRouteIds[0])?.route_color)
+			: null;
 
 		features.push({
 			type: 'Feature',
@@ -190,7 +192,7 @@ interface RouteProperties {
  */
 export const readRoutes = (
 	gtfs: GTFS,
-	options: { ignoreShapes?: boolean } = {}
+	options: { ignoreShapes?: boolean; } = {}
 ): FeatureCollection<MultiLineString, RouteProperties> => {
 	if (gtfs.shapes && !options.ignoreShapes) {
 		return readRouteShapes(gtfs);

@@ -3,8 +3,8 @@
  */
 
 import type { FeatureCollection } from 'geojson';
-import type { ArcGisRenderer } from './webmap';
 import { mercatorToLat, mercatorToLng } from './mercator';
+import type { ArcGisRenderer } from './webmap';
 
 // ============================
 // カタログ関連
@@ -29,10 +29,10 @@ export interface ArcGisCatalogInfo {
 export const isArcGisCatalogUrl = (url: string): boolean => {
 	const cleaned = url.replace(/\/+$/, '').split('?')[0];
 	return (
-		!cleaned.endsWith('/FeatureServer') &&
-		!cleaned.endsWith('/MapServer') &&
-		!/\/FeatureServer\/\d+$/.test(cleaned) &&
-		!/\/MapServer\/\d+$/.test(cleaned)
+		!cleaned.endsWith('/FeatureServer')
+		&& !cleaned.endsWith('/MapServer')
+		&& !/\/FeatureServer\/\d+$/.test(cleaned)
+		&& !/\/MapServer\/\d+$/.test(cleaned)
 	);
 };
 
@@ -59,8 +59,9 @@ export const fetchArcGisCatalog = async (url: string): Promise<ArcGisCatalogInfo
 	// ベースURLは /services まで遡る
 	const cleanUrl = baseUrl.split('?')[0];
 	const servicesIdx = cleanUrl.toLowerCase().indexOf('/services');
-	const catalogBaseUrl =
-		servicesIdx !== -1 ? cleanUrl.substring(0, servicesIdx + '/services'.length) : cleanUrl;
+	const catalogBaseUrl = servicesIdx !== -1
+		? cleanUrl.substring(0, servicesIdx + '/services'.length)
+		: cleanUrl;
 
 	const services: ArcGisCatalogService[] = (data.services ?? [])
 		.filter((s: any) => s.type === 'FeatureServer' || s.type === 'MapServer')
@@ -90,11 +91,11 @@ export interface ArcGisFeatureLayerInfo {
 	id: number;
 	name: string;
 	geometryType: string; // esriGeometryPoint, esriGeometryPolyline, esriGeometryPolygon
-	fields: { name: string; alias: string; type: string }[];
+	fields: { name: string; alias: string; type: string; }[];
 	bounds?: [number, number, number, number];
 	maxRecordCount: number;
 	description?: string;
-	drawingInfo?: { renderer?: ArcGisRenderer };
+	drawingInfo?: { renderer?: ArcGisRenderer; };
 	typeIdField?: string;
 	types?: ArcGisFeatureTypeInfo[];
 }
@@ -145,12 +146,11 @@ export const fetchArcGisFeatureServerInfo = async (
 		throw new Error(data.error.message || 'ArcGIS REST APIエラー');
 	}
 
-	const name =
-		data.documentInfo?.Title ||
-		data.documentInfo?.title ||
-		data.serviceDescription ||
-		data.description ||
-		'ArcGIS FeatureServer';
+	const name = data.documentInfo?.Title
+		|| data.documentInfo?.title
+		|| data.serviceDescription
+		|| data.description
+		|| 'ArcGIS FeatureServer';
 
 	// レイヤー情報の取得
 	const layerInfos = data.layers ?? [];
@@ -169,12 +169,15 @@ export const fetchArcGisFeatureServerInfo = async (
 				let bounds: [number, number, number, number] | undefined;
 				const ext = layerData.extent;
 				if (ext) {
-					if (ext.spatialReference?.wkid === 4326 || ext.spatialReference?.latestWkid === 4326) {
+					if (
+						ext.spatialReference?.wkid === 4326
+						|| ext.spatialReference?.latestWkid === 4326
+					) {
 						bounds = [ext.xmin, ext.ymin, ext.xmax, ext.ymax];
 					} else if (
-						ext.spatialReference?.wkid === 102100 ||
-						ext.spatialReference?.wkid === 3857 ||
-						ext.spatialReference?.latestWkid === 3857
+						ext.spatialReference?.wkid === 102100
+						|| ext.spatialReference?.wkid === 3857
+						|| ext.spatialReference?.latestWkid === 3857
 					) {
 						bounds = [
 							mercatorToLng(ext.xmin),
@@ -183,9 +186,9 @@ export const fetchArcGisFeatureServerInfo = async (
 							mercatorToLat(ext.ymax)
 						];
 					} else if (
-						ext.spatialReference?.wkid === 4612 ||
-						ext.spatialReference?.latestWkid === 4612 ||
-						ext.spatialReference?.wkid === 104111
+						ext.spatialReference?.wkid === 4612
+						|| ext.spatialReference?.latestWkid === 4612
+						|| ext.spatialReference?.wkid === 104111
 					) {
 						// JGD2000 — ほぼWGS84と同等
 						bounds = [ext.xmin, ext.ymin, ext.xmax, ext.ymax];
@@ -193,10 +196,9 @@ export const fetchArcGisFeatureServerInfo = async (
 				}
 
 				// types情報の取得
-				const types: ArcGisFeatureTypeInfo[] | undefined =
-					layerData.types?.length > 0
-						? layerData.types.map((t: any) => ({ id: t.id, name: t.name }))
-						: undefined;
+				const types: ArcGisFeatureTypeInfo[] | undefined = layerData.types?.length > 0
+					? layerData.types.map((t: any) => ({ id: t.id, name: t.name }))
+					: undefined;
 
 				return {
 					id: layer.id,
@@ -250,10 +252,9 @@ export const fetchFeatureLayerAsGeoJSON = async (
 	let hasMore = true;
 
 	while (hasMore) {
-		const queryUrl =
-			`${layerUrl}/query?f=geojson&where=1%3D1` +
-			`&outFields=*&outSR=4326` +
-			`&resultOffset=${offset}&resultRecordCount=${maxRecordCount}`;
+		const queryUrl = `${layerUrl}/query?f=geojson&where=1%3D1`
+			+ `&outFields=*&outSR=4326`
+			+ `&resultOffset=${offset}&resultRecordCount=${maxRecordCount}`;
 
 		const res = await fetch(queryUrl);
 		if (!res.ok) {

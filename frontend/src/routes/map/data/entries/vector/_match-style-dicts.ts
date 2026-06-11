@@ -1,5 +1,5 @@
-import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
+import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 
 export type MatchColorDict = Record<string, BaseSingleColor>;
 export type MatchPatternDict = Record<string, SpritePatternId>;

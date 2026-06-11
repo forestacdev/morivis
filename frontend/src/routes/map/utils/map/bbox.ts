@@ -1,11 +1,11 @@
-import type { Coordinates, LngLat } from 'maplibre-gl';
 import type { BBox as GeoJsonBBox } from 'geojson';
+import type { Coordinates, LngLat } from 'maplibre-gl';
 
 import {
-	WEB_MERCATOR_MIN_LAT,
 	WEB_MERCATOR_MAX_LAT,
-	WEB_MERCATOR_MIN_LNG,
-	WEB_MERCATOR_MAX_LNG
+	WEB_MERCATOR_MAX_LNG,
+	WEB_MERCATOR_MIN_LAT,
+	WEB_MERCATOR_MIN_LNG
 } from '$routes/map/data/entries/_meta_data/_bounds';
 
 export type BBox = [number, number, number, number];
@@ -96,13 +96,13 @@ export const isBboxValid = (bbox: BBox | BBox3D): boolean => {
 	const allFinite = [minLng, minLat, maxLng, maxLat].every(isFiniteNumber);
 
 	return (
-		minLatValid &&
-		maxLatValid &&
-		minLngValid &&
-		maxLngValid &&
-		latOrderValid &&
-		lngOrderValid &&
-		allFinite
+		minLatValid
+		&& maxLatValid
+		&& minLngValid
+		&& maxLngValid
+		&& latOrderValid
+		&& lngOrderValid
+		&& allFinite
 	);
 };
 
@@ -113,7 +113,8 @@ export const isFiniteBbox = (bbox: BBox | BBox3D | null | undefined): bbox is BB
 	const [minLng, minLat, maxLng, maxLat] = bbox2d;
 
 	return (
-		[minLng, minLat, maxLng, maxLat].every(isFiniteNumber) && minLng <= maxLng && minLat <= maxLat
+		[minLng, minLat, maxLng, maxLat].every(isFiniteNumber) && minLng <= maxLng
+		&& minLat <= maxLat
 	);
 };
 
@@ -125,7 +126,9 @@ export const isFiniteBbox = (bbox: BBox | BBox3D | null | undefined): bbox is BB
  */
 export const getBoundingBoxCorners = (bbox: BBox): Coordinates => {
 	if (bbox.length !== 4) {
-		throw new Error('Input array must contain exactly 4 numbers (minLon, minLat, maxLon, maxLat).');
+		throw new Error(
+			'Input array must contain exactly 4 numbers (minLon, minLat, maxLon, maxLat).'
+		);
 	}
 
 	const minLon = bbox[0];

@@ -1,4 +1,4 @@
-import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
+import type { RasterBaseMapStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'raster_fa6e4fc0-1da9-48a9-8969-7f13d8f52c22',

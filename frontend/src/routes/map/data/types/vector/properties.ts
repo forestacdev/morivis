@@ -1,9 +1,9 @@
-import type { FeatureProp } from '$routes/map/types/properties';
 import type {
+	FilterTemporalBehavior,
 	SharedDiscreteDimension,
-	TemporalBehavior,
-	FilterTemporalBehavior
+	TemporalBehavior
 } from '$routes/map/data/types';
+import type { FeatureProp } from '$routes/map/types/properties';
 
 /**
  * 属性表示のタイトル表示テンプレート
@@ -558,15 +558,17 @@ export const formatFieldValue = (rawValue: unknown, field?: FieldDef): string =>
 					break;
 				case 'replace':
 					if (rule.pattern != null) {
-						const pattern =
-							typeof rule.pattern === 'string' ? new RegExp(rule.pattern, 'g') : rule.pattern;
+						const pattern = typeof rule.pattern === 'string'
+							? new RegExp(rule.pattern, 'g')
+							: rule.pattern;
 						str = str.replace(pattern, rule.replaceWith ?? '');
 					}
 					break;
 				case 'removePattern':
 					if (rule.pattern != null) {
-						const pattern =
-							typeof rule.pattern === 'string' ? new RegExp(rule.pattern, 'g') : rule.pattern;
+						const pattern = typeof rule.pattern === 'string'
+							? new RegExp(rule.pattern, 'g')
+							: rule.pattern;
 						str = str.replace(pattern, '');
 					}
 					break;

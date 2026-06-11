@@ -8,6 +8,7 @@
 
 ## Interfaces
 
+- [GeoArrowStyle](interfaces/GeoArrowStyle.md)
 - [MeshHeightColorRampStyle](interfaces/MeshHeightColorRampStyle.md)
 - [MeshShadingOptionStyle](interfaces/MeshShadingOptionStyle.md)
 - [MeshShadingStyle](interfaces/MeshShadingStyle.md)
@@ -16,6 +17,8 @@
 - [ModelAnimationClip](interfaces/ModelAnimationClip.md)
 - [ModelAnimationProperties](interfaces/ModelAnimationProperties.md)
 - [ModelAnimationState](interfaces/ModelAnimationState.md)
+- [ModelGeoArrowEntry](interfaces/ModelGeoArrowEntry.md)
+- [ModelGeoJson3DEntry](interfaces/ModelGeoJson3DEntry.md)
 - [ModelMeshEntry](interfaces/ModelMeshEntry.md)
 - [ModelPointCloudEntry](interfaces/ModelPointCloudEntry.md)
 - [ModelTiles3DEntry](interfaces/ModelTiles3DEntry.md)
@@ -28,6 +31,7 @@
 - [AnyModelTiles3DEntry](type-aliases/AnyModelTiles3DEntry.md)
 - [MeshFormatType](type-aliases/MeshFormatType.md)
 - [MeshStyleEntry](type-aliases/MeshStyleEntry.md)
+- [ModelDeckVectorEntry](type-aliases/ModelDeckVectorEntry.md)
 - [PointCloudStyleEntry](type-aliases/PointCloudStyleEntry.md)
 
 ## Variables

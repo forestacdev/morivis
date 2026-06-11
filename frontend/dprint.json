@@ -1,0 +1,36 @@
+{
+	"$schema": "https://dprint.dev/schemas/v0.json",
+	"lineWidth": 100,
+	"useTabs": true,
+	"indentWidth": 4,
+	"newLineKind": "lf",
+	"includes": [
+		"src/**/*.{ts,js,mts,cts,json,md}",
+		"*.{json,js,mjs,cjs,ts}",
+		"e2e/**/*.ts"
+	],
+	"excludes": [
+		"build",
+		".svelte-kit",
+		"node_modules",
+		"docs",
+		"static",
+		"src/**/*.svelte",
+		"src/**/*.html",
+		"src/**/*.css"
+	],
+	"typescript": {
+		"quoteStyle": "preferSingle",
+		"semiColons": "always",
+		"trailingCommas": "never"
+	},
+	"json": {
+		"indentWidth": 4
+	},
+	"plugins": [
+		"./node_modules/@dprint/typescript/plugin.wasm",
+		"./node_modules/@dprint/json/plugin.wasm",
+		"./node_modules/@dprint/markdown/plugin.wasm",
+		"./node_modules/@dprint/toml/plugin.wasm"
+	]
+}

@@ -1,7 +1,7 @@
-import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
-import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
+import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'gsi_gmld_ptc2',
