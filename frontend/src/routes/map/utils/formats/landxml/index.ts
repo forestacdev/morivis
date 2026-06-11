@@ -6,12 +6,12 @@
  * - landxml npm: https://github.com/abrman/landxml
  */
 
+import type { FeatureCollection } from '$routes/map/types/geojson';
+import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
+import { reprojectGeoJson, toGlbAndContours } from 'landxml';
 import proj4 from 'proj4';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
-import { toGlbAndContours, reprojectGeoJson } from 'landxml';
-import type { FeatureCollection } from '$routes/map/types/geojson';
-import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
 import RasterizeWorker from './rasterize.worker?worker';
 
 export interface LandXmlSurface {
@@ -352,10 +352,9 @@ export const parseTinSurfaces = (text: string): TinSurfaceData[] => {
 	const doc = parser.parseFromString(text, 'text/xml');
 	const ns = 'http://www.landxml.org/schema/LandXML-1.2';
 
-	const surfaceEls =
-		doc.getElementsByTagNameNS(ns, 'Surface').length > 0
-			? doc.getElementsByTagNameNS(ns, 'Surface')
-			: doc.getElementsByTagName('Surface');
+	const surfaceEls = doc.getElementsByTagNameNS(ns, 'Surface').length > 0
+		? doc.getElementsByTagNameNS(ns, 'Surface')
+		: doc.getElementsByTagName('Surface');
 
 	const results: TinSurfaceData[] = [];
 

@@ -16,8 +16,10 @@
 	import type {
 		RasterImageEntry,
 		RasterCogEntry,
+		RasterGeoZarrEntry,
 		RasterTiffStyle
 	} from '$routes/map/data/types/raster';
+	import { registerGeoZarr } from '$routes/map/protocol/geozarr';
 	import type { DialogType } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
@@ -33,14 +35,21 @@
 		searchItems,
 		fetchChildLinks,
 		fetchStaticItems,
-		getCogAssets,
+		getRenderableAssets,
+		normalizeStacUrl,
 		type StacSourceType,
 		type StacCollection,
 		type StacItem,
-		type StacAsset
+		type StacAsset,
+		type StacRenderableAsset
 	} from '$routes/map/utils/formats/stac';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
-	import { fetchWithDevProxy, resolveRequestUrl } from '$routes/map/utils/platform/request';
+	import {
+		fetchResolvedRequestUrl,
+		fetchWithDevProxy,
+		resolveCogProxyUrl,
+		resolveRequestUrl
+	} from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -92,7 +101,7 @@
 	let selectedItemIndex = $state(0);
 
 	// アセット選択
-	let cogAssets = $state<{ key: string; asset: StacAsset }[]>([]);
+	let renderableAssets = $state<StacRenderableAsset[]>([]);
 	let selectedAssetKey = $state('');
 
 	$effect(() => {
@@ -118,7 +127,7 @@
 	const loadCogDirect = async (cogUrl: string) => {
 		statusText = 'COGメタデータを読み取り中...';
 		const id = `geotiff_${crypto.randomUUID()}`;
-		const requestCogUrl = resolveRequestUrl(cogUrl);
+		const requestCogUrl = resolveCogProxyUrl(cogUrl);
 		const entryName =
 			cogUrl
 				.split('/')
@@ -299,6 +308,8 @@
 		isProcessing.set(true);
 		statusText = '接続中...';
 		try {
+			apiUrl = normalizeStacUrl(apiUrl);
+
 			// COG直URLの場合はCOG読み込みフローへ
 			if (isCogUrl(apiUrl)) {
 				await loadCogDirect(apiUrl);
@@ -326,7 +337,7 @@
 				}
 				items = foundItems;
 				selectedItemIndex = 0;
-				updateCogAssets(0);
+				updateRenderableAssets(0);
 				statusText = `${foundItems.length}件のアイテム`;
 				step = 'items';
 			} else {
@@ -338,7 +349,7 @@
 					if (foundItems.length > 0) {
 						items = foundItems;
 						selectedItemIndex = 0;
-						updateCogAssets(0);
+						updateRenderableAssets(0);
 						statusText = `${foundItems.length}件のアイテム`;
 						step = 'items';
 					} else {
@@ -376,7 +387,7 @@
 				if (foundItems.length > 0) {
 					items = foundItems;
 					selectedItemIndex = 0;
-					updateCogAssets(0);
+					updateRenderableAssets(0);
 					statusText = `${foundItems.length}件のアイテム`;
 					step = 'items';
 				} else {
@@ -434,7 +445,7 @@
 			}
 
 			selectedItemIndex = 0;
-			updateCogAssets(0);
+			updateRenderableAssets(0);
 			step = 'items';
 		} catch (e) {
 			showNotification('検索に失敗しました', 'error');
@@ -444,11 +455,11 @@
 		}
 	};
 
-	const updateCogAssets = (index: number) => {
+	const updateRenderableAssets = (index: number) => {
 		const item = items[index];
 		if (!item) return;
-		cogAssets = getCogAssets(item);
-		selectedAssetKey = cogAssets.length > 0 ? cogAssets[0].key : '';
+		renderableAssets = getRenderableAssets(item);
+		selectedAssetKey = renderableAssets.length > 0 ? renderableAssets[0].key : '';
 	};
 
 	let progressText = $state('');
@@ -460,20 +471,106 @@
 		return `${bytes} B`;
 	};
 
-	/** COGをロードしてエントリ作成 */
-	const loadCog = async () => {
+	const loadGeoZarr = async (item: StacItem, asset: StacAsset) => {
+		const entryId = `geozarr_${crypto.randomUUID()}`;
+		const bbox = item.bbox;
+		const resolvedBbox: [number, number, number, number] = [
+			Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, bbox[0])),
+			Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, bbox[1])),
+			Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, bbox[2])),
+			Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, bbox[3]))
+		];
+		const entryName = item.collection ? `${item.collection}_${item.id}` : item.id;
+		const metadata = await registerGeoZarr({
+			entryId,
+			url: asset.href,
+			bboxText: bbox.join(', ')
+		});
+		const sampleRanges =
+			metadata.sampleRanges.length > 0 ? metadata.sampleRanges : [{ min: 0, max: 1 }];
+
+		const entry: RasterGeoZarrEntry<RasterTiffStyle> = {
+			id: entryId,
+			type: 'raster',
+			format: {
+				type: 'geozarr',
+				url: asset.href,
+				arrayPath: metadata.arrayPath || undefined
+			},
+			metaData: {
+				...DEFAULT_CUSTOM_META_DATA,
+				attribution: 'STAC/GeoZarr',
+				name: entryName,
+				tileSize: 256,
+				bounds: resolvedBbox,
+				minZoom: 0,
+				maxZoom: 24,
+				xyzImageTile: findCenterTile(resolvedBbox)
+			},
+			properties: {
+				bands: {
+					numBands: metadata.numBands,
+					sampleRanges
+				}
+			},
+			interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
+			style: {
+				type: 'tiff',
+				opacity: 1.0,
+				visible: true,
+				visualization: {
+					mode: metadata.numBands >= 3 ? 'multi' : 'single',
+					uniformsData: {
+						single: {
+							index: 0,
+							min: sampleRanges[0]?.min ?? 0,
+							max: sampleRanges[0]?.max ?? 1,
+							colorMap: 'jet'
+						},
+						multi: {
+							r: { index: 0, min: sampleRanges[0]?.min ?? 0, max: sampleRanges[0]?.max ?? 255 },
+							g: {
+								index: Math.min(1, metadata.numBands - 1),
+								min: sampleRanges[1]?.min ?? sampleRanges[0]?.min ?? 0,
+								max: sampleRanges[1]?.max ?? sampleRanges[0]?.max ?? 255
+							},
+							b: {
+								index: Math.min(2, metadata.numBands - 1),
+								min: sampleRanges[2]?.min ?? sampleRanges[0]?.min ?? 0,
+								max: sampleRanges[2]?.max ?? sampleRanges[0]?.max ?? 255
+							}
+						}
+					}
+				}
+			}
+		};
+
+		showDataEntry = entry;
+		showDialogType = null;
+		showNotification('GeoZarrを読み込みました', 'success');
+	};
+
+	/** 描画可能アセットをロードしてエントリ作成 */
+	const loadSelectedAsset = async () => {
 		const item = items[selectedItemIndex];
-		const asset = cogAssets.find((a) => a.key === selectedAssetKey)?.asset;
-		if (!item || !asset) return;
+		const selectedAsset = renderableAssets.find((a) => a.key === selectedAssetKey);
+		if (!item || !selectedAsset) return;
 
 		isProcessing.set(true);
 		progressText = 'ファイル情報を取得中...';
 		try {
+			if (selectedAsset.type === 'geozarr') {
+				progressText = 'GeoZarrメタデータを読み取り中...';
+				await loadGeoZarr(item, selectedAsset.asset);
+				return;
+			}
+
+			const asset = selectedAsset.asset;
 			// 直接アクセスでCORS確認
 			const cogUrl = asset.href;
-			const requestCogUrl = resolveRequestUrl(cogUrl);
+			const requestCogUrl = resolveCogProxyUrl(cogUrl);
 			try {
-				const testRes = await fetchWithDevProxy(asset.href, { method: 'HEAD' });
+				const testRes = await fetchResolvedRequestUrl(requestCogUrl, { method: 'HEAD' });
 				const contentLength = testRes.headers.get('Content-Length');
 				if (contentLength) {
 					progressText = `COGヘッダーを取得中... (${formatFileSize(Number(contentLength))})`;
@@ -752,7 +849,7 @@
 			</label>
 		</div>
 
-		<div class="w-full p-2 text-xs text-gray-400">検索範囲: 現在の地図表示範囲</div>
+		<div class="w-full p-2 text-xs text-gray-400">検索範囲: 全体</div>
 	{/if}
 
 	{#if step === 'browse'}
@@ -775,7 +872,7 @@
 				<span class="text-sm text-gray-300">アイテム ({items.length}件)</span>
 				<select
 					bind:value={selectedItemIndex}
-					onchange={() => updateCogAssets(selectedItemIndex)}
+					onchange={() => updateRenderableAssets(selectedItemIndex)}
 					class="bg-sub rounded border border-gray-600 p-2 text-white"
 				>
 					{#each items as item, i}
@@ -788,7 +885,7 @@
 			</label>
 		</div>
 
-		{#if cogAssets.length > 0}
+		{#if renderableAssets.length > 0}
 			<div transition:slide class="w-full p-2">
 				<label class="flex flex-col gap-1">
 					<span class="text-sm text-gray-300">アセット</span>
@@ -796,15 +893,17 @@
 						bind:value={selectedAssetKey}
 						class="bg-sub rounded border border-gray-600 p-2 text-white"
 					>
-						{#each cogAssets as { key, asset }}
-							<option value={key}>{asset.title || key}</option>
+						{#each renderableAssets as { key, asset, type }}
+							<option value={key}
+								>{type === 'geozarr' ? '[GeoZarr] ' : '[COG] '}{asset.title || key}</option
+							>
 						{/each}
 					</select>
 				</label>
 			</div>
 		{:else}
 			<div transition:slide class="w-full p-2 text-sm text-yellow-400">
-				COGアセットが見つかりません
+				描画可能な COG / GeoZarr アセットが見つかりません
 			</div>
 		{/if}
 	{/if}
@@ -849,7 +948,7 @@
 		</button>
 	{:else if step === 'items'}
 		<button
-			onclick={loadCog}
+			onclick={loadSelectedAsset}
 			disabled={!selectedAssetKey || $isProcessing}
 			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {!selectedAssetKey ||
 			$isProcessing

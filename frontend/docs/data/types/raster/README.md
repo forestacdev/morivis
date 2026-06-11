@@ -10,6 +10,9 @@
 
 - [BaseRasterStyle](interfaces/BaseRasterStyle.md)
 - [CategoryLegend](interfaces/CategoryLegend.md)
+- [DemLinearColorStyle](interfaces/DemLinearColorStyle.md)
+- [DemStepColorStyle](interfaces/DemStepColorStyle.md)
+- [DerivedBandData](interfaces/DerivedBandData.md)
 - [GradientLegend](interfaces/GradientLegend.md)
 - [ImageLegend](interfaces/ImageLegend.md)
 - [MultiBandData](interfaces/MultiBandData.md)
@@ -19,8 +22,6 @@
 - [RasterCategoricalStyle](interfaces/RasterCategoricalStyle.md)
 - [RasterCogEntry](interfaces/RasterCogEntry.md)
 - [RasterDemStyle](interfaces/RasterDemStyle.md)
-- [RasterDimensionState](interfaces/RasterDimensionState.md)
-- [RasterDiscreteDimension](interfaces/RasterDiscreteDimension.md)
 - [RasterEntryState](interfaces/RasterEntryState.md)
 - [RasterImageEntry](interfaces/RasterImageEntry.md)
 - [RasterImageGroupEntry](interfaces/RasterImageGroupEntry.md)
@@ -30,6 +31,7 @@
 - [RasterProperties](interfaces/RasterProperties.md)
 - [RasterTemporalProperties](interfaces/RasterTemporalProperties.md)
 - [RasterTiffStyle](interfaces/RasterTiffStyle.md)
+- [RasterWcsEntry](interfaces/RasterWcsEntry.md)
 - [ShingleBandData](interfaces/ShingleBandData.md)
 - [TileXYZ](interfaces/TileXYZ.md)
 
@@ -39,10 +41,13 @@
 - [ColorMapType](type-aliases/ColorMapType.md)
 - [DemDataType](type-aliases/DemDataType.md)
 - [DemDataTypeKey](type-aliases/DemDataTypeKey.md)
+- [DemRangeColorStyle](type-aliases/DemRangeColorStyle.md)
 - [DemStyleMode](type-aliases/DemStyleMode.md)
 - [DemStyleModeNum](type-aliases/DemStyleModeNum.md)
 - [RasterCadEntry](type-aliases/RasterCadEntry.md)
 - [RasterDemEntry](type-aliases/RasterDemEntry.md)
+- [RasterDimensionState](type-aliases/RasterDimensionState.md)
+- [RasterDiscreteDimension](type-aliases/RasterDiscreteDimension.md)
 - [RasterEntry](type-aliases/RasterEntry.md)
 - [RasterFormatType](type-aliases/RasterFormatType.md)
 - [RasterStyleType](type-aliases/RasterStyleType.md)
@@ -51,6 +56,5 @@
 
 ## Variables
 
-- [COLOR\_MAP\_TYPE](variables/COLOR_MAP_TYPE.md)
 - [DEM\_DATA\_TYPE](variables/DEM_DATA_TYPE.md)
 - [DEM\_STYLE\_TYPE](variables/DEM_STYLE_TYPE.md)

@@ -18,7 +18,8 @@ interface GsiReverseGeocoderResponse {
  * @returns 標高 (m)
  */
 export const gsiGetElevation = async (lng: number, lat: number): Promise<number> => {
-	const url = `https://mreversegeocoder.gsi.go.jp/general/dem/scripts/getelevation.php?lon=${lng}&lat=${lat}&outtype=JSON`;
+	const url =
+		`https://mreversegeocoder.gsi.go.jp/general/dem/scripts/getelevation.php?lon=${lng}&lat=${lat}&outtype=JSON`;
 	try {
 		const response = await fetch(url);
 		if (response.ok) {
@@ -51,7 +52,8 @@ export const gsiLonLatToAddress = async (
 	lat: number,
 	signal?: AbortSignal
 ): Promise<GsiReverseGeocoderResponse> => {
-	const url = `https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat}&lon=${lng}`;
+	const url =
+		`https://mreversegeocoder.gsi.go.jp/reverse-geocoder/LonLatToAddress?lat=${lat}&lon=${lng}`;
 	try {
 		const response = await fetch(url, { signal });
 		if (response.ok) {

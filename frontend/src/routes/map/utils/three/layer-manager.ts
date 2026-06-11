@@ -1,36 +1,40 @@
 import { asset } from '$app/paths';
+import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
+import {
+	DEFAULT_MESH_SHADING,
+	type MeshShadingStyle,
+	type MeshStyle,
+	type ModelMeshEntry
+} from '$routes/map/data/types/model';
+import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+import {
+	calculateModelTransform,
+	type ModelTransform
+} from '$routes/map/utils/three/model-transform';
+import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import {
-	DEFAULT_MESH_SHADING,
-	type MeshShadingStyle,
-	type ModelMeshEntry,
-	type MeshStyle
-} from '$routes/map/data/types/model';
-import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
-import {
-	calculateModelTransform,
-	type ModelTransform
-} from '$routes/map/utils/three/model-transform';
-import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
-import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 const DRACO_DECODER_PATH = asset('/draco/gltf/');
 const IFC_WASM_PATH = asset('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
-let rhino3dmLoaderModulePromise: Promise<
-	typeof import('three/addons/loaders/3DMLoader.js')
-> | null = null;
+let rhino3dmLoaderModulePromise:
+	| Promise<
+		typeof import('three/addons/loaders/3DMLoader.js')
+	>
+	| null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
 let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
 	null;
-let colladaLoaderModulePromise: Promise<
-	typeof import('three/addons/loaders/ColladaLoader.js')
-> | null = null;
+let colladaLoaderModulePromise:
+	| Promise<
+		typeof import('three/addons/loaders/ColladaLoader.js')
+	>
+	| null = null;
 let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
 	null;
 let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
@@ -147,10 +151,9 @@ export class ThreeJsLayerManager {
 			baseColor.multiply(sourceMaterial.color);
 		}
 
-		const map =
-			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
-				? sourceMaterial.map
-				: null;
+		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+			? sourceMaterial.map
+			: null;
 		const colorRamp = style.heightColorRamp;
 		const [colorRampMin, colorRampMax] = getAdjustableRangeValue(
 			colorRamp?.range,
@@ -169,27 +172,25 @@ export class ThreeJsLayerManager {
 		const colorRampArray = colorRamp?.enabled
 			? this.colorMapManager.createColorArray(colorRamp.colorMap)
 			: null;
-		const colorRampRgbaArray =
-			colorRampArray != null
-				? new Uint8Array(
-						Array.from({ length: 256 * 4 }, (_, i) => {
-							const colorIndex = Math.floor(i / 4);
-							const channel = i % 4;
-							if (channel === 3) return 255;
-							return colorRampArray[colorIndex * 3 + channel] ?? 0;
-						})
-					)
-				: null;
-		const colorRampTexture =
-			colorRamp?.enabled && colorRampMax > colorRampMin
-				? new THREE.DataTexture(
-						colorRampRgbaArray,
-						1,
-						256,
-						THREE.RGBAFormat,
-						THREE.UnsignedByteType
-					)
-				: null;
+		const colorRampRgbaArray = colorRampArray != null
+			? new Uint8Array(
+				Array.from({ length: 256 * 4 }, (_, i) => {
+					const colorIndex = Math.floor(i / 4);
+					const channel = i % 4;
+					if (channel === 3) return 255;
+					return colorRampArray[colorIndex * 3 + channel] ?? 0;
+				})
+			)
+			: null;
+		const colorRampTexture = colorRamp?.enabled && colorRampMax > colorRampMin
+			? new THREE.DataTexture(
+				colorRampRgbaArray,
+				1,
+				256,
+				THREE.RGBAFormat,
+				THREE.UnsignedByteType
+			)
+			: null;
 		if (colorRampTexture) {
 			colorRampTexture.colorSpace = THREE.SRGBColorSpace;
 			colorRampTexture.minFilter = THREE.LinearFilter;
@@ -292,10 +293,9 @@ export class ThreeJsLayerManager {
 			baseColor.multiply(sourceMaterial.color);
 		}
 
-		const map =
-			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
-				? sourceMaterial.map
-				: null;
+		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+			? sourceMaterial.map
+			: null;
 
 		const material = new THREE.MeshBasicMaterial({
 			color: baseColor,
@@ -329,24 +329,23 @@ export class ThreeJsLayerManager {
 
 	private applyStyleToMesh = (mesh: THREE.Mesh, style: MeshStyle) => {
 		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-		const originalMaterials =
-			(mesh.userData.originalMaterials as THREE.Material[] | undefined) ??
-			currentMaterials.map((material) => material.clone());
+		const originalMaterials = (mesh.userData.originalMaterials as THREE.Material[] | undefined)
+			?? currentMaterials.map((material) => material.clone());
 
 		if (!mesh.userData.originalMaterials) {
 			mesh.userData.originalMaterials = originalMaterials;
 		}
 
-		const useShaderMaterial =
-			Boolean(style.shading?.enabled) || Boolean(style.heightColorRamp?.enabled);
+		const useShaderMaterial = Boolean(style.shading?.enabled)
+			|| Boolean(style.heightColorRamp?.enabled);
 		const isSkinnedMesh = (mesh as THREE.SkinnedMesh).isSkinnedMesh === true;
 
 		const nextMaterials = originalMaterials.map((sourceMaterial) =>
 			isSkinnedMesh
 				? this.createStyledSourceMaterial(sourceMaterial, style)
 				: useShaderMaterial
-					? this.createShaderMaterial(sourceMaterial, style)
-					: this.createFlatMaterial(sourceMaterial, style)
+				? this.createShaderMaterial(sourceMaterial, style)
+				: this.createFlatMaterial(sourceMaterial, style)
 		);
 
 		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
@@ -450,8 +449,9 @@ export class ThreeJsLayerManager {
 				if (!this.scene || !this.camera || !this.renderer) return;
 				if (this.loadedModels.size === 0) return;
 				const nowMs = performance.now();
-				const deltaSeconds =
-					this.lastRenderTimeMs == null ? 0 : Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
+				const deltaSeconds = this.lastRenderTimeMs == null
+					? 0
+					: Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
 				this.lastRenderTimeMs = nowMs;
 				let hasPlayingAnimation = false;
 
@@ -466,7 +466,10 @@ export class ThreeJsLayerManager {
 					const { transform } = loaded;
 
 					const anchoredModelMatrix = new THREE.Matrix4().fromArray(
-						this.map!.transform.getMatrixForModel(transform.modelOrigin, transform.modelAltitude)
+						this.map!.transform.getMatrixForModel(
+							transform.modelOrigin,
+							transform.modelAltitude
+						)
 					);
 					const rotationX = new THREE.Matrix4().makeRotationAxis(
 						new THREE.Vector3(1, 0, 0),
@@ -499,8 +502,8 @@ export class ThreeJsLayerManager {
 
 					this.modelGroup!.traverse((child) => {
 						if (child.userData.entryId) {
-							child.visible =
-								child.userData.entryId === loaded.entry.id && (loaded.entry.style.visible ?? true);
+							child.visible = child.userData.entryId === loaded.entry.id
+								&& (loaded.entry.style.visible ?? true);
 						}
 					});
 
@@ -590,10 +593,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -633,10 +636,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -667,10 +670,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -694,10 +697,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -722,10 +725,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -747,7 +750,9 @@ export class ThreeJsLayerManager {
 								}
 								onModelLoaded(
 									object,
-									(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? []
+									(object as THREE.Group & {
+										animations?: THREE.AnimationClip[];
+									}).animations ?? []
 								);
 							},
 							undefined,
@@ -763,7 +768,10 @@ export class ThreeJsLayerManager {
 							geometry.computeVertexNormals();
 						}
 						onModelLoaded(
-							new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#ffffff' }))
+							new THREE.Mesh(
+								geometry,
+								new THREE.MeshStandardMaterial({ color: '#ffffff' })
+							)
 						);
 					},
 					undefined,
@@ -814,7 +822,11 @@ export class ThreeJsLayerManager {
 										entryId: entry.id,
 										name: entry.metaData.name,
 										position: object.position.toArray(),
-										rotation: [object.rotation.x, object.rotation.y, object.rotation.z],
+										rotation: [
+											object.rotation.x,
+											object.rotation.y,
+											object.rotation.z
+										],
 										scale: object.scale.toArray()
 									});
 									onModelLoaded(object);
@@ -865,7 +877,9 @@ export class ThreeJsLayerManager {
 				mesh.geometry.dispose();
 				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 				materials.forEach((mat) => mat.dispose());
-				const originalMaterials = mesh.userData.originalMaterials as THREE.Material[] | undefined;
+				const originalMaterials = mesh.userData.originalMaterials as
+					| THREE.Material[]
+					| undefined;
 				originalMaterials?.forEach((material) => material.dispose());
 			}
 		});
@@ -953,13 +967,12 @@ export class ThreeJsLayerManager {
 			if (positionAttribute.itemSize !== 3) return;
 			if (positionAttribute.count !== heights.length) return;
 			const uvAttribute = mesh.geometry.getAttribute('uv');
-			const uvBufferAttribute =
-				uvAttribute instanceof THREE.BufferAttribute &&
-				uvAttribute.itemSize === 2 &&
-				normalizedHeights != null &&
-				uvAttribute.count === normalizedHeights.length
-					? uvAttribute
-					: null;
+			const uvBufferAttribute = uvAttribute instanceof THREE.BufferAttribute
+					&& uvAttribute.itemSize === 2
+					&& normalizedHeights != null
+					&& uvAttribute.count === normalizedHeights.length
+				? uvAttribute
+				: null;
 
 			for (let i = 0; i < positionAttribute.count; i++) {
 				positionAttribute.setY(i, heights[i] ?? 0);

@@ -5,9 +5,9 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
+import type { MeshStyle } from '$routes/map/data/types/model';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
-import type { MeshStyle } from '$routes/map/data/types/model';
 import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transform';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 
@@ -36,15 +36,19 @@ const DRACO_DECODER_PATH = asset('/draco/gltf/');
 const IFC_WASM_PATH = asset('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
 const dracoLoader = new DRACOLoader();
-let rhino3dmLoaderModulePromise: Promise<
-	typeof import('three/addons/loaders/3DMLoader.js')
-> | null = null;
+let rhino3dmLoaderModulePromise:
+	| Promise<
+		typeof import('three/addons/loaders/3DMLoader.js')
+	>
+	| null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
 let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
 	null;
-let colladaLoaderModulePromise: Promise<
-	typeof import('three/addons/loaders/ColladaLoader.js')
-> | null = null;
+let colladaLoaderModulePromise:
+	| Promise<
+		typeof import('three/addons/loaders/ColladaLoader.js')
+	>
+	| null = null;
 let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
 	null;
 let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
@@ -151,10 +155,10 @@ const parseTdsObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl] ??
-				resourceUrls[relativeWithoutRoot] ??
-				resourceUrls[fileName] ??
-				url
+				resourceUrls[normalizedUrl]
+					?? resourceUrls[relativeWithoutRoot]
+					?? resourceUrls[fileName]
+					?? url
 			);
 		});
 	}
@@ -184,10 +188,10 @@ const parseDaeObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl] ??
-				resourceUrls[relativeWithoutRoot] ??
-				resourceUrls[fileName] ??
-				url
+				resourceUrls[normalizedUrl]
+					?? resourceUrls[relativeWithoutRoot]
+					?? resourceUrls[fileName]
+					?? url
 			);
 		});
 	}
@@ -215,10 +219,10 @@ const parse3dmObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl] ??
-				resourceUrls[relativeWithoutRoot] ??
-				resourceUrls[fileName] ??
-				url
+				resourceUrls[normalizedUrl]
+					?? resourceUrls[relativeWithoutRoot]
+					?? resourceUrls[fileName]
+					?? url
 			);
 		});
 	}
@@ -250,10 +254,10 @@ const parseFbxObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl] ??
-				resourceUrls[relativeWithoutRoot] ??
-				resourceUrls[fileName] ??
-				url
+				resourceUrls[normalizedUrl]
+					?? resourceUrls[relativeWithoutRoot]
+					?? resourceUrls[fileName]
+					?? url
 			);
 		});
 	}
@@ -273,7 +277,7 @@ const parseFbxObject = async (
 			normalizeObjectToLocalOrigin(object);
 		}
 		const animations =
-			(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? [];
+			(object as THREE.Group & { animations?: THREE.AnimationClip[]; }).animations ?? [];
 		return {
 			object,
 			animationNames: animations.map((clip, index) => clip.name || `Animation ${index + 1}`)

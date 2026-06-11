@@ -3,7 +3,7 @@ import WKT from 'ol/format/WKT.js';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { FeatureProp } from '$routes/map/types/properties';
 import { geometryToGeoJSON } from '$routes/map/utils/formats/transformers/geometry';
-import { isValidEpsg, type EpsgCode } from '$routes/map/utils/proj/dict';
+import { type EpsgCode, isValidEpsg } from '$routes/map/utils/proj/dict';
 
 export class WktParseError extends Error {
 	constructor(message: string) {
@@ -109,7 +109,9 @@ export const wktTextToGeojson = (text: string, sourceName: string = 'WKT'): WktP
 			}
 		} catch (error) {
 			throw new WktParseError(
-				`${index + 1}行目のWKTを読み込めませんでした${error instanceof Error ? `: ${error.message}` : ''}`
+				`${index + 1}行目のWKTを読み込めませんでした${
+					error instanceof Error ? `: ${error.message}` : ''
+				}`
 			);
 		}
 	}

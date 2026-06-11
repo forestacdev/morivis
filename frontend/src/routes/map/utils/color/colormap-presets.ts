@@ -5,7 +5,9 @@ export interface ColorMapStop {
 
 const stop = (index: number, rgb: [number, number, number]): ColorMapStop => ({
 	index,
-	color: `#${rgb[0].toString(16).padStart(2, '0')}${rgb[1].toString(16).padStart(2, '0')}${rgb[2].toString(16).padStart(2, '0')}`
+	color: `#${rgb[0].toString(16).padStart(2, '0')}${rgb[1].toString(16).padStart(2, '0')}${
+		rgb[2].toString(16).padStart(2, '0')
+	}`
 });
 
 export const COLORMAP_PRESETS = {

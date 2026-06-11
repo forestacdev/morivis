@@ -354,7 +354,7 @@ const parseFeatures = (
 type Proj4Forward = (coord: [number, number]) => [number, number];
 
 const createTransformer = (
-	proj4: ((fromProjection: string, toProjection: string) => { forward: Proj4Forward }) | null,
+	proj4: ((fromProjection: string, toProjection: string) => { forward: Proj4Forward; }) | null,
 	sourceCrs: string
 ): Proj4Forward | null => {
 	if (!proj4) return null;
@@ -384,7 +384,8 @@ const roundCoord = (v: number): number => Math.trunc(v * 1_000_000_000) / 1_000_
 export const parseMojXml = (
 	xmlString: string,
 	options: ParseOptions = {},
-	proj4: ((fromProjection: string, toProjection: string) => { forward: Proj4Forward }) | null = null
+	proj4: ((fromProjection: string, toProjection: string) => { forward: Proj4Forward; }) | null =
+		null
 ): FeatureCollection => {
 	const { includeArbitraryCrs = false, includeChikugai = false } = options;
 

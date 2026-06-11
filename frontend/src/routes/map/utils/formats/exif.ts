@@ -78,7 +78,9 @@ const createSquareThumbnailImageUrl = async (
 		const blob = await new Promise<Blob>((resolve, reject) => {
 			canvas.toBlob(
 				(nextBlob) =>
-					nextBlob ? resolve(nextBlob) : reject(new Error('アイコン画像の生成に失敗しました')),
+					nextBlob
+						? resolve(nextBlob)
+						: reject(new Error('アイコン画像の生成に失敗しました')),
 				'image/webp',
 				0.9
 			);
@@ -93,13 +95,15 @@ const createSquareThumbnailImageUrl = async (
 /** 単一ファイルからEXIF GPS情報を抽出 */
 const parseExifGps = async (
 	file: File
-): Promise<{
-	lat: number;
-	lng: number;
-	datetime?: string;
-	bearing?: number;
-	altitude?: number;
-} | null> => {
+): Promise<
+	{
+		lat: number;
+		lng: number;
+		datetime?: string;
+		bearing?: number;
+		altitude?: number;
+	} | null
+> => {
 	try {
 		// GPS座標を取得
 		const gps = await exifr.gps(file);
@@ -111,7 +115,11 @@ const parseExifGps = async (
 		let altitude: number | undefined;
 
 		try {
-			const meta = await exifr.parse(file, ['DateTimeOriginal', 'GPSImgDirection', 'GPSAltitude']);
+			const meta = await exifr.parse(file, [
+				'DateTimeOriginal',
+				'GPSImgDirection',
+				'GPSAltitude'
+			]);
 			if (meta) {
 				datetime = meta.DateTimeOriginal
 					? meta.DateTimeOriginal instanceof Date

@@ -6,7 +6,7 @@
 
 # Interface: MeshStyle
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:82](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L82)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:86](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L86)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:82](https://githu
 
 > **color**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:87](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L87)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:91](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L91)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:87](https://githu
 
 > `optional` **heightColorRamp**: [`MeshHeightColorRampStyle`](MeshHeightColorRampStyle.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:90](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L90)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:94](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L94)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:90](https://githu
 
 > **opacity**: [`Opacity`](../../type-aliases/Opacity.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:84](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L84)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:88](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L88)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:84](https://githu
 
 > `optional` **shading**: [`MeshShadingStyle`](MeshShadingStyle.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:88](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L88)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:92](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L92)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:88](https://githu
 
 > `optional` **shadingOptions**: [`MeshShadingOptionStyle`](MeshShadingOptionStyle.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:89](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L89)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:93](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L93)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:89](https://githu
 
 > **transform**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:92](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L92)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:96](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L96)
 
 #### altitude
 
@@ -122,7 +122,7 @@ Y 方向だけに効く高さ倍率
 
 > `optional` **transformOptions**: [`MeshTransformOptionStyle`](MeshTransformOptionStyle.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:91](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L91)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:95](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L95)
 
 ***
 
@@ -130,7 +130,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:91](https://githu
 
 > **type**: `"mesh"`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:83](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L83)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:87](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L87)
 
 ***
 
@@ -138,7 +138,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:83](https://githu
 
 > `optional` **visible**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:85](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L85)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:89](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L89)
 
 ***
 
@@ -146,4 +146,4 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:85](https://githu
 
 > **wireframe**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:86](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L86)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:90](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L90)

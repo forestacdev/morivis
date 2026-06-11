@@ -17,24 +17,24 @@
  */
 
 import {
-	PDFDocument,
-	PDFPage,
-	PDFDict as PdfLibDict,
+	decodePDFRawStream,
 	PDFArray as PdfLibArray,
-	PDFName,
-	PDFNumber,
-	PDFString,
-	PDFHexString,
 	PDFBool,
+	PDFDict as PdfLibDict,
+	PDFDocument,
+	PDFHexString,
+	PDFName,
 	PDFNull,
-	PDFRef,
-	PDFRawStream,
-	PDFStream,
+	PDFNumber,
 	PDFObject,
-	decodePDFRawStream
+	PDFPage,
+	PDFRawStream,
+	PDFRef,
+	PDFStream,
+	PDFString
 } from 'pdf-lib';
 
-import type { PDFDict, PDFArray, PDFValue, PDFValueType } from './geopdf-parser';
+import type { PDFArray, PDFDict, PDFValue, PDFValueType } from './geopdf-parser';
 
 function resolveRef(obj: PDFObject, context: any): PDFObject {
 	if (obj instanceof PDFRef) {
@@ -204,7 +204,7 @@ export async function parseGeoPDFFromBuffer(buffer: ArrayBuffer | Uint8Array, pa
 export async function extractContentStream(
 	buffer: ArrayBuffer | Uint8Array,
 	pageIndex = 0
-): Promise<{ content: string; pageWidth: number; pageHeight: number }> {
+): Promise<{ content: string; pageWidth: number; pageHeight: number; }> {
 	const doc = await PDFDocument.load(buffer);
 	const page = doc.getPage(pageIndex);
 	const node = page.node;
@@ -212,10 +212,10 @@ export async function extractContentStream(
 
 	// MediaBox からページサイズ取得
 	const mediaBox = node.MediaBox();
-	const pageWidth =
-		mediaBox.lookup(2, PDFNumber).asNumber() - mediaBox.lookup(0, PDFNumber).asNumber();
-	const pageHeight =
-		mediaBox.lookup(3, PDFNumber).asNumber() - mediaBox.lookup(1, PDFNumber).asNumber();
+	const pageWidth = mediaBox.lookup(2, PDFNumber).asNumber()
+		- mediaBox.lookup(0, PDFNumber).asNumber();
+	const pageHeight = mediaBox.lookup(3, PDFNumber).asNumber()
+		- mediaBox.lookup(1, PDFNumber).asNumber();
 
 	// Contents 取得（単一ストリームまたは配列）
 	const contentsRef = node.get(PDFName.of('Contents'));

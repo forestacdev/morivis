@@ -1,7 +1,7 @@
-import maplibregl from 'maplibre-gl';
-import * as THREE from 'three';
 import type { MeshStyle } from '$routes/map/data/types/model';
 import { mapStore } from '$routes/stores/map';
+import maplibregl from 'maplibre-gl';
+import * as THREE from 'three';
 
 export interface ModelTransform {
 	modelOrigin: [number, number];

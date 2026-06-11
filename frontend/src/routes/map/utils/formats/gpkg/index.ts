@@ -6,7 +6,7 @@ import type { RasterBands } from '$routes/map/utils/formats/geotiff';
 export interface GeoJSONFeature {
 	type: 'Feature';
 	geometry: any;
-	properties: { [key: string]: any };
+	properties: { [key: string]: any; };
 	id?: string | number;
 }
 
@@ -26,7 +26,7 @@ export interface GpkgReadOptions {
 export interface GpkgInfo {
 	featureTables: string[];
 	tileTables: string[];
-	tableInfo: { [tableName: string]: any };
+	tableInfo: { [tableName: string]: any; };
 }
 
 export interface GpkgRasterResult {
@@ -43,7 +43,7 @@ export interface GpkgRasterResult {
 
 let _worker: Worker | null = null;
 let _requestId = 0;
-const _pending = new Map<number, { resolve: (v: any) => void; reject: (e: Error) => void }>();
+const _pending = new Map<number, { resolve: (v: any) => void; reject: (e: Error) => void; }>();
 
 const getWorker = (): Worker => {
 	if (!_worker) {
@@ -156,8 +156,8 @@ export const gpkgToRaster = async (
 /**
  * 開いているDBに対して任意のSQLクエリを実行
  */
-export const gpkgQuery = async (sql: string): Promise<{ columns: string[]; values: any[][] }> =>
-	sendCommand<{ columns: string[]; values: any[][] }>({ type: 'query', sql });
+export const gpkgQuery = async (sql: string): Promise<{ columns: string[]; values: any[][]; }> =>
+	sendCommand<{ columns: string[]; values: any[][]; }>({ type: 'query', sql });
 
 /**
  * GPKGからスタイル情報を取得（QGIS layer_styles テーブル）

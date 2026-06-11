@@ -1,6 +1,6 @@
-import type { RasterCadStyle, RasterPMTilesEntry } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+import type { RasterCadStyle, RasterPMTilesEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterPMTilesEntry<RasterCadStyle> = {
 	id: 'ziriki_floor_plan',

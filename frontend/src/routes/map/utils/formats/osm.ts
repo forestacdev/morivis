@@ -30,7 +30,9 @@ const normalizeFeatureCollection = (
 ): FeatureCollection<AnyGeometry, FeatureProp> => ({
 	type: 'FeatureCollection',
 	features: geojson.features
-		.filter((feature): feature is GeoJSON.Feature<GeoJSON.Geometry> => feature.geometry !== null)
+		.filter((feature): feature is GeoJSON.Feature<GeoJSON.Geometry> =>
+			feature.geometry !== null
+		)
 		.map((feature) => ({
 			type: 'Feature',
 			id: feature.id != null ? String(feature.id) : undefined,

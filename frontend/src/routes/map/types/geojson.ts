@@ -3,17 +3,17 @@
     https://geojson.org/
 */
 
-import type { FeatureProp } from './properties';
 import type {
 	AnyGeometry,
-	PointGeometry,
+	GeometryCollection,
 	LineStringGeometry,
-	PolygonGeometry,
-	MultiPointGeometry,
 	MultiLineStringGeometry,
+	MultiPointGeometry,
 	MultiPolygonGeometry,
-	GeometryCollection
+	PointGeometry,
+	PolygonGeometry
 } from './geometry';
+import type { FeatureProp } from './properties';
 
 export interface Feature<_Geometry = AnyGeometry, _Properties = FeatureProp> {
 	type: 'Feature';

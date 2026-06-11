@@ -6,7 +6,7 @@
 
 # Interface: VectorInteraction
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:23](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L23)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:26](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L26)
 
 ## Properties
 
@@ -14,4 +14,4 @@ Defined in: [frontend/src/routes/map/data/types/vector/index.ts:23](https://gith
 
 > **clickable**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:24](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L24)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:27](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L27)

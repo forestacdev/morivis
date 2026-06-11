@@ -87,7 +87,7 @@ const getOrCreateContext = (tileSize: number): GLContext => {
 
 const bindTextures = (
 	ctx: GLContext,
-	textures: { [name: string]: { image: ImageBitmap | Uint8Array; type: 'height' | 'colormap' } }
+	textures: { [name: string]: { image: ImageBitmap | Uint8Array; type: 'height' | 'colormap'; }; }
 ) => {
 	const { gl, program, texturePool } = ctx;
 	let unitIndex = 0;
@@ -108,7 +108,14 @@ const bindTextures = (
 		gl.uniform1i(location, unitIndex);
 
 		if (type === 'height') {
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image as ImageBitmap);
+			gl.texImage2D(
+				gl.TEXTURE_2D,
+				0,
+				gl.RGBA,
+				gl.RGBA,
+				gl.UNSIGNED_BYTE,
+				image as ImageBitmap
+			);
 		} else {
 			gl.texImage2D(
 				gl.TEXTURE_2D,

@@ -1,15 +1,15 @@
 import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
-import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 import {
-	FOREST_MESH_PROPERTIES,
-	FOREST_MESH_POPUP_KEYS
+	FOREST_MESH_POPUP_KEYS,
+	FOREST_MESH_PROPERTIES
 } from '$routes/map/data/entries/vector/_properties';
 import {
-	FOREST_MESH_STYLE,
-	TREE_SINGLE_COLOR_STYLE,
+	createMatchColorMapping,
 	FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS,
-	createMatchColorMapping
+	FOREST_MESH_STYLE,
+	TREE_SINGLE_COLOR_STYLE
 } from '$routes/map/data/entries/vector/_style';
+import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: PolygonEntry<TileMetaData> = {
 	id: 'hyogo_fr_mesh20m',

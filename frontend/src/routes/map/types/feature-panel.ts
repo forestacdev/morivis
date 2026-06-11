@@ -1,9 +1,9 @@
+import type { FeatureProp } from '$routes/map/types/properties';
 import type {
 	ResultAddressData,
 	ResultCoordinateData,
 	ResultPoiData
 } from '$routes/map/utils/data/search-result';
-import type { FeatureProp } from '$routes/map/types/properties';
 
 export type FeaturePanelData =
 	| LayerFeaturePanelData
@@ -82,7 +82,7 @@ export interface TimberSpecies {
 	distribution?: string;
 	nameEn?: string;
 	scientificName?: string;
-	airDryDensity?: number | { min: number; max: number };
+	airDryDensity?: number | { min: number; max: number; };
 	woodStructure?: string;
 	hardness?: string;
 	summary?: string;

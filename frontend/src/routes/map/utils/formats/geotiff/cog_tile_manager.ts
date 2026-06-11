@@ -4,10 +4,10 @@
  * リモートCOGへの接続を管理し、Webメルカトルタイル座標 (z, x, y) に対応する
  * ラスターデータを geotiff.js の HTTP Range request で効率的に読み取る。
  */
+import { resolveCogProxyUrl } from '$routes/map/utils/platform/request';
 import { fromUrl, type GeoTIFF, type GeoTIFFImage } from 'geotiff';
 import proj4 from 'proj4';
 import { buildTriangulation, type Triangle } from './triangulation';
-import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 export interface CogMetadata {
 	/** フル解像度の幅 */
@@ -21,13 +21,13 @@ export interface CogMetadata {
 	/** WGS84 bbox [minLon, minLat, maxLon, maxLat] */
 	bbox: [number, number, number, number];
 	/** オーバービュー情報（index → {width, height}） */
-	overviews: { index: number; width: number; height: number }[];
+	overviews: { index: number; width: number; height: number; }[];
 	/** 推奨 minZoom */
 	minZoom: number;
 	/** 推奨 maxZoom */
 	maxZoom: number;
 	/** バンドごとのサンプルmin/max（サムネイル用小サンプルから） */
-	sampleRanges: { min: number; max: number }[];
+	sampleRanges: { min: number; max: number; }[];
 	/** COG内部タイルサイズ（256 or 512） */
 	tileSize: 256 | 512;
 }
@@ -125,7 +125,7 @@ const selectOverviewForResolution = (conn: CogConnection, targetDpp: number): Ge
 const getMinMax = (
 	data: ArrayLike<number>,
 	nodata: number | null
-): { min: number; max: number } => {
+): { min: number; max: number; } => {
 	let min = Infinity;
 	let max = -Infinity;
 	for (let i = 0; i < data.length; i++) {
@@ -209,10 +209,16 @@ export const CogTileManager = {
 	}> => {
 		// 既に登録済みならメタデータを返す（サンプルデータは再取得不可）
 		const existing = connections.get(entryId);
-		if (existing)
-			return { metadata: existing.metadata, sampleBands: [], sampleWidth: 0, sampleHeight: 0 };
+		if (existing) {
+			return {
+				metadata: existing.metadata,
+				sampleBands: [],
+				sampleWidth: 0,
+				sampleHeight: 0
+			};
+		}
 
-		const tiff = await fromUrl(resolveRequestUrl(url));
+		const tiff = await fromUrl(resolveCogProxyUrl(url));
 		const fullImage = await tiff.getImage();
 		const fullWidth = fullImage.getWidth();
 		const fullHeight = fullImage.getHeight();
@@ -224,7 +230,12 @@ export const CogTileManager = {
 
 		// bbox（CRS検出 → WGS84に変換）
 		const rawBbox = fullImage.getBoundingBox();
-		let bbox: [number, number, number, number] = [rawBbox[0], rawBbox[1], rawBbox[2], rawBbox[3]];
+		let bbox: [number, number, number, number] = [
+			rawBbox[0],
+			rawBbox[1],
+			rawBbox[2],
+			rawBbox[3]
+		];
 
 		const nativeBbox: [number, number, number, number] = [...bbox];
 		let resolvedProjName: string | null = null;
@@ -290,7 +301,13 @@ export const CogTileManager = {
 			tileSize
 		};
 
-		connections.set(entryId, { tiff, images, metadata, nativeBbox, projName: resolvedProjName });
+		connections.set(entryId, {
+			tiff,
+			images,
+			metadata,
+			nativeBbox,
+			projName: resolvedProjName
+		});
 
 		const sampleWidth = sampleImage.getWidth();
 		const sampleHeight = sampleImage.getHeight();
@@ -327,10 +344,10 @@ export const CogTileManager = {
 
 		// COGのWGS84 bboxと交差しない場合はnull
 		if (
-			tileLonMax <= bbox[0] ||
-			tileLonMin >= bbox[2] ||
-			tileLatMax <= bbox[1] ||
-			tileLatMin >= bbox[3]
+			tileLonMax <= bbox[0]
+			|| tileLonMin >= bbox[2]
+			|| tileLatMax <= bbox[1]
+			|| tileLatMin >= bbox[3]
 		) {
 			return null;
 		}
@@ -459,10 +476,10 @@ export const CogTileManager = {
 		const { nativeBbox, projName } = conn;
 
 		if (
-			targetExtent[2] <= bbox[0] ||
-			targetExtent[0] >= bbox[2] ||
-			targetExtent[3] <= bbox[1] ||
-			targetExtent[1] >= bbox[3]
+			targetExtent[2] <= bbox[0]
+			|| targetExtent[0] >= bbox[2]
+			|| targetExtent[3] <= bbox[1]
+			|| targetExtent[1] >= bbox[3]
 		) {
 			return null;
 		}

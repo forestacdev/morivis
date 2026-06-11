@@ -6,7 +6,7 @@
 
 # Interface: ModelAnimationState
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:20](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L20)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:23](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L23)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:20](https://githu
 
 > **currentClipIndex**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:21](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L21)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:24](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L24)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:21](https://githu
 
 > **playing**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:22](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L22)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:25](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L25)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:22](https://githu
 
 > **speed**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:23](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L23)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:26](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L26)

@@ -5,11 +5,11 @@
  * - OpenLayers KML format: https://openlayers.org/en/latest/apidoc/module-ol_format_KML-KML.html
  */
 
-import JSZip from 'jszip';
-import KML from 'ol/format/KML.js';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { FeatureProp } from '$routes/map/types/properties';
 import { geometryToGeoJSON } from '$routes/map/utils/formats/transformers/geometry';
+import JSZip from 'jszip';
+import KML from 'ol/format/KML.js';
 
 const KML_NS = 'http://www.opengis.net/kml/2.2';
 const GX_NS = 'http://www.google.com/kml/ext/2.2';
@@ -132,7 +132,8 @@ const extractPlacemarkTime = (placemark: Element): string | null => {
 
 	const timeStamp = placemark.getElementsByTagNameNS(KML_NS, 'TimeStamp')[0];
 	const timeStampWhen = timeStamp
-		? (getFirstChildText(timeStamp, KML_NS, 'when') ?? getFirstChildText(timeStamp, GX_NS, 'when'))
+		? (getFirstChildText(timeStamp, KML_NS, 'when')
+			?? getFirstChildText(timeStamp, GX_NS, 'when'))
 		: null;
 	if (timeStampWhen) return timeStampWhen;
 
@@ -227,9 +228,8 @@ const getTrackPointBearing = (
 	const toLatRad = (toLat * Math.PI) / 180;
 	const deltaLng = ((toLng - fromLng) * Math.PI) / 180;
 	const y = Math.sin(deltaLng) * Math.cos(toLatRad);
-	const x =
-		Math.cos(fromLatRad) * Math.sin(toLatRad) -
-		Math.sin(fromLatRad) * Math.cos(toLatRad) * Math.cos(deltaLng);
+	const x = Math.cos(fromLatRad) * Math.sin(toLatRad)
+		- Math.sin(fromLatRad) * Math.cos(toLatRad) * Math.cos(deltaLng);
 
 	return (Math.atan2(y, x) * 180) / Math.PI;
 };
@@ -253,7 +253,7 @@ const parseTrackFeatures = (
 	const features: {
 		type: 'Feature';
 		id: string | number;
-		geometry: { type: 'Point'; coordinates: [number, number] };
+		geometry: { type: 'Point'; coordinates: [number, number]; };
 		properties: FeatureProp;
 	}[] = [];
 	let featureIndex = 1000000;
@@ -279,20 +279,22 @@ const parseTrackFeatures = (
 				const parsed = parseTrackCoordinate(coordValues[pointIndex]);
 				if (!parsed) continue;
 
-				const previous = pointIndex > 0 ? parseTrackCoordinate(coordValues[pointIndex - 1]) : null;
-				const next =
-					pointIndex < pointCount - 1 ? parseTrackCoordinate(coordValues[pointIndex + 1]) : null;
+				const previous = pointIndex > 0
+					? parseTrackCoordinate(coordValues[pointIndex - 1])
+					: null;
+				const next = pointIndex < pointCount - 1
+					? parseTrackCoordinate(coordValues[pointIndex + 1])
+					: null;
 				const properties = {
 					...baseProperties,
 					time: whenValues[pointIndex],
 					track_index: trackIndex,
 					track_point_index: pointIndex
 				} as FeatureProp;
-				const bearing =
-					getTrackPointBearing(
-						previous?.coordinate2d ?? parsed.coordinate2d,
-						next?.coordinate2d ?? null
-					) ?? undefined;
+				const bearing = getTrackPointBearing(
+					previous?.coordinate2d ?? parsed.coordinate2d,
+					next?.coordinate2d ?? null
+				) ?? undefined;
 				if (bearing != null) {
 					properties.angle = bearing;
 				}
@@ -317,7 +319,7 @@ const parseTrackFeatures = (
 /** Style/StyleMapのid→色マッピングを構築する */
 const parseKmlStyles = (
 	text: string
-): { fillColors: Map<string, string>; lineColors: Map<string, string> } => {
+): { fillColors: Map<string, string>; lineColors: Map<string, string>; } => {
 	const fillColors = new Map<string, string>();
 	const lineColors = new Map<string, string>();
 
@@ -339,8 +341,8 @@ const parseKmlStyles = (
 	}
 
 	// Style要素からfill/lineカラーを取得
-	const extractColorsFromStyle = (style: Element): { fill?: string; line?: string } => {
-		const result: { fill?: string; line?: string } = {};
+	const extractColorsFromStyle = (style: Element): { fill?: string; line?: string; } => {
+		const result: { fill?: string; line?: string; } = {};
 		const polyStyle = style.getElementsByTagNameNS(KML_NS, 'PolyStyle')[0];
 		if (polyStyle) {
 			const color = polyStyle.getElementsByTagNameNS(KML_NS, 'color')[0]?.textContent?.trim();
@@ -355,7 +357,7 @@ const parseKmlStyles = (
 	};
 
 	// 全Styleを登録
-	const styleById = new Map<string, { fill?: string; line?: string }>();
+	const styleById = new Map<string, { fill?: string; line?: string; }>();
 	for (const style of doc.getElementsByTagNameNS(KML_NS, 'Style')) {
 		const id = style.getAttribute('id');
 		if (!id) continue;
@@ -535,21 +537,22 @@ const parseKmzModelPlacement = (doc: Document): KmzModelPlacement | undefined =>
 	const location = model ? getDirectChildElement(model, KML_NS, 'Location') : null;
 	const locationLng = location ? Number(getFirstChildText(location, KML_NS, 'longitude')) : NaN;
 	const locationLat = location ? Number(getFirstChildText(location, KML_NS, 'latitude')) : NaN;
-	const locationAltitude = location ? Number(getFirstChildText(location, KML_NS, 'altitude')) : NaN;
+	const locationAltitude = location
+		? Number(getFirstChildText(location, KML_NS, 'altitude'))
+		: NaN;
 
 	if (Number.isFinite(locationLng) && Number.isFinite(locationLat)) {
 		const scaleNode = getDirectChildElement(model!, KML_NS, 'Scale');
 		const scaleX = scaleNode ? Number(getFirstChildText(scaleNode, KML_NS, 'x')) : NaN;
 		const scaleY = scaleNode ? Number(getFirstChildText(scaleNode, KML_NS, 'y')) : NaN;
 		const scaleZ = scaleNode ? Number(getFirstChildText(scaleNode, KML_NS, 'z')) : NaN;
-		const uniformScale =
-			Number.isFinite(scaleX) &&
-			Number.isFinite(scaleY) &&
-			Number.isFinite(scaleZ) &&
-			Math.abs(scaleX - scaleY) < 1e-6 &&
-			Math.abs(scaleX - scaleZ) < 1e-6
-				? scaleX
-				: undefined;
+		const uniformScale = Number.isFinite(scaleX)
+				&& Number.isFinite(scaleY)
+				&& Number.isFinite(scaleZ)
+				&& Math.abs(scaleX - scaleY) < 1e-6
+				&& Math.abs(scaleX - scaleZ) < 1e-6
+			? scaleX
+			: undefined;
 
 		return {
 			name,
@@ -563,7 +566,9 @@ const parseKmzModelPlacement = (doc: Document): KmzModelPlacement | undefined =>
 	const coordinatesText = point ? getFirstChildText(point, KML_NS, 'coordinates') : null;
 	if (!coordinatesText) return undefined;
 
-	const [lngText, latText, altitudeText] = coordinatesText.split(',').map((value) => value.trim());
+	const [lngText, latText, altitudeText] = coordinatesText.split(',').map((value) =>
+		value.trim()
+	);
 	const lng = Number(lngText);
 	const lat = Number(latText);
 	const altitude = Number(altitudeText ?? '0');
@@ -606,7 +611,10 @@ export const extractModelFromKmz = async (file: File): Promise<KmzModelResult | 
 
 		const blob = await entry.async('blob');
 		const fileName = path.split('/').pop() ?? path;
-		const extractedFile = setRelativePath(new File([blob], fileName, { type: blob.type }), path);
+		const extractedFile = setRelativePath(
+			new File([blob], fileName, { type: blob.type }),
+			path
+		);
 		modelFiles.push(
 			path === mainModelPath && placement
 				? setModelPlacement(extractedFile, placement)

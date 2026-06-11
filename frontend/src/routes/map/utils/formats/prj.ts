@@ -1,4 +1,4 @@
-import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+import { type EpsgCode, getProjContext } from '$routes/map/utils/proj/dict';
 
 /**
  * PRJファイルをダウンロード

@@ -8,8 +8,14 @@
 
 ## Interfaces
 
+- [AdjustableRange](interfaces/AdjustableRange.md)
 - [AuxiliaryLayersData](interfaces/AuxiliaryLayersData.md)
 - [BaseMetaData](interfaces/BaseMetaData.md)
+- [FilterTemporalBehavior](interfaces/FilterTemporalBehavior.md)
+- [GeoDataEntryCatalogItem](interfaces/GeoDataEntryCatalogItem.md)
+- [SharedDimensionState](interfaces/SharedDimensionState.md)
+- [SharedDiscreteDimension](interfaces/SharedDiscreteDimension.md)
+- [SourceTemporalBehavior](interfaces/SourceTemporalBehavior.md)
 
 ## Type Aliases
 
@@ -19,3 +25,11 @@
 - [GeoDataEntry](type-aliases/GeoDataEntry.md)
 - [GeoDataType](type-aliases/GeoDataType.md)
 - [Opacity](type-aliases/Opacity.md)
+- [RangeTuple](type-aliases/RangeTuple.md)
+- [TemporalBehavior](type-aliases/TemporalBehavior.md)
+
+## Functions
+
+- [createAdjustableRange](functions/createAdjustableRange.md)
+- [getAdjustableRangeDomain](functions/getAdjustableRangeDomain.md)
+- [getAdjustableRangeValue](functions/getAdjustableRangeValue.md)

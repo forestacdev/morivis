@@ -67,7 +67,9 @@ const asArray = <T>(value: T | T[] | null | undefined): T[] => {
 };
 
 const asObject = (value: unknown): JsonObject | null => {
-	return value && typeof value === 'object' && !Array.isArray(value) ? (value as JsonObject) : null;
+	return value && typeof value === 'object' && !Array.isArray(value)
+		? (value as JsonObject)
+		: null;
 };
 
 const isFiniteNumber = (value: unknown): value is number => {
@@ -141,11 +143,13 @@ const parseLocationHistoryText = (text: string): LocationHistoryRecord[] => {
 	return parsed.filter((item): item is LocationHistoryRecord => {
 		const record = asObject(item);
 		if (!record) return false;
-		if (typeof record.startTime !== 'string' || typeof record.endTime !== 'string') return false;
+		if (typeof record.startTime !== 'string' || typeof record.endTime !== 'string') {
+			return false;
+		}
 		return (
-			asObject(record.visit) !== null ||
-			asObject(record.activity) !== null ||
-			Array.isArray(record.timelinePath)
+			asObject(record.visit) !== null
+			|| asObject(record.activity) !== null
+			|| Array.isArray(record.timelinePath)
 		);
 	});
 };
@@ -154,11 +158,11 @@ const isLocationHistoryRecord = (record: LocationHistoryRecord) => {
 	const objectRecord = asObject(record);
 	if (!objectRecord) return false;
 	return (
-		typeof objectRecord.startTime === 'string' &&
-		typeof objectRecord.endTime === 'string' &&
-		(asObject(objectRecord.visit) !== null ||
-			asObject(objectRecord.activity) !== null ||
-			Array.isArray(objectRecord.timelinePath))
+		typeof objectRecord.startTime === 'string'
+		&& typeof objectRecord.endTime === 'string'
+		&& (asObject(objectRecord.visit) !== null
+			|| asObject(objectRecord.activity) !== null
+			|| Array.isArray(objectRecord.timelinePath))
 	);
 };
 
@@ -183,8 +187,9 @@ const createVisitFeatures = (
 			start_time: startTime,
 			end_time: endTime,
 			duration_minutes: durationMinutes,
-			duration_hours:
-				durationMinutes == null ? undefined : Math.round((durationMinutes / 60) * 100) / 100,
+			duration_hours: durationMinutes == null
+				? undefined
+				: Math.round((durationMinutes / 60) * 100) / 100,
 			hierarchy_level: visit.hierarchyLevel,
 			visit_probability: toFiniteNumber(visit.probability),
 			candidate_probability: toFiniteNumber(topCandidate.probability),
@@ -236,8 +241,9 @@ const createActivityFeatures = (
 			start_time: startTime,
 			end_time: endTime,
 			duration_minutes: durationMinutes,
-			duration_hours:
-				durationMinutes == null ? undefined : Math.round((durationMinutes / 60) * 100) / 100,
+			duration_hours: durationMinutes == null
+				? undefined
+				: Math.round((durationMinutes / 60) * 100) / 100,
 			activity_type: topCandidate.type,
 			activity_probability: toFiniteNumber(topCandidate.probability),
 			record_probability: toFiniteNumber(activity.probability),
@@ -344,9 +350,9 @@ const getLocationHistorySummary = (records: LocationHistoryRecord[]): LocationHi
 			timelinePointCount += rawRecord.timelinePath.filter((item) => {
 				const timelinePoint = asObject(item);
 				return Boolean(
-					timelinePoint &&
-						parseGeoPoint(timelinePoint.point) &&
-						toFiniteNumber(timelinePoint.durationMinutesOffsetFromStartTime) != null
+					timelinePoint
+						&& parseGeoPoint(timelinePoint.point)
+						&& toFiniteNumber(timelinePoint.durationMinutesOffsetFromStartTime) != null
 				);
 			}).length;
 		}
@@ -366,7 +372,8 @@ export const isLocationHistoryText = (text: string): boolean => {
 		if (records.length === 0) return false;
 
 		const summary = getLocationHistorySummary(records);
-		return summary.visitCount > 0 || summary.activityCount > 0 || summary.timelinePointCount > 0;
+		return summary.visitCount > 0 || summary.activityCount > 0
+			|| summary.timelinePointCount > 0;
 	} catch {
 		return false;
 	}

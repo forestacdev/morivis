@@ -15,6 +15,7 @@
 	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
+	import GeoZarrForm from '$routes/map/components/upload/form/GeoZarrForm.svelte';
 	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
 	import GpkgForm from '$routes/map/components/upload/form/GpkgForm.svelte';
 	import GpxForm from '$routes/map/components/upload/form/GpxForm.svelte';
@@ -115,6 +116,9 @@
 			{/if}
 			{#if showDialogType === 'wcs'}
 				<WcsForm bind:showDataEntry bind:showDialogType bind:dropFile />
+			{/if}
+			{#if showDialogType === 'geozarr'}
+				<GeoZarrForm bind:showDataEntry bind:showDialogType />
 			{/if}
 			{#if showDialogType === 'featureservice' || showDialogType === 'wfs' || showDialogType === 'ogcapifeatures'}
 				<FeatureServiceForm

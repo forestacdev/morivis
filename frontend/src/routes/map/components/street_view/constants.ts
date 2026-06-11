@@ -1,5 +1,5 @@
-import { checkPc } from '$routes/map/utils/platform/viewport';
 import { PUBLIC_PANORAMA_PATH } from '$env/static/public';
+import { checkPc } from '$routes/map/utils/platform/viewport';
 import * as THREE from 'three';
 
 export const PANORAMA_IMAGE_URL = PUBLIC_PANORAMA_PATH + '/';

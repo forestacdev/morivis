@@ -1,9 +1,9 @@
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import {
 	createJmaNowcastFallbackEntry,
-	loadJmaNowcastRasterEntry,
-	type JmaNowcastConfig
+	type JmaNowcastConfig,
+	loadJmaNowcastRasterEntry
 } from '$routes/map/api/nowcast';
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { GeoDataEntryCatalogItem } from '$routes/map/data/types';

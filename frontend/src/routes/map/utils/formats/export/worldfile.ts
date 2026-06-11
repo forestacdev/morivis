@@ -3,7 +3,7 @@ import type { Map } from 'maplibre-gl';
 /**
  * 経緯度をWeb メルカトル座標(メートル)に変換
  */
-const lngLatToWebMercator = (lng: number, lat: number): { x: number; y: number } => {
+const lngLatToWebMercator = (lng: number, lat: number): { x: number; y: number; } => {
 	const EARTH_RADIUS = 6378137;
 
 	const x = ((lng * Math.PI) / 180) * EARTH_RADIUS;

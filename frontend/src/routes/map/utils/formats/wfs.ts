@@ -123,7 +123,9 @@ const parseOutputFormats = (xml: XMLDocument): string[] => {
 const getFeatureTypeOutputFormats = (featureType: Element): string[] => {
 	return normalizeOutputFormats(
 		Array.from(
-			featureType.querySelectorAll('OutputFormats > Format, wfs\\:OutputFormats > wfs\\:Format')
+			featureType.querySelectorAll(
+				'OutputFormats > Format, wfs\\:OutputFormats > wfs\\:Format'
+			)
 		)
 			.map((element) => element.textContent?.trim() ?? '')
 			.filter(Boolean)
@@ -179,18 +181,17 @@ export const parseWfsCapabilities = async (url: string): Promise<WfsCapabilities
 		const version = root.getAttribute('version') ?? '1.1.0';
 		const outputFormats = parseOutputFormats(xml);
 
-		const serviceUrl =
-			xml
+		const serviceUrl = xml
+			.querySelector(
+				'ows\\:Operation[name="GetFeature"] ows\\:DCP ows\\:HTTP ows\\:Get, Capability Request GetFeature DCPType HTTP Get OnlineResource'
+			)
+			?.getAttribute('xlink:href')
+			?? xml
 				.querySelector(
 					'ows\\:Operation[name="GetFeature"] ows\\:DCP ows\\:HTTP ows\\:Get, Capability Request GetFeature DCPType HTTP Get OnlineResource'
 				)
-				?.getAttribute('xlink:href') ??
-			xml
-				.querySelector(
-					'ows\\:Operation[name="GetFeature"] ows\\:DCP ows\\:HTTP ows\\:Get, Capability Request GetFeature DCPType HTTP Get OnlineResource'
-				)
-				?.getAttribute('href') ??
-			stripKnownParams(capsUrl).toString();
+				?.getAttribute('href')
+			?? stripKnownParams(capsUrl).toString();
 
 		const featureTypes = Array.from(
 			xml.querySelectorAll(
@@ -204,9 +205,13 @@ export const parseWfsCapabilities = async (url: string): Promise<WfsCapabilities
 				name,
 				title: getElementText(featureType, ['Title', 'wfs\\:Title']) ?? name,
 				bbox: parseWgs84BoundingBox(featureType) ?? parseLatLonBoundingBox(featureType),
-				defaultCrs:
-					getElementText(featureType, ['DefaultCRS', 'wfs\\:DefaultCRS', 'DefaultSRS', 'SRS']) ??
-					null,
+				defaultCrs: getElementText(featureType, [
+					'DefaultCRS',
+					'wfs\\:DefaultCRS',
+					'DefaultSRS',
+					'SRS'
+				])
+					?? null,
 				otherCrs: normalizeOutputFormats(
 					Array.from(featureType.querySelectorAll('OtherCRS, wfs\\:OtherCRS, OtherSRS'))
 						.map((element) => element.textContent?.trim() ?? '')
@@ -232,9 +237,9 @@ export const parseWfsCapabilities = async (url: string): Promise<WfsCapabilities
 
 const isGeoJsonContent = (contentType: string, text: string, outputFormat: string): boolean => {
 	return (
-		/json|geo\+json/i.test(contentType) ||
-		/json|geojson/i.test(outputFormat) ||
-		text.trim().startsWith('{')
+		/json|geo\+json/i.test(contentType)
+		|| /json|geojson/i.test(outputFormat)
+		|| text.trim().startsWith('{')
 	);
 };
 

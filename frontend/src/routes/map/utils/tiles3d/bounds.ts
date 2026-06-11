@@ -1,7 +1,7 @@
-import type { LngLatBoundsLike } from 'maplibre-gl';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+import type { LngLatBoundsLike } from 'maplibre-gl';
 
-type Tiles3DBoundingVolume = { box?: number[]; region?: number[]; sphere?: number[] };
+type Tiles3DBoundingVolume = { box?: number[]; region?: number[]; sphere?: number[]; };
 
 interface Tiles3DRoot {
 	boundingVolume: Tiles3DBoundingVolume;
@@ -166,7 +166,7 @@ export const fetchTileset3DBbox = async (
 };
 
 /** tileset.jsonからLngLatBoundsを計算する（レガシー互換） */
-export const tiles3DToLngLatBounds = (tileset: { root: Tiles3DRoot }): LngLatBoundsLike | null => {
+export const tiles3DToLngLatBounds = (tileset: { root: Tiles3DRoot; }): LngLatBoundsLike | null => {
 	const bbox = rootToBbox(tileset.root);
 	if (!bbox) return null;
 	return [

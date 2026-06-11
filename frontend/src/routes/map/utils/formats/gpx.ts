@@ -1,5 +1,5 @@
 import GPXParser from 'gpxparser';
-import type { Waypoint, Track, Route } from 'gpxparser';
+import type { Route, Track, Waypoint } from 'gpxparser';
 
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { LineStringGeometry, PointGeometry } from '$routes/map/types/geometry';
@@ -28,8 +28,8 @@ const getTrackTime = (track: Track): string | undefined => {
 };
 
 const getBearing = (
-	from: { lat: number; lon: number },
-	to: { lat: number; lon: number }
+	from: { lat: number; lon: number; },
+	to: { lat: number; lon: number; }
 ): number => {
 	const toRadians = (value: number) => (value * Math.PI) / 180;
 	const toDegrees = (value: number) => (value * 180) / Math.PI;
@@ -39,15 +39,15 @@ const getBearing = (
 	const deltaLon = toRadians(to.lon - from.lon);
 
 	const y = Math.sin(deltaLon) * Math.cos(toLat);
-	const x =
-		Math.cos(fromLat) * Math.sin(toLat) - Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLon);
+	const x = Math.cos(fromLat) * Math.sin(toLat)
+		- Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLon);
 	const bearing = toDegrees(Math.atan2(y, x));
 
 	return (bearing + 360) % 360;
 };
 
 const getTrackPointAngle = (
-	points: Array<{ lat: number; lon: number }>,
+	points: Array<{ lat: number; lon: number; }>,
 	pointIndex: number
 ): number | undefined => {
 	const currentPoint = points[pointIndex];
@@ -68,7 +68,7 @@ const getTrackPointAngle = (
 export type DataType = 'tracks' | 'track_points' | 'routes' | 'waypoints';
 export const checkGpxFile = async (
 	file: File
-): Promise<{ tracks: boolean; track_points: boolean; routes: boolean; waypoints: boolean }> => {
+): Promise<{ tracks: boolean; track_points: boolean; routes: boolean; waypoints: boolean; }> => {
 	try {
 		const gpxData = await file.text();
 		const parser = new GPXParser();

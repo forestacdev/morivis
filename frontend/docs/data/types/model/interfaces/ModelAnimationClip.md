@@ -6,7 +6,7 @@
 
 # Interface: ModelAnimationClip
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:12](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L12)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:15](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L15)
 
 ## Properties
 
@@ -14,4 +14,4 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:12](https://githu
 
 > **name**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:13](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L13)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:16](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L16)

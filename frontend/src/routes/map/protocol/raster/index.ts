@@ -1,7 +1,7 @@
 import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/types/raster';
-import { TileImageManager } from '../image';
-import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { DEM_STYLE_TYPE } from '$routes/map/data/types/raster';
+import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+import { TileImageManager } from '../image';
 
 const getDemProtocolColorArray = (
 	colorMapCache: ColorMapManager,
@@ -22,7 +22,7 @@ class WorkerProtocol {
 	private pendingRequests: Map<
 		string,
 		{
-			resolve: (value: { data: Uint8Array } | PromiseLike<{ data: Uint8Array }>) => void;
+			resolve: (value: { data: Uint8Array; } | PromiseLike<{ data: Uint8Array; }>) => void;
 			reject: (reason?: Error) => void;
 			controller: AbortController;
 		}
@@ -40,7 +40,7 @@ class WorkerProtocol {
 		this.worker.addEventListener('error', this.handleError);
 	}
 
-	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array }> {
+	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array; }> {
 		const x = parseInt(url.searchParams.get('x') || '0', 10);
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
@@ -69,7 +69,10 @@ class WorkerProtocol {
 				formatType,
 				controller
 			);
-			const elevationColorArray = getDemProtocolColorArray(this.colorMapCache, url.searchParams);
+			const elevationColorArray = getDemProtocolColorArray(
+				this.colorMapCache,
+				url.searchParams
+			);
 			const max = parseFloat(url.searchParams.get('max') || '10000');
 			const min = parseFloat(url.searchParams.get('min') || '0');
 			return new Promise((resolve, reject) => {
@@ -99,7 +102,10 @@ class WorkerProtocol {
 				controller
 			);
 
-			const elevationColorArray = getDemProtocolColorArray(this.colorMapCache, url.searchParams);
+			const elevationColorArray = getDemProtocolColorArray(
+				this.colorMapCache,
+				url.searchParams
+			);
 
 			const center = images.center; // 中央のタイル
 			const left = images.left; // 左のタイル
@@ -229,7 +235,7 @@ class WorkerProtocolPool {
 	}
 
 	// タイルリクエストを処理する
-	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array }> {
+	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array; }> {
 		const worker = this.getNextWorker();
 		return worker.request(url, controller);
 	}
@@ -270,7 +276,7 @@ export const terminateDemWorkerPool = () => {
 export const demProtocol = (protocolName: string) => {
 	return {
 		protocolName,
-		request: (params: { url: string }, abortController: AbortController) => {
+		request: (params: { url: string; }, abortController: AbortController) => {
 			// プロトコル部分を削除（/// も // も対応）
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 

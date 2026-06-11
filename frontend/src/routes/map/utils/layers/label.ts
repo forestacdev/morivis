@@ -1,5 +1,5 @@
-import type { SymbolLayerSpecification, VectorSourceSpecification } from 'maplibre-gl';
 import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
+import type { SymbolLayerSpecification, VectorSourceSpecification } from 'maplibre-gl';
 
 export const labelSources: Record<string, VectorSourceSpecification> = {
 	openmaptiles: {
@@ -91,7 +91,11 @@ export const labelLayers: SymbolLayerSpecification[] = [
 		source: 'openmaptiles',
 		'source-layer': 'transportation_name',
 		minzoom: 13,
-		filter: ['all', ['!=', 'name', '森林文化アカデミー演習林歩道'], ['==', '$type', 'LineString']],
+		filter: ['all', ['!=', 'name', '森林文化アカデミー演習林歩道'], [
+			'==',
+			'$type',
+			'LineString'
+		]],
 		layout: {
 			'symbol-placement': 'line',
 			'text-field': '{name}',

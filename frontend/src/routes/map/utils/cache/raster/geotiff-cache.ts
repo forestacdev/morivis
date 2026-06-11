@@ -38,13 +38,13 @@ export class GeoTiffCache {
 	// バンドごとのデータ範囲（正規化逆変換用）
 	private static dataRangeCache: Map<string, BandDataRange[]> = new Map();
 	// 画像サイズ
-	private static sizeCache: Map<string, { width: number; height: number }> = new Map();
+	private static sizeCache: Map<string, { width: number; height: number; }> = new Map();
 	// bbox (WGS84)
 	private static bboxCache: Map<string, [number, number, number, number]> = new Map();
 	// バンド数
 	private static numBandsCache: Map<string, number> = new Map();
 	// 最終レンダリング済み画像
-	private static blobCache: Map<string, { blob: Blob; url: string }> = new Map();
+	private static blobCache: Map<string, { blob: Blob; url: string; }> = new Map();
 	// render worker にテクスチャ転送済みか
 	private static textureTransferredSet: Set<string> = new Set();
 	// single-band GeoTIFF の元データ
@@ -83,7 +83,7 @@ export class GeoTiffCache {
 	static setSize(key: string, width: number, height: number) {
 		this.sizeCache.set(key, { width, height });
 	}
-	static getSize(key: string): { width: number; height: number } | undefined {
+	static getSize(key: string): { width: number; height: number; } | undefined {
 		return this.sizeCache.get(key);
 	}
 	static hasSize(key: string): boolean {

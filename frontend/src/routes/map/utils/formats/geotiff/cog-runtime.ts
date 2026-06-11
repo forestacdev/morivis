@@ -1,10 +1,10 @@
 import type maplibregl from 'maplibre-gl';
 import type { Coordinates } from 'maplibre-gl';
 
+import { getAdjustableRangeValue } from '$routes/map/data/types';
 import type { RasterCogEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
-import { getAdjustableRangeValue } from '$routes/map/data/types';
 
 const MAX_COG_IMAGE_SIZE = 768;
 
@@ -97,9 +97,17 @@ class CogViewportRenderer {
 			const band = createFloat32Copy(tileData.bands[bandIndex] ?? tileData.bands[0]);
 			const dataMin = sampleRanges[bandIndex]?.min ?? 0;
 			const dataMax = sampleRanges[bandIndex]?.max ?? 1;
-			const [valueMin, valueMax] = getAdjustableRangeValue(uniform.range, uniform.min, uniform.max);
-			const normalizedMin = dataMax !== dataMin ? (valueMin - dataMin) / (dataMax - dataMin) : 0;
-			const normalizedMax = dataMax !== dataMin ? (valueMax - dataMin) / (dataMax - dataMin) : 1;
+			const [valueMin, valueMax] = getAdjustableRangeValue(
+				uniform.range,
+				uniform.min,
+				uniform.max
+			);
+			const normalizedMin = dataMax !== dataMin
+				? (valueMin - dataMin) / (dataMax - dataMin)
+				: 0;
+			const normalizedMax = dataMax !== dataMin
+				? (valueMax - dataMin) / (dataMax - dataMin)
+				: 1;
 			const colorMapArray = this.colorMapManager.createColorArray(uniform.colorMap);
 
 			return await new Promise<Blob>((resolve, reject) => {
@@ -240,7 +248,7 @@ export const resetCogViewportReady = (entryId: string) => {
 export const fetchCogViewportImage = async (
 	entry: RasterCogEntry<RasterTiffStyle>,
 	map: maplibregl.Map
-): Promise<{ url: string; coordinates: Coordinates } | null> => {
+): Promise<{ url: string; coordinates: Coordinates; } | null> => {
 	if (!readyCogViewportEntryIds.has(entry.id)) {
 		return null;
 	}

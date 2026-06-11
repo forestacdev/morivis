@@ -6,7 +6,7 @@
 
 # Interface: MultiBandData
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:205](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L205)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:187](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L187)
 
 ## Properties
 
@@ -14,19 +14,23 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:205](https://git
 
 > **b**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:208](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L208)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:190](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L190)
 
 #### index
 
 > **index**: `number`
 
-#### max
+#### max?
 
-> **max**: `number`
+> `optional` **max**: `number`
 
-#### min
+#### min?
 
-> **min**: `number`
+> `optional` **min**: `number`
+
+#### range?
+
+> `optional` **range**: [`AdjustableRange`](../../interfaces/AdjustableRange.md)
 
 ***
 
@@ -34,19 +38,23 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:208](https://git
 
 > **g**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:207](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L207)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:189](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L189)
 
 #### index
 
 > **index**: `number`
 
-#### max
+#### max?
 
-> **max**: `number`
+> `optional` **max**: `number`
 
-#### min
+#### min?
 
-> **min**: `number`
+> `optional` **min**: `number`
+
+#### range?
+
+> `optional` **range**: [`AdjustableRange`](../../interfaces/AdjustableRange.md)
 
 ***
 
@@ -54,16 +62,20 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:207](https://git
 
 > **r**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:206](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L206)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:188](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L188)
 
 #### index
 
 > **index**: `number`
 
-#### max
+#### max?
 
-> **max**: `number`
+> `optional` **max**: `number`
 
-#### min
+#### min?
 
-> **min**: `number`
+> `optional` **min**: `number`
+
+#### range?
+
+> `optional` **range**: [`AdjustableRange`](../../interfaces/AdjustableRange.md)

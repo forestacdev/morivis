@@ -1,12 +1,12 @@
-import type { BaseMetaData, Opacity, AdjustableRange } from '$routes/map/data/types';
-import type { Table } from 'apache-arrow';
-import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-import type { FeatureCollection } from '$routes/map/types/geojson';
+import type { AdjustableRange, BaseMetaData, Opacity } from '$routes/map/data/types';
 import type {
 	ColorMapType,
-	RasterDiscreteDimension,
-	RasterDimensionState
+	RasterDimensionState,
+	RasterDiscreteDimension
 } from '$routes/map/data/types/raster';
+import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+import type { FeatureCollection } from '$routes/map/types/geojson';
+import type { Table } from 'apache-arrow';
 
 interface ModelMetaData extends BaseMetaData {
 	altitude?: number;

@@ -319,9 +319,9 @@ function parseNeatline(dict: PDFDict): Neatline | null {
 		}
 		// Close ring
 		if (
-			coords.length > 0 &&
-			(coords[0][0] !== coords[coords.length - 1][0] ||
-				coords[0][1] !== coords[coords.length - 1][1])
+			coords.length > 0
+			&& (coords[0][0] !== coords[coords.length - 1][0]
+				|| coords[0][1] !== coords[coords.length - 1][1])
 		) {
 			coords.push([...coords[0]]);
 		}
@@ -378,7 +378,7 @@ function parseRegistration(dict: PDFDict): GCP[] {
 // ============================================================
 
 /** Well-known datum codes from OGC GeoPDF spec Annex A */
-const DATUM_MAP: Record<string, { name: string; epsg?: number }> = {
+const DATUM_MAP: Record<string, { name: string; epsg?: number; }> = {
 	WE: { name: 'WGS 84', epsg: 4326 },
 	WGE: { name: 'WGS 84', epsg: 4326 },
 	NAR: { name: 'NAD83', epsg: 4269 },
@@ -407,8 +407,8 @@ function parseProjDict(projDict: PDFDict): SRSInfo {
 
 			// Check well-known codes
 			const upper = datumCode.toUpperCase();
-			const known =
-				DATUM_MAP[upper] ?? Object.entries(DATUM_MAP).find(([k]) => upper.startsWith(k + '-'))?.[1];
+			const known = DATUM_MAP[upper]
+				?? Object.entries(DATUM_MAP).find(([k]) => upper.startsWith(k + '-'))?.[1];
 			if (known?.epsg) {
 				srs.epsg = known.epsg;
 			}
@@ -458,9 +458,8 @@ function parseVP(
 		const bArr = bbox.asArray();
 		if (bArr.length !== 4) continue;
 
-		const area =
-			Math.abs(getArrayNumber(bArr, 2) - getArrayNumber(bArr, 0)) *
-			Math.abs(getArrayNumber(bArr, 3) - getArrayNumber(bArr, 1));
+		const area = Math.abs(getArrayNumber(bArr, 2) - getArrayNumber(bArr, 0))
+			* Math.abs(getArrayNumber(bArr, 3) - getArrayNumber(bArr, 1));
 
 		if (area > largestArea) {
 			largestArea = area;
@@ -659,26 +658,30 @@ export function gcpsToGeoTransform(gcps: GCP[]): GeoTransform | null {
 	// | sp  spp spl | * | a1 | = | spx |
 	// | sl  spl sll |   | a2 |   | slx |
 
-	const det =
-		s1 * (spp * sll - spl * spl) - sp * (sp * sll - spl * sl) + sl * (sp * spl - spp * sl);
+	const det = s1 * (spp * sll - spl * spl) - sp * (sp * sll - spl * sl)
+		+ sl * (sp * spl - spp * sl);
 
 	if (Math.abs(det) < 1e-15) return null;
 
 	const a0 =
-		(sx * (spp * sll - spl * spl) - sp * (spx * sll - slx * spl) + sl * (spx * spl - slx * spp)) /
-		det;
+		(sx * (spp * sll - spl * spl) - sp * (spx * sll - slx * spl) + sl * (spx * spl - slx * spp))
+		/ det;
 	const a1 =
-		(s1 * (spx * sll - slx * spl) - sx * (sp * sll - spl * sl) + sl * (sp * slx - spx * sl)) / det;
+		(s1 * (spx * sll - slx * spl) - sx * (sp * sll - spl * sl) + sl * (sp * slx - spx * sl))
+		/ det;
 	const a2 =
-		(s1 * (spp * slx - spl * spx) - sp * (sp * slx - spx * sl) + sx * (sp * spl - spp * sl)) / det;
+		(s1 * (spp * slx - spl * spx) - sp * (sp * slx - spx * sl) + sx * (sp * spl - spp * sl))
+		/ det;
 
 	const b0 =
-		(sy * (spp * sll - spl * spl) - sp * (spy * sll - sly * spl) + sl * (spy * spl - sly * spp)) /
-		det;
+		(sy * (spp * sll - spl * spl) - sp * (spy * sll - sly * spl) + sl * (spy * spl - sly * spp))
+		/ det;
 	const b1 =
-		(s1 * (spy * sll - sly * spl) - sy * (sp * sll - spl * sl) + sl * (sp * sly - spy * sl)) / det;
+		(s1 * (spy * sll - sly * spl) - sy * (sp * sll - spl * sl) + sl * (sp * sly - spy * sl))
+		/ det;
 	const b2 =
-		(s1 * (spp * sly - spl * spy) - sp * (sp * sly - spy * sl) + sy * (sp * spl - spp * sl)) / det;
+		(s1 * (spp * sly - spl * spy) - sp * (sp * sly - spy * sl) + sy * (sp * spl - spp * sl))
+		/ det;
 
 	return {
 		originX: a0,
@@ -731,7 +734,7 @@ export function pixelToGeo(
 	gt: GeoTransform,
 	pixel: number,
 	line: number
-): { x: number; y: number } {
+): { x: number; y: number; } {
 	return {
 		x: gt.originX + gt.pixelWidth * pixel + gt.rotationX * line,
 		y: gt.originY + gt.rotationY * pixel + gt.pixelHeight * line
@@ -742,7 +745,7 @@ export function geoToPixel(
 	gt: GeoTransform,
 	x: number,
 	y: number
-): { pixel: number; line: number } {
+): { pixel: number; line: number; } {
 	const det = gt.pixelWidth * gt.pixelHeight - gt.rotationX * gt.rotationY;
 	if (Math.abs(det) < 1e-15) {
 		throw new Error('Singular GeoTransform, cannot invert');

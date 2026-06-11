@@ -1,5 +1,5 @@
-import Papa from 'papaparse';
 import JSZip from 'jszip';
+import Papa from 'papaparse';
 
 // GTFS table row types
 export interface Agency {

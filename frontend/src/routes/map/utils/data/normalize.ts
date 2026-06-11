@@ -81,9 +81,9 @@ export const normalizeSchoolName = (name: string): string => {
 
 	// 「県立」がなく、都道府県名で始まらない場合
 	if (
-		!normalized.includes('県立') &&
-		!normalized.includes('都立') &&
-		!normalized.includes('府立')
+		!normalized.includes('県立')
+		&& !normalized.includes('都立')
+		&& !normalized.includes('府立')
 	) {
 		// 末尾から都道府県を推測
 		for (const pref of prefectures) {

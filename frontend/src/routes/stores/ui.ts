@@ -1,8 +1,8 @@
-import { get, writable, readable } from 'svelte/store';
-import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/platform/viewport';
 import { browser } from '$app/environment';
 import { MOBILE_WIDTH } from '$routes/constants';
+import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/platform/viewport';
 import { isStreetView, isStyleEdit } from '$routes/stores';
+import { get, readable, writable } from 'svelte/store';
 
 /** 処理中の状態 */
 export const isProcessing = writable<boolean>(false);
@@ -56,7 +56,7 @@ export const isMobile = readable(false, (set) => {
 
 // 初期化
 
-//TODO: 履歴管理の整理
+// TODO: 履歴管理の整理
 
 // メニュー状態の型定義
 interface MenuState {
@@ -217,10 +217,10 @@ class MenuHistoryPcManager {
 	 */
 	private isValidState(state: any): state is HistoryState {
 		return (
-			state &&
-			typeof state === 'object' &&
-			typeof state.showLayerMenu === 'boolean' &&
-			typeof state.showDataMenu === 'boolean'
+			state
+			&& typeof state === 'object'
+			&& typeof state.showLayerMenu === 'boolean'
+			&& typeof state.showDataMenu === 'boolean'
 		);
 	}
 
@@ -598,12 +598,12 @@ class MenuHistoryMobileManager {
 	private isValidState(state: any): state is MobileHistoryState {
 		const validMenus: MobileActiveMenu[] = ['map', 'layer', 'data', 'other'];
 		return (
-			state &&
-			typeof state === 'object' &&
-			typeof state.activeMenu === 'string' &&
-			validMenus.includes(state.activeMenu as MobileActiveMenu) &&
-			typeof state.isStreetView === 'boolean' &&
-			typeof state.isStyleEdit === 'boolean'
+			state
+			&& typeof state === 'object'
+			&& typeof state.activeMenu === 'string'
+			&& validMenus.includes(state.activeMenu as MobileActiveMenu)
+			&& typeof state.isStreetView === 'boolean'
+			&& typeof state.isStyleEdit === 'boolean'
 		);
 	}
 

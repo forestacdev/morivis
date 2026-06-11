@@ -271,7 +271,8 @@ html.is-map-moving .bg-side-menu {
 .c-bg-fog-left,
 .c-bg-fog-right {
 	--fog-base: var(--color-main);
-	--fog-stops: color-mix(in srgb, var(--fog-base) 90%, transparent) 5%,
+	--fog-stops:
+		color-mix(in srgb, var(--fog-base) 90%, transparent) 5%,
 		color-mix(in srgb, var(--fog-base) 86%, transparent) 15%,
 		color-mix(in srgb, var(--fog-base) 74%, transparent) 29%,
 		color-mix(in srgb, var(--fog-base) 59%, transparent) 41%,

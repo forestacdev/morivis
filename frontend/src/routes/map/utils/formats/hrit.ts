@@ -86,16 +86,13 @@ const MAX_OUTPUT_HEIGHT = 2048;
 const MIN_OUTPUT_SIZE = 256;
 const NODATA_VALUE = Number.NaN;
 
-const EARTH_POLAR_RATIO =
-	(EARTH_POLAR_RADIUS_KM * EARTH_POLAR_RADIUS_KM) /
-	(EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM);
-const EARTH_ECCENTRICITY_SQUARED =
-	(EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM -
-		EARTH_POLAR_RADIUS_KM * EARTH_POLAR_RADIUS_KM) /
-	(EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM);
-const EARTH_EQUATORIAL_OVER_POLAR =
-	(EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM) /
-	(EARTH_POLAR_RADIUS_KM * EARTH_POLAR_RADIUS_KM);
+const EARTH_POLAR_RATIO = (EARTH_POLAR_RADIUS_KM * EARTH_POLAR_RADIUS_KM)
+	/ (EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM);
+const EARTH_ECCENTRICITY_SQUARED = (EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM
+	- EARTH_POLAR_RADIUS_KM * EARTH_POLAR_RADIUS_KM)
+	/ (EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM);
+const EARTH_EQUATORIAL_OVER_POLAR = (EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM)
+	/ (EARTH_POLAR_RADIUS_KM * EARTH_POLAR_RADIUS_KM);
 
 const parseAsciiPairs = (text: string): Record<string, string> => {
 	const pairs: Record<string, string> = {};
@@ -153,7 +150,11 @@ const parsePhysicalRange = (
 	bitsPerPixel: number,
 	annotation: string,
 	ancillaryText: string
-): HritMetadata['physicalRange'] & { channelName: string; unit: string; nodata: number | null } => {
+): HritMetadata['physicalRange'] & {
+	channelName: string;
+	unit: string;
+	nodata: number | null;
+} => {
 	const pairs = parseAsciiPairs(dataDefinitionText);
 	const countMin = Number(Object.keys(pairs).find((key) => /^-?\d+$/.test(key)) ?? 0);
 	const defaultCountMax = bitsPerPixel > 0 ? 2 ** bitsPerPixel - 1 : 255;
@@ -274,13 +275,17 @@ const parseHritMetadata = (buffer: ArrayBufferLike): HritMetadata => {
 				loff = view.getInt32(offset + 47, false);
 				break;
 			case 3:
-				dataDefinitionText = decoder.decode(new Uint8Array(buffer, offset + 3, headerLength - 3));
+				dataDefinitionText = decoder.decode(
+					new Uint8Array(buffer, offset + 3, headerLength - 3)
+				);
 				break;
 			case 4:
 				annotation = decoder.decode(new Uint8Array(buffer, offset + 3, headerLength - 3));
 				break;
 			case 6:
-				ancillaryText = decoder.decode(new Uint8Array(buffer, offset + 3, headerLength - 3));
+				ancillaryText = decoder.decode(
+					new Uint8Array(buffer, offset + 3, headerLength - 3)
+				);
 				break;
 			case 128:
 				if (headerLength >= 17) {
@@ -299,8 +304,13 @@ const parseHritMetadata = (buffer: ArrayBufferLike): HritMetadata => {
 				break;
 			case 130:
 				{
-					const text = decoder.decode(new Uint8Array(buffer, offset + 3, headerLength - 3));
-					if (text.includes('LINE:=') || text.includes('COFF:=') || text.includes('LOFF:=')) {
+					const text = decoder.decode(
+						new Uint8Array(buffer, offset + 3, headerLength - 3)
+					);
+					if (
+						text.includes('LINE:=') || text.includes('COFF:=')
+						|| text.includes('LOFF:=')
+					) {
 						compensationText = text;
 					}
 				}
@@ -394,9 +404,8 @@ const pixelToLonLat = (column: number, row: number, metadata: HritMetadata): Lon
 	const sinY = Math.sin(y);
 	const a = cosY * cosY + EARTH_EQUATORIAL_OVER_POLAR * sinY * sinY;
 	const b = -2 * SATELLITE_DISTANCE_KM * cosX * cosY;
-	const c =
-		SATELLITE_DISTANCE_KM * SATELLITE_DISTANCE_KM -
-		EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM;
+	const c = SATELLITE_DISTANCE_KM * SATELLITE_DISTANCE_KM
+		- EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM;
 	const discriminant = b * b - 4 * a * c;
 
 	if (discriminant <= 0) return null;
@@ -407,8 +416,8 @@ const pixelToLonLat = (column: number, row: number, metadata: HritMetadata): Lon
 	const s2 = sn * sinX * cosY;
 	const s3 = -sn * sinY;
 	const lon = normalizeLon((subLonRad + Math.atan2(s2, s1)) * RAD2DEG);
-	const lat =
-		Math.atan(EARTH_EQUATORIAL_OVER_POLAR * (s3 / Math.sqrt(s1 * s1 + s2 * s2))) * RAD2DEG;
+	const lat = Math.atan(EARTH_EQUATORIAL_OVER_POLAR * (s3 / Math.sqrt(s1 * s1 + s2 * s2)))
+		* RAD2DEG;
 
 	return { lon, lat };
 };
@@ -425,17 +434,16 @@ const lonLatToPixel = (lon: number, lat: number, metadata: HritMetadata): PixelP
 	while (lonDiff > Math.PI) lonDiff -= Math.PI * 2;
 
 	const geocentricLat = Math.atan(EARTH_POLAR_RATIO * Math.tan(latRad));
-	const re =
-		EARTH_POLAR_RADIUS_KM /
-		Math.sqrt(1 - EARTH_ECCENTRICITY_SQUARED * Math.cos(geocentricLat) ** 2);
+	const re = EARTH_POLAR_RADIUS_KM
+		/ Math.sqrt(1 - EARTH_ECCENTRICITY_SQUARED * Math.cos(geocentricLat) ** 2);
 	const r1 = SATELLITE_DISTANCE_KM - re * Math.cos(geocentricLat) * Math.cos(lonDiff);
 	const r2 = -re * Math.cos(geocentricLat) * Math.sin(lonDiff);
 	const r3 = re * Math.sin(geocentricLat);
 	const rn = Math.sqrt(r1 * r1 + r2 * r2 + r3 * r3);
 
 	if (
-		SATELLITE_DISTANCE_KM * (SATELLITE_DISTANCE_KM - r1) <
-		r2 * r2 + EARTH_EQUATORIAL_OVER_POLAR * r3 * r3
+		SATELLITE_DISTANCE_KM * (SATELLITE_DISTANCE_KM - r1)
+			< r2 * r2 + EARTH_EQUATORIAL_OVER_POLAR * r3 * r3
 	) {
 		return null;
 	}
@@ -488,7 +496,7 @@ const resolveSegmentBbox = (metadata: HritMetadata) => {
 const resolveOutputSize = (
 	sourceWidth: number,
 	bbox: [number, number, number, number]
-): { width: number; height: number } => {
+): { width: number; height: number; } => {
 	const lonSpan = Math.max(1e-6, bbox[2] - bbox[0]);
 	const latSpan = Math.max(1e-6, bbox[3] - bbox[1]);
 	const width = Math.min(MAX_OUTPUT_WIDTH, Math.max(MIN_OUTPUT_SIZE, sourceWidth));
@@ -523,10 +531,10 @@ const resampleToLatLonGrid = (
 			const sourceRow = Math.round(sourcePixel.row) - rowStart;
 
 			if (
-				sourceColumn < 0 ||
-				sourceColumn >= metadata.columns ||
-				sourceRow < 0 ||
-				sourceRow >= metadata.lines
+				sourceColumn < 0
+				|| sourceColumn >= metadata.columns
+				|| sourceRow < 0
+				|| sourceRow >= metadata.lines
 			) {
 				continue;
 			}
@@ -609,17 +617,21 @@ const mergeHritSegments = (segments: ParsedHritSegment[]): ParsedHritSegment => 
 	}
 
 	const sorted = [...segments].sort((a, b) => {
-		const aRow = a.metadata.startRow > 0 ? a.metadata.startRow : a.metadata.imageSegmentSequence;
-		const bRow = b.metadata.startRow > 0 ? b.metadata.startRow : b.metadata.imageSegmentSequence;
+		const aRow = a.metadata.startRow > 0
+			? a.metadata.startRow
+			: a.metadata.imageSegmentSequence;
+		const bRow = b.metadata.startRow > 0
+			? b.metadata.startRow
+			: b.metadata.imageSegmentSequence;
 		return aRow - bRow;
 	});
 	const first = sorted[0];
 
 	for (const segment of sorted.slice(1)) {
 		if (
-			segment.metadata.bitsPerPixel !== first.metadata.bitsPerPixel ||
-			segment.metadata.columns !== first.metadata.columns ||
-			segment.metadata.projectionName !== first.metadata.projectionName
+			segment.metadata.bitsPerPixel !== first.metadata.bitsPerPixel
+			|| segment.metadata.columns !== first.metadata.columns
+			|| segment.metadata.projectionName !== first.metadata.projectionName
 		) {
 			throw new Error('異なるHRITセグメントが混在しています');
 		}
@@ -627,8 +639,9 @@ const mergeHritSegments = (segments: ParsedHritSegment[]): ParsedHritSegment => 
 
 	const mergedLines = sorted.reduce((sum, segment) => sum + segment.metadata.lines, 0);
 	const pixels = first.metadata.columns * mergedLines;
-	const mergedRawCounts =
-		first.metadata.bitsPerPixel === 8 ? new Uint8Array(pixels) : new Uint16Array(pixels);
+	const mergedRawCounts = first.metadata.bitsPerPixel === 8
+		? new Uint8Array(pixels)
+		: new Uint16Array(pixels);
 
 	let lineOffset = 0;
 	for (const segment of sorted) {

@@ -6,12 +6,20 @@
 
 # Interface: VectorEntryState
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:34](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L34)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:42](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L42)
 
 ## Properties
+
+### dimension?
+
+> `optional` **dimension**: [`SharedDimensionState`](../../interfaces/SharedDimensionState.md)
+
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:44](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L44)
+
+***
 
 ### temporalFilter?
 
 > `optional` **temporalFilter**: [`VectorTemporalFilterState`](VectorTemporalFilterState.md)
 
-Defined in: [frontend/src/routes/map/data/types/vector/index.ts:35](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/vector/index.ts#L35)
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:43](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/vector/index.ts#L43)

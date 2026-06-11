@@ -1,5 +1,5 @@
+import { DISASTER_LORE_ALL_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import { MAP_IMAGE_BASE_PATH, DISASTER_LORE_ALL_PATH } from '$routes/constants';
 
 import type { PointEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 

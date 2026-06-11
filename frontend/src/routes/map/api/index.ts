@@ -6,7 +6,9 @@ const searchDataset = async (
 	maxy: number,
 	limit: number = 12
 ): Promise<any> => {
-	const url = new URL('https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items');
+	const url = new URL(
+		'https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a/items'
+	);
 
 	const params = {
 		limit: limit.toString(),

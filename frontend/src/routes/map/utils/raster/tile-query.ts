@@ -1,19 +1,19 @@
-import * as tilebelt from '@mapbox/tilebelt';
-import chroma from 'chroma-js';
-import type { LngLat } from 'maplibre-gl';
-import { PMTiles } from 'pmtiles';
-import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import type {
 	CategoryLegend,
 	RasterFormatType,
 	TileSize,
 	ZoomLevel
 } from '$routes/map/data/types/raster';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
+import * as tilebelt from '@mapbox/tilebelt';
+import chroma from 'chroma-js';
+import type { LngLat } from 'maplibre-gl';
+import { PMTiles } from 'pmtiles';
 
 /** PMTiles から画像を取得する */
 export const getImagePmtiles = async (
 	url: string,
-	tile: { x: number; y: number; z: number }
+	tile: { x: number; y: number; z: number; }
 ): Promise<string> => {
 	const pmtiles = new PMTiles(resolveRequestUrl(url));
 

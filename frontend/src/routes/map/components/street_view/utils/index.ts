@@ -1,10 +1,10 @@
-import * as THREE from 'three';
-import { PANORAMA_IMAGE_URL } from '../constants';
 import type {
-	NextPointData,
 	CurrentPointData,
+	NextPointData,
 	PhotoAngleDict
 } from '$routes/map/types/street-view';
+import * as THREE from 'three';
+import { PANORAMA_IMAGE_URL } from '../constants';
 import photoAngleDataDictRaw from './photo_angles.json';
 
 const photoAngleDataDict = photoAngleDataDictRaw as PhotoAngleDict;
@@ -26,7 +26,7 @@ export const placePointData = (nextPointData: NextPointData[]): CurrentPointData
 		return {
 			node_id: pointData.featureData.properties.node_id,
 			photo_id: photo_id,
-			angle: angleData as { angle_x: number; angle_y: number; angle_z: number },
+			angle: angleData as { angle_x: number; angle_y: number; angle_z: number; },
 			featureData: pointData.featureData,
 			texture: webp
 		};
@@ -40,7 +40,7 @@ export const placePointData = (nextPointData: NextPointData[]): CurrentPointData
  * @param camera THREE.PerspectiveCamera | THREE.OrthographicCamera
  * @returns 0〜360度の X Y Z 軸回転角度
  */
-export const getCameraXYRotation = (camera: THREE.Camera): { x: number; y: number } => {
+export const getCameraXYRotation = (camera: THREE.Camera): { x: number; y: number; } => {
 	const xDegrees = -THREE.MathUtils.radToDeg(camera.rotation.x); // ラジアン→度に変換
 	const yDegrees = -THREE.MathUtils.radToDeg(camera.rotation.y); // ラジアン→度に変換
 	return {
@@ -56,7 +56,7 @@ export const getCameraXYRotation = (camera: THREE.Camera): { x: number; y: numbe
  */
 export const setCameraXYRotation = (
 	camera: THREE.Camera,
-	rotation: { x: number; y: number }
+	rotation: { x: number; y: number; }
 ): void => {
 	// 0〜360度の値を -180〜180度に正規化してからラジアンに変換
 	const xRadians = -THREE.MathUtils.degToRad(rotation.x);

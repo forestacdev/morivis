@@ -1,6 +1,6 @@
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { createRasterEntry } from '$routes/map/data/entries/raster';
-import type { RasterEntry, RasterBaseMapStyle, TileXYZ } from '$routes/map/data/types/raster';
+import type { RasterBaseMapStyle, RasterEntry, TileXYZ } from '$routes/map/data/types/raster';
 import type { Tag } from '$routes/map/data/types/tags';
 
 export interface HimawariTargetTime {
@@ -26,10 +26,10 @@ const isHimawariTargetTime = (value: unknown): value is HimawariTargetTime => {
 	if (!value || typeof value !== 'object') return false;
 	const record = value as Record<string, unknown>;
 	return (
-		typeof record.basetime === 'string' &&
-		typeof record.validtime === 'string' &&
-		/^\d{14}$/.test(record.basetime) &&
-		/^\d{14}$/.test(record.validtime)
+		typeof record.basetime === 'string'
+		&& typeof record.validtime === 'string'
+		&& /^\d{14}$/.test(record.basetime)
+		&& /^\d{14}$/.test(record.validtime)
 	);
 };
 
@@ -55,9 +55,13 @@ export const getHimawariSatimgTimes = async (): Promise<HimawariTargetTime[]> =>
 			} catch (error) {
 				himawariSatimgTimesPromise = null;
 				if (error instanceof Error) {
-					throw new Error(`Failed to fetch Himawari satellite image times: ${error.message}`);
+					throw new Error(
+						`Failed to fetch Himawari satellite image times: ${error.message}`
+					);
 				}
-				throw new Error('Unknown error occurred while fetching Himawari satellite image times');
+				throw new Error(
+					'Unknown error occurred while fetching Himawari satellite image times'
+				);
 			}
 		})();
 	}
@@ -80,7 +84,8 @@ const formatHimawariTimeLabel = (basetime: string) => {
 
 export const getHimawariImageUrl = (basetime: string | number, band = 'B13', prod = 'TBB') => {
 	const basetimeText = String(basetime);
-	const url = `https://www.jma.go.jp/bosai/himawari/data/satimg/${basetimeText}/fd/${basetimeText}/${band}/${prod}/{z}/{x}/{y}.jpg`;
+	const url =
+		`https://www.jma.go.jp/bosai/himawari/data/satimg/${basetimeText}/fd/${basetimeText}/${band}/${prod}/{z}/{x}/{y}.jpg`;
 	return url;
 };
 

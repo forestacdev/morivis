@@ -6,7 +6,7 @@
 
 # Interface: RasterInteraction
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:258](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L258)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:240](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L240)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:258](https://git
 
 > **clickable**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:259](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L259)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:241](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L241)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:259](https://git
 
 > `optional` **overlay**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:260](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/raster/index.ts#L260)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:242](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/raster/index.ts#L242)

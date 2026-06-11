@@ -4,8 +4,8 @@ import {
 	ICON_IMAGE_BASE_PATH,
 	MAP_IMAGE_BASE_PATH
 } from '$routes/constants';
-import type { TileMetaData, PointEntry } from '$routes/map/data/types/vector/index';
 import { DEFAULT_POINT_LABEL_STYLE } from '$routes/map/data/entries/vector/_style';
+import type { PointEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: PointEntry<TileMetaData> = {
 	id: 'fac_poi_search',

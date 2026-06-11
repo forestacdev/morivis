@@ -2,7 +2,9 @@ import { MOBILE_WIDTH } from '$routes/constants';
 
 /** PC画面かどうかを判定する */
 export const checkPc = () => {
-	if (window.matchMedia && window.matchMedia(`(min-device-width: ${MOBILE_WIDTH + 1}px)`).matches) {
+	if (
+		window.matchMedia && window.matchMedia(`(min-device-width: ${MOBILE_WIDTH + 1}px)`).matches
+	) {
 		return true;
 	}
 	return false;

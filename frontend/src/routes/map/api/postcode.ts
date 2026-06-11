@@ -68,7 +68,7 @@ export async function getPostcodeText(
  */
 export async function searchPostcode(
 	keyword: string,
-	options: { per?: number } = {}
+	options: { per?: number; } = {}
 ): Promise<PostcodeInfo[]> {
 	const params = new URLSearchParams({ s: keyword });
 	if (options.per) params.set('per', String(options.per));

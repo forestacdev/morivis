@@ -1,11 +1,11 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import { KOCHI_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import {
-	TREE_MATCH_COLOR_STYLE,
-	DEFAULT_POLYGON_STYLE
+	DEFAULT_POLYGON_STYLE,
+	TREE_MATCH_COLOR_STYLE
 } from '$routes/map/data/entries/vector/_style';
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'kochi_tree_species',

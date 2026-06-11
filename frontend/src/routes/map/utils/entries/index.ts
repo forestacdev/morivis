@@ -1,5 +1,5 @@
-import type { GeoDataEntry } from '$routes/map/data/types';
 import { getLayerIconName } from '$lib/icons';
+import type { GeoDataEntry } from '$routes/map/data/types';
 // 配列を自動ソートする ラスターが下になるように
 export type LayerType = 'model' | 'point' | 'line' | 'polygon' | 'raster';
 

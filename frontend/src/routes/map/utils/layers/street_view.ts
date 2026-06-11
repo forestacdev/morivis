@@ -1,4 +1,4 @@
-import type { LineLayerSpecification, CircleLayerSpecification } from 'maplibre-gl';
+import type { CircleLayerSpecification, LineLayerSpecification } from 'maplibre-gl';
 
 export const streetViewLineLayer: LineLayerSpecification = {
 	// ストリートビューのライン

@@ -7,7 +7,7 @@ import {
 	type TaxonomicRank
 } from '$routes/map/api/inaturalist';
 import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
-import { propData, type MediaData } from '$routes/map/data/entries/_prop_data';
+import { type MediaData, propData } from '$routes/map/data/entries/_prop_data';
 import {
 	ProtectionForestNameToCodeDict,
 	ProtectionForestTypes
@@ -25,10 +25,10 @@ import { resolvePopupImageUrl } from '$routes/map/utils/icon';
 
 export const hasFeaturePanelSummaryContent = (summary: FeaturePanelSummaryData): boolean => {
 	return Boolean(
-		summary.description?.linkUrl ||
-			summary.description?.text.trim() ||
-			summary.timberSpecies ||
-			summary.taxonomy?.length
+		summary.description?.linkUrl
+			|| summary.description?.text.trim()
+			|| summary.timberSpecies
+			|| summary.taxonomy?.length
 		// summary.protectionForestDescription?.trim()
 		// summary.point ||
 	);
@@ -88,10 +88,9 @@ const getLayerFeatureMedia = async (
 			return data.medias.map((media) => convertMediaData(media, targetLayer));
 		}
 
-		const url =
-			targetLayer && targetLayer.type === 'vector'
-				? resolvePopupImageUrl(featureMenuData.properties, targetLayer.properties)
-				: null;
+		const url = targetLayer && targetLayer.type === 'vector'
+			? resolvePopupImageUrl(featureMenuData.properties, targetLayer.properties)
+			: null;
 
 		if (url) {
 			return [
@@ -105,10 +104,9 @@ const getLayerFeatureMedia = async (
 			];
 		}
 
-		const iNaturalistNameKey =
-			targetLayer && targetLayer.type === 'vector'
-				? targetLayer.properties.attributeView.relations?.iNaturalistNameKey
-				: null;
+		const iNaturalistNameKey = targetLayer && targetLayer.type === 'vector'
+			? targetLayer.properties.attributeView.relations?.iNaturalistNameKey
+			: null;
 
 		if (iNaturalistNameKey && featureMenuData.properties) {
 			const name = featureMenuData.properties[iNaturalistNameKey] as string;
@@ -147,7 +145,7 @@ const getWikipediaArticleForINaturalist = async (
 // iNaturalist の和名から、概要欄に出すリンネ分類を整形する。
 const getTaxonomyItemsForINaturalist = async (
 	commonName?: string
-): Promise<Array<{ label: string; value: string }> | undefined> => {
+): Promise<Array<{ label: string; value: string; }> | undefined> => {
 	if (!commonName?.trim()) return undefined;
 
 	const taxonomy = await getTaxonomyByJapaneseName(commonName);
@@ -172,7 +170,7 @@ const getTaxonomyItemsForINaturalist = async (
 				value: info.commonName || info.name
 			};
 		})
-		.filter((item): item is { label: string; value: string } => item !== null);
+		.filter((item): item is { label: string; value: string; } => item !== null);
 
 	return items.length > 0 ? items : undefined;
 };
@@ -181,13 +179,13 @@ const getTaxonomyItemsForINaturalist = async (
 const getProtectionForestDescription = (
 	targetLayer: GeoDataEntry | null,
 	featureMenuData: FeatureMenuData
-): { name?: string; description?: string } | null => {
+): { name?: string; description?: string; } | null => {
 	if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData.properties) {
 		return null;
 	}
 
-	const protectionForestNameKey =
-		targetLayer.properties.attributeView.relations?.nationalForest?.protectionForestNameKey;
+	const protectionForestNameKey = targetLayer.properties.attributeView.relations?.nationalForest
+		?.protectionForestNameKey;
 	if (!protectionForestNameKey) return null;
 
 	const protectionForestName = featureMenuData.properties[protectionForestNameKey];
@@ -212,18 +210,19 @@ const getTimberSpeciesSummary = (
 	featureMenuData: FeatureMenuData
 ):
 	| {
-			url: string;
-			distribution?: string;
-			nameEn?: string;
-			scientificName?: string;
-			airDryDensity?: number | { min: number; max: number };
-			woodStructure?: string;
-			hardness?: string;
-			summary?: string;
-			characteristics?: string[];
-			uses?: string[];
-	  }
-	| undefined => {
+		url: string;
+		distribution?: string;
+		nameEn?: string;
+		scientificName?: string;
+		airDryDensity?: number | { min: number; max: number; };
+		woodStructure?: string;
+		hardness?: string;
+		summary?: string;
+		characteristics?: string[];
+		uses?: string[];
+	}
+	| undefined =>
+{
 	if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData.properties) {
 		return undefined;
 	}
@@ -265,28 +264,23 @@ export const getLayerFeaturePanelSummary = async (
 		? propData[featureMenuData.properties._prop_id as string]
 		: null;
 	const propId = featureMenuData.properties?._prop_id;
-	const descriptionKey =
-		targetLayer && targetLayer.type === 'vector'
-			? targetLayer.properties.attributeView.descriptionKey
-			: null;
-	const descriptionField =
-		descriptionKey && targetLayer && targetLayer.type === 'vector'
-			? targetLayer.properties.fields.find((field) => field.key === descriptionKey)
-			: undefined;
-	const attributeDescription =
-		descriptionKey && featureMenuData.properties
-			? formatFieldValue(featureMenuData.properties[descriptionKey], descriptionField)
-			: null;
+	const descriptionKey = targetLayer && targetLayer.type === 'vector'
+		? targetLayer.properties.attributeView.descriptionKey
+		: null;
+	const descriptionField = descriptionKey && targetLayer && targetLayer.type === 'vector'
+		? targetLayer.properties.fields.find((field) => field.key === descriptionKey)
+		: undefined;
+	const attributeDescription = descriptionKey && featureMenuData.properties
+		? formatFieldValue(featureMenuData.properties[descriptionKey], descriptionField)
+		: null;
 	const protectionForestSummary = getProtectionForestDescription(targetLayer, featureMenuData);
 	const timberSpecies = getTimberSpeciesSummary(targetLayer, featureMenuData);
-	const iNaturalistNameKey =
-		targetLayer && targetLayer.type === 'vector'
-			? targetLayer.properties.attributeView.relations?.iNaturalistNameKey
-			: null;
-	const iNaturalistName =
-		iNaturalistNameKey && featureMenuData.properties
-			? (featureMenuData.properties[iNaturalistNameKey] as string)
-			: null;
+	const iNaturalistNameKey = targetLayer && targetLayer.type === 'vector'
+		? targetLayer.properties.attributeView.relations?.iNaturalistNameKey
+		: null;
+	const iNaturalistName = iNaturalistNameKey && featureMenuData.properties
+		? (featureMenuData.properties[iNaturalistNameKey] as string)
+		: null;
 
 	// 外部連携で取るものは並列で取得する。
 	const [iNaturalistData, wikipediaArticle, taxonomy] = await Promise.all([
@@ -294,41 +288,41 @@ export const getLayerFeaturePanelSummary = async (
 		!data?.description && iNaturalistName
 			? getWikipediaArticleForINaturalist(iNaturalistName)
 			: Promise.resolve(null),
-		iNaturalistName ? getTaxonomyItemsForINaturalist(iNaturalistName) : Promise.resolve(undefined)
+		iNaturalistName
+			? getTaxonomyItemsForINaturalist(iNaturalistName)
+			: Promise.resolve(undefined)
 	]);
 
 	const media = await getLayerFeatureMedia(featureMenuData, targetLayer, iNaturalistData);
 
 	// 説明文は 属性 descriptionKey -> _prop_data.ts -> Wikipedia の順で補完する。
-	const description =
-		typeof attributeDescription === 'string' && attributeDescription !== ''
-			? {
-					text: attributeDescription,
-					source: 'attribute' as const
-				}
-			: data?.description
-				? {
-						text: data.description,
-						source: 'static' as const,
-						linkUrl: data.url ?? undefined,
-						linkLabel: data.url ? '詳細を見る' : undefined
-					}
-				: wikipediaArticle?.extract
-					? {
-							text: wikipediaArticle.extract,
-							source: 'wikipedia' as const,
-							linkUrl: wikipediaArticle.url ?? undefined,
-							linkLabel: wikipediaArticle.url ? 'Wikipediaを見る' : undefined
-						}
-					: undefined;
+	const description = typeof attributeDescription === 'string' && attributeDescription !== ''
+		? {
+			text: attributeDescription,
+			source: 'attribute' as const
+		}
+		: data?.description
+		? {
+			text: data.description,
+			source: 'static' as const,
+			linkUrl: data.url ?? undefined,
+			linkLabel: data.url ? '詳細を見る' : undefined
+		}
+		: wikipediaArticle?.extract
+		? {
+			text: wikipediaArticle.extract,
+			source: 'wikipedia' as const,
+			linkUrl: wikipediaArticle.url ?? undefined,
+			linkLabel: wikipediaArticle.url ? 'Wikipediaを見る' : undefined
+		}
+		: undefined;
 
 	if (propId && featureMenuData.properties) {
 		return {
 			title: String(featureMenuData.properties.name ?? targetLayer?.metaData.name ?? ''),
-			subtitle:
-				typeof featureMenuData.properties.category === 'string'
-					? featureMenuData.properties.category
-					: undefined,
+			subtitle: typeof featureMenuData.properties.category === 'string'
+				? featureMenuData.properties.category
+				: undefined,
 			media,
 			protectionForestName: protectionForestSummary?.name,
 			protectionForestDescription: protectionForestSummary?.description,
@@ -338,13 +332,15 @@ export const getLayerFeaturePanelSummary = async (
 		};
 	}
 
-	const title =
-		targetLayer &&
-		targetLayer.type === 'vector' &&
-		targetLayer.properties.attributeView.titles.length &&
-		featureMenuData.properties
-			? generatePopupTitle(featureMenuData.properties, targetLayer.properties.attributeView.titles)
-			: targetLayer?.metaData.name;
+	const title = targetLayer
+			&& targetLayer.type === 'vector'
+			&& targetLayer.properties.attributeView.titles.length
+			&& featureMenuData.properties
+		? generatePopupTitle(
+			featureMenuData.properties,
+			targetLayer.properties.attributeView.titles
+		)
+		: targetLayer?.metaData.name;
 
 	return {
 		title: title ?? '',

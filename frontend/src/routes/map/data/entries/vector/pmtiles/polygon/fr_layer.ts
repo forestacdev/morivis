@@ -1,7 +1,7 @@
-import { MAP_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
+import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 
-import type { VectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector/index';
 
 const entry: VectorEntry<TileMetaData> = {
 	id: 'fr_layer',
@@ -165,7 +165,15 @@ const entry: VectorEntry<TileMetaData> = {
 							'近畿中国森林管理局',
 							'四国森林管理局'
 						],
-						values: ['#33a02c', '#1f78b4', '#e31a1c', '#ff7f00', '#6a3d9a', '#b15928', '#b2df8a'],
+						values: [
+							'#33a02c',
+							'#1f78b4',
+							'#e31a1c',
+							'#ff7f00',
+							'#6a3d9a',
+							'#b15928',
+							'#b2df8a'
+						],
 						patterns: [null, null, null, null, null, null, null]
 					}
 				}

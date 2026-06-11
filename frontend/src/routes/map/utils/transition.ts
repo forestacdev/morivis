@@ -1,6 +1,6 @@
-import { elasticOut, cubicOut } from 'svelte/easing';
-import type { TransitionConfig } from 'svelte/transition';
 import gsap from 'gsap';
+import { cubicOut, elasticOut } from 'svelte/easing';
+import type { TransitionConfig } from 'svelte/transition';
 interface SpinTransitionOptions {
 	duration?: number;
 }

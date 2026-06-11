@@ -6,7 +6,7 @@
 
 # Interface: ModelPointCloudEntry
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:139](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L139)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:162](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L162)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:139](https://gith
 
 > **format**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:140](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L140)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:163](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L163)
 
 #### colors?
 
@@ -54,7 +54,7 @@ Blob URL of the LAS/LAZ file (未変換時)
 
 > **id**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:27](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L27)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:30](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L30)
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:27](https://githu
 
 > **interaction**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:36](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L36)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:39](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L39)
 
 #### clickable
 
@@ -82,7 +82,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:36](https://githu
 
 > **metaData**: `ModelMetaData`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:29](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L29)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:32](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L32)
 
 #### Inherited from
 
@@ -94,7 +94,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:29](https://githu
 
 > `optional` **properties**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:30](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L30)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:33](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L33)
 
 #### animation?
 
@@ -106,7 +106,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:30](https://githu
 
 ##### temporal.dimension
 
-> **dimension**: [`RasterDiscreteDimension`](../../raster/interfaces/RasterDiscreteDimension.md)
+> **dimension**: [`SharedDiscreteDimension`](../../interfaces/SharedDiscreteDimension.md)
 
 #### Inherited from
 
@@ -118,7 +118,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:30](https://githu
 
 > `optional` **state**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:39](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L39)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:42](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L42)
 
 #### animation?
 
@@ -126,7 +126,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:39](https://githu
 
 #### dimension?
 
-> `optional` **dimension**: [`RasterDimensionState`](../../raster/interfaces/RasterDimensionState.md)
+> `optional` **dimension**: [`SharedDimensionState`](../../interfaces/SharedDimensionState.md)
 
 #### Inherited from
 
@@ -138,7 +138,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:39](https://githu
 
 > **style**: [`PointCloudStyle`](PointCloudStyle.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:151](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L151)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:174](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L174)
 
 ***
 
@@ -146,7 +146,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:151](https://gith
 
 > **type**: `"model"`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:28](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L28)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:31](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L31)
 
 #### Inherited from
 

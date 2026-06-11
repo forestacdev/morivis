@@ -6,12 +6,12 @@
  * 重い処理はWeb Workerで実行する。
  */
 
-import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
+import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 import type { GeoTransform } from './geopdf-parser';
-import type { VectorFeature } from './vector-parser';
 import type { VectorParseResult } from './vector-parse.worker';
+import type { VectorFeature } from './vector-parser';
 
 export interface ExtractVectorsOptions {
 	/** GeoTransform（PDF座標→地理座標の変換） */

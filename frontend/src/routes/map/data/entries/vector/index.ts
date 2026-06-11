@@ -1,44 +1,44 @@
 import turfBbox from '@turf/bbox';
 
-import type { FeatureCollection } from '$routes/map/types/geojson';
-import type {
-	VectorEntry,
-	GeoJsonMetaData,
-	VectorEntryGeometryType,
-	TileMetaData
-} from '$routes/map/data/types/vector';
 import { createAdjustableRange } from '$routes/map/data/types';
+import type {
+	GeoJsonMetaData,
+	TileMetaData,
+	VectorEntry,
+	VectorEntryGeometryType
+} from '$routes/map/data/types/vector';
+import type { FeatureCollection } from '$routes/map/types/geojson';
 
-import { getUniquePropertyKeys } from '$routes/map/utils/data/properties';
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
+import { getUniquePropertyKeys } from '$routes/map/utils/data/properties';
 
 import {
-	DEFAULT_VECTOR_POINT_STYLE,
-	DEFAULT_VECTOR_LINE_STYLE,
-	DEFAULT_VECTOR_POLYGON_STYLE,
-	DEFAULT_CAD_STYLE,
+	createColorStyleDXFMapping,
 	createMatchColorMapping,
-	createColorStyleDXFMapping
+	DEFAULT_CAD_STYLE,
+	DEFAULT_VECTOR_LINE_STYLE,
+	DEFAULT_VECTOR_POINT_STYLE,
+	DEFAULT_VECTOR_POLYGON_STYLE
 } from '$routes/map/data/entries/vector/_style';
 import type { SequentialCount, SequentialScheme } from '$routes/map/utils/color/color-brewer';
 
-import { getRandomColor } from '$routes/map/utils/color/color-brewer';
-import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style';
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+import { createLabelsExpressions } from '$routes/map/data/entries/vector/_style';
+import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 import { showNotification } from '$routes/stores/notification';
 
-import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
-import type {
-	ColorsStyle,
-	ColorMatchExpression,
-	ColorStepExpression,
-	VectorStyle,
-	PolygonStyle,
-	LineStringStyle,
-	PointStyle
-} from '../../types/vector/style';
-import { findCenterTile } from '$routes/map/utils/map/tile';
 import type { AnyGeometry, GeometryCollection } from '$routes/map/types/geometry';
+import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
+import { findCenterTile } from '$routes/map/utils/map/tile';
+import type {
+	ColorMatchExpression,
+	ColorsStyle,
+	ColorStepExpression,
+	LineStringStyle,
+	PointStyle,
+	PolygonStyle,
+	VectorStyle
+} from '../../types/vector/style';
 
 // --- ジオメトリタイプ判定 ---
 
@@ -96,10 +96,10 @@ const isPointOnSegment = (
 	const epsilon = 1e-10;
 
 	return (
-		px <= Math.max(ax, bx) + epsilon &&
-		px >= Math.min(ax, bx) - epsilon &&
-		py <= Math.max(ay, by) + epsilon &&
-		py >= Math.min(ay, by) - epsilon
+		px <= Math.max(ax, bx) + epsilon
+		&& px >= Math.min(ax, bx) - epsilon
+		&& py <= Math.max(ay, by) + epsilon
+		&& py >= Math.min(ay, by) - epsilon
 	);
 };
 
@@ -302,7 +302,7 @@ const getDefaultStyle = (
 
 // --- DM/DXF/CAD スタイル構築ヘルパー（export） ---
 
-export { createMatchColorMapping, createColorStyleDXFMapping, DEFAULT_CAD_STYLE };
+export { createColorStyleDXFMapping, createMatchColorMapping, DEFAULT_CAD_STYLE };
 
 export const buildDmStyle = (
 	data: FeatureCollection,
@@ -311,14 +311,17 @@ export const buildDmStyle = (
 ): VectorStyle => {
 	const colorsConfig = createDefaultColorsConfig(entryGeometryType);
 
-	const classNames = groupPropertyByGeometryType(data, (props) =>
-		props?.className != null ? String(props.className) : undefined
+	const classNames = groupPropertyByGeometryType(
+		data,
+		(props) => props?.className != null ? String(props.className) : undefined
 	);
-	const layers = groupPropertyByGeometryType(data, (props) =>
-		props?.layer != null ? String(props.layer) : undefined
+	const layers = groupPropertyByGeometryType(
+		data,
+		(props) => props?.layer != null ? String(props.layer) : undefined
 	);
-	const dataTypes = groupPropertyByGeometryType(data, (props) =>
-		props?.dataType != null ? String(props.dataType) : undefined
+	const dataTypes = groupPropertyByGeometryType(
+		data,
+		(props) => props?.dataType != null ? String(props.dataType) : undefined
 	);
 
 	colorsConfig.expressions.push({
@@ -357,11 +360,13 @@ export const buildDxfStyle = (
 ): VectorStyle => {
 	const colorsConfig = createDefaultColorsConfig(entryGeometryType);
 
-	const colors = groupPropertyByGeometryType(data, (props) =>
-		props?.color != null ? String(props.color) : undefined
+	const colors = groupPropertyByGeometryType(
+		data,
+		(props) => props?.color != null ? String(props.color) : undefined
 	);
-	const entityTypes = groupPropertyByGeometryType(data, (props) =>
-		props?.type != null ? String(props.type) : undefined
+	const entityTypes = groupPropertyByGeometryType(
+		data,
+		(props) => props?.type != null ? String(props.type) : undefined
 	);
 
 	const dxfCategories = colors[entryGeometryType] ?? [];
@@ -716,9 +721,16 @@ export const createGeoJsonTileEntry = (
 	url: string,
 	entryGeometryType: VectorEntryGeometryType,
 	color: string = getRandomColor(),
-	options?: { bounds?: [number, number, number, number] }
+	options?: { bounds?: [number, number, number, number]; }
 ): VectorEntry<TileMetaData> | undefined => {
-	const entry = createVectorTileEntry(name, url, 'geojsonLayer', entryGeometryType, color, options);
+	const entry = createVectorTileEntry(
+		name,
+		url,
+		'geojsonLayer',
+		entryGeometryType,
+		color,
+		options
+	);
 	if (!entry) return undefined;
 
 	return {
@@ -735,10 +747,17 @@ export const createOgcFeatureTileEntry = (
 	name: string,
 	url: string,
 	entryGeometryType: VectorEntryGeometryType,
-	options?: { bounds?: [number, number, number, number] },
+	options?: { bounds?: [number, number, number, number]; },
 	color: string = getRandomColor()
 ): VectorEntry<TileMetaData> | undefined => {
-	const entry = createVectorTileEntry(name, url, 'geojsonLayer', entryGeometryType, color, options);
+	const entry = createVectorTileEntry(
+		name,
+		url,
+		'geojsonLayer',
+		entryGeometryType,
+		color,
+		options
+	);
 	if (!entry) return undefined;
 
 	return {
@@ -755,10 +774,17 @@ export const createWfsFeatureTileEntry = (
 	name: string,
 	url: string,
 	entryGeometryType: VectorEntryGeometryType,
-	options?: { bounds?: [number, number, number, number] },
+	options?: { bounds?: [number, number, number, number]; },
 	color: string = getRandomColor()
 ): VectorEntry<TileMetaData> | undefined => {
-	const entry = createVectorTileEntry(name, url, 'geojsonLayer', entryGeometryType, color, options);
+	const entry = createVectorTileEntry(
+		name,
+		url,
+		'geojsonLayer',
+		entryGeometryType,
+		color,
+		options
+	);
 	if (!entry) return undefined;
 
 	return {
@@ -779,7 +805,7 @@ export const createVectorPmtilesEntry = (
 	sourceLayer: string,
 	entryGeometryType: VectorEntryGeometryType,
 	color: string = getRandomColor(),
-	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number }
+	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number; }
 ): VectorEntry<TileMetaData> | undefined => {
 	const entry = createVectorTileEntry(name, url, sourceLayer, entryGeometryType, color);
 	if (!entry) return undefined;
@@ -797,7 +823,9 @@ export const createVectorPmtilesEntry = (
 			minZoom: options?.minZoom ?? entry.metaData.minZoom,
 			maxZoom: options?.maxZoom ?? entry.metaData.maxZoom,
 			attribution: 'PMTiles',
-			xyzImageTile: options?.bounds ? findCenterTile(options.bounds) : entry.metaData.xyzImageTile
+			xyzImageTile: options?.bounds
+				? findCenterTile(options.bounds)
+				: entry.metaData.xyzImageTile
 		}
 	} as VectorEntry<TileMetaData>;
 };

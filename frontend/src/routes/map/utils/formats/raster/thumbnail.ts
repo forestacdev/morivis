@@ -12,7 +12,7 @@ export interface ThumbnailOptions {
 	/** WGS84 bbox。指定時はメルカトル補正を行う */
 	bbox?: [number, number, number, number];
 	nodata?: number | null;
-	ranges?: { min: number; max: number }[];
+	ranges?: { min: number; max: number; }[];
 	/** サムネイルの最大辺（デフォルト: 512） */
 	thumbSize?: number;
 }
@@ -66,9 +66,8 @@ export const generateThumbnail = (opts: ThumbnailOptions): string => {
 	const pixels = imgData.data;
 
 	// デフォルトranges
-	const effectiveRanges =
-		ranges ??
-		bands.map((band) => {
+	const effectiveRanges = ranges
+		?? bands.map((band) => {
 			let min = Infinity;
 			let max = -Infinity;
 			for (let i = 0; i < band.length; i++) {
@@ -108,8 +107,9 @@ export const generateThumbnail = (opts: ThumbnailOptions): string => {
 			const srcIdx = srcY * width + srcX;
 			const val = bands[0][srcIdx];
 
-			const isNd =
-				nodata !== null ? (Number.isNaN(nodata) ? Number.isNaN(val) : val === nodata) : false;
+			const isNd = nodata !== null
+				? (Number.isNaN(nodata) ? Number.isNaN(val) : val === nodata)
+				: false;
 
 			if (isNd || !Number.isFinite(val)) {
 				pixels[dstIdx + 3] = 0;

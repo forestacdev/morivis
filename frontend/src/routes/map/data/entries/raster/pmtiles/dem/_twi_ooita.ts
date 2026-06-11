@@ -1,6 +1,6 @@
-import type { RasterPMTilesEntry, RasterDemStyle } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
 import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
+import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
+import type { RasterDemStyle, RasterPMTilesEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterPMTilesEntry<RasterDemStyle> = {
 	id: 'twi_ooita',
@@ -26,7 +26,12 @@ const entry: RasterPMTilesEntry<RasterDemStyle> = {
 			y: 824,
 			z: 11
 		}, // 画像タイルのXYZ座標
-		bounds: [130.8244139036812328, 32.7147781331445557, 132.0853865969756384, 33.7401721950509739]
+		bounds: [
+			130.8244139036812328,
+			32.7147781331445557,
+			132.0853865969756384,
+			33.7401721950509739
+		]
 	},
 	interaction: {
 		clickable: true

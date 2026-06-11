@@ -1,11 +1,3 @@
-import type {
-	DataDrivenPropertyValueSpecification,
-	Map as MapLibreMapType,
-	MapStyleImageMissingEvent,
-	ResolvedImageSpecification,
-	MapGeoJSONFeature,
-	ExpressionSpecification
-} from 'maplibre-gl';
 import {
 	ICON_IMAGE_BASE_PATH,
 	ICON_NO_IMAGE_PATH,
@@ -17,6 +9,14 @@ import type {
 	VectorProperties
 } from '$routes/map/data/types/vector/properties';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
+import type {
+	DataDrivenPropertyValueSpecification,
+	ExpressionSpecification,
+	Map as MapLibreMapType,
+	MapGeoJSONFeature,
+	MapStyleImageMissingEvent,
+	ResolvedImageSpecification
+} from 'maplibre-gl';
 
 import type { PointImageIcon } from '$routes/map/data/types/vector/style';
 
@@ -25,7 +25,7 @@ const imageBitmapCache = new Map<string, Promise<ImageBitmap>>();
 const inflightGeneratedPoiIcons = new Map<string, Promise<void>>();
 let renderedDummyIconPromise: Promise<ImageBitmap> | null = null;
 
-//NOTE: 現状は1スレッドに抑えておく
+// NOTE: 現状は1スレッドに抑えておく
 const ICON_WORKER_POOL_MIN_SIZE = 1;
 const ICON_WORKER_POOL_MAX_SIZE = 1;
 const ICON_WORKER_IDLE_TIMEOUT_MS = 3000;

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
-import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+import type { MeshStyle, ModelMeshEntry } from '$routes/map/data/types/model';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 
@@ -32,7 +32,7 @@ interface CreateRasterMeshEntryParams {
 
 interface RasterMeshGeometry {
 	glb: ArrayBuffer;
-	center: { lng: number; lat: number };
+	center: { lng: number; lat: number; };
 	minHeight: number;
 	maxHeight: number;
 }
@@ -165,20 +165,21 @@ export const sampleRasterMeshHeights = ({
 	const effectiveBaseValue = baseValue ?? 0;
 	const targetHorizontalSpanMeters = Math.max(
 		1,
-		maplibregl.MercatorCoordinate.fromLngLat([bounds[2], centerLat], 0).x / meterUnit -
-			maplibregl.MercatorCoordinate.fromLngLat([bounds[0], centerLat], 0).x / meterUnit,
-		maplibregl.MercatorCoordinate.fromLngLat([centerLng, bounds[3]], 0).y / meterUnit -
-			maplibregl.MercatorCoordinate.fromLngLat([centerLng, bounds[1]], 0).y / meterUnit
+		maplibregl.MercatorCoordinate.fromLngLat([bounds[2], centerLat], 0).x / meterUnit
+			- maplibregl.MercatorCoordinate.fromLngLat([bounds[0], centerLat], 0).x / meterUnit,
+		maplibregl.MercatorCoordinate.fromLngLat([centerLng, bounds[3]], 0).y / meterUnit
+			- maplibregl.MercatorCoordinate.fromLngLat([centerLng, bounds[1]], 0).y / meterUnit
 	);
 	const heightRange = Math.max(1e-6, sampledMaxValue - effectiveBaseValue);
 	// 初期表示で起伏が潰れすぎないよう、縦方向の最大差を横方向スパンの一定比率に収める。
-	const effectiveHeightScale =
-		heightScale ??
-		(autoHeightScale ? (targetHorizontalSpanMeters * AUTO_MESH_HEIGHT_RATIO) / heightRange : 1);
+	const effectiveHeightScale = heightScale
+		?? (autoHeightScale
+			? (targetHorizontalSpanMeters * AUTO_MESH_HEIGHT_RATIO) / heightRange
+			: 1);
 	const normalizedRange = Math.max(
 		1e-6,
-		(sampledMaxValue - effectiveBaseValue) * effectiveHeightScale -
-			(sampledMinValue - effectiveBaseValue) * effectiveHeightScale
+		(sampledMaxValue - effectiveBaseValue) * effectiveHeightScale
+			- (sampledMinValue - effectiveBaseValue) * effectiveHeightScale
 	);
 
 	for (let y = 0; y < sampleHeight; y++) {
@@ -195,9 +196,9 @@ export const sampleRasterMeshHeights = ({
 			}
 
 			heights[vertexIndex] = (value - effectiveBaseValue) * effectiveHeightScale;
-			normalizedHeights[vertexIndex] =
-				(heights[vertexIndex] - (sampledMinValue - effectiveBaseValue) * effectiveHeightScale) /
-				normalizedRange;
+			normalizedHeights[vertexIndex] = (heights[vertexIndex]
+				- (sampledMinValue - effectiveBaseValue) * effectiveHeightScale)
+				/ normalizedRange;
 			validVertices[vertexIndex] = 1;
 		}
 	}
@@ -328,7 +329,9 @@ const buildRasterMeshGeometry = async ({
 				indices.push(topLeft, bottomLeft, topRight);
 			}
 
-			if (validVertices[topRight] && validVertices[bottomLeft] && validVertices[bottomRight]) {
+			if (
+				validVertices[topRight] && validVertices[bottomLeft] && validVertices[bottomRight]
+			) {
 				indices.push(topRight, bottomLeft, bottomRight);
 			}
 		}

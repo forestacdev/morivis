@@ -1,5 +1,5 @@
-import type { NumberStepExpression } from '$routes/map/data/types/vector/style';
 import { getAdjustableRangeValue } from '$routes/map/data/types';
+import type { NumberStepExpression } from '$routes/map/data/types/vector/style';
 
 export const generateNumberToNumberMap = (
 	mapping: NumberStepExpression['mapping']

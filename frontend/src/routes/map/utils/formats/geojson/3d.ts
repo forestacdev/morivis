@@ -3,9 +3,9 @@ import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry, GeometryCollection } from '$routes/map/types/geometry';
 
 const isCoordinateTuple = (value: unknown): value is number[] =>
-	Array.isArray(value) &&
-	value.length >= 2 &&
-	value.every((item) => typeof item === 'number' && Number.isFinite(item));
+	Array.isArray(value)
+	&& value.length >= 2
+	&& value.every((item) => typeof item === 'number' && Number.isFinite(item));
 
 const coordinatesContainZ = (coordinates: unknown): boolean => {
 	if (isCoordinateTuple(coordinates)) {

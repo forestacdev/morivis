@@ -1,17 +1,17 @@
 import type { CircleLayerSpecification, SymbolLayerSpecification } from 'maplibre-gl';
 
+import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
+import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { PointStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';
-import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 import { compileLabelExpr } from '$routes/map/utils/layers/vector/label';
-import type { FieldDef } from '$routes/map/data/types/vector/properties';
 
 import { getColorExpression } from '$routes/map/utils/layers/vector/expression/color';
 import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
 
 import type { IconImageSource } from '$routes/map/data/types/vector/properties';
-import { getIconExpression } from '$routes/map/utils/layers/vector/expression/color';
 import { buildGeneratedPoiIconExpression } from '$routes/map/utils/icon';
+import { getIconExpression } from '$routes/map/utils/layers/vector/expression/color';
 
 import {
 	createMorivisLayerMetadata,
@@ -122,12 +122,12 @@ export const createPointImageIconLayer = (
 			// ラベルのスタイルはアイコンレイヤーに統合
 			...(showLabel
 				? {
-						'text-opacity': 1,
-						'text-color': '#000000',
-						'text-halo-color': '#e8e8e8',
-						'text-halo-width': 2
-						// ...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
-					}
+					'text-opacity': 1,
+					'text-color': '#000000',
+					'text-halo-color': '#e8e8e8',
+					'text-halo-width': 2
+					// ...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.paint : {})
+				}
 				: {})
 		},
 		layout: {
@@ -142,14 +142,14 @@ export const createPointImageIconLayer = (
 			// ラベルのスタイルはアイコンレイヤーに統合
 			...(showLabel
 				? {
-						'text-field': compileLabelExpr(LabelsExpression!, fields),
-						'text-size': 12,
-						'text-max-width': 12,
-						'text-font': DEFAULT_SYMBOL_TEXT_FONT,
-						'text-anchor': 'top',
-						'text-offset': [0, 0.5]
-						// ...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
-					}
+					'text-field': compileLabelExpr(LabelsExpression!, fields),
+					'text-size': 12,
+					'text-max-width': 12,
+					'text-font': DEFAULT_SYMBOL_TEXT_FONT,
+					'text-anchor': 'top',
+					'text-offset': [0, 0.5]
+					// ...(defaultStyle && defaultStyle.symbol ? defaultStyle.symbol.layout : {})
+				}
 				: {})
 		},
 		...(combineFilters(layer.filter, defaultStyle?.symbol?.filter)

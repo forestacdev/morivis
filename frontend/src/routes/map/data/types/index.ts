@@ -1,19 +1,19 @@
-import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
+import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
+import type { AnyModelEntry } from '$routes/map/data/types/model';
 import type {
-	RasterEntry,
-	RasterCategoricalStyle,
 	RasterBaseMapStyle,
-	RasterDemStyle,
-	RasterTiffStyle,
 	RasterCadStyle,
+	RasterCategoricalStyle,
+	RasterDemStyle,
+	RasterEntry,
+	RasterTiffStyle,
 	TileXYZ
 } from '$routes/map/data/types/raster';
-import type { AnyModelEntry } from '$routes/map/data/types/model';
 import type { StyleJsonEntry } from '$routes/map/data/types/stylejson';
-import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
+import type { GeoJsonMetaData, TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
+import type { LayerSpecification, SourceSpecification } from 'maplibre-gl';
 import type { Region } from './location';
 import type { Tag } from './tags';
-import type { SourceSpecification, LayerSpecification } from 'maplibre-gl';
 
 export type GeoDataType = 'raster' | 'vector' | 'model' | 'stylejson';
 export type Opacity = 1 | 0.7 | 0.5 | 0.3;

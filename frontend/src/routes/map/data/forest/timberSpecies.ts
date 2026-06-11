@@ -12,7 +12,7 @@ export interface TimberSpecies {
 	nameJa: string;
 	nameEn: string;
 	scientificName: string;
-	airDryDensity: number | { min: number; max: number };
+	airDryDensity: number | { min: number; max: number; };
 	woodStructure: WoodStructure;
 	hardness: '軽軟' | '中庸' | '重硬' | '極重硬';
 	summary: string;
@@ -67,7 +67,8 @@ export const timberSpecies: TimberSpecies[] = [
 		airDryDensity: 0.698,
 		woodStructure: '環孔材',
 		hardness: '重硬',
-		summary: '木目が明瞭で耐朽性が高く、寺院建築の構造材から山中漆器の木地まで幅広く用いられる。',
+		summary:
+			'木目が明瞭で耐朽性が高く、寺院建築の構造材から山中漆器の木地まで幅広く用いられる。',
 		characteristics: ['ダイナミックな木目', '玉杢・如輪杢', '耐朽性高', '深い光沢'],
 		uses: ['大黒柱', '梁', '床の間', '玄関式台', '山中漆器木地椀', '薄挽きカップ', '寺院の厨子']
 	},
@@ -131,7 +132,8 @@ export const timberSpecies: TimberSpecies[] = [
 		airDryDensity: 0.69,
 		woodStructure: '散孔材',
 		hardness: '重硬',
-		summary: '均質で緻密な構造と磨いたときの光沢を持ち、松本民芸家具や山中漆器の木地に用いられる。',
+		summary:
+			'均質で緻密な構造と磨いたときの光沢を持ち、松本民芸家具や山中漆器の木地に用いられる。',
 		characteristics: ['均質', '緻密', 'サリチル酸メチルの香り', '磨くと光沢'],
 		uses: ['松本民芸家具', '山中漆器木地', '重厚な家具']
 	},
@@ -399,7 +401,8 @@ export const timberSpecies: TimberSpecies[] = [
 		airDryDensity: 0.485,
 		woodStructure: '環孔材',
 		hardness: '軽軟',
-		summary: '成長が早い早生樹で加工が容易であり、ケヤキに似た木目を持ち、家具や建具に用いられる。',
+		summary:
+			'成長が早い早生樹で加工が容易であり、ケヤキに似た木目を持ち、家具や建具に用いられる。',
 		characteristics: ['早生樹', '加工容易', 'ケヤキに似た木目'],
 		uses: ['家具内部材', '小物', '建具']
 	},
@@ -547,7 +550,8 @@ export const timberSpecies: TimberSpecies[] = [
 		airDryDensity: 0.317,
 		woodStructure: '散孔材',
 		hardness: '軽軟',
-		summary: '軽くて繊維が強靭で折れにくく、曲げ適性が高いため、編み座や柳行李などに用いられる。',
+		summary:
+			'軽くて繊維が強靭で折れにくく、曲げ適性が高いため、編み座や柳行李などに用いられる。',
 		characteristics: ['極軽軟', '繊維強靭で折れにくい', '曲げ適性高'],
 		uses: ['編み座（椅子）', '柳行李', '編み組工芸']
 	},

@@ -6,7 +6,7 @@
 
 # Interface: PointCloudStyle
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:113](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L113)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:117](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L117)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:113](https://gith
 
 > **opacity**: [`Opacity`](../../type-aliases/Opacity.md)
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:115](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L115)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:119](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L119)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:115](https://gith
 
 > **pointSize**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:117](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L117)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:121](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L121)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:117](https://gith
 
 > **type**: `"point-cloud"`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:114](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L114)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:118](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L118)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:114](https://gith
 
 > `optional` **visible**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:116](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L116)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:120](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L120)

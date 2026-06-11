@@ -1,6 +1,6 @@
-import { PMTiles } from 'pmtiles';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
-type TileImageData = { [position: string]: { tileId: string; image: ImageBitmap } };
+import { PMTiles } from 'pmtiles';
+type TileImageData = { [position: string]: { tileId: string; image: ImageBitmap; }; };
 
 // タイル画像の処理
 export class TileImageManager {
@@ -28,7 +28,7 @@ export class TileImageManager {
 
 	public async loadImagePmtiles(
 		src: string,
-		tile: { x: number; y: number; z: number },
+		tile: { x: number; y: number; z: number; },
 		signal: AbortSignal
 	): Promise<ImageBitmap> {
 		try {
@@ -161,7 +161,11 @@ export class TileImageManager {
 						imageBitmap = await this.loadImage(imageUrl, controller.signal);
 					} else if (formatType === 'pmtiles') {
 						const tile = { x: tileX, y: tileY, z };
-						imageBitmap = await this.loadImagePmtiles(imageUrl, tile, controller.signal);
+						imageBitmap = await this.loadImagePmtiles(
+							imageUrl,
+							tile,
+							controller.signal
+						);
 					}
 				}
 				if (!imageBitmap) return;

@@ -34,7 +34,9 @@ const initWebGL = (canvas: OffscreenCanvas): GLContext => {
 		gl.compileShader(shader);
 
 		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-			console.error('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
+			console.error(
+				'An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader)
+			);
 			gl.deleteShader(shader);
 			return null;
 		}

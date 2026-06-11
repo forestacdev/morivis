@@ -1,6 +1,6 @@
 import { COVER_IMAGE_BASE_PATH } from '$routes/constants';
-import type { TileMetaData, PointEntry } from '$routes/map/data/types/vector/index';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
+import type { PointEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: PointEntry<TileMetaData> = {
 	id: 'gsi_elevation_point',

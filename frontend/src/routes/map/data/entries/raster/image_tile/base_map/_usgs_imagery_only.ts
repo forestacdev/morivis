@@ -1,7 +1,7 @@
-import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
-import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import type { RasterBaseMapStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'usgs_imagery_only',
@@ -15,7 +15,8 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 
 		attribution: 'USGS',
 		tags: ['写真'],
-		downloadUrl: 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer',
+		downloadUrl:
+			'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer',
 		location: '世界',
 		minZoom: 1,
 		maxZoom: 22,

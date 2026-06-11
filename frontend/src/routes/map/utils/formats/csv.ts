@@ -3,9 +3,9 @@ import Papa from 'papaparse';
 
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 
-import type { ParseResult } from 'papaparse';
-import { showNotification } from '$routes/stores/notification';
 import { parseDmsString } from '$routes/map/utils/proj/dms';
+import { showNotification } from '$routes/stores/notification';
+import type { ParseResult } from 'papaparse';
 
 export interface DelimitedTextOptions {
 	delimiter?: string;
@@ -98,8 +98,8 @@ export const getDelimitedTextPreview = (
 			delimiter,
 			complete: (results: ParseResult<Record<string, string | number>>) => {
 				if (
-					results.errors.length > 0 &&
-					(!results.meta.fields || results.meta.fields.length === 0)
+					results.errors.length > 0
+					&& (!results.meta.fields || results.meta.fields.length === 0)
 				) {
 					reject(new Error(`CSV parsing error: ${results.errors[0].message}`));
 					return;
@@ -158,10 +158,10 @@ export const delimitedTextToGeojson = (
 
 				const json = results.data.filter(
 					(item: Record<string, string | number>) =>
-						item[latColumn] != null &&
-						item[lonColumn] != null &&
-						item[latColumn] !== '' &&
-						item[lonColumn] !== ''
+						item[latColumn] != null
+						&& item[lonColumn] != null
+						&& item[latColumn] !== ''
+						&& item[lonColumn] !== ''
 				);
 
 				if (json.length === 0) {
@@ -250,10 +250,10 @@ export const csvFileToGeojson = (
 				// 緯度・経度データがある行のみフィルタリング
 				const json = results.data.filter(
 					(item: Record<string, string | number>) =>
-						item[latColumn] != null &&
-						item[lonColumn] != null &&
-						item[latColumn] !== '' &&
-						item[lonColumn] !== ''
+						item[latColumn] != null
+						&& item[lonColumn] != null
+						&& item[latColumn] !== ''
+						&& item[lonColumn] !== ''
 				);
 
 				if (json.length === 0) {
@@ -415,7 +415,10 @@ export const geojsonToCSV = (
 				case 'LineString':
 				case 'MultiPoint': {
 					// 最初の座標を使用
-					const [firstLon, firstLat] = feature.geometry.coordinates[0] as [number, number];
+					const [firstLon, firstLat] = feature.geometry.coordinates[0] as [
+						number,
+						number
+					];
 					row[lonColumn] = firstLon;
 					row[latColumn] = firstLat;
 					break;
@@ -423,14 +426,20 @@ export const geojsonToCSV = (
 				case 'Polygon':
 				case 'MultiLineString': {
 					// 最初の座標を使用
-					const [polyLon, polyLat] = feature.geometry.coordinates[0][0] as [number, number];
+					const [polyLon, polyLat] = feature.geometry.coordinates[0][0] as [
+						number,
+						number
+					];
 					row[lonColumn] = polyLon;
 					row[latColumn] = polyLat;
 					break;
 				}
 				case 'MultiPolygon': {
 					// 最初の座標を使用
-					const [multiLon, multiLat] = feature.geometry.coordinates[0][0][0] as [number, number];
+					const [multiLon, multiLat] = feature.geometry.coordinates[0][0][0] as [
+						number,
+						number
+					];
 					row[lonColumn] = multiLon;
 					row[latColumn] = multiLat;
 					break;
@@ -567,7 +576,10 @@ export const getGeojsonStats = (geojson: FeatureCollection) => {
 	const stats = {
 		totalFeatures: geojson.features.length,
 		geometryTypes: {} as Record<string, number>,
-		properties: {} as Record<string, { count: number; uniqueValues: number; nullCount: number }>
+		properties: {} as Record<
+			string,
+			{ count: number; uniqueValues: number; nullCount: number; }
+		>
 	};
 
 	// 全プロパティを収集

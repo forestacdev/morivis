@@ -5,8 +5,8 @@
  *
  * URL形式: mbtiles://{entryId}/{z}/{x}/{y}
  */
-import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 import { asset } from '$app/paths';
+import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 
 const PROTOCOL_NAME = 'mbtiles';
 
@@ -211,9 +211,9 @@ const isGzipped = (data: Uint8Array): boolean =>
  * MBTilesプロトコルのリクエストハンドラ
  */
 const request = async (
-	params: { url: string },
+	params: { url: string; },
 	_abortController: AbortController
-): Promise<{ data: Uint8Array }> => {
+): Promise<{ data: Uint8Array; }> => {
 	const url = params.url.replace(`${PROTOCOL_NAME}://`, '');
 	const parts = url.split('/');
 	if (parts.length < 4) {

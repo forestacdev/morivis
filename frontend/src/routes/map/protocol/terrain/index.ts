@@ -1,12 +1,12 @@
 import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/types/raster';
-import { PMTiles } from 'pmtiles';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
+import { PMTiles } from 'pmtiles';
 
 const pmCache = new Map<string, PMTiles>();
 
 const loadImagePmtiles = async (
 	src: string,
-	tile: { x: number; y: number; z: number },
+	tile: { x: number; y: number; z: number; },
 	signal: AbortSignal
 ): Promise<ImageBitmap> => {
 	try {
@@ -61,7 +61,7 @@ class WorkerProtocol {
 	private pendingRequests: Map<
 		string,
 		{
-			resolve: (value: { data: Uint8Array } | PromiseLike<{ data: Uint8Array }>) => void;
+			resolve: (value: { data: Uint8Array; } | PromiseLike<{ data: Uint8Array; }>) => void;
 			reject: (reason?: Error) => void;
 			controller: AbortController;
 		}
@@ -75,7 +75,7 @@ class WorkerProtocol {
 		this.worker.addEventListener('error', this.handleError);
 	}
 
-	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array }> {
+	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array; }> {
 		try {
 			const x = parseInt(url.searchParams.get('x') || '0', 10);
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
@@ -143,7 +143,7 @@ const workerProtocol = new WorkerProtocol(worker);
 export const terrainProtocol = (protocolName: string) => {
 	return {
 		protocolName,
-		request: (params: { url: string }, abortController: AbortController) => {
+		request: (params: { url: string; }, abortController: AbortController) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol);
 			return workerProtocol.request(url, abortController);

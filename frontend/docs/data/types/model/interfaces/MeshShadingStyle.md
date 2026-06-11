@@ -6,7 +6,7 @@
 
 # Interface: MeshShadingStyle
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:45](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L45)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:48](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L48)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:45](https://githu
 
 > **ambientStrength**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:48](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L48)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:51](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L51)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:48](https://githu
 
 > **azimuthDeg**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:49](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L49)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:52](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L52)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:49](https://githu
 
 > **elevationDeg**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:50](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L50)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:53](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L53)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:50](https://githu
 
 > **enabled**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:46](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L46)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:49](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L49)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:46](https://githu
 
 > **shadeStrength**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:47](https://github.com/forestacdev/morivis/blob/c2bc8fb176171e3877586dcb7881ff237e3214f8/frontend/src/routes/map/data/types/model/index.ts#L47)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:50](https://github.com/forestacdev/morivis/blob/f56763847073a1ce9f103de49af249e6cc5bb3ce/frontend/src/routes/map/data/types/model/index.ts#L50)

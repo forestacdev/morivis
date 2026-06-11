@@ -1,10 +1,10 @@
+import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import {
 	createAmedasFallbackEntry,
-	loadAmedasPointEntry,
-	type JmaAmedasConfig
+	type JmaAmedasConfig,
+	loadAmedasPointEntry
 } from '$routes/map/api/amedas';
 import type { GeoDataEntryCatalogItem } from '$routes/map/data/types';
-import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 
 const config: JmaAmedasConfig = {
 	id: 'jma_amedas',

@@ -5,8 +5,8 @@ import type {
 } from 'maplibre-gl';
 
 import type {
-	ColorsStyle,
 	ColorMatchExpression,
+	ColorsStyle,
 	ColorStepExpression
 } from '$routes/map/data/types/vector/style';
 

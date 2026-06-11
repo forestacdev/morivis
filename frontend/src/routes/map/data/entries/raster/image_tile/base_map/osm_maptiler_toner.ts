@@ -1,7 +1,7 @@
-import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
-import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import type { RasterBaseMapStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 

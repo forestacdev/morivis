@@ -1,22 +1,22 @@
+import type { AdjustableRange, Opacity, RangeTuple } from '$routes/map/data/types';
 import type {
-	FillLayerSpecification,
-	LineLayerSpecification,
-	SymbolLayerSpecification,
+	BaseSingleColor,
+	SequentialCount,
+	SequentialScheme
+} from '$routes/map/utils/color/color-brewer';
+import type {
 	CircleLayerSpecification,
-	HeatmapLayerSpecification,
-	FillExtrusionLayerSpecification,
 	DataDrivenPropertyValueSpecification,
-	FormattedSpecification,
 	ExpressionSpecification,
-	ResolvedImageSpecification
+	FillExtrusionLayerSpecification,
+	FillLayerSpecification,
+	FormattedSpecification,
+	HeatmapLayerSpecification,
+	LineLayerSpecification,
+	ResolvedImageSpecification,
+	SymbolLayerSpecification
 } from 'maplibre-gl';
 import type { SpritePatternId } from './pattern';
-import type { Opacity, AdjustableRange, RangeTuple } from '$routes/map/data/types';
-import type {
-	SequentialScheme,
-	SequentialCount,
-	BaseSingleColor
-} from '$routes/map/utils/color/color-brewer';
 
 interface fillLayerStyle {
 	paint: FillLayerSpecification['paint'];

@@ -51,8 +51,9 @@ self.onmessage = async (e) => {
 			const pixIdx = i * 4;
 
 			// nodata チェック
-			const isNodata =
-				nodata !== null ? (Number.isNaN(nodata) ? Number.isNaN(value) : value === nodata) : false;
+			const isNodata = nodata !== null
+				? (Number.isNaN(nodata) ? Number.isNaN(value) : value === nodata)
+				: false;
 
 			if (isNodata || !Number.isFinite(value)) {
 				pixels[pixIdx] = 0;

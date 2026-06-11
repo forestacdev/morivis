@@ -1,7 +1,7 @@
 import type {
 	FieldDef,
-	Title,
 	Relations,
+	Title,
 	VectorProperties
 } from '$routes/map/data/types/vector/properties';
 

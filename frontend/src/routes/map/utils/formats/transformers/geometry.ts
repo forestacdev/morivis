@@ -1,3 +1,4 @@
+import type { AnyGeometry } from '$routes/map/types/geometry';
 import type Geometry from 'ol/geom/Geometry';
 import type LineString from 'ol/geom/LineString';
 import type MultiLineString from 'ol/geom/MultiLineString';
@@ -5,7 +6,6 @@ import type MultiPoint from 'ol/geom/MultiPoint';
 import type MultiPolygon from 'ol/geom/MultiPolygon';
 import type Point from 'ol/geom/Point';
 import type Polygon from 'ol/geom/Polygon';
-import type { AnyGeometry } from '$routes/map/types/geometry';
 
 export const geometryToGeoJSON = (geometry: Geometry): AnyGeometry | null => {
 	if (!geometry) return null;

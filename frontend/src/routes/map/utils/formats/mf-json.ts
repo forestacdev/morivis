@@ -1,8 +1,8 @@
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type {
 	LineStringGeometry,
-	PolygonGeometry,
-	MultiPolygonGeometry
+	MultiPolygonGeometry,
+	PolygonGeometry
 } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 
@@ -35,7 +35,9 @@ const asArray = <T>(value: T | T[] | undefined | null): T[] => {
 };
 
 const asObject = (value: unknown): JsonObject | null => {
-	return value && typeof value === 'object' && !Array.isArray(value) ? (value as JsonObject) : null;
+	return value && typeof value === 'object' && !Array.isArray(value)
+		? (value as JsonObject)
+		: null;
 };
 
 const isFiniteNumber = (value: unknown): value is number => {
@@ -129,7 +131,7 @@ const parsePolygonCoordinate = (
 };
 
 const getTrackPointAngle = (
-	points: Array<{ lat: number; lon: number }>,
+	points: Array<{ lat: number; lon: number; }>,
 	pointIndex: number
 ): number | undefined => {
 	const currentPoint = points[pointIndex];
@@ -138,14 +140,13 @@ const getTrackPointAngle = (
 
 	const toRadians = (value: number) => (value * Math.PI) / 180;
 	const toDegrees = (value: number) => (value * 180) / Math.PI;
-	const getBearing = (from: { lat: number; lon: number }, to: { lat: number; lon: number }) => {
+	const getBearing = (from: { lat: number; lon: number; }, to: { lat: number; lon: number; }) => {
 		const fromLat = toRadians(from.lat);
 		const toLat = toRadians(to.lat);
 		const deltaLon = toRadians(to.lon - from.lon);
 		const y = Math.sin(deltaLon) * Math.cos(toLat);
-		const x =
-			Math.cos(fromLat) * Math.sin(toLat) -
-			Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLon);
+		const x = Math.cos(fromLat) * Math.sin(toLat)
+			- Math.sin(fromLat) * Math.cos(toLat) * Math.cos(deltaLon);
 		return (toDegrees(Math.atan2(y, x)) + 360) % 360;
 	};
 
@@ -283,18 +284,18 @@ export const isMfJsonText = (text: string): boolean => {
 			const firstFeature = asArray(node.features)[0];
 			const firstObject = asObject(firstFeature);
 			return Boolean(
-				firstObject &&
-					(asObject(firstObject.temporalGeometry) ||
-						(asObject(firstObject.geometry)?.type === 'LineString' &&
-							Array.isArray(asObject(firstObject.properties)?.datetimes)))
+				firstObject
+					&& (asObject(firstObject.temporalGeometry)
+						|| (asObject(firstObject.geometry)?.type === 'LineString'
+							&& Array.isArray(asObject(firstObject.properties)?.datetimes)))
 			);
 		}
 
 		return Boolean(
-			node.type === 'Feature' &&
-				(asObject(node.temporalGeometry) ||
-					(asObject(node.geometry)?.type === 'LineString' &&
-						Array.isArray(asObject(node.properties)?.datetimes)))
+			node.type === 'Feature'
+				&& (asObject(node.temporalGeometry)
+					|| (asObject(node.geometry)?.type === 'LineString'
+						&& Array.isArray(asObject(node.properties)?.datetimes)))
 		);
 	} catch {
 		return false;
@@ -393,16 +394,16 @@ export const mfJsonFileToGeojson = async (
 				if (!polygonCoordinates) return [];
 
 				const geometry: PolygonGeometry | MultiPolygonGeometry = Array.isArray(
-					polygonCoordinates[0]?.[0]?.[0]
-				)
+						polygonCoordinates[0]?.[0]?.[0]
+					)
 					? {
-							type: 'MultiPolygon',
-							coordinates: polygonCoordinates as MultiPolygonGeometry['coordinates']
-						}
+						type: 'MultiPolygon',
+						coordinates: polygonCoordinates as MultiPolygonGeometry['coordinates']
+					}
 					: {
-							type: 'Polygon',
-							coordinates: polygonCoordinates as PolygonGeometry['coordinates']
-						};
+						type: 'Polygon',
+						coordinates: polygonCoordinates as PolygonGeometry['coordinates']
+					};
 
 				return [
 					{

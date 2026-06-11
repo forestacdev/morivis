@@ -1,4 +1,4 @@
-import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
+import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry, Geometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 
@@ -43,13 +43,13 @@ const mapMifCharsetToEncoding = (charset: string): string | null => {
 		.replace(/[-_\s]/g, '');
 
 	if (
-		normalized === 'shiftjis' ||
-		normalized === 'shift_jis' ||
-		normalized === 'sjis' ||
-		normalized === 'cp932' ||
-		normalized === 'ms932' ||
-		normalized === 'windowsjapanese' ||
-		normalized === 'japanese'
+		normalized === 'shiftjis'
+		|| normalized === 'shift_jis'
+		|| normalized === 'sjis'
+		|| normalized === 'cp932'
+		|| normalized === 'ms932'
+		|| normalized === 'windowsjapanese'
+		|| normalized === 'japanese'
 	) {
 		return 'shift-jis';
 	}
@@ -185,7 +185,10 @@ const createEllipseRing = (
 
 	for (let i = 0; i < segments; i += 1) {
 		const angle = (Math.PI * 2 * i) / segments;
-		coordinates.push([centerX + radiusX * Math.cos(angle), centerY + radiusY * Math.sin(angle)]);
+		coordinates.push([
+			centerX + radiusX * Math.cos(angle),
+			centerY + radiusY * Math.sin(angle)
+		]);
 	}
 
 	return closeRing(coordinates);
@@ -225,7 +228,10 @@ const createRoundedRectRing = (
 		const coordinates: Coordinate[] = [];
 		for (let i = 0; i <= segmentsPerCorner; i += 1) {
 			const angle = startAngle + ((endAngle - startAngle) * i) / segmentsPerCorner;
-			coordinates.push([centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle)]);
+			coordinates.push([
+				centerX + radius * Math.cos(angle),
+				centerY + radius * Math.sin(angle)
+			]);
 		}
 		return coordinates;
 	};
@@ -284,7 +290,9 @@ const createArcLine = (
 	const startAngle = normalizeAngle(
 		Math.atan2((startY - centerY) / radiusY, (startX - centerX) / radiusX)
 	);
-	let endAngle = normalizeAngle(Math.atan2((endY - centerY) / radiusY, (endX - centerX) / radiusX));
+	let endAngle = normalizeAngle(
+		Math.atan2((endY - centerY) / radiusY, (endX - centerX) / radiusX)
+	);
 	if (endAngle <= startAngle) {
 		endAngle += Math.PI * 2;
 	}
@@ -292,7 +300,10 @@ const createArcLine = (
 	const coordinates: Coordinate[] = [];
 	for (let i = 0; i <= segments; i += 1) {
 		const angle = startAngle + ((endAngle - startAngle) * i) / segments;
-		coordinates.push([centerX + radiusX * Math.cos(angle), centerY + radiusY * Math.sin(angle)]);
+		coordinates.push([
+			centerX + radiusX * Math.cos(angle),
+			centerY + radiusY * Math.sin(angle)
+		]);
 	}
 
 	return coordinates;
@@ -301,13 +312,14 @@ const createArcLine = (
 const normalizeGeometryCollection = (geometries: Geometry[]): Geometry => {
 	const singles = geometries.every(
 		(geometry) =>
-			geometry.type === 'Point' || geometry.type === 'LineString' || geometry.type === 'Polygon'
+			geometry.type === 'Point' || geometry.type === 'LineString'
+			|| geometry.type === 'Polygon'
 	);
 	const multis = geometries.every(
 		(geometry) =>
-			geometry.type === 'MultiPoint' ||
-			geometry.type === 'MultiLineString' ||
-			geometry.type === 'MultiPolygon'
+			geometry.type === 'MultiPoint'
+			|| geometry.type === 'MultiLineString'
+			|| geometry.type === 'MultiPolygon'
 	);
 
 	if (singles || multis) {
@@ -362,7 +374,7 @@ class MifLineReader {
 	readCoordinateBlock(
 		index: number,
 		vertexCount: number
-	): { coordinates: Coordinate[]; nextIndex: number } {
+	): { coordinates: Coordinate[]; nextIndex: number; } {
 		const coordinates: Coordinate[] = [];
 		let cursor = index;
 
@@ -571,9 +583,9 @@ const parseText = (
 		.map(Number);
 
 	if (
-		!textMatch ||
-		boundsTokens.length < 4 ||
-		boundsTokens.some((value) => !Number.isFinite(value))
+		!textMatch
+		|| boundsTokens.length < 4
+		|| boundsTokens.some((value) => !Number.isFinite(value))
 	) {
 		throw new Error(
 			`Text の解析に失敗しました: ${reader.getLine(index)} / ${reader.getLine(index + 1)}`
@@ -664,16 +676,15 @@ const parseRegion = (reader: MifLineReader, index: number): ParsedGeometry => {
 	}
 
 	return {
-		geometry:
-			polygons.length === 1
-				? {
-						type: 'Polygon',
-						coordinates: polygons[0]
-					}
-				: {
-						type: 'MultiPolygon',
-						coordinates: polygons
-					},
+		geometry: polygons.length === 1
+			? {
+				type: 'Polygon',
+				coordinates: polygons[0]
+			}
+			: {
+				type: 'MultiPolygon',
+				coordinates: polygons
+			},
 		nextIndex: reader.skipStyle(cursor)
 	};
 };
@@ -836,7 +847,9 @@ export const mifFilesToGeoJson = async (
 	const mifText = await readFileAsText(mifFile);
 	const lines = splitLines(mifText);
 	const { delimiter, columns, dataIndex } = readHeader(lines);
-	const propertiesList = midFile ? parseMid(await readFileAsText(midFile), delimiter, columns) : [];
+	const propertiesList = midFile
+		? parseMid(await readFileAsText(midFile), delimiter, columns)
+		: [];
 	const reader = new MifLineReader(lines);
 
 	const features: Feature<Geometry, FeatureProp>[] = [];

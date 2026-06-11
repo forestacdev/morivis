@@ -1,6 +1,6 @@
-import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import { TABLE_JOIN_DATA_PATH } from '$routes/constants/index';
 import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
+import { TABLE_JOIN_DATA_PATH } from '$routes/constants/index';
+import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 
 import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
@@ -75,7 +75,13 @@ const entry: PolygonEntry<TileMetaData> = {
 					key: 'name',
 					name: '地形分類名ごとの色分け',
 					mapping: {
-						categories: ['切土地', '農耕平坦化地', '盛土地･埋立地', '干拓地', '改変工事中'],
+						categories: [
+							'切土地',
+							'農耕平坦化地',
+							'盛土地･埋立地',
+							'干拓地',
+							'改変工事中'
+						],
 						values: ['#85c4d1', '#8ad8b6', '#ef8888', '#c37aff', '#ffe8e8'],
 						patterns: [null, null, null, null, null]
 					}

@@ -1,6 +1,6 @@
 import type {
-	FillLayerSpecification,
 	FillExtrusionLayerSpecification,
+	FillLayerSpecification,
 	LineLayerSpecification
 } from 'maplibre-gl';
 
@@ -12,8 +12,8 @@ import {
 	getMorivisLogicalLayerId
 } from '$routes/map/utils/layers/id';
 import {
-	getPatternExpression,
-	getColorExpression
+	getColorExpression,
+	getPatternExpression
 } from '$routes/map/utils/layers/vector/expression/color';
 import { getNumberExpression } from '$routes/map/utils/layers/vector/expression/number';
 import { combineFilters } from '$routes/map/utils/layers/vector/filter';

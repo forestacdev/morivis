@@ -1,9 +1,9 @@
 import * as tilebelt from '@mapbox/tilebelt';
 
 import type { FeatureCollection } from '$routes/map/types/geojson';
+import { normalizeGeoJsonGeometryCollections } from '$routes/map/utils/formats/geojson';
 import { buildOgcApiFeaturesBboxUrl } from '$routes/map/utils/formats/ogc-api-features';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
-import { normalizeGeoJsonGeometryCollections } from '$routes/map/utils/formats/geojson';
 
 const JSON_REQUEST_INIT: RequestInit = {
 	headers: {
@@ -36,7 +36,7 @@ class WorkerProtocol {
 	private pendingRequests: Map<
 		string,
 		{
-			resolve: (value: { data: Uint8Array } | PromiseLike<{ data: Uint8Array }>) => void;
+			resolve: (value: { data: Uint8Array; } | PromiseLike<{ data: Uint8Array; }>) => void;
 			reject: (reason?: any) => void;
 		}
 	>;
@@ -64,7 +64,7 @@ class WorkerProtocol {
 		);
 	}
 
-	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array }> {
+	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array; }> {
 		try {
 			const x = parseInt(url.searchParams.get('x') || '0', 10);
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
@@ -102,8 +102,9 @@ class WorkerProtocol {
 			return new Promise((resolve, reject) => {
 				this.pendingRequests.set(id, {
 					resolve: (result) => {
-						const data =
-							'data' in result ? (result as { data: Uint8Array }).data : new Uint8Array();
+						const data = 'data' in result
+							? (result as { data: Uint8Array; }).data
+							: new Uint8Array();
 						setTileCache(cacheKey, data);
 						resolve({ data: cloneUint8Array(data) });
 					},
@@ -173,7 +174,7 @@ export const terminateOgcFeatureWorker = () => {
 export const ogcFeatureProtocol = (protocolName: 'ogc-feature') => {
 	return {
 		protocolName,
-		request: (params: { url: string }, abortController: AbortController) => {
+		request: (params: { url: string; }, abortController: AbortController) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol, 'https://morivis.local');
 			return getWorkerProtocol().request(url, abortController);

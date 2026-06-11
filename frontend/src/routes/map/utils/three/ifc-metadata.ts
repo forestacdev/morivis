@@ -1,6 +1,6 @@
 import { asset } from '$app/paths';
+import { type EpsgCode, getProjContext } from '$routes/map/utils/proj/dict';
 import proj4 from 'proj4';
-import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 
 // IFC georeferencing helper for future use.
 // Spec references:
@@ -50,7 +50,7 @@ const loadWebIfcModule = async () => {
 
 const unwrapIfcValue = (value: unknown): any => {
 	if (value && typeof value === 'object' && 'value' in value) {
-		return unwrapIfcValue((value as { value: unknown }).value);
+		return unwrapIfcValue((value as { value: unknown; }).value);
 	}
 	return value;
 };
@@ -97,7 +97,9 @@ const parseLengthUnitScale = async (model: any, project: any) => {
 
 		const conversionFactor = await resolveIfcEntity(model, unit?.ConversionFactor);
 		const valueComponent = Number(
-			unwrapIfcValue(conversionFactor?.ValueComponent?.value ?? conversionFactor?.ValueComponent)
+			unwrapIfcValue(
+				conversionFactor?.ValueComponent?.value ?? conversionFactor?.ValueComponent
+			)
 		);
 		if (Number.isFinite(valueComponent) && valueComponent > 0) {
 			return valueComponent;
@@ -162,10 +164,9 @@ const parseMapConversionPlacement = async (model: any, mapConversion: any) => {
 			eastings,
 			northings
 		]) as [number, number];
-		const baseRotationZ =
-			Number.isFinite(xAxisAbscissa) && Number.isFinite(xAxisOrdinate)
-				? (Math.atan2(xAxisOrdinate, xAxisAbscissa) * 180) / Math.PI
-				: undefined;
+		const baseRotationZ = Number.isFinite(xAxisAbscissa) && Number.isFinite(xAxisOrdinate)
+			? (Math.atan2(xAxisOrdinate, xAxisAbscissa) * 180) / Math.PI
+			: undefined;
 
 		return {
 			lng,
@@ -189,10 +190,9 @@ export const resolveIfcPlacementWithEpsg = (
 			metadata.eastings,
 			metadata.northings
 		]) as [number, number];
-		const baseRotationZ =
-			metadata.xAxisAbscissa != null && metadata.xAxisOrdinate != null
-				? (Math.atan2(metadata.xAxisOrdinate, metadata.xAxisAbscissa) * 180) / Math.PI
-				: undefined;
+		const baseRotationZ = metadata.xAxisAbscissa != null && metadata.xAxisOrdinate != null
+			? (Math.atan2(metadata.xAxisOrdinate, metadata.xAxisAbscissa) * 180) / Math.PI
+			: undefined;
 
 		return {
 			...metadata,

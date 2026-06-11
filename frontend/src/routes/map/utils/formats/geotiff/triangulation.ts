@@ -41,9 +41,9 @@ export const buildTriangulation = (
 	// 変換関数: WGS84 → ソースCRS
 	const transform = projName
 		? (lon: number, lat: number): [number, number] => {
-				const [x, y] = proj4('EPSG:4326', projName, [lon, lat]);
-				return [x, y];
-			}
+			const [x, y] = proj4('EPSG:4326', projName, [lon, lat]);
+			return [x, y];
+		}
 		: (lon: number, lat: number): [number, number] => [lon, lat];
 
 	// 正規化座標 (0-1) → 経緯度

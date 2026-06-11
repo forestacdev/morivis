@@ -1,20 +1,20 @@
-import { geojson } from 'flatgeobuf';
 import type { GeoDataEntry } from '$routes/map/data/types';
-import type { MapGeoJSONFeature } from 'maplibre-gl';
 import type {
 	ResultAddressData,
 	ResultCoordinateData,
 	ResultPoiData
 } from '$routes/map/utils/data/search-result';
+import { geojson } from 'flatgeobuf';
+import type { MapGeoJSONFeature } from 'maplibre-gl';
 export type {
 	FeatureMenuData,
-	FeaturePanelData,
-	FeaturePanelImageSource,
-	FeaturePanelImageMedia,
-	FeaturePanelMedia,
-	FeaturePanelVideoMedia,
 	FeaturePanelAudioMedia,
+	FeaturePanelData,
+	FeaturePanelImageMedia,
+	FeaturePanelImageSource,
+	FeaturePanelMedia,
 	FeaturePanelSummary,
+	FeaturePanelVideoMedia,
 	LayerFeaturePanelData,
 	SearchAddressPanelData,
 	SearchCoordinatePanelData,
@@ -36,7 +36,6 @@ export type CSSCursor =
 	| 'wait'
 	| 'help'
 	| 'none'
-
 	// リサイズカーソル
 	| 'n-resize'
 	| 's-resize'
@@ -52,7 +51,6 @@ export type CSSCursor =
 	| 'nwse-resize'
 	| 'col-resize'
 	| 'row-resize'
-
 	// インタラクションカーソル
 	| 'grab'
 	| 'grabbing'
@@ -82,6 +80,7 @@ export type DialogType =
 	| 'geotiff'
 	| 'wmts'
 	| 'wcs'
+	| 'geozarr'
 	| 'featureservice'
 	| 'wfs'
 	| 'ogcapifeatures'
@@ -260,7 +259,8 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	},
 	{
 		label: 'GRIB2 (GPV)',
-		description: '気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
+		description:
+			'気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
 		extensions: ['.grib2', '.grb2', '.grb', '.bin']
 	},
 	{
@@ -327,7 +327,8 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	},
 	{
 		label: 'Autodesk 3DS',
-		description: '3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
+		description:
+			'3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
 		extensions: ['.3ds']
 	},
 	{
@@ -401,7 +402,7 @@ export interface PoiHighlightMarkerState {
 	type: 'poi';
 	featureId: string | number;
 	point: [number, number];
-	properties: { [key: string]: any };
+	properties: { [key: string]: any; };
 	iconImage?: string | null;
 }
 

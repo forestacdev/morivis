@@ -476,7 +476,9 @@ export const searchPlaces = async (
 	}
 
 	try {
-		const response = await fetch(`https://api.inaturalist.org/v1/places/autocomplete?${params}`);
+		const response = await fetch(
+			`https://api.inaturalist.org/v1/places/autocomplete?${params}`
+		);
 		const data: INatSearchResponse<INatPlace> = await response.json();
 		return data.results || [];
 	} catch (error) {
@@ -729,10 +731,12 @@ const getPrimaryTaxonByNormalizedName = async (
 
 const getNormalizedPrimaryTaxonByName = async (
 	name: string
-): Promise<{
-	normalizedName: string;
-	taxon: INatTaxon | null;
-} | null> => {
+): Promise<
+	{
+		normalizedName: string;
+		taxon: INatTaxon | null;
+	} | null
+> => {
 	const normalizedName = normalizeJapaneseName(name);
 	if (!normalizedName) {
 		return null;
@@ -767,21 +771,21 @@ export type TaxonomicRank =
  */
 export interface LinnaeanTaxonomy {
 	/** 界（例: 植物界） */
-	kingdom?: { name: string; commonName?: string };
+	kingdom?: { name: string; commonName?: string; };
 	/** 門（例: 被子植物門） */
-	phylum?: { name: string; commonName?: string };
+	phylum?: { name: string; commonName?: string; };
 	/** 亜門（例: 脊椎動物亜門） */
-	subphylum?: { name: string; commonName?: string };
+	subphylum?: { name: string; commonName?: string; };
 	/** 綱（例: 双子葉植物綱） */
-	class?: { name: string; commonName?: string };
+	class?: { name: string; commonName?: string; };
 	/** 目（例: マツ目） */
-	order?: { name: string; commonName?: string };
+	order?: { name: string; commonName?: string; };
 	/** 科（例: ヒノキ科） */
-	family?: { name: string; commonName?: string };
+	family?: { name: string; commonName?: string; };
 	/** 属（例: スギ属） */
-	genus?: { name: string; commonName?: string };
+	genus?: { name: string; commonName?: string; };
 	/** 種（例: スギ） */
-	species?: { name: string; commonName?: string };
+	species?: { name: string; commonName?: string; };
 }
 
 /**
@@ -1137,7 +1141,13 @@ export interface INatImage {
 const createImageUrls = (
 	baseUrl: string,
 	size: INatImageSize
-): { url: string; squareUrl: string; mediumUrl: string; largeUrl: string; originalUrl: string } => {
+): {
+	url: string;
+	squareUrl: string;
+	mediumUrl: string;
+	largeUrl: string;
+	originalUrl: string;
+} => {
 	return {
 		url: convertImageUrl(baseUrl, size),
 		squareUrl: convertImageUrl(baseUrl, 'square'),

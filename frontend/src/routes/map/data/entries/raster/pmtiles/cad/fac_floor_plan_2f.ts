@@ -1,6 +1,6 @@
-import type { RasterCadStyle, RasterPMTilesEntry } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+import type { RasterCadStyle, RasterPMTilesEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterPMTilesEntry<RasterCadStyle> = {
 	id: 'fac_floor_plan_2f',
@@ -18,7 +18,12 @@ const entry: RasterPMTilesEntry<RasterCadStyle> = {
 		maxZoom: 22,
 		tileSize: 512,
 		tags: ['施設平面図', 'CAD'],
-		bounds: [136.9173152931533934, 35.5538854123020585, 136.9200990542338729, 35.5559061137465733],
+		bounds: [
+			136.9173152931533934,
+			35.5538854123020585,
+			136.9200990542338729,
+			35.5559061137465733
+		],
 		xyzImageTile: { x: 1846186, y: 826711, z: 21 }
 	},
 	interaction: {

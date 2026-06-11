@@ -1,5 +1,5 @@
-import { writable } from 'svelte/store';
 import { PUBLIC_INIT_DEBUG_MODE } from '$env/static/public';
+import { writable } from 'svelte/store';
 
 import type { GeoDataEntry } from '$routes/map/data/types';
 

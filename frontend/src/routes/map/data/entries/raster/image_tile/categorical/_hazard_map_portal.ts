@@ -2,8 +2,8 @@ import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
-import type { Tag } from '$routes/map/data/types/tags';
 import type { TileXYZ } from '$routes/map/data/types/raster';
+import type { Tag } from '$routes/map/data/types/tags';
 
 type HazardLegendItem = {
 	color: string;
@@ -41,7 +41,8 @@ export const createHazardMapPortalEntry = ({
 			sourceDataName: name,
 			description,
 			attribution: 'ハザードマップポータルサイト',
-			downloadUrl: 'https://disaportal.gsi.go.jp/hazardmapportal/hazardmap/copyright/opendata.html',
+			downloadUrl:
+				'https://disaportal.gsi.go.jp/hazardmapportal/hazardmap/copyright/opendata.html',
 			location: '全国',
 			tags,
 			minZoom: 2,

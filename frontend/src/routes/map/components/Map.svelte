@@ -656,8 +656,14 @@
 			e.type === 'raster' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'cog';
+		const isGeoZarrEntry = (e: GeoDataEntry) =>
+			e.type === 'raster' &&
+			'format' in e &&
+			(e as { format: { type: string } }).format.type === 'geozarr';
 		const isCogTileEntry = (e: GeoDataEntry) =>
 			isCogEntry(e) && (e as { format: { mode?: 'tile' | 'viewport' } }).format.mode === 'tile';
+		const hasGeoZarrLayer =
+			entries.some(isGeoZarrEntry) || (showDataEntry && isGeoZarrEntry(showDataEntry));
 		const hasCogLayer = entries.some(isCogEntry) || (showDataEntry && isCogEntry(showDataEntry));
 		const hasCogTileLayer =
 			entries.some(isCogTileEntry) || (showDataEntry && isCogTileEntry(showDataEntry));
@@ -666,6 +672,12 @@
 			mapStore.ensureCogProtocol();
 		} else {
 			mapStore.releaseCogProtocol();
+		}
+
+		if (hasGeoZarrLayer) {
+			mapStore.ensureGeoZarrProtocol();
+		} else {
+			mapStore.releaseGeoZarrProtocol();
 		}
 
 		if (hasCogLayer) {

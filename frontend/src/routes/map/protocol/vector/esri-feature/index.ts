@@ -30,7 +30,7 @@ class WorkerProtocol {
 	private pendingRequests: Map<
 		string,
 		{
-			resolve: (value: { data: Uint8Array } | PromiseLike<{ data: Uint8Array }>) => void;
+			resolve: (value: { data: Uint8Array; } | PromiseLike<{ data: Uint8Array; }>) => void;
 			reject: (reason?: any) => void;
 		}
 	>;
@@ -43,7 +43,7 @@ class WorkerProtocol {
 		this.worker.addEventListener('error', this.handleError);
 	}
 
-	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array }> {
+	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array; }> {
 		try {
 			const x = parseInt(url.searchParams.get('x') || '0', 10);
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
@@ -72,17 +72,24 @@ class WorkerProtocol {
 			const geometryParam = encodeURIComponent(`${minLng},${minLat},${maxLng},${maxLat}`);
 
 			// PBF形式でクエリ（GeoJSONより転送量が大幅に小さい）
-			const queryUrl =
-				`${layerUrl}/query?f=pbf&where=1%3D1` +
-				`&geometry=${geometryParam}` +
-				`&geometryType=esriGeometryEnvelope` +
-				`&inSR=4326&outFields=*&outSR=4326` +
-				`&spatialRel=esriSpatialRelIntersects`;
+			const queryUrl = `${layerUrl}/query?f=pbf&where=1%3D1`
+				+ `&geometry=${geometryParam}`
+				+ `&geometryType=esriGeometryEnvelope`
+				+ `&inSR=4326&outFields=*&outSR=4326`
+				+ `&spatialRel=esriSpatialRelIntersects`;
 
 			const res = await fetch(queryUrl, { signal });
 			if (!res.ok) {
 				// PBF非対応の場合、GeoJSONにフォールバック
-				return this.requestGeoJsonFallback(layerUrl, geometryParam, z, x, y, cacheKey, signal);
+				return this.requestGeoJsonFallback(
+					layerUrl,
+					geometryParam,
+					z,
+					x,
+					y,
+					cacheKey,
+					signal
+				);
 			}
 
 			const contentType = res.headers.get('content-type') || '';
@@ -90,8 +97,8 @@ class WorkerProtocol {
 			let geojson: GeoJSON.FeatureCollection;
 
 			if (
-				contentType.includes('application/x-protobuf') ||
-				contentType.includes('application/octet-stream')
+				contentType.includes('application/x-protobuf')
+				|| contentType.includes('application/octet-stream')
 			) {
 				// PBFレスポンスをデコード
 				const buffer = await res.arrayBuffer();
@@ -120,8 +127,9 @@ class WorkerProtocol {
 				this.pendingRequests.set(id, {
 					resolve: (result) => {
 						// Worker結果をキャッシュ
-						const data =
-							'data' in result ? (result as { data: Uint8Array }).data : new Uint8Array();
+						const data = 'data' in result
+							? (result as { data: Uint8Array; }).data
+							: new Uint8Array();
 						setTileCache(cacheKey, data);
 						resolve(result);
 					},
@@ -149,13 +157,12 @@ class WorkerProtocol {
 		y: number,
 		cacheKey: string,
 		signal: AbortSignal
-	): Promise<{ data: Uint8Array }> {
-		const queryUrl =
-			`${layerUrl}/query?f=geojson&where=1%3D1` +
-			`&geometry=${geometryParam}` +
-			`&geometryType=esriGeometryEnvelope` +
-			`&inSR=4326&outFields=*&outSR=4326` +
-			`&spatialRel=esriSpatialRelIntersects`;
+	): Promise<{ data: Uint8Array; }> {
+		const queryUrl = `${layerUrl}/query?f=geojson&where=1%3D1`
+			+ `&geometry=${geometryParam}`
+			+ `&geometryType=esriGeometryEnvelope`
+			+ `&inSR=4326&outFields=*&outSR=4326`
+			+ `&spatialRel=esriSpatialRelIntersects`;
 
 		const res = await fetch(queryUrl, { signal });
 		if (!res.ok) {
@@ -175,7 +182,9 @@ class WorkerProtocol {
 		return new Promise((resolve, reject) => {
 			this.pendingRequests.set(id, {
 				resolve: (result) => {
-					const data = 'data' in result ? (result as { data: Uint8Array }).data : new Uint8Array();
+					const data = 'data' in result
+						? (result as { data: Uint8Array; }).data
+						: new Uint8Array();
 					setTileCache(cacheKey, data);
 					resolve(result);
 				},
@@ -243,7 +252,7 @@ export const terminateEsriFeatureWorker = () => {
 export const esriFeatureProtocol = (protocolName: 'esri-feature') => {
 	return {
 		protocolName,
-		request: (params: { url: string }, abortController: AbortController) => {
+		request: (params: { url: string; }, abortController: AbortController) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol);
 			return getWorkerProtocol().request(url, abortController);

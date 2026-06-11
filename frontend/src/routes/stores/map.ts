@@ -1,88 +1,89 @@
-import { writable, type Writable } from 'svelte/store';
+import type { CSSCursor } from '$routes/map/types';
 import maplibregl from 'maplibre-gl';
 import type {
-	StyleSpecification,
-	LngLat,
 	AnimationOptions,
-	EaseToOptions,
-	PointLike,
-	Marker,
-	MapMouseEvent,
-	MapLibreEvent,
-	QueryRenderedFeaturesOptions,
-	MapGeoJSONFeature,
-	LngLatBoundsLike,
-	GeoJSONSource,
-	FilterSpecification,
-	StyleSetterOptions,
-	FlyToOptions,
-	RasterTileSource,
 	Coordinates,
-	ImageSource
+	EaseToOptions,
+	FilterSpecification,
+	FlyToOptions,
+	GeoJSONSource,
+	ImageSource,
+	LngLat,
+	LngLatBoundsLike,
+	MapGeoJSONFeature,
+	MapLibreEvent,
+	MapMouseEvent,
+	Marker,
+	PointLike,
+	QueryRenderedFeaturesOptions,
+	RasterTileSource,
+	StyleSetterOptions,
+	StyleSpecification
 } from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
-import type { CSSCursor } from '$routes/map/types';
+import { type Writable, writable } from 'svelte/store';
 
-import turfBbox from '@turf/bbox';
-import { setMapParams, getMapParams, set3dParams } from '$routes/map/utils/platform/url-params';
-import { isDebugMode } from '$routes/stores';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import type { Opacity } from '$routes/map/data/types';
-import { get } from 'svelte/store';
+import { getMapParams, set3dParams, setMapParams } from '$routes/map/utils/platform/url-params';
+import { isDebugMode } from '$routes/stores';
+import turfBbox from '@turf/bbox';
 import { debounce } from 'es-toolkit';
+import { get } from 'svelte/store';
 
 import { cogProtocol, terminateCogWorkerPool } from '$routes/map/protocol/cog';
+import { geozarrProtocol } from '$routes/map/protocol/geozarr';
 import { demProtocol, terminateDemWorkerPool } from '$routes/map/protocol/raster';
 import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
 import poiTopIcon from '$lib/icons/poi_top.png';
+import { isHighlightLayerId } from '$routes/map/utils/layers/highlight';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 import { resolveMapLibreRequest, resolveRequestUrl } from '$routes/map/utils/platform/request';
-import { isHighlightLayerId } from '$routes/map/utils/layers/highlight';
 
+import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 import {
-	WEB_MERCATOR_MIN_LAT,
 	WEB_MERCATOR_MAX_LAT,
-	WEB_MERCATOR_MIN_LNG,
-	WEB_MERCATOR_MAX_LNG
+	WEB_MERCATOR_MAX_LNG,
+	WEB_MERCATOR_MIN_LAT,
+	WEB_MERCATOR_MIN_LNG
 } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { FeatureCollection, Feature, GeoJsonProperties, Geometry } from 'geojson';
-import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
+import {
+	type AnyModelTiles3DEntry,
+	type MeshStyle,
+	type ModelDeckVectorEntry,
+	type ModelMeshEntry,
+	type ModelPointCloudEntry
+} from '$routes/map/data/types/model';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
-import { geojsonProtocol, terminateGeojsonWorker } from '$routes/map/protocol/vector/geojson';
 import {
 	esriFeatureProtocol,
 	terminateEsriFeatureWorker
 } from '$routes/map/protocol/vector/esri-feature';
+import { geojsonProtocol, terminateGeojsonWorker } from '$routes/map/protocol/vector/geojson';
 import {
 	ogcFeatureProtocol,
 	terminateOgcFeatureWorker
 } from '$routes/map/protocol/vector/ogc-feature';
 import {
-	wfsFeatureProtocol,
-	terminateWfsFeatureWorker
+	terminateWfsFeatureWorker,
+	wfsFeatureProtocol
 } from '$routes/map/protocol/vector/wfs-feature';
-import { isPointInBbox } from '$routes/map/utils/map/bbox';
-import { MapboxOverlay } from '@deck.gl/mapbox';
-import type { LayersList } from '@deck.gl/core';
-import { threeJsManager } from '$routes/map/utils/three/layer-manager';
-import {
-	type AnyModelTiles3DEntry,
-	type ModelDeckVectorEntry,
-	type ModelMeshEntry,
-	type MeshStyle,
-	type ModelPointCloudEntry
-} from '$routes/map/data/types/model';
-import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
+import { clearPointCloudDataCache, createDeckOverlay } from '$routes/map/utils/deck/overlay';
 import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
-import { clearPointCloudDataCache, createDeckOverlay } from '$routes/map/utils/deck/overlay';
 import {
 	handleStyleImageMissing,
 	isGeneratedPoiIconId,
 	warmupGeneratedPoiIconWorker
 } from '$routes/map/utils/icon';
+import { isPointInBbox } from '$routes/map/utils/map/bbox';
+import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
+import { threeJsManager } from '$routes/map/utils/three/layer-manager';
+import type { LayersList } from '@deck.gl/core';
+import { MapboxOverlay } from '@deck.gl/mapbox';
+import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -131,6 +132,24 @@ const releaseCogProtocol = () => {
 		terminateCogWorkerPool();
 		maplibregl.removeProtocol(cogProt.protocolName);
 		_cogProtocolRegistered = false;
+	}
+};
+
+const geozarrProt = geozarrProtocol('geozarr');
+let _geozarrProtocolRegistered = false;
+
+const ensureGeoZarrProtocol = () => {
+	if (!_geozarrProtocolRegistered) {
+		maplibregl.addProtocol(geozarrProt.protocolName, geozarrProt.request);
+		_geozarrProtocolRegistered = true;
+	}
+};
+
+const releaseGeoZarrProtocol = () => {
+	if (_geozarrProtocolRegistered) {
+		geozarrProt.cancelAllRequests();
+		maplibregl.removeProtocol(geozarrProt.protocolName);
+		_geozarrProtocolRegistered = false;
 	}
 };
 
@@ -259,7 +278,7 @@ export const isTerrain3d = writable<boolean>(false); // 3D地形の表示状態�
 /** グローブ表示 */
 export const isGlobe = writable<boolean>(false); // グローブ表示の状態を管理するストア
 
-//prefecture, municipalities
+// prefecture, municipalities
 const updateSisplayingArea = async (
 	lng: number,
 	lat: number,
@@ -381,7 +400,6 @@ const createMapStore = () => {
 			transformRequest: (url, resourceType) => {
 				return resolveMapLibreRequest(url, resourceType);
 			}
-
 			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
 		});
 
@@ -558,13 +576,13 @@ const createMapStore = () => {
 			resizeEvent.set(e);
 		});
 		map.on('data', () => {
-			//your code here
+			// your code here
 			isLoadingEvent.set(true);
 			(window as any).__morivis_map_idle = false;
 			// console.log(e);
 		});
 		map.on('idle', () => {
-			//your code here
+			// your code here
 			isLoadingEvent.set(false);
 			(window as any).__morivis_map_idle = true;
 			// console.log(e);
@@ -645,7 +663,7 @@ const createMapStore = () => {
 
 			const zoomLevel = map.getZoom();
 
-			//TODO: 投影法の切り替え対応
+			// TODO: 投影法の切り替え対応
 			// map.once('idle', () => {
 			// 	if (!map || !isMapValid(map)) return;
 			// 	map.setProjection({
@@ -672,11 +690,11 @@ const createMapStore = () => {
 	// マップの初期化判定
 	const isMapValid = (_map: any): boolean => {
 		return (
-			_map &&
-			typeof _map === 'object' &&
-			typeof _map.getLayer === 'function' &&
-			typeof _map.setLayoutProperty === 'function' &&
-			!_map._removed
+			_map
+			&& typeof _map === 'object'
+			&& typeof _map.getLayer === 'function'
+			&& typeof _map.setLayoutProperty === 'function'
+			&& !_map._removed
 		); // マップが削除されていないかチェック
 	};
 
@@ -770,7 +788,11 @@ const createMapStore = () => {
 		currentDeckTiles3dEntries = new Map(tiles3dEntries.map((entry) => [entry.id, entry]));
 		currentDeckPointCloudEntries = new Map(pointCloudEntries.map((entry) => [entry.id, entry]));
 		currentDeckVectorEntries = new Map(deckVectorEntries.map((entry) => [entry.id, entry]));
-		const layers = await createDeckOverlay(tiles3dEntries, pointCloudEntries, deckVectorEntries);
+		const layers = await createDeckOverlay(
+			tiles3dEntries,
+			pointCloudEntries,
+			deckVectorEntries
+		);
 		setDeckOverlay(layers);
 	};
 
@@ -1022,11 +1044,13 @@ const createMapStore = () => {
 		layers.forEach((layer) => {
 			if (currentMap.getLayer(layer.id)) return;
 			if (
-				'source' in layer &&
-				typeof layer.source === 'string' &&
-				!currentMap.getSource(layer.source)
+				'source' in layer
+				&& typeof layer.source === 'string'
+				&& !currentMap.getSource(layer.source)
 			) {
-				console.warn(`Skip highlight layer ${layer.id}: source "${layer.source}" not found.`);
+				console.warn(
+					`Skip highlight layer ${layer.id}: source "${layer.source}" not found.`
+				);
 				return;
 			}
 			currentMap.addLayer(layer);
@@ -1136,9 +1160,9 @@ const createMapStore = () => {
 		lngLat:
 			| [number, number]
 			| {
-					lng: number;
-					lat: number;
-			  },
+				lng: number;
+				lat: number;
+			},
 		option?: EaseToOptions
 	) => {
 		if (!map || !isMapValid(map)) return;
@@ -1149,15 +1173,15 @@ const createMapStore = () => {
 		lngLat:
 			| [number, number]
 			| {
-					lng: number;
-					lat: number;
-			  }
+				lng: number;
+				lat: number;
+			}
 	) => {
 		if (!map || !isMapValid(map)) return;
 
 		if (checkPc()) {
 			// TODO
-			//github.com/maplibre/maplibre-gl-js/issues/4891
+			// github.com/maplibre/maplibre-gl-js/issues/4891
 			map.panTo(lngLat, {
 				duration: 300
 			});
@@ -1206,10 +1230,9 @@ const createMapStore = () => {
 		const targetW = bounds[2] - bounds[0];
 		const targetH = bounds[3] - bounds[1];
 		const targetArea = targetW * targetH;
-		const scaleRatio =
-			currentArea > 0 && targetArea > 0
-				? Math.max(currentArea / targetArea, targetArea / currentArea)
-				: 1;
+		const scaleRatio = currentArea > 0 && targetArea > 0
+			? Math.max(currentArea / targetArea, targetArea / currentArea)
+			: 1;
 
 		// 距離ベース: 近い→短い、遠い→長い
 		const distDuration = dist * 100;
@@ -1223,9 +1246,8 @@ const createMapStore = () => {
 		if (_entry.metaData.center) {
 			map.flyTo({
 				center: _entry.metaData.center,
-				zoom:
-					('minZoom' in _entry.style ? _entry.style.minZoom : null) ??
-					_entry.metaData.minZoom + 1.5,
+				zoom: ('minZoom' in _entry.style ? _entry.style.minZoom : null)
+					?? _entry.metaData.minZoom + 1.5,
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
 				duration: 1000,
@@ -1647,6 +1669,8 @@ const createMapStore = () => {
 		releaseWfsFeatureProtocol,
 		ensureCogProtocol,
 		releaseCogProtocol,
+		ensureGeoZarrProtocol,
+		releaseGeoZarrProtocol,
 		ensureDemProtocol,
 		releaseDemProtocol,
 		ensureMbtilesProtocol,

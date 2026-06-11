@@ -1,7 +1,7 @@
 import type { FeatureCollection } from '$routes/map/types/geojson';
-import * as shapefile from 'shapefile';
 import { isWgs84Prj, transformGeoJSONParallel } from '$routes/map/utils/proj';
 import { showNotification } from '$routes/stores/notification';
+import * as shapefile from 'shapefile';
 
 const loadBinaryFile = (file: File): Promise<ArrayBuffer> => {
 	return new Promise((resolve) => {
@@ -38,10 +38,9 @@ export const shpFileToGeojson = async (
 	prjContent?: string,
 	encoding?: string
 ): Promise<FeatureCollection> => {
-	const [shpData, dbfData] =
-		shp && dbf
-			? await Promise.all([loadBinaryFile(shp), loadBinaryFile(dbf)])
-			: await Promise.all([loadBinaryFile(shp), null]);
+	const [shpData, dbfData] = shp && dbf
+		? await Promise.all([loadBinaryFile(shp), loadBinaryFile(dbf)])
+		: await Promise.all([loadBinaryFile(shp), null]);
 	if (!shpData) {
 		throw new Error('Failed to load .shp file');
 	}
@@ -52,12 +51,11 @@ export const shpFileToGeojson = async (
 
 	const dbfEncoding = encoding ?? 'shift-jis';
 
-	const geojson =
-		prjContent && dbf
-			? await shapefile.read(shpData, dbfData, {
-					encoding: dbfEncoding
-				})
-			: await shapefile.read(shpData);
+	const geojson = prjContent && dbf
+		? await shapefile.read(shpData, dbfData, {
+			encoding: dbfEncoding
+		})
+		: await shapefile.read(shpData);
 	if (!geojson) {
 		throw new Error('Failed to convert SHP to GeoJSON');
 	}

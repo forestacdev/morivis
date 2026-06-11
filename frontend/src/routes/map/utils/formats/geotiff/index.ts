@@ -1,15 +1,15 @@
-import type { TypedArray, ReadRasterResult } from 'geotiff';
+import type { ReadRasterResult, TypedArray } from 'geotiff';
 
 import { getAdjustableRangeValue } from '$routes/map/data/types';
 import type { RasterTiffStyle } from '$routes/map/data/types/raster';
 import {
+	type BandDataRange,
 	GeoTiffCache,
-	getDerivedRasterCacheKey,
-	type BandDataRange
+	getDerivedRasterCacheKey
 } from '$routes/map/utils/cache/raster/geotiff-cache';
-import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { encodeBandsToTerrariumUrls } from '$routes/map/utils/formats/raster/terrarium';
 import { renderTerrarium } from '$routes/map/utils/formats/raster/terrarium-render';
+import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import {
 	computeTerrainDerivatives,
 	terminateTerrainDerivativesWorker
@@ -36,17 +36,16 @@ export const getTopexCacheKey = (id: string): string =>
 export const getMinMax = (
 	band: TypedArray,
 	nodata: number | null
-): { min: number; max: number } => {
+): { min: number; max: number; } => {
 	let min = Infinity;
 	let max = -Infinity;
 
 	for (let i = 0; i < band.length; i++) {
 		const value = band[i];
-		const isValid =
-			Number.isFinite(value) &&
-			(nodata === null ||
-				(!Number.isNaN(nodata) && value !== nodata) ||
-				(Number.isNaN(nodata) && !Number.isNaN(value)));
+		const isValid = Number.isFinite(value)
+			&& (nodata === null
+				|| (!Number.isNaN(nodata) && value !== nodata)
+				|| (Number.isNaN(nodata) && !Number.isNaN(value)));
 		if (isValid) {
 			min = Math.min(min, value);
 			max = Math.max(max, value);
@@ -208,8 +207,11 @@ export const loadRasterData = async (
 ): Promise<string | undefined> => {
 	try {
 		const mode = visualization.mode;
-		const cacheKey =
-			mode === 'twi' ? getTwiCacheKey(id) : mode === 'topex' ? getTopexCacheKey(id) : id;
+		const cacheKey = mode === 'twi'
+			? getTwiCacheKey(id)
+			: mode === 'topex'
+			? getTopexCacheKey(id)
+			: id;
 
 		if (!GeoTiffCache.hasTerrarium(cacheKey)) {
 			throw new Error('Terrarium data not found in cache');
@@ -222,33 +224,31 @@ export const loadRasterData = async (
 		if (!dataRanges) throw new Error('Data ranges not found in cache');
 
 		const uniformsData = visualization.uniformsData;
-		const colorMap =
-			mode === 'single'
-				? uniformsData.single.colorMap
-				: mode === 'twi'
-					? (uniformsData.twi?.colorMap ?? 'hsv')
-					: mode === 'slope'
-						? (uniformsData.slope?.colorMap ?? 'salinity')
-						: mode === 'aspect'
-							? (uniformsData.aspect?.colorMap ?? 'rainbow-soft')
-							: mode === 'tpi'
-								? (uniformsData.tpi?.colorMap ?? 'rdbu')
-								: mode === 'topex'
-									? (uniformsData.topex?.colorMap ?? 'rdbu')
-									: uniformsData.single.colorMap;
+		const colorMap = mode === 'single'
+			? uniformsData.single.colorMap
+			: mode === 'twi'
+			? (uniformsData.twi?.colorMap ?? 'hsv')
+			: mode === 'slope'
+			? (uniformsData.slope?.colorMap ?? 'salinity')
+			: mode === 'aspect'
+			? (uniformsData.aspect?.colorMap ?? 'rainbow-soft')
+			: mode === 'tpi'
+			? (uniformsData.tpi?.colorMap ?? 'rdbu')
+			: mode === 'topex'
+			? (uniformsData.topex?.colorMap ?? 'rdbu')
+			: uniformsData.single.colorMap;
 		const colorArray = colorMapManager.createColorArray(colorMap || 'bone');
 
 		// Worker メッセージ構築
 		const workerMessage: Record<string, unknown> = {
 			entryId: cacheKey,
-			type:
-				mode === 'twi' ||
-				mode === 'slope' ||
-				mode === 'aspect' ||
-				mode === 'tpi' ||
-				mode === 'topex'
-					? 'single'
-					: mode,
+			type: mode === 'twi'
+					|| mode === 'slope'
+					|| mode === 'aspect'
+					|| mode === 'tpi'
+					|| mode === 'topex'
+				? 'single'
+				: mode,
 			width: size.width,
 			height: size.height
 		};
@@ -264,7 +264,8 @@ export const loadRasterData = async (
 
 				// メルカトルのアスペクト比で出力画像サイズを計算
 				const DEG2RAD = Math.PI / 180;
-				const latToMercY = (lat: number) => Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
+				const latToMercY = (lat: number) =>
+					Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
 				const mercYMax = latToMercY(bbox[3]);
 				const mercYMin = latToMercY(bbox[1]);
 				const lngRange = bbox[2] - bbox[0];
@@ -303,14 +304,13 @@ export const loadRasterData = async (
 
 		if (mode === 'single' || mode === 'slope' || mode === 'aspect' || mode === 'tpi') {
 			const bandIndex = mode === 'single' ? uniformsData.single.index : 0;
-			const styleData =
-				mode === 'single'
-					? uniformsData.single
-					: mode === 'slope'
-						? (uniformsData.slope ?? { min: 0, max: 90, colorMap: 'salinity' })
-						: mode === 'aspect'
-							? (uniformsData.aspect ?? { min: 0, max: 360, colorMap: 'rainbow-soft' })
-							: (uniformsData.tpi ?? { min: -1, max: 1, colorMap: 'rdbu' });
+			const styleData = mode === 'single'
+				? uniformsData.single
+				: mode === 'slope'
+				? (uniformsData.slope ?? { min: 0, max: 90, colorMap: 'salinity' })
+				: mode === 'aspect'
+				? (uniformsData.aspect ?? { min: 0, max: 360, colorMap: 'rainbow-soft' })
+				: (uniformsData.tpi ?? { min: -1, max: 1, colorMap: 'rdbu' });
 			const range = dataRanges[bandIndex];
 			const dMin = range?.min ?? 0;
 			const dMax = range?.max ?? 1;
@@ -327,8 +327,13 @@ export const loadRasterData = async (
 			workerMessage.max = valueMax;
 			workerMessage.dataMin = dMin;
 			workerMessage.dataMax = dMax;
-			workerMessage.derivedMode =
-				mode === 'slope' ? 'slope' : mode === 'aspect' ? 'aspect' : mode === 'tpi' ? 'tpi' : 'none';
+			workerMessage.derivedMode = mode === 'slope'
+				? 'slope'
+				: mode === 'aspect'
+				? 'aspect'
+				: mode === 'tpi'
+				? 'tpi'
+				: 'none';
 			if (mode !== 'single') {
 				const rawSingleBand = GeoTiffCache.getRawSingleBand(id);
 				workerMessage.ewres = rawSingleBand?.ewres ?? 1;

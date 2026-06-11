@@ -12,7 +12,7 @@ export interface ParseXmlResult {
 	error?: string;
 }
 
-self.onmessage = function (e) {
+self.onmessage = function(e) {
 	const task: ParseXmlTask = e.data;
 
 	try {

@@ -1,7 +1,7 @@
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 import type {} from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
 import { EHIME_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
+import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'ehime_slope',
@@ -35,7 +35,13 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 			type: 'category',
 			name: '傾斜',
 			colors: ['#0F02FE', '#00B050', '#99FF99', '#FEFF00', '#FFC100'],
-			labels: ['0以上15度未満', '15以上20度未満', '20以上30度未満', '30以上35度未満', '35以上']
+			labels: [
+				'0以上15度未満',
+				'15以上20度未満',
+				'20以上30度未満',
+				'30以上35度未満',
+				'35以上'
+			]
 		}
 	}
 };

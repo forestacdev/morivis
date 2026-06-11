@@ -1,6 +1,6 @@
-import type { RasterImageEntry, RasterBaseMapStyle } from '$routes/map/data/types/raster';
-import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
 import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import type { RasterBaseMapStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	id: 'H30_hokkaido_abira_0911do',
@@ -20,7 +20,12 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		maxZoom: 18,
 		tileSize: 256,
 		tags: ['地震', '写真'],
-		bounds: [141.7475067169999932, 42.705288742999997, 142.0180056750000119, 42.9639444889999993],
+		bounds: [
+			141.7475067169999932,
+			42.705288742999997,
+			142.0180056750000119,
+			42.9639444889999993
+		],
 		xyzImageTile: { x: 29301, y: 12060, z: 15 }
 	},
 	interaction: {

@@ -10,14 +10,9 @@
  * });
  */
 
-import type { Region } from '$routes/map/data/types/location';
-import type { Tag } from '$routes/map/data/types/tags';
-import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
-import type { VectorFormatType, PolygonEntry, TileMetaData } from '$routes/map/data/types/vector';
-import type { FieldDef } from '$routes/map/data/types/vector/properties';
-import type { ColorsExpression } from '$routes/map/data/types/vector/style';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
-import { resolveBounds, type Bounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
+import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
+import { type Bounds, resolveBounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
 import {
 	FOREST_MESH_FIELDS,
 	FOREST_MESH_POPUP_KEYS,
@@ -25,14 +20,19 @@ import {
 	FOREST_MESH_TITLES
 } from '$routes/map/data/entries/vector/_properties';
 import {
+	createMatchColorMapping,
 	DEFAULT_POLYGON_STYLE,
 	FOREST_MESH_LABELS,
 	FOREST_MESH_OUTLINE,
 	FOREST_MESH_STEP_COLOR_STYLE_EXPRESSIONS,
-	TREE_SINGLE_COLOR_STYLE,
 	TREE_MATCH_COLOR_STYLE,
-	createMatchColorMapping
+	TREE_SINGLE_COLOR_STYLE
 } from '$routes/map/data/entries/vector/_style';
+import type { Region } from '$routes/map/data/types/location';
+import type { Tag } from '$routes/map/data/types/tags';
+import type { PolygonEntry, TileMetaData, VectorFormatType } from '$routes/map/data/types/vector';
+import type { FieldDef } from '$routes/map/data/types/vector/properties';
+import type { ColorsExpression } from '$routes/map/data/types/vector/style';
 
 type XYZPresetKey = keyof typeof IMAGE_TILE_XYZ_SETS;
 
@@ -71,7 +71,7 @@ export interface ForestMeshEntryConfig {
 	bounds?: Region | Bounds;
 
 	/** ズームレベル */
-	zoom?: { min: number; max: number };
+	zoom?: { min: number; max: number; };
 
 	/** プレビュータイル */
 	xyzImageTile?: XYZPresetKey;

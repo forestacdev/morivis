@@ -1,4 +1,4 @@
-import { getWkt, isValidEpsg, type EpsgCode } from '$routes/map/utils/proj/dict';
+import { type EpsgCode, getWkt, isValidEpsg } from '$routes/map/utils/proj/dict';
 
 // ============================
 // aux.xml パース

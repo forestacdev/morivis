@@ -1,7 +1,7 @@
-import * as THREE from 'three';
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 import { geojson } from 'flatgeobuf';
 import proj4 from 'proj4';
-import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+import * as THREE from 'three';
 
 proj4.defs(
 	'EPSG:6675',
@@ -74,7 +74,10 @@ export class FGB2DLineLoader {
 			let cumulativeDistance = 0; // 累積距離
 
 			coordinates.forEach((vec3, idx) => {
-				const vec2 = proj4('WGS84', option.proj ? option.proj : 'WGS84', [vec3[0], vec3[1]]) as [
+				const vec2 = proj4('WGS84', option.proj ? option.proj : 'WGS84', [
+					vec3[0],
+					vec3[1]
+				]) as [
 					number,
 					number
 				];
@@ -89,7 +92,11 @@ export class FGB2DLineLoader {
 						vertices[(idx - 1) * 3 + 1],
 						vertices[(idx - 1) * 3 + 2]
 					);
-					const v2 = new THREE.Vector3(vec2[0] - this.center[0], vec2[1] - this.center[1], 0);
+					const v2 = new THREE.Vector3(
+						vec2[0] - this.center[0],
+						vec2[1] - this.center[1],
+						0
+					);
 					cumulativeDistance += v1.distanceTo(v2);
 				}
 				distances.push(cumulativeDistance);

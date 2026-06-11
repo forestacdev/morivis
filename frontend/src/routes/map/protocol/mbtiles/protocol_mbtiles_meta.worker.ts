@@ -1,5 +1,5 @@
-import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 import { asset } from '$app/paths';
+import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 import type { MBTilesMetadata, MBTilesVectorLayer } from './index';
 
 type MetadataWorkerRequest = {
@@ -60,11 +60,11 @@ const calculateBoundsFromTiles = (db: Database): [number, number, number, number
 			number | null
 		>;
 		if (
-			maxZoom === null ||
-			minColumn === null ||
-			maxColumn === null ||
-			minRow === null ||
-			maxRow === null
+			maxZoom === null
+			|| minColumn === null
+			|| maxColumn === null
+			|| minRow === null
+			|| maxRow === null
 		) {
 			return undefined;
 		}
@@ -113,7 +113,9 @@ const parseVectorLayers = (jsonText?: string): MBTilesVectorLayer[] => {
 			for (const stat of jsonMeta.tilestats.layers) {
 				const existing = vectorLayers.find((layer) => layer.id === stat.layer);
 				if (existing) {
-					if (!existing.geometryType && stat.geometry) existing.geometryType = stat.geometry;
+					if (!existing.geometryType && stat.geometry) {
+						existing.geometryType = stat.geometry;
+					}
 					continue;
 				}
 				vectorLayers.push({
@@ -150,9 +152,8 @@ const extractMetadata = (db: Database, fileName: string): MBTilesMetadata => {
 
 	const isVector = meta.format === 'pbf';
 	const bounds = parseBounds(meta.bounds) ?? calculateBoundsFromTiles(db);
-	const center =
-		parseCenter(meta.center) ??
-		(bounds ? [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2] : undefined);
+	const center = parseCenter(meta.center)
+		?? (bounds ? [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2] : undefined);
 
 	return {
 		name: meta.name || fileName.replace(/\.[^.]+$/, ''),

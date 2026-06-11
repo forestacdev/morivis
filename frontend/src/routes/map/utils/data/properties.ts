@@ -1,4 +1,4 @@
-import type { Feature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
+import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 
 import type { Title } from '$routes/map/data/types/vector/properties';
 

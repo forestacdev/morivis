@@ -14,6 +14,7 @@
 - [TileMetaData](interfaces/TileMetaData.md)
 - [VectorEntryState](interfaces/VectorEntryState.md)
 - [VectorInteraction](interfaces/VectorInteraction.md)
+- [VectorRuntimeSource](interfaces/VectorRuntimeSource.md)
 - [VectorTemporalFilterState](interfaces/VectorTemporalFilterState.md)
 
 ## Type Aliases

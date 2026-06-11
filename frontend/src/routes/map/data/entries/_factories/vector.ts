@@ -1,32 +1,32 @@
-import type { Region } from '$routes/map/data/types/location';
-import type { Tag } from '$routes/map/data/types/tags';
-import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
-import type {
-	VectorFormatType,
-	TileMetaData,
-	PolygonEntry,
-	LineStringEntry,
-	PointEntry
-} from '$routes/map/data/types/vector';
-import type {
-	PolygonStyle,
-	LineStringStyle,
-	PointStyle,
-	ColorsStyle,
-	NumbersStyle,
-	Labels,
-	ColorsExpression,
-	ColorSingleExpression
-} from '$routes/map/data/types/vector/style';
-import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
-import type { FieldDef, AttributeView } from '$routes/map/data/types/vector/properties';
 import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
-import { resolveBounds, type Bounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
+import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
+import { type Bounds, resolveBounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
 import {
-	DEFAULT_VECTOR_POINT_STYLE,
 	DEFAULT_VECTOR_LINE_STYLE,
+	DEFAULT_VECTOR_POINT_STYLE,
 	DEFAULT_VECTOR_POLYGON_STYLE
 } from '$routes/map/data/entries/vector/_style';
+import type { Region } from '$routes/map/data/types/location';
+import type { Tag } from '$routes/map/data/types/tags';
+import type {
+	LineStringEntry,
+	PointEntry,
+	PolygonEntry,
+	TileMetaData,
+	VectorFormatType
+} from '$routes/map/data/types/vector';
+import type { AttributeView, FieldDef } from '$routes/map/data/types/vector/properties';
+import type {
+	ColorsExpression,
+	ColorSingleExpression,
+	ColorsStyle,
+	Labels,
+	LineStringStyle,
+	NumbersStyle,
+	PointStyle,
+	PolygonStyle
+} from '$routes/map/data/types/vector/style';
+import type { BaseSingleColor } from '$routes/map/utils/color/color-brewer';
 
 type XYZPresetKey = keyof typeof IMAGE_TILE_XYZ_SETS;
 
@@ -45,7 +45,7 @@ interface BaseVectorConfig {
 	tags?: Tag[];
 	downloadUrl?: string;
 	sourceDataName?: string;
-	zoom?: { min: number; max: number };
+	zoom?: { min: number; max: number; };
 	xyzImageTile?: XYZPresetKey;
 	fields?: FieldDef[];
 	popupKeys?: string[];
@@ -68,7 +68,9 @@ function createLabelsFromFields(fields: FieldDef[]): Labels {
 	return {
 		key: labelExpressions[0]?.key ?? 'name',
 		show: false,
-		expressions: labelExpressions.length > 0 ? labelExpressions : [{ key: 'name', name: 'name' }]
+		expressions: labelExpressions.length > 0
+			? labelExpressions
+			: [{ key: 'name', name: 'name' }]
 	};
 }
 
@@ -162,9 +164,9 @@ export function createTilePointEntry(config: TilePointEntryConfig): PointEntry<T
 	const radiusStyle: NumbersStyle = radiusExpressions
 		? { key: radiusExpressions[0]?.key ?? '単一', expressions: radiusExpressions }
 		: {
-				key: '単一',
-				expressions: [{ type: 'single', key: '単一', name: '単一', mapping: { value: radius } }]
-			};
+			key: '単一',
+			expressions: [{ type: 'single', key: '単一', name: '単一', mapping: { value: radius } }]
+		};
 
 	return {
 		id,
@@ -246,9 +248,9 @@ export function createTileLineEntry(config: TileLineEntryConfig): LineStringEntr
 	const widthStyle: NumbersStyle = widthExpressions
 		? { key: widthExpressions[0]?.key ?? '単一', expressions: widthExpressions }
 		: {
-				key: '単一',
-				expressions: [{ type: 'single', key: '単一', name: '単一', mapping: { value: width } }]
-			};
+			key: '単一',
+			expressions: [{ type: 'single', key: '単一', name: '単一', mapping: { value: width } }]
+		};
 
 	return {
 		id,

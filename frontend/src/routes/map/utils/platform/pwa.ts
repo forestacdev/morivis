@@ -26,7 +26,8 @@ export const isIOS = (): boolean => {
  */
 export const isIOSSafari = (): boolean => {
 	const ua = navigator.userAgent;
-	return /iPad|iPhone|iPod/.test(ua) && /Safari/.test(ua) && !/CriOS|FxiOS|OPiOS|mercury/.test(ua);
+	return /iPad|iPhone|iPod/.test(ua) && /Safari/.test(ua)
+		&& !/CriOS|FxiOS|OPiOS|mercury/.test(ua);
 };
 
 /**

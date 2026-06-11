@@ -61,7 +61,9 @@ export const parseObjPointCloudFile = async (file: File): Promise<ObjPointCloudP
 		const valuesText = line.slice(2).trim();
 		const values: number[] = valuesText.split(/\s+/).map((value: string) => Number(value));
 
-		if (values.length < 3 || values.slice(0, 3).some((value) => !Number.isFinite(value))) continue;
+		if (values.length < 3 || values.slice(0, 3).some((value) => !Number.isFinite(value))) {
+			continue;
+		}
 
 		positions.push(values[0], values[1], values[2]);
 
@@ -83,7 +85,9 @@ export const parseObjPointCloudFile = async (file: File): Promise<ObjPointCloudP
 	let colors: Uint8Array | null = null;
 
 	if (hasColor) {
-		const useUnitColor = colorRows.every((row) => row.every((value) => value >= 0 && value <= 1));
+		const useUnitColor = colorRows.every((row) =>
+			row.every((value) => value >= 0 && value <= 1)
+		);
 		const colorValues = colorRows.flatMap((row) =>
 			row.map((value) => clampColor(useUnitColor ? value * 255 : value))
 		);

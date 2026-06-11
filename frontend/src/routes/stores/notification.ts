@@ -1,6 +1,6 @@
-import { writable } from 'svelte/store';
 import type { GeoDataEntry } from '$routes/map/data/types';
 import { shake } from '$routes/map/utils/camera/effects/shake';
+import { writable } from 'svelte/store';
 
 const MAX_NOTIFICATIONS = 3;
 

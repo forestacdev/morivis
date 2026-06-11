@@ -44,7 +44,7 @@ export const fetchArcGisMapServerInfo = async (url: string): Promise<ArcGisMapSe
 	let maxZoom = 22;
 
 	if (tileInfo?.lods && tileInfo.lods.length > 0) {
-		const lods = tileInfo.lods as { level: number }[];
+		const lods = tileInfo.lods as { level: number; }[];
 		minZoom = Math.min(...lods.map((l) => l.level));
 		maxZoom = Math.max(...lods.map((l) => l.level));
 	}
@@ -59,9 +59,9 @@ export const fetchArcGisMapServerInfo = async (url: string): Promise<ArcGisMapSe
 		if (ext.spatialReference?.wkid === 4326 || ext.spatialReference?.latestWkid === 4326) {
 			bounds = [ext.xmin, ext.ymin, ext.xmax, ext.ymax];
 		} else if (
-			ext.spatialReference?.wkid === 102100 ||
-			ext.spatialReference?.wkid === 3857 ||
-			ext.spatialReference?.latestWkid === 3857
+			ext.spatialReference?.wkid === 102100
+			|| ext.spatialReference?.wkid === 3857
+			|| ext.spatialReference?.latestWkid === 3857
 		) {
 			// Web Mercatorからの概算変換
 			bounds = [
@@ -73,12 +73,11 @@ export const fetchArcGisMapServerInfo = async (url: string): Promise<ArcGisMapSe
 		}
 	}
 
-	const name =
-		data.documentInfo?.Title ||
-		data.documentInfo?.title ||
-		data.mapName ||
-		data.serviceDescription ||
-		'ArcGIS Layer';
+	const name = data.documentInfo?.Title
+		|| data.documentInfo?.title
+		|| data.mapName
+		|| data.serviceDescription
+		|| 'ArcGIS Layer';
 
 	return {
 		name: name.length > 100 ? name.substring(0, 100) : name,

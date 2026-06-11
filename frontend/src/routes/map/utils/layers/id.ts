@@ -41,7 +41,9 @@ const isMetadataRecord = (metadata: unknown): metadata is MetadataRecord => {
 	return typeof metadata === 'object' && metadata !== null;
 };
 
-export const parseSublayerId = (layerId: string): { baseId: string; type: SublayerType } | null => {
+export const parseSublayerId = (
+	layerId: string
+): { baseId: string; type: SublayerType; } | null => {
 	for (const type of SUBLAYER_TYPES) {
 		const suffix = getSublayerSuffix(type);
 		if (!layerId.endsWith(suffix)) continue;

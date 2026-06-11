@@ -12,6 +12,7 @@
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { GeoDataEntry } from '$routes/map/data/types';
 	import type { MeshStyle, ModelMeshEntry } from '$routes/map/data/types/model';
+	import { unregisterGeoZarr } from '$routes/map/protocol/geozarr';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
@@ -81,7 +82,9 @@
 	let isTiffCustomLayer = $derived.by(() => {
 		return (
 			layerEntry.type === 'raster' &&
-			layerEntry.format.type === 'image' &&
+			(layerEntry.format.type === 'image' ||
+				layerEntry.format.type === 'cog' ||
+				layerEntry.format.type === 'geozarr') &&
 			'style' in layerEntry &&
 			(layerEntry as { style: { type: string } }).style.type === 'tiff' &&
 			layerEntry?.metaData.isUserUploaded
@@ -188,6 +191,9 @@
 		if (layerEntry.type === 'raster' && 'url' in layerEntry.format) {
 			const url = (layerEntry.format as { url?: string }).url;
 			if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+		}
+		if (layerEntry.type === 'raster' && layerEntry.format.type === 'geozarr') {
+			unregisterGeoZarr(layerEntry.id);
 		}
 	};
 
