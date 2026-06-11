@@ -24,7 +24,10 @@
     "pnpm": {
         "overrides": {
             "sharp": "0.34.5",
-            "@sveltejs/enhanced-img>sharp": "0.34.5"
+            "@sveltejs/enhanced-img>sharp": "0.34.5",
+            "@xmldom/xmldom": "0.8.13",
+            "thrift": "0.23.0",
+            "tmp": "0.2.6"
         }
     }
 }
