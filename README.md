@@ -16,6 +16,9 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Code-MIT-22C55E.svg?style=flat" alt="Code MIT">
   <img src="https://img.shields.io/badge/Data-CC%20BY--NC--ND%204.0-F59E0B.svg?style=flat" alt="Data CC BY-NC-ND 4.0">
+</p>
+
+<p align="center">
   <a href="https://github.com/forestacdev/morivis/actions/workflows/frontend-pull-request-check.yml">
     <img src="https://github.com/forestacdev/morivis/actions/workflows/frontend-pull-request-check.yml/badge.svg" alt="frontend pull request check">
   </a>
@@ -39,8 +42,6 @@ morivis is an open development web platform for exploring and visualizing forest
   <img src="./academy-logo.svg" alt="Gifu Academy of Forest Science and Culture" width="220" />
 </p>
 
-It supports vector, raster, tile, point cloud, and 3D geospatial data on the web, with many parsing and rendering tasks handled client-side through MapLibre GL JS, deck.gl, and three.js.
-
 ## Purpose
 
 morivis is being developed as an open web platform for making forest data easier to explore and use.
@@ -49,9 +50,9 @@ It began from the idea that students, trainees, and future practitioners should 
 
 ## Rendering Stack
 
-- `MapLibre GL JS` for the main 2D map and style-driven layer rendering
-- `deck.gl` for 3D Tiles overlays and large data-driven visualization
-- `three.js` for mesh rendering and custom 3D map layers
+- [`MapLibre GL JS`](https://maplibre.org/projects/gl-js/) for the main 2D map and style-driven layer rendering
+- [`deck.gl`](https://deck.gl/) for 3D Tiles overlays and large data-driven visualization
+- [`three.js`](https://threejs.org/) for mesh rendering and custom 3D map layers
 - `WebGL workers` for Terrarium encoding, raster derivatives, reprojection, and heavy parsing
 
 ## Data Flow
