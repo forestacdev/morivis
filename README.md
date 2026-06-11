@@ -35,7 +35,7 @@
 
 morivis is an open development web platform for exploring and visualizing forest data, centered on the academy's training forest at the [Gifu Academy of Forest Science and Culture](https://www.forest.ac.jp/).
 
-<p align="left">
+<p align="center">
   <img src="./academy-logo.svg" alt="Gifu Academy of Forest Science and Culture" width="220" />
 </p>
 
@@ -79,6 +79,10 @@ This project is in alpha.
 - APIs may change without notice.
 - Data structures and internal format pipelines are still evolving.
 - Some parts of the project cover broad or experimental workflows, so regression risk remains until test coverage improves.
+
+## Author
+
+Developed by [Satoshi Komatsu](https://github.com/satoshi7190), an engineer and graduate of the Gifu Academy of Forest Science and Culture.
 
 ## Disclaimer
 
