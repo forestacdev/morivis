@@ -1,7 +1,7 @@
 <img src="https://img.shields.io/badge/-Svelte-E5ECF1.svg?logo=svelte&style=flat"> <img src="https://img.shields.io/badge/-TypeScript-FFFFFF.svg?logo=typescript&style=flat"> <img src="https://img.shields.io/badge/-TailWindCSS-1572B6.svg?logo=tailwindcss&style=flat">
-<img src="https://img.shields.io/badge/-WebGL-990000.svg?logo=webgl&style=flat"> <img src="https://img.shields.io/badge/-MapLibre GL JS-396CB2.svg?logo=maplibre&style=flat"> <img src="https://img.shields.io/badge/-deck.gl-E5ECF1.svg?style=flat"> <img src="https://img.shields.io/badge/-Three.js-000000.svg?logo=threedotjs&style=flat">
+<img src="https://img.shields.io/badge/-WebGL-990000.svg?logo=webgl&style=flat"> <img src="https://img.shields.io/badge/-MapLibre GL JS-396CB2.svg?logo=maplibre&style=flat"> <img src="https://img.shields.io/badge/-deck.gl-E5ECF1.svg?style=flat"> <img src="https://img.shields.io/badge/-Three.js-000000.svg?logo=threedotjs&style=flat"> <img src="https://img.shields.io/badge/-PWA-5A0FC8.svg?logo=pwa&style=flat">
 
-<img src="https://img.shields.io/badge/-PWA-5A0FC8.svg?logo=pwa&style=flat">
+<img src="https://img.shields.io/badge/Code-MIT-22C55E.svg?style=flat"> <img src="https://img.shields.io/badge/Data-CC%20BY--NC--ND%204.0-F59E0B.svg?style=flat">
 
 
 [![frontend-pull-request-check](https://github.com/forestacdev/morivis/actions/workflows/frontend-pull-request-check.yml/badge.svg)](https://github.com/forestacdev/morivis/actions/workflows/frontend-pull-request-check.yml)
@@ -38,8 +38,9 @@ This project uses dual licensing:
 ### Source Code
 
 - License: [MIT License](LICENSE-MIT)
-- Scope: Application code, frontend logic
+- Scope: Source code in this repository
 - Usage: Commercial use, modification, and distribution allowed
+- Note: Third-party libraries are subject to their own licenses
 
 ### Academy-Provided Data
 
