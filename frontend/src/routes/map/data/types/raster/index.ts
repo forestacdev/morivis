@@ -77,7 +77,14 @@ export interface TileXYZ {
 	z: ZoomLevel;
 }
 
-export type RasterFormatType = 'image' | 'pmtiles' | 'mbtiles' | 'cog' | 'tiff' | 'wcs';
+export type RasterFormatType =
+	| 'image'
+	| 'pmtiles'
+	| 'mbtiles'
+	| 'cog'
+	| 'tiff'
+	| 'wcs'
+	| 'geozarr';
 
 export type TileSize = 512 | 256;
 
@@ -299,6 +306,15 @@ export interface RasterWcsEntry<T> extends BaseRasterEntry {
 	style: T;
 }
 
+export interface RasterGeoZarrEntry<T> extends BaseRasterEntry {
+	format: {
+		type: 'geozarr';
+		url: string;
+		arrayPath?: string;
+	};
+	style: T;
+}
+
 // TODO グループ化したスタイルの型を定義する
 export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	format: {
@@ -311,6 +327,7 @@ export type RasterEntry<T> =
 	| RasterPMTilesEntry<T>
 	| RasterMBTilesEntry<T>
 	| RasterCogEntry<T>
-	| RasterWcsEntry<T>;
+	| RasterWcsEntry<T>
+	| RasterGeoZarrEntry<T>;
 export type RasterDemEntry = RasterEntry<RasterDemStyle>;
 export type RasterCadEntry = RasterEntry<RasterCadStyle>;

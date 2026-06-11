@@ -32,6 +32,7 @@ import { debounce } from 'es-toolkit';
 import { get } from 'svelte/store';
 
 import { cogProtocol, terminateCogWorkerPool } from '$routes/map/protocol/cog';
+import { geozarrProtocol } from '$routes/map/protocol/geozarr';
 import { demProtocol, terminateDemWorkerPool } from '$routes/map/protocol/raster';
 import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
@@ -131,6 +132,24 @@ const releaseCogProtocol = () => {
 		terminateCogWorkerPool();
 		maplibregl.removeProtocol(cogProt.protocolName);
 		_cogProtocolRegistered = false;
+	}
+};
+
+const geozarrProt = geozarrProtocol('geozarr');
+let _geozarrProtocolRegistered = false;
+
+const ensureGeoZarrProtocol = () => {
+	if (!_geozarrProtocolRegistered) {
+		maplibregl.addProtocol(geozarrProt.protocolName, geozarrProt.request);
+		_geozarrProtocolRegistered = true;
+	}
+};
+
+const releaseGeoZarrProtocol = () => {
+	if (_geozarrProtocolRegistered) {
+		geozarrProt.cancelAllRequests();
+		maplibregl.removeProtocol(geozarrProt.protocolName);
+		_geozarrProtocolRegistered = false;
 	}
 };
 
@@ -1650,6 +1669,8 @@ const createMapStore = () => {
 		releaseWfsFeatureProtocol,
 		ensureCogProtocol,
 		releaseCogProtocol,
+		ensureGeoZarrProtocol,
+		releaseGeoZarrProtocol,
 		ensureDemProtocol,
 		releaseDemProtocol,
 		ensureMbtilesProtocol,

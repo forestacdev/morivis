@@ -19,6 +19,7 @@
 	import { clearCogViewportImage } from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
+	import { unregisterGeoZarr } from '$routes/map/protocol/geozarr';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
@@ -81,7 +82,9 @@
 	let isTiffCustomLayer = $derived.by(() => {
 		return (
 			layerEntry.type === 'raster' &&
-			layerEntry.format.type === 'image' &&
+			(layerEntry.format.type === 'image' ||
+				layerEntry.format.type === 'cog' ||
+				layerEntry.format.type === 'geozarr') &&
 			'style' in layerEntry &&
 			(layerEntry as { style: { type: string } }).style.type === 'tiff' &&
 			layerEntry?.metaData.isUserUploaded
@@ -188,6 +191,9 @@
 		if (layerEntry.type === 'raster' && 'url' in layerEntry.format) {
 			const url = (layerEntry.format as { url?: string }).url;
 			if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
+		}
+		if (layerEntry.type === 'raster' && layerEntry.format.type === 'geozarr') {
+			unregisterGeoZarr(layerEntry.id);
 		}
 	};
 

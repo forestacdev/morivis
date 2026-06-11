@@ -26,6 +26,10 @@
 		"typedoc": "npx typedoc --plugin typedoc-plugin-markdown"
 	},
 	"devDependencies": {
+		"@dprint/json": "^0.21.3",
+		"@dprint/markdown": "^0.22.1",
+		"@dprint/toml": "^0.7.0",
+		"@dprint/typescript": "^0.96.1",
 		"@eslint/compat": "^1.2.3",
 		"@eslint/js": "^9.39.2",
 		"@iconify/svelte": "^4.1.0",
@@ -53,17 +57,13 @@
 		"@types/vt-pbf": "^3.1.1",
 		"@vite-pwa/assets-generator": "^1.0.2",
 		"@vite-pwa/sveltekit": "^1.0.0",
-		"@dprint/json": "^0.21.3",
-		"@dprint/markdown": "^0.22.1",
-		"@dprint/toml": "^0.7.0",
-		"@dprint/typescript": "^0.96.1",
+		"dprint": "^0.54.0",
 		"eslint": "^9.7.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-import": "^2.31.0",
 		"eslint-plugin-svelte": "^2.36.0",
 		"globals": "^15.0.0",
 		"path": "^0.12.7",
-		"dprint": "^0.54.0",
 		"prettier": "^3.8.4",
 		"prettier-plugin-svelte": "^4.1.0",
 		"prettier-plugin-tailwindcss": "^0.8.0",
@@ -191,6 +191,7 @@
 		"wkt": "^0.1.1",
 		"wkt-parser": "^1.4.0",
 		"yup": "^1.6.1",
+		"zarrita": "^0.7.3",
 		"zstd-codec": "0.1.5"
 	},
 	"packageManager": "pnpm@10.12.4+sha256.cadfd9e6c9fcc2cb76fe7c0779a5250b632898aea5f53d833a73690c77a778d9"

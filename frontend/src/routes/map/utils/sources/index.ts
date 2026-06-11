@@ -509,6 +509,48 @@ export const createSourcesItems = async (
 							url: EMPTY_IMAGE_DATA_URL,
 							coordinates: getBoundingBoxCorners(metaData.bounds)
 						} satisfies ImageSourceSpecification;
+					} else if (format.type === 'geozarr') {
+						if (style.type === 'tiff') {
+							const visualization = style.visualization;
+							const mode = visualization.mode;
+							let tileUrl: string;
+
+							if (mode === 'single') {
+								const u = visualization.uniformsData.single;
+								const [uMin, uMax] = getAdjustableRangeValue(u.range, u.min, u.max);
+								tileUrl =
+									`geozarr://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${uMin}&max=${uMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+							} else {
+								const u = visualization.uniformsData.multi;
+								const [rMin, rMax] = getAdjustableRangeValue(
+									u.r.range,
+									u.r.min,
+									u.r.max
+								);
+								const [gMin, gMax] = getAdjustableRangeValue(
+									u.g.range,
+									u.g.min,
+									u.g.max
+								);
+								const [bMin, bMax] = getAdjustableRangeValue(
+									u.b.range,
+									u.b.min,
+									u.b.max
+								);
+								tileUrl =
+									`geozarr://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${rMin}&rMax=${rMax}&gMin=${gMin}&gMax=${gMax}&bMin=${bMin}&bMax=${bMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+							}
+
+							items[sourceId] = {
+								type: 'raster',
+								tiles: [tileUrl],
+								maxzoom: metaData.maxZoom,
+								minzoom: metaData.minZoom,
+								tileSize: metaData.tileSize,
+								attribution: metaData.attribution,
+								bounds: metaData.bounds
+							} as RasterSourceSpecification;
+						}
 					}
 					break;
 				}

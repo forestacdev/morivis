@@ -58,6 +58,25 @@ export const resolveRequestUrl = (url: string): string => {
 	return resolveRuntimeUrl(url);
 };
 
+export const resolveCogProxyUrl = (url: string): string => {
+	const resolvedUrl = resolveRuntimeUrl(url);
+	if (import.meta.env.PROD) return resolvedUrl;
+
+	const absoluteUrl = toAbsoluteUrl(resolvedUrl);
+	const appOrigin = typeof window === 'undefined' ? 'http://localhost' : window.location.origin;
+
+	try {
+		const parsed = new URL(absoluteUrl);
+		if (parsed.origin === appOrigin) return absoluteUrl;
+
+		const proxyUrl = new URL('/api/cog-proxy', appOrigin);
+		proxyUrl.searchParams.set('url', absoluteUrl);
+		return proxyUrl.toString();
+	} catch {
+		return absoluteUrl;
+	}
+};
+
 export const resolveAbsoluteRequestUrl = (url: string): string => {
 	return toAbsoluteUrl(resolveRuntimeUrl(url));
 };

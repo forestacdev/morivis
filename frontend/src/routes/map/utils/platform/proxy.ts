@@ -92,6 +92,11 @@ const STATIC_PROXY_RULES: ProxyRule[] = [
 		proxyPath: '/api/eodc-objects'
 	},
 	{
+		match: 'api.explorer.eopf.copernicus.eu',
+		target: 'https://api.explorer.eopf.copernicus.eu',
+		proxyPath: '/api/copernicus-eopf'
+	},
+	{
 		match: 'ahocevar.com',
 		target: 'https://ahocevar.com',
 		proxyPath: '/api/ahocevar'

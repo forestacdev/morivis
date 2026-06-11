@@ -4,7 +4,7 @@
  * リモートCOGへの接続を管理し、Webメルカトルタイル座標 (z, x, y) に対応する
  * ラスターデータを geotiff.js の HTTP Range request で効率的に読み取る。
  */
-import { resolveRequestUrl } from '$routes/map/utils/platform/request';
+import { resolveCogProxyUrl } from '$routes/map/utils/platform/request';
 import { fromUrl, type GeoTIFF, type GeoTIFFImage } from 'geotiff';
 import proj4 from 'proj4';
 import { buildTriangulation, type Triangle } from './triangulation';
@@ -218,7 +218,7 @@ export const CogTileManager = {
 			};
 		}
 
-		const tiff = await fromUrl(resolveRequestUrl(url));
+		const tiff = await fromUrl(resolveCogProxyUrl(url));
 		const fullImage = await tiff.getImage();
 		const fullWidth = fullImage.getWidth();
 		const fullHeight = fullImage.getHeight();
