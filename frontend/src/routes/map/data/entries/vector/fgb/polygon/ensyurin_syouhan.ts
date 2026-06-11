@@ -86,15 +86,7 @@ const entry: PolygonEntry<TileMetaData> = {
 					name: '樹種ごとの色分け',
 					mapping: {
 						...createMatchColorMapping(
-							[
-								'スギ',
-								'ヒノキ',
-								'アカマツ',
-								'スラッシュマツ',
-								'広葉樹',
-								'草地',
-								'その他岩石'
-							],
+							['スギ', 'ヒノキ', 'アカマツ', 'スラッシュマツ', '広葉樹', '草地', 'その他岩石'],
 							'treeSpecies'
 						)
 					}
@@ -274,7 +266,7 @@ const entry: PolygonEntry<TileMetaData> = {
 		// 			source: 'ensyurin_syouhan_rinhan',
 		// 			layout: {
 		// 				'text-field': '{林班}林班',
-		// 				'text-font': ['Noto Sans JP Regular'],
+		// 				'text-font': ['Noto Sans CJK JP Regular'],
 		// 				'text-size': 12,
 		// 				'text-anchor': 'center'
 		// 			},

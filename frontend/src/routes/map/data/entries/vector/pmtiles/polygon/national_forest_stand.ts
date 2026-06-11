@@ -306,15 +306,7 @@ const entry: PolygonEntry<TileMetaData> = {
 							'近畿中国森林管理局',
 							'四国森林管理局'
 						],
-						values: [
-							'#33a02c',
-							'#1f78b4',
-							'#e31a1c',
-							'#ff7f00',
-							'#6a3d9a',
-							'#b15928',
-							'#b2df8a'
-						],
+						values: ['#33a02c', '#1f78b4', '#e31a1c', '#ff7f00', '#6a3d9a', '#b15928', '#b2df8a'],
 						patterns: [null, null, null, null, null, null, null]
 					}
 				},
@@ -444,10 +436,7 @@ const entry: PolygonEntry<TileMetaData> = {
 						// zoom < 15: 樹種・林齢のみ（小林班IDなし）
 						[
 							'case',
-							['all', ['has', '樹種１'], ['has', '樹立林齢１'], ['!=', [
-								'get',
-								'樹立林齢１'
-							], '']],
+							['all', ['has', '樹種１'], ['has', '樹立林齢１'], ['!=', ['get', '樹立林齢１'], '']],
 							['concat', ['get', '樹種１'], '林'],
 							['has', '樹種１'],
 							['get', '樹種１'],
@@ -478,10 +467,7 @@ const entry: PolygonEntry<TileMetaData> = {
 								'年生'
 							],
 							['all', ['has', '林班主番'], ['has', '小班主番'], ['has', '樹種１']],
-							['concat', ['get', '林班主番'], ' ', ['get', '小班主番'], '\n', [
-								'get',
-								'樹種１'
-							]],
+							['concat', ['get', '林班主番'], ' ', ['get', '小班主番'], '\n', ['get', '樹種１']],
 							['all', ['has', '林班主番'], ['has', '小班主番']],
 							['concat', ['get', '林班主番'], ' ', ['get', '小班主番']],
 							''
@@ -680,7 +666,7 @@ const entry: PolygonEntry<TileMetaData> = {
 			// 	'source-layer': 'national_forest_compartment',
 			// 	layout: {
 			// 		'text-field': '{林班主番}-{林班枝番}',
-			// 		'text-font': ['Noto Sans JP Regular'],
+			// 		'text-font': ['Noto Sans CJK JP Regular'],
 			// 		'text-size': 10,
 			// 		'text-anchor': 'center'
 			// 	},
