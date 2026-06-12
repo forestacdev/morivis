@@ -2,7 +2,7 @@
 	import JSZip from 'jszip';
 	import maplibregl from 'maplibre-gl';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
 	import { hasExifGps } from '$routes/map/utils/formats/exif';
 	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
@@ -25,8 +25,8 @@
 		map: maplibregl.Map;
 		isDragover: boolean;
 		dropFile: File | FileList | null;
-		tempLayerEntries: GeoDataEntry[];
-		showDataEntry: GeoDataEntry | null;
+		tempLayerEntries: MorivisLayerEntry[];
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		showZoneForm: boolean;
 		focusBbox: [number, number, number, number] | null;

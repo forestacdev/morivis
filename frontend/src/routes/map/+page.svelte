@@ -58,10 +58,10 @@
 		geoDataEntries,
 		isLazyCatalogEntry,
 		needsLazyHydration,
-		resolveGeoDataEntry
+		resolveMorivisLayerEntry
 	} from '$routes/map/data/entries';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type { MorivisRasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
 	import type { GeoJsonMetaData, PointEntry, TileMetaData } from '$routes/map/data/types/vector';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import {
@@ -121,9 +121,9 @@
 		});
 	}
 
-	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
+	let tempLayerEntries = $state<MorivisLayerEntry[]>([]); // 一時レイヤーデータ
 
-	const getLayerEntriesData = (): GeoDataEntry[] => {
+	const getLayerEntriesData = (): MorivisLayerEntry[] => {
 		// tempが空の場合は定数のみ返す
 		if (tempLayerEntries.length === 0) {
 			return geoDataEntries;
@@ -133,10 +133,10 @@
 
 	let demEntries = $derived.by(() => {
 		return geoDataEntries.filter((entry) => entry.type === 'raster' && entry.style.type === 'dem');
-	}) as RasterEntry<RasterDemStyle>[];
+	}) as MorivisRasterEntry<RasterDemStyle>[];
 
-	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
-	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
+	let layerEntries = $state<MorivisLayerEntry[]>([]); // アクティブなレイヤーデータ
+	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<File | FileList | null>(null); // ドロップしたファイル
 	let remotePmtilesUrl = $state<string | null>(null);
 	let remoteRasterUrl = $state<string | null>(null);
@@ -521,9 +521,9 @@
 	});
 
 	const mergeResolvedLayerEntry = (
-		currentEntry: GeoDataEntry,
-		resolvedEntry: GeoDataEntry
-	): GeoDataEntry => {
+		currentEntry: MorivisLayerEntry,
+		resolvedEntry: MorivisLayerEntry
+	): MorivisLayerEntry => {
 		if (currentEntry.id !== resolvedEntry.id || currentEntry.type !== resolvedEntry.type) {
 			return resolvedEntry;
 		}
@@ -533,10 +533,10 @@
 			style: currentEntry.style,
 			interaction: currentEntry.interaction,
 			...('state' in currentEntry ? { state: currentEntry.state } : {})
-		} as GeoDataEntry;
+		} as MorivisLayerEntry;
 	};
 
-	const replaceLayerEntry = (entryId: string, resolvedEntry: GeoDataEntry) => {
+	const replaceLayerEntry = (entryId: string, resolvedEntry: MorivisLayerEntry) => {
 		if (!$activeLayerIdsStore.includes(entryId)) return;
 
 		layerEntries = layerEntries.map((entry) => {
@@ -545,7 +545,7 @@
 		});
 	};
 
-	const replaceShowDataEntry = (resolvedEntry: GeoDataEntry) => {
+	const replaceShowDataEntry = (resolvedEntry: MorivisLayerEntry) => {
 		if (!showDataEntry || showDataEntry.id !== resolvedEntry.id) return;
 		showDataEntry = mergeResolvedLayerEntry(showDataEntry, resolvedEntry);
 	};
@@ -556,7 +556,7 @@
 		if (!isLazyCatalogEntry(entryId) || pendingLazyEntryIds.has(entryId)) return;
 
 		pendingLazyEntryIds.add(entryId);
-		void resolveGeoDataEntry(entryId)
+		void resolveMorivisLayerEntry(entryId)
 			.then((resolvedEntry) => {
 				if (!resolvedEntry) return;
 				replaceLayerEntry(entryId, resolvedEntry);
@@ -575,7 +575,7 @@
 		if (!entryId || !isLazyCatalogEntry(entryId)) return;
 		if (!needsLazyHydration(previewEntry)) return;
 
-		void resolveGeoDataEntry(entryId)
+		void resolveMorivisLayerEntry(entryId)
 			.then((resolvedEntry) => {
 				if (!resolvedEntry) return;
 				replaceShowDataEntry(resolvedEntry);

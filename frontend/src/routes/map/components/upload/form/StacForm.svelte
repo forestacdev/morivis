@@ -12,7 +12,7 @@
 		WEB_MERCATOR_MAX_LNG
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type {
 		RasterImageEntry,
 		RasterCogEntry,
@@ -54,7 +54,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 	}
 

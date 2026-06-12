@@ -3,7 +3,7 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import {
 		formatDate,
 		type FieldDef,
@@ -16,7 +16,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 	}
@@ -51,7 +51,7 @@
 		}
 	});
 
-	const getTemporalItemsFromEntry = (entry: GeoDataEntry): VectorTemporalItem[] => {
+	const getTemporalItemsFromEntry = (entry: MorivisLayerEntry): VectorTemporalItem[] => {
 		if (entry.type !== 'vector' || entry.format.type !== 'geojson') return [];
 
 		const values = new Map<string, VectorTemporalItem>();
@@ -80,7 +80,7 @@
 		return Array.from(values.values()).sort((a, b) => a.timestamp - b.timestamp);
 	};
 
-	const applyTcxTemporalProperties = (entry: GeoDataEntry) => {
+	const applyTcxTemporalProperties = (entry: MorivisLayerEntry) => {
 		if (entry.type !== 'vector') return;
 
 		entry.properties.fields = entry.properties.fields.map((field) =>

@@ -1,5 +1,5 @@
 import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import { esriFeatureProtocol } from '$routes/map/protocol/vector/esri-feature';
@@ -318,7 +318,7 @@ export async function generateMapImageDOM(
 	return parallelQueue.add(() => _generateMapImageParallel(style, options));
 }
 
-export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
+export const generateVectorImageUrl = async (_layerEntry: MorivisLayerEntry) => {
 	const url = CoverImageManager.get(_layerEntry.id);
 	if (url) return url;
 
@@ -381,7 +381,7 @@ export const generateVectorImageUrl = async (_layerEntry: GeoDataEntry) => {
 				: _layerEntry.metaData.bounds,
 			maxZoom: _layerEntry.metaData.xyzImageTile?.z ?? _layerEntry.metaData.maxZoom
 		}
-	} as GeoDataEntry;
+	} as MorivisLayerEntry;
 
 	const sources = await createSourcesItems([minimumEntry], 'preview');
 	const layers = await createLayersItems([minimumEntry], 'preview');

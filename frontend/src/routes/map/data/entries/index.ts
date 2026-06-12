@@ -1,4 +1,4 @@
-import type { GeoDataEntry, GeoDataEntryCatalogItem } from '$routes/map/data/types';
+import type { MorivisLayerEntry, MorivisLayerEntryCatalogItem } from '$routes/map/data/types';
 import { activeLayerIdsStore } from '$routes/stores/layers';
 
 import { encode } from '$routes/map/utils/data/normalize';
@@ -8,7 +8,7 @@ import Fuse from 'fuse.js';
 
 // 共通の初期化処理
 // visible を true にする
-const initData = (data: GeoDataEntry[]) => {
+const initData = (data: MorivisLayerEntry[]) => {
 	try {
 		data.forEach((value) => {
 			value.style.visible = true;
@@ -23,8 +23,8 @@ const initData = (data: GeoDataEntry[]) => {
 
 const isDev = !import.meta.env.PROD;
 
-type EntryModule = { default: GeoDataEntry; };
-type CatalogModule = { default: GeoDataEntryCatalogItem; };
+type EntryModule = { default: MorivisLayerEntry; };
+type CatalogModule = { default: MorivisLayerEntryCatalogItem; };
 
 const allModules = import.meta.glob<EntryModule>(
 	[
@@ -41,7 +41,7 @@ const lazyEntryModules = import.meta.glob<CatalogModule>(
 	{ eager: true }
 );
 
-const markEntryNeedsLazyHydration = (entry: GeoDataEntry, value: boolean): GeoDataEntry => {
+const markEntryNeedsLazyHydration = (entry: MorivisLayerEntry, value: boolean): MorivisLayerEntry => {
 	entry.metaData.needsLazyHydration = value;
 	return entry;
 };
@@ -56,7 +56,7 @@ const allEntries = [...staticEntries, ...lazyEntries];
 const debugEntries = isDev ? allEntries.filter((entry) => entry.id.startsWith('!')) : [];
 const hasDebugEntries = debugEntries.length > 0;
 
-const entryCatalogItems: GeoDataEntryCatalogItem[] = hasDebugEntries
+const entryCatalogItems: MorivisLayerEntryCatalogItem[] = hasDebugEntries
 	? [
 		...Object.values(allModules)
 			.filter((mod) => mod.default.id.startsWith('!'))
@@ -74,7 +74,7 @@ if (hasDebugEntries) {
 	console.warn('デバッグ用データエントリが読み込まれました。');
 	activeLayerIdsStore.setLayers(debugEntries.map((entry) => entry.id));
 }
-export const entries: GeoDataEntry[] = entryCatalogItems
+export const entries: MorivisLayerEntry[] = entryCatalogItems
 	.map((item) => item.entry)
 	.sort((a, b) => a.metaData.name.localeCompare(b.metaData.name, 'ja'));
 
@@ -94,17 +94,17 @@ export const geoDataEntries = (() => {
 	return initData(entries);
 })();
 
-const cloneStyle = (style: GeoDataEntry['style']): GeoDataEntry['style'] =>
-	JSON.parse(JSON.stringify(style)) as GeoDataEntry['style'];
+const cloneStyle = (style: MorivisLayerEntry['style']): MorivisLayerEntry['style'] =>
+	JSON.parse(JSON.stringify(style)) as MorivisLayerEntry['style'];
 
-const initialEntryStyleMap = new Map<string, GeoDataEntry['style']>(
+const initialEntryStyleMap = new Map<string, MorivisLayerEntry['style']>(
 	entries.map((entry) => [entry.id, cloneStyle(entry.style)])
 );
 
-const resolvedLazyEntryMap = new Map<string, GeoDataEntry>();
-const inflightLazyEntryMap = new Map<string, Promise<GeoDataEntry>>();
+const resolvedLazyEntryMap = new Map<string, MorivisLayerEntry>();
+const inflightLazyEntryMap = new Map<string, Promise<MorivisLayerEntry>>();
 
-export const registerInitialEntryStyle = (entry: GeoDataEntry) => {
+export const registerInitialEntryStyle = (entry: MorivisLayerEntry) => {
 	if (initialEntryStyleMap.has(entry.id)) return;
 	initialEntryStyleMap.set(entry.id, cloneStyle(entry.style));
 };
@@ -113,13 +113,13 @@ export const unregisterInitialEntryStyle = (entryId: string) => {
 	initialEntryStyleMap.delete(entryId);
 };
 
-export const getInitialEntryStyle = (entryId: string): GeoDataEntry['style'] | undefined => {
+export const getInitialEntryStyle = (entryId: string): MorivisLayerEntry['style'] | undefined => {
 	const style = initialEntryStyleMap.get(entryId);
 	if (!style) return undefined;
 	return cloneStyle(style);
 };
 
-export const findCatalogEntry = (entryId: string): GeoDataEntry | undefined => {
+export const findCatalogEntry = (entryId: string): MorivisLayerEntry | undefined => {
 	return entryCatalogMap.get(entryId)?.entry;
 };
 
@@ -127,11 +127,11 @@ export const isLazyCatalogEntry = (entryId: string): boolean => {
 	return lazyEntryIdSet.has(entryId);
 };
 
-export const needsLazyHydration = (entry: GeoDataEntry): boolean => {
+export const needsLazyHydration = (entry: MorivisLayerEntry): boolean => {
 	return entry.metaData.needsLazyHydration === true;
 };
 
-export const resolveGeoDataEntry = async (entryId: string): Promise<GeoDataEntry | null> => {
+export const resolveMorivisLayerEntry = async (entryId: string): Promise<MorivisLayerEntry | null> => {
 	const catalogItem = entryCatalogMap.get(entryId);
 	if (!catalogItem) return null;
 
@@ -147,7 +147,7 @@ export const resolveGeoDataEntry = async (entryId: string): Promise<GeoDataEntry
 
 	const loadPromise = catalogItem
 		.loadEntry()
-		.then((entry: GeoDataEntry) => {
+		.then((entry: MorivisLayerEntry) => {
 			markEntryNeedsLazyHydration(entry, false);
 			resolvedLazyEntryMap.set(entryId, entry);
 			return entry;
@@ -163,7 +163,7 @@ export const resolveGeoDataEntry = async (entryId: string): Promise<GeoDataEntry
 export const layerDataFuse = new Fuse(geoDataEntries, {
 	keys: ['metaData.name', 'metaData.tags', 'metaData.location', 'metaData.attribution'],
 	threshold: 0.3,
-	getFn: (obj: GeoDataEntry, path: string | string[]) => {
+	getFn: (obj: MorivisLayerEntry, path: string | string[]) => {
 		const values = [];
 		if (obj.metaData.name) values.push(encode(obj.metaData.name));
 		if (obj.metaData.location) values.push(encode(obj.metaData.location));

@@ -9,14 +9,14 @@
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import { getInitialEntryStyle } from '$routes/map/data/entries';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { resetLayerStyleConfirm } from '$routes/stores/confirmation';
 
 	interface Props {
-		layerEntry: GeoDataEntry | null;
-		tempLayerEntries: GeoDataEntry[];
+		layerEntry: MorivisLayerEntry | null;
+		tempLayerEntries: MorivisLayerEntry[];
 	}
 
 	let { layerEntry = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
@@ -36,7 +36,7 @@
 	// 	}
 	// })();
 	let src = $state<string | undefined>(undefined);
-	const getImage = async (_layerEntry: GeoDataEntry) => {
+	const getImage = async (_layerEntry: MorivisLayerEntry) => {
 		try {
 			const imageResult = await getLayerImage(_layerEntry);
 			src = imageResult ? imageResult.url : undefined;

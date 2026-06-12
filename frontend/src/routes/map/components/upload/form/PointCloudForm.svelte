@@ -7,7 +7,7 @@
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { parseObjPointCloudFile } from '$routes/map/utils/formats/obj';
 	import { parseXyzFile } from '$routes/map/utils/formats/xyz';
@@ -19,7 +19,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		showZoneForm: boolean;

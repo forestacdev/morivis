@@ -8,9 +8,9 @@
 	import RangeSlider from '../../atoms/RangeSlider.svelte';
 
 	import { ICONS } from '$lib/icons';
-	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
-		RasterEntry,
+		MorivisRasterEntry,
 		RasterImageEntry,
 		RasterCategoricalStyle,
 		RasterBaseMapStyle,
@@ -18,7 +18,7 @@
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
-	import type { VectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
+	import type { MorivisVectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getTopexCacheKey, getTwiCacheKey } from '$routes/map/utils/formats/geotiff';
 	import {
@@ -32,16 +32,16 @@
 	} from '$routes/map/utils/vector/dimension-runtime';
 	import { mapStore } from '$routes/stores/map';
 
-	type DimensionEnabledRasterEntry = RasterEntry<
+	type DimensionEnabledRasterEntry = MorivisRasterEntry<
 		RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
 	>;
 
-	type DimensionEnabledVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;
+	type DimensionEnabledVectorEntry = MorivisVectorEntry<GeoJsonMetaData | TileMetaData>;
 
 	type DimensionEnabledEntry =
 		| DimensionEnabledRasterEntry
 		| DimensionEnabledVectorEntry
-		| ModelMeshEntry<MeshStyle>;
+		| MeshEntry<MeshStyle>;
 
 	interface Props {
 		layerEntry: DimensionEnabledEntry;
@@ -58,7 +58,7 @@
 	): entry is DimensionEnabledVectorEntry =>
 		entry.type === 'vector' && Boolean(getVectorDimension(entry));
 
-	const isTemporalMeshEntry = (entry: DimensionEnabledEntry): entry is ModelMeshEntry<MeshStyle> =>
+	const isTemporalMeshEntry = (entry: DimensionEnabledEntry): entry is MeshEntry<MeshStyle> =>
 		entry.type === 'model' &&
 		entry.style.type === 'mesh' &&
 		Boolean(entry.properties?.temporal?.dimension);

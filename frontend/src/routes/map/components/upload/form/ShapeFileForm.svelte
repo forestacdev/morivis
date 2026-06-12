@@ -9,7 +9,7 @@
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { shpFileToGeojson, readCpgEncoding } from '$routes/map/utils/formats/shp';
 	import { isBboxValid, isBbox2D } from '$routes/map/utils/map/bbox';
@@ -19,7 +19,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		showZoneForm: boolean; // 座標系フォームの表示状態

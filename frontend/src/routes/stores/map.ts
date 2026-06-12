@@ -23,7 +23,7 @@ import type {
 import { Protocol } from 'pmtiles';
 import { type Writable, writable } from 'svelte/store';
 
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { Opacity } from '$routes/map/data/types';
 import { getMapParams, set3dParams, setMapParams } from '$routes/map/utils/platform/url-params';
 import { isDebugMode } from '$routes/stores';
@@ -50,11 +50,11 @@ import {
 	WEB_MERCATOR_MIN_LNG
 } from '$routes/map/data/entries/_meta_data/_bounds';
 import {
-	type AnyModelTiles3DEntry,
+	type AnyTiles3DEntry,
 	type MeshStyle,
-	type ModelDeckVectorEntry,
-	type ModelMeshEntry,
-	type ModelPointCloudEntry
+	type DeckVectorEntry,
+	type MeshEntry,
+	type PointCloudEntry
 } from '$routes/map/data/types/model';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import {
@@ -776,14 +776,14 @@ const createMapStore = () => {
 
 	// 現在のエントリIDを追跡
 	let currentThreeModelIds: Set<string> = new Set();
-	let currentDeckTiles3dEntries = new Map<string, AnyModelTiles3DEntry>();
-	let currentDeckPointCloudEntries = new Map<string, ModelPointCloudEntry>();
-	let currentDeckVectorEntries = new Map<string, ModelDeckVectorEntry>();
+	let currentDeckTiles3dEntries = new Map<string, AnyTiles3DEntry>();
+	let currentDeckPointCloudEntries = new Map<string, PointCloudEntry>();
+	let currentDeckVectorEntries = new Map<string, DeckVectorEntry>();
 
 	const syncDeckOverlay = async (
-		tiles3dEntries: AnyModelTiles3DEntry[],
-		pointCloudEntries: ModelPointCloudEntry[] = [],
-		deckVectorEntries: ModelDeckVectorEntry[] = []
+		tiles3dEntries: AnyTiles3DEntry[],
+		pointCloudEntries: PointCloudEntry[] = [],
+		deckVectorEntries: DeckVectorEntry[] = []
 	) => {
 		currentDeckTiles3dEntries = new Map(tiles3dEntries.map((entry) => [entry.id, entry]));
 		currentDeckPointCloudEntries = new Map(pointCloudEntries.map((entry) => [entry.id, entry]));
@@ -808,7 +808,7 @@ const createMapStore = () => {
 	};
 
 	const applyTemporalModelMeshTimeStep = (
-		entry: ModelMeshEntry<MeshStyle>,
+		entry: MeshEntry<MeshStyle>,
 		timeIndex: number
 	): boolean => {
 		const cacheEntry = NetCDFDataCache.get(entry.id);
@@ -842,7 +842,7 @@ const createMapStore = () => {
 
 	// Three.js モデルを設定（差分更新）
 	const setThreeLayer = async (
-		newEntries: ModelMeshEntry<MeshStyle>[],
+		newEntries: MeshEntry<MeshStyle>[],
 		_type: 'main' | 'preview' = 'main'
 	): Promise<void> => {
 		if (_type === 'preview' && newEntries.length > 0) {
@@ -898,7 +898,7 @@ const createMapStore = () => {
 	};
 
 	const setTemporalModelTimeStep = async (
-		entry: ModelMeshEntry<MeshStyle>,
+		entry: MeshEntry<MeshStyle>,
 		timeIndex: number
 	): Promise<void> => {
 		const dimension = entry.properties?.temporal?.dimension;
@@ -921,14 +921,14 @@ const createMapStore = () => {
 		}
 	};
 
-	const setModelAnimationState = (entry: ModelMeshEntry<MeshStyle>) => {
+	const setModelAnimationState = (entry: MeshEntry<MeshStyle>) => {
 		threeJsManager.setModelAnimationState(entry);
 		if (map && isMapValid(map)) {
 			map.triggerRepaint();
 		}
 	};
 
-	const setModelStyle = (entry: ModelMeshEntry<MeshStyle>) => {
+	const setModelStyle = (entry: MeshEntry<MeshStyle>) => {
 		threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
 		threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
 		threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
@@ -941,9 +941,9 @@ const createMapStore = () => {
 	};
 
 	const setDeckModelStyleEntries = async (
-		tiles3dEntries: AnyModelTiles3DEntry[],
-		pointCloudEntries: ModelPointCloudEntry[] = [],
-		deckVectorEntries: ModelDeckVectorEntry[] = []
+		tiles3dEntries: AnyTiles3DEntry[],
+		pointCloudEntries: PointCloudEntry[] = [],
+		deckVectorEntries: DeckVectorEntry[] = []
 	) => {
 		await syncDeckOverlay(tiles3dEntries, pointCloudEntries, deckVectorEntries);
 	};
@@ -1206,7 +1206,7 @@ const createMapStore = () => {
 		map.easeTo(options);
 	};
 
-	const focusLayer = async (_entry: GeoDataEntry) => {
+	const focusLayer = async (_entry: MorivisLayerEntry) => {
 		if (!map || !isMapValid(map)) return;
 
 		// 現在の中心とターゲットの距離に応じてdurationを調整

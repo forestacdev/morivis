@@ -3,7 +3,7 @@
 	import { fade, fly, slide } from 'svelte/transition';
 
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import {
 		SUPPORTED_FILE_ACCEPT,
 		SUPPORTED_FILE_EXTENSIONS,
@@ -19,7 +19,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
 		remotePmtilesUrl: string | null;

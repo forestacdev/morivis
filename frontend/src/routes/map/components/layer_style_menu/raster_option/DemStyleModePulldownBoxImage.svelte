@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DemRangeColorStyle, RasterDemEntry } from '$routes/map/data/types/raster';
+	import type { DemRangeColorStyle, DemRasterEntry } from '$routes/map/data/types/raster';
 	import { type ImageResult, getLayerImage } from '$routes/map/utils/image';
 	import { isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 
@@ -9,7 +9,7 @@
 		name: string;
 		hoveredName: string;
 		showPullDown: boolean;
-		layerEntry: RasterDemEntry;
+		layerEntry: DemRasterEntry;
 	}
 
 	let {
@@ -24,11 +24,11 @@
 	let promise = $state<Promise<ImageResult | undefined>>();
 	let isImageError = $state<boolean>(false);
 
-	let copyEntry: RasterDemEntry = $derived.by(() => {
+	let copyEntry: DemRasterEntry = $derived.by(() => {
 		return {
 			...layerEntry,
 			style: { ...layerEntry.style, visualization: { ...layerEntry.style.visualization, mode } }
-		} as RasterDemEntry;
+		} as DemRasterEntry;
 	});
 
 	const normalizePreviewRangeStyle = (style: DemRangeColorStyle): DemRangeColorStyle => {

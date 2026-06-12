@@ -11,13 +11,13 @@ import type {
 	DemRangeColorStyle,
 	DerivedBandData,
 	RasterDemStyle,
-	RasterEntry
+	MorivisRasterEntry
 } from '$routes/map/data/types/raster';
 import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 
 import {
 	createAdjustableRange,
-	type GeoDataEntry,
+	type MorivisLayerEntry,
 	getAdjustableRangeValue
 } from '$routes/map/data/types';
 import {
@@ -285,7 +285,7 @@ export const getRasterTiffImageSource = async (
 };
 
 export const createSourcesItems = async (
-	_dataEntries: GeoDataEntry[],
+	_dataEntries: MorivisLayerEntry[],
 	_type: 'main' | 'preview' = 'main'
 ): Promise<{ [_: string]: SourceSpecification; }> => {
 	// 各エントリの非同期処理結果を配列に格納
@@ -765,7 +765,7 @@ export const createSourcesItems = async (
 };
 
 export const createTerrainSources = async (
-	_dataEntries: RasterEntry<RasterDemStyle>[],
+	_dataEntries: MorivisRasterEntry<RasterDemStyle>[],
 	_id: string
 ): Promise<{ [_: string]: RasterDEMSourceSpecification; }> => {
 	const sourceItems: { [_: string]: RasterDEMSourceSpecification; } = {};

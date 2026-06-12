@@ -12,7 +12,7 @@
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { layerDataFuse } from '$routes/map/data/entries';
 	import { getPrimaryImageMedia, propData } from '$routes/map/data/entries/_prop_data';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { type FeatureMenuData } from '$routes/map/types';
 	import { encode } from '$routes/map/utils/data/normalize';
 	import type { ResultData } from '$routes/map/utils/data/search-result';
@@ -22,14 +22,14 @@
 	import { showDataMenu, showSearchMenu, showSearchSuggest } from '$routes/stores/ui';
 
 	interface Props {
-		layerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		searchSuggests: ResultData[] | null;
 		focusFeature: (result: ResultData) => void;
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 	}
 
 	let {

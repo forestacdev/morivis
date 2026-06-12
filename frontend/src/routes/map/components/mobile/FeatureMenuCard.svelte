@@ -4,7 +4,7 @@
 	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { generatePopupTitle } from '$routes/map/utils/data/properties';
 	import { debugLog } from '$routes/stores/debug';
@@ -12,7 +12,7 @@
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
-		layerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
 		showSelectionMarker: boolean;
 		children: Snippet;
 	}

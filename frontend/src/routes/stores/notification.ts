@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import { shake } from '$routes/map/utils/camera/effects/shake';
 import { writable } from 'svelte/store';
 
@@ -10,7 +10,7 @@ export type NotificationMessage = {
 	message: string;
 	type: 'success' | 'info' | 'error' | 'warning' | 'add';
 	persistent?: boolean;
-	entry?: GeoDataEntry;
+	entry?: MorivisLayerEntry;
 };
 
 /** 通知メッセージを表示するストア（最大3件） */
@@ -39,7 +39,7 @@ export const showNotification = (
 	if (type === 'error') shake();
 };
 
-export const showLayerAddedNotification = (entry: GeoDataEntry) => {
+export const showLayerAddedNotification = (entry: MorivisLayerEntry) => {
 	addNotification({
 		id: ++notificationId,
 		message: entry.metaData.name,

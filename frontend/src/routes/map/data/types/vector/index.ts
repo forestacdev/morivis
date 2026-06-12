@@ -95,4 +95,11 @@ export interface PointEntry<T> extends BaseVectorEntry {
 	auxiliaryLayers?: AuxiliaryLayersData;
 }
 
-export type VectorEntry<T> = PolygonEntry<T> | LineStringEntry<T> | PointEntry<T>;
+export type VectorPolygonEntry<T> = PolygonEntry<T>;
+export type VectorLineEntry<T> = LineStringEntry<T>;
+export type VectorPointEntry<T> = PointEntry<T>;
+
+export type MorivisVectorEntry<T> =
+	| VectorPolygonEntry<T>
+	| VectorLineEntry<T>
+	| VectorPointEntry<T>;

@@ -3,7 +3,7 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import {
 		formatDate,
 		type FieldDef,
@@ -21,7 +21,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 	}
@@ -150,7 +150,7 @@
 		return Array.from(values.values()).sort((left, right) => left.timestamp - right.timestamp);
 	};
 
-	const applyFieldFormats = (entry: GeoDataEntry) => {
+	const applyFieldFormats = (entry: MorivisLayerEntry) => {
 		if (entry.type !== 'vector') return;
 
 		const timeFields = new Set([
@@ -166,7 +166,7 @@
 		);
 	};
 
-	const applyTemporalProperties = (entry: GeoDataEntry, geojson: FeatureCollection) => {
+	const applyTemporalProperties = (entry: MorivisLayerEntry, geojson: FeatureCollection) => {
 		if (entry.type !== 'vector') return;
 
 		const temporalItems = getTemporalItemsFromGeojson(geojson);
@@ -184,7 +184,7 @@
 		entry.properties.attributeView.timeKey = 'time';
 	};
 
-	const applyAttributeView = (entry: GeoDataEntry) => {
+	const applyAttributeView = (entry: MorivisLayerEntry) => {
 		if (entry.type !== 'vector') return;
 
 		if (dataType === 'visits') {

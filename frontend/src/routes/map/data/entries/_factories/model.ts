@@ -6,8 +6,8 @@ import type { Region } from '$routes/map/data/types/location';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	MeshStyle,
-	ModelMeshEntry,
-	ModelTiles3DEntry,
+	MeshEntry,
+	Tiles3DEntry,
 	PointCloudStyle
 } from '$routes/map/data/types/model';
 import type { Tag } from '$routes/map/data/types/tags';
@@ -55,7 +55,7 @@ export interface MeshModelEntryConfig extends BaseModelConfig {
 	};
 }
 
-export function createMeshModelEntry(config: MeshModelEntryConfig): ModelMeshEntry<MeshStyle> {
+export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<MeshStyle> {
 	const {
 		id,
 		name,
@@ -144,7 +144,7 @@ export interface PointCloudEntryConfig extends BaseModelConfig {
 
 export function createPointCloudEntry(
 	config: PointCloudEntryConfig
-): ModelTiles3DEntry<PointCloudStyle> {
+): Tiles3DEntry<PointCloudStyle> {
 	const {
 		id,
 		name,

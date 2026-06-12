@@ -1,6 +1,6 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { KANAGAWA_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector/index';
+import type { TileMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector/index';
 
 import {
 	TREE_SPECIES_FIELDS,
@@ -17,7 +17,7 @@ import {
 	TREE_SPECIES_STYLE
 } from '$routes/map/data/entries/vector/_style';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: MorivisVectorEntry<TileMetaData> = {
 	id: 'kanagawa_tree_species',
 	type: 'vector',
 	format: {

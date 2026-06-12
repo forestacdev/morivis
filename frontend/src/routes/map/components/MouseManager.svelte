@@ -5,7 +5,7 @@
 	import { clickDebug } from './map-debug';
 
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { ZoomLevel } from '$routes/map/data/types/raster';
 	import type { PointEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
 	import type { FeatureMenuData, HighlightMarkerState } from '$routes/map/types';
@@ -42,8 +42,8 @@
 		clickedLayerIds: string[];
 		featureMenuData: FeatureMenuData | null;
 		highlightMarkerState: HighlightMarkerState | null;
-		layerEntries: GeoDataEntry[];
-		showDataEntry: GeoDataEntry | null;
+		layerEntries: MorivisLayerEntry[];
+		showDataEntry: MorivisLayerEntry | null;
 		cameraBearing: number;
 		isExternalCameraUpdate: boolean;
 		selectedSearchId: number | null;
@@ -129,7 +129,7 @@
 	const getHitQueryBox = (
 		point: MapMouseEvent['point'],
 		layerIds: string[],
-		layerHints: GeoDataEntry[]
+		layerHints: MorivisLayerEntry[]
 	): [[number, number], [number, number]] => {
 		// 点1発の queryRenderedFeatures だと、細かく分割された MultiPolygon や細線を取りこぼす。
 		// クリック周辺を小さい矩形で問い合わせて、見た目に対するヒット率を安定させる。

@@ -13,7 +13,7 @@
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import {
 		formatDate,
@@ -44,7 +44,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 	}
@@ -146,7 +146,7 @@
 		}
 	});
 
-	const getTemporalItemsFromEntry = (entry: GeoDataEntry): VectorTemporalItem[] => {
+	const getTemporalItemsFromEntry = (entry: MorivisLayerEntry): VectorTemporalItem[] => {
 		if (entry.type !== 'vector' || entry.format.type !== 'geojson') return [];
 
 		const values = new Map<string, VectorTemporalItem>();
@@ -175,7 +175,7 @@
 		return Array.from(values.values()).sort((a, b) => a.timestamp - b.timestamp);
 	};
 
-	const applyTemporalProperties = (entry: GeoDataEntry) => {
+	const applyTemporalProperties = (entry: MorivisLayerEntry) => {
 		if (entry.type !== 'vector') return;
 
 		entry.properties.fields = entry.properties.fields.map((field) =>

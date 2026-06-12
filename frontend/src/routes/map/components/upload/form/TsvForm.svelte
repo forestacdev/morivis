@@ -1,11 +1,11 @@
 <script lang="ts">
 	import DelimitedTextPointForm from '$routes/map/components/upload/form/DelimitedTextPointForm.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		showZoneForm: boolean;

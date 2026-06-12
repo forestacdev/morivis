@@ -2,14 +2,14 @@
 	import Icon from '@iconify/svelte';
 
 	import { getVisibilityIconName } from '$lib/icons';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { Opacity } from '$routes/map/data/types';
-	import type { MeshStyle, ModelMeshEntry } from '$routes/map/data/types/model';
+	import type { MeshStyle, MeshEntry } from '$routes/map/data/types/model';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
-		layerEntry: GeoDataEntry;
+		layerEntry: MorivisLayerEntry;
 		previewSrc?: string;
 	}
 
@@ -43,7 +43,7 @@
 		layerEntry.style.visible = false;
 		if (layerEntry.type !== 'model') return;
 		if (layerEntry.style.type === 'mesh') {
-			mapStore.setModelStyle(layerEntry as ModelMeshEntry<MeshStyle>);
+			mapStore.setModelStyle(layerEntry as MeshEntry<MeshStyle>);
 			return;
 		}
 		mapStore.setDeckModelVisibility(layerEntry.id, false);
@@ -54,7 +54,7 @@
 		layerEntry.style.opacity = opacity;
 		if (layerEntry.type !== 'model') return;
 		if (layerEntry.style.type === 'mesh') {
-			mapStore.setModelStyle(layerEntry as ModelMeshEntry<MeshStyle>);
+			mapStore.setModelStyle(layerEntry as MeshEntry<MeshStyle>);
 			return;
 		}
 		mapStore.setDeckModelOpacity(layerEntry.id, opacity);

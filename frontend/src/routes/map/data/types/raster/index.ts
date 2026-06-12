@@ -322,12 +322,16 @@ export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	};
 	style: T;
 }
-export type RasterEntry<T> =
+export type MorivisRasterEntry<T> =
 	| RasterImageEntry<T>
 	| RasterPMTilesEntry<T>
 	| RasterMBTilesEntry<T>
 	| RasterCogEntry<T>
 	| RasterWcsEntry<T>
 	| RasterGeoZarrEntry<T>;
-export type RasterDemEntry = RasterEntry<RasterDemStyle>;
-export type RasterCadEntry = RasterEntry<RasterCadStyle>;
+
+export type BaseMapRasterEntry = MorivisRasterEntry<RasterBaseMapStyle>;
+export type CategoricalRasterEntry = MorivisRasterEntry<RasterCategoricalStyle>;
+export type DemRasterEntry = MorivisRasterEntry<RasterDemStyle>;
+export type TiffRasterEntry = MorivisRasterEntry<RasterTiffStyle>;
+export type CadRasterEntry = MorivisRasterEntry<RasterCadStyle>;

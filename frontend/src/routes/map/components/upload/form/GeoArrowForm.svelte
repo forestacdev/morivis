@@ -5,7 +5,7 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import { createGeoArrowEntry } from '$routes/map/data/entries/model';
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import {
@@ -17,7 +17,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		showZoneForm: boolean;
@@ -109,7 +109,7 @@
 
 		const geometryType = selectedGeometryType as VectorEntryGeometryType;
 		const bounds = getGeoArrowBounds(geoArrowTable, geometryType);
-		let entry: GeoDataEntry | undefined;
+		let entry: MorivisLayerEntry | undefined;
 
 		if (selectedRenderMode === 'deck') {
 			entry = createGeoArrowEntry(entryName, geoArrowTable, geometryType, bounds ?? undefined);

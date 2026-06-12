@@ -2,7 +2,7 @@
 	import { fly } from 'svelte/transition';
 
 	import { geoDataEntries, registerInitialEntryStyle } from '$routes/map/data/entries';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { getLayerType } from '$routes/map/utils/entries';
 	import { resetWcsViewportReady } from '$routes/map/utils/formats/wcs/runtime';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
@@ -12,15 +12,15 @@
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
-		tempLayerEntries: GeoDataEntry[];
+		showDataEntry: MorivisLayerEntry | null;
+		tempLayerEntries: MorivisLayerEntry[];
 	}
 
 	let { showDataEntry = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
 
 	const isWcsEntry = (
-		entry: GeoDataEntry
-	): entry is Extract<GeoDataEntry, { type: 'raster'; format: { type: 'wcs' } }> =>
+		entry: MorivisLayerEntry
+	): entry is Extract<MorivisLayerEntry, { type: 'raster'; format: { type: 'wcs' } }> =>
 		entry.type === 'raster' && entry.format.type === 'wcs';
 
 	const addData = () => {

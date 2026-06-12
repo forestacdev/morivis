@@ -5,7 +5,7 @@
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createRasterEntry } from '$routes/map/data/entries/raster';
 	import { createVectorTileEntry } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import {
 		fetchArcGisMapServerInfo,
@@ -27,7 +27,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 	}
 

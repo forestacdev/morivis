@@ -10,7 +10,7 @@
 		getGeometryTypes,
 		filterByGeometryType
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import {
@@ -41,7 +41,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		showZoneForm: boolean;
@@ -224,7 +224,7 @@
 		}
 	});
 
-	const getTemporalItemsFromEntry = (entry: GeoDataEntry): VectorTemporalItem[] => {
+	const getTemporalItemsFromEntry = (entry: MorivisLayerEntry): VectorTemporalItem[] => {
 		if (entry.type !== 'vector') return [];
 		if (entry.format.type !== 'geojson') return [];
 
@@ -259,7 +259,7 @@
 		return Array.from(values.values()).sort((a, b) => a.timestamp - b.timestamp);
 	};
 
-	const applyKmlTemporalProperties = (entry: GeoDataEntry) => {
+	const applyKmlTemporalProperties = (entry: MorivisLayerEntry) => {
 		if (entry.type !== 'vector') return;
 
 		entry.properties.fields = entry.properties.fields.map((field) =>

@@ -4,11 +4,11 @@ import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	MeshFormatType,
 	MeshStyle,
-	ModelGeoArrowEntry,
-	ModelGeoJson3DEntry,
-	ModelMeshEntry,
-	ModelPointCloudEntry,
-	ModelTiles3DEntry,
+	GeoArrowEntry,
+	GeoJson3DEntry,
+	MeshEntry,
+	PointCloudEntry,
+	Tiles3DEntry,
 	PointCloudStyle
 } from '$routes/map/data/types/model';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
@@ -21,7 +21,7 @@ export const createTiles3DEntry = (
 	name: string,
 	url: string,
 	bounds?: [number, number, number, number]
-): ModelTiles3DEntry<PointCloudStyle> => ({
+): Tiles3DEntry<PointCloudStyle> => ({
 	id: '3dtiles_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
@@ -61,7 +61,7 @@ export const createPointCloudEntry = (
 		pointCount: number;
 	},
 	bounds?: [number, number, number, number]
-): ModelPointCloudEntry => ({
+): PointCloudEntry => ({
 	id: 'pointcloud_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
@@ -90,7 +90,7 @@ export const createGeoArrowEntry = (
 	table: Table,
 	geometryType: VectorEntryGeometryType,
 	bounds?: [number, number, number, number]
-): ModelGeoArrowEntry => ({
+): GeoArrowEntry => ({
 	id: 'geoarrow_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
@@ -118,7 +118,7 @@ export const createGeoJson3DEntry = (
 	data: FeatureCollection,
 	geometryType: VectorEntryGeometryType,
 	bounds?: [number, number, number, number]
-): ModelGeoJson3DEntry => ({
+): GeoJson3DEntry => ({
 	id: 'geojson3d_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
@@ -158,7 +158,7 @@ export const createGlbEntry = (
 	options?: {
 		normalizeToLocalOrigin?: boolean;
 	}
-): ModelMeshEntry<MeshStyle> => {
+): MeshEntry<MeshStyle> => {
 	// 3MF は Z-up 前提のモデルが多く、そのままだと map 上で横倒しになるため基準回転を分ける。
 	const baseRotationX = formatType === '3mf' ? 90 : -180;
 

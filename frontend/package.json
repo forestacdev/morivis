@@ -23,7 +23,9 @@
 		"test:e2e": "playwright test",
 		"preinstall": "npx only-allow pnpm",
 		"generate-pwa-assets": "pwa-assets-generator",
-		"typedoc": "npx typedoc --plugin typedoc-plugin-markdown"
+		"typedoc": "npx typedoc --plugin typedoc-plugin-markdown",
+		"typedoc:json": "pnpm exec typedoc --json docs/typedoc.json",
+		"typedoc:diagram": "pnpm run typedoc:json && node ./scripts/generate-typedoc-mermaid.mjs && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i docs/diagrams/morivis-layer-entry-hierarchy.mmd -o docs/diagrams/morivis-layer-entry-hierarchy.svg && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i docs/diagrams/morivis-layer-entry-hierarchy.mmd -o docs/diagrams/morivis-layer-entry-hierarchy.png -b transparent"
 	},
 	"devDependencies": {
 		"@dprint/json": "^0.21.3",

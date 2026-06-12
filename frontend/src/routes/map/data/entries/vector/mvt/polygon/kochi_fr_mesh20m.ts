@@ -1,8 +1,8 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { KOCHI_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector/index';
+import type { TileMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector/index';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: MorivisVectorEntry<TileMetaData> = {
 	id: 'kochi_fr_mesh20m',
 	type: 'vector',
 	format: {

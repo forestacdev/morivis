@@ -7,14 +7,14 @@
 	import type {
 		DemRangeColorStyle,
 		DemStyleMode,
-		RasterDemEntry
+		DemRasterEntry
 	} from '$routes/map/data/types/raster';
 	import { getLayerImage, type ImageResult } from '$routes/map/utils/image';
 	import { isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 
 	interface Props {
 		isMode: DemStyleMode;
-		layerEntry: RasterDemEntry;
+		layerEntry: DemRasterEntry;
 	}
 	let { isMode = $bindable(), layerEntry }: Props = $props();
 	interface DemStyleModeOptions {
@@ -94,7 +94,7 @@
 				};
 	};
 
-	const getDemPreviewKey = (entry: RasterDemEntry): string => {
+	const getDemPreviewKey = (entry: DemRasterEntry): string => {
 		return JSON.stringify({
 			id: entry.id,
 			mode: entry.style.visualization.mode,

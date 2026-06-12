@@ -4,7 +4,7 @@ import {
 	type JmaAmedasConfig,
 	loadAmedasPointEntry
 } from '$routes/map/api/amedas';
-import type { GeoDataEntryCatalogItem } from '$routes/map/data/types';
+import type { MorivisLayerEntryCatalogItem } from '$routes/map/data/types';
 
 const config: JmaAmedasConfig = {
 	id: 'jma_amedas',
@@ -18,7 +18,7 @@ const config: JmaAmedasConfig = {
 
 const entry = createAmedasFallbackEntry(config);
 
-const catalogItem: GeoDataEntryCatalogItem = {
+const catalogItem: MorivisLayerEntryCatalogItem = {
 	entry,
 	loadEntry: () => loadAmedasPointEntry(config)
 };

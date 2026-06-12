@@ -1,9 +1,9 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 
-import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector/index';
+import type { TileMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector/index';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: MorivisVectorEntry<TileMetaData> = {
 	id: '',
 	type: 'vector',
 	format: {

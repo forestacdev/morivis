@@ -16,7 +16,7 @@
 	import GlobeControl from '$routes/map/components/map_control/GlobeControl.svelte';
 	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { ResultData, ResultAddressData } from '$routes/map/utils/data/search-result';
 	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
@@ -27,14 +27,14 @@
 	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
-		layerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
 		inputSearchWord: string;
 		featureMenuData: FeatureMenuData | null;
 		selectedSearchResultData: ResultData | null;
 		showSelectionMarker: boolean;
 		selectionMarkerLngLat: LngLat | null;
 		searchResults: ResultData[] | null;
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		focusFeature: (result: ResultData) => void;
 	}
 

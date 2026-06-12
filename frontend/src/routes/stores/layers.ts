@@ -1,6 +1,6 @@
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
 import { EntryIdToTypeMap, unregisterInitialEntryStyle } from '$routes/map/data/entries';
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 import { JoinDataCache } from '$routes/map/utils/cache/join-data-cache';
 import { rotationalVibration } from '$routes/map/utils/camera/effects/shake';
@@ -121,7 +121,7 @@ const createLayerStore = () => {
 /** 表示中レイヤーのIDを管理するストア */
 export const activeLayerIdsStore = createLayerStore();
 
-export const getEntryIds = (layerEntries: GeoDataEntry[]): string[] => {
+export const getEntryIds = (layerEntries: MorivisLayerEntry[]): string[] => {
 	return layerEntries.map((entry) => entry.id);
 };
 

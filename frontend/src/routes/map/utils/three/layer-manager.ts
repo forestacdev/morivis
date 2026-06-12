@@ -4,7 +4,7 @@ import {
 	DEFAULT_MESH_SHADING,
 	type MeshShadingStyle,
 	type MeshStyle,
-	type ModelMeshEntry
+	type MeshEntry
 } from '$routes/map/data/types/model';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import {
@@ -92,7 +92,7 @@ const loadAmfLoaderModule = async () => {
 };
 
 interface LoadedModel {
-	entry: ModelMeshEntry<MeshStyle>;
+	entry: MeshEntry<MeshStyle>;
 	object: THREE.Object3D;
 	transform: ModelTransform;
 	mixer?: THREE.AnimationMixer;
@@ -523,7 +523,7 @@ export class ThreeJsLayerManager {
 	}
 
 	/** モデルを追加。プレビューに同じIDのモデルがあれば再利用する */
-	addModel(entry: ModelMeshEntry<MeshStyle>, _type: 'main' | 'preview' = 'main'): Promise<void> {
+	addModel(entry: MeshEntry<MeshStyle>, _type: 'main' | 'preview' = 'main'): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!this.modelGroup || !this.previewModelGroup) {
 				reject(new Error('modelGroup not initialized'));
@@ -849,11 +849,11 @@ export class ThreeJsLayerManager {
 	}
 
 	/** 複数のモデルを追加 */
-	async addModels(entries: ModelMeshEntry<MeshStyle>[]): Promise<void> {
+	async addModels(entries: MeshEntry<MeshStyle>[]): Promise<void> {
 		await Promise.all(entries.map((entry) => this.addModel(entry)));
 	}
 
-	updateTransform(entries: ModelMeshEntry<MeshStyle>[]): void {
+	updateTransform(entries: MeshEntry<MeshStyle>[]): void {
 		entries.forEach((entry) => {
 			const loaded = this.loadedModels.get(entry.id);
 			if (!loaded) return;
@@ -895,7 +895,7 @@ export class ThreeJsLayerManager {
 	}
 
 	/** モデルを入れ替え（既存をすべて削除して新しいモデルを追加） */
-	async replaceModels(entries: ModelMeshEntry<MeshStyle>[]): Promise<void> {
+	async replaceModels(entries: MeshEntry<MeshStyle>[]): Promise<void> {
 		this.clearAllModels();
 		await this.addModels(entries);
 	}
@@ -942,7 +942,7 @@ export class ThreeJsLayerManager {
 		this.syncAnimationState(loaded);
 	}
 
-	setModelAnimationState(entry: ModelMeshEntry<MeshStyle>): void {
+	setModelAnimationState(entry: MeshEntry<MeshStyle>): void {
 		const loaded = this.loadedModels.get(entry.id);
 		if (!loaded) return;
 		loaded.entry = entry;

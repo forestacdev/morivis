@@ -1,7 +1,7 @@
 import { PUBLIC_INIT_DEBUG_MODE } from '$env/static/public';
 import { writable } from 'svelte/store';
 
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 
 /**  デバッグモード 開発時のみ */
 export const isDebugMode = writable<boolean>(PUBLIC_INIT_DEBUG_MODE === '1');
@@ -28,7 +28,7 @@ export const isStreetView = writable<boolean>(false);
 export const selectedLayerId = writable<string>('');
 
 export interface SelectedHighlightData {
-	layerId: GeoDataEntry['id'];
+	layerId: MorivisLayerEntry['id'];
 	featureId: string | number;
 }
 

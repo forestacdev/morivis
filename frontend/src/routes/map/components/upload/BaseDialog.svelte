@@ -48,15 +48,15 @@
 	import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';
 	import WktForm from '$routes/map/components/upload/form/WktForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDialogType: DialogType;
-		tempLayerEntries: GeoDataEntry[];
-		showDataEntry: GeoDataEntry | null;
+		tempLayerEntries: MorivisLayerEntry[];
+		showDataEntry: MorivisLayerEntry | null;
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;

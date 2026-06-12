@@ -4,7 +4,7 @@
 
 	import MobileCompass from './MobileCompass.svelte';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { isStreetView, isStyleEdit } from '$routes/stores';
 	import {
@@ -14,7 +14,7 @@
 		isActiveMobileMenu
 	} from '$routes/stores/ui';
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		featureMenuData: FeatureMenuData | null;
 	}
 

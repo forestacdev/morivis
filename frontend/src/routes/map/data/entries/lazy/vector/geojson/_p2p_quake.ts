@@ -3,7 +3,7 @@ import {
 	loadEarthquakePointEntry,
 	type QuakePointConfig
 } from '$routes/map/api/quake';
-import type { GeoDataEntryCatalogItem } from '$routes/map/data/types';
+import type { MorivisLayerEntryCatalogItem } from '$routes/map/data/types';
 
 const config: QuakePointConfig = {
 	id: 'p2p_quake',
@@ -16,7 +16,7 @@ const config: QuakePointConfig = {
 
 const entry = createEarthquakeFallbackEntry(config);
 
-const catalogItem: GeoDataEntryCatalogItem = {
+const catalogItem: MorivisLayerEntryCatalogItem = {
 	entry,
 	loadEntry: () => loadEarthquakePointEntry(config)
 };

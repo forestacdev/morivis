@@ -1,16 +1,20 @@
 import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attribution';
-import type { AnyModelEntry } from '$routes/map/data/types/model';
+import type { MorivisModelEntry } from '$routes/map/data/types/model';
 import type {
+	MorivisRasterEntry,
 	RasterBaseMapStyle,
 	RasterCadStyle,
 	RasterCategoricalStyle,
 	RasterDemStyle,
-	RasterEntry,
 	RasterTiffStyle,
 	TileXYZ
 } from '$routes/map/data/types/raster';
 import type { StyleJsonEntry } from '$routes/map/data/types/stylejson';
-import type { GeoJsonMetaData, TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
+import type {
+	GeoJsonMetaData,
+	MorivisVectorEntry,
+	TileMetaData
+} from '$routes/map/data/types/vector';
 import type { LayerSpecification, SourceSpecification } from 'maplibre-gl';
 import type { Region } from './location';
 import type { Tag } from './tags';
@@ -116,15 +120,15 @@ export interface BaseMetaData {
 	needsLazyHydration?: boolean;
 }
 
-export type AnyRasterEntry = RasterEntry<
+export type AnyRasterEntry = MorivisRasterEntry<
 	RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
 >;
 
-export type AnyVectorEntry = VectorEntry<GeoJsonMetaData | TileMetaData>;
+export type AnyVectorEntry = MorivisVectorEntry<GeoJsonMetaData | TileMetaData>;
 
-export type GeoDataEntry = AnyRasterEntry | AnyVectorEntry | AnyModelEntry | StyleJsonEntry;
+export type MorivisLayerEntry = AnyRasterEntry | AnyVectorEntry | MorivisModelEntry | StyleJsonEntry;
 
-export interface GeoDataEntryCatalogItem {
-	entry: GeoDataEntry;
-	loadEntry?: () => Promise<GeoDataEntry>;
+export interface MorivisLayerEntryCatalogItem {
+	entry: MorivisLayerEntry;
+	loadEntry?: () => Promise<MorivisLayerEntry>;
 }

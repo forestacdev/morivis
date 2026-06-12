@@ -1,7 +1,7 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
-import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector';
+import type { TileMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: MorivisVectorEntry<TileMetaData> = {
 	id: 'ensyurin_road',
 	type: 'vector',
 	format: {

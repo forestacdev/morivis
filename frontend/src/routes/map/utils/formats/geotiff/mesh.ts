@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
-import type { MeshStyle, ModelMeshEntry } from '$routes/map/data/types/model';
+import type { MeshStyle, MeshEntry } from '$routes/map/data/types/model';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 
@@ -371,7 +371,7 @@ const buildRasterMeshGeometry = async ({
 
 export const createRasterMeshEntry = async (
 	params: CreateRasterMeshEntryParams
-): Promise<ModelMeshEntry<MeshStyle>> => {
+): Promise<MeshEntry<MeshStyle>> => {
 	const { id, name, bounds, mapImage } = params;
 	const { glb, center, minHeight, maxHeight } = await buildRasterMeshGeometry(params);
 	const url = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }));

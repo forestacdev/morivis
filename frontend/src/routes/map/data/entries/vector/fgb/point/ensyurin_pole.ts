@@ -1,8 +1,8 @@
 import { ENTRY_FGB_PATH, FEATURE_IMAGE_BASE_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { DEFAULT_POINT_LABEL_STYLE } from '$routes/map/data/entries/vector/_style';
-import type { GeoJsonMetaData, VectorEntry } from '$routes/map/data/types/vector';
+import type { GeoJsonMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector';
 
-const entry: VectorEntry<GeoJsonMetaData> = {
+const entry: MorivisVectorEntry<GeoJsonMetaData> = {
 	id: 'ensyurin_pole',
 	type: 'vector',
 	format: {

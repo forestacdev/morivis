@@ -3,11 +3,11 @@
 	import { fade } from 'svelte/transition';
 
 	import { ICONS } from '$lib/icons';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { ResultData } from '$routes/map/utils/data/search-result';
 	import { showSearchSuggest } from '$routes/stores/ui';
 	interface Props {
-		layerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
 		searchResults: ResultData[] | null;
 		searchSuggests: ResultData[] | null;
 		inputSearchWord: string;

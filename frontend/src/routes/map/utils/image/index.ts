@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { generatePmtilesImageUrl, getRasterImageUrl } from './raster';
@@ -105,12 +105,12 @@ export class TileProxy {
 }
 
 /** カバー画像のURLを取得する関数 */
-export const getCoverImageUrl = (_layerEntry: GeoDataEntry): string | undefined => {
+export const getCoverImageUrl = (_layerEntry: MorivisLayerEntry): string | undefined => {
 	return _layerEntry.metaData.coverImage ?? undefined;
 };
 
 /** 地図画像のURLを取得する関数 */
-export const getMapImageUrl = (_layerEntry: GeoDataEntry): string | undefined => {
+export const getMapImageUrl = (_layerEntry: MorivisLayerEntry): string | undefined => {
 	return _layerEntry.metaData.mapImage ?? undefined;
 };
 
@@ -144,7 +144,7 @@ const generatePlaceholderImage = (label: string, color = '#495a54'): string => {
 	return canvas.toDataURL('image/png');
 };
 
-const getMbtilesPreviewLabel = (_layerEntry: GeoDataEntry): string => {
+const getMbtilesPreviewLabel = (_layerEntry: MorivisLayerEntry): string => {
 	if (_layerEntry.type === 'vector') {
 		const geometryType = _layerEntry.format.geometryType;
 		if (geometryType === 'Point') return 'MBT Pt';
@@ -161,7 +161,7 @@ const getMbtilesPreviewLabel = (_layerEntry: GeoDataEntry): string => {
  * @returns 画像URLまたはundefined
  */
 export const getLayerImage = async (
-	_layerEntry: GeoDataEntry
+	_layerEntry: MorivisLayerEntry
 ): Promise<ImageResult | undefined> => {
 	try {
 		if (_layerEntry.metaData.mapImage) {

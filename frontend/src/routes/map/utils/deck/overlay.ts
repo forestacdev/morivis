@@ -7,11 +7,11 @@ import {
 } from '@geoarrow/deck.gl-layers';
 
 import type {
-	AnyModelTiles3DEntry,
-	ModelDeckVectorEntry,
-	ModelGeoArrowEntry,
-	ModelGeoJson3DEntry,
-	ModelPointCloudEntry
+	AnyTiles3DEntry,
+	DeckVectorEntry,
+	GeoArrowEntry,
+	GeoJson3DEntry,
+	PointCloudEntry
 } from '$routes/map/data/types/model';
 
 interface TileContent {
@@ -50,7 +50,7 @@ const hexToRgba = (color: string, alpha = 255): [number, number, number, number]
 
 const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
 
-export const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
+export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 	const altitudeOffset = dataEntry.metaData.altitude ?? 0;
 
 	return new Tile3DLayer({
@@ -75,7 +75,7 @@ export const createTiles3DLayer = (dataEntry: AnyModelTiles3DEntry) => {
 	});
 };
 
-const getPointCloudData = (dataEntry: ModelPointCloudEntry) => {
+const getPointCloudData = (dataEntry: PointCloudEntry) => {
 	const { positions, colors, pointCount } = dataEntry.format;
 	if (!positions || pointCount === 0) return null;
 
@@ -123,7 +123,7 @@ export const clearPointCloudDataCache = (entryId?: string) => {
 	pointCloudDataCache.clear();
 };
 
-export const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
+export const createPointCloudLayer = (dataEntry: PointCloudEntry) => {
 	const data = getPointCloudData(dataEntry);
 	if (!data) return null;
 
@@ -141,10 +141,10 @@ export const createPointCloudLayer = (dataEntry: ModelPointCloudEntry) => {
 	});
 };
 
-const isGeoArrowEntry = (dataEntry: ModelDeckVectorEntry): dataEntry is ModelGeoArrowEntry =>
+const isGeoArrowEntry = (dataEntry: DeckVectorEntry): dataEntry is GeoArrowEntry =>
 	dataEntry.format.type === 'geoarrow';
 
-const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
+const createGeoArrowLayer = (dataEntry: GeoArrowEntry) =>
 	dataEntry.format.geometryType === 'Point'
 		? new GeoArrowScatterplotLayer({
 			id: `geoarrow-layer-${dataEntry.id}`,
@@ -188,7 +188,7 @@ const createGeoArrowLayer = (dataEntry: ModelGeoArrowEntry) =>
 			beforeId: 'deck-reference-layer'
 		});
 
-const createGeoJson3DLayer = (dataEntry: ModelGeoJson3DEntry) =>
+const createGeoJson3DLayer = (dataEntry: GeoJson3DEntry) =>
 	new GeoJsonLayer({
 		id: `geojson-3d-layer-${dataEntry.id}`,
 		data: dataEntry.format.data,
@@ -208,7 +208,7 @@ const createGeoJson3DLayer = (dataEntry: ModelGeoJson3DEntry) =>
 		beforeId: 'deck-reference-layer'
 	});
 
-export const createDeckVectorLayer = (dataEntry: ModelDeckVectorEntry) => {
+export const createDeckVectorLayer = (dataEntry: DeckVectorEntry) => {
 	if (isGeoArrowEntry(dataEntry)) {
 		return createGeoArrowLayer(dataEntry);
 	}
@@ -217,9 +217,9 @@ export const createDeckVectorLayer = (dataEntry: ModelDeckVectorEntry) => {
 };
 
 export const createDeckOverlay = async (
-	tiles3dEntries: AnyModelTiles3DEntry[],
-	pointCloudEntries: ModelPointCloudEntry[] = [],
-	deckVectorEntries: ModelDeckVectorEntry[] = []
+	tiles3dEntries: AnyTiles3DEntry[],
+	pointCloudEntries: PointCloudEntry[] = [],
+	deckVectorEntries: DeckVectorEntry[] = []
 ) => {
 	const tiles3dLayers = tiles3dEntries.map((entry) => createTiles3DLayer(entry));
 	const pointCloudLayers = pointCloudEntries

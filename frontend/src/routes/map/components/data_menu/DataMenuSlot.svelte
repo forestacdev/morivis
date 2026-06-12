@@ -9,7 +9,7 @@
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import type { ImageResult } from '$routes/map/utils/image';
 	import { getLayerImage } from '$routes/map/utils/image';
@@ -21,8 +21,8 @@
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
-		dataEntry: GeoDataEntry;
-		showDataEntry: GeoDataEntry | null;
+		dataEntry: MorivisLayerEntry;
+		showDataEntry: MorivisLayerEntry | null;
 		itemHeight: number;
 		index: number;
 		isLeftEdge: boolean;

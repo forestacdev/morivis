@@ -1,9 +1,9 @@
 import { MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { TOKYO_23KU_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 
-import type { TileMetaData, VectorEntry } from '$routes/map/data/types/vector/index';
+import type { TileMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector/index';
 
-const entry: VectorEntry<TileMetaData> = {
+const entry: MorivisVectorEntry<TileMetaData> = {
 	id: 'plateau_lod2_mvt',
 	type: 'vector',
 	format: {

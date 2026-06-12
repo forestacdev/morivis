@@ -10,7 +10,7 @@
 	import {
 		type ColorMapType,
 		type DerivedBandData,
-		type RasterEntry,
+		type MorivisRasterEntry,
 		type RasterTiffStyle
 	} from '$routes/map/data/types/raster';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
@@ -25,7 +25,7 @@
 	const colorMapManager = new ColorMapManager();
 	const colorMapOptions = [...SEQUENTIAL_SCHEMES, ...COLORMAP_PRESET_NAMES];
 	interface Props {
-		layerEntry: RasterEntry<RasterTiffStyle>;
+		layerEntry: MorivisRasterEntry<RasterTiffStyle>;
 		showColorOption: boolean;
 		showDimensionOption: boolean;
 	}

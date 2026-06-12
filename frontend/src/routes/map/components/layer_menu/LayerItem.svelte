@@ -10,8 +10,8 @@
 	import { registerInitialEntryStyle } from '$routes/map/data/entries';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { MeshStyle, ModelMeshEntry } from '$routes/map/data/types/model';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type { MeshStyle, MeshEntry } from '$routes/map/data/types/model';
 	import { unregisterGeoZarr } from '$routes/map/protocol/geozarr';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
@@ -31,9 +31,9 @@
 		length: number;
 		isLast: boolean;
 		layerType: LayerType;
-		layerEntry: GeoDataEntry;
-		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
-		tempLayerEntries: GeoDataEntry[];
+		layerEntry: MorivisLayerEntry;
+		showDataEntry: MorivisLayerEntry | null; // データメニューの表示状態
+		tempLayerEntries: MorivisLayerEntry[];
 		enableFlip: boolean;
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
 		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ
@@ -99,7 +99,7 @@
 
 		// モデルは setStyle 再生成の対象外なので、表示切替を描画系へ直接同期する。
 		if (layerEntry.style.type === 'mesh') {
-			mapStore.setModelStyle(layerEntry as ModelMeshEntry<MeshStyle>);
+			mapStore.setModelStyle(layerEntry as MeshEntry<MeshStyle>);
 			return;
 		}
 
@@ -141,7 +141,7 @@
 		if (!layerEntry) return;
 		$isStyleEdit = false;
 		const uuid = crypto.randomUUID();
-		const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
+		const copy: MorivisLayerEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
 
 		copy.id = uuid;
 		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
@@ -252,7 +252,7 @@
 		if (!layerEntry) return;
 		$isStyleEdit = false;
 		const uuid = crypto.randomUUID();
-		const copy: GeoDataEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
+		const copy: MorivisLayerEntry = JSON.parse(JSON.stringify(layerEntry)); // 深いコピーを作成
 
 		copy.id = uuid;
 		copy.metaData.name = `${layerEntry.metaData.name}`;

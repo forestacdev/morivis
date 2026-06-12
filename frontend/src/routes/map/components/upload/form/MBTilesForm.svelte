@@ -5,7 +5,7 @@
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createRasterEntry } from '$routes/map/data/entries/raster';
 	import { createVectorTileEntry } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import { registerMBTiles, type MBTilesMetadata } from '$routes/map/protocol/mbtiles';
 	import type { DialogType } from '$routes/map/types';
@@ -13,7 +13,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 	}

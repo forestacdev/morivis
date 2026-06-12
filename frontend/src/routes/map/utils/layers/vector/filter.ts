@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import {
 	getVectorTemporalFilterBehavior,
 	getVectorTemporalItems
@@ -16,7 +16,7 @@ export const combineFilters = (
 	return ['all', ...validFilters] as FilterSpecification;
 };
 
-export const getTemporalFilter = (entry: GeoDataEntry): FilterSpecification | undefined => {
+export const getTemporalFilter = (entry: MorivisLayerEntry): FilterSpecification | undefined => {
 	if (entry.type !== 'vector') return undefined;
 	if (entry.format.type !== 'geojson') return undefined;
 

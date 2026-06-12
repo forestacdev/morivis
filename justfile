@@ -44,6 +44,9 @@ lint-errors:
 typedoc:
     cd frontend && pnpm run typedoc
 
+typedoc-diagram:
+    cd frontend && pnpm run typedoc:diagram
+
 # node_modules含む完全クリア & 再インストール & dev再起動
 clean-all:
     rm -rf frontend/node_modules/.vite

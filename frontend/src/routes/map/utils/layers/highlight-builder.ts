@@ -1,5 +1,5 @@
 import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import type { VectorProperties } from '$routes/map/data/types/vector/properties';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
@@ -76,7 +76,7 @@ export const registerLayerFilterState = ({
 	});
 };
 
-export const createBaseLayerItem = (entry: GeoDataEntry): LayerItem => {
+export const createBaseLayerItem = (entry: MorivisLayerEntry): LayerItem => {
 	const { metaData, style } = entry;
 
 	return {
@@ -247,7 +247,7 @@ export const registerHighlightLayers = ({
 	return highlightLayer;
 };
 
-export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
+export const createHighlightLayerItems = (_dataEntries: MorivisLayerEntry[]) => {
 	const highlightLayerItems: LayerSpecification[] = [];
 	const highlightClickableIds: string[] = [];
 	HighlightLayerRegistry.clear();
@@ -258,7 +258,7 @@ export const createHighlightLayerItems = (_dataEntries: GeoDataEntry[]) => {
 		.forEach((entry) => {
 			if (entry.type !== 'vector') return;
 
-			const vectorEntry = entry as GeoDataEntry & {
+			const vectorEntry = entry as MorivisLayerEntry & {
 				style: VectorStyle;
 				properties: VectorProperties & { fields: FieldDef[]; };
 			};

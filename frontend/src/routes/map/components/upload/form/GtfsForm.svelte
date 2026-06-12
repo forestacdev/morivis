@@ -4,7 +4,7 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FieldDef, VectorTemporalItem } from '$routes/map/data/types/vector/properties';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -16,7 +16,7 @@
 	type DataType = 'stops' | 'routes' | 'stop_times';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 	}
@@ -98,7 +98,7 @@
 	};
 
 	const applyGtfsTemporalProperties = (
-		entry: GeoDataEntry,
+		entry: MorivisLayerEntry,
 		geojson: FeatureCollection,
 		currentDataType: DataType
 	) => {
@@ -126,7 +126,7 @@
 		entry.properties.attributeView.timeKey = 'time';
 	};
 
-	const applyGtfsRouteColorStyle = (entry: GeoDataEntry, geojson: FeatureCollection) => {
+	const applyGtfsRouteColorStyle = (entry: MorivisLayerEntry, geojson: FeatureCollection) => {
 		if (entry.type !== 'vector') return;
 
 		const routeNamesSet = new Set<string>();
