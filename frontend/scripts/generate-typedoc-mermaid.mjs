@@ -4,9 +4,7 @@ import process from 'node:process';
 
 const cwd = process.cwd();
 const typedocJsonPath = path.resolve(cwd, 'docs/typedoc.json');
-const diagramBasePath = path.resolve(cwd, 'docs/diagrams/morivis-layer-entry-hierarchy');
-const markdownOutputPath = `${diagramBasePath}.md`;
-const mermaidOutputPath = `${diagramBasePath}.mmd`;
+const diagramsDirPath = path.resolve(cwd, 'docs/diagrams');
 
 const ALIAS_COLLAPSE_PREFIX = 'Any';
 
@@ -90,6 +88,15 @@ const getUnionChildren = (name, indexes) => {
 	);
 };
 
+const getUnionLiteralValues = (name, indexes) => {
+	const reflection = indexes.byName.get(name);
+	if (!reflection?.type || reflection.type.type !== 'union') return [];
+
+	return reflection.type.types
+		.filter((child) => child.type === 'literal' && typeof child.value === 'string')
+		.map((child) => child.value);
+};
+
 const getReverseAliasChildren = (parentName, indexes, matcher = () => true) => {
 	const children = [];
 
@@ -135,6 +142,109 @@ const buildLayerEntryEdges = (indexes) => {
 	return edges;
 };
 
+const buildVectorDetailEdges = (indexes) => {
+	const edges = [];
+	const vectorChildren = getUnionChildren('MorivisVectorEntry', indexes);
+	const vectorFormatLabels = {
+		geojson: 'GeoJSON',
+		fgb: 'FlatGeobuf',
+		mvt: 'MVT',
+		pmtiles: 'PMTiles',
+		mbtiles: 'MBTiles',
+		geojsontile: 'GeoJSON Tile',
+		'esri-feature': 'ArcGIS FeatureServer',
+		'ogc-feature': 'OGC API Features',
+		'wfs-feature': 'WFS'
+	};
+	const vectorFormats = getUnionLiteralValues('VectorFormatType', indexes).map(
+		(format) => vectorFormatLabels[format] ?? format
+	);
+
+	pushEdges(edges, 'MorivisVectorEntry', vectorChildren);
+
+	vectorChildren.forEach((childName) => {
+		pushEdges(edges, childName, vectorFormats);
+	});
+
+	return edges;
+};
+
+const buildRasterDetailEdges = (indexes) => {
+	const edges = [];
+	const rasterChildren = getReverseAliasChildren(
+		'MorivisRasterEntry',
+		indexes,
+		(name) =>
+			name.endsWith('RasterEntry')
+			&& name !== 'MorivisRasterEntry'
+			&& !name.startsWith(ALIAS_COLLAPSE_PREFIX)
+	);
+	const demModeLabels = {
+		default: 'Default',
+		relief: 'Relief',
+		slope: 'Slope',
+		aspect: 'Aspect',
+		curvature: 'Curvature',
+		shadow: 'Shadow'
+	};
+	const bandModeLabels = {
+		single: 'Single Band',
+		multi: 'Multi Band',
+		twi: 'TWI',
+		slope: 'Slope',
+		aspect: 'Aspect',
+		tpi: 'TPI',
+		topex: 'TOPEX'
+	};
+	const demModes = ['default', 'relief', 'slope', 'aspect', 'curvature', 'shadow'].map(
+		(mode) => demModeLabels[mode] ?? mode
+	);
+	const bandModes = getUnionLiteralValues('BandTypeKey', indexes).map(
+		(mode) => bandModeLabels[mode] ?? mode
+	);
+
+	pushEdges(edges, 'MorivisRasterEntry', rasterChildren);
+	pushEdges(edges, 'DemRasterEntry', demModes);
+	pushEdges(edges, 'TiffRasterEntry', bandModes);
+
+	return edges;
+};
+
+const buildModelDetailEdges = (indexes) => {
+	const edges = [];
+	const modelChildren = getUnionChildren('MorivisModelEntry', indexes);
+	const deckVectorChildren = getUnionChildren('DeckVectorEntry', indexes);
+	const meshFormatLabels = {
+		gltf: 'glTF',
+		obj: 'OBJ',
+		'3ds': '3DS',
+		dae: 'DAE',
+		'3dm': '3DM',
+		fbx: 'FBX',
+		drc: 'DRC',
+		'3mf': '3MF',
+		amf: 'AMF',
+		ifc: 'IFC'
+	};
+	const meshFormats = getUnionLiteralValues('MeshFormatType', indexes).map(
+		(format) => meshFormatLabels[format] ?? format
+	);
+
+	pushEdges(edges, 'MorivisModelEntry', modelChildren);
+	pushEdges(edges, 'DeckVectorEntry', deckVectorChildren);
+	pushEdges(edges, 'MeshEntry', meshFormats);
+	pushEdges(edges, 'Tiles3DEntry', ['3D Tiles']);
+	pushEdges(edges, 'PointCloudEntry', ['Point Cloud']);
+	pushEdges(edges, 'GeoArrowEntry', ['GeoArrow']);
+	pushEdges(edges, 'GeoJson3DEntry', ['GeoJSON 3D']);
+	pushEdges(edges, 'MeshEntry', ['three.js']);
+	pushEdges(edges, 'Tiles3DEntry', ['deck.gl']);
+	pushEdges(edges, 'PointCloudEntry', ['deck.gl']);
+	pushEdges(edges, 'DeckVectorEntry', ['deck.gl']);
+
+	return edges;
+};
+
 const renderMermaid = (edges) => {
 	const lines = ['```mermaid', 'flowchart TD'];
 
@@ -146,29 +256,60 @@ const renderMermaid = (edges) => {
 	return lines.join('\n');
 };
 
-const renderMarkdown = (edges) => {
+const writeDiagram = async ({ fileBaseName, title, description, edges }) => {
+	const diagramBasePath = path.resolve(diagramsDirPath, fileBaseName);
+	const markdownOutputPath = `${diagramBasePath}.md`;
+	const mermaidOutputPath = `${diagramBasePath}.mmd`;
 	const mermaid = renderMermaid(edges);
 
-	return `# Morivis Layer Entry Hierarchy
+	await writeFile(
+		markdownOutputPath,
+		`# ${title}
 
-TypeDoc JSON から抽出した morivis のレイヤー型関係図です。
+${description}
 
 ${mermaid}
-`;
+`,
+		'utf8'
+	);
+	await writeFile(mermaidOutputPath, mermaid.replace(/^```mermaid\n|\n```$/g, ''), 'utf8');
+
+	console.log(`Generated ${path.relative(cwd, markdownOutputPath)}`);
+	console.log(`Generated ${path.relative(cwd, mermaidOutputPath)}`);
 };
 
 const main = async () => {
 	const typedocJson = JSON.parse(await readFile(typedocJsonPath, 'utf8'));
 	const indexes = buildReflectionIndexes(typedocJson);
-	const edges = buildLayerEntryEdges(indexes);
-	const mermaid = renderMermaid(edges);
 
-	await mkdir(path.dirname(markdownOutputPath), { recursive: true });
-	await writeFile(markdownOutputPath, renderMarkdown(edges), 'utf8');
-	await writeFile(mermaidOutputPath, mermaid.replace(/^```mermaid\n|\n```$/g, ''), 'utf8');
-
-	console.log(`Generated ${path.relative(cwd, markdownOutputPath)}`);
-	console.log(`Generated ${path.relative(cwd, mermaidOutputPath)}`);
+	await mkdir(diagramsDirPath, { recursive: true });
+	await writeDiagram({
+		fileBaseName: 'morivis-layer-entry-hierarchy',
+		title: 'Morivis Layer Entry Hierarchy',
+		description: 'TypeDoc JSON から抽出した morivis のレイヤー型関係図です。',
+		edges: buildLayerEntryEdges(indexes)
+	});
+	await writeDiagram({
+		fileBaseName: 'morivis-vector-entry-detail',
+		title: 'Morivis Vector Entry Detail',
+		description:
+			'TypeDoc JSON の型階層に、geometry ごとで共通に扱う format 群を補って整理した vector 詳細図です。',
+		edges: buildVectorDetailEdges(indexes)
+	});
+	await writeDiagram({
+		fileBaseName: 'morivis-raster-entry-detail',
+		title: 'Morivis Raster Entry Detail',
+		description:
+			'TypeDoc JSON の型階層に、raster の主要分類と DEM / TIFF の可視化モードを補って整理した詳細図です。',
+		edges: buildRasterDetailEdges(indexes)
+	});
+	await writeDiagram({
+		fileBaseName: 'morivis-model-entry-detail',
+		title: 'Morivis Model Entry Detail',
+		description:
+			'TypeDoc JSON の型階層に、model の主要分類と mesh format / deck vector 分岐、および three.js / deck.gl への描画先を補って整理した詳細図です。',
+		edges: buildModelDetailEdges(indexes)
+	});
 };
 
 void main();
