@@ -4,7 +4,7 @@ import process from 'node:process';
 
 const cwd = process.cwd();
 const typedocJsonPath = path.resolve(cwd, 'docs/typedoc.json');
-const diagramsDirPath = path.resolve(cwd, 'docs/diagrams');
+const diagramsDirPath = path.resolve(cwd, '../docs/architecture/diagrams');
 
 const ALIAS_COLLAPSE_PREFIX = 'Any';
 
