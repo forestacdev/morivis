@@ -115,6 +115,7 @@
 	let itemWidth = $state<number>(300); // item Height + grid margin & padding
 	let listContainer = $state<HTMLDivElement | null>(null);
 	let hasScrolledCatalog = $state(false);
+	let isShowDataMenuInitialized = $state(false);
 
 	$effect(() => {
 		if (gridWidth > itemWidth * 2) {
@@ -142,6 +143,11 @@
 
 	// 閉じられたときの処理
 	showDataMenu.subscribe((value) => {
+		if (!isShowDataMenuInitialized) {
+			isShowDataMenuInitialized = true;
+			return;
+		}
+
 		if (!value) {
 			selected = 'system';
 			showDataEntry = null;

@@ -163,6 +163,10 @@ const getMbtilesPreviewLabel = (_layerEntry: MorivisLayerEntry): string => {
 export const getLayerImage = async (
 	_layerEntry: MorivisLayerEntry
 ): Promise<ImageResult | undefined> => {
+	if (!_layerEntry) {
+		return undefined;
+	}
+
 	try {
 		if (_layerEntry.metaData.mapImage) {
 			const url = getMapImageUrl(_layerEntry);

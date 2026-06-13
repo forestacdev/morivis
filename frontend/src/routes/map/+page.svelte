@@ -55,6 +55,7 @@
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
+		GeoRefConfirmPayload,
 		GeoRefData,
 		GeoRefPreviewData
 	} from '$routes/map/components/upload/form/transform/georef-types';
@@ -66,7 +67,12 @@
 		resolveMorivisLayerEntry
 	} from '$routes/map/data/entries';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { MorivisRasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+	import type {
+		MorivisRasterEntry,
+		RasterDemStyle,
+		RasterImageEntry,
+		RasterTiffStyle
+	} from '$routes/map/data/types/raster';
 	import type { GeoJsonMetaData, PointEntry, TileMetaData } from '$routes/map/data/types/vector';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import {
@@ -81,13 +87,18 @@
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
 	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
+	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
+	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import {
 		getPopupImageFieldKey,
 		resolveGeneratedPoiIconUrl,
 		resolvePopupImageUrl
 	} from '$routes/map/utils/icon';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
 	import {
 		get3dParams,
@@ -101,6 +112,9 @@
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
+	import { debugLog } from '$routes/stores/debug';
+	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -232,9 +246,146 @@
 	let geoRefData = $state<GeoRefData | null>(null);
 	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
 
+	const closeGeoRefUi = () => {
+		geoRefPreviewData = null;
+		transformOptionMode = null;
+		geoRefData = null;
+		showDialogType = null;
+		dropFile = null;
+	};
+
+	const finalizeGeoRefEntry = async (payload: GeoRefConfirmPayload) => {
+		if (!geoRefData) return;
+
+		isProcessing.set(true);
+		try {
+			const data = geoRefData;
+			const { bbox, corners } = payload;
+
+			debugLog.info(
+				`+page finalizeGeoRefEntry開始: id=${data.entryId}, mode=${data.registrationMode}, size=${data.imageWidth}x${data.imageHeight}`
+			);
+
+			GeoTiffCache.setBbox(data.entryId, bbox);
+			GeoTiffCache.setSize(data.entryId, data.imageWidth, data.imageHeight);
+			GeoTiffCache.setNumBands(data.entryId, data.numBands);
+
+			const mapImage = generateThumbnail({
+				bands: data.parsedBands,
+				width: data.imageWidth,
+				height: data.imageHeight
+			});
+
+			if (data.registrationMode === 'mesh' && data.numBands === 1) {
+				const entry = await createRasterMeshEntry({
+					id: data.entryId,
+					name: data.entryName || 'GeoTIFF 3Dメッシュ',
+					band: data.parsedBands[0],
+					width: data.imageWidth,
+					height: data.imageHeight,
+					nodata: data.parsedNodata,
+					bounds: bbox,
+					corners,
+					mapImage
+				});
+
+				debugLog.info(`+page finalizeGeoRefEntry メッシュ生成: id=${entry.id}`);
+				closeGeoRefUi();
+				showDataEntry = entry;
+				showNotification('3Dメッシュを生成しました', 'success');
+				return;
+			}
+
+			await encodeAllBandsToTerrarium(
+				data.entryId,
+				data.parsedBands,
+				data.imageWidth,
+				data.imageHeight,
+				data.parsedNodata,
+				data.dataRanges
+			);
+
+			const isSingleBand = data.numBands === 1;
+			const entry: RasterImageEntry<RasterTiffStyle> = {
+				id: data.entryId,
+				type: 'raster',
+				format: {
+					type: 'image',
+					url: ''
+				},
+				metaData: {
+					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'GeoTIFF',
+					name: data.entryName || '画像データ',
+					tileSize: 256,
+					bounds: bbox,
+					imageCorners: corners,
+					xyzImageTile: findCenterTile(bbox),
+					mapImage
+				},
+				properties: {
+					bands: {
+						numBands: data.numBands
+					}
+				},
+				interaction: {
+					...DEFAULT_RASTER_BASEMAP_INTERACTION
+				},
+				style: {
+					type: 'tiff',
+					opacity: 1,
+					visible: true,
+					visualization: {
+						mode: isSingleBand ? 'single' : 'multi',
+						uniformsData: {
+							single: {
+								index: 0,
+								min: data.bandMinMax.min,
+								max: data.bandMinMax.max,
+								colorMap: 'jet'
+							},
+							multi: {
+								r: { index: 0, min: data.multiBandMinMax.r.min, max: data.multiBandMinMax.r.max },
+								g: {
+									index: data.numBands >= 2 ? 1 : 0,
+									min: data.multiBandMinMax.g.min,
+									max: data.multiBandMinMax.g.max
+								},
+								b: {
+									index: data.numBands >= 3 ? 2 : 0,
+									min: data.multiBandMinMax.b.min,
+									max: data.multiBandMinMax.b.max
+								}
+							}
+						}
+					}
+				}
+			};
+
+			debugLog.info(`+page finalizeGeoRefEntry ラスター生成: id=${entry.id}, bounds=${bbox.join(',')}`);
+			closeGeoRefUi();
+			showDataEntry = entry;
+			showNotification('画像の位置を設定しました', 'success');
+		} catch (error) {
+			debugLog.error(
+				`+page finalizeGeoRefEntry失敗: ${error instanceof Error ? error.message : String(error)}`
+			);
+			showNotification(
+				error instanceof Error ? error.message : 'エンコードに失敗しました',
+				'error'
+			);
+			console.error(error);
+		} finally {
+			isProcessing.set(false);
+		}
+	};
+
 	const openPendingZoneGeoRef = async (pendingData: PendingZoneGeoRefData, epsgCode: EpsgCode) => {
 		isProcessing.set(true);
 		isPreparingGeoRefData = true;
+		debugLog.info(
+			`GeoRef準備開始: entryName=${pendingData.entryName}, epsg=${epsgCode}, featureCount=${pendingData.featureCollection.features.length}`
+		);
 
 		try {
 			const prjContent = getProjContext(epsgCode);
@@ -245,6 +396,7 @@
 			const bbox = turfBbox(transformedGeojson);
 
 			if (!bbox || !isBboxValid(bbox)) {
+				debugLog.warn(`GeoRef準備中断: bbox不正 entryName=${pendingData.entryName}`);
 				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
 				return;
 			}
@@ -253,9 +405,15 @@
 				featureCollection: transformedGeojson as AppFeatureCollection,
 				entryName: `${pendingData.entryName}（GeoRef）`
 			});
+			debugLog.info(
+				`GeoRef画像生成完了: id=${geoRefData.entryId}, width=${geoRefData.imageWidth}, height=${geoRefData.imageHeight}`
+			);
 			transformOptionMode = 'georef';
 			showDialogType = null;
 		} catch (error) {
+			debugLog.error(
+				`GeoRef準備失敗: ${error instanceof Error ? error.message : String(error)}`
+			);
 			showNotification('GeoJSON画像の作成中にエラーが発生しました', 'error');
 			console.error(error);
 		} finally {
@@ -302,7 +460,18 @@
 
 		const pendingData = pendingZoneGeoRefData;
 		const epsg = selectedEpsgCode;
+		debugLog.info(`GeoRef自動生成トリガー: epsg=${epsg}, entryName=${pendingData.entryName}`);
 		void openPendingZoneGeoRef(pendingData, epsg);
+	});
+
+	$effect(() => {
+		const entry = showDataEntry;
+		if (!entry) {
+			debugLog.info('showDataEntry=null');
+			return;
+		}
+
+		debugLog.info(`showDataEntry set: id=${entry.id}, type=${entry.type}, name=${entry.metaData.name}`);
 	});
 
 	let mobileLayerFeatureSummaryPromise = $derived.by(() => {
@@ -1036,7 +1205,6 @@
 		bind:zoneBboxGeojsonData
 		bind:geoRefData
 		bind:geoRefPreviewData
-		bind:showDataEntry
 		bind:showDialogType
 		bind:dropFile
 		bind:transformOptionMode
@@ -1045,11 +1213,17 @@
 			geoRefPreviewData = null;
 			transformOptionMode = null;
 			zoneConfirmedEpsg = epsgCode;
+			debugLog.info(`Zone確定: epsg=${epsgCode}`);
 		}}
 		onZoneGeoRef={(epsgCode: EpsgCode) => {
 			geoRefPreviewData = null;
 			selectedEpsgCode = epsgCode;
 			transformOptionMode = 'georef';
+			debugLog.info(`GeoRef切替: epsg=${epsgCode}`);
+		}}
+		onGeoRefConfirm={(payload: GeoRefConfirmPayload) => {
+			debugLog.info(`GeoRef確定値受信: bbox=${payload.bbox.join(',')}`);
+			void finalizeGeoRefEntry(payload);
 		}}
 	/>
 {/if}

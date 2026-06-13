@@ -28,3 +28,8 @@ export interface GeoRefPreviewData {
 	url: string;
 	coordinates: [[number, number], [number, number], [number, number], [number, number]];
 }
+
+export interface GeoRefConfirmPayload {
+	bbox: [number, number, number, number];
+	corners: [[number, number], [number, number], [number, number], [number, number]];
+}

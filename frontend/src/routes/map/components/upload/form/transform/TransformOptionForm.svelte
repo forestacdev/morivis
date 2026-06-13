@@ -4,7 +4,7 @@
 	import turfNearestPoint from '@turf/nearest-point';
 	import maplibregl from 'maplibre-gl';
 	import type { ImageSource } from 'maplibre-gl';
-	import { tick, untrack } from 'svelte';
+	import { untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
 	import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
@@ -16,31 +16,24 @@
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
+		GeoRefConfirmPayload,
 		GeoRefData,
 		GeoRefPreviewData,
 		RasterRegistrationMode
 	} from '$routes/map/components/upload/form/transform/georef-types';
 	import GeoRefMenu from '$routes/map/components/upload/form/transform/GeoRefMenu.svelte';
 	import ZoneMenu from '$routes/map/components/upload/form/transform/ZoneMenu.svelte';
-	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
 		WEB_MERCATOR_MAX_LAT,
 		WEB_MERCATOR_MIN_LNG,
 		WEB_MERCATOR_MAX_LNG
 	} from '$routes/map/data/entries/_meta_data/_bounds';
-	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
-	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PointGeometry, PolygonGeometry } from '$routes/map/types/geometry';
-	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
-	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid, isFiniteBbox } from '$routes/map/utils/map/bbox';
-	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import {
 		getEpsgInfoArray,
@@ -48,6 +41,7 @@
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
 	import { mapStore } from '$routes/stores/map';
+	import { debugLog } from '$routes/stores/debug';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, showDataMenu } from '$routes/stores/ui';
 
@@ -63,12 +57,12 @@
 		zoneBboxGeojsonData: FeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>;
 		geoRefData: GeoRefData | null;
 		geoRefPreviewData: GeoRefPreviewData | null;
-		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		transformOptionMode: TransformOptionMode;
 		onZoneConfirm: (epsgCode: EpsgCode) => void;
 		onZoneGeoRef: (epsgCode: EpsgCode) => void;
+		onGeoRefConfirm: (payload: GeoRefConfirmPayload) => void;
 	}
 
 	let {
@@ -78,12 +72,12 @@
 		zoneBboxGeojsonData = $bindable(),
 		geoRefData = $bindable(),
 		geoRefPreviewData = $bindable(),
-		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
 		transformOptionMode = $bindable(),
 		onZoneConfirm,
-		onZoneGeoRef
+		onZoneGeoRef,
+		onGeoRefConfirm
 	}: Props = $props();
 
 	const PREVIEW_SOURCE_ID = 'georef_image_preview';
@@ -161,12 +155,6 @@
 		dropFile = null;
 	};
 
-	const finalizeGeoRefPreview = async (entry: MorivisLayerEntry) => {
-		showDataEntry = entry;
-		await tick();
-		cleanupGeoRef();
-	};
-
 	const handleCancel = () => {
 		if (transformOptionMode === 'georef') {
 			cleanupGeoRef();
@@ -188,106 +176,16 @@
 		isProcessing.set(true);
 		try {
 			const data = geoRefData;
+			debugLog.info(
+				`GeoRef確定開始: id=${data.entryId}, mode=${data.registrationMode}, size=${data.imageWidth}x${data.imageHeight}`
+			);
 			const bbox = getBbox();
 			const corners = getCornerCoordinates();
-
-			GeoTiffCache.setBbox(data.entryId, bbox);
-			GeoTiffCache.setSize(data.entryId, data.imageWidth, data.imageHeight);
-			GeoTiffCache.setNumBands(data.entryId, data.numBands);
-
-			const mapImage = generateThumbnail({
-				bands: data.parsedBands,
-				width: data.imageWidth,
-				height: data.imageHeight
-			});
-
-			if (data.registrationMode === 'mesh' && data.numBands === 1) {
-				const entry = await createRasterMeshEntry({
-					id: data.entryId,
-					name: data.entryName || 'GeoTIFF 3Dメッシュ',
-					band: data.parsedBands[0],
-					width: data.imageWidth,
-					height: data.imageHeight,
-					nodata: data.parsedNodata,
-					bounds: bbox,
-					corners,
-					mapImage
-				});
-
-				await finalizeGeoRefPreview(entry);
-				showNotification('3Dメッシュを生成しました', 'success');
-				return;
-			}
-
-			await encodeAllBandsToTerrarium(
-				data.entryId,
-				data.parsedBands,
-				data.imageWidth,
-				data.imageHeight,
-				data.parsedNodata,
-				data.dataRanges
-			);
-
-			const isSingleBand = data.numBands === 1;
-			const entry: RasterImageEntry<RasterTiffStyle> = {
-				id: data.entryId,
-				type: 'raster',
-				format: {
-					type: 'image',
-					url: ''
-				},
-				metaData: {
-					...DEFAULT_CUSTOM_META_DATA,
-					attribution: 'GeoTIFF',
-					name: data.entryName || '画像データ',
-					tileSize: 256,
-					bounds: bbox,
-					imageCorners: corners,
-					xyzImageTile: findCenterTile(bbox),
-					mapImage
-				},
-				properties: {
-					bands: {
-						numBands: data.numBands
-					}
-				},
-				interaction: {
-					...DEFAULT_RASTER_BASEMAP_INTERACTION
-				},
-				style: {
-					type: 'tiff',
-					opacity: 1,
-					visible: true,
-					visualization: {
-						mode: isSingleBand ? 'single' : 'multi',
-						uniformsData: {
-							single: {
-								index: 0,
-								min: data.bandMinMax.min,
-								max: data.bandMinMax.max,
-								colorMap: 'jet'
-							},
-							multi: {
-								r: { index: 0, min: data.multiBandMinMax.r.min, max: data.multiBandMinMax.r.max },
-								g: {
-									index: data.numBands >= 2 ? 1 : 0,
-									min: data.multiBandMinMax.g.min,
-									max: data.multiBandMinMax.g.max
-								},
-								b: {
-									index: data.numBands >= 3 ? 2 : 0,
-									min: data.multiBandMinMax.b.min,
-									max: data.multiBandMinMax.b.max
-								}
-							}
-						}
-					}
-				}
-			};
-
-			await finalizeGeoRefPreview(entry);
-			showNotification('画像の位置を設定しました', 'success');
+			onGeoRefConfirm({ bbox, corners });
 		} catch (error) {
+			debugLog.error(
+				`GeoRef確定失敗: ${error instanceof Error ? error.message : String(error)}`
+			);
 			showNotification(
 				error instanceof Error ? error.message : 'エンコードに失敗しました',
 				'error'

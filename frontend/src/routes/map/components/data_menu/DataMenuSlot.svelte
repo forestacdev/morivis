@@ -97,6 +97,11 @@
 	let promise = $state<Promise<ImageResult | undefined>>();
 
 	$effect(() => {
+		if (!dataEntry) {
+			promise = Promise.resolve(undefined);
+			return;
+		}
+
 		try {
 			promise = getLayerImage(dataEntry);
 		} catch (error) {
