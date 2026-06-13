@@ -6,6 +6,20 @@ import type { FeatureProp } from '$routes/map/types/properties';
 
 type OSMToGeoJSONFeatureCollection = GeoJSON.FeatureCollection<GeoJSON.Geometry>;
 
+const parseXmlDocument = async (text: string): Promise<XMLDocument> => {
+	if (typeof DOMParser !== 'undefined') {
+		return new DOMParser().parseFromString(text, 'text/xml');
+	}
+
+	const { DOMParser: XmldomParser } = await import('@xmldom/xmldom');
+	return new XmldomParser().parseFromString(text, 'text/xml') as unknown as XMLDocument;
+};
+
+const getParserErrorText = (doc: XMLDocument) => {
+	const parserError = doc.getElementsByTagName('parsererror')[0];
+	return parserError?.textContent?.trim();
+};
+
 export class OsmParseError extends Error {
 	constructor(message: string) {
 		super(message);
@@ -13,12 +27,9 @@ export class OsmParseError extends Error {
 	}
 }
 
-const parseOsmXml = (text: string): XMLDocument => {
-	const parser = new DOMParser();
-	const document = parser.parseFromString(text, 'text/xml');
-	const parserError = document.querySelector('parsererror');
-
-	if (parserError) {
+const parseOsmXml = async (text: string): Promise<XMLDocument> => {
+	const document = await parseXmlDocument(text);
+	if (getParserErrorText(document)) {
 		throw new OsmParseError('OSM XMLの構文が壊れています');
 	}
 
@@ -44,7 +55,7 @@ const normalizeFeatureCollection = (
 export const osmFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
 	try {
 		const text = await file.text();
-		const xml = parseOsmXml(text);
+		const xml = await parseOsmXml(text);
 		const geojson = osmtogeojson(xml, {
 			flatProperties: true
 		});

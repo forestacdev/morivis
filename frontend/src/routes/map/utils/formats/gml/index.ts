@@ -17,6 +17,24 @@ import GML2 from 'ol/format/GML2.js';
 const GML_NS = 'http://www.opengis.net/gml/3.2';
 const FGD_NS = 'http://fgd.gsi.go.jp/spec/2008/FGD_GMLSchema';
 
+const getChildElements = (parent: Element) => {
+	return Array.from(parent.childNodes).filter((child): child is Element => child.nodeType === 1);
+};
+
+const parseXmlDocument = async (text: string): Promise<Document> => {
+	if (typeof DOMParser !== 'undefined') {
+		return new DOMParser().parseFromString(text, 'text/xml');
+	}
+
+	const { DOMParser: XmldomParser } = await import('@xmldom/xmldom');
+	return new XmldomParser().parseFromString(text, 'text/xml') as unknown as Document;
+};
+
+const getParserErrorText = (doc: Document) => {
+	const parserError = doc.getElementsByTagName('parsererror')[0];
+	return parserError?.textContent?.trim();
+};
+
 /** 基盤地図情報のフィーチャータグ一覧 */
 const FGD_FEATURE_TAGS = [
 	'GCP',
@@ -77,7 +95,7 @@ const parseLineGeometry = (featureEl: Element): AnyGeometry | null => {
 
 	// 複数セグメントの座標を結合
 	const allCoords: [number, number][] = [];
-	for (const posList of posLists) {
+	for (const posList of Array.from(posLists)) {
 		if (posList.textContent) {
 			allCoords.push(...parsePosListText(posList.textContent));
 		}
@@ -104,7 +122,7 @@ const parsePolygonGeometry = (featureEl: Element): AnyGeometry | null => {
 		if (exterior) {
 			const posLists = exterior.getElementsByTagNameNS(GML_NS, 'posList');
 			const coords: [number, number][] = [];
-			for (const posList of posLists) {
+			for (const posList of Array.from(posLists)) {
 				if (posList.textContent) {
 					coords.push(...parsePosListText(posList.textContent));
 				}
@@ -114,10 +132,10 @@ const parsePolygonGeometry = (featureEl: Element): AnyGeometry | null => {
 
 		// interior rings (holes)
 		const interiors = patch.getElementsByTagNameNS(GML_NS, 'interior');
-		for (const interior of interiors) {
+		for (const interior of Array.from(interiors)) {
 			const posLists = interior.getElementsByTagNameNS(GML_NS, 'posList');
 			const coords: [number, number][] = [];
-			for (const posList of posLists) {
+			for (const posList of Array.from(posLists)) {
 				if (posList.textContent) {
 					coords.push(...parsePosListText(posList.textContent));
 				}
@@ -149,7 +167,7 @@ const SKIP_PROPERTY_TAGS = new Set([
 /** FGDフィーチャー要素からプロパティを抽出 */
 const parseFgdProperties = (featureEl: Element): Record<string, string> => {
 	const props: Record<string, string> = {};
-	for (const child of featureEl.children) {
+	for (const child of getChildElements(featureEl)) {
 		const tag = child.localName;
 		if (SKIP_PROPERTY_TAGS.has(tag)) continue;
 		if (child.namespaceURI === GML_NS) continue;
@@ -165,13 +183,12 @@ const isFgdGml = (text: string): boolean => text.includes('fgd.gsi.go.jp');
 /**
  * 基盤地図情報GMLをパースしてGeoJSONに変換
  */
-const parseFgdGml = (text: string): FeatureCollection => {
-	const parser = new DOMParser();
-	const doc = parser.parseFromString(text, 'text/xml');
+const parseFgdGml = async (text: string): Promise<FeatureCollection> => {
+	const doc = await parseXmlDocument(text);
 
-	const parserError = doc.querySelector('parsererror');
-	if (parserError) {
-		throw new Error('Invalid XML: ' + parserError.textContent);
+	const parserErrorText = getParserErrorText(doc);
+	if (parserErrorText) {
+		throw new Error('Invalid XML: ' + parserErrorText);
 	}
 
 	const features: Feature[] = [];
@@ -181,7 +198,7 @@ const parseFgdGml = (text: string): FeatureCollection => {
 			? doc.getElementsByTagNameNS(FGD_NS, tag)
 			: doc.getElementsByTagName(tag);
 
-		for (const el of elements) {
+		for (const el of Array.from(elements)) {
 			const geometry = parseFgdGeometry(el);
 			if (!geometry) continue;
 
@@ -251,9 +268,9 @@ const parseGenericGml = (text: string): FeatureCollection => {
 
 // ---- エクスポート ----
 
-export const gmlTextToGeoJson = (text: string): FeatureCollection => {
+export const gmlTextToGeoJson = async (text: string): Promise<FeatureCollection> => {
 	if (isFgdGml(text)) {
-		return parseFgdGml(text);
+		return await parseFgdGml(text);
 	}
 
 	return parseGenericGml(text);
@@ -266,7 +283,7 @@ export const gmlTextToGeoJson = (text: string): FeatureCollection => {
 export const gmlFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
 	try {
 		const text = await file.text();
-		return gmlTextToGeoJson(text);
+		return await gmlTextToGeoJson(text);
 	} catch (error) {
 		console.error('GML parsing error:', error);
 		throw new Error('Failed to parse GML file');

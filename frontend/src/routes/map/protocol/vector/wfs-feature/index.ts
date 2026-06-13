@@ -70,7 +70,7 @@ class WorkerProtocol {
 			);
 		}
 
-		return gmlTextToGeoJson(text);
+		return await gmlTextToGeoJson(text);
 	}
 
 	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array; }> {

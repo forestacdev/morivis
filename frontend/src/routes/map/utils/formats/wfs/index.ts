@@ -323,7 +323,7 @@ export const fetchWfsFeatureCollection = async ({
 		);
 	}
 
-	return gmlTextToGeoJson(text);
+	return await gmlTextToGeoJson(text);
 };
 
 export const buildWfsBboxGetFeatureUrl = ({
