@@ -31,8 +31,6 @@
 		showXYZTileLayer,
 		showRoadLayer,
 		showBoundaryLayer,
-		showPoiLayer,
-		showStreetViewLayer,
 		showCloudLayer
 	} from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
@@ -510,9 +508,6 @@
 					<!-- 余白 -->
 					<div class="h-[300px] w-full shrink-0"></div>
 				{:else if selectedTab === 'map-display'}
-					<!-- <MapSettingItem>
-						<Switch label="アカデミー施設等" bind:value={$showPoiLayer} />
-					</MapSettingItem> -->
 					<MapSettingItem>
 						<Switch label="境界線" bind:value={$showBoundaryLayer} />
 					</MapSettingItem>

@@ -88,7 +88,6 @@
 		showCloudLayer,
 		type BaseMapType,
 		showBoundaryLayer,
-		showPoiLayer,
 		activeLayerIdsStore
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
@@ -633,7 +632,10 @@
 		);
 	};
 
-	const setStyleDebounce = debounce(async (entries: MorivisLayerEntry[]) => {
+	const DEFAULT_SET_STYLE_DEBOUNCE_MS = 100;
+	const setStyleDebounceHandlers: Record<number, (entries: MorivisLayerEntry[]) => void> = {};
+
+	const setStyle = async (entries: MorivisLayerEntry[]) => {
 		const updateId = ++styleUpdateId;
 		const mapLibreEntry = getMapStyleEntries(entries);
 
@@ -859,7 +861,22 @@
 		mapStore.terrainReload();
 
 		if (!maplibreMap) return;
-	}, 100);
+	};
+
+	const getSetStyleDebounceHandler = (wait = DEFAULT_SET_STYLE_DEBOUNCE_MS) => {
+		const existingHandler = setStyleDebounceHandlers[wait];
+		if (existingHandler) return existingHandler;
+
+		const handler = debounce((entries: MorivisLayerEntry[]) => {
+			void setStyle(entries);
+		}, wait);
+		setStyleDebounceHandlers[wait] = handler;
+		return handler;
+	};
+
+	const setStyleDebounce = (entries: MorivisLayerEntry[], wait?: number) => {
+		getSetStyleDebounceHandler(wait)(entries);
+	};
 
 	const requestStyleUpdateByDependency = (_dependency: unknown) => {
 		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
@@ -887,9 +904,6 @@
 		selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
-		// showPoiLayer.subscribe(() => {
-		// 	setStyleDebounce(layerEntries as MorivisLayerEntry[]);
-		// }),
 		showBoundaryLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),

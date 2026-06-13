@@ -129,9 +129,6 @@ export const getEntryIds = (layerEntries: MorivisLayerEntry[]): string[] => {
 export type BaseMapType = 'satellite' | 'relief' | 'slope' | 'aspect' | 'curvature' | 'osm';
 export const selectedBaseMap = writable<BaseMapType>('satellite');
 
-/** アカデミーPOI */
-export const showPoiLayer = writable<boolean>(false);
-
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
 

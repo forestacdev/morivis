@@ -142,10 +142,6 @@
 		return [...geoDataEntries, ...tempLayerEntries];
 	};
 
-	let demEntries = $derived.by(() => {
-		return geoDataEntries.filter((entry) => entry.type === 'raster' && entry.style.type === 'dem');
-	}) as MorivisRasterEntry<RasterDemStyle>[];
-
 	let layerEntries = $state<MorivisLayerEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<File | FileList | null>(null); // ドロップしたファイル
