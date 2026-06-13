@@ -30,6 +30,7 @@
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
+	import type { GeoRefPreviewData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type {
 		AnyTiles3DEntry,
@@ -123,6 +124,7 @@
 		contextMenuState: ContextMenuState | null;
 		isDragover: boolean;
 		showGeoRefForm: boolean;
+		geoRefPreviewData: GeoRefPreviewData | null;
 		focusFeature: (result: ResultData) => void;
 	}
 
@@ -156,6 +158,7 @@
 		contextMenuState = $bindable(),
 		isDragover = $bindable(),
 		showGeoRefForm,
+		geoRefPreviewData,
 		focusFeature
 	}: Props = $props();
 
@@ -245,10 +248,57 @@
 				// }
 			};
 		}
+		if (showGeoRefForm && geoRefPreviewData) {
+			previewSources = {
+				...previewSources,
+				georef_image_preview: {
+					type: 'image',
+					url: geoRefPreviewData.url,
+					coordinates: geoRefPreviewData.coordinates
+				} satisfies SourceSpecification
+			};
+		}
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
 		if (showDataEntry || showZoneForm) {
 			previewLayers = [...previewBaseLayers, ...previewLayers];
 		}
+		if (showGeoRefForm && geoRefPreviewData) {
+			previewLayers = [
+				...previewLayers,
+				{
+					id: '@georef_image_preview',
+					type: 'raster',
+					source: 'georef_image_preview',
+					paint: {
+						'raster-opacity': 0.6
+					}
+				}
+			];
+		}
+		const zoneLayers: LayerSpecification[] = showZoneForm
+			? [
+					{
+						id: '@zone_bbox_select',
+						type: 'fill',
+						source: 'zone_bbox',
+						filter: ['all', ['==', '$type', 'Polygon'], ['==', 'code', selectedEpsgCode]],
+						paint: {
+							'fill-color': 'red',
+							'fill-opacity': 0.5
+						}
+					},
+					{
+						id: '@zone_bbox',
+						type: 'line',
+						source: 'zone_bbox',
+						filter: ['==', '$type', 'Polygon'],
+						paint: {
+							'line-color': 'white',
+							'line-width': 1
+						}
+					}
+				]
+			: [];
 
 		const xyzTileSources: Record<string, SourceSpecification> = $showXYZTileLayer
 			? {
@@ -383,26 +433,7 @@
 				},
 
 				// 座標系選択のフィーチャー
-				{
-					id: '@zone_bbox_select',
-					type: 'fill',
-					source: 'zone_bbox',
-					filter: ['all', ['==', '$type', 'Polygon'], ['==', 'code', selectedEpsgCode]],
-					paint: {
-						'fill-color': 'red',
-						'fill-opacity': 0.5
-					}
-				},
-				{
-					id: '@zone_bbox',
-					type: 'line',
-					source: 'zone_bbox',
-					filter: ['==', '$type', 'Polygon'],
-					paint: {
-						'line-color': 'white',
-						'line-width': 1
-					}
-				},
+				...zoneLayers,
 
 				// 検索マーカー
 				{
@@ -897,6 +928,13 @@
 	$effect(() => {
 		// 引数として渡すことで、このeffectを検索結果GeoJSONの変更に反応させる。
 		requestStyleUpdateByDependency(searchGeojsonData);
+	});
+
+	$effect(() => {
+		$state.snapshot(geoRefPreviewData);
+		if (showGeoRefForm) {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}
 	});
 
 	// データプレビュー

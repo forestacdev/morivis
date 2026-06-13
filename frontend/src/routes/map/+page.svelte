@@ -52,7 +52,10 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
-	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type {
+		GeoRefData,
+		GeoRefPreviewData
+	} from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import {
 		findCatalogEntry,
 		geoDataEntries,
@@ -224,6 +227,7 @@
 	// ジオリファレンスフォーム
 	let showGeoRefForm = $state<boolean>(false);
 	let geoRefData = $state<GeoRefData | null>(null);
+	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
 
 	// 検索ワード
 	let inputSearchWord = $state<string>('');
@@ -763,6 +767,7 @@
 				bind:contextMenuState
 				bind:isDragover
 				{showGeoRefForm}
+				{geoRefPreviewData}
 				{searchResults}
 				{selectedEpsgCode}
 				{zoneBboxGeojsonData}
@@ -844,6 +849,7 @@
 						bind:contextMenuState
 						bind:isDragover
 						{showGeoRefForm}
+						{geoRefPreviewData}
 						{searchResults}
 						{selectedEpsgCode}
 						{zoneBboxGeojsonData}
@@ -992,6 +998,7 @@
 		{map}
 		bind:showGeoRefForm
 		bind:geoRefData
+		bind:geoRefPreviewData
 		bind:showDataEntry
 		bind:showDialogType
 		bind:dropFile

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import maplibregl from 'maplibre-gl';
-	import type { ImageSource } from 'maplibre-gl';
-	import { onDestroy, untrack } from 'svelte';
+	import { untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
@@ -43,10 +42,16 @@
 		registrationMode: RasterRegistrationMode;
 	}
 
+	export interface GeoRefPreviewData {
+		url: string;
+		coordinates: [[number, number], [number, number], [number, number], [number, number]];
+	}
+
 	interface Props {
 		map: maplibregl.Map;
 		showGeoRefForm: boolean;
 		geoRefData: GeoRefData | null;
+		geoRefPreviewData: GeoRefPreviewData | null;
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
@@ -56,16 +61,13 @@
 		map,
 		showGeoRefForm = $bindable(),
 		geoRefData = $bindable(),
+		geoRefPreviewData = $bindable(),
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable()
 	}: Props = $props();
 
-	const PREVIEW_SOURCE_ID = 'georef-image-preview';
-	const PREVIEW_LAYER_ID = 'georef-image-preview-layer';
-
 	let imageUrl = $state<string | null>(null);
-	let previewAdded = $state(false);
 	const registrationModeOptions = [
 		{ key: 'raster', name: 'ラスター' },
 		{ key: 'mesh', name: '3Dメッシュ' }
@@ -88,6 +90,15 @@
 		[se.lng, se.lat],
 		[sw.lng, sw.lat]
 	];
+
+	const updatePreviewData = () => {
+		if (!showGeoRefForm || !imageUrl) return;
+
+		geoRefPreviewData = {
+			url: imageUrl,
+			coordinates: getCornerCoordinates()
+		};
+	};
 
 	const getBbox = (): [number, number, number, number] => {
 		const lngs = [nw.lng, ne.lng, se.lng, sw.lng];
@@ -147,59 +158,15 @@
 
 				// 画像プレビュー用URL
 				imageUrl = data.previewImageUrl ?? URL.createObjectURL(data.imageFile);
-				addPreview();
+				updatePreviewData();
 				initialized = true;
 			});
 		}
 	});
 
-	const addPreview = () => {
-		if (!imageUrl || previewAdded) return;
-
-		if (map.getSource(PREVIEW_SOURCE_ID)) {
-			map.removeLayer(PREVIEW_LAYER_ID);
-			map.removeSource(PREVIEW_SOURCE_ID);
-		}
-
-		map.addSource(PREVIEW_SOURCE_ID, {
-			type: 'image',
-			url: imageUrl,
-			coordinates: getCornerCoordinates()
-		});
-
-		map.addLayer({
-			id: PREVIEW_LAYER_ID,
-			type: 'raster',
-			source: PREVIEW_SOURCE_ID,
-			paint: {
-				'raster-opacity': 0.6
-			}
-		});
-
-		previewAdded = true;
-	};
-
-	let rafId: number | null = null;
-
-	const updatePreview = () => {
-		if (!previewAdded) return;
-		if (rafId !== null) return;
-
-		rafId = requestAnimationFrame(() => {
-			rafId = null;
-			const source = map.getSource(PREVIEW_SOURCE_ID) as ImageSource | undefined;
-			if (source && imageUrl) {
-				source.updateImage({
-					url: imageUrl,
-					coordinates: getCornerCoordinates()
-				});
-			}
-		});
-	};
-
 	// コーナードラッグ: 各コーナー独立移動（回転・自由変形対応）
 	const onDragCorner = () => {
-		updatePreview();
+		updatePreviewData();
 	};
 
 	const registration = async () => {
@@ -320,23 +287,11 @@
 	};
 
 	const removePreview = () => {
-		if (previewAdded) {
-			try {
-				if (map.getLayer(PREVIEW_LAYER_ID)) map.removeLayer(PREVIEW_LAYER_ID);
-				if (map.getSource(PREVIEW_SOURCE_ID)) map.removeSource(PREVIEW_SOURCE_ID);
-			} catch {
-				// skip
-			}
-			previewAdded = false;
-		}
+		geoRefPreviewData = null;
 		if (imageUrl && imageUrl.startsWith('blob:')) {
 			URL.revokeObjectURL(imageUrl);
 		}
 		imageUrl = null;
-		if (rafId !== null) {
-			cancelAnimationFrame(rafId);
-			rafId = null;
-		}
 	};
 
 	const cleanup = () => {
@@ -351,10 +306,6 @@
 	const cancel = () => {
 		cleanup();
 	};
-
-	onDestroy(() => {
-		removePreview();
-	});
 
 	const bboxDisplay = $derived.by(() => {
 		const bbox = getBbox();
