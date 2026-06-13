@@ -181,6 +181,7 @@
 		});
 
 		geoRefData = {
+			sourceType: 'raster',
 			entryId,
 			entryName,
 			parsedBands,

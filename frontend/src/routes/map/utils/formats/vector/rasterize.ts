@@ -8,8 +8,8 @@ import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 const DEFAULT_WIDTH = 1024;
 const DEFAULT_HEIGHT = 1024;
 const PADDING_RATIO = 0.05;
-const FILL_COLOR = 'rgba(59, 130, 246, 0.22)';
-const STROKE_COLOR = '#2563eb';
+const FILL_COLOR = 'rgba(220, 38, 38, 0.22)';
+const STROKE_COLOR = '#dc2626';
 const POINT_COLOR = '#dc2626';
 const POINT_RADIUS = 4;
 const LINE_WIDTH = 2;
@@ -198,6 +198,7 @@ export const featureCollectionToGeoRefData = async ({
 	});
 
 	return {
+		sourceType: 'vector',
 		entryId: `georef_vector_${crypto.randomUUID()}`,
 		entryName,
 		parsedBands,
@@ -214,6 +215,7 @@ export const featureCollectionToGeoRefData = async ({
 		},
 		imageFile,
 		previewImageUrl,
+		sourceFeatureCollection: featureCollection,
 		initialCorners: [
 			[bbox[0], bbox[3]],
 			[bbox[2], bbox[3]],

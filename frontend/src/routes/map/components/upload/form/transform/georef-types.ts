@@ -1,9 +1,13 @@
+import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import type { RasterBands } from '$routes/map/utils/formats/geotiff';
+import type { GeoRefCorners } from '$routes/map/utils/transform/georef/homography';
 
 export type RasterRegistrationMode = 'raster' | 'mesh';
+export type GeoRefSourceType = 'raster' | 'vector';
 
 export interface GeoRefData {
+	sourceType: GeoRefSourceType;
 	entryId: string;
 	entryName: string;
 	parsedBands: RasterBands;
@@ -20,7 +24,8 @@ export interface GeoRefData {
 	};
 	imageFile: File;
 	previewImageUrl?: string;
-	initialCorners?: [[number, number], [number, number], [number, number], [number, number]];
+	initialCorners?: GeoRefCorners;
+	sourceFeatureCollection?: FeatureCollection;
 	registrationMode: RasterRegistrationMode;
 }
 
@@ -31,5 +36,5 @@ export interface GeoRefPreviewData {
 
 export interface GeoRefConfirmPayload {
 	bbox: [number, number, number, number];
-	corners: [[number, number], [number, number], [number, number], [number, number]];
+	corners: GeoRefCorners;
 }

@@ -141,6 +141,7 @@
 			GeoTiffCache.setNumBands(id, 3);
 
 			geoRefData = {
+				sourceType: 'raster',
 				entryId: id,
 				entryName,
 				parsedBands: bands,
@@ -291,6 +292,7 @@
 		});
 
 		geoRefData = {
+			sourceType: 'raster',
 			entryId: id,
 			entryName,
 			parsedBands: bands,
@@ -591,8 +593,8 @@
 			<div class="text-sm text-gray-300">
 				ベクターデータに複数のジオメトリ種別が含まれています。
 			</div>
-			<div class="flex flex-col gap-2">
-				{#each vectorGeoTypes as geoType}
+				<div class="flex flex-col gap-2">
+					{#each vectorGeoTypes as geoType (geoType)}
 					<button
 						onclick={() => registerAsVector(geoType)}
 						disabled={$isProcessing}

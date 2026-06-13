@@ -90,8 +90,10 @@
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
 	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
+	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
+	import { warpGeoJSONByCornersParallel } from '$routes/map/utils/transform/georef';
 	import {
 		getPopupImageFieldKey,
 		resolveGeneratedPoiIconUrl,
@@ -265,6 +267,52 @@
 			debugLog.info(
 				`+page finalizeGeoRefEntry開始: id=${data.entryId}, mode=${data.registrationMode}, size=${data.imageWidth}x${data.imageHeight}`
 			);
+
+			if (
+				data.sourceType === 'vector' &&
+				data.sourceFeatureCollection &&
+				data.initialCorners
+			) {
+				const plainSourceFeatureCollection = JSON.parse(
+					JSON.stringify(data.sourceFeatureCollection)
+				) as AppFeatureCollection;
+				const plainCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
+				const warpedGeojson = await warpGeoJSONByCornersParallel(
+					plainSourceFeatureCollection,
+					data.initialCorners,
+					plainCorners
+				);
+				const warpedType = geometryTypeToEntryType(warpedGeojson as AppFeatureCollection);
+				const warpedBbox = turfBbox(warpedGeojson as AppFeatureCollection) as [
+					number,
+					number,
+					number,
+					number
+				];
+
+				if (!warpedType || !isBboxValid(warpedBbox)) {
+					throw new Error('GeoRefベクター変形後のデータが不正です');
+				}
+
+				const warpedEntry = await createGeoJsonEntry(
+					warpedGeojson as AppFeatureCollection,
+					warpedType,
+					data.entryName,
+					warpedBbox
+				);
+
+				if (!warpedEntry) {
+					throw new Error('GeoRefベクターのエントリ生成に失敗しました');
+				}
+
+				debugLog.info(
+					`+page finalizeGeoRefEntry ベクター生成: id=${warpedEntry.id}, bounds=${warpedBbox.join(',')}`
+				);
+				closeGeoRefUi();
+				showDataEntry = warpedEntry;
+				showNotification('ベクターの位置を設定しました', 'success');
+				return;
+			}
 
 			GeoTiffCache.setBbox(data.entryId, bbox);
 			GeoTiffCache.setSize(data.entryId, data.imageWidth, data.imageHeight);
