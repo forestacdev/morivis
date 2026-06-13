@@ -913,7 +913,7 @@
 	// ストリートビューの表示
 	styleUpdateUnsubscribers.push(
 		showStreetViewLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
 		})
 	);
 
@@ -945,7 +945,7 @@
 
 	// データプレビュー
 	$effect(() => {
-		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
 		threeJsManager.setGroupVisibility(!showDataEntry);
 	});
 
