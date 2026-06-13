@@ -8,6 +8,11 @@
 import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
+const createAbortError = () => new Error('Request aborted');
+const throwIfAborted = (signal: AbortSignal) => {
+	if (signal.aborted) throw createAbortError();
+};
+
 // --- Worker Protocol ---
 
 class CogWorkerProtocol {
@@ -35,6 +40,8 @@ class CogWorkerProtocol {
 		url: URL,
 		controller: AbortController
 	): Promise<{ data: Uint8Array | ImageBitmap; }> {
+		throwIfAborted(controller.signal);
+
 		const x = parseInt(url.searchParams.get('x') || '0', 10);
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
@@ -45,8 +52,8 @@ class CogWorkerProtocol {
 		const cacheKey = `${entryId}_${x}_${y}_${z}`;
 		const requestId = `${cacheKey}_${this.requestCounter++}`;
 
-		// CogTileManagerからバンドデータ + 三角形メッシュを読み取る
 		const tileData = await CogTileManager.readTile(entryId, z, x, y, tileSize);
+		throwIfAborted(controller.signal);
 		if (!tileData) {
 			return { data: new Uint8Array(0) };
 		}
@@ -55,26 +62,43 @@ class CogWorkerProtocol {
 		const nodata = metadata?.nodata ?? null;
 		const { srcWidth, srcHeight, triangles } = tileData;
 
-		if (mode === 'single') {
-			const bandIndex = parseInt(url.searchParams.get('bandIndex') || '0', 10);
-			const colorMap = url.searchParams.get('colorMap') || 'jet';
-			const min = parseFloat(url.searchParams.get('min') || '0');
-			const max = parseFloat(url.searchParams.get('max') || '1');
+		return new Promise((resolve, reject) => {
+			let settled = false;
+			const finish = (callback: () => void) => {
+				if (settled) return;
+				settled = true;
+				this.pendingRequests.delete(requestId);
+				controller.signal.removeEventListener('abort', handleAbort);
+				callback();
+			};
+			const handleAbort = () => {
+				finish(() => reject(createAbortError()));
+			};
 
-			const band = tileData.bands[bandIndex] ?? tileData.bands[0];
-			const dataMin = metadata?.sampleRanges[bandIndex]?.min ?? 0;
-			const dataMax = metadata?.sampleRanges[bandIndex]?.max ?? 1;
-			const colorMapArray = this.colorMapCache.createColorArray(colorMap);
+			controller.signal.addEventListener('abort', handleAbort, { once: true });
+			this.pendingRequests.set(requestId, {
+				resolve: (value) => finish(() => resolve(value)),
+				reject: (error) => finish(() => reject(error)),
+				controller
+			});
 
-			const normMin = dataMax !== dataMin ? (min - dataMin) / (dataMax - dataMin) : 0;
-			const normMax = dataMax !== dataMin ? (max - dataMin) / (dataMax - dataMin) : 1;
+			if (mode === 'single') {
+				const bandIndex = parseInt(url.searchParams.get('bandIndex') || '0', 10);
+				const colorMap = url.searchParams.get('colorMap') || 'jet';
+				const min = parseFloat(url.searchParams.get('min') || '0');
+				const max = parseFloat(url.searchParams.get('max') || '1');
 
-			// バンドデータのコピーを作成してtransfer（元データはキャッシュで保持）
-			const bandCopy = new Float32Array(band.length);
-			for (let i = 0; i < band.length; i++) bandCopy[i] = band[i];
+				const band = tileData.bands[bandIndex] ?? tileData.bands[0];
+				const dataMin = metadata?.sampleRanges[bandIndex]?.min ?? 0;
+				const dataMax = metadata?.sampleRanges[bandIndex]?.max ?? 1;
+				const colorMapArray = this.colorMapCache.createColorArray(colorMap);
 
-			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(requestId, { resolve, reject, controller });
+				const normMin = dataMax !== dataMin ? (min - dataMin) / (dataMax - dataMin) : 0;
+				const normMax = dataMax !== dataMin ? (max - dataMin) / (dataMax - dataMin) : 1;
+
+				const bandCopy = new Float32Array(band.length);
+				for (let i = 0; i < band.length; i++) bandCopy[i] = band[i];
+
 				this.worker.postMessage(
 					{
 						tileId: requestId,
@@ -93,9 +117,9 @@ class CogWorkerProtocol {
 					},
 					{ transfer: [bandCopy.buffer] }
 				);
-			});
-		} else {
-			// multi mode
+				return;
+			}
+
 			const rIdx = parseInt(url.searchParams.get('rIndex') || '0', 10);
 			const gIdx = parseInt(url.searchParams.get('gIndex') || '1', 10);
 			const bIdx = parseInt(url.searchParams.get('bIndex') || '2', 10);
@@ -131,37 +155,34 @@ class CogWorkerProtocol {
 			const norm = (val: number, dMin: number, dMax: number) =>
 				dMax !== dMin ? (val - dMin) / (dMax - dMin) : 0;
 
-			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(requestId, { resolve, reject, controller });
-				this.worker.postMessage(
-					{
-						tileId: requestId,
-						mode: 'multi',
-						tileSize,
-						triangles,
-						srcWidth,
-						srcHeight,
-						nodata,
-						bandR: r.band,
-						bandG: g.band,
-						bandB: b.band,
-						dataMinR: r.dataMin,
-						dataMaxR: r.dataMax,
-						dataMinG: g.dataMin,
-						dataMaxG: g.dataMax,
-						dataMinB: b.dataMin,
-						dataMaxB: b.dataMax,
-						rMin: norm(rMin, rRange.min, rRange.max),
-						rMax: norm(rMax, rRange.min, rRange.max),
-						gMin: norm(gMin, gRange.min, gRange.max),
-						gMax: norm(gMax, gRange.min, gRange.max),
-						bMin: norm(bMin, bRange.min, bRange.max),
-						bMax: norm(bMax, bRange.min, bRange.max)
-					},
-					{ transfer: [r.band.buffer, g.band.buffer, b.band.buffer] }
-				);
-			});
-		}
+			this.worker.postMessage(
+				{
+					tileId: requestId,
+					mode: 'multi',
+					tileSize,
+					triangles,
+					srcWidth,
+					srcHeight,
+					nodata,
+					bandR: r.band,
+					bandG: g.band,
+					bandB: b.band,
+					dataMinR: r.dataMin,
+					dataMaxR: r.dataMax,
+					dataMinG: g.dataMin,
+					dataMaxG: g.dataMax,
+					dataMinB: b.dataMin,
+					dataMaxB: b.dataMax,
+					rMin: norm(rMin, rRange.min, rRange.max),
+					rMax: norm(rMax, rRange.min, rRange.max),
+					gMin: norm(gMin, gRange.min, gRange.max),
+					gMax: norm(gMax, gRange.min, gRange.max),
+					bMin: norm(bMin, bRange.min, bRange.max),
+					bMax: norm(bMax, bRange.min, bRange.max)
+				},
+				{ transfer: [r.band.buffer, g.band.buffer, b.band.buffer] }
+			);
+		});
 	}
 
 	private handleMessage = (e: MessageEvent) => {

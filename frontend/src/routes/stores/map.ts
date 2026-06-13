@@ -170,6 +170,7 @@ const ensureMbtilesProtocol = () => {
 
 const releaseMbtilesProtocol = () => {
 	if (_mbtilesProtocolRegistered) {
+		mbtilesProt.cancelAllRequests?.();
 		maplibregl.removeProtocol(mbtilesProt.protocolName);
 		_mbtilesProtocolRegistered = false;
 	}

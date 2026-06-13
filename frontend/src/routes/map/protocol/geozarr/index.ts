@@ -8,6 +8,11 @@ import { resolveAbsoluteRequestUrl } from '$routes/map/utils/platform/request';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
 const EMPTY_TILE = new Uint8Array(0);
+const createAbortError = () => new Error('Request aborted');
+const throwIfAborted = (signal: AbortSignal) => {
+	if (signal.aborted) throw createAbortError();
+};
+const GEOZARR_TILE_CACHE_MAX = 256;
 
 type GeoZarrArrayNode = {
 	shape: number[];
@@ -61,6 +66,15 @@ interface GeoZarrSourceState extends GeoZarrRegistrationMeta {
 
 const zarrRegistry = new Map<string, GeoZarrSourceState>();
 const colorMapManager = new ColorMapManager();
+const pendingGeoZarrRequests = new Map<
+	string,
+	{
+		controller: AbortController;
+		reject: (reason?: Error) => void;
+	}
+>();
+const geozarrStoreCache = new Map<string, Promise<GeoZarrListableStore>>();
+const geozarrTileCache = new Map<string, Uint8Array>();
 
 type GeoZarrListableStore = zarr.FetchStore & {
 	contents?: () => { path: string; kind: 'array' | 'group'; }[];
@@ -84,14 +98,51 @@ export const normalizeGeoZarrUrl = (url: string): string => {
 };
 
 const createProxyFetchStore = async (url: string): Promise<GeoZarrListableStore> => {
-	const baseStore = new zarr.FetchStore(resolveAbsoluteRequestUrl(normalizeGeoZarrUrl(url)), {
-		fetch: async (request) => {
-			const proxyUrl = new URL('/api/cog-proxy', window.location.origin);
-			proxyUrl.searchParams.set('url', request.url);
-			return fetch(new Request(proxyUrl.toString(), request));
-		}
-	});
-	return (await zarr.withMaybeConsolidatedMetadata(baseStore)) as GeoZarrListableStore;
+	const normalizedUrl = normalizeGeoZarrUrl(url);
+	const cached = geozarrStoreCache.get(normalizedUrl);
+	if (cached) return cached;
+
+	const storePromise = (async () => {
+		const baseStore = new zarr.FetchStore(resolveAbsoluteRequestUrl(normalizedUrl), {
+			fetch: async (request) => {
+				const proxyUrl = new URL('/api/cog-proxy', window.location.origin);
+				proxyUrl.searchParams.set('url', request.url);
+				return fetch(new Request(proxyUrl.toString(), request));
+			}
+		});
+		return (await zarr.withMaybeConsolidatedMetadata(baseStore)) as GeoZarrListableStore;
+	})();
+
+	geozarrStoreCache.set(normalizedUrl, storePromise);
+	try {
+		return await storePromise;
+	} catch (error) {
+		geozarrStoreCache.delete(normalizedUrl);
+		throw error;
+	}
+};
+
+const cloneUint8Array = (value: Uint8Array): Uint8Array => {
+	return new Uint8Array(value.slice().buffer);
+};
+
+const getGeoZarrTileCache = (key: string): Uint8Array | null => {
+	const cached = geozarrTileCache.get(key);
+	if (!cached) return null;
+	geozarrTileCache.delete(key);
+	geozarrTileCache.set(key, cached);
+	return cloneUint8Array(cached);
+};
+
+const setGeoZarrTileCache = (key: string, value: Uint8Array) => {
+	if (geozarrTileCache.has(key)) {
+		geozarrTileCache.delete(key);
+	}
+	if (geozarrTileCache.size >= GEOZARR_TILE_CACHE_MAX) {
+		const oldest = geozarrTileCache.keys().next().value;
+		if (oldest) geozarrTileCache.delete(oldest);
+	}
+	geozarrTileCache.set(key, cloneUint8Array(value));
 };
 
 const normalizeArrayPath = (value?: string): string =>
@@ -822,6 +873,9 @@ export const registerGeoZarr = async (
 
 export const unregisterGeoZarr = (entryId: string) => {
 	zarrRegistry.delete(entryId);
+	for (const key of geozarrTileCache.keys()) {
+		if (key.startsWith(`${entryId}|`)) geozarrTileCache.delete(key);
+	}
 };
 
 const clamp = (value: number, min: number, max: number): number => {
@@ -996,104 +1050,161 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 		params: { url: string; },
 		abortController: AbortController
 	): Promise<{ data: Uint8Array; }> => {
-		void abortController;
 		const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 		const url = new URL(urlWithoutProtocol, window.location.origin);
-		const entryId = url.searchParams.get('entryId') ?? '';
-		const state = zarrRegistry.get(entryId);
-		if (!state) return { data: EMPTY_TILE };
+		const requestId = `${url.toString()}_${crypto.randomUUID()}`;
 
-		const x = Number.parseInt(url.searchParams.get('x') ?? '0', 10);
-		const y = Number.parseInt(url.searchParams.get('y') ?? '0', 10);
-		const z = Number.parseInt(url.searchParams.get('z') ?? '0', 10);
-		const tileSize = Number.parseInt(url.searchParams.get('tileSize') ?? '256', 10);
-		const westSouthEastNorth = tilebelt.tileToBBOX([x, y, z]);
-		const [west, south, east, north] = westSouthEastNorth;
-		const [minX, minY, maxX, maxY] = state.bbox;
-
-		if (east <= minX || west >= maxX || north <= minY || south >= maxY) {
-			return { data: EMPTY_TILE };
-		}
-
-		const xStart = clamp(
-			Math.floor(((west - minX) / (maxX - minX)) * state.width),
-			0,
-			state.width - 1
-		);
-		const xEnd = clamp(
-			Math.ceil(((east - minX) / (maxX - minX)) * state.width),
-			xStart + 1,
-			state.width
-		);
-		const yStart = clamp(
-			Math.floor(((maxY - north) / (maxY - minY)) * state.height),
-			0,
-			state.height - 1
-		);
-		const yEnd = clamp(
-			Math.ceil(((maxY - south) / (maxY - minY)) * state.height),
-			yStart + 1,
-			state.height
-		);
-
-		const mode = url.searchParams.get('mode') ?? 'single';
-		if (mode === 'multi' && state.numBands >= 3) {
-			const indices = [
-				Number.parseInt(url.searchParams.get('rIndex') ?? '0', 10),
-				Number.parseInt(url.searchParams.get('gIndex') ?? '1', 10),
-				Number.parseInt(url.searchParams.get('bIndex') ?? '2', 10)
-			] as [number, number, number];
-			const views = await Promise.all(
-				indices.map((index) => readBandWindow(state, xStart, xEnd, yStart, yEnd, index))
-			);
-			const ranges = [
-				{
-					min: Number.parseFloat(
-						url.searchParams.get('rMin') ?? String(state.sampleRanges[0]?.min ?? 0)
-					),
-					max: Number.parseFloat(
-						url.searchParams.get('rMax') ?? String(state.sampleRanges[0]?.max ?? 1)
-					)
-				},
-				{
-					min: Number.parseFloat(
-						url.searchParams.get('gMin') ?? String(state.sampleRanges[1]?.min ?? 0)
-					),
-					max: Number.parseFloat(
-						url.searchParams.get('gMax') ?? String(state.sampleRanges[1]?.max ?? 1)
-					)
-				},
-				{
-					min: Number.parseFloat(
-						url.searchParams.get('bMin') ?? String(state.sampleRanges[2]?.min ?? 0)
-					),
-					max: Number.parseFloat(
-						url.searchParams.get('bMax') ?? String(state.sampleRanges[2]?.max ?? 1)
-					)
-				}
-			] as [BandDataRange, BandDataRange, BandDataRange];
-			return {
-				data: await renderMultiBandTile(views, state, z, x, y, tileSize, xStart, yStart, {
-					indices,
-					ranges
-				})
+		return new Promise<{ data: Uint8Array; }>((resolve, reject) => {
+			let settled = false;
+			const finish = (callback: () => void) => {
+				if (settled) return;
+				settled = true;
+				pendingGeoZarrRequests.delete(requestId);
+				abortController.signal.removeEventListener('abort', handleAbort);
+				callback();
 			};
-		}
+			const handleAbort = () => {
+				finish(() => reject(createAbortError()));
+			};
 
-		const bandIndex = Number.parseInt(url.searchParams.get('bandIndex') ?? '0', 10);
-		const view = await readBandWindow(state, xStart, xEnd, yStart, yEnd, bandIndex);
-		return {
-			data: await renderSingleBandTile(view, state, z, x, y, tileSize, xStart, yStart, {
-				bandIndex,
-				colorMap: url.searchParams.get('colorMap') ?? 'jet',
-				min: Number.parseFloat(
-					url.searchParams.get('min') ?? String(state.sampleRanges[bandIndex]?.min ?? 0)
-				),
-				max: Number.parseFloat(
-					url.searchParams.get('max') ?? String(state.sampleRanges[bandIndex]?.max ?? 1)
-				)
-			})
-		};
+			pendingGeoZarrRequests.set(requestId, { controller: abortController, reject });
+			abortController.signal.addEventListener('abort', handleAbort, { once: true });
+
+			void (async () => {
+				try {
+					throwIfAborted(abortController.signal);
+					const entryId = url.searchParams.get('entryId') ?? '';
+					const state = zarrRegistry.get(entryId);
+					if (!state) {
+						finish(() => resolve({ data: EMPTY_TILE }));
+						return;
+					}
+					const cacheKey = `${entryId}|${url.toString()}`;
+					const cachedTile = getGeoZarrTileCache(cacheKey);
+					if (cachedTile) {
+						finish(() => resolve({ data: cachedTile }));
+						return;
+					}
+
+					const x = Number.parseInt(url.searchParams.get('x') ?? '0', 10);
+					const y = Number.parseInt(url.searchParams.get('y') ?? '0', 10);
+					const z = Number.parseInt(url.searchParams.get('z') ?? '0', 10);
+					const tileSize = Number.parseInt(url.searchParams.get('tileSize') ?? '256', 10);
+					const westSouthEastNorth = tilebelt.tileToBBOX([x, y, z]);
+					const [west, south, east, north] = westSouthEastNorth;
+					const [minX, minY, maxX, maxY] = state.bbox;
+
+					if (east <= minX || west >= maxX || north <= minY || south >= maxY) {
+						finish(() => resolve({ data: EMPTY_TILE }));
+						return;
+					}
+
+					const xStart = clamp(
+						Math.floor(((west - minX) / (maxX - minX)) * state.width),
+						0,
+						state.width - 1
+					);
+					const xEnd = clamp(
+						Math.ceil(((east - minX) / (maxX - minX)) * state.width),
+						xStart + 1,
+						state.width
+					);
+					const yStart = clamp(
+						Math.floor(((maxY - north) / (maxY - minY)) * state.height),
+						0,
+						state.height - 1
+					);
+					const yEnd = clamp(
+						Math.ceil(((maxY - south) / (maxY - minY)) * state.height),
+						yStart + 1,
+						state.height
+					);
+
+					const mode = url.searchParams.get('mode') ?? 'single';
+					if (mode === 'multi' && state.numBands >= 3) {
+						const indices = [
+							Number.parseInt(url.searchParams.get('rIndex') ?? '0', 10),
+							Number.parseInt(url.searchParams.get('gIndex') ?? '1', 10),
+							Number.parseInt(url.searchParams.get('bIndex') ?? '2', 10)
+						] as [number, number, number];
+						const views = await Promise.all(
+							indices.map((index) => readBandWindow(state, xStart, xEnd, yStart, yEnd, index))
+						);
+						throwIfAborted(abortController.signal);
+						const ranges = [
+							{
+								min: Number.parseFloat(
+									url.searchParams.get('rMin') ?? String(state.sampleRanges[0]?.min ?? 0)
+								),
+								max: Number.parseFloat(
+									url.searchParams.get('rMax') ?? String(state.sampleRanges[0]?.max ?? 1)
+								)
+							},
+							{
+								min: Number.parseFloat(
+									url.searchParams.get('gMin') ?? String(state.sampleRanges[1]?.min ?? 0)
+								),
+								max: Number.parseFloat(
+									url.searchParams.get('gMax') ?? String(state.sampleRanges[1]?.max ?? 1)
+								)
+							},
+							{
+								min: Number.parseFloat(
+									url.searchParams.get('bMin') ?? String(state.sampleRanges[2]?.min ?? 0)
+								),
+								max: Number.parseFloat(
+									url.searchParams.get('bMax') ?? String(state.sampleRanges[2]?.max ?? 1)
+								)
+							}
+						] as [BandDataRange, BandDataRange, BandDataRange];
+						const data = await renderMultiBandTile(
+							views,
+							state,
+							z,
+							x,
+							y,
+							tileSize,
+							xStart,
+							yStart,
+							{
+								indices,
+								ranges
+							}
+						);
+						throwIfAborted(abortController.signal);
+						setGeoZarrTileCache(cacheKey, data);
+						finish(() => resolve({ data }));
+						return;
+					}
+
+					const bandIndex = Number.parseInt(url.searchParams.get('bandIndex') ?? '0', 10);
+					const view = await readBandWindow(state, xStart, xEnd, yStart, yEnd, bandIndex);
+					throwIfAborted(abortController.signal);
+					const data = await renderSingleBandTile(view, state, z, x, y, tileSize, xStart, yStart, {
+						bandIndex,
+						colorMap: url.searchParams.get('colorMap') ?? 'jet',
+						min: Number.parseFloat(
+							url.searchParams.get('min') ?? String(state.sampleRanges[bandIndex]?.min ?? 0)
+						),
+						max: Number.parseFloat(
+							url.searchParams.get('max') ?? String(state.sampleRanges[bandIndex]?.max ?? 1)
+						)
+					});
+					throwIfAborted(abortController.signal);
+					setGeoZarrTileCache(cacheKey, data);
+					finish(() => resolve({ data }));
+				} catch (error) {
+					finish(() =>
+						reject(error instanceof Error ? error : new Error('GeoZarr tile request failed'))
+					);
+				}
+			})();
+		});
 	},
-	cancelAllRequests: () => undefined
+	cancelAllRequests: () => {
+		pendingGeoZarrRequests.forEach(({ controller }) => {
+			controller.abort();
+		});
+		pendingGeoZarrRequests.clear();
+	}
 });

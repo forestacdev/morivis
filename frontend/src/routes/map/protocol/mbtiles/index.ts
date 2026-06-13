@@ -9,6 +9,10 @@ import { asset } from '$app/paths';
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 
 const PROTOCOL_NAME = 'mbtiles';
+const createAbortError = () => new Error('Request aborted');
+const throwIfAborted = (signal: AbortSignal) => {
+	if (signal.aborted) throw createAbortError();
+};
 
 // エントリIDごとにDBインスタンスを保持
 const dbCache = new Map<string, Database>();
@@ -212,8 +216,9 @@ const isGzipped = (data: Uint8Array): boolean =>
  */
 const request = async (
 	params: { url: string; },
-	_abortController: AbortController
+	abortController: AbortController
 ): Promise<{ data: Uint8Array; }> => {
+	throwIfAborted(abortController.signal);
 	const url = params.url.replace(`${PROTOCOL_NAME}://`, '');
 	const parts = url.split('/');
 	if (parts.length < 4) {
@@ -231,6 +236,7 @@ const request = async (
 	}
 
 	try {
+		throwIfAborted(abortController.signal);
 		const tmsY = (1 << z) - 1 - y;
 		const stmt = db.prepare(
 			'SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?'
@@ -238,9 +244,11 @@ const request = async (
 		try {
 			stmt.bind([z, x, tmsY]);
 			if (stmt.step()) {
+				throwIfAborted(abortController.signal);
 				let tileData = stmt.get()[0] as Uint8Array;
 				if (isGzipped(tileData)) {
 					tileData = await decompressGzip(tileData);
+					throwIfAborted(abortController.signal);
 				}
 				return { data: tileData };
 			}
@@ -256,5 +264,6 @@ const request = async (
 
 export const mbtilesProtocol = () => ({
 	protocolName: PROTOCOL_NAME,
-	request
+	request,
+	cancelAllRequests: () => undefined
 });
