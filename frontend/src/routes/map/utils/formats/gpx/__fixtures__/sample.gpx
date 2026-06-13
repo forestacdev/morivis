@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="vitest" xmlns="http://www.topografix.com/GPX/1/1">
+  <wpt lat="35.6895" lon="139.6917">
+    <name>Tokyo</name>
+    <time>2024-01-01T00:00:00Z</time>
+  </wpt>
+  <rte>
+    <name>Sample Route</name>
+    <rtept lat="35.6895" lon="139.6917"></rtept>
+    <rtept lat="35.7" lon="139.8"></rtept>
+  </rte>
+  <trk>
+    <name>Sample Track</name>
+    <trkseg>
+      <trkpt lat="35.6895" lon="139.6917">
+        <ele>10</ele>
+        <time>2024-01-01T00:00:00Z</time>
+      </trkpt>
+      <trkpt lat="35.7" lon="139.8">
+        <ele>20</ele>
+        <time>2024-01-01T00:05:00Z</time>
+      </trkpt>
+    </trkseg>
+  </trk>
+</gpx>

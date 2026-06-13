@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <Style id="sample-style">
+      <IconStyle>
+        <color>ff00ff00</color>
+      </IconStyle>
+      <LineStyle>
+        <color>ff00ff00</color>
+      </LineStyle>
+      <PolyStyle>
+        <color>ff0000ff</color>
+      </PolyStyle>
+    </Style>
+    <Placemark>
+      <name>Sample Point</name>
+      <description><![CDATA[<table><tr><td>category</td><td>survey</td></tr></table>]]></description>
+      <styleUrl>#sample-style</styleUrl>
+      <Point>
+        <coordinates>139.6917,35.6895,0</coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>

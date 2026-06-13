@@ -114,6 +114,9 @@ importers:
       '@mapbox/tilebelt':
         specifier: ^2.0.3
         version: 2.0.3
+      '@mapbox/togeojson':
+        specifier: ^0.16.2
+        version: 0.16.2
       '@mapbox/vector-tile':
         specifier: ^2.0.3
         version: 2.0.4
@@ -177,6 +180,9 @@ importers:
       '@types/proj4':
         specifier: ^2.5.6
         version: 2.19.0
+      '@xmldom/xmldom':
+        specifier: 0.8.13
+        version: 0.8.13
       apache-arrow:
         specifier: 21.1.0
         version: 21.1.0
@@ -1889,6 +1895,10 @@ packages:
 
   '@mapbox/tiny-sdf@2.0.7':
     resolution: {integrity: sha512-25gQLQMcpivjOSA40g3gO6qgiFPDpWRoMfd+G/GoppPIeP6JDaMMkMrEJnMZhKyyS6iKwVt5YKu02vCUyJM3Ug==}
+
+  '@mapbox/togeojson@0.16.2':
+    resolution: {integrity: sha512-DcApudmw4g/grOrpM5gYPZfts6Kr8litBESN6n/27sDsjR2f+iJhx4BA0J2B+XrLlnHyJkKztYApe6oCUZpzFA==}
+    hasBin: true
 
   '@mapbox/unitbezier@0.0.1':
     resolution: {integrity: sha512-nMkuDXFv60aBr9soUG5q+GvZYL+2KZHVvsqFCzqnkGEf46U2fvmytHaEVc1/YZbiLn8X+eR3QzX1+dwDO1lxlw==}
@@ -8033,6 +8043,12 @@ snapshots:
   '@mapbox/tilebelt@2.0.3': {}
 
   '@mapbox/tiny-sdf@2.0.7': {}
+
+  '@mapbox/togeojson@0.16.2':
+    dependencies:
+      '@xmldom/xmldom': 0.8.13
+      concat-stream: 2.0.0
+      minimist: 1.2.8
 
   '@mapbox/unitbezier@0.0.1': {}
 
