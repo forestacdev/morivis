@@ -76,7 +76,6 @@
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
 		zoneConfirmedEpsg: EpsgCode | null;
-		zoneConfirmMode: 'entry' | 'georef' | null;
 		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 		geoRefData: GeoRefData | null;
 	}
@@ -99,7 +98,6 @@
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
-		zoneConfirmMode = $bindable(),
 		pendingZoneGeoRefData = $bindable(),
 		geoRefData = $bindable()
 	}: Props = $props();
@@ -138,7 +136,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -157,7 +154,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -170,7 +166,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -256,7 +251,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -269,7 +263,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -282,7 +275,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -306,7 +298,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -325,7 +316,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -338,7 +328,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -351,7 +340,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -384,7 +372,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -400,7 +387,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -413,7 +399,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -426,7 +411,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -442,7 +426,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -455,7 +438,6 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:zoneConfirmMode
 					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
@@ -473,7 +455,6 @@
 		bind:transformOptionMode
 		bind:focusBbox
 		bind:zoneConfirmedEpsg
-		bind:zoneConfirmMode
 		bind:pendingZoneGeoRefData
 		{selectedEpsgCode}
 	/>

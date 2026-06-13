@@ -32,7 +32,6 @@
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		isDragover: boolean;
 		zoneConfirmedEpsg: EpsgCode | null;
-		zoneConfirmMode: 'entry' | 'georef' | null;
 		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
@@ -45,7 +44,6 @@
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
-		zoneConfirmMode = $bindable(),
 		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
@@ -305,11 +303,8 @@
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'shp') {
 			const epsg = zoneConfirmedEpsg;
-			const mode = zoneConfirmMode ?? 'entry';
-			if (mode !== 'entry') return;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
-				zoneConfirmMode = null;
 				const prjContent = getProjContext(epsg);
 				if (prjContent) {
 					setEntryData(prjContent);

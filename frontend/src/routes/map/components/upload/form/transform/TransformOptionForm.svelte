@@ -4,13 +4,17 @@
 	import turfNearestPoint from '@turf/nearest-point';
 	import maplibregl from 'maplibre-gl';
 	import type { ImageSource } from 'maplibre-gl';
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
 	import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import GeoRefMarker from '$routes/map/components/marker/GeoRefMarker.svelte';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
-	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type {
+		ActiveTransformOptionMode,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefData,
 		GeoRefPreviewData,
@@ -63,11 +67,8 @@
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		transformOptionMode: TransformOptionMode;
-		canSwitchToGeoRef: boolean;
-		canSwitchToZone: boolean;
 		onZoneConfirm: (epsgCode: EpsgCode) => void;
 		onZoneGeoRef: (epsgCode: EpsgCode) => void;
-		onSelectTab: (tab: 'zone' | 'georef') => void;
 	}
 
 	let {
@@ -81,11 +82,8 @@
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
 		transformOptionMode = $bindable(),
-		canSwitchToGeoRef,
-		canSwitchToZone,
 		onZoneConfirm,
-		onZoneGeoRef,
-		onSelectTab
+		onZoneGeoRef
 	}: Props = $props();
 
 	const PREVIEW_SOURCE_ID = 'georef_image_preview';
@@ -93,8 +91,6 @@
 		{ key: 'raster', name: 'ラスター' },
 		{ key: 'mesh', name: '3Dメッシュ' }
 	];
-	const isZoneVisible = $derived(transformOptionMode === 'zone');
-	const isGeoRefVisible = $derived(transformOptionMode === 'georef');
 
 	let originalBbox = $derived.by(() => focusBbox ?? null);
 	let poiData = $state<PoiData[]>([]);
@@ -165,8 +161,14 @@
 		dropFile = null;
 	};
 
+	const finalizeGeoRefPreview = async (entry: MorivisLayerEntry) => {
+		showDataEntry = entry;
+		await tick();
+		cleanupGeoRef();
+	};
+
 	const handleCancel = () => {
-		if (isGeoRefVisible) {
+		if (transformOptionMode === 'georef') {
 			cleanupGeoRef();
 			return;
 		}
@@ -174,7 +176,7 @@
 	};
 
 	const handleConfirm = async () => {
-		if (isZoneVisible) {
+		if (transformOptionMode === 'zone') {
 			const code = selectedEpsgCode;
 			resetZone();
 			onZoneConfirm(code);
@@ -212,8 +214,7 @@
 					mapImage
 				});
 
-				showDataEntry = entry;
-				cleanupGeoRef();
+				await finalizeGeoRefPreview(entry);
 				showNotification('3Dメッシュを生成しました', 'success');
 				return;
 			}
@@ -284,8 +285,7 @@
 				}
 			};
 
-			showDataEntry = entry;
-			cleanupGeoRef();
+			await finalizeGeoRefPreview(entry);
 			showNotification('画像の位置を設定しました', 'success');
 		} catch (error) {
 			showNotification(
@@ -448,7 +448,7 @@
 	});
 
 	$effect(() => {
-		if (geoRefData && isGeoRefVisible && !initialized) {
+		if (geoRefData && transformOptionMode === 'georef' && !initialized) {
 			const data = geoRefData;
 			untrack(() => {
 				showDataMenu.set(false);
@@ -515,6 +515,11 @@
 		const bbox = getBbox();
 		return `[${bbox.map((value) => value.toFixed(6)).join(', ')}]`;
 	});
+
+	const transModeOptions = [
+		{ key: 'zone', name: '投影法' },
+		{ key: 'georef', name: '位置合わせ' }
+	] as { key: ActiveTransformOptionMode; name: string }[];
 </script>
 
 {#if transformOptionMode}
@@ -522,21 +527,13 @@
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="w-side-menu bg-main absolute top-0 left-0 z-30 flex h-full flex-col items-center justify-center p-4 text-base"
 	>
-		{#if isZoneVisible}
-			<ZoneMenu
-				bind:selectedEpsgCode
-				{poiData}
-				{canSwitchToGeoRef}
-				onSwitchToGeoRef={handleZoneToGeoRef}
-			/>
-		{:else if isGeoRefVisible && geoRefData}
-			<GeoRefMenu
-				{geoRefData}
-				{bboxDisplay}
-				{canSwitchToZone}
-				onSwitchToZone={() => onSelectTab('zone')}
-				{registrationModeOptions}
-			/>
+		<div class="w-full mb-4">
+			<HorizontalSelectBox bind:group={transformOptionMode} options={transModeOptions} />
+		</div>
+		{#if transformOptionMode === 'zone'}
+			<ZoneMenu bind:selectedEpsgCode {poiData} />
+		{:else if transformOptionMode === 'georef' && geoRefData}
+			<GeoRefMenu {geoRefData} {bboxDisplay} {registrationModeOptions} />
 		{/if}
 
 		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2 pb-2">
@@ -555,7 +552,7 @@
 		</div>
 	</div>
 
-	{#if isZoneVisible}
+	{#if transformOptionMode === 'zone'}
 		{#each poiData as poi (poi.properties.code)}
 			<ZoneMarker
 				{map}
@@ -567,7 +564,7 @@
 				{selectedEpsgCode}
 			/>
 		{/each}
-	{:else if isGeoRefVisible && geoRefData}
+	{:else if transformOptionMode === 'georef' && geoRefData}
 		<GeoRefMarker {map} bind:lngLat={nw} label="NW" onDrag={onDragCorner} />
 		<GeoRefMarker {map} bind:lngLat={ne} label="NE" onDrag={onDragCorner} />
 		<GeoRefMarker {map} bind:lngLat={se} label="SE" onDrag={onDragCorner} />

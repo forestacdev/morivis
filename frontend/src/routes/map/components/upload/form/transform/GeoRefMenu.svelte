@@ -10,21 +10,11 @@
 	interface Props {
 		geoRefData: GeoRefData;
 		bboxDisplay: string;
-		canSwitchToZone: boolean;
-		onSwitchToZone: () => void;
 		registrationModeOptions: { key: RasterRegistrationMode; name: string }[];
 	}
 
-	let { geoRefData, bboxDisplay, canSwitchToZone, onSwitchToZone, registrationModeOptions }: Props =
-		$props();
+	let { geoRefData, bboxDisplay, registrationModeOptions }: Props = $props();
 </script>
-
-{#if canSwitchToZone}
-	<div class="mb-4 grid w-full shrink-0 grid-cols-2 gap-2">
-		<button onclick={onSwitchToZone} class="c-btn-sub cursor-pointer p-3 text-base">投影法</button>
-		<button class="c-btn-confirm p-3 text-base">位置合わせ</button>
-	</div>
-{/if}
 
 <div class="flex shrink-0 items-center justify-between gap-2 overflow-auto pb-4">
 	<Icon icon="ph:polygon-fill" class="h-8 w-8" />

@@ -225,15 +225,16 @@
 	});
 
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
-	let zoneConfirmMode = $state<'entry' | 'georef' | null>(null);
 	let pendingZoneGeoRefData = $state.raw<PendingZoneGeoRefData | null>(null);
 	let transformOptionMode = $state<'zone' | 'georef' | null>(null);
+	let isPreparingGeoRefData = $state(false);
 
 	let geoRefData = $state<GeoRefData | null>(null);
 	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
 
 	const openPendingZoneGeoRef = async (pendingData: PendingZoneGeoRefData, epsgCode: EpsgCode) => {
 		isProcessing.set(true);
+		isPreparingGeoRefData = true;
 
 		try {
 			const prjContent = getProjContext(epsgCode);
@@ -258,6 +259,7 @@
 			showNotification('GeoJSON画像の作成中にエラーが発生しました', 'error');
 			console.error(error);
 		} finally {
+			isPreparingGeoRefData = false;
 			isProcessing.set(false);
 		}
 	};
@@ -283,21 +285,24 @@
 	});
 
 	$effect(() => {
-		if (!zoneConfirmedEpsg || zoneConfirmMode !== 'georef' || !pendingZoneGeoRefData) return;
-
-		const epsg = zoneConfirmedEpsg;
-		const pendingData = pendingZoneGeoRefData;
-		untrack(() => {
-			zoneConfirmedEpsg = null;
-			zoneConfirmMode = null;
-			void openPendingZoneGeoRef(pendingData, epsg);
-		});
-	});
-
-	$effect(() => {
 		if (transformOptionMode === null) {
 			pendingZoneGeoRefData = null;
 		}
+	});
+
+	$effect(() => {
+		if (
+			transformOptionMode !== 'georef' ||
+			geoRefData ||
+			!pendingZoneGeoRefData ||
+			isPreparingGeoRefData
+		) {
+			return;
+		}
+
+		const pendingData = pendingZoneGeoRefData;
+		const epsg = selectedEpsgCode;
+		void openPendingZoneGeoRef(pendingData, epsg);
 	});
 
 	let mobileLayerFeatureSummaryPromise = $derived.by(() => {
@@ -1015,7 +1020,6 @@
 		bind:focusBbox
 		bind:isDragover
 		bind:zoneConfirmedEpsg
-		bind:zoneConfirmMode
 		bind:pendingZoneGeoRefData
 		bind:geoRefData
 		{selectedEpsgCode}
@@ -1035,22 +1039,17 @@
 		bind:showDataEntry
 		bind:showDialogType
 		bind:dropFile
-		{transformOptionMode}
-		canSwitchToGeoRef={pendingZoneGeoRefData !== null}
-		canSwitchToZone={pendingZoneGeoRefData !== null}
+		bind:transformOptionMode
 		onZoneConfirm={(epsgCode: EpsgCode) => {
 			geoRefData = null;
 			geoRefPreviewData = null;
 			transformOptionMode = null;
-			zoneConfirmMode = 'entry';
 			zoneConfirmedEpsg = epsgCode;
 		}}
 		onZoneGeoRef={(epsgCode: EpsgCode) => {
-			zoneConfirmMode = 'georef';
-			zoneConfirmedEpsg = epsgCode;
-		}}
-		onSelectTab={(tab: 'zone' | 'georef') => {
-			transformOptionMode = tab;
+			geoRefPreviewData = null;
+			selectedEpsgCode = epsgCode;
+			transformOptionMode = 'georef';
 		}}
 	/>
 {/if}

@@ -16,7 +16,6 @@
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
-		zoneConfirmMode: 'entry' | 'georef' | null;
 		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
@@ -28,7 +27,6 @@
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
-		zoneConfirmMode = $bindable(),
 		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 </script>
@@ -40,7 +38,6 @@
 	bind:transformOptionMode
 	bind:focusBbox
 	bind:zoneConfirmedEpsg
-	bind:zoneConfirmMode
 	bind:pendingZoneGeoRefData
 	{selectedEpsgCode}
 	formatName="CSV"

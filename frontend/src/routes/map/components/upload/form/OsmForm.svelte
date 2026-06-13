@@ -31,7 +31,6 @@
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
-		zoneConfirmMode: 'entry' | 'georef' | null;
 		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
@@ -43,7 +42,6 @@
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
-		zoneConfirmMode = $bindable(),
 		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
@@ -196,11 +194,8 @@
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'osm') {
 			const epsg = zoneConfirmedEpsg;
-			const mode = zoneConfirmMode ?? 'entry';
-			if (mode !== 'entry') return;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
-				zoneConfirmMode = null;
 				convertAndCreateEntry(epsg);
 			});
 		}

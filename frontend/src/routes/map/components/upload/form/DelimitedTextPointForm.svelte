@@ -30,7 +30,6 @@
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
-		zoneConfirmMode: 'entry' | 'georef' | null;
 		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 		formatName: string;
 		dialogTypeValue: Exclude<DialogType, null>;
@@ -46,7 +45,6 @@
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
-		zoneConfirmMode = $bindable(),
 		pendingZoneGeoRefData = $bindable(),
 		formatName,
 		dialogTypeValue,
@@ -203,11 +201,8 @@
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === dialogTypeValue) {
 			const epsg = zoneConfirmedEpsg;
-			const mode = zoneConfirmMode ?? 'entry';
-			if (mode !== 'entry') return;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
-				zoneConfirmMode = null;
 				convertAndCreateEntry(epsg);
 			});
 		}
