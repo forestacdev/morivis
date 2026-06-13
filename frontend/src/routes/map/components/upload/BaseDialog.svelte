@@ -71,6 +71,7 @@
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
 		zoneConfirmedEpsg: EpsgCode | null;
+		zoneConfirmMode: 'entry' | 'georef' | null;
 		showGeoRefForm: boolean;
 		geoRefData: GeoRefData | null;
 	}
@@ -93,6 +94,7 @@
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
+		zoneConfirmMode = $bindable(),
 		showGeoRefForm = $bindable(),
 		geoRefData = $bindable()
 	}: Props = $props();
@@ -243,6 +245,9 @@
 					bind:showZoneForm
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:showGeoRefForm
+					bind:geoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}

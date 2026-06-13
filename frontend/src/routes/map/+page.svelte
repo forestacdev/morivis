@@ -219,6 +219,7 @@
 	});
 
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
+	let zoneConfirmMode = $state<'entry' | 'georef' | null>(null);
 
 	// ジオリファレンスフォーム
 	let showGeoRefForm = $state<boolean>(false);
@@ -959,6 +960,7 @@
 		bind:focusBbox
 		bind:isDragover
 		bind:zoneConfirmedEpsg
+		bind:zoneConfirmMode
 		bind:showGeoRefForm
 		bind:geoRefData
 		{selectedEpsgCode}
@@ -975,6 +977,11 @@
 		bind:focusBbox
 		bind:zoneBboxGeojsonData
 		onConfirm={(epsgCode: EpsgCode) => {
+			zoneConfirmMode = 'entry';
+			zoneConfirmedEpsg = epsgCode;
+		}}
+		onGeoRef={(epsgCode: EpsgCode) => {
+			zoneConfirmMode = 'georef';
 			zoneConfirmedEpsg = epsgCode;
 		}}
 	/>

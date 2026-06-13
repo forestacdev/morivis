@@ -7,6 +7,7 @@
 		type GeoJsonRenderMode
 	} from '$routes/map/components/upload/form/GeoJsonRenderModeForm.svelte';
 	import GeometryTypeForm from '$routes/map/components/upload/form/GeometryTypeForm.svelte';
+	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
 	import { createGeoJson3DEntry } from '$routes/map/data/entries/model';
 	import {
 		createGeoJsonEntry,
@@ -28,6 +29,7 @@
 		canRender3dGeoJsonWithDeck,
 		has3dGeometryForType
 	} from '$routes/map/utils/formats/geojson/3d';
+	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -42,6 +44,9 @@
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		zoneConfirmMode: 'entry' | 'georef' | null;
+		showGeoRefForm: boolean;
+		geoRefData: GeoRefData | null;
 	}
 
 	let {
@@ -51,7 +56,10 @@
 		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		zoneConfirmMode = $bindable(),
+		showGeoRefForm = $bindable(),
+		geoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -119,7 +127,7 @@
 		} as unknown as FeatureCollection;
 	};
 
-	let rawGeojson = $state<FeatureCollection | null>(null);
+	let rawGeojson = $state.raw<FeatureCollection | null>(null);
 	let sourceMode = $state<'file' | 'text'>('file');
 	let inputText = $state('');
 	let manualEntryName = $state('GeoJSONデータ');
@@ -330,6 +338,45 @@
 		}
 	};
 
+	const convertAndOpenGeoRef = async (epsgCode: EpsgCode) => {
+		if (!rawGeojson || !selectedGeometryType) return;
+		isProcessing.set(true);
+
+		try {
+			const prjContent = getProjContext(epsgCode);
+			const transformedGeojson = (await transformGeoJSONParallel(
+				rawGeojson,
+				prjContent
+			)) as FeatureCollection;
+			const geojsonData = filterByGeometryType(transformedGeojson, selectedGeometryType);
+
+			if (!geojsonData || geojsonData.features.length === 0) {
+				showNotification('GeoJSONファイルの変換に失敗しました', 'error');
+				return;
+			}
+
+			const bbox = turfBbox(geojsonData);
+			if (!bbox || !isBboxValid(bbox)) {
+				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
+				return;
+			}
+
+			geoRefData = await featureCollectionToGeoRefData({
+				featureCollection: geojsonData,
+				entryName: `${entryName}（GeoRef）`
+			});
+			showGeoRefForm = true;
+			showGeometryTypeDialog = false;
+			showRenderModeDialog = false;
+			showDialogType = null;
+		} catch (error) {
+			showNotification('GeoJSON画像の作成中にエラーが発生しました', 'error');
+			console.error(error);
+		} finally {
+			isProcessing.set(false);
+		}
+	};
+
 	const cancel = () => {
 		dropFile = null;
 		showGeometryTypeDialog = false;
@@ -422,9 +469,15 @@
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'geojson') {
 			const epsg = zoneConfirmedEpsg;
+			const mode = zoneConfirmMode ?? 'entry';
 			untrack(() => {
 				zoneConfirmedEpsg = null;
-				convertAndCreateEntry(epsg);
+				zoneConfirmMode = null;
+				if (mode === 'georef') {
+					void convertAndOpenGeoRef(epsg);
+					return;
+				}
+				void convertAndCreateEntry(epsg);
 			});
 		}
 	});

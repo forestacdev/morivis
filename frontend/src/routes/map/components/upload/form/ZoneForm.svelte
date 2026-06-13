@@ -31,6 +31,7 @@
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		zoneBboxGeojsonData: FeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>;
 		onConfirm: (epsgCode: EpsgCode) => void;
+		onGeoRef: (epsgCode: EpsgCode) => void;
 	}
 
 	let {
@@ -39,7 +40,8 @@
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneBboxGeojsonData = $bindable(),
-		onConfirm
+		onConfirm,
+		onGeoRef
 	}: Props = $props();
 
 	// リセット処理
@@ -56,6 +58,12 @@
 		const code = selectedEpsgCode;
 		reset();
 		onConfirm(code);
+	};
+
+	const registrationAsGeoRef = () => {
+		const code = selectedEpsgCode;
+		reset();
+		onGeoRef(code);
 	};
 	let originalBbox = $derived.by(() => {
 		if (focusBbox) {
@@ -262,11 +270,17 @@
 			<div class="flex w-full max-w-[300px] flex-col items-center gap-2">
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
-			<div class="flex gap-2">
-				<button onclick={reset} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
-				<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
-					決定
+			<div class="flex flex-col gap-3">
+				<button onclick={registrationAsGeoRef} class="c-btn-sub pointer min-w-[200px] p-4">
+					画像として位置合わせ
 				</button>
+				<div class="flex gap-2">
+					<button onclick={reset} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
+
+					<button onclick={registration} class="c-btn-confirm pointer min-w-[200px] p-4 text-lg">
+						決定
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>

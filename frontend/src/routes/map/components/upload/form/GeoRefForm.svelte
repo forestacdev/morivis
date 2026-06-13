@@ -108,6 +108,16 @@
 					ne = new maplibregl.LngLat(data.initialCorners[1][0], data.initialCorners[1][1]);
 					se = new maplibregl.LngLat(data.initialCorners[2][0], data.initialCorners[2][1]);
 					sw = new maplibregl.LngLat(data.initialCorners[3][0], data.initialCorners[3][1]);
+					map.fitBounds(
+						[
+							[Math.min(nw.lng, sw.lng), Math.min(sw.lat, se.lat)],
+							[Math.max(ne.lng, se.lng), Math.max(nw.lat, ne.lat)]
+						],
+						{
+							padding: 80,
+							duration: 0
+						}
+					);
 				} else {
 					const center = map.getCenter();
 					const bounds = map.getBounds();
