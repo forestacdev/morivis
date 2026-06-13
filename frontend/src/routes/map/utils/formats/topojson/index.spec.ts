@@ -4,7 +4,7 @@ import {
 	getTopoJsonObjects,
 	topoJsonFileToGeoJson,
 	topoJsonObjectToGeoJson
-} from './topojson';
+} from '.';
 
 const topologyText = JSON.stringify({
 	type: 'Topology',

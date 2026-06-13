@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WktParseError, wktTextToGeojson } from './wkt';
+import { WktParseError, wktTextToGeojson } from '.';
 
 describe('wkt parser', () => {
 	it('単一 WKT を FeatureCollection に変換できる', () => {
