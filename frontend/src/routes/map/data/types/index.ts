@@ -19,7 +19,7 @@ import type { LayerSpecification, SourceSpecification } from 'maplibre-gl';
 import type { Region } from './location';
 import type { Tag } from './tags';
 
-export type GeoDataType = 'raster' | 'vector' | 'model' | 'stylejson';
+export type MorivisLayerType = 'raster' | 'vector' | 'model' | 'stylejson';
 export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 export type RangeTuple = [min: number, max: number];
 
@@ -126,7 +126,11 @@ export type AnyRasterEntry = MorivisRasterEntry<
 
 export type AnyVectorEntry = MorivisVectorEntry<GeoJsonMetaData | TileMetaData>;
 
-export type MorivisLayerEntry = AnyRasterEntry | AnyVectorEntry | MorivisModelEntry | StyleJsonEntry;
+export type MorivisLayerEntry =
+	| AnyRasterEntry
+	| AnyVectorEntry
+	| MorivisModelEntry
+	| StyleJsonEntry;
 
 export interface MorivisLayerEntryCatalogItem {
 	entry: MorivisLayerEntry;
