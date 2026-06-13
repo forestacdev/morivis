@@ -40,6 +40,9 @@ lint:
 lint-errors:
     cd frontend && pnpm exec eslint . --quiet
 
+docs-serve:
+    cd frontend && pnpm run docs:serve
+
 # typedocの更新
 typedoc:
     cd frontend && pnpm run typedoc
