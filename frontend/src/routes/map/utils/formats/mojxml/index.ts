@@ -106,8 +106,21 @@ const PROJ4_DEFS: Record<string, string> = {
 
 // ---- XML Helper ----
 
+const getChildElements = (parent: Element) => {
+	return Array.from(parent.childNodes).filter((child): child is Element => child.nodeType === 1);
+};
+
+const parseXmlDocument = async (text: string): Promise<Document> => {
+	if (typeof DOMParser !== 'undefined') {
+		return new DOMParser().parseFromString(text, 'text/xml');
+	}
+
+	const { DOMParser: XmldomParser } = await import('@xmldom/xmldom');
+	return new XmldomParser().parseFromString(text, 'text/xml') as unknown as Document;
+};
+
 const findElement = (parent: Element, localName: string, ns: string): Element | null => {
-	const children = parent.children;
+	const children = getChildElements(parent);
 	for (let i = 0; i < children.length; i++) {
 		if (children[i].localName === localName && children[i].namespaceURI === ns) {
 			return children[i];
@@ -118,7 +131,7 @@ const findElement = (parent: Element, localName: string, ns: string): Element | 
 
 const findAllElements = (parent: Element, localName: string, ns: string): Element[] => {
 	const result: Element[] = [];
-	const children = parent.children;
+	const children = getChildElements(parent);
 	for (let i = 0; i < children.length; i++) {
 		if (children[i].localName === localName && children[i].namespaceURI === ns) {
 			result.push(children[i]);
@@ -129,8 +142,9 @@ const findAllElements = (parent: Element, localName: string, ns: string): Elemen
 
 const findElementDeep = (parent: Element, localName: string, ns: string): Element | null => {
 	if (parent.localName === localName && parent.namespaceURI === ns) return parent;
-	for (let i = 0; i < parent.children.length; i++) {
-		const found = findElementDeep(parent.children[i], localName, ns);
+	const children = getChildElements(parent);
+	for (let i = 0; i < children.length; i++) {
+		const found = findElementDeep(children[i], localName, ns);
 		if (found) return found;
 	}
 	return null;
@@ -142,8 +156,9 @@ const findAllElementsDeep = (parent: Element, localName: string, ns: string): El
 		if (el.localName === localName && el.namespaceURI === ns) {
 			result.push(el);
 		}
-		for (let i = 0; i < el.children.length; i++) {
-			walk(el.children[i]);
+		const children = getChildElements(el);
+		for (let i = 0; i < children.length; i++) {
+			walk(children[i]);
 		}
 	};
 	walk(parent);
@@ -175,8 +190,9 @@ const parsePoints = (spatialElem: Element): Map<string, Point> => {
 
 		let x: number | null = null;
 		let y: number | null = null;
-		for (let i = 0; i < pos.children.length; i++) {
-			const child = pos.children[i];
+		const positionChildren = getChildElements(pos);
+		for (let i = 0; i < positionChildren.length; i++) {
+			const child = positionChildren[i];
 			if (child.localName === 'X' && child.namespaceURI === NS_TIZUZUMEN) {
 				x = parseFloat(child.textContent!);
 			} else if (child.localName === 'Y' && child.namespaceURI === NS_TIZUZUMEN) {
@@ -197,22 +213,24 @@ const parseCurves = (spatialElem: Element, points: Map<string, Point>): Map<stri
 		const columns = findAllElementsDeep(curve, 'GM_PointArray.column', NS_TIZUZUMEN);
 		if (columns.length < 1) continue;
 		const column = columns[0];
-		if (column.children.length < 1) continue;
+		const columnChildren = getChildElements(column);
+		if (columnChildren.length < 1) continue;
 
-		const pos = column.children[0];
+		const pos = columnChildren[0];
 		let x: number | null = null;
 		let y: number | null = null;
 
 		if (pos.localName === 'GM_Position.indirect' && pos.namespaceURI === NS_TIZUZUMEN) {
-			const ref = pos.children[0];
+			const ref = getChildElements(pos)[0];
 			const idref = ref.getAttribute('idref')!;
 			const pt = points.get(idref);
 			if (pt) {
 				[x, y] = pt;
 			}
 		} else if (pos.localName === 'GM_Position.direct' && pos.namespaceURI === NS_TIZUZUMEN) {
-			for (let i = 0; i < pos.children.length; i++) {
-				const child = pos.children[i];
+			const positionChildren = getChildElements(pos);
+			for (let i = 0; i < positionChildren.length; i++) {
+				const child = positionChildren[i];
 				if (child.localName === 'X' && child.namespaceURI === NS_TIZUZUMEN) {
 					x = parseFloat(child.textContent!);
 				} else if (child.localName === 'Y' && child.namespaceURI === NS_TIZUZUMEN) {
@@ -244,8 +262,9 @@ const parseSurfaces = (spatialElem: Element, curves: Map<string, Curve>): Map<st
 			const gmRing = findElementDeep(exterior, 'GM_Ring', NS_TIZUZUMEN);
 			if (gmRing) {
 				const ring: [number, number][] = [];
-				for (let i = 0; i < gmRing.children.length; i++) {
-					const cc = gmRing.children[i];
+				const ringChildren = getChildElements(gmRing);
+				for (let i = 0; i < ringChildren.length; i++) {
+					const cc = ringChildren[i];
 					const curveId = cc.getAttribute('idref');
 					if (curveId && curves.has(curveId)) {
 						ring.push(curves.get(curveId)! as [number, number]);
@@ -264,8 +283,9 @@ const parseSurfaces = (spatialElem: Element, curves: Map<string, Curve>): Map<st
 			const gmRing = findElementDeep(interior, 'GM_Ring', NS_TIZUZUMEN);
 			if (gmRing) {
 				const ring: [number, number][] = [];
-				for (let i = 0; i < gmRing.children.length; i++) {
-					const cc = gmRing.children[i];
+				const ringChildren = getChildElements(gmRing);
+				for (let i = 0; i < ringChildren.length; i++) {
+					const cc = ringChildren[i];
 					const curveId = cc.getAttribute('idref');
 					if (curveId && curves.has(curveId)) {
 						ring.push(curves.get(curveId)! as [number, number]);
@@ -315,8 +335,9 @@ const parseFeatures = (
 
 		let geometry: Feature['geometry'] = null;
 
-		for (let i = 0; i < fude.children.length; i++) {
-			const entry = fude.children[i];
+		const fudeChildren = getChildElements(fude);
+		for (let i = 0; i < fudeChildren.length; i++) {
+			const entry = fudeChildren[i];
 			const key = entry.localName;
 			if (key === '形状') {
 				const idref = entry.getAttribute('idref');
@@ -381,16 +402,15 @@ const roundCoord = (v: number): number => Math.trunc(v * 1_000_000_000) / 1_000_
  * const geojson = parseMojXml(xml, {}, proj4);
  * ```
  */
-export const parseMojXml = (
+export const parseMojXml = async (
 	xmlString: string,
 	options: ParseOptions = {},
 	proj4: ((fromProjection: string, toProjection: string) => { forward: Proj4Forward; }) | null =
 		null
-): FeatureCollection => {
+): Promise<FeatureCollection> => {
 	const { includeArbitraryCrs = false, includeChikugai = false } = options;
 
-	const parser = new DOMParser();
-	const xmlDoc = parser.parseFromString(xmlString, 'text/xml');
+	const xmlDoc = await parseXmlDocument(xmlString);
 	const doc = xmlDoc.documentElement;
 
 	// 座標参照系を取得

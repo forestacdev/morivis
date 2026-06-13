@@ -57,14 +57,14 @@
 		}
 	});
 
-	const parseXmlStrings = (xmlStrings: string[]): FeatureCollection => {
+	const parseXmlStrings = async (xmlStrings: string[]): Promise<FeatureCollection> => {
 		const allFeatures: FeatureCollection['features'] = [];
 		for (const xmlString of xmlStrings) {
-			const geojson = parseMojXml(
+			const geojson = (await parseMojXml(
 				xmlString,
 				{ includeArbitraryCrs: true },
 				proj4
-			) as unknown as FeatureCollection;
+			)) as unknown as FeatureCollection;
 			allFeatures.push(...geojson.features);
 		}
 		return { type: 'FeatureCollection', features: allFeatures };
@@ -89,7 +89,7 @@
 			const isZip = mojFile.name.toLowerCase().endsWith('.zip');
 			const xmlStrings = isZip ? await readXmlFromZip(mojFile) : [await mojFile.text()];
 
-			const geojson = parseXmlStrings(xmlStrings);
+			const geojson = await parseXmlStrings(xmlStrings);
 
 			if (!geojson.features.length) {
 				showNotification('フィーチャが見つかりませんでした', 'error');
