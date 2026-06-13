@@ -14,10 +14,10 @@
 		GeoRefData,
 		GeoRefPreviewData,
 		RasterRegistrationMode
-	} from '$routes/map/components/upload/form/GeoRefForm.svelte';
-	import GeoRefMenu from '$routes/map/components/upload/form/GeoRefMenu.svelte';
+	} from '$routes/map/components/upload/form/transform/georef-types';
+	import GeoRefMenu from '$routes/map/components/upload/form/transform/GeoRefMenu.svelte';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
-	import ZoneMenu from '$routes/map/components/upload/form/ZoneMenu.svelte';
+	import ZoneMenu from '$routes/map/components/upload/form/transform/ZoneMenu.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,

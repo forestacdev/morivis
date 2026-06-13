@@ -213,7 +213,7 @@
 
 			// bbox検証: 座標変換が正しくできたか
 			if (!isBboxValid(bbox)) {
-				// 座標系不明 → ZoneFormで手動選択
+				// 座標系不明 → 座標系選択UIで手動選択
 				transformOptionMode = 'zone';
 				focusBbox = bbox;
 				return;
@@ -306,7 +306,7 @@
 		await createDemEntry();
 	};
 
-	// ZoneFormで座標系選択後
+	// 座標系選択後
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'landxml') {
 			const epsg = zoneConfirmedEpsg;

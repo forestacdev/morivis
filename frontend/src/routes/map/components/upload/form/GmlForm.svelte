@@ -147,7 +147,7 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// 座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (gmlFiles.length === 0 || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);

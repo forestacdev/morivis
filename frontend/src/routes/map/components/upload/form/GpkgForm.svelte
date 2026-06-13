@@ -222,7 +222,7 @@
 						resolvedBbox = transformed;
 					}
 				} catch {
-					// 変換失敗時はZoneFormへ
+					// 変換失敗時は座標系選択へ
 				}
 			}
 
@@ -433,7 +433,7 @@
 		return false;
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// 座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);

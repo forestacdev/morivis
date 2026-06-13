@@ -3,7 +3,7 @@
 	import { untrack } from 'svelte';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
-	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';

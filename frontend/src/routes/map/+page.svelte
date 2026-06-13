@@ -56,7 +56,7 @@
 	import type {
 		GeoRefData,
 		GeoRefPreviewData
-	} from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	} from '$routes/map/components/upload/form/transform/georef-types';
 	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		findCatalogEntry,
@@ -125,7 +125,7 @@
 	if (isPc) {
 		Promise.all([
 			import('$routes/map/components/upload/BaseDialog.svelte'),
-			import('$routes/map/components/upload/form/TransformOptionForm.svelte')
+			import('$routes/map/components/upload/form/transform/TransformOptionForm.svelte')
 		]).then(([uploadMod, transformOptionMod]) => {
 			UploadDialog = uploadMod.default;
 			TransformOptionForm = transformOptionMod.default;

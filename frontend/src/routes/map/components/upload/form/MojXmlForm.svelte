@@ -131,7 +131,7 @@
 		const bbox = turfBbox(filtered);
 
 		if (!bbox || !isBboxValid(bbox)) {
-			// 任意座標系 → 確認ダイアログを表示してからZoneFormへ
+			// 任意座標系 → 確認ダイアログを表示してから座標系選択へ
 			await showConfirmDialog({
 				message: 'このファイルは任意座標系のため、地図上の正しい位置に表示できません。',
 				confirmText: 'OK',
@@ -164,7 +164,7 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// 座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!rawGeojson) return;
 		isProcessing.set(true);

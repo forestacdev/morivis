@@ -49,7 +49,7 @@
 		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
-	const isZoneFormVisible = $derived(transformOptionMode === 'zone');
+	const isZoneSelectionVisible = $derived(transformOptionMode === 'zone');
 
 	const shpValidation = yup.object().shape({
 		shpFile: yup
@@ -419,7 +419,7 @@
 		<div
 			transition:fade={{ duration: 200 }}
 			class="c-bg absolute bottom-0 z-30 grid h-full w-full place-items-center
-         {isZoneFormVisible ? 'pointer-events-none opacity-0' : ''}"
+         {isZoneSelectionVisible ? 'pointer-events-none opacity-0' : ''}"
 		>
 			<div class="flex shrink-0 flex-col items-center gap-3 overflow-auto pt-8 pb-2">
 				<span class="text-3xl font-bold text-white">シェープファイルの登録</span>

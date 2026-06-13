@@ -14,7 +14,7 @@
 	import GeoParquetForm from '$routes/map/components/upload/form/GeoParquetForm.svelte';
 	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
 	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
-	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 	import GeoZarrForm from '$routes/map/components/upload/form/GeoZarrForm.svelte';
 	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
@@ -105,13 +105,13 @@
 	}: Props = $props();
 
 	let isFixedHeight = $derived(showDialogType === 'dxf' || showDialogType === 'dm');
-	const isZoneFormVisible = $derived(transformOptionMode === 'zone');
+	const isTransformOptionVisible = $derived(transformOptionMode === 'zone');
 </script>
 
 {#if showDialogType && showDialogType !== 'shp'}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 {isZoneFormVisible
+		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 {isTransformOptionVisible
 			? 'pointer-events-none opacity-0'
 			: ''}"
 	>

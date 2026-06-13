@@ -7,7 +7,7 @@
 	import type {
 		GeoRefData,
 		RasterRegistrationMode
-	} from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	} from '$routes/map/components/upload/form/transform/georef-types';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
@@ -170,7 +170,7 @@
 		}
 	};
 
-	const openGeoRefForm = (file: File) => {
+	const openGeoRefTransform = (file: File) => {
 		if (!parsedBands) return;
 
 		const previewImageUrl = generateThumbnail({
@@ -220,7 +220,7 @@
 		}
 
 		showNotification('位置情報がありません。位置合わせフォームへ移動します', 'warning');
-		openGeoRefForm(file);
+		openGeoRefTransform(file);
 	};
 
 	const parseBboxFromGeoTiffImage = (
@@ -496,7 +496,7 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → bbox座標変換 → 自動登録
+	// 座標系選択後 → bbox座標変換 → 自動登録
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'geotiff') {
 			const epsg = zoneConfirmedEpsg;
@@ -554,7 +554,7 @@
 				focusBbox = rawBbox;
 				transformOptionMode = 'zone';
 			} else if (imageFile) {
-				openGeoRefForm(imageFile);
+				openGeoRefTransform(imageFile);
 			}
 			return;
 		}

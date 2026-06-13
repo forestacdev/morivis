@@ -5,7 +5,7 @@
 	import type {
 		GeoRefData,
 		RasterRegistrationMode
-	} from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	} from '$routes/map/components/upload/form/transform/georef-types';
 
 	interface Props {
 		geoRefData: GeoRefData;

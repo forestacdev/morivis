@@ -185,7 +185,7 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換
+	// 座標系選択後 → 座標変換
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'pointcloud') {
 			const epsg = zoneConfirmedEpsg;

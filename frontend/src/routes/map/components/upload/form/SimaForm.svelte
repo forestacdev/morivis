@@ -133,7 +133,7 @@
 						layersByGeometryType = groupPropertyByGeometryType(rawGeojson, extractSimaLayer);
 						const layers = layersByGeometryType[selectedGeometryType] ?? [];
 						if (layers.length <= 1) {
-							openZoneForm();
+							openZoneSelection();
 							return;
 						}
 					} else {
@@ -160,8 +160,8 @@
 		}
 	});
 
-	// 「決定」→ ZoneFormを表示
-	const openZoneForm = () => {
+	// 「決定」→ 座標系選択UIを表示
+	const openZoneSelection = () => {
 		if (rawGeojson) {
 			pendingZoneGeoRefData = {
 				featureCollection: rawGeojson,
@@ -172,7 +172,7 @@
 		focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// 座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!simaFile || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);
@@ -307,7 +307,7 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
-		onclick={openZoneForm}
+		onclick={openZoneSelection}
 		disabled={$isProcessing || !selectedGeometryType}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
 		!selectedGeometryType

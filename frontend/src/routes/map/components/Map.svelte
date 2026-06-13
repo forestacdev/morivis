@@ -30,7 +30,7 @@
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
-	import type { GeoRefPreviewData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { GeoRefPreviewData } from '$routes/map/components/upload/form/transform/georef-types';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type {
@@ -951,7 +951,7 @@
 	$effect(() => {
 		requestStyleUpdateByDependency({
 			previewUrl: isGeoRefRegistrationActive ? (geoRefPreviewData?.url ?? null) : null,
-			showGeoRefForm: isGeoRefRegistrationActive
+			showGeoRefTransform: isGeoRefRegistrationActive
 		});
 		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 	});

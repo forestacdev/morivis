@@ -1,6 +1,6 @@
 import turfBbox from '@turf/bbox';
 
-import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import { getMinMax, type RasterBands } from '$routes/map/utils/formats/geotiff';
 import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
