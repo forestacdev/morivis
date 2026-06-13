@@ -128,6 +128,7 @@ export interface GeoArrowStyle {
 	color: string;
 }
 
+/** mesh 系 model entry の入力形式。主に three.js 側で読む 3D モデル形式を表す。 */
 export type MeshFormatType =
 	| 'gltf'
 	| 'obj'
@@ -192,6 +193,7 @@ export interface GeoJson3DEntry extends BaseModelEntry {
 	style: GeoArrowStyle;
 }
 
+/** deck.gl 側で扱うベクター系 3D entry。 */
 export type DeckVectorEntry = GeoArrowEntry | GeoJson3DEntry;
 
 export type AnyMeshEntry = MeshEntry<MeshStyle> | MeshEntry<PointCloudStyle>;
@@ -206,6 +208,10 @@ export type PointCloudStyleEntry =
 	| Tiles3DEntry<PointCloudStyle>
 	| PointCloudEntry;
 
+/**
+ * morivis の model 系内部モデル。
+ * object / runtime を主分類軸とし、three.js 系と deck.gl 系の分岐元になる。
+ */
 export type MorivisModelEntry =
 	| AnyMeshEntry
 	| AnyTiles3DEntry

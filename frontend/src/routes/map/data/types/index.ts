@@ -19,6 +19,11 @@ import type { LayerSpecification, SourceSpecification } from 'maplibre-gl';
 import type { Region } from './location';
 import type { Tag } from './tags';
 
+/**
+ * morivis が内部で扱うレイヤーの大分類。
+ * `vector / raster / model` は同じ粒度の意味ではなく、
+ * それぞれ geometry / visualization / runtime を主分類軸として持つ。
+ */
 export type MorivisLayerType = 'raster' | 'vector' | 'model' | 'stylejson';
 export type Opacity = 1 | 0.7 | 0.5 | 0.3;
 export type RangeTuple = [min: number, max: number];
@@ -126,12 +131,20 @@ export type AnyRasterEntry = MorivisRasterEntry<
 
 export type AnyVectorEntry = MorivisVectorEntry<GeoJsonMetaData | TileMetaData>;
 
+/**
+ * morivis が UI・ストア・描画変換で共通に扱う内部レイヤーモデル。
+ *
+ * これは外部カタログ形式でも、MapLibre / deck.gl / three.js の
+ * 生設定オブジェクトでもない。入力形式の違いをいったん吸収し、
+ * 描画直前までの標準形として使う。
+ */
 export type MorivisLayerEntry =
 	| AnyRasterEntry
 	| AnyVectorEntry
 	| MorivisModelEntry
 	| StyleJsonEntry;
 
+/** lazy entry を含むカタログ上の 1 件。必要なら loadEntry で完全な entry に解決する。 */
 export interface MorivisLayerEntryCatalogItem {
 	entry: MorivisLayerEntry;
 	loadEntry?: () => Promise<MorivisLayerEntry>;
