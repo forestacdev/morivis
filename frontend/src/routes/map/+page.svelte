@@ -403,7 +403,7 @@
 
 			geoRefData = await featureCollectionToGeoRefData({
 				featureCollection: transformedGeojson as AppFeatureCollection,
-				entryName: `${pendingData.entryName}（GeoRef）`
+				entryName: pendingData.entryName
 			});
 			debugLog.info(
 				`GeoRef画像生成完了: id=${geoRefData.entryId}, width=${geoRefData.imageWidth}, height=${geoRefData.imageHeight}`
