@@ -1,18 +1,18 @@
+/**
+ * Format spec:
+ * - https://service.gsi.go.jp/kiban/contents/screen/basismap/documents/FGD_DLFileSpecV5.2.pdf
+ *
+ * References:
+ * - https://fgd.gsi.go.jp/download/reference.html
+ * - https://fgd.gsi.go.jp/download/documents.html
+ * - https://www.ogc.org/standards/gml/
+ */
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 import { geometryToGeoJSON } from '$routes/map/utils/formats/transformers/geometry';
 import GML from 'ol/format/GML.js';
 import GML2 from 'ol/format/GML2.js';
-
-/**
- * 基盤地図情報（FGD）GML パーサー
- *
- * 仕様書:
- * - ファイル仕様書: https://service.gsi.go.jp/kiban/contents/screen/basismap/documents/FGD_DLFileSpecV5.2.pdf
- * - データの説明: https://fgd.gsi.go.jp/download/reference.html
- * - 各種資料: https://fgd.gsi.go.jp/download/documents.html
- */
 
 const GML_NS = 'http://www.opengis.net/gml/3.2';
 const FGD_NS = 'http://fgd.gsi.go.jp/spec/2008/FGD_GMLSchema';
