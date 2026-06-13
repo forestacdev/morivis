@@ -8,6 +8,7 @@
 		GeoRefData,
 		RasterRegistrationMode
 	} from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -48,11 +49,10 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
-		showGeoRefForm: boolean;
 		geoRefData: GeoRefData | null;
 	}
 
@@ -60,11 +60,10 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
-		showGeoRefForm = $bindable(),
 		geoRefData = $bindable()
 	}: Props = $props();
 
@@ -197,7 +196,7 @@
 			previewImageUrl,
 			registrationMode
 		};
-		showGeoRefForm = true;
+		transformOptionMode = 'georef';
 		showDialogType = null;
 	};
 
@@ -216,7 +215,7 @@
 		if (rawBbox) {
 			showNotification('座標系が不明です。投影法を選択してください', 'warning');
 			focusBbox = rawBbox;
-			showZoneForm = true;
+			transformOptionMode = 'zone';
 			return;
 		}
 
@@ -553,7 +552,7 @@
 		if (!resolvedBbox) {
 			if (rawBbox) {
 				focusBbox = rawBbox;
-				showZoneForm = true;
+				transformOptionMode = 'zone';
 			} else if (imageFile) {
 				openGeoRefForm(imageFile);
 			}

@@ -3,6 +3,10 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
@@ -23,20 +27,24 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		zoneConfirmMode: 'entry' | 'georef' | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		zoneConfirmMode = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -113,7 +121,11 @@
 		const bbox = turfBbox(filtered);
 
 		if (!bbox || !isBboxValid(bbox)) {
-			showZoneForm = true;
+			pendingZoneGeoRefData = {
+				featureCollection: filtered,
+				entryName
+			};
+			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 		} else {
 			const entry = await createGeoJsonEntry(
@@ -193,8 +205,11 @@
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'gml') {
 			const epsg = zoneConfirmedEpsg;
+			const mode = zoneConfirmMode ?? 'entry';
+			if (mode !== 'entry') return;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
+				zoneConfirmMode = null;
 				convertAndCreateEntry(epsg);
 			});
 		}

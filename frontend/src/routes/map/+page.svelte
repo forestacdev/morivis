@@ -1,10 +1,11 @@
 <script lang="ts">
+	import turfBbox from '@turf/bbox';
 	import turfBearing from '@turf/bearing';
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat } from 'maplibre-gl';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { slide } from 'svelte/transition';
 
@@ -56,6 +57,7 @@
 		GeoRefData,
 		GeoRefPreviewData
 	} from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		findCatalogEntry,
 		geoDataEntries,
@@ -79,21 +81,29 @@
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
 	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
+	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import {
 		getPopupImageFieldKey,
 		resolveGeneratedPoiIconUrl,
 		resolvePopupImageUrl
 	} from '$routes/map/utils/icon';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
 	import {
 		get3dParams,
 		getParams,
 		getStreetViewParams
 	} from '$routes/map/utils/platform/url-params';
-	import type { EpsgCode, EpsgInfoWithCode } from '$routes/map/utils/proj/dict';
+	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
+	import {
+		getProjContext,
+		type EpsgCode,
+		type EpsgInfoWithCode
+	} from '$routes/map/utils/proj/dict';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
+	import { showNotification } from '$routes/stores/notification';
 	import { themeMode } from '$routes/stores/theme';
 	import {
 		isBlocked,
@@ -102,25 +112,23 @@
 		showOtherMenu,
 		showInfoDialog,
 		showSearchMenu,
-		showTermsDialog
+		showTermsDialog,
+		isProcessing
 	} from '$routes/stores/ui';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	// アップロード関連コンポーネント（PC時のみ動的ロード）
 	let UploadDialog = $state.raw<any>(null);
-	let ZoneForm = $state.raw<any>(null);
-	let GeoRefForm = $state.raw<any>(null);
+	let TransformOptionForm = $state.raw<any>(null);
 
 	const isPc = typeof window !== 'undefined' && checkPc();
 	if (isPc) {
 		Promise.all([
 			import('$routes/map/components/upload/BaseDialog.svelte'),
-			import('$routes/map/components/upload/form/ZoneForm.svelte'),
-			import('$routes/map/components/upload/form/GeoRefForm.svelte')
-		]).then(([uploadMod, zoneMod, georefMod]) => {
+			import('$routes/map/components/upload/form/TransformOptionForm.svelte')
+		]).then(([uploadMod, transformOptionMod]) => {
 			UploadDialog = uploadMod.default;
-			ZoneForm = zoneMod.default;
-			GeoRefForm = georefMod.default;
+			TransformOptionForm = transformOptionMod.default;
 		});
 	}
 
@@ -211,7 +219,6 @@
 
 	let showDialogType = $state<DialogType>(null);
 	let showDebugWindow = $state<boolean>(false); // デバッグウィンドウの表示
-	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
 	let selectedEpsgCode = $state<EpsgCode>('3857'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
 	let zoneBboxGeojsonData = $state<
@@ -223,11 +230,41 @@
 
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
 	let zoneConfirmMode = $state<'entry' | 'georef' | null>(null);
+	let pendingZoneGeoRefData = $state.raw<PendingZoneGeoRefData | null>(null);
+	let transformOptionMode = $state<'zone' | 'georef' | null>(null);
 
-	// ジオリファレンスフォーム
-	let showGeoRefForm = $state<boolean>(false);
 	let geoRefData = $state<GeoRefData | null>(null);
 	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
+
+	const openPendingZoneGeoRef = async (pendingData: PendingZoneGeoRefData, epsgCode: EpsgCode) => {
+		isProcessing.set(true);
+
+		try {
+			const prjContent = getProjContext(epsgCode);
+			const transformedGeojson = (await transformGeoJSONParallel(
+				pendingData.featureCollection,
+				prjContent
+			)) as FeatureCollection;
+			const bbox = turfBbox(transformedGeojson);
+
+			if (!bbox || !isBboxValid(bbox)) {
+				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
+				return;
+			}
+
+			geoRefData = await featureCollectionToGeoRefData({
+				featureCollection: transformedGeojson as AppFeatureCollection,
+				entryName: `${pendingData.entryName}（GeoRef）`
+			});
+			transformOptionMode = 'georef';
+			showDialogType = null;
+		} catch (error) {
+			showNotification('GeoJSON画像の作成中にエラーが発生しました', 'error');
+			console.error(error);
+		} finally {
+			isProcessing.set(false);
+		}
+	};
 
 	// 検索ワード
 	let inputSearchWord = $state<string>('');
@@ -247,6 +284,24 @@
 		}
 
 		return null;
+	});
+
+	$effect(() => {
+		if (!zoneConfirmedEpsg || zoneConfirmMode !== 'georef' || !pendingZoneGeoRefData) return;
+
+		const epsg = zoneConfirmedEpsg;
+		const pendingData = pendingZoneGeoRefData;
+		untrack(() => {
+			zoneConfirmedEpsg = null;
+			zoneConfirmMode = null;
+			void openPendingZoneGeoRef(pendingData, epsg);
+		});
+	});
+
+	$effect(() => {
+		if (transformOptionMode === null) {
+			pendingZoneGeoRefData = null;
+		}
 	});
 
 	let mobileLayerFeatureSummaryPromise = $derived.by(() => {
@@ -313,7 +368,7 @@
 	});
 
 	$effect(() => {
-		if (showDataEntry || showGeoRefForm || showZoneForm) {
+		if (showDataEntry || transformOptionMode) {
 			themeMode.setMode('preview');
 		} else {
 			themeMode.setMode('default');
@@ -759,14 +814,13 @@
 				bind:dropFile
 				bind:showDialogType
 				bind:drawGeojsonData
-				bind:showZoneForm
+				{transformOptionMode}
 				bind:focusBbox
 				bind:isExternalCameraUpdate
 				bind:selectedSearchId
 				bind:selectedSearchResultData
 				bind:contextMenuState
 				bind:isDragover
-				{showGeoRefForm}
 				{geoRefPreviewData}
 				{searchResults}
 				{selectedEpsgCode}
@@ -841,14 +895,13 @@
 						bind:dropFile
 						bind:showDialogType
 						bind:drawGeojsonData
-						bind:showZoneForm
+						{transformOptionMode}
 						bind:focusBbox
 						bind:isExternalCameraUpdate
 						bind:selectedSearchId
 						bind:selectedSearchResultData
 						bind:contextMenuState
 						bind:isDragover
-						{showGeoRefForm}
 						{geoRefPreviewData}
 						{searchResults}
 						{selectedEpsgCode}
@@ -909,7 +962,7 @@
 
 			<PreviewMenu bind:showDataEntry />
 
-			{#if !showZoneForm}
+			{#if !transformOptionMode}
 				<DataMenu
 					bind:showDataEntry
 					bind:dropFile
@@ -962,12 +1015,12 @@
 		bind:remoteWmtsUrl
 		bind:remoteFeatureServiceUrl
 		bind:pendingTileUrl
-		bind:showZoneForm
+		bind:transformOptionMode
 		bind:focusBbox
 		bind:isDragover
 		bind:zoneConfirmedEpsg
 		bind:zoneConfirmMode
-		bind:showGeoRefForm
+		bind:pendingZoneGeoRefData
 		bind:geoRefData
 		{selectedEpsgCode}
 	/>
@@ -975,33 +1028,34 @@
 
 <ImagePreviewDialog bind:imagePreviewUrl bind:imageBounds />
 
-{#if map && ZoneForm}
-	<ZoneForm
+{#if map && transformOptionMode && TransformOptionForm}
+	<TransformOptionForm
 		{map}
-		bind:showZoneForm
 		bind:selectedEpsgCode
 		bind:focusBbox
 		bind:zoneBboxGeojsonData
-		onConfirm={(epsgCode: EpsgCode) => {
-			zoneConfirmMode = 'entry';
-			zoneConfirmedEpsg = epsgCode;
-		}}
-		onGeoRef={(epsgCode: EpsgCode) => {
-			zoneConfirmMode = 'georef';
-			zoneConfirmedEpsg = epsgCode;
-		}}
-	/>
-{/if}
-
-{#if map && showGeoRefForm && geoRefData && GeoRefForm}
-	<GeoRefForm
-		{map}
-		bind:showGeoRefForm
 		bind:geoRefData
 		bind:geoRefPreviewData
 		bind:showDataEntry
 		bind:showDialogType
 		bind:dropFile
+		{transformOptionMode}
+		canSwitchToGeoRef={pendingZoneGeoRefData !== null}
+		canSwitchToZone={pendingZoneGeoRefData !== null}
+		onZoneConfirm={(epsgCode: EpsgCode) => {
+			geoRefData = null;
+			geoRefPreviewData = null;
+			transformOptionMode = null;
+			zoneConfirmMode = 'entry';
+			zoneConfirmedEpsg = epsgCode;
+		}}
+		onZoneGeoRef={(epsgCode: EpsgCode) => {
+			zoneConfirmMode = 'georef';
+			zoneConfirmedEpsg = epsgCode;
+		}}
+		onSelectTab={(tab: 'zone' | 'georef') => {
+			transformOptionMode = tab;
+		}}
 	/>
 {/if}
 

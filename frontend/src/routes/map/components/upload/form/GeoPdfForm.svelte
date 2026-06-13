@@ -4,6 +4,7 @@
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createGeoJsonEntry, getGeometryTypes } from '$routes/map/data/entries/vector';
@@ -34,7 +35,7 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showGeoRefForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		geoRefData: GeoRefData | null;
 	}
 
@@ -42,7 +43,7 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showGeoRefForm = $bindable(),
+		transformOptionMode = $bindable(),
 		geoRefData = $bindable()
 	}: Props = $props();
 
@@ -153,7 +154,7 @@
 				imageFile: file,
 				registrationMode: 'raster'
 			};
-			showGeoRefForm = true;
+			transformOptionMode = 'georef';
 			showDialogType = null;
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : '画像の解析に失敗しました', 'error');
@@ -303,7 +304,7 @@
 			imageFile: pngFile,
 			registrationMode: 'raster'
 		};
-		showGeoRefForm = true;
+		transformOptionMode = 'georef';
 		showDialogType = null;
 	};
 

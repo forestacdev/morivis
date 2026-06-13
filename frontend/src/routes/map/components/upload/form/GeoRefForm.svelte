@@ -50,27 +50,32 @@
 
 	interface Props {
 		map: maplibregl.Map;
-		showGeoRefForm: boolean;
 		geoRefData: GeoRefData | null;
 		geoRefPreviewData: GeoRefPreviewData | null;
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
+		transformOptionMode: 'zone' | 'georef' | null;
+		canSwitchToZone: boolean;
+		onSelectTab: (tab: 'zone' | 'georef') => void;
 	}
 
 	let {
 		map,
-		showGeoRefForm = $bindable(),
 		geoRefData = $bindable(),
 		geoRefPreviewData = $bindable(),
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		dropFile = $bindable()
+		dropFile = $bindable(),
+		transformOptionMode,
+		canSwitchToZone,
+		onSelectTab
 	}: Props = $props();
 
 	const PREVIEW_SOURCE_ID = 'georef_image_preview';
 
 	let imageUrl = $state<string | null>(null);
+	const isGeoRefVisible = $derived(transformOptionMode === 'georef');
 	const registrationModeOptions = [
 		{ key: 'raster', name: 'ラスター' },
 		{ key: 'mesh', name: '3Dメッシュ' }
@@ -95,7 +100,7 @@
 	];
 
 	const updatePreviewData = () => {
-		if (!showGeoRefForm || !imageUrl) return;
+		if (!isGeoRefVisible || !imageUrl) return;
 
 		if (!geoRefPreviewData || geoRefPreviewData.url !== imageUrl) {
 			geoRefPreviewData = {
@@ -136,7 +141,7 @@
 
 	// 初期配置: 地図の現在のビューから画像のアスペクト比でbboxを計算
 	$effect(() => {
-		if (geoRefData && showGeoRefForm && !initialized) {
+		if (geoRefData && isGeoRefVisible && !initialized) {
 			const data = geoRefData;
 			untrack(() => {
 				showDataMenu.set(false);
@@ -184,14 +189,14 @@
 
 				// 画像プレビュー用URL
 				imageUrl =
-					data.previewImageUrl
-					?? generateThumbnail({
-							bands: data.parsedBands,
-							width: data.imageWidth,
-							height: data.imageHeight,
-							nodata: data.parsedNodata,
-							ranges: data.dataRanges
-						});
+					data.previewImageUrl ??
+					generateThumbnail({
+						bands: data.parsedBands,
+						width: data.imageWidth,
+						height: data.imageHeight,
+						nodata: data.parsedNodata,
+						ranges: data.dataRanges
+					});
 				updatePreviewData();
 				initialized = true;
 			});
@@ -336,7 +341,7 @@
 	const cleanup = () => {
 		removePreview();
 		initialized = false;
-		showGeoRefForm = false;
+		transformOptionMode = null;
 		geoRefData = null;
 		showDialogType = null;
 		dropFile = null;
@@ -352,11 +357,19 @@
 	});
 </script>
 
-{#if showGeoRefForm && geoRefData}
+{#if isGeoRefVisible && geoRefData}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="w-side-menu bg-main absolute top-0 left-0 z-30 flex h-full flex-col items-center justify-center p-4 text-base"
 	>
+		{#if canSwitchToZone}
+			<div class="mb-4 grid w-full shrink-0 grid-cols-2 gap-2">
+				<button onclick={() => onSelectTab('zone')} class="c-btn-sub cursor-pointer p-3 text-base">
+					投影法
+				</button>
+				<button class="c-btn-confirm p-3 text-base">位置合わせ</button>
+			</div>
+		{/if}
 		<div class="flex shrink-0 items-center justify-between gap-2 overflow-auto pb-4">
 			<Icon icon="ph:polygon-fill" class="h-8 w-8" />
 			<span class="text-2xl font-bold">画像の位置合わせ</span>

@@ -1,9 +1,9 @@
 import turfBbox from '@turf/bbox';
 
 import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import { getMinMax, type RasterBands } from '$routes/map/utils/formats/geotiff';
 import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
-import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 
 const DEFAULT_WIDTH = 1024;
 const DEFAULT_HEIGHT = 1024;

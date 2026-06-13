@@ -3,6 +3,7 @@
 	import type { Table } from 'apache-arrow';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { createGeoArrowEntry } from '$routes/map/data/entries/model';
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
@@ -20,7 +21,7 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: string;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: string | null;
@@ -30,7 +31,7 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable()
@@ -139,7 +140,7 @@
 	const cancel = () => {
 		dropFile = null;
 		showDialogType = null;
-		showZoneForm = false;
+		transformOptionMode = null;
 		focusBbox = null;
 	};
 </script>

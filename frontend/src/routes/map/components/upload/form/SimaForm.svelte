@@ -4,6 +4,10 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
@@ -33,20 +37,24 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		zoneConfirmMode: 'entry' | 'georef' | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		zoneConfirmMode = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -154,7 +162,13 @@
 
 	// 「決定」→ ZoneFormを表示
 	const openZoneForm = () => {
-		showZoneForm = true;
+		if (rawGeojson) {
+			pendingZoneGeoRefData = {
+				featureCollection: rawGeojson,
+				entryName: simaFile?.name.replace(/\.[^.]+$/, '') ?? 'SIMAデータ'
+			};
+		}
+		transformOptionMode = 'zone';
 		focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
 	};
 
@@ -226,8 +240,11 @@
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'sima') {
 			const epsg = zoneConfirmedEpsg;
+			const mode = zoneConfirmMode ?? 'entry';
+			if (mode !== 'entry') return;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
+				zoneConfirmMode = null;
 				convertAndCreateEntry(epsg);
 			});
 		}
@@ -279,7 +296,7 @@
 				</div>
 			</div>
 			<div class="flex flex-col gap-1">
-				{#each layersByGeometryType[selectedGeometryType] as layer}
+				{#each layersByGeometryType[selectedGeometryType] as layer (layer)}
 					<Checkbox label={layer} bind:value={layerChecked[layer]} />
 				{/each}
 			</div>

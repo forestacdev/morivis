@@ -4,6 +4,10 @@
 	import proj4 from 'proj4';
 	import { untrack } from 'svelte';
 
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
@@ -25,9 +29,11 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		zoneConfirmMode: 'entry' | 'georef' | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 		selectedEpsgCode: EpsgCode;
 	}
 
@@ -35,9 +41,11 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
+		zoneConfirmMode = $bindable(),
+		pendingZoneGeoRefData = $bindable(),
 		selectedEpsgCode = $bindable()
 	}: Props = $props();
 
@@ -129,7 +137,11 @@
 				confirmText: 'OK',
 				confirmOnly: true
 			});
-			showZoneForm = true;
+			pendingZoneGeoRefData = {
+				featureCollection: filtered,
+				entryName
+			};
+			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 			return;
 		}
@@ -208,8 +220,11 @@
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'mojxml') {
 			const epsg = zoneConfirmedEpsg;
+			const mode = zoneConfirmMode ?? 'entry';
+			if (mode !== 'entry') return;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
+				zoneConfirmMode = null;
 				convertAndCreateEntry(epsg);
 			});
 		}

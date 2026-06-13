@@ -26,27 +26,29 @@
 
 	interface Props {
 		map: maplibregl.Map; // MapLibre GL JSのマップインスタンス
-		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		zoneBboxGeojsonData: FeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>;
+		transformOptionMode: 'zone' | 'georef' | null;
+		canSwitchToGeoRef: boolean;
 		onConfirm: (epsgCode: EpsgCode) => void;
 		onGeoRef: (epsgCode: EpsgCode) => void;
 	}
 
 	let {
 		map,
-		showZoneForm = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneBboxGeojsonData = $bindable(),
+		transformOptionMode,
+		canSwitchToGeoRef,
 		onConfirm,
 		onGeoRef
 	}: Props = $props();
 
 	// リセット処理
 	const reset = () => {
-		showZoneForm = false;
+		transformOptionMode = null;
 		focusBbox = null; // リセットして次回のeffect再実行を保証
 		zoneBboxGeojsonData = {
 			type: 'FeatureCollection',
@@ -62,7 +64,6 @@
 
 	const registrationAsGeoRef = () => {
 		const code = selectedEpsgCode;
-		reset();
 		onGeoRef(code);
 	};
 	let originalBbox = $derived.by(() => {
@@ -224,11 +225,19 @@
 	};
 </script>
 
-{#if showZoneForm}
+{#if transformOptionMode === 'zone'}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="w-side-menu bg-main absolute top-0 left-0 z-30 flex h-full flex-col items-center justify-center p-4 text-base"
 	>
+		{#if canSwitchToGeoRef}
+			<div class="mb-4 grid w-full shrink-0 grid-cols-2 gap-2">
+				<button class="c-btn-confirm p-3 text-base">投影法</button>
+				<button onclick={registrationAsGeoRef} class="c-btn-sub cursor-pointer p-3 text-base">
+					位置合わせ
+				</button>
+			</div>
+		{/if}
 		<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
 			<span class="text-2xl font-bold">投影法の選択</span>
 		</div>
@@ -271,9 +280,6 @@
 				<span class="text-lg">選択されたEPSGコード: {selectedEpsgCode}</span>
 			</div>
 			<div class="flex flex-col gap-3">
-				<button onclick={registrationAsGeoRef} class="c-btn-sub pointer min-w-[200px] p-4">
-					画像として位置合わせ
-				</button>
 				<div class="flex gap-2">
 					<button onclick={reset} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 
@@ -286,7 +292,7 @@
 	</div>
 {/if}
 
-{#if showZoneForm}
+{#if transformOptionMode === 'zone'}
 	{#each poiData as poi (poi.properties.code)}
 		<ZoneMarker
 			{map}

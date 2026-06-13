@@ -31,6 +31,7 @@
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
 	import type { GeoRefPreviewData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type {
 		AnyTiles3DEntry,
@@ -112,7 +113,7 @@
 		showDataEntry: MorivisLayerEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
-		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
+		transformOptionMode: TransformOptionMode;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		zoneBboxGeojsonData: FeatureCollection; // 座標系選択用GeoJSON
@@ -123,7 +124,6 @@
 		searchResults: ResultData[] | null;
 		contextMenuState: ContextMenuState | null;
 		isDragover: boolean;
-		showGeoRefForm: boolean;
 		geoRefPreviewData: GeoRefPreviewData | null;
 		focusFeature: (result: ResultData) => void;
 	}
@@ -146,7 +146,7 @@
 		dropFile = $bindable(),
 		showDialogType = $bindable(),
 		drawGeojsonData = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode,
 		focusBbox = $bindable(),
 		selectedEpsgCode,
 		zoneBboxGeojsonData,
@@ -157,10 +157,12 @@
 		searchResults,
 		contextMenuState = $bindable(),
 		isDragover = $bindable(),
-		showGeoRefForm,
 		geoRefPreviewData,
 		focusFeature
 	}: Props = $props();
+
+	const isZoneRegistrationActive = $derived(transformOptionMode === 'zone');
+	const isGeoRefRegistrationActive = $derived(transformOptionMode === 'georef');
 
 	// 監視用のデータを保持
 	let layerWatchTargets = $derived.by(() => {
@@ -211,15 +213,17 @@
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: MorivisLayerEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
-		const sources = !showDataEntry && !showZoneForm ? await createSourcesItems(_dataEntries) : {};
-		const layers = !showDataEntry && !showZoneForm ? await createLayersItems(_dataEntries) : [];
+		const sources =
+			!showDataEntry && !isZoneRegistrationActive ? await createSourcesItems(_dataEntries) : {};
+		const layers =
+			!showDataEntry && !isZoneRegistrationActive ? await createLayersItems(_dataEntries) : [];
 
 		if (!import.meta.env.PROD) {
 			console.log('debug:entries', _dataEntries);
 		}
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
-		if (showDataEntry || showZoneForm) {
+		if (showDataEntry || isZoneRegistrationActive) {
 			previewSources = {
 				...previewSources,
 				// preview_base_1: {
@@ -248,7 +252,7 @@
 				// }
 			};
 		}
-		if (showGeoRefForm && geoRefPreviewData) {
+		if (isGeoRefRegistrationActive && geoRefPreviewData) {
 			previewSources = {
 				...previewSources,
 				georef_image_preview: {
@@ -259,10 +263,10 @@
 			};
 		}
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
-		if (showDataEntry || showZoneForm) {
+		if (showDataEntry || isZoneRegistrationActive) {
 			previewLayers = [...previewBaseLayers, ...previewLayers];
 		}
-		if (showGeoRefForm && geoRefPreviewData) {
+		if (isGeoRefRegistrationActive && geoRefPreviewData) {
 			previewLayers = [
 				...previewLayers,
 				{
@@ -275,7 +279,7 @@
 				}
 			];
 		}
-		const zoneLayers: LayerSpecification[] = showZoneForm
+		const zoneLayers: LayerSpecification[] = isZoneRegistrationActive
 			? [
 					{
 						id: '@zone_bbox_select',
@@ -772,7 +776,7 @@
 		await refreshCogEntries(entries);
 
 		const tiles3dEntry =
-			showDataEntry || showZoneForm
+			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
@@ -787,7 +791,7 @@
 		}
 
 		const pointCloudEntries =
-			showDataEntry || showZoneForm
+			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
@@ -802,7 +806,7 @@
 		}
 
 		const deckVectorEntries =
-			showDataEntry || showZoneForm
+			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) =>
@@ -824,7 +828,7 @@
 		if (updateId !== styleUpdateId) return;
 
 		const meshEntries =
-			showDataEntry || showZoneForm
+			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) =>
@@ -862,7 +866,7 @@
 	};
 
 	const syncHighlightLayers = () => {
-		if (showDataEntry || showZoneForm) {
+		if (showDataEntry || isZoneRegistrationActive) {
 			mapStore.clearHighlightLayers();
 			return;
 		}
@@ -931,9 +935,10 @@
 	});
 
 	$effect(() => {
-		const previewUrl = showGeoRefForm ? geoRefPreviewData?.url ?? null : null;
-		previewUrl;
-		showGeoRefForm;
+		requestStyleUpdateByDependency({
+			previewUrl: isGeoRefRegistrationActive ? (geoRefPreviewData?.url ?? null) : null,
+			showGeoRefForm: isGeoRefRegistrationActive
+		});
 		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 	});
 
@@ -1048,7 +1053,7 @@
 	onDragleave={dragleave}
 	{onDropFile}
 	{onDropEntryId}
-	disabled={showGeoRefForm}
+	disabled={isGeoRefRegistrationActive}
 	class="h-full w-full"
 >
 	<div
@@ -1081,7 +1086,7 @@
 				: ' opacity-0'}"
 		></div>
 
-		{#if !$isStreetView && !showDataEntry && !showZoneForm && !showGeoRefForm && !$showDataMenu}
+		{#if !$isStreetView && !showDataEntry && !transformOptionMode && !$showDataMenu}
 			<!-- PC用地図コントロール -->
 			<div class="absolute right-0 bottom-0 max-lg:hidden">
 				<Compass />
@@ -1106,7 +1111,6 @@
 		bind:tempLayerEntries
 		bind:showDataEntry
 		bind:showDialogType
-		bind:showZoneForm
 		bind:focusBbox
 	/>
 

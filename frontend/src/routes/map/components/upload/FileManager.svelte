@@ -30,7 +30,6 @@
 		tempLayerEntries: MorivisLayerEntry[];
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		showZoneForm: boolean;
 		focusBbox: [number, number, number, number] | null;
 	}
 
@@ -41,7 +40,6 @@
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		showZoneForm = $bindable(),
 		focusBbox = $bindable()
 	}: Props = $props();
 

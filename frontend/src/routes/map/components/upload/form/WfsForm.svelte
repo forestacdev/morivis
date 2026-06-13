@@ -6,6 +6,7 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		filterByGeometryType,
@@ -32,7 +33,7 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		remoteWfsUrl: string | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
@@ -42,7 +43,7 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		remoteWfsUrl = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable()
@@ -221,7 +222,7 @@
 
 		const bbox = turfBbox(geojson) as [number, number, number, number];
 		if (!bbox || !isBboxValid(bbox)) {
-			showZoneForm = true;
+			transformOptionMode = 'zone';
 			focusBbox = bbox;
 			return;
 		}

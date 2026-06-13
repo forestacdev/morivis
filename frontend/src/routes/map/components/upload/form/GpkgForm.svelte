@@ -3,6 +3,10 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import {
@@ -39,20 +43,24 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		zoneConfirmMode: 'entry' | 'georef' | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		zoneConfirmMode = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -220,7 +228,7 @@
 
 			if (!isBboxValid(resolvedBbox)) {
 				closeGpkg();
-				showZoneForm = true;
+				transformOptionMode = 'zone';
 				focusBbox = result.bounds;
 				rasterReady = false;
 				return;
@@ -394,7 +402,11 @@
 			}
 			closeGpkg();
 			gpkgBuffer = null;
-			showZoneForm = true;
+			pendingZoneGeoRefData = {
+				featureCollection: filtered as FeatureCollection,
+				entryName
+			};
+			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 		} else {
 			const entry = await createGeoJsonEntry(
@@ -498,8 +510,11 @@
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'gpkg') {
 			const epsg = zoneConfirmedEpsg;
+			const mode = zoneConfirmMode ?? 'entry';
+			if (mode !== 'entry') return;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
+				zoneConfirmMode = null;
 				convertAndCreateEntry(epsg);
 			});
 		}

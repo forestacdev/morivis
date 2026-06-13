@@ -4,6 +4,7 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { createMeshModelEntry } from '$routes/map/data/entries/_factories';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
@@ -38,7 +39,7 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
@@ -48,7 +49,7 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable()
@@ -125,7 +126,7 @@
 		const projString = resolveProjString(surface, overrideProjString);
 		if (!projString) {
 			showNotification('座標系が不明です。投影法を選択してください', 'warning');
-			showZoneForm = true;
+			transformOptionMode = 'zone';
 			focusBbox = [surface.center[0], surface.center[1], surface.center[0], surface.center[1]];
 			return;
 		}
@@ -213,7 +214,7 @@
 			// bbox検証: 座標変換が正しくできたか
 			if (!isBboxValid(bbox)) {
 				// 座標系不明 → ZoneFormで手動選択
-				showZoneForm = true;
+				transformOptionMode = 'zone';
 				focusBbox = bbox;
 				return;
 			}

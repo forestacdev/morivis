@@ -4,6 +4,10 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		filterByProperty,
@@ -24,20 +28,24 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		zoneConfirmMode: 'entry' | 'georef' | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		zoneConfirmMode = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Partial<Record<VectorEntryGeometryType, string>> = {
@@ -210,7 +218,25 @@
 
 	// 「決定」→ ZoneFormを表示
 	const openZoneForm = () => {
-		showZoneForm = true;
+		if (rawGeojson && selectedGeometryType) {
+			let filtered = filterDmByGeometryType(
+				rawGeojson,
+				selectedGeometryType as VectorEntryGeometryType
+			);
+			if (selectedClassNames.length > 0) {
+				filtered = filterByProperty(filtered, selectedClassNames, extractClassName);
+			}
+			pendingZoneGeoRefData = {
+				featureCollection: filtered as FeatureCollection,
+				entryName: zoneInfo?.drawingName || dmFile?.name || 'DMデータ'
+			};
+		} else if (rawGeojson) {
+			pendingZoneGeoRefData = {
+				featureCollection: rawGeojson,
+				entryName: zoneInfo?.drawingName || dmFile?.name || 'DMデータ'
+			};
+		}
+		transformOptionMode = 'zone';
 
 		// フィルタ結果でbboxを計算（rawGeojsonは上書きしない）
 		if (rawGeojson && selectedGeometryType) {
@@ -293,8 +319,11 @@
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'dm') {
 			const epsg = zoneConfirmedEpsg;
+			const mode = zoneConfirmMode ?? 'entry';
+			if (mode !== 'entry') return;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
+				zoneConfirmMode = null;
 				convertAndCreateEntry(epsg);
 			});
 		}
@@ -326,7 +355,7 @@
 		{#if dataTypesByGeometryType[selectedGeometryType]?.length}
 			<div class="flex w-full flex-wrap items-center gap-1 px-2">
 				<span class="text-xs text-gray-400">含まれる要素:</span>
-				{#each dataTypesByGeometryType[selectedGeometryType] as dt}
+				{#each dataTypesByGeometryType[selectedGeometryType] as dt (dt)}
 					<span class="rounded bg-gray-700 px-1.5 py-0.5 text-xs text-gray-300">{dt}</span>
 				{/each}
 			</div>
@@ -359,7 +388,7 @@
 					const codeA = parseInt(classCodeMap[a] ?? '9999', 10);
 					const codeB = parseInt(classCodeMap[b] ?? '9999', 10);
 					return codeA - codeB;
-				}) as className}
+				}) as className (className)}
 					<Checkbox
 						label={classCodeMap[className]
 							? `${className} (${classCodeMap[className]})`

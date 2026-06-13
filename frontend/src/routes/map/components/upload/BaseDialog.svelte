@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { fade, scale } from 'svelte/transition';
 
 	import ArcGisForm from '$routes/map/components/upload/form/ArcGisForm.svelte';
@@ -33,6 +34,10 @@
 	import MojXmlForm from '$routes/map/components/upload/form/MojXmlForm.svelte';
 	import NetCDFForm from '$routes/map/components/upload/form/NetCDFForm.svelte';
 	import OsmForm from '$routes/map/components/upload/form/OsmForm.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 	import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.svelte';
 	import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
@@ -57,7 +62,7 @@
 		showDialogType: DialogType;
 		tempLayerEntries: MorivisLayerEntry[];
 		showDataEntry: MorivisLayerEntry | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;
 		remoteGeoZarrUrl: string | null;
@@ -72,7 +77,7 @@
 		isDragover: boolean;
 		zoneConfirmedEpsg: EpsgCode | null;
 		zoneConfirmMode: 'entry' | 'georef' | null;
-		showGeoRefForm: boolean;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 		geoRefData: GeoRefData | null;
 	}
 
@@ -80,7 +85,7 @@
 		showDialogType = $bindable(),
 		showDataEntry = $bindable(),
 		tempLayerEntries = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode,
 		dropFile = $bindable(),
 		remoteGeoZarrUrl = $bindable(),
@@ -95,17 +100,18 @@
 		isDragover = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
 		zoneConfirmMode = $bindable(),
-		showGeoRefForm = $bindable(),
+		pendingZoneGeoRefData = $bindable(),
 		geoRefData = $bindable()
 	}: Props = $props();
 
 	let isFixedHeight = $derived(showDialogType === 'dxf' || showDialogType === 'dm');
+	const isZoneFormVisible = $derived(transformOptionMode === 'zone');
 </script>
 
 {#if showDialogType && showDialogType !== 'shp'}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 {showZoneForm
+		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 {isZoneFormVisible
 			? 'pointer-events-none opacity-0'
 			: ''}"
 	>
@@ -129,9 +135,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:remoteFeatureServiceUrl
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -146,9 +154,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -157,9 +167,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -182,7 +194,7 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
@@ -217,7 +229,7 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showGeoRefForm
+					bind:transformOptionMode
 					bind:geoRefData
 				/>
 			{/if}
@@ -226,10 +238,9 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
-					bind:showGeoRefForm
 					bind:geoRefData
 					{selectedEpsgCode}
 				/>
@@ -242,12 +253,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
 					bind:zoneConfirmMode
-					bind:showGeoRefForm
-					bind:geoRefData
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -256,9 +266,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -267,9 +279,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -278,7 +292,7 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
@@ -289,9 +303,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -306,9 +322,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -317,9 +335,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -328,9 +348,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -339,7 +361,7 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
 					{selectedEpsgCode}
@@ -359,9 +381,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -373,9 +397,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -384,9 +410,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -395,9 +423,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -409,9 +439,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -420,9 +452,11 @@
 					bind:showDataEntry
 					bind:showDialogType
 					bind:dropFile
-					bind:showZoneForm
+					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:zoneConfirmMode
+					bind:pendingZoneGeoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}
@@ -436,9 +470,11 @@
 		bind:showDialogType
 		bind:dropFile
 		bind:isDragover
-		bind:showZoneForm
+		bind:transformOptionMode
 		bind:focusBbox
 		bind:zoneConfirmedEpsg
+		bind:zoneConfirmMode
+		bind:pendingZoneGeoRefData
 		{selectedEpsgCode}
 	/>
 {/if}
