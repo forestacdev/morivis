@@ -2,12 +2,14 @@
 	import JSZip from 'jszip';
 	import maplibregl from 'maplibre-gl';
 
+	import { createGlbEntry } from '$routes/map/data/entries/model';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type { MeshFormatType } from '$routes/map/data/types/model';
 	import { SUPPORTED_FILE_EXTENSIONS, type DialogType } from '$routes/map/types';
 	import { hasExifGps } from '$routes/map/utils/formats/exif';
 	import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
 	import { isLikelyHritFile } from '$routes/map/utils/formats/hrit';
-	import { extractModelFromKmz } from '$routes/map/utils/formats/kml';
+	import { extractModelFromKml, extractModelFromKmz } from '$routes/map/utils/formats/kml';
 	import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
 	import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
 	import { inspectObjFile } from '$routes/map/utils/formats/obj';
@@ -53,6 +55,40 @@
 		const name = file.name;
 		const dotIndex = name.lastIndexOf('.');
 		return dotIndex > 0 && dotIndex < name.length - 1;
+	};
+	const getMeshFormatType = (path: string): MeshFormatType => {
+		const normalizedPath = path.toLowerCase();
+		if (normalizedPath.endsWith('.obj')) return 'obj';
+		if (normalizedPath.endsWith('.3ds')) return '3ds';
+		if (normalizedPath.endsWith('.dae')) return 'dae';
+		if (normalizedPath.endsWith('.3dm')) return '3dm';
+		if (normalizedPath.endsWith('.fbx')) return 'fbx';
+		if (normalizedPath.endsWith('.drc')) return 'drc';
+		if (normalizedPath.endsWith('.3mf')) return '3mf';
+		if (normalizedPath.endsWith('.amf')) return 'amf';
+		if (normalizedPath.endsWith('.ifc')) return 'ifc';
+		return 'gltf';
+	};
+	const registerRemoteKmlModel = (name: string, modelUrl: string, placement?: {
+		lng: number;
+		lat: number;
+		altitude: number;
+		scale?: number;
+	}) => {
+		const center = map.getCenter();
+		showDataEntry = createGlbEntry(
+			name,
+			modelUrl,
+			{
+				lng: placement?.lng ?? center.lng,
+				lat: placement?.lat ?? center.lat,
+				altitude: placement?.altitude ?? 0,
+				scale: placement?.scale
+			},
+			getMeshFormatType(modelUrl)
+		);
+		showDialogType = null;
+		dropFile = null;
 	};
 	const logDroppedFiles = (files: File[]) => {
 		console.log(
@@ -224,9 +260,19 @@
 				case 'gml':
 					showDialogType = 'gml';
 					return;
-				case 'kml':
+				case 'kml': {
+					const kmlModel = await extractModelFromKml(file).catch(() => null);
+					if (kmlModel?.modelUrl) {
+						registerRemoteKmlModel(
+							kmlModel.placement?.name?.trim() || file.name.replace(/\.[^.]+$/, ''),
+							kmlModel.modelUrl,
+							kmlModel.placement
+						);
+						return;
+					}
 					showDialogType = 'kml';
 					return;
+				}
 				case 'kmz': {
 					const kmzModel = await extractModelFromKmz(file).catch(() => null);
 					if (kmzModel && kmzModel.modelFiles.length > 0) {
@@ -392,6 +438,26 @@
 
 			// 大きなファイルの確認
 			if (!(await checkLargeFile(files))) return;
+
+			const kmlFile = files.find((candidate) => hasExtension(candidate, '.kml'));
+			if (kmlFile) {
+				const kmlModel = await extractModelFromKml(kmlFile, files).catch(() => null);
+				if (kmlModel?.modelUrl) {
+					registerRemoteKmlModel(
+						kmlModel.placement?.name?.trim() || kmlFile.name.replace(/\.[^.]+$/, ''),
+						kmlModel.modelUrl,
+						kmlModel.placement
+					);
+					return;
+				}
+				if (kmlModel && kmlModel.modelFiles.length > 0) {
+					const dt = new DataTransfer();
+					kmlModel.modelFiles.forEach((modelFile) => dt.items.add(modelFile));
+					dropFile = dt.files;
+					showDialogType = 'glb';
+					return;
+				}
+			}
 
 			if (files.some((f) => hasExtension(f, '.obj'))) {
 				const objFile = files.find((f) => hasExtension(f, '.obj'));

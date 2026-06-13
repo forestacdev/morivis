@@ -24,6 +24,13 @@ export interface KmzModelResult {
 	placement?: KmzModelPlacement;
 }
 
+export interface KmlModelResult {
+	modelFiles: File[];
+	mainModelPath?: string;
+	modelUrl?: string;
+	placement?: KmzModelPlacement;
+}
+
 export const extractKmlFromKmz = async (file: File): Promise<string> => {
 	const zip = await JSZip.loadAsync(await file.arrayBuffer());
 	const kmlFileName = Object.keys(zip.files).find((name) => name.endsWith('.kml'));
@@ -47,7 +54,7 @@ const extractKmzPayload = async (file: File) => {
 	return { zip, kmlFileName, kmlText };
 };
 
-const resolveKmzEntryPath = (basePath: string, relativePath: string) => {
+const resolveEntryPath = (basePath: string, relativePath: string) => {
 	const baseSegments = basePath.split('/').slice(0, -1);
 	const targetSegments = relativePath.split('/');
 	const resolved = [...baseSegments];
@@ -62,6 +69,11 @@ const resolveKmzEntryPath = (basePath: string, relativePath: string) => {
 	}
 
 	return resolved.join('/');
+};
+
+const getPathLikeName = (file: File) => {
+	const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
+	return (relativePath ?? file.name).replace(/\\/g, '/');
 };
 
 const setRelativePath = (file: File, relativePath: string) => {
@@ -147,7 +159,7 @@ export const extractModelFromKmz = async (file: File): Promise<KmzModelResult | 
 	if (!href) return null;
 
 	const mainModelPathCandidates = [
-		resolveKmzEntryPath(kmlFileName, href),
+		resolveEntryPath(kmlFileName, href),
 		href.replace(/^\/+/, '')
 	];
 	const mainModelPath = mainModelPathCandidates.find((path) => Boolean(zip.files[path]));
@@ -182,6 +194,59 @@ export const extractModelFromKmz = async (file: File): Promise<KmzModelResult | 
 	};
 };
 
+export const extractModelFromKml = async (
+	file: File,
+	relatedFiles: File[] = []
+): Promise<KmlModelResult | null> => {
+	const kmlText = await file.text();
+	const doc = await parseXmlDocument(kmlText);
+	const model = doc.getElementsByTagNameNS(KML_NS, 'Model')[0];
+	if (!model) return null;
+
+	const link = getDirectChildElement(model, KML_NS, 'Link');
+	const href = link ? getFirstChildText(link, KML_NS, 'href') : null;
+	if (!href) return null;
+
+	const placement = parseKmzModelPlacement(doc);
+	if (/^https?:\/\//i.test(href)) {
+		return {
+			modelFiles: [],
+			modelUrl: href,
+			placement
+		};
+	}
+
+	const basePath = getPathLikeName(file);
+	const mainModelPathCandidates = [
+		resolveEntryPath(basePath, href),
+		href.replace(/^\/+/, ''),
+		href
+	].map((path) => path.replace(/\\/g, '/'));
+
+	const sourceFiles = relatedFiles.filter((candidate) => candidate !== file);
+	const pathMap = new Map(
+		sourceFiles.map((candidate) => [getPathLikeName(candidate).toLowerCase(), candidate] as const)
+	);
+	const mainModelPath = mainModelPathCandidates.find((path) => pathMap.has(path.toLowerCase()));
+	if (!mainModelPath) return null;
+
+	const modelFiles = sourceFiles
+		.filter((candidate) => !getPathLikeName(candidate).toLowerCase().endsWith('.kml'))
+		.map((candidate) => {
+			const relativePath = getPathLikeName(candidate);
+			const prepared = setRelativePath(candidate, relativePath);
+			return relativePath.toLowerCase() === mainModelPath.toLowerCase() && placement
+				? setModelPlacement(prepared, placement)
+				: prepared;
+		});
+
+	return {
+		modelFiles,
+		mainModelPath,
+		placement
+	};
+};
+
 export const extractGroundOverlayFromKmz = async (
 	file: File
 ): Promise<KmlGroundOverlayResult | null> => {
@@ -203,7 +268,7 @@ export const extractGroundOverlayFromKmz = async (
 		return null;
 	}
 
-	const imagePathCandidates = [resolveKmzEntryPath(kmlFileName, href), href.replace(/^\/+/, '')];
+	const imagePathCandidates = [resolveEntryPath(kmlFileName, href), href.replace(/^\/+/, '')];
 	const imagePath = imagePathCandidates.find((path) => Boolean(zip.files[path]));
 	if (!imagePath) {
 		throw new Error(`GroundOverlay image not found in KMZ: ${href}`);

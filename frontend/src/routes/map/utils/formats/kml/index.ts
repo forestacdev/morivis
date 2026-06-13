@@ -1,9 +1,15 @@
 import type { KmlParseResult } from './parse';
-import { extractKmlFromKmz, extractGroundOverlayFromKmz, extractModelFromKmz } from './kmz';
+import {
+	extractKmlFromKmz,
+	extractGroundOverlayFromKmz,
+	extractModelFromKml,
+	extractModelFromKmz
+} from './kmz';
 import { parseKmlString } from './parse';
 export { getKmlDefaultColor } from './styles';
 export type {
 	KmlGroundOverlayResult,
+	KmlModelResult,
 	KmzModelPlacement,
 	KmzModelResult
 } from './kmz';
@@ -20,4 +26,4 @@ export const kmlFileToGeoJson = async (file: File): Promise<KmlParseResult> => {
 	}
 };
 
-export { extractGroundOverlayFromKmz, extractModelFromKmz };
+export { extractGroundOverlayFromKmz, extractModelFromKml, extractModelFromKmz };

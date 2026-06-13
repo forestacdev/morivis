@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Box Model</name>
+    <Placemark>
+      <name>Box</name>
+      <description>KMZ model test fixture</description>
+      <Model>
+        <altitudeMode>absolute</altitudeMode>
+        <Location>
+          <longitude>139.6917</longitude>
+          <latitude>35.6895</latitude>
+          <altitude>12.5</altitude>
+        </Location>
+        <Orientation>
+          <heading>0</heading>
+          <tilt>0</tilt>
+          <roll>0</roll>
+        </Orientation>
+        <Scale>
+          <x>1</x>
+          <y>1</y>
+          <z>1</z>
+        </Scale>
+        <Link>
+          <href>box.glb</href>
+        </Link>
+      </Model>
+      <Point>
+        <coordinates>139.6917,35.6895,12.5</coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>
