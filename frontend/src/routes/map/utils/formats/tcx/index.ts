@@ -1,3 +1,8 @@
+/**
+ * References:
+ * - https://www8.garmin.com/xmlschemas/TrainingCenterDatabasev2.xsd
+ * - https://www8.garmin.com/xmlschemas/ActivityExtensionv2.xsd
+ */
 import { XMLParser } from 'fast-xml-parser';
 
 import type { FeatureCollection } from '$routes/map/types/geojson';

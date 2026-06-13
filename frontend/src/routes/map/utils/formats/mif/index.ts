@@ -1,3 +1,8 @@
+/**
+ * References:
+ * - https://web.archive.org/web/20060909054240/http://resource.mapinfo.com/static/files/document/1074660800077/interchange_file.pdf
+ * - https://en.wikipedia.org/wiki/MapInfo_Interchange_Format
+ */
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry, Geometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';

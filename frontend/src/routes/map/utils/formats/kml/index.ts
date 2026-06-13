@@ -1,3 +1,10 @@
+/**
+ * Format spec:
+ * - https://www.ogc.org/standards/kml/
+ *
+ * References:
+ * - https://developers.google.com/kml/documentation/kmlreference
+ */
 import type { KmlParseResult } from './parse';
 import {
 	extractKmlFromKmz,

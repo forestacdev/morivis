@@ -1,3 +1,10 @@
+/**
+ * Format spec:
+ * - https://datatracker.ietf.org/doc/html/rfc4180
+ *
+ * References:
+ * - https://www.papaparse.com/docs
+ */
 import Encoding from 'encoding-japanese';
 import Papa from 'papaparse';
 

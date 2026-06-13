@@ -1,3 +1,11 @@
+/**
+ * Format spec:
+ * - https://geoparquet.org/releases/v1.1.0/
+ *
+ * References:
+ * - https://parquet.apache.org/
+ * - https://geoarrow.org/
+ */
 import { parse } from '@loaders.gl/core';
 import { GeoParquetLoader } from '@loaders.gl/parquet';
 import { type FileMetaData, parquetMetadata, parquetReadObjects } from 'hyparquet';

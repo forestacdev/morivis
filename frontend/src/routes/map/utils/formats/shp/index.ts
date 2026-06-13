@@ -1,3 +1,10 @@
+/**
+ * Format spec:
+ * - https://downloads.esri.com/support/whitepapers/other_/shapefile.pdf
+ *
+ * References:
+ * - https://support.esri.com/en-us/technical-paper/esri-shapefile-technical-description-398
+ */
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import { isWgs84Prj, transformGeoJSONParallel } from '$routes/map/utils/proj';
 import { showNotification } from '$routes/stores/notification';

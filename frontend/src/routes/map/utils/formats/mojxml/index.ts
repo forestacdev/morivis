@@ -1,11 +1,10 @@
 /**
- * Parse MOJ MAP XML files and convert to GeoJSON
- * Browser-compatible TypeScript implementation
+ * Format spec:
+ * - https://www.moj.go.jp/content/000116464.pdf
  *
- * 法務省登記所備付地図データ (MOJ Map XML)
- * - 仕様書: https://www.moj.go.jp/content/000116464.pdf
- * - 法務省案内ページ: https://www.moj.go.jp/MINJI/minji05_00494.html
- * - G空間情報センター: https://front.geospatial.jp/moj-chizu-xml-readme/
+ * References:
+ * - https://www.moj.go.jp/MINJI/minji05_00494.html
+ * - https://front.geospatial.jp/moj-chizu-xml-readme/
  */
 
 // ---- Types ----

@@ -1,8 +1,8 @@
 /**
- * EXIF GPS情報付き写真のパーサー
- *
- * JPEG/HEICファイルからEXIF GPS座標・撮影日時・方位を抽出し、
- * GeoJSON FeatureCollectionに変換する。
+ * References:
+ * - https://exiftool.org/TagNames/GPS.html
+ * - https://github.com/MikeKovarik/exifr
+ * - https://github.com/hoppergee/heic-to
  */
 import * as exifr from 'exifr';
 import { heicTo, isHeic } from 'heic-to';

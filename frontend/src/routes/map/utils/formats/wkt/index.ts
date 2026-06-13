@@ -1,3 +1,10 @@
+/**
+ * Format spec:
+ * - https://www.ogc.org/standards/sfa/
+ *
+ * References:
+ * - https://libgeos.org/specifications/wkt/
+ */
 import WKT from 'ol/format/WKT.js';
 
 import type { FeatureCollection } from '$routes/map/types/geojson';

@@ -1,9 +1,10 @@
 /**
- * STAC (SpatioTemporal Asset Catalog) クライアント
+ * Format spec:
+ * - https://stacspec.org/
+ * - https://github.com/radiantearth/stac-api-spec
  *
- * STAC APIと静的カタログ（Static Catalog）の両方に対応
- * - STAC仕様: https://stacspec.org/
- * - STAC API仕様: https://github.com/radiantearth/stac-api-spec
+ * References:
+ * - https://github.com/radiantearth/stac-spec
  */
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 

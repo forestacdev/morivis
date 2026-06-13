@@ -1,10 +1,11 @@
+/**
+ * References:
+ * - https://support.google.com/maps/answer/6258979
+ * - https://locationhistoryformat.com/reference/semantic/
+ */
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { LineStringGeometry, PointGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
-
-// Google の公開スキーマは見当たらないため、
-// エクスポート先ファイル名 `location-history.json` を案内している公式ヘルプを参照元として残す。
-// https://support.google.com/maps/answer/6258979?co=GENIE.Platform%3DiOS&hl=en
 
 type JsonObject = Record<string, unknown>;
 

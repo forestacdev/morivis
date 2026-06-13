@@ -1,3 +1,10 @@
+/**
+ * Format spec:
+ * - https://www.topografix.com/gpx/1/1/
+ *
+ * References:
+ * - https://www.topografix.com/gpx/1/1/gpx.xsd
+ */
 import GPXParser from 'gpxparser';
 import type { Route, Track, Waypoint } from 'gpxparser';
 

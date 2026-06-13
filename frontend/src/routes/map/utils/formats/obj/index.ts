@@ -1,3 +1,8 @@
+/**
+ * References:
+ * - https://www.loc.gov/preservation/digital/formats/fdd/fdd000507.shtml
+ * - https://www.fileformat.info/format/wavefrontobj/egff.htm
+ */
 export interface ObjFileInspectionResult {
 	isPointCloud: boolean;
 	hasFaces: boolean;

@@ -1,3 +1,8 @@
+/**
+ * References:
+ * - https://wiki.openstreetmap.org/wiki/OSM_XML
+ * - https://github.com/tyrasd/osmtogeojson
+ */
 import osmtogeojson from 'osmtogeojson';
 
 import type { FeatureCollection } from '$routes/map/types/geojson';

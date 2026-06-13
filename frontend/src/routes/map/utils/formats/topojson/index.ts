@@ -1,8 +1,9 @@
 /**
- * TopoJSON パーサー
+ * Format spec:
+ * - https://github.com/topojson/topojson-specification
  *
- * - TopoJSON仕様: https://github.com/topojson/topojson-specification
- * - topojson-client: https://github.com/topojson/topojson-client
+ * References:
+ * - https://github.com/topojson/topojson-client
  */
 
 import type { FeatureCollection } from '$routes/map/types/geojson';

@@ -1,3 +1,10 @@
+/**
+ * Format spec:
+ * - https://docs.ogc.org/is/19-045r3/19-045r3.html
+ *
+ * References:
+ * - https://datatracker.ietf.org/doc/html/rfc7946
+ */
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type {
 	LineStringGeometry,

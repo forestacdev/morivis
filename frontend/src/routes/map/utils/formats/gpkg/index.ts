@@ -1,3 +1,10 @@
+/**
+ * Format spec:
+ * - https://www.geopackage.org/spec/
+ *
+ * References:
+ * - https://www.ogc.org/standards/geopackage/
+ */
 import { asset } from '$app/paths';
 
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
