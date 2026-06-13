@@ -16,7 +16,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { gmlFileToGeoJson } from '$routes/map/utils/formats/gml';
+	import { gmlFileToGeoJsonInWorker } from '$routes/map/utils/formats/gml/analyze';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -67,11 +67,37 @@
 
 	/** 複数ファイルをパースしてマージ */
 	const parseAllFiles = async (files: File[]): Promise<FeatureCollection> => {
-		const results = await Promise.all(files.map((f) => gmlFileToGeoJson(f)));
+		const results = await Promise.all(files.map((f) => gmlFileToGeoJsonInWorker(f)));
 		return {
 			type: 'FeatureCollection',
 			features: results.flatMap((r) => r.features)
 		};
+	};
+
+	const createGmlEntry = async (
+		geojson: FeatureCollection,
+		geometryType: VectorEntryGeometryType,
+		bbox: [number, number, number, number]
+	) => {
+		const entry = await createGeoJsonEntry(geojson, geometryType, entryName, bbox, undefined, {
+			attribution: 'GML'
+		});
+
+		if (entry && geometryType === 'LineString' && entry.style.type === 'line') {
+			entry.style.width.key = '単一';
+			entry.style.width.expressions = [
+				{
+					type: 'single',
+					key: '単一',
+					name: '単一',
+					mapping: {
+						value: 1
+					}
+				}
+			];
+		}
+
+		return entry;
 	};
 
 	// ファイルドロップ時: GML → GeoJSON → ジオメトリタイプ確認
@@ -126,13 +152,10 @@
 			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 		} else {
-			const entry = await createGeoJsonEntry(
+			const entry = await createGmlEntry(
 				filtered,
 				selectedGeometryType as VectorEntryGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				undefined,
-				{ attribution: 'GML' }
+				bbox as [number, number, number, number]
 			);
 
 			if (entry) {
@@ -173,13 +196,10 @@
 				return;
 			}
 
-			const entry = await createGeoJsonEntry(
+			const entry = await createGmlEntry(
 				geojsonData,
 				selectedGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				undefined,
-				{ attribution: 'GML' }
+				bbox as [number, number, number, number]
 			);
 
 			if (entry) {

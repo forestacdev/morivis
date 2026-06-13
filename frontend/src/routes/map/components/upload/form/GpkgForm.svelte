@@ -234,45 +234,6 @@
 
 			GeoTiffCache.setBbox(id, resolvedBbox);
 
-			// サムネイル生成
-			const thumbSize = 512;
-			const thumbCanvas = new OffscreenCanvas(thumbSize, thumbSize);
-			const thumbCtx = thumbCanvas.getContext('2d')!;
-			const thumbImg = thumbCtx.createImageData(thumbSize, thumbSize);
-			const thumbData = thumbImg.data;
-			const hasRgb = result.bands.length >= 3;
-			const size = Math.min(result.width, result.height);
-			const sx = Math.floor((result.width - size) / 2);
-			const sy = Math.floor((result.height - size) / 2);
-
-			for (let ty = 0; ty < thumbSize; ty++) {
-				for (let tx = 0; tx < thumbSize; tx++) {
-					const srcX = sx + Math.floor((tx * size) / thumbSize);
-					const srcY = sy + Math.floor((ty * size) / thumbSize);
-					const srcIdx = srcY * result.width + srcX;
-					const dstIdx = (ty * thumbSize + tx) * 4;
-
-					if (hasRgb) {
-						thumbData[dstIdx] = result.bands[0][srcIdx];
-						thumbData[dstIdx + 1] = result.bands[1][srcIdx];
-						thumbData[dstIdx + 2] = result.bands[2][srcIdx];
-					} else {
-						const v = result.bands[0][srcIdx];
-						thumbData[dstIdx] = v;
-						thumbData[dstIdx + 1] = v;
-						thumbData[dstIdx + 2] = v;
-					}
-					thumbData[dstIdx + 3] = 255;
-				}
-			}
-			thumbCtx.putImageData(thumbImg, 0, 0);
-			const tempCanvas = document.createElement('canvas');
-			tempCanvas.width = thumbSize;
-			tempCanvas.height = thumbSize;
-			const tempCtx = tempCanvas.getContext('2d')!;
-			tempCtx.putImageData(thumbImg, 0, 0);
-			const mapImage = tempCanvas.toDataURL('image/png');
-
 			await encodeAllBandsToTerrarium(
 				id,
 				result.bands,
@@ -296,7 +257,7 @@
 					tileSize: 256,
 					bounds: resolvedBbox,
 					xyzImageTile: findCenterTile(resolvedBbox),
-					mapImage
+					mapImage: result.mapImage
 				},
 				properties: {
 					bands: {

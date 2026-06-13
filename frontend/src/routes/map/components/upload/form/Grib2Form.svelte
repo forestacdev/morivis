@@ -19,7 +19,10 @@
 		getMinMax,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
-	import { PureGrib2Parser } from '$routes/map/utils/formats/grib2';
+	import {
+		analyzeGrib2InWorker,
+		type Grib2ParsedMessage
+	} from '$routes/map/utils/formats/grib2/analyze';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
@@ -38,76 +41,21 @@
 		dropFile = $bindable()
 	}: Props = $props();
 
-	interface GribMessage {
-		index: number;
-		label: string;
-		parameterNumber: number;
-		levelType: number;
-		levelValue: number;
-		referenceTime: Date;
-		forecastTime: number;
-		timeRangeUnit: number;
-		validTime: Date;
-		nx: number;
-		ny: number;
-		la1: number;
-		lo1: number;
-		la2: number;
-		lo2: number;
-		values: Float32Array;
-	}
-
 	const MAX_BANDS = 10;
 
 	const pad2 = (value: number) => value.toString().padStart(2, '0');
 
-	const addForecastOffset = (referenceTime: Date, forecastTime: number, timeRangeUnit: number) => {
-		const validTime = new Date(referenceTime.getTime());
-		switch (timeRangeUnit) {
-			case 0:
-				validTime.setMinutes(validTime.getMinutes() + forecastTime);
-				break;
-			case 1:
-				validTime.setHours(validTime.getHours() + forecastTime);
-				break;
-			case 2:
-				validTime.setDate(validTime.getDate() + forecastTime);
-				break;
-			case 10:
-				validTime.setHours(validTime.getHours() + forecastTime * 3);
-				break;
-			case 11:
-				validTime.setHours(validTime.getHours() + forecastTime * 6);
-				break;
-			case 12:
-				validTime.setHours(validTime.getHours() + forecastTime * 12);
-				break;
-			case 13:
-				validTime.setSeconds(validTime.getSeconds() + forecastTime);
-				break;
-			default:
-				validTime.setHours(validTime.getHours() + forecastTime);
-				break;
-		}
-		return validTime;
-	};
+	const formatTemporalValue = (date: Date) =>
+		`${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(
+			date.getHours()
+		)}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}+09:00`;
 
-	const formatTemporalValue = (date: Date) => {
-		return (
-			[date.getFullYear(), pad2(date.getMonth() + 1), pad2(date.getDate())].join('-') +
-			'T' +
-			[pad2(date.getHours()), pad2(date.getMinutes()), pad2(date.getSeconds())].join(':') +
-			'+09:00'
-		);
-	};
-
-	const formatTemporalLabel = (date: Date) => {
-		return `${date.getFullYear()}/${pad2(date.getMonth() + 1)}/${pad2(date.getDate())} ${pad2(
+	const formatTemporalLabel = (date: Date) =>
+		`${date.getFullYear()}/${pad2(date.getMonth() + 1)}/${pad2(date.getDate())} ${pad2(
 			date.getHours()
 		)}:${pad2(date.getMinutes())}`;
-	};
 
-	const getTemporalSeriesInfo = (selectedMessages: GribMessage[]) => {
+	const getTemporalSeriesInfo = (selectedMessages: Grib2ParsedMessage[]) => {
 		if (selectedMessages.length <= 1) return null;
 
 		const first = selectedMessages[0];
@@ -141,7 +89,7 @@
 
 	let entryName = $state('');
 	let analyzed = $state(false);
-	let messages = $state<GribMessage[]>([]);
+	let messages = $state<Grib2ParsedMessage[]>([]);
 	let selectedIndices = $state<number[]>([]);
 
 	const gribFile = $derived.by(() => {
@@ -167,36 +115,7 @@
 
 		try {
 			const arrayBuffer = await file.arrayBuffer();
-			const parser = new PureGrib2Parser(arrayBuffer);
-			const records = parser.parse();
-
-			messages = records.map((record, i) => {
-				const meta = record.metadata;
-				const paramName = meta.parameterName ?? `Param ${meta.parameterNumber}`;
-				const validTime = addForecastOffset(
-					meta.referenceTime,
-					meta.forecastTime,
-					meta.timeRangeUnit
-				);
-				return {
-					index: i,
-					label: `${formatTemporalLabel(validTime)} ${paramName} (${meta.nx}x${meta.ny}) Level:${meta.levelType}=${meta.levelValue}`,
-					parameterNumber: meta.parameterNumber,
-					levelType: meta.levelType,
-					levelValue: meta.levelValue,
-					referenceTime: meta.referenceTime,
-					forecastTime: meta.forecastTime,
-					timeRangeUnit: meta.timeRangeUnit,
-					validTime,
-					nx: meta.nx,
-					ny: meta.ny,
-					la1: meta.la1,
-					lo1: meta.lo1,
-					la2: meta.la2,
-					lo2: meta.lo2,
-					values: record.values
-				};
-			});
+			messages = await analyzeGrib2InWorker(arrayBuffer);
 
 			analyzed = true;
 

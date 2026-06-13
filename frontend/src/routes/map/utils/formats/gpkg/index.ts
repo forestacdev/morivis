@@ -44,6 +44,7 @@ export interface GpkgRasterResult {
 	epsg: number | null;
 	nodata: number | null;
 	dataRanges: BandDataRange[];
+	mapImage: string;
 }
 
 // ---- ワーカー管理 ----
@@ -156,7 +157,8 @@ export const gpkgToRaster = async (
 		bounds: raw.bounds,
 		epsg: raw.epsg,
 		nodata: raw.nodata,
-		dataRanges: raw.dataRanges
+		dataRanges: raw.dataRanges,
+		mapImage: raw.mapImage
 	};
 };
 

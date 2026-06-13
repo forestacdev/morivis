@@ -29,6 +29,10 @@ preview:
     @lsof -ti:4173 && echo "Port 4173 is in use, killing process..." && npx kill-port 4173 || echo "Port 4173 is free"
     pnpm run preview
 
+# テスト
+test:
+    cd frontend && pnpm run test:unit
+
 # フォーマット
 format:
     cd frontend && pnpm run format

@@ -2,6 +2,7 @@ import type { TypedArray } from 'geotiff';
 
 import AnalyzeGeoTiffWorker from './analyze.worker?worker';
 import type { GeoTiffAnalyzeWorkerResponse } from './analyze.worker';
+import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 
 export interface GeoTiffAnalyzeResult {
 	width: number;
@@ -42,34 +43,20 @@ const restoreBands = (buffers: ArrayBuffer[], bandTypes: string[]): TypedArray[]
 export const analyzeGeoTiffInWorker = (
 	arrayBuffer: ArrayBuffer
 ): Promise<GeoTiffAnalyzeResult> =>
-	new Promise((resolve, reject) => {
-		const worker = new AnalyzeGeoTiffWorker();
-
-		worker.onmessage = (
-			event: MessageEvent<GeoTiffAnalyzeWorkerResponse & { error?: string }>
-		) => {
-			worker.terminate();
-
-			if (event.data.error) {
-				reject(new Error(event.data.error));
-				return;
-			}
-
-			resolve({
-				width: event.data.width,
-				height: event.data.height,
-				rawBbox: event.data.rawBbox,
-				numBands: event.data.numBands,
-				nodata: event.data.nodata,
-				dataRanges: event.data.dataRanges,
-				bands: restoreBands(event.data.bandBuffers, event.data.bandTypes)
-			});
-		};
-
-		worker.onerror = (error) => {
-			worker.terminate();
-			reject(new Error(`GeoTIFF analyze worker error: ${error.message}`));
-		};
-
-		worker.postMessage({ arrayBuffer }, [arrayBuffer]);
+	runSingleShotWorker<
+		{ arrayBuffer: ArrayBuffer; },
+		GeoTiffAnalyzeWorkerResponse,
+		GeoTiffAnalyzeResult
+	>(AnalyzeGeoTiffWorker, { arrayBuffer }, {
+		errorPrefix: 'GeoTIFF analyze worker error',
+		mapResponse: (response) => ({
+			width: response.width,
+			height: response.height,
+			rawBbox: response.rawBbox,
+			numBands: response.numBands,
+			nodata: response.nodata,
+			dataRanges: response.dataRanges,
+			bands: restoreBands(response.bandBuffers, response.bandTypes)
+		}),
+		transfer: [arrayBuffer]
 	});

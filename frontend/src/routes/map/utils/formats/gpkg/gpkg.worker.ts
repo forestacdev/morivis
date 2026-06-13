@@ -20,6 +20,62 @@ interface WorkerResponse {
 	transfer?: ArrayBuffer[];
 }
 
+const arrayBufferToDataUrl = (buffer: ArrayBuffer, mimeType: string): string => {
+	let binary = '';
+	const bytes = new Uint8Array(buffer);
+	const chunkSize = 0x8000;
+
+	for (let i = 0; i < bytes.length; i += chunkSize) {
+		const chunk = bytes.subarray(i, i + chunkSize);
+		binary += String.fromCharCode(...chunk);
+	}
+
+	return `data:${mimeType};base64,${btoa(binary)}`;
+};
+
+const createRasterThumbnail = async (
+	bands: Float32Array[],
+	width: number,
+	height: number,
+	thumbSize = 512
+): Promise<string> => {
+	const canvas = new OffscreenCanvas(thumbSize, thumbSize);
+	const ctx = canvas.getContext('2d');
+	if (!ctx) throw new Error('Canvas context取得失敗');
+
+	const imageData = ctx.createImageData(thumbSize, thumbSize);
+	const pixels = imageData.data;
+	const hasRgb = bands.length >= 3;
+	const size = Math.min(width, height);
+	const sx = Math.floor((width - size) / 2);
+	const sy = Math.floor((height - size) / 2);
+
+	for (let ty = 0; ty < thumbSize; ty++) {
+		for (let tx = 0; tx < thumbSize; tx++) {
+			const srcX = sx + Math.floor((tx * size) / thumbSize);
+			const srcY = sy + Math.floor((ty * size) / thumbSize);
+			const srcIdx = srcY * width + srcX;
+			const dstIdx = (ty * thumbSize + tx) * 4;
+
+			if (hasRgb) {
+				pixels[dstIdx] = bands[0][srcIdx];
+				pixels[dstIdx + 1] = bands[1][srcIdx];
+				pixels[dstIdx + 2] = bands[2][srcIdx];
+			} else {
+				const value = bands[0][srcIdx];
+				pixels[dstIdx] = value;
+				pixels[dstIdx + 1] = value;
+				pixels[dstIdx + 2] = value;
+			}
+			pixels[dstIdx + 3] = 255;
+		}
+	}
+
+	ctx.putImageData(imageData, 0, 0);
+	const blob = await canvas.convertToBlob({ type: 'image/png' });
+	return arrayBufferToDataUrl(await blob.arrayBuffer(), 'image/png');
+};
+
 // ---- sql.js初期化 ----
 
 let sqlPromise: ReturnType<typeof initSqlJs> | null = null;
@@ -603,6 +659,7 @@ const handleToRaster = async (db: Database, tableName: string) => {
 				getMinMax(gB, nanNodata),
 				getMinMax(bB, nanNodata)
 			];
+			const mapImage = await createRasterThumbnail([rB, gB, bB], totalW, totalH);
 			transferBuffers.push(
 				rB.buffer as ArrayBuffer,
 				gB.buffer as ArrayBuffer,
@@ -617,6 +674,7 @@ const handleToRaster = async (db: Database, tableName: string) => {
 					epsg,
 					nodata: nanNodata,
 					dataRanges: ranges,
+					mapImage,
 					bandBuffers: [rB.buffer, gB.buffer, bB.buffer]
 				},
 				transfer: transferBuffers

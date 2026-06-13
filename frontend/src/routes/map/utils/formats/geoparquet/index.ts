@@ -314,8 +314,9 @@ const sanitizeProperties = (
 	return properties;
 };
 
-export const geoParquetFileToGeoJson = async (file: File): Promise<GeoParquetReadResult> => {
-	const buffer = await file.arrayBuffer();
+export const geoParquetArrayBufferToGeoJson = async (
+	buffer: ArrayBuffer
+): Promise<GeoParquetReadResult> => {
 	const metadata = parquetMetadata(buffer);
 	const geoMetadata = parseGeoParquetMetadata(metadata);
 	const geometryColumns = getGeometryColumns(metadata, geoMetadata);
@@ -383,3 +384,6 @@ export const geoParquetFileToGeoJson = async (file: File): Promise<GeoParquetRea
 		sourceCrsName
 	};
 };
+
+export const geoParquetFileToGeoJson = async (file: File): Promise<GeoParquetReadResult> =>
+	geoParquetArrayBufferToGeoJson(await file.arrayBuffer());

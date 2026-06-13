@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
-	import { scale } from 'svelte/transition';
+	import { fade, scale } from 'svelte/transition';
 
 	import { isProcessing } from '$routes/stores/ui';
 
-	const MIN_VISIBLE_MS = 500;
+	const MIN_VISIBLE_MS = 300;
 
 	let visible = $state(false);
 	let shownAt = 0;
@@ -45,9 +45,12 @@
 </script>
 
 {#if visible}
-	<div class="fixed top-0 left-0 z-[9999] h-dvh w-full bg-black/50">
+	<div
+		transition:fade={{ duration: 150 }}
+		class="fixed top-0 left-0 z-[9999] h-dvh w-full bg-black/70"
+	>
 		<div class="flex h-full w-full items-center justify-center">
-			<div class="loader" transition:scale={{ duration: 200 }}></div>
+			<div class="loader" transition:scale={{ duration: 150, opacity: 100 }}></div>
 		</div>
 	</div>
 {/if}

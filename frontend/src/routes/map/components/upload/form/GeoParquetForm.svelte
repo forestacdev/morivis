@@ -16,7 +16,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { geoParquetFileToGeoJson } from '$routes/map/utils/formats/geoparquet';
+	import { geoParquetFileToGeoJsonInWorker } from '$routes/map/utils/formats/geoparquet/analyze';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -66,7 +66,7 @@
 	$effect(() => {
 		if (geoParquetFile) {
 			isProcessing.set(true);
-			geoParquetFileToGeoJson(geoParquetFile)
+			geoParquetFileToGeoJsonInWorker(geoParquetFile)
 				.then((result) => {
 					rawGeojson = result.geojson;
 					sourceEpsgCode = result.sourceEpsgCode;
