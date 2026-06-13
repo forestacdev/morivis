@@ -13,6 +13,7 @@ const throwIfAborted = (signal: AbortSignal) => {
 	if (signal.aborted) throw createAbortError();
 };
 const GEOZARR_TILE_CACHE_MAX = 256;
+const GEOZARR_WINDOW_CACHE_MAX = 1024;
 
 type GeoZarrArrayNode = {
 	shape: number[];
@@ -64,6 +65,25 @@ interface GeoZarrSourceState extends GeoZarrRegistrationMeta {
 	fixedIndices: number[];
 }
 
+type GeoZarrRasterView = {
+	data: ArrayLike<number>;
+	shape: number[];
+	stride: number[];
+};
+
+export type GeoZarrSampleWindow = {
+	xStart: number;
+	xEnd: number;
+	yStart: number;
+	yEnd: number;
+};
+
+export type GeoZarrFallbackRange = {
+	displayRange: BandDataRange;
+	sliderRange?: BandDataRange;
+	colorMap?: string;
+};
+
 const zarrRegistry = new Map<string, GeoZarrSourceState>();
 const colorMapManager = new ColorMapManager();
 const pendingGeoZarrRequests = new Map<
@@ -75,6 +95,7 @@ const pendingGeoZarrRequests = new Map<
 >();
 const geozarrStoreCache = new Map<string, Promise<GeoZarrListableStore>>();
 const geozarrTileCache = new Map<string, Uint8Array>();
+const geozarrWindowCache = new Map<string, GeoZarrRasterView>();
 
 type GeoZarrListableStore = zarr.FetchStore & {
 	contents?: () => { path: string; kind: 'array' | 'group'; }[];
@@ -143,6 +164,41 @@ const setGeoZarrTileCache = (key: string, value: Uint8Array) => {
 		if (oldest) geozarrTileCache.delete(oldest);
 	}
 	geozarrTileCache.set(key, cloneUint8Array(value));
+};
+
+const cloneGeoZarrViewData = (data: ArrayLike<number>): ArrayLike<number> => {
+	if (ArrayBuffer.isView(data)) {
+		const TypedArray = data.constructor as new (source: ArrayLike<number>) => ArrayLike<number>;
+		return new TypedArray(data);
+	}
+	return Array.from(data);
+};
+
+const getGeoZarrWindowCache = (key: string): GeoZarrRasterView | null => {
+	const cached = geozarrWindowCache.get(key);
+	if (!cached) return null;
+	geozarrWindowCache.delete(key);
+	geozarrWindowCache.set(key, cached);
+	return {
+		data: cloneGeoZarrViewData(cached.data),
+		shape: [...cached.shape],
+		stride: [...cached.stride]
+	};
+};
+
+const setGeoZarrWindowCache = (key: string, value: GeoZarrRasterView) => {
+	if (geozarrWindowCache.has(key)) {
+		geozarrWindowCache.delete(key);
+	}
+	if (geozarrWindowCache.size >= GEOZARR_WINDOW_CACHE_MAX) {
+		const oldest = geozarrWindowCache.keys().next().value;
+		if (oldest) geozarrWindowCache.delete(oldest);
+	}
+	geozarrWindowCache.set(key, {
+		data: cloneGeoZarrViewData(value.data),
+		shape: [...value.shape],
+		stride: [...value.stride]
+	});
 };
 
 const normalizeArrayPath = (value?: string): string =>
@@ -223,6 +279,57 @@ const getMetadataString = (attrs: Record<string, unknown>, ...keys: string[]) =>
 		if (typeof nested === 'string' && nested.trim().length > 0) return nested.trim();
 	}
 	return null;
+};
+
+export const GEOZARR_FALLBACK_RANGES: Record<string, GeoZarrFallbackRange> = {
+	dew_point_temperature: {
+		displayRange: { min: -60, max: 30 },
+		sliderRange: { min: -90, max: 40 },
+		colorMap: 'jet'
+	},
+	air_temperature: {
+		displayRange: { min: -60, max: 50 },
+		sliderRange: { min: -90, max: 60 },
+		colorMap: 'jet'
+	},
+	precipitation_amount: {
+		displayRange: { min: 0, max: 100 },
+		sliderRange: { min: 0, max: 300 },
+		colorMap: 'viridis'
+	},
+	eastward_wind: {
+		displayRange: { min: -80, max: 80 },
+		sliderRange: { min: -120, max: 120 },
+		colorMap: 'jet'
+	},
+	northward_wind: {
+		displayRange: { min: -80, max: 80 },
+		sliderRange: { min: -120, max: 120 },
+		colorMap: 'jet'
+	},
+	wind_speed: {
+		displayRange: { min: 0, max: 80 },
+		sliderRange: { min: 0, max: 120 },
+		colorMap: 'viridis'
+	},
+	relative_humidity: {
+		displayRange: { min: 0, max: 100 },
+		sliderRange: { min: 0, max: 100 },
+		colorMap: 'viridis'
+	},
+	specific_humidity: {
+		displayRange: { min: 0, max: 0.03 },
+		sliderRange: { min: 0, max: 0.05 },
+		colorMap: 'viridis'
+	}
+};
+
+export const resolveGeoZarrFallbackRange = (
+	attrs: Record<string, unknown>
+): GeoZarrFallbackRange | null => {
+	const standardName = getMetadataString(attrs, 'standard_name');
+	if (!standardName) return null;
+	return GEOZARR_FALLBACK_RANGES[standardName] ?? null;
 };
 
 const compareGeoZarrCandidates = (a: GeoZarrArrayCandidate, b: GeoZarrArrayCandidate) => {
@@ -700,6 +807,70 @@ const getFiniteMinMax = (data: ArrayLike<number>): BandDataRange => {
 	return { min, max };
 };
 
+export const mergeBandDataRanges = (ranges: BandDataRange[]): BandDataRange => {
+	let min = Number.POSITIVE_INFINITY;
+	let max = Number.NEGATIVE_INFINITY;
+
+	for (const range of ranges) {
+		if (!Number.isFinite(range.min) || !Number.isFinite(range.max)) continue;
+		if (range.min < min) min = range.min;
+		if (range.max > max) max = range.max;
+	}
+
+	if (!Number.isFinite(min) || !Number.isFinite(max) || min === max) {
+		return { min: 0, max: 1 };
+	}
+
+	return { min, max };
+};
+
+export const mergeSampleRangeWithFallback = (
+	sampleRange: BandDataRange,
+	fallbackRange: BandDataRange | null
+): BandDataRange => {
+	if (!fallbackRange) return sampleRange;
+	return {
+		min: Math.min(sampleRange.min, fallbackRange.min),
+		max: Math.max(sampleRange.max, fallbackRange.max)
+	};
+};
+
+export const buildGeoZarrSampleWindows = (
+	width: number,
+	height: number,
+	maxWindowSize = 96
+): GeoZarrSampleWindow[] => {
+	const sampleWidth = Math.max(1, Math.min(maxWindowSize, width));
+	const sampleHeight = Math.max(1, Math.min(maxWindowSize, height));
+	const xStarts = [0, Math.max(0, width - sampleWidth), Math.max(0, Math.floor((width - sampleWidth) / 2))];
+	const yStarts = [
+		0,
+		Math.max(0, height - sampleHeight),
+		Math.max(0, Math.floor((height - sampleHeight) / 2))
+	];
+	const windows = [
+		{ xStart: xStarts[0], yStart: yStarts[0] },
+		{ xStart: xStarts[1], yStart: yStarts[0] },
+		{ xStart: xStarts[0], yStart: yStarts[1] },
+		{ xStart: xStarts[1], yStart: yStarts[1] },
+		{ xStart: xStarts[2], yStart: yStarts[2] }
+	];
+
+	return Array.from(
+		new Map(
+			windows.map(({ xStart, yStart }) => [
+				`${xStart}:${yStart}`,
+				{
+					xStart,
+					xEnd: Math.min(width, xStart + sampleWidth),
+					yStart,
+					yEnd: Math.min(height, yStart + sampleHeight)
+				}
+			])
+		).values()
+	);
+};
+
 const getDefaultRangeFromDtype = (dtype: string): BandDataRange => {
 	const normalized = dtype.toLowerCase();
 	if (normalized.includes('uint8')) return { min: 0, max: 255 };
@@ -726,6 +897,33 @@ const readBandWindow = async (
 		shape: number[];
 		stride: number[];
 	};
+};
+
+const getGeoZarrWindowCacheKey = (
+	state: GeoZarrSourceState,
+	xStart: number,
+	xEnd: number,
+	yStart: number,
+	yEnd: number,
+	bandIndex: number
+) =>
+	`${state.url}|${state.arrayPath}|${state.width}|${state.height}|${xStart}|${xEnd}|${yStart}|${yEnd}|${bandIndex}`;
+
+const readBandWindowCached = async (
+	state: GeoZarrSourceState,
+	xStart: number,
+	xEnd: number,
+	yStart: number,
+	yEnd: number,
+	bandIndex = 0
+): Promise<GeoZarrRasterView> => {
+	const cacheKey = getGeoZarrWindowCacheKey(state, xStart, xEnd, yStart, yEnd, bandIndex);
+	const cached = getGeoZarrWindowCache(cacheKey);
+	if (cached) return cached;
+
+	const view = await readBandWindow(state, xStart, xEnd, yStart, yEnd, bandIndex);
+	setGeoZarrWindowCache(cacheKey, view);
+	return view;
 };
 
 const inspectGeoZarrInternal = async (
@@ -770,43 +968,44 @@ const inspectGeoZarrInternal = async (
 
 	const numBands = getNumBands(array, bandIndex);
 	const sampleRanges: BandDataRange[] = [];
-
-	const sampleWidth = Math.max(1, Math.min(128, width));
-	const sampleHeight = Math.max(1, Math.min(128, height));
-	const xStart = Math.max(0, Math.floor((width - sampleWidth) / 2));
-	const yStart = Math.max(0, Math.floor((height - sampleHeight) / 2));
-	const xEnd = Math.min(width, xStart + sampleWidth);
-	const yEnd = Math.min(height, yStart + sampleHeight);
+	const sampleWindows = buildGeoZarrSampleWindows(width, height);
+	const fallbackRange = resolveGeoZarrFallbackRange(attrs)?.displayRange ?? null;
 
 	const bandsToSample = numBands >= 3 ? [0, 1, 2] : [0];
 	for (const index of bandsToSample) {
+		const ranges: BandDataRange[] = [];
 		try {
-			const view = await readBandWindow(
-				{
-					url,
-					arrayPath: resolvedArrayPath,
-					width,
-					height,
-					numBands,
-					bbox,
-					sampleRanges: [],
-					dtype: array.dtype ?? 'unknown',
-					dimensionNames,
-					array,
-					xIndex,
-					yIndex,
-					bandIndex,
-					fixedIndices: array.shape.map(() => 0)
-				},
-				xStart,
-				xEnd,
-				yStart,
-				yEnd,
-				index
-			);
-			sampleRanges.push(getFiniteMinMax(view.data));
+			for (const sampleWindow of sampleWindows) {
+				const view = await readBandWindow(
+					{
+						url,
+						arrayPath: resolvedArrayPath,
+						width,
+						height,
+						numBands,
+						bbox,
+						sampleRanges: [],
+						dtype: array.dtype ?? 'unknown',
+						dimensionNames,
+						array,
+						xIndex,
+						yIndex,
+						bandIndex,
+						fixedIndices: array.shape.map(() => 0)
+					},
+					sampleWindow.xStart,
+					sampleWindow.xEnd,
+					sampleWindow.yStart,
+					sampleWindow.yEnd,
+					index
+				);
+				ranges.push(getFiniteMinMax(view.data));
+			}
+			sampleRanges.push(mergeSampleRangeWithFallback(mergeBandDataRanges(ranges), fallbackRange));
 		} catch {
-			sampleRanges.push(getDefaultRangeFromDtype(array.dtype ?? 'unknown'));
+			sampleRanges.push(
+				mergeSampleRangeWithFallback(getDefaultRangeFromDtype(array.dtype ?? 'unknown'), fallbackRange)
+			);
 		}
 	}
 
@@ -872,9 +1071,15 @@ export const registerGeoZarr = async (
 };
 
 export const unregisterGeoZarr = (entryId: string) => {
+	const state = zarrRegistry.get(entryId);
 	zarrRegistry.delete(entryId);
 	for (const key of geozarrTileCache.keys()) {
 		if (key.startsWith(`${entryId}|`)) geozarrTileCache.delete(key);
+	}
+	if (state) {
+		for (const key of geozarrWindowCache.keys()) {
+			if (key.startsWith(`${state.url}|${state.arrayPath}|`)) geozarrWindowCache.delete(key);
+		}
 	}
 };
 
@@ -1128,7 +1333,9 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 							Number.parseInt(url.searchParams.get('bIndex') ?? '2', 10)
 						] as [number, number, number];
 						const views = await Promise.all(
-							indices.map((index) => readBandWindow(state, xStart, xEnd, yStart, yEnd, index))
+							indices.map((index) =>
+								readBandWindowCached(state, xStart, xEnd, yStart, yEnd, index)
+							)
 						);
 						throwIfAborted(abortController.signal);
 						const ranges = [
@@ -1178,7 +1385,7 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 					}
 
 					const bandIndex = Number.parseInt(url.searchParams.get('bandIndex') ?? '0', 10);
-					const view = await readBandWindow(state, xStart, xEnd, yStart, yEnd, bandIndex);
+					const view = await readBandWindowCached(state, xStart, xEnd, yStart, yEnd, bandIndex);
 					throwIfAborted(abortController.signal);
 					const data = await renderSingleBandTile(view, state, z, x, y, tileSize, xStart, yStart, {
 						bandIndex,

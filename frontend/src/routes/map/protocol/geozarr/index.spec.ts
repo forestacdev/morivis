@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	buildGeoZarrSampleWindows,
+	mergeBandDataRanges,
+	mergeSampleRangeWithFallback,
 	normalizeGeoZarrBbox,
 	normalizeGeoZarrUrl,
 	parseBboxFromAttrs,
-	parseProjectionCodeFromAttrs
+	parseProjectionCodeFromAttrs,
+	resolveGeoZarrFallbackRange
 } from '.';
 
 describe('GeoZarr bbox helpers', () => {
@@ -40,5 +44,60 @@ describe('GeoZarr bbox helpers', () => {
 				'https://us-west-2.opendata.source.coop/pangeo/geozarr-examples/TCI.zarr/.zmetadata'
 			)
 		).toBe('https://us-west-2.opendata.source.coop/pangeo/geozarr-examples/TCI.zarr');
+	});
+});
+
+describe('GeoZarr sample range helpers', () => {
+	it('全球配列向けに角4点と中央のサンプル window を作る', () => {
+		expect(buildGeoZarrSampleWindows(1440, 721)).toEqual([
+			{ xStart: 0, xEnd: 96, yStart: 0, yEnd: 96 },
+			{ xStart: 1344, xEnd: 1440, yStart: 0, yEnd: 96 },
+			{ xStart: 0, xEnd: 96, yStart: 625, yEnd: 721 },
+			{ xStart: 1344, xEnd: 1440, yStart: 625, yEnd: 721 },
+			{ xStart: 672, xEnd: 768, yStart: 312, yEnd: 408 }
+		]);
+	});
+
+	it('ECMWF dew_point_temperature_2m のような全球データでは複数 window の min/max を合成する', () => {
+		const merged = mergeBandDataRanges([
+			{ min: -30.625, max: -8.5 },
+			{ min: -33.25, max: -19.875 },
+			{ min: -57.5, max: -0.2734375 },
+			{ min: -57, max: -2.984375 },
+			{ min: -5.0625, max: 26.125 }
+		]);
+
+		expect(merged.min).toBe(-57.5);
+		expect(merged.max).toBe(26.125);
+	});
+
+	it('小さい配列では重複しない window だけを返す', () => {
+		expect(buildGeoZarrSampleWindows(32, 16)).toEqual([{ xStart: 0, xEnd: 32, yStart: 0, yEnd: 16 }]);
+	});
+
+	it('standard_name から dew point の fallback range を引ける', () => {
+		expect(resolveGeoZarrFallbackRange({ standard_name: 'dew_point_temperature' })).toEqual({
+			displayRange: { min: -60, max: 30 },
+			sliderRange: { min: -90, max: 40 },
+			colorMap: 'jet'
+		});
+	});
+
+	it('sample range が狭すぎるときは fallback で広げる', () => {
+		expect(
+			mergeSampleRangeWithFallback(
+				{ min: -5.0625, max: 26.125 },
+				{ min: -60, max: 30 }
+			)
+		).toEqual({ min: -60, max: 30 });
+	});
+
+	it('sample range が fallback より広いときは sample を維持する', () => {
+		expect(
+			mergeSampleRangeWithFallback(
+				{ min: -72, max: 33 },
+				{ min: -60, max: 30 }
+			)
+		).toEqual({ min: -72, max: 33 });
 	});
 });

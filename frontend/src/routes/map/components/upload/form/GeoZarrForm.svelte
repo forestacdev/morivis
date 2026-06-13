@@ -293,13 +293,16 @@
 	</p>
 
 	<TextForm label="URL" bind:value={forms.url} error={errors.url} onInput={onUrlChange} />
-	<TextForm label="bbox（任意）" bind:value={forms.bbox} error={errors.bbox} onInput={onBboxChange} />
+	<TextForm
+		label="bbox（任意）"
+		bind:value={forms.bbox}
+		error={errors.bbox}
+		onInput={onBboxChange}
+	/>
 
 	{#if candidates.length > 0}
 		<div class="flex flex-col gap-2">
-			<label class="text-sm font-medium text-gray-200" for="geozarr-array-select">
-				配列候補
-			</label>
+			<label class="text-sm font-medium text-gray-200" for="geozarr-array-select"> 配列候補 </label>
 			<select
 				id="geozarr-array-select"
 				bind:value={forms.arrayPath}
@@ -313,8 +316,8 @@
 				{/each}
 			</select>
 			<p class="text-xs leading-relaxed text-gray-400">
-				`measurements` は画像本体、`quality` は品質情報、`conditions` は補助データ、
-				`coordinates` は座標軸です。
+				`measurements` は画像本体、`quality` は品質情報、`conditions` は補助データ、 `coordinates`
+				は座標軸です。
 			</p>
 		</div>
 	{:else if shouldShowManualArrayPath}
@@ -333,13 +336,16 @@
 	{/if}
 
 	{#if selectedCandidate}
-		<div transition:slide={{ duration: 180 }} class="bg-base rounded-lg p-3 text-sm">
+		<div
+			transition:slide={{ duration: 180 }}
+			class="rounded-lg p-3 text-sm text-gray-200 border border-gray-700 bg-black/20"
+		>
 			<div class="flex items-center gap-2">
-				<span class="rounded bg-white/10 px-2 py-0.5 text-xs text-gray-200">
+				<span class="rounded bg-white/10 px-2 py-0.5 text-xs text-gray-100">
 					{categoryLabel(selectedCandidate.category)}
 				</span>
 				{#if selectedCandidate.isRecommended}
-					<span class="rounded bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-300">
+					<span class="rounded bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-200">
 						自動選択候補
 					</span>
 				{/if}
@@ -374,7 +380,7 @@
 	</div>
 
 	{#if analyzed}
-		<div transition:slide={{ duration: 180 }} class="bg-base rounded-lg p-3 text-sm">
+		<div transition:slide={{ duration: 180 }} class="bg-base rounded-lg p-3 text-sm text-gray-200">
 			{#if selectedCandidate}
 				<div>分類: {categoryLabel(selectedCandidate.category)}</div>
 			{/if}
