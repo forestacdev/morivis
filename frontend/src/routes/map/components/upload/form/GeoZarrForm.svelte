@@ -55,10 +55,25 @@
 	let analyzed = $state<GeoZarrRegistrationMeta | null>(null);
 	let candidates = $state<GeoZarrArrayCandidate[]>([]);
 	let candidatesLoaded = $state(false);
+	let analyzedSnapshot = $state<{
+		url: string;
+		arrayPath: string;
+		bbox: string;
+	} | null>(null);
 
 	const selectedCandidate = $derived.by(
 		() => candidates.find((candidate) => candidate.arrayPath === forms.arrayPath) ?? null
 	);
+	const shouldShowManualArrayPath = $derived(candidatesLoaded && candidates.length === 0);
+	const canRegister = $derived.by(() => {
+		return (
+			analyzed !== null &&
+			analyzedSnapshot?.url === forms.url &&
+			analyzedSnapshot?.arrayPath === forms.arrayPath &&
+			analyzedSnapshot?.bbox === forms.bbox
+		);
+	});
+	const inspectButtonLabel = $derived(candidatesLoaded ? '選択した配列を解析' : '候補を解析');
 
 	$effect(() => {
 		try {
@@ -81,7 +96,6 @@
 		if (isSubmitDisabled) return;
 
 		isProcessing.set(true);
-		analyzed = null;
 
 		try {
 			const normalizedUrl = normalizeHttpUrlInput(forms.url);
@@ -90,14 +104,40 @@
 				return;
 			}
 			forms.url = normalizeGeoZarrUrl(normalizedUrl);
-			candidates = await listGeoZarrArrayCandidates(forms.url);
-			candidatesLoaded = true;
-			if (!forms.arrayPath && candidates[0]) {
-				forms.arrayPath = candidates[0].arrayPath;
+			if (!candidatesLoaded) {
+				candidates = await listGeoZarrArrayCandidates(forms.url);
+				candidatesLoaded = true;
+				analyzed = null;
+				analyzedSnapshot = null;
+
+				if (!forms.arrayPath && candidates[0]) {
+					forms.arrayPath = candidates[0].arrayPath;
+				}
+
+				showNotification('GeoZarr の候補を取得しました', 'success');
+				return;
 			}
+
+			if (!forms.arrayPath) {
+				showNotification('配列を選択してください', 'error');
+				return;
+			}
+
+			analyzed = null;
+			analyzedSnapshot = null;
 			analyzed = await inspectGeoZarr(forms.url, forms.arrayPath, forms.bbox || null);
+			analyzedSnapshot = {
+				url: forms.url,
+				arrayPath: forms.arrayPath,
+				bbox: forms.bbox
+			};
 			if (!forms.bbox) {
 				forms.bbox = analyzed.bbox.join(', ');
+				analyzedSnapshot = {
+					url: forms.url,
+					arrayPath: forms.arrayPath,
+					bbox: forms.bbox
+				};
 			}
 			showNotification('GeoZarr を解析しました', 'success');
 		} catch (error) {
@@ -112,7 +152,7 @@
 	};
 
 	const registration = async () => {
-		if (isSubmitDisabled) return;
+		if (isSubmitDisabled || !canRegister) return;
 
 		isProcessing.set(true);
 
@@ -208,6 +248,7 @@
 
 	const resetAnalysis = () => {
 		analyzed = null;
+		analyzedSnapshot = null;
 	};
 
 	const categoryLabel = (category: GeoZarrArrayCandidate['category']) => {
@@ -227,6 +268,20 @@
 
 	const onArrayPathChange = () => {
 		analyzed = null;
+		analyzedSnapshot = null;
+	};
+
+	const onUrlChange = () => {
+		candidates = [];
+		candidatesLoaded = false;
+		forms.arrayPath = '';
+		analyzed = null;
+		analyzedSnapshot = null;
+	};
+
+	const onBboxChange = () => {
+		analyzed = null;
+		analyzedSnapshot = null;
 	};
 </script>
 
@@ -237,9 +292,8 @@
 		bbox が見つからないときだけ `minx,miny,maxx,maxy` を補います。
 	</p>
 
-	<TextForm label="URL" bind:value={forms.url} error={errors.url} />
-	<TextForm label="配列パス（任意）" bind:value={forms.arrayPath} error={errors.arrayPath} />
-	<TextForm label="bbox（任意）" bind:value={forms.bbox} error={errors.bbox} />
+	<TextForm label="URL" bind:value={forms.url} error={errors.url} onInput={onUrlChange} />
+	<TextForm label="bbox（任意）" bind:value={forms.bbox} error={errors.bbox} onInput={onBboxChange} />
 
 	{#if candidates.length > 0}
 		<div class="flex flex-col gap-2">
@@ -263,10 +317,19 @@
 				`coordinates` は座標軸です。
 			</p>
 		</div>
-	{:else if candidatesLoaded}
+	{:else if shouldShowManualArrayPath}
 		<div class="rounded-lg border border-gray-700 bg-black/20 p-3 text-sm text-gray-300">
 			配列候補を一覧できませんでした。必要なら配列パスを手入力してください。
 		</div>
+	{/if}
+
+	{#if shouldShowManualArrayPath}
+		<TextForm
+			label="配列パス"
+			bind:value={forms.arrayPath}
+			error={errors.arrayPath}
+			onInput={onArrayPathChange}
+		/>
 	{/if}
 
 	{#if selectedCandidate}
@@ -300,11 +363,13 @@
 
 	<div class="flex gap-3">
 		<button class="c-btn-sub px-4 py-2" onclick={inspect} disabled={isSubmitDisabled}>
-			解析
+			{inspectButtonLabel}
 		</button>
-		<button class="c-btn-confirm px-4 py-2" onclick={registration} disabled={isSubmitDisabled}>
-			登録
-		</button>
+		{#if canRegister}
+			<button class="c-btn-confirm px-4 py-2" onclick={registration} disabled={isSubmitDisabled}>
+				登録
+			</button>
+		{/if}
 		<button class="c-btn-sub px-4 py-2" onclick={() => (showDialogType = null)}>閉じる</button>
 	</div>
 
