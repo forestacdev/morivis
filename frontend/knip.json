@@ -1,0 +1,26 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"entry": [
+		"src/app.d.ts",
+		"src/hooks.client.ts",
+		"src/hooks.server.ts",
+		"src/hooks.ts",
+		"src/app.html",
+		"scripts/**/*.mjs",
+		"vite.config.ts",
+		"vitest.setup.ts",
+		"playwright.config.ts",
+		"svelte.config.js",
+		"eslint.config.js"
+	],
+	"project": ["src/**/*.{js,ts,svelte}", "scripts/**/*.mjs", "e2e/**/*.ts"],
+	"ignoreFiles": [
+		"src/routes/_dev/unused/**",
+		"src/routes/map/data/entries/**",
+		"src/lib/components/svgs/**"
+	],
+	"ignoreExportsUsedInFile": {
+		"interface": true,
+		"type": true
+	}
+}

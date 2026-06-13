@@ -40,6 +40,12 @@ lint:
 lint-errors:
     cd frontend && pnpm exec eslint . --quiet
 
+knip:
+    cd frontend && pnpm run knip
+
+knip-compact:
+    cd frontend && pnpm run knip -- --reporter compact
+
 docs-serve:
     cd frontend && pnpm run docs:serve
 
