@@ -2,9 +2,9 @@ import { asset } from '$app/paths';
 import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import {
 	DEFAULT_MESH_SHADING,
+	type MeshEntry,
 	type MeshShadingStyle,
-	type MeshStyle,
-	type MeshEntry
+	type MeshStyle
 } from '$routes/map/data/types/model';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import {

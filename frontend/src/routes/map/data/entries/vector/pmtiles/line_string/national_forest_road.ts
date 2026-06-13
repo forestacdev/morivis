@@ -1,6 +1,6 @@
 import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import type { TileMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector';
+import type { MorivisVectorEntry, TileMetaData } from '$routes/map/data/types/vector';
 
 const entry: MorivisVectorEntry<TileMetaData> = {
 	id: 'national_forest_road',

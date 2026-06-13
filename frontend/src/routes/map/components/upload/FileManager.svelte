@@ -69,12 +69,16 @@
 		if (normalizedPath.endsWith('.ifc')) return 'ifc';
 		return 'gltf';
 	};
-	const registerRemoteKmlModel = (name: string, modelUrl: string, placement?: {
-		lng: number;
-		lat: number;
-		altitude: number;
-		scale?: number;
-	}) => {
+	const registerRemoteKmlModel = (
+		name: string,
+		modelUrl: string,
+		placement?: {
+			lng: number;
+			lat: number;
+			altitude: number;
+			scale?: number;
+		}
+	) => {
 		const center = map.getCenter();
 		showDataEntry = createGlbEntry(
 			name,

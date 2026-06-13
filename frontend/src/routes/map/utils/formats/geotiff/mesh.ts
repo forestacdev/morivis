@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
-import type { MeshStyle, MeshEntry } from '$routes/map/data/types/model';
+import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 

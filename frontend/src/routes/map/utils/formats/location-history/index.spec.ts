@@ -8,7 +8,10 @@ import {
 	locationHistoryFileToGeojson
 } from '.';
 
-const sampleJson = readFileSync(resolve(import.meta.dirname, '__fixtures__', 'sample.json'), 'utf8');
+const sampleJson = readFileSync(
+	resolve(import.meta.dirname, '__fixtures__', 'sample.json'),
+	'utf8'
+);
 
 const createFile = () =>
 	({

@@ -5,15 +5,14 @@
  * References:
  * - https://developers.google.com/kml/documentation/kmlreference
  */
-import type { KmlParseResult } from './parse';
 import {
-	extractKmlFromKmz,
 	extractGroundOverlayFromKmz,
+	extractKmlFromKmz,
 	extractModelFromKml,
 	extractModelFromKmz
 } from './kmz';
+import type { KmlParseResult } from './parse';
 import { parseKmlString } from './parse';
-export { getKmlDefaultColor } from './styles';
 export type {
 	KmlGroundOverlayResult,
 	KmlModelResult,
@@ -21,6 +20,7 @@ export type {
 	KmzModelResult
 } from './kmz';
 export type { KmlParseResult } from './parse';
+export { getKmlDefaultColor } from './styles';
 
 export const kmlFileToGeoJson = async (file: File): Promise<KmlParseResult> => {
 	try {

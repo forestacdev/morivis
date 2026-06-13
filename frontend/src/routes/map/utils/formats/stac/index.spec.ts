@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-	getRenderableAssets,
-	getThumbnailUrl,
-	normalizeStacUrl,
-	type StacItem
-} from '.';
+import { getRenderableAssets, getThumbnailUrl, normalizeStacUrl, type StacItem } from '.';
 
 const sampleItem: StacItem = {
 	id: 'sample-item',

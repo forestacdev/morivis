@@ -1,6 +1,10 @@
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { createRasterEntry } from '$routes/map/data/entries/raster';
-import type { RasterBaseMapStyle, MorivisRasterEntry, TileXYZ } from '$routes/map/data/types/raster';
+import type {
+	MorivisRasterEntry,
+	RasterBaseMapStyle,
+	TileXYZ
+} from '$routes/map/data/types/raster';
 import type { Tag } from '$routes/map/data/types/tags';
 
 export interface HimawariTargetTime {

@@ -50,9 +50,11 @@ export const parseKmlStyles = (text: string): KmlStyleMaps => {
 	for (const sm of collectNodesByName(parsed, 'StyleMap')) {
 		const id = typeof sm['@_id'] === 'string' ? sm['@_id'] : null;
 		if (!id) continue;
-		for (const pair of toArray(sm['Pair']).filter(
-			(item): item is Record<string, unknown> => typeof item === 'object' && item !== null
-		)) {
+		for (
+			const pair of toArray(sm['Pair']).filter(
+				(item): item is Record<string, unknown> => typeof item === 'object' && item !== null
+			)
+		) {
 			const key = typeof pair['key'] === 'string' ? pair['key'].trim() : null;
 			if (key === 'normal') {
 				const url = typeof pair['styleUrl'] === 'string' ? pair['styleUrl'].trim() : null;
@@ -66,16 +68,18 @@ export const parseKmlStyles = (text: string): KmlStyleMaps => {
 	): { fill?: string; line?: string; } => {
 		const result: { fill?: string; line?: string; } = {};
 		const polyStyle = style['PolyStyle'];
-		const polyColor = typeof (polyStyle as Record<string, unknown> | undefined)?.['color'] === 'string'
-			? ((polyStyle as Record<string, unknown>)['color'] as string).trim()
-			: null;
+		const polyColor =
+			typeof (polyStyle as Record<string, unknown> | undefined)?.['color'] === 'string'
+				? ((polyStyle as Record<string, unknown>)['color'] as string).trim()
+				: null;
 		if (polyColor) {
 			result.fill = kmlColorToHex(polyColor);
 		}
 		const lineStyle = style['LineStyle'];
-		const lineColor = typeof (lineStyle as Record<string, unknown> | undefined)?.['color'] === 'string'
-			? ((lineStyle as Record<string, unknown>)['color'] as string).trim()
-			: null;
+		const lineColor =
+			typeof (lineStyle as Record<string, unknown> | undefined)?.['color'] === 'string'
+				? ((lineStyle as Record<string, unknown>)['color'] as string).trim()
+				: null;
 		if (lineColor) {
 			result.line = kmlColorToHex(lineColor);
 		}

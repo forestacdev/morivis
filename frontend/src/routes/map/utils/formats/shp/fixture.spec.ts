@@ -41,7 +41,8 @@ const cpgText = readFileSync(resolve(fixtureDir, 'sample-point.cpg'), 'utf8');
 const createBinaryFile = (name: string, bytes: Uint8Array) =>
 	new File([new Uint8Array(bytes)], name, { type: 'application/octet-stream' });
 
-const createTextFile = (name: string, text: string) => new File([text], name, { type: 'text/plain' });
+const createTextFile = (name: string, text: string) =>
+	new File([text], name, { type: 'text/plain' });
 
 beforeEach(() => {
 	vi.stubGlobal('FileReader', MockFileReader);
@@ -68,7 +69,9 @@ describe('shp parser fixture', () => {
 		expect(result.features).toHaveLength(1);
 		expect(result.features[0]?.geometry.type).toBe('Point');
 		expect(result.features[0]?.geometry.coordinates).toEqual([139.6917, 35.6895]);
-		expect(String(result.features[0]?.properties?.NAME).replace(/\0+$/g, '')).toBe('Sample Point');
+		expect(String(result.features[0]?.properties?.NAME).replace(/\0+$/g, '')).toBe(
+			'Sample Point'
+		);
 	});
 
 	it('fixture の補助ファイルが存在する', () => {

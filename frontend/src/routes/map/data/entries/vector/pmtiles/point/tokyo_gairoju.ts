@@ -1,7 +1,7 @@
 import { ENTRY_PMTILES_VECTOR_PATH, MAP_IMAGE_BASE_PATH } from '$routes/constants';
 import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
 import { DEFAULT_POINT_LABEL_STYLE } from '$routes/map/data/entries/vector/_style';
-import type { TileMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector/index';
+import type { MorivisVectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: MorivisVectorEntry<TileMetaData> = {
 	id: 'tokyo_gairoju',

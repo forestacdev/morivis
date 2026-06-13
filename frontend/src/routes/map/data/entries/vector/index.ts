@@ -3,8 +3,8 @@ import turfBbox from '@turf/bbox';
 import { createAdjustableRange } from '$routes/map/data/types';
 import type {
 	GeoJsonMetaData,
-	TileMetaData,
 	MorivisVectorEntry,
+	TileMetaData,
 	VectorEntryGeometryType
 } from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';

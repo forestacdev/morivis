@@ -316,12 +316,12 @@
 			{/if}
 		{/if}
 		{#if selected === 'user'}
-				<UploadPane
-					bind:showDataEntry
-					bind:dropFile
-					bind:showDialogType
-					bind:remoteGeoZarrUrl
-					bind:remotePmtilesUrl
+			<UploadPane
+				bind:showDataEntry
+				bind:dropFile
+				bind:showDialogType
+				bind:remoteGeoZarrUrl
+				bind:remotePmtilesUrl
 				bind:remoteRasterUrl
 				bind:remoteVectorUrl
 				bind:remoteTiles3dUrl

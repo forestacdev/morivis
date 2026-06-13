@@ -9,7 +9,8 @@ const sampleMid = readFileSync(resolve(import.meta.dirname, '__fixtures__', 'sam
 const createFile = (name: string, bytes: Buffer) =>
 	({
 		name,
-		arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+		arrayBuffer: async () =>
+			bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
 	}) as File;
 
 describe('mif parser', () => {

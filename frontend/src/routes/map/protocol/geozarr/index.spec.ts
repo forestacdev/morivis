@@ -63,7 +63,11 @@ describe('GeoZarr categorical helpers', () => {
 	});
 
 	it('カテゴリ情報が無ければ null を返す', () => {
-		expect(buildCategoricalMeta('dew_point_temperature_2m', { standard_name: 'dew_point_temperature' })).toBeNull();
+		expect(
+			buildCategoricalMeta('dew_point_temperature_2m', {
+				standard_name: 'dew_point_temperature'
+			})
+		).toBeNull();
 	});
 });
 
@@ -92,7 +96,12 @@ describe('GeoZarr sample range helpers', () => {
 	});
 
 	it('小さい配列では重複しない window だけを返す', () => {
-		expect(buildGeoZarrSampleWindows(32, 16)).toEqual([{ xStart: 0, xEnd: 32, yStart: 0, yEnd: 16 }]);
+		expect(buildGeoZarrSampleWindows(32, 16)).toEqual([{
+			xStart: 0,
+			xEnd: 32,
+			yStart: 0,
+			yEnd: 16
+		}]);
 	});
 
 	it('standard_name から dew point の fallback range を引ける', () => {

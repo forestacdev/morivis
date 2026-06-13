@@ -5,10 +5,10 @@ import type { Opacity } from '$routes/map/data/types';
 import type { Region } from '$routes/map/data/types/location';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
-	MeshStyle,
 	MeshEntry,
-	Tiles3DEntry,
-	PointCloudStyle
+	MeshStyle,
+	PointCloudStyle,
+	Tiles3DEntry
 } from '$routes/map/data/types/model';
 import type { Tag } from '$routes/map/data/types/tags';
 

@@ -4,7 +4,7 @@ import {
 	DEFAULT_POLYGON_STYLE,
 	TREE_MATCH_COLOR_STYLE
 } from '$routes/map/data/entries/vector/_style';
-import type { TileMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector/index';
+import type { MorivisVectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: MorivisVectorEntry<TileMetaData> = {
 	id: 'tochigi_tree_species',

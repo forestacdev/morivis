@@ -51,9 +51,9 @@ import {
 } from '$routes/map/data/entries/_meta_data/_bounds';
 import {
 	type AnyTiles3DEntry,
-	type MeshStyle,
 	type DeckVectorEntry,
 	type MeshEntry,
+	type MeshStyle,
 	type PointCloudEntry
 } from '$routes/map/data/types/model';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';

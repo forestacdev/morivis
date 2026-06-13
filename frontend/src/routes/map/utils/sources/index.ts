@@ -10,15 +10,15 @@ import {
 import type {
 	DemRangeColorStyle,
 	DerivedBandData,
-	RasterDemStyle,
-	MorivisRasterEntry
+	MorivisRasterEntry,
+	RasterDemStyle
 } from '$routes/map/data/types/raster';
 import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 
 import {
 	createAdjustableRange,
-	type MorivisLayerEntry,
-	getAdjustableRangeValue
+	getAdjustableRangeValue,
+	type MorivisLayerEntry
 } from '$routes/map/data/types';
 import {
 	selectedBaseMap,
@@ -511,12 +511,15 @@ export const createSourcesItems = async (
 						} satisfies ImageSourceSpecification;
 					} else if (format.type === 'geozarr') {
 						if (style.type === 'categorical' && style.legend.type === 'category') {
-							const categoricalValues =
-								entry.properties?.categories?.values.join('|')
+							const categoricalValues = entry.properties?.categories?.values.join('|')
 								?? style.legend.labels.map((_, index) => index).join('|');
 							const categoricalColors = style.legend.colors.join('|');
 							const tileUrl =
-								`geozarr://tile?entryId=${entry.id}&mode=categorical&bandIndex=0&values=${encodeURIComponent(categoricalValues)}&colors=${encodeURIComponent(categoricalColors)}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+								`geozarr://tile?entryId=${entry.id}&mode=categorical&bandIndex=0&values=${
+									encodeURIComponent(categoricalValues)
+								}&colors=${
+									encodeURIComponent(categoricalColors)
+								}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
 
 							items[sourceId] = {
 								type: 'raster',

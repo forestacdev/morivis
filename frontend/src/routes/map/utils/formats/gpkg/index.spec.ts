@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import initSqlJs, { type Database } from 'sql.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const wasmPath = resolve(import.meta.dirname, '../../../../../../static/sql-wasm.wasm');
 
@@ -132,7 +132,9 @@ class MockGpkgWorker {
 				});
 			}
 		})().catch((error) => {
-			this.onerror?.({ message: error instanceof Error ? error.message : String(error) } as ErrorEvent);
+			this.onerror?.(
+				{ message: error instanceof Error ? error.message : String(error) } as ErrorEvent
+			);
 		});
 	}
 

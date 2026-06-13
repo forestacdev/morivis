@@ -3,8 +3,8 @@ import proj4 from 'proj4';
 import * as zarr from 'zarrita';
 
 import { convertCanvasToResult } from '$routes/map/protocol/farbling';
-import { getColorBrewerSchemeColors } from '$routes/map/utils/color/color-brewer';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
+import { getColorBrewerSchemeColors } from '$routes/map/utils/color/color-brewer';
 import { resolveAbsoluteRequestUrl } from '$routes/map/utils/platform/request';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 
@@ -190,7 +190,7 @@ const setGeoZarrTileCache = (key: string, value: Uint8Array) => {
 
 const cloneGeoZarrViewData = (data: ArrayLike<number>): ArrayLike<number> => {
 	if (ArrayBuffer.isView(data)) {
-		const TypedArray = data.constructor as new (source: ArrayLike<number>) => ArrayLike<number>;
+		const TypedArray = data.constructor as new(source: ArrayLike<number>) => ArrayLike<number>;
 		return new TypedArray(data);
 	}
 	return Array.from(data);
@@ -230,8 +230,9 @@ const getArrayAttrs = (array: GeoZarrArrayNode): Record<string, unknown> => {
 	return array.attrs ?? array.attributes ?? {};
 };
 
-const getNodeAttrs = (node: { attrs?: Record<string, unknown>; attributes?: Record<string, unknown>; }) =>
-	node.attrs ?? node.attributes ?? {};
+const getNodeAttrs = (
+	node: { attrs?: Record<string, unknown>; attributes?: Record<string, unknown>; }
+) => node.attrs ?? node.attributes ?? {};
 
 const parseBboxText = (value?: string | null): [number, number, number, number] | null => {
 	if (!value) return null;
@@ -276,9 +277,10 @@ const inferDimensionNames = (array: GeoZarrArrayNode): string[] => {
 };
 
 const isCoordinateLikePath = (path: string): boolean => {
-	return /(^|\/)(time|valid_time|step|latitude|lat|longitude|lon|x|y|band|bands|angle|angles|detector|detectors|level|levels|hybrid|hybrid_sigma_pressure|pressure)$/i.test(
-		path
-	);
+	return /(^|\/)(time|valid_time|step|latitude|lat|longitude|lon|x|y|band|bands|angle|angles|detector|detectors|level|levels|hybrid|hybrid_sigma_pressure|pressure)$/i
+		.test(
+			path
+		);
 };
 
 const getGeoZarrArrayCategory = (
@@ -327,13 +329,17 @@ export const buildCategoricalMeta = (arrayPath: string, attrs: Record<string, un
 	const categories = flagValues.length > 0
 		? flagValues
 		: typeof attrs['valid_min'] === 'number' && typeof attrs['valid_max'] === 'number'
-			? Array.from(
-				{ length: Math.max(0, Math.min(32, Number(attrs['valid_max']) - Number(attrs['valid_min']) + 1)) },
-				(_, index) => Number(attrs['valid_min']) + index
-			)
-			: [];
-	const isCategorical =
-		categories.length > 0
+		? Array.from(
+			{
+				length: Math.max(
+					0,
+					Math.min(32, Number(attrs['valid_max']) - Number(attrs['valid_min']) + 1)
+				)
+			},
+			(_, index) => Number(attrs['valid_min']) + index
+		)
+		: [];
+	const isCategorical = categories.length > 0
 		|| /^categorical_/i.test(arrayPath)
 		|| getMetadataString(attrs, 'standard_name')?.startsWith('categorical_')
 		|| getMetadataString(attrs, 'long_name')?.toLowerCase().includes('categorical') === true;
@@ -600,19 +606,19 @@ export const listGeoZarrArrayCandidates = async (url: string): Promise<GeoZarrAr
 		return [];
 	}
 
-	const paths =
-		typeof store.contents === 'function'
-			? store
-					.contents()
-					.filter((entry) => entry.kind === 'array' && entry.path !== '/')
-					.map((entry) => entry.path.replace(/^\/+/, ''))
-			: [];
+	const paths = typeof store.contents === 'function'
+		? store
+			.contents()
+			.filter((entry) => entry.kind === 'array' && entry.path !== '/')
+			.map((entry) => entry.path.replace(/^\/+/, ''))
+		: [];
 
 	const candidates: GeoZarrArrayCandidate[] = [];
 
 	for (const path of paths) {
 		try {
-			const array = (await zarr.open(root.resolve(path), { kind: 'array' })) as GeoZarrArrayNode;
+			const array =
+				(await zarr.open(root.resolve(path), { kind: 'array' })) as GeoZarrArrayNode;
 			const attrs = getArrayAttrs(array);
 			const dimensionNames = inferDimensionNames(array);
 			const category = getGeoZarrArrayCategory(path, array);
@@ -628,8 +634,7 @@ export const listGeoZarrArrayCandidates = async (url: string): Promise<GeoZarrAr
 				shortName: getMetadataString(attrs, 'short_name', 'standard_name'),
 				units: getMetadataString(attrs, 'units'),
 				category,
-				isRecommended:
-					category === 'measurements'
+				isRecommended: category === 'measurements'
 					&& array.shape.length >= 2
 					&& Number.isFinite(score)
 					&& score >= 100
@@ -740,8 +745,12 @@ export const normalizeGeoZarrBbox = (
 			[bbox[2], bbox[3]],
 			[bbox[0], bbox[3]]
 		].map((corner) => proj4(projectionCode, 'EPSG:4326', corner as [number, number]));
-		const lons = corners.map((corner) => Number(corner[0])).filter((value) => Number.isFinite(value));
-		const lats = corners.map((corner) => Number(corner[1])).filter((value) => Number.isFinite(value));
+		const lons = corners.map((corner) => Number(corner[0])).filter((value) =>
+			Number.isFinite(value)
+		);
+		const lats = corners.map((corner) => Number(corner[1])).filter((value) =>
+			Number.isFinite(value)
+		);
 
 		if (lons.length !== 4 || lats.length !== 4) return bbox;
 
@@ -815,13 +824,12 @@ const readDatasetGroupMetadata = async (url: string) => {
 	const rootMeta = await inspectGroup('');
 	if (rootMeta?.bbox || rootMeta?.projectionCode) return rootMeta;
 
-	const paths =
-		typeof store.contents === 'function'
-			? store
-					.contents()
-					.filter((entry) => entry.kind === 'group' && entry.path !== '/')
-					.map((entry) => entry.path.replace(/^\/+/, ''))
-			: [];
+	const paths = typeof store.contents === 'function'
+		? store
+			.contents()
+			.filter((entry) => entry.kind === 'group' && entry.path !== '/')
+			.map((entry) => entry.path.replace(/^\/+/, ''))
+		: [];
 
 	for (const groupPath of paths) {
 		const meta = await inspectGroup(groupPath);
@@ -912,7 +920,11 @@ export const buildGeoZarrSampleWindows = (
 ): GeoZarrSampleWindow[] => {
 	const sampleWidth = Math.max(1, Math.min(maxWindowSize, width));
 	const sampleHeight = Math.max(1, Math.min(maxWindowSize, height));
-	const xStarts = [0, Math.max(0, width - sampleWidth), Math.max(0, Math.floor((width - sampleWidth) / 2))];
+	const xStarts = [
+		0,
+		Math.max(0, width - sampleWidth),
+		Math.max(0, Math.floor((width - sampleWidth) / 2))
+	];
 	const yStarts = [
 		0,
 		Math.max(0, height - sampleHeight),
@@ -976,8 +988,7 @@ const getGeoZarrWindowCacheKey = (
 	yStart: number,
 	yEnd: number,
 	bandIndex: number
-) =>
-	`${state.url}|${state.arrayPath}|${state.width}|${state.height}|${xStart}|${xEnd}|${yStart}|${yEnd}|${bandIndex}`;
+) => `${state.url}|${state.arrayPath}|${state.width}|${state.height}|${xStart}|${xEnd}|${yStart}|${yEnd}|${bandIndex}`;
 
 const readBandWindowCached = async (
 	state: GeoZarrSourceState,
@@ -1002,7 +1013,10 @@ const inspectGeoZarrInternal = async (
 	bboxText?: string | null
 ): Promise<Omit<GeoZarrSourceState, 'array'>> => {
 	const normalizedUrl = normalizeGeoZarrUrl(url);
-	const { array, arrayPath: resolvedArrayPath } = await openGeoZarrArray(normalizedUrl, arrayPath);
+	const { array, arrayPath: resolvedArrayPath } = await openGeoZarrArray(
+		normalizedUrl,
+		arrayPath
+	);
 	const attrs = getArrayAttrs(array);
 	const dimensionNames = inferDimensionNames(array);
 	const { xIndex, yIndex, bandIndex } = inferAxisIndexes(array, dimensionNames);
@@ -1010,12 +1024,10 @@ const inspectGeoZarrInternal = async (
 		normalizedUrl,
 		resolvedArrayPath
 	);
-	const datasetMetadata =
-		ancestorBbox && projectionCode
-			? { bbox: ancestorBbox, projectionCode }
-			: await readDatasetGroupMetadata(normalizedUrl);
-	const rawBbox =
-		parseBboxText(bboxText)
+	const datasetMetadata = ancestorBbox && projectionCode
+		? { bbox: ancestorBbox, projectionCode }
+		: await readDatasetGroupMetadata(normalizedUrl);
+	const rawBbox = parseBboxText(bboxText)
 		?? parseBboxFromAttrs(attrs)
 		?? ancestorBbox
 		?? datasetMetadata.bbox
@@ -1072,10 +1084,15 @@ const inspectGeoZarrInternal = async (
 				);
 				ranges.push(getFiniteMinMax(view.data));
 			}
-			sampleRanges.push(mergeSampleRangeWithFallback(mergeBandDataRanges(ranges), fallbackRange));
+			sampleRanges.push(
+				mergeSampleRangeWithFallback(mergeBandDataRanges(ranges), fallbackRange)
+			);
 		} catch {
 			sampleRanges.push(
-				mergeSampleRangeWithFallback(getDefaultRangeFromDtype(array.dtype ?? 'unknown'), fallbackRange)
+				mergeSampleRangeWithFallback(
+					getDefaultRangeFromDtype(array.dtype ?? 'unknown'),
+					fallbackRange
+				)
 			);
 		}
 	}
@@ -1123,17 +1140,18 @@ export const registerGeoZarr = async (
 ): Promise<GeoZarrRegistrationMeta> => {
 	const normalizedUrl = normalizeGeoZarrUrl(input.url);
 	const { array } = await openGeoZarrArray(normalizedUrl, input.arrayPath);
-	const metadata =
-		input.metadata && normalizeGeoZarrUrl(input.metadata.url) === normalizedUrl ? input.metadata : null;
+	const metadata = input.metadata && normalizeGeoZarrUrl(input.metadata.url) === normalizedUrl
+		? input.metadata
+		: null;
 	const axisIndexes = metadata ? inferAxisIndexes(array, metadata.dimensionNames) : null;
 	const inspected = metadata
 		? {
-				...metadata,
-				xIndex: axisIndexes?.xIndex ?? Math.max(1, array.shape.length - 1),
-				yIndex: axisIndexes?.yIndex ?? Math.max(0, array.shape.length - 2),
-				bandIndex: axisIndexes?.bandIndex ?? null,
-				fixedIndices: array.shape.map(() => 0)
-			}
+			...metadata,
+			xIndex: axisIndexes?.xIndex ?? Math.max(1, array.shape.length - 1),
+			yIndex: axisIndexes?.yIndex ?? Math.max(0, array.shape.length - 2),
+			bandIndex: axisIndexes?.bandIndex ?? null,
+			fixedIndices: array.shape.map(() => 0)
+		}
 		: await inspectGeoZarrInternal(normalizedUrl, input.arrayPath, input.bboxText);
 	const state: GeoZarrSourceState = {
 		...inspected,
@@ -1509,7 +1527,10 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 
 					const mode = url.searchParams.get('mode') ?? 'single';
 					if (mode === 'categorical') {
-						const bandIndex = Number.parseInt(url.searchParams.get('bandIndex') ?? '0', 10);
+						const bandIndex = Number.parseInt(
+							url.searchParams.get('bandIndex') ?? '0',
+							10
+						);
 						const values = (url.searchParams.get('values') ?? '')
 							.split('|')
 							.map((item) => Number(item))
@@ -1541,10 +1562,20 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 						});
 						throwIfAborted(abortController.signal);
 						const renderStartedAt = performance.now();
-						const data = await renderCategoricalTile(view, state, z, x, y, tileSize, xStart, yStart, {
-							values,
-							colors
-						});
+						const data = await renderCategoricalTile(
+							view,
+							state,
+							z,
+							x,
+							y,
+							tileSize,
+							xStart,
+							yStart,
+							{
+								values,
+								colors
+							}
+						);
 						logGeoZarrTiming('tile-render', {
 							entryId,
 							mode,
@@ -1597,26 +1628,32 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 						const ranges = [
 							{
 								min: Number.parseFloat(
-									url.searchParams.get('rMin') ?? String(state.sampleRanges[0]?.min ?? 0)
+									url.searchParams.get('rMin')
+										?? String(state.sampleRanges[0]?.min ?? 0)
 								),
 								max: Number.parseFloat(
-									url.searchParams.get('rMax') ?? String(state.sampleRanges[0]?.max ?? 1)
+									url.searchParams.get('rMax')
+										?? String(state.sampleRanges[0]?.max ?? 1)
 								)
 							},
 							{
 								min: Number.parseFloat(
-									url.searchParams.get('gMin') ?? String(state.sampleRanges[1]?.min ?? 0)
+									url.searchParams.get('gMin')
+										?? String(state.sampleRanges[1]?.min ?? 0)
 								),
 								max: Number.parseFloat(
-									url.searchParams.get('gMax') ?? String(state.sampleRanges[1]?.max ?? 1)
+									url.searchParams.get('gMax')
+										?? String(state.sampleRanges[1]?.max ?? 1)
 								)
 							},
 							{
 								min: Number.parseFloat(
-									url.searchParams.get('bMin') ?? String(state.sampleRanges[2]?.min ?? 0)
+									url.searchParams.get('bMin')
+										?? String(state.sampleRanges[2]?.min ?? 0)
 								),
 								max: Number.parseFloat(
-									url.searchParams.get('bMax') ?? String(state.sampleRanges[2]?.max ?? 1)
+									url.searchParams.get('bMax')
+										?? String(state.sampleRanges[2]?.max ?? 1)
 								)
 							}
 						] as [BandDataRange, BandDataRange, BandDataRange];
@@ -1681,16 +1718,28 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 					});
 					throwIfAborted(abortController.signal);
 					const renderStartedAt = performance.now();
-					const data = await renderSingleBandTile(view, state, z, x, y, tileSize, xStart, yStart, {
-						bandIndex,
-						colorMap: url.searchParams.get('colorMap') ?? 'jet',
-						min: Number.parseFloat(
-							url.searchParams.get('min') ?? String(state.sampleRanges[bandIndex]?.min ?? 0)
-						),
-						max: Number.parseFloat(
-							url.searchParams.get('max') ?? String(state.sampleRanges[bandIndex]?.max ?? 1)
-						)
-					});
+					const data = await renderSingleBandTile(
+						view,
+						state,
+						z,
+						x,
+						y,
+						tileSize,
+						xStart,
+						yStart,
+						{
+							bandIndex,
+							colorMap: url.searchParams.get('colorMap') ?? 'jet',
+							min: Number.parseFloat(
+								url.searchParams.get('min')
+									?? String(state.sampleRanges[bandIndex]?.min ?? 0)
+							),
+							max: Number.parseFloat(
+								url.searchParams.get('max')
+									?? String(state.sampleRanges[bandIndex]?.max ?? 1)
+							)
+						}
+					);
 					logGeoZarrTiming('tile-render', {
 						entryId,
 						mode,
@@ -1712,7 +1761,11 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 					finish(() => resolve({ data }));
 				} catch (error) {
 					finish(() =>
-						reject(error instanceof Error ? error : new Error('GeoZarr tile request failed'))
+						reject(
+							error instanceof Error
+								? error
+								: new Error('GeoZarr tile request failed')
+						)
 					);
 				}
 			})();

@@ -14,7 +14,6 @@
 	import { looksLikeWfsUrl, parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
 	import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
 	import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
-	import { normalizeGeoZarrUrl } from '$routes/map/protocol/geozarr';
 	import { fetchWithDevProxy, normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -170,18 +169,6 @@
 		}
 	};
 
-	const isGeoZarrUrl = (urlValue: string): boolean => {
-		const normalized = normalizeHttpUrlInput(urlValue);
-		if (!normalized) return false;
-		const lowerUrl = normalized.toLowerCase();
-		return (
-			lowerUrl.includes('.zarr') ||
-			lowerUrl.endsWith('/zarr.json') ||
-			lowerUrl.endsWith('/.zmetadata') ||
-			lowerUrl.endsWith('/.zgroup')
-		);
-	};
-
 	const isWmsOrWmtsUrl = async (urlValue: string): Promise<boolean> => {
 		let wmtsResult = await parseWmtsCapabilities(urlValue);
 
@@ -232,16 +219,6 @@
 			showNotification('http(s) または s3:// で始まるURLを入力してください', 'error');
 			return;
 		}
-		const normalizedGeoZarrUrl = normalizeGeoZarrUrl(normalizedInputUrl);
-
-		if (isGeoZarrUrl(trimmedUrl)) {
-			remoteGeoZarrUrl = normalizedGeoZarrUrl;
-			showDialogType = 'geozarr';
-			inputUrl = '';
-			hasTouchedUrlInput = false;
-			return;
-		}
-
 		if (isTilesetJsonUrl(normalizedInputUrl)) {
 			remoteTiles3dUrl = normalizedInputUrl;
 			showDialogType = '3dtiles';
@@ -448,12 +425,6 @@
 					label: 'STAC / COG',
 					description:
 						'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。'
-				},
-				{
-					type: 'geozarr',
-					label: 'GeoZarr',
-					description:
-						'GeoZarr の配列URLです。クラウド上の多次元ラスターデータを直接追加するときに使います。'
 				}
 			]
 		}

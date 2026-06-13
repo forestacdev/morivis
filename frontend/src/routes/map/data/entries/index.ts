@@ -41,7 +41,10 @@ const lazyEntryModules = import.meta.glob<CatalogModule>(
 	{ eager: true }
 );
 
-const markEntryNeedsLazyHydration = (entry: MorivisLayerEntry, value: boolean): MorivisLayerEntry => {
+const markEntryNeedsLazyHydration = (
+	entry: MorivisLayerEntry,
+	value: boolean
+): MorivisLayerEntry => {
 	entry.metaData.needsLazyHydration = value;
 	return entry;
 };
@@ -131,7 +134,9 @@ export const needsLazyHydration = (entry: MorivisLayerEntry): boolean => {
 	return entry.metaData.needsLazyHydration === true;
 };
 
-export const resolveMorivisLayerEntry = async (entryId: string): Promise<MorivisLayerEntry | null> => {
+export const resolveMorivisLayerEntry = async (
+	entryId: string
+): Promise<MorivisLayerEntry | null> => {
 	const catalogItem = entryCatalogMap.get(entryId);
 	if (!catalogItem) return null;
 

@@ -12,9 +12,9 @@ import {
 	type RasterDemStyle
 } from '$routes/map/data/types/raster';
 import {
+	type CadRasterEntry,
 	DEM_STYLE_TYPE,
-	type DemStyleMode,
-	type CadRasterEntry
+	type DemStyleMode
 } from '$routes/map/data/types/raster';
 import { replaceDimensionPlaceholder } from '$routes/map/utils/dimension';
 import { TileProxy } from '$routes/map/utils/image';

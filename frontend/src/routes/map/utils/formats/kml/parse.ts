@@ -3,7 +3,7 @@ import type { FeatureProp } from '$routes/map/types/properties';
 import { normalizeGeoJsonGeometryCollections } from '$routes/map/utils/formats/geojson';
 import toGeoJSON from '@mapbox/togeojson';
 import { GX_NS, KML_NS } from './constants';
-import { applyStyleProperties, parseKmlStyles, type KmlStyleMaps } from './styles';
+import { applyStyleProperties, type KmlStyleMaps, parseKmlStyles } from './styles';
 import { getDirectChildText, getFirstChildText, parseXmlDocument } from './xml';
 
 export interface KmlParseResult extends KmlStyleMaps {
@@ -130,9 +130,11 @@ const extractPlacemarkProperties = (placemark: Element) => {
 		if (key && value) properties[key] = value;
 	}
 
-	for (const simpleDataElement of Array.from(
-		placemark.getElementsByTagNameNS(KML_NS, 'SimpleData')
-	)) {
+	for (
+		const simpleDataElement of Array.from(
+			placemark.getElementsByTagNameNS(KML_NS, 'SimpleData')
+		)
+	) {
 		const key = simpleDataElement.getAttribute('name')?.trim();
 		const value = simpleDataElement.textContent?.trim();
 		if (key && value) properties[key] = value;

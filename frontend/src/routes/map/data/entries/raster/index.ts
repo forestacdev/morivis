@@ -6,10 +6,10 @@ import {
 
 import type {
 	DemDataTypeKey,
+	MorivisRasterEntry,
 	RasterBaseMapStyle,
 	RasterDemStyle,
 	RasterDiscreteDimension,
-	MorivisRasterEntry,
 	RasterPMTilesEntry
 } from '$routes/map/data/types/raster';
 

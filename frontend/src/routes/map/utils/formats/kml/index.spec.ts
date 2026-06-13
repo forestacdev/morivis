@@ -48,7 +48,10 @@ describe('kml parser', () => {
 			altitude: 12.5,
 			scale: 1
 		});
-		expect((result?.modelFiles[0] as File & { morivisModelPlacement?: unknown }).morivisModelPlacement)
+		expect(
+			(result?.modelFiles[0] as File & { morivisModelPlacement?: unknown; })
+				.morivisModelPlacement
+		)
 			.toMatchObject({
 				name: 'Box',
 				lng: 139.6917,
@@ -59,7 +62,8 @@ describe('kml parser', () => {
 	it('リモート参照の Model URL を抽出する', async () => {
 		const remoteKmlFile = ({
 			name: 'remote.kml',
-			text: async () => `<?xml version="1.0" encoding="UTF-8"?>
+			text: async () =>
+				`<?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Placemark>
     <name>Remote Cube</name>

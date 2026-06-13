@@ -13,9 +13,10 @@ describe('wkt parser', () => {
 
 	it('SRID 付き複数行 WKT をまとめて変換できる', () => {
 		const result = wktTextToGeojson(
-			['SRID=4326;POINT (139.6917 35.6895)', 'SRID=4326;LINESTRING (139.6 35.6, 139.7 35.7)'].join(
-				'\n'
-			),
+			['SRID=4326;POINT (139.6917 35.6895)', 'SRID=4326;LINESTRING (139.6 35.6, 139.7 35.7)']
+				.join(
+					'\n'
+				),
 			'multi.wkt'
 		);
 

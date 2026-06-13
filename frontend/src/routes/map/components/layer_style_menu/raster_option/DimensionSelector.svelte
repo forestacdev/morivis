@@ -18,7 +18,11 @@
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
-	import type { MorivisVectorEntry, GeoJsonMetaData, TileMetaData } from '$routes/map/data/types/vector';
+	import type {
+		MorivisVectorEntry,
+		GeoJsonMetaData,
+		TileMetaData
+	} from '$routes/map/data/types/vector';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getTopexCacheKey, getTwiCacheKey } from '$routes/map/utils/formats/geotiff';
 	import {

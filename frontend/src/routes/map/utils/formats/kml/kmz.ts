@@ -72,7 +72,7 @@ const resolveEntryPath = (basePath: string, relativePath: string) => {
 };
 
 const getPathLikeName = (file: File) => {
-	const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
+	const relativePath = (file as File & { morivisRelativePath?: string; }).morivisRelativePath;
 	return (relativePath ?? file.name).replace(/\\/g, '/');
 };
 
@@ -225,7 +225,9 @@ export const extractModelFromKml = async (
 
 	const sourceFiles = relatedFiles.filter((candidate) => candidate !== file);
 	const pathMap = new Map(
-		sourceFiles.map((candidate) => [getPathLikeName(candidate).toLowerCase(), candidate] as const)
+		sourceFiles.map((candidate) =>
+			[getPathLikeName(candidate).toLowerCase(), candidate] as const
+		)
 	);
 	const mainModelPath = mainModelPathCandidates.find((path) => pathMap.has(path.toLowerCase()));
 	if (!mainModelPath) return null;

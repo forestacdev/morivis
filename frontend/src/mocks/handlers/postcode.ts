@@ -1,22 +1,24 @@
 import { http, HttpResponse } from 'msw';
 
 export const postcodeHandlers = [
-	http.get('https://postcode.teraren.com/postcodes/:postcode.json', ({ params }) =>
-		HttpResponse.json({
-			jis: '13104',
-			old: String(params.postcode),
-			new: String(params.postcode),
-			prefecture_kana: 'トウキョウト',
-			city_kana: 'シンジュクク',
-			suburb_kana: 'ニシシンジュク',
-			prefecture: '東京都',
-			city: '新宿区',
-			suburb: '西新宿',
-			location: {
-				latitude: '35.6895',
-				longitude: '139.6917'
-			}
-		})
+	http.get(
+		'https://postcode.teraren.com/postcodes/:postcode.json',
+		({ params }) =>
+			HttpResponse.json({
+				jis: '13104',
+				old: String(params.postcode),
+				new: String(params.postcode),
+				prefecture_kana: 'トウキョウト',
+				city_kana: 'シンジュクク',
+				suburb_kana: 'ニシシンジュク',
+				prefecture: '東京都',
+				city: '新宿区',
+				suburb: '西新宿',
+				location: {
+					latitude: '35.6895',
+					longitude: '139.6917'
+				}
+			})
 	),
 	http.get('https://postcode.teraren.com/postcodes/:postcode.txt', ({ request }) => {
 		const url = new URL(request.url);
@@ -41,6 +43,5 @@ export const postcodeHandlers = [
 					longitude: '139.6917'
 				}
 			}
-		])
-	)
+		]))
 ];

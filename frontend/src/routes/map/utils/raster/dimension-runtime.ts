@@ -77,7 +77,9 @@ export const canApplyRasterDimensionRuntimeUpdate = (entry: MorivisLayerEntry) =
 	return canUpdateMainSource || canUpdateAuxiliarySource;
 };
 
-export const getRasterDimensionRuntimeUpdates = (entry: MorivisLayerEntry): RuntimeDimensionUpdate[] => {
+export const getRasterDimensionRuntimeUpdates = (
+	entry: MorivisLayerEntry
+): RuntimeDimensionUpdate[] => {
 	if (entry.type !== 'raster') return [];
 
 	const dimensionValue = getRasterDimensionValue(entry);

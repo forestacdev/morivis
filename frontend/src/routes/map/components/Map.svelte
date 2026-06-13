@@ -545,7 +545,9 @@
 		return entry.type === 'raster' && entry.format.type === 'wcs';
 	};
 
-	const isViewportCogEntry = (entry: MorivisLayerEntry): entry is RasterCogEntry<RasterTiffStyle> => {
+	const isViewportCogEntry = (
+		entry: MorivisLayerEntry
+	): entry is RasterCogEntry<RasterTiffStyle> => {
 		return entry.type === 'raster' && entry.format.type === 'cog' && entry.format.mode !== 'tile';
 	};
 

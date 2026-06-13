@@ -93,8 +93,12 @@ afterEach(() => {
 describe('shp parser', () => {
 	it('CPG のよくあるエンコーディング名を正規化できる', async () => {
 		await expect(readCpgEncoding(createTextFile('sample.cpg', 'UTF-8'))).resolves.toBe('utf-8');
-		await expect(readCpgEncoding(createTextFile('sample.cpg', '932'))).resolves.toBe('shift-jis');
-		await expect(readCpgEncoding(createTextFile('sample.cpg', 'EUC-JP'))).resolves.toBe('euc-jp');
+		await expect(readCpgEncoding(createTextFile('sample.cpg', '932'))).resolves.toBe(
+			'shift-jis'
+		);
+		await expect(readCpgEncoding(createTextFile('sample.cpg', 'EUC-JP'))).resolves.toBe(
+			'euc-jp'
+		);
 	});
 
 	it('PRJ が無い場合は shapefile.read の結果をそのまま返す', async () => {

@@ -15,7 +15,7 @@ import {
 	TREE_SPECIES_OUTLINE,
 	TREE_SPECIES_STYLE
 } from '$routes/map/data/entries/vector/_style';
-import type { TileMetaData, MorivisVectorEntry } from '$routes/map/data/types/vector/index';
+import type { MorivisVectorEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 
 const entry: MorivisVectorEntry<TileMetaData> = {
 	id: 'hyogo_tree_species',

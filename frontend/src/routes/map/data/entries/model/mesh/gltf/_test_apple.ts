@@ -1,5 +1,5 @@
 import { ENTRY_GLTF_PATH } from '$routes/constants';
-import type { MeshStyle, MeshEntry } from '$routes/map/data/types/model';
+import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 
 const entry: MeshEntry<MeshStyle> = {
 	id: 'test_apple',

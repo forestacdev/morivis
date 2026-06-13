@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { csvTextToGeojson, delimitedTextToGeojson, getCSVPreview, getDelimitedTextPreview } from '.';
+import {
+	csvTextToGeojson,
+	delimitedTextToGeojson,
+	getCSVPreview,
+	getDelimitedTextPreview
+} from '.';
 
 vi.mock('$routes/stores/notification', () => ({
 	showNotification: vi.fn()
@@ -29,9 +34,10 @@ describe('csv parser', () => {
 	});
 
 	it('指定カラムが無いときは reject する', async () => {
-		await expect(csvTextToGeojson(readFixture('missing-columns.csv'), 'lat', 'lon')).rejects.toThrow(
-			`Latitude column 'lat' not found`
-		);
+		await expect(csvTextToGeojson(readFixture('missing-columns.csv'), 'lat', 'lon')).rejects
+			.toThrow(
+				`Latitude column 'lat' not found`
+			);
 	});
 
 	it('TSV をタブ区切りでプレビューと Point に変換できる', async () => {

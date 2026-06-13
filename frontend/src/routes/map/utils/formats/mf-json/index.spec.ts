@@ -3,7 +3,10 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { inspectMfJsonFile, isMfJsonFile, isMfJsonText, mfJsonFileToGeojson } from '.';
 
-const sampleJson = readFileSync(resolve(import.meta.dirname, '__fixtures__', 'sample.json'), 'utf8');
+const sampleJson = readFileSync(
+	resolve(import.meta.dirname, '__fixtures__', 'sample.json'),
+	'utf8'
+);
 
 const createFile = () =>
 	({

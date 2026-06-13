@@ -2,14 +2,14 @@ import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
-	MeshFormatType,
-	MeshStyle,
 	GeoArrowEntry,
 	GeoJson3DEntry,
 	MeshEntry,
+	MeshFormatType,
+	MeshStyle,
 	PointCloudEntry,
-	Tiles3DEntry,
-	PointCloudStyle
+	PointCloudStyle,
+	Tiles3DEntry
 } from '$routes/map/data/types/model';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';
