@@ -3,6 +3,7 @@ import proj4 from 'proj4';
 import * as zarr from 'zarrita';
 
 import { convertCanvasToResult } from '$routes/map/protocol/farbling';
+import { getColorBrewerSchemeColors } from '$routes/map/utils/color/color-brewer';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import { resolveAbsoluteRequestUrl } from '$routes/map/utils/platform/request';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
@@ -12,6 +13,7 @@ const createAbortError = () => new Error('Request aborted');
 const throwIfAborted = (signal: AbortSignal) => {
 	if (signal.aborted) throw createAbortError();
 };
+const GEOZARR_TIMING_DEBUG = import.meta.env.DEV;
 const GEOZARR_TILE_CACHE_MAX = 256;
 const GEOZARR_WINDOW_CACHE_MAX = 1024;
 
@@ -29,6 +31,7 @@ interface GeoZarrRegistrationInput {
 	url: string;
 	arrayPath?: string;
 	bboxText?: string | null;
+	metadata?: GeoZarrRegistrationMeta | null;
 }
 
 export interface GeoZarrRegistrationMeta {
@@ -41,6 +44,11 @@ export interface GeoZarrRegistrationMeta {
 	sampleRanges: BandDataRange[];
 	dtype: string;
 	dimensionNames: string[];
+	categorical?: {
+		values: number[];
+		labels: string[];
+		colors: string[];
+	} | null;
 }
 
 export interface GeoZarrArrayCandidate {
@@ -101,6 +109,11 @@ type GeoZarrListableStore = zarr.FetchStore & {
 	contents?: () => { path: string; kind: 'array' | 'group'; }[];
 };
 
+const logGeoZarrTiming = (phase: string, details: Record<string, unknown>) => {
+	if (!GEOZARR_TIMING_DEBUG) return;
+	console.info(`[GeoZarr] ${phase}`, details);
+};
+
 export const normalizeGeoZarrUrl = (url: string): string => {
 	const trimmed = url.trim();
 	if (!trimmed) return trimmed;
@@ -121,9 +134,13 @@ export const normalizeGeoZarrUrl = (url: string): string => {
 const createProxyFetchStore = async (url: string): Promise<GeoZarrListableStore> => {
 	const normalizedUrl = normalizeGeoZarrUrl(url);
 	const cached = geozarrStoreCache.get(normalizedUrl);
-	if (cached) return cached;
+	if (cached) {
+		logGeoZarrTiming('store-cache-hit', { url: normalizedUrl });
+		return cached;
+	}
 
 	const storePromise = (async () => {
+		const startAt = performance.now();
 		const baseStore = new zarr.FetchStore(resolveAbsoluteRequestUrl(normalizedUrl), {
 			fetch: async (request) => {
 				const proxyUrl = new URL('/api/cog-proxy', window.location.origin);
@@ -131,7 +148,12 @@ const createProxyFetchStore = async (url: string): Promise<GeoZarrListableStore>
 				return fetch(new Request(proxyUrl.toString(), request));
 			}
 		});
-		return (await zarr.withMaybeConsolidatedMetadata(baseStore)) as GeoZarrListableStore;
+		const store = (await zarr.withMaybeConsolidatedMetadata(baseStore)) as GeoZarrListableStore;
+		logGeoZarrTiming('store-open', {
+			url: normalizedUrl,
+			durationMs: Number((performance.now() - startAt).toFixed(1))
+		});
+		return store;
 	})();
 
 	geozarrStoreCache.set(normalizedUrl, storePromise);
@@ -279,6 +301,54 @@ const getMetadataString = (attrs: Record<string, unknown>, ...keys: string[]) =>
 		if (typeof nested === 'string' && nested.trim().length > 0) return nested.trim();
 	}
 	return null;
+};
+
+const parseNumberArray = (value: unknown): number[] => {
+	if (!Array.isArray(value)) return [];
+	return value
+		.map((item) => Number(item))
+		.filter((item) => Number.isFinite(item));
+};
+
+const parseMeaningLabels = (value: unknown): string[] => {
+	if (Array.isArray(value)) {
+		return value.map((item) => String(item).trim()).filter((item) => item.length > 0);
+	}
+	if (typeof value !== 'string') return [];
+	return value
+		.split(/[,\s]+/u)
+		.map((item) => item.trim())
+		.filter((item) => item.length > 0);
+};
+
+export const buildCategoricalMeta = (arrayPath: string, attrs: Record<string, unknown>) => {
+	const flagValues = parseNumberArray(attrs['flag_values']);
+	const flagMeanings = parseMeaningLabels(attrs['flag_meanings']);
+	const categories = flagValues.length > 0
+		? flagValues
+		: typeof attrs['valid_min'] === 'number' && typeof attrs['valid_max'] === 'number'
+			? Array.from(
+				{ length: Math.max(0, Math.min(32, Number(attrs['valid_max']) - Number(attrs['valid_min']) + 1)) },
+				(_, index) => Number(attrs['valid_min']) + index
+			)
+			: [];
+	const isCategorical =
+		categories.length > 0
+		|| /^categorical_/i.test(arrayPath)
+		|| getMetadataString(attrs, 'standard_name')?.startsWith('categorical_')
+		|| getMetadataString(attrs, 'long_name')?.toLowerCase().includes('categorical') === true;
+
+	if (!isCategorical || categories.length === 0) return null;
+
+	const palette = getColorBrewerSchemeColors('Set3');
+	const labels = categories.map((value, index) => flagMeanings[index] ?? String(value));
+	const colors = categories.map((_, index) => palette[index % palette.length] ?? '#999999');
+
+	return {
+		values: categories,
+		labels,
+		colors
+	};
 };
 
 export const GEOZARR_FALLBACK_RANGES: Record<string, GeoZarrFallbackRange> = {
@@ -916,14 +986,14 @@ const readBandWindowCached = async (
 	yStart: number,
 	yEnd: number,
 	bandIndex = 0
-): Promise<GeoZarrRasterView> => {
+): Promise<{ view: GeoZarrRasterView; cacheHit: boolean; }> => {
 	const cacheKey = getGeoZarrWindowCacheKey(state, xStart, xEnd, yStart, yEnd, bandIndex);
 	const cached = getGeoZarrWindowCache(cacheKey);
-	if (cached) return cached;
+	if (cached) return { view: cached, cacheHit: true };
 
 	const view = await readBandWindow(state, xStart, xEnd, yStart, yEnd, bandIndex);
 	setGeoZarrWindowCache(cacheKey, view);
-	return view;
+	return { view, cacheHit: false };
 };
 
 const inspectGeoZarrInternal = async (
@@ -967,6 +1037,7 @@ const inspectGeoZarrInternal = async (
 	}
 
 	const numBands = getNumBands(array, bandIndex);
+	const categorical = buildCategoricalMeta(resolvedArrayPath, attrs);
 	const sampleRanges: BandDataRange[] = [];
 	const sampleWindows = buildGeoZarrSampleWindows(width, height);
 	const fallbackRange = resolveGeoZarrFallbackRange(attrs)?.displayRange ?? null;
@@ -1019,6 +1090,7 @@ const inspectGeoZarrInternal = async (
 		sampleRanges,
 		dtype: array.dtype ?? 'unknown',
 		dimensionNames,
+		categorical,
 		xIndex,
 		yIndex,
 		bandIndex,
@@ -1041,7 +1113,8 @@ export const inspectGeoZarr = async (
 		bbox: state.bbox,
 		sampleRanges: state.sampleRanges,
 		dtype: state.dtype,
-		dimensionNames: state.dimensionNames
+		dimensionNames: state.dimensionNames,
+		categorical: state.categorical
 	};
 };
 
@@ -1050,7 +1123,18 @@ export const registerGeoZarr = async (
 ): Promise<GeoZarrRegistrationMeta> => {
 	const normalizedUrl = normalizeGeoZarrUrl(input.url);
 	const { array } = await openGeoZarrArray(normalizedUrl, input.arrayPath);
-	const inspected = await inspectGeoZarrInternal(normalizedUrl, input.arrayPath, input.bboxText);
+	const metadata =
+		input.metadata && normalizeGeoZarrUrl(input.metadata.url) === normalizedUrl ? input.metadata : null;
+	const axisIndexes = metadata ? inferAxisIndexes(array, metadata.dimensionNames) : null;
+	const inspected = metadata
+		? {
+				...metadata,
+				xIndex: axisIndexes?.xIndex ?? Math.max(1, array.shape.length - 1),
+				yIndex: axisIndexes?.yIndex ?? Math.max(0, array.shape.length - 2),
+				bandIndex: axisIndexes?.bandIndex ?? null,
+				fixedIndices: array.shape.map(() => 0)
+			}
+		: await inspectGeoZarrInternal(normalizedUrl, input.arrayPath, input.bboxText);
 	const state: GeoZarrSourceState = {
 		...inspected,
 		array
@@ -1066,7 +1150,8 @@ export const registerGeoZarr = async (
 		bbox: state.bbox,
 		sampleRanges: state.sampleRanges,
 		dtype: state.dtype,
-		dimensionNames: state.dimensionNames
+		dimensionNames: state.dimensionNames,
+		categorical: state.categorical
 	};
 };
 
@@ -1153,6 +1238,94 @@ const renderSingleBandTile = async (
 			data[offset] = colorMap[colorIndex] ?? 0;
 			data[offset + 1] = colorMap[colorIndex + 1] ?? 0;
 			data[offset + 2] = colorMap[colorIndex + 2] ?? 0;
+			data[offset + 3] = 255;
+		}
+	}
+
+	context.putImageData(image, 0, 0);
+	const result = await convertCanvasToResult(canvas);
+	if (result instanceof Blob) return new Uint8Array(await result.arrayBuffer());
+
+	const fallbackCanvas = new OffscreenCanvas(tileSize, tileSize);
+	const fallbackContext = fallbackCanvas.getContext('2d');
+	if (!fallbackContext) throw new Error('GeoZarr PNG 変換に失敗しました');
+	fallbackContext.drawImage(result, 0, 0);
+	const blob = await fallbackCanvas.convertToBlob({ type: 'image/png' });
+	return new Uint8Array(await blob.arrayBuffer());
+};
+
+const renderCategoricalTile = async (
+	view: { data: ArrayLike<number>; shape: number[]; stride: number[]; },
+	state: GeoZarrSourceState,
+	z: number,
+	x: number,
+	y: number,
+	tileSize: number,
+	xOrigin: number,
+	yOrigin: number,
+	style: {
+		values: number[];
+		colors: string[];
+	}
+): Promise<Uint8Array> => {
+	const [west, south, east, north] = tilebelt.tileToBBOX([x, y, z]);
+	const [minX, minY, maxX, maxY] = state.bbox;
+	const width = view.shape[1];
+	const height = view.shape[0];
+	const colorTable = style.values.map((value, index) => ({
+		value,
+		color: style.colors[index] ?? '#999999'
+	}));
+
+	const canvas = new OffscreenCanvas(tileSize, tileSize);
+	const context = canvas.getContext('2d');
+	if (!context) throw new Error('GeoZarr タイル描画用の Canvas 初期化に失敗しました');
+
+	const image = new ImageData(tileSize, tileSize);
+	const data = image.data;
+	for (let row = 0; row < tileSize; row++) {
+		const lat = north - ((row + 0.5) / tileSize) * (north - south);
+		for (let column = 0; column < tileSize; column++) {
+			const lon = west + ((column + 0.5) / tileSize) * (east - west);
+			const offset = (row * tileSize + column) * 4;
+			if (lon < minX || lon > maxX || lat < minY || lat > maxY) {
+				data[offset + 3] = 0;
+				continue;
+			}
+
+			const srcX = clamp(
+				Math.floor(((lon - minX) / (maxX - minX)) * state.width),
+				0,
+				state.width - 1
+			);
+			const srcY = clamp(
+				Math.floor(((maxY - lat) / (maxY - minY)) * state.height),
+				0,
+				state.height - 1
+			);
+			const localX = clamp(srcX - xOrigin, 0, width - 1);
+			const localY = clamp(srcY - yOrigin, 0, height - 1);
+			const value = getViewValue(view, localY, localX);
+			if (!Number.isFinite(value)) {
+				data[offset + 3] = 0;
+				continue;
+			}
+
+			const matched = colorTable.find((item) => Math.abs(item.value - value) < 1e-6);
+			if (!matched) {
+				data[offset + 3] = 0;
+				continue;
+			}
+
+			const rgb = matched.color.startsWith('#') ? matched.color : `#${matched.color}`;
+			const [r, g, b] = [
+				Number.parseInt(rgb.slice(1, 3), 16),
+				Number.parseInt(rgb.slice(3, 5), 16),
+				Number.parseInt(rgb.slice(5, 7), 16)
+			];
+			data[offset] = r;
+			data[offset + 1] = g;
+			data[offset + 2] = b;
 			data[offset + 3] = 255;
 		}
 	}
@@ -1258,6 +1431,7 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 		const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 		const url = new URL(urlWithoutProtocol, window.location.origin);
 		const requestId = `${url.toString()}_${crypto.randomUUID()}`;
+		const requestStartedAt = performance.now();
 
 		return new Promise<{ data: Uint8Array; }>((resolve, reject) => {
 			let settled = false;
@@ -1287,6 +1461,14 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 					const cacheKey = `${entryId}|${url.toString()}`;
 					const cachedTile = getGeoZarrTileCache(cacheKey);
 					if (cachedTile) {
+						logGeoZarrTiming('tile-cache-hit', {
+							entryId,
+							mode: url.searchParams.get('mode') ?? 'single',
+							z: url.searchParams.get('z'),
+							x: url.searchParams.get('x'),
+							y: url.searchParams.get('y'),
+							durationMs: Number((performance.now() - requestStartedAt).toFixed(1))
+						});
 						finish(() => resolve({ data: cachedTile }));
 						return;
 					}
@@ -1326,17 +1508,91 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 					);
 
 					const mode = url.searchParams.get('mode') ?? 'single';
+					if (mode === 'categorical') {
+						const bandIndex = Number.parseInt(url.searchParams.get('bandIndex') ?? '0', 10);
+						const values = (url.searchParams.get('values') ?? '')
+							.split('|')
+							.map((item) => Number(item))
+							.filter((item) => Number.isFinite(item));
+						const colors = (url.searchParams.get('colors') ?? '')
+							.split('|')
+							.map((item) => item.trim())
+							.filter((item) => item.length > 0);
+						const windowStartedAt = performance.now();
+						const { view, cacheHit } = await readBandWindowCached(
+							state,
+							xStart,
+							xEnd,
+							yStart,
+							yEnd,
+							bandIndex
+						);
+						logGeoZarrTiming('tile-window-read', {
+							entryId,
+							mode,
+							z,
+							x,
+							y,
+							width: xEnd - xStart,
+							height: yEnd - yStart,
+							cacheHits: cacheHit ? 1 : 0,
+							cacheMisses: cacheHit ? 0 : 1,
+							durationMs: Number((performance.now() - windowStartedAt).toFixed(1))
+						});
+						throwIfAborted(abortController.signal);
+						const renderStartedAt = performance.now();
+						const data = await renderCategoricalTile(view, state, z, x, y, tileSize, xStart, yStart, {
+							values,
+							colors
+						});
+						logGeoZarrTiming('tile-render', {
+							entryId,
+							mode,
+							z,
+							x,
+							y,
+							durationMs: Number((performance.now() - renderStartedAt).toFixed(1))
+						});
+						throwIfAborted(abortController.signal);
+						setGeoZarrTileCache(cacheKey, data);
+						logGeoZarrTiming('tile-finished', {
+							entryId,
+							mode,
+							z,
+							x,
+							y,
+							durationMs: Number((performance.now() - requestStartedAt).toFixed(1))
+						});
+						finish(() => resolve({ data }));
+						return;
+					}
+
 					if (mode === 'multi' && state.numBands >= 3) {
 						const indices = [
 							Number.parseInt(url.searchParams.get('rIndex') ?? '0', 10),
 							Number.parseInt(url.searchParams.get('gIndex') ?? '1', 10),
 							Number.parseInt(url.searchParams.get('bIndex') ?? '2', 10)
 						] as [number, number, number];
-						const views = await Promise.all(
+						const windowStartedAt = performance.now();
+						const windowReads = await Promise.all(
 							indices.map((index) =>
 								readBandWindowCached(state, xStart, xEnd, yStart, yEnd, index)
 							)
 						);
+						const windowCacheHits = windowReads.filter((item) => item.cacheHit).length;
+						const views = windowReads.map((item) => item.view);
+						logGeoZarrTiming('tile-window-read', {
+							entryId,
+							mode,
+							z,
+							x,
+							y,
+							width: xEnd - xStart,
+							height: yEnd - yStart,
+							cacheHits: windowCacheHits,
+							cacheMisses: windowReads.length - windowCacheHits,
+							durationMs: Number((performance.now() - windowStartedAt).toFixed(1))
+						});
 						throwIfAborted(abortController.signal);
 						const ranges = [
 							{
@@ -1364,6 +1620,7 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 								)
 							}
 						] as [BandDataRange, BandDataRange, BandDataRange];
+						const renderStartedAt = performance.now();
 						const data = await renderMultiBandTile(
 							views,
 							state,
@@ -1378,15 +1635,52 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 								ranges
 							}
 						);
+						logGeoZarrTiming('tile-render', {
+							entryId,
+							mode,
+							z,
+							x,
+							y,
+							durationMs: Number((performance.now() - renderStartedAt).toFixed(1))
+						});
 						throwIfAborted(abortController.signal);
 						setGeoZarrTileCache(cacheKey, data);
+						logGeoZarrTiming('tile-finished', {
+							entryId,
+							mode,
+							z,
+							x,
+							y,
+							durationMs: Number((performance.now() - requestStartedAt).toFixed(1))
+						});
 						finish(() => resolve({ data }));
 						return;
 					}
 
 					const bandIndex = Number.parseInt(url.searchParams.get('bandIndex') ?? '0', 10);
-					const view = await readBandWindowCached(state, xStart, xEnd, yStart, yEnd, bandIndex);
+					const windowStartedAt = performance.now();
+					const { view, cacheHit } = await readBandWindowCached(
+						state,
+						xStart,
+						xEnd,
+						yStart,
+						yEnd,
+						bandIndex
+					);
+					logGeoZarrTiming('tile-window-read', {
+						entryId,
+						mode,
+						z,
+						x,
+						y,
+						width: xEnd - xStart,
+						height: yEnd - yStart,
+						cacheHits: cacheHit ? 1 : 0,
+						cacheMisses: cacheHit ? 0 : 1,
+						durationMs: Number((performance.now() - windowStartedAt).toFixed(1))
+					});
 					throwIfAborted(abortController.signal);
+					const renderStartedAt = performance.now();
 					const data = await renderSingleBandTile(view, state, z, x, y, tileSize, xStart, yStart, {
 						bandIndex,
 						colorMap: url.searchParams.get('colorMap') ?? 'jet',
@@ -1397,8 +1691,24 @@ export const geozarrProtocol = (protocolName: 'geozarr') => ({
 							url.searchParams.get('max') ?? String(state.sampleRanges[bandIndex]?.max ?? 1)
 						)
 					});
+					logGeoZarrTiming('tile-render', {
+						entryId,
+						mode,
+						z,
+						x,
+						y,
+						durationMs: Number((performance.now() - renderStartedAt).toFixed(1))
+					});
 					throwIfAborted(abortController.signal);
 					setGeoZarrTileCache(cacheKey, data);
+					logGeoZarrTiming('tile-finished', {
+						entryId,
+						mode,
+						z,
+						x,
+						y,
+						durationMs: Number((performance.now() - requestStartedAt).toFixed(1))
+					});
 					finish(() => resolve({ data }));
 				} catch (error) {
 					finish(() =>

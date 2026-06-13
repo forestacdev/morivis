@@ -100,6 +100,16 @@
 						style="opacity: {item.value};"
 					/>
 				</div>
+			{:else}
+				<div
+					class="bg-sub text-base flex h-full w-full items-center justify-center rounded-full border-2 text-xs font-bold {layerEntry
+						.style.opacity === item.value && layerEntry.style.visible
+						? 'border-accent'
+						: 'border-sub'}"
+					style="opacity: {item.value};"
+				>
+					{item.label}
+				</div>
 			{/if}
 		</button>
 	{/each}

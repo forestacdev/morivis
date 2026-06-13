@@ -241,9 +241,14 @@ export interface RasterBandProperties {
 	sampleRanges?: { min: number; max: number; }[];
 }
 
+export interface RasterCategoryProperties {
+	values: number[];
+}
+
 export interface RasterProperties {
 	temporal?: RasterTemporalProperties;
 	bands?: RasterBandProperties;
+	categories?: RasterCategoryProperties;
 }
 
 export interface RasterInteraction {

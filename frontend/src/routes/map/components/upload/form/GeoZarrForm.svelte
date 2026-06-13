@@ -6,7 +6,11 @@
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { RasterGeoZarrEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
+	import type {
+		RasterCategoricalStyle,
+		RasterGeoZarrEntry,
+		RasterTiffStyle
+	} from '$routes/map/data/types/raster';
 	import {
 		inspectGeoZarr,
 		listGeoZarrArrayCandidates,
@@ -24,9 +28,14 @@
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
+		remoteGeoZarrUrl: string | null;
 	}
 
-	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		showDialogType = $bindable(),
+		remoteGeoZarrUrl = $bindable()
+	}: Props = $props();
 
 	const validation = yup.object().shape({
 		url: yup
@@ -55,25 +64,26 @@
 	let analyzed = $state<GeoZarrRegistrationMeta | null>(null);
 	let candidates = $state<GeoZarrArrayCandidate[]>([]);
 	let candidatesLoaded = $state(false);
-	let analyzedSnapshot = $state<{
-		url: string;
-		arrayPath: string;
-		bbox: string;
-	} | null>(null);
+	let isRegistering = $state(false);
+	let needsManualBbox = $state(false);
 
 	const selectedCandidate = $derived.by(
 		() => candidates.find((candidate) => candidate.arrayPath === forms.arrayPath) ?? null
 	);
 	const shouldShowManualArrayPath = $derived(candidatesLoaded && candidates.length === 0);
-	const canRegister = $derived.by(() => {
-		return (
-			analyzed !== null &&
-			analyzedSnapshot?.url === forms.url &&
-			analyzedSnapshot?.arrayPath === forms.arrayPath &&
-			analyzedSnapshot?.bbox === forms.bbox
-		);
+	const canRegister = $derived(
+		candidatesLoaded &&
+			!!forms.arrayPath &&
+			!isSubmitDisabled &&
+			!isRegistering &&
+			(!needsManualBbox || !!forms.bbox.trim())
+	);
+	$effect(() => {
+		if (remoteGeoZarrUrl) {
+			forms.url = normalizeGeoZarrUrl(remoteGeoZarrUrl);
+			remoteGeoZarrUrl = null;
+		}
 	});
-	const inspectButtonLabel = $derived(candidatesLoaded ? '選択した配列を解析' : '候補を解析');
 
 	$effect(() => {
 		try {
@@ -104,42 +114,23 @@
 				return;
 			}
 			forms.url = normalizeGeoZarrUrl(normalizedUrl);
-			if (!candidatesLoaded) {
-				candidates = await listGeoZarrArrayCandidates(forms.url);
-				candidatesLoaded = true;
-				analyzed = null;
-				analyzedSnapshot = null;
-
-				if (!forms.arrayPath && candidates[0]) {
-					forms.arrayPath = candidates[0].arrayPath;
-				}
-
-				showNotification('GeoZarr の候補を取得しました', 'success');
-				return;
-			}
-
-			if (!forms.arrayPath) {
-				showNotification('配列を選択してください', 'error');
-				return;
-			}
-
+			candidates = await listGeoZarrArrayCandidates(forms.url);
+			candidatesLoaded = true;
+			needsManualBbox = false;
 			analyzed = null;
-			analyzedSnapshot = null;
-			analyzed = await inspectGeoZarr(forms.url, forms.arrayPath, forms.bbox || null);
-			analyzedSnapshot = {
-				url: forms.url,
-				arrayPath: forms.arrayPath,
-				bbox: forms.bbox
-			};
-			if (!forms.bbox) {
-				forms.bbox = analyzed.bbox.join(', ');
-				analyzedSnapshot = {
-					url: forms.url,
-					arrayPath: forms.arrayPath,
-					bbox: forms.bbox
-				};
+
+			if (candidates.length > 0) {
+				forms.arrayPath = candidates.some((candidate) => candidate.arrayPath === forms.arrayPath)
+					? forms.arrayPath
+					: (candidates[0]?.arrayPath ?? '');
+			} else if (!forms.arrayPath) {
+				showNotification(
+					'配列候補を一覧できませんでした。必要なら配列パスを入力してください',
+					'info'
+				);
 			}
-			showNotification('GeoZarr を解析しました', 'success');
+
+			showNotification('GeoZarr の候補を取得しました', 'success');
 		} catch (error) {
 			console.error(error);
 			showNotification(
@@ -155,6 +146,7 @@
 		if (isSubmitDisabled || !canRegister) return;
 
 		isProcessing.set(true);
+		isRegistering = true;
 
 		try {
 			const normalizedUrl = normalizeHttpUrlInput(forms.url);
@@ -162,17 +154,28 @@
 				showNotification('URLの形式が正しくありません', 'error');
 				return;
 			}
+			const inspected = await inspectGeoZarr(
+				normalizeGeoZarrUrl(normalizedUrl),
+				forms.arrayPath,
+				forms.bbox || null
+			);
+			analyzed = inspected;
+			needsManualBbox = false;
+			if (!forms.bbox) {
+				forms.bbox = inspected.bbox.join(', ');
+			}
 
 			const entryId = `geozarr_${crypto.randomUUID()}`;
 			const metadata = await registerGeoZarr({
 				entryId,
 				url: normalizedUrl,
 				arrayPath: forms.arrayPath,
-				bboxText: forms.bbox || null
+				bboxText: forms.bbox || null,
+				metadata: inspected
 			});
 			const sampleRanges =
 				metadata.sampleRanges.length > 0 ? metadata.sampleRanges : [{ min: 0, max: 1 }];
-			const entry: RasterGeoZarrEntry<RasterTiffStyle> = {
+			const entry: RasterGeoZarrEntry<RasterTiffStyle | RasterCategoricalStyle> = {
 				id: entryId,
 				type: 'raster',
 				format: {
@@ -194,61 +197,77 @@
 					bands: {
 						numBands: metadata.numBands,
 						sampleRanges
-					}
+					},
+					...(metadata.categorical ? { categories: { values: metadata.categorical.values } } : {})
 				},
 				interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
-				style: {
-					type: 'tiff',
-					opacity: 1.0,
-					visible: true,
-					visualization: {
-						mode: metadata.numBands >= 3 ? 'multi' : 'single',
-						uniformsData: {
-							single: {
-								index: 0,
-								min: sampleRanges[0]?.min ?? 0,
-								max: sampleRanges[0]?.max ?? 1,
-								colorMap: 'jet'
-							},
-							multi: {
-								r: {
-									index: 0,
-									min: sampleRanges[0]?.min ?? 0,
-									max: sampleRanges[0]?.max ?? 255
-								},
-								g: {
-									index: Math.min(1, metadata.numBands - 1),
-									min: sampleRanges[1]?.min ?? sampleRanges[0]?.min ?? 0,
-									max: sampleRanges[1]?.max ?? sampleRanges[0]?.max ?? 255
-								},
-								b: {
-									index: Math.min(2, metadata.numBands - 1),
-									min: sampleRanges[2]?.min ?? sampleRanges[0]?.min ?? 0,
-									max: sampleRanges[2]?.max ?? sampleRanges[0]?.max ?? 255
+				style: metadata.categorical
+					? {
+							type: 'categorical',
+							opacity: 1.0,
+							visible: true,
+							legend: {
+								type: 'category',
+								name: metadata.arrayPath.split('/').pop() || 'category',
+								colors: metadata.categorical.colors,
+								labels: metadata.categorical.labels
+							}
+						}
+					: {
+							type: 'tiff',
+							opacity: 1.0,
+							visible: true,
+							visualization: {
+								mode: metadata.numBands >= 3 ? 'multi' : 'single',
+								uniformsData: {
+									single: {
+										index: 0,
+										min: sampleRanges[0]?.min ?? 0,
+										max: sampleRanges[0]?.max ?? 1,
+										colorMap: 'jet'
+									},
+									multi: {
+										r: {
+											index: 0,
+											min: sampleRanges[0]?.min ?? 0,
+											max: sampleRanges[0]?.max ?? 255
+										},
+										g: {
+											index: Math.min(1, metadata.numBands - 1),
+											min: sampleRanges[1]?.min ?? sampleRanges[0]?.min ?? 0,
+											max: sampleRanges[1]?.max ?? sampleRanges[0]?.max ?? 255
+										},
+										b: {
+											index: Math.min(2, metadata.numBands - 1),
+											min: sampleRanges[2]?.min ?? sampleRanges[0]?.min ?? 0,
+											max: sampleRanges[2]?.max ?? sampleRanges[0]?.max ?? 255
+										}
+									}
 								}
 							}
 						}
-					}
-				}
 			};
 
 			showDataEntry = entry;
 			showDialogType = null;
+			remoteGeoZarrUrl = null;
 			showNotification('GeoZarr レイヤーを登録しました', 'success');
 		} catch (error) {
 			console.error(error);
+			needsManualBbox =
+				error instanceof Error && error.message.includes('bbox を判定できませんでした');
 			showNotification(
 				error instanceof Error ? error.message : 'GeoZarr の登録に失敗しました',
 				'error'
 			);
 		} finally {
+			isRegistering = false;
 			isProcessing.set(false);
 		}
 	};
 
 	const resetAnalysis = () => {
 		analyzed = null;
-		analyzedSnapshot = null;
 	};
 
 	const categoryLabel = (category: GeoZarrArrayCandidate['category']) => {
@@ -268,20 +287,20 @@
 
 	const onArrayPathChange = () => {
 		analyzed = null;
-		analyzedSnapshot = null;
+		needsManualBbox = false;
 	};
 
 	const onUrlChange = () => {
 		candidates = [];
 		candidatesLoaded = false;
 		forms.arrayPath = '';
+		forms.bbox = '';
 		analyzed = null;
-		analyzedSnapshot = null;
+		needsManualBbox = false;
 	};
 
 	const onBboxChange = () => {
 		analyzed = null;
-		analyzedSnapshot = null;
 	};
 </script>
 
@@ -289,16 +308,13 @@
 	<h2 class="text-lg font-bold">GeoZarr を追加</h2>
 	<p class="text-sm leading-relaxed text-gray-300">
 		公開された GeoZarr 配列を URL から追加します。root が group の場合は配列パスも入力してください。
-		bbox が見つからないときだけ `minx,miny,maxx,maxy` を補います。
+		bbox が自動判定できないときだけ `minx,miny,maxx,maxy` を補います。
 	</p>
 
 	<TextForm label="URL" bind:value={forms.url} error={errors.url} onInput={onUrlChange} />
-	<TextForm
-		label="bbox（任意）"
-		bind:value={forms.bbox}
-		error={errors.bbox}
-		onInput={onBboxChange}
-	/>
+	{#if needsManualBbox}
+		<TextForm label="bbox" bind:value={forms.bbox} error={errors.bbox} onInput={onBboxChange} />
+	{/if}
 
 	{#if candidates.length > 0}
 		<div class="flex flex-col gap-2">
@@ -369,10 +385,10 @@
 
 	<div class="flex gap-3">
 		<button class="c-btn-sub px-4 py-2" onclick={inspect} disabled={isSubmitDisabled}>
-			{inspectButtonLabel}
+			候補を解析
 		</button>
-		{#if canRegister}
-			<button class="c-btn-confirm px-4 py-2" onclick={registration} disabled={isSubmitDisabled}>
+		{#if candidatesLoaded}
+			<button class="c-btn-confirm px-4 py-2" onclick={registration} disabled={!canRegister}>
 				登録
 			</button>
 		{/if}
@@ -380,7 +396,10 @@
 	</div>
 
 	{#if analyzed}
-		<div transition:slide={{ duration: 180 }} class="bg-base rounded-lg p-3 text-sm text-gray-200">
+		<div
+			transition:slide={{ duration: 180 }}
+			class="rounded-lg p-3 text-sm text-gray-200 border border-gray-700 bg-black/20"
+		>
 			{#if selectedCandidate}
 				<div>分類: {categoryLabel(selectedCandidate.category)}</div>
 			{/if}
@@ -393,6 +412,14 @@
 			<button class="mt-3 text-xs text-gray-300 underline" onclick={resetAnalysis}>
 				解析結果を消す
 			</button>
+		</div>
+	{:else if isRegistering}
+		<div
+			transition:slide={{ duration: 180 }}
+			class="flex items-center gap-3 rounded-lg border border-gray-700 bg-black/20 p-3 text-sm text-gray-200"
+		>
+			<div class="border-t-accent h-4 w-4 animate-spin rounded-full border-2 border-gray-300"></div>
+			<span>GeoZarr を解析して登録しています...</span>
 		</div>
 	{/if}
 </div>

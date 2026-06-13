@@ -18,6 +18,7 @@
 		showDataEntry: MorivisLayerEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
+		remoteGeoZarrUrl: string | null;
 		remotePmtilesUrl: string | null;
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
@@ -31,6 +32,7 @@
 		showDataEntry = $bindable(),
 		dropFile = $bindable(),
 		showDialogType = $bindable(),
+		remoteGeoZarrUrl = $bindable(),
 		remotePmtilesUrl = $bindable(),
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
@@ -314,11 +316,12 @@
 			{/if}
 		{/if}
 		{#if selected === 'user'}
-			<UploadPane
-				bind:showDataEntry
-				bind:dropFile
-				bind:showDialogType
-				bind:remotePmtilesUrl
+				<UploadPane
+					bind:showDataEntry
+					bind:dropFile
+					bind:showDialogType
+					bind:remoteGeoZarrUrl
+					bind:remotePmtilesUrl
 				bind:remoteRasterUrl
 				bind:remoteVectorUrl
 				bind:remoteTiles3dUrl

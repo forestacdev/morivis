@@ -14,7 +14,8 @@
 	import { looksLikeWfsUrl, parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
 	import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
 	import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
-	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+	import { normalizeGeoZarrUrl } from '$routes/map/protocol/geozarr';
+	import { fetchWithDevProxy, normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -22,6 +23,7 @@
 		showDataEntry: MorivisLayerEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
+		remoteGeoZarrUrl: string | null;
 		remotePmtilesUrl: string | null;
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
@@ -35,6 +37,7 @@
 		showDataEntry = $bindable(),
 		dropFile = $bindable(),
 		showDialogType = $bindable(),
+		remoteGeoZarrUrl = $bindable(),
 		remotePmtilesUrl = $bindable(),
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
@@ -55,7 +58,8 @@
 	const urlInputError = $derived.by(() => {
 		if (!hasTouchedUrlInput) return '';
 		if (!trimmedInputUrl) return 'URLを入力してください';
-		if (!/^https?:\/\//i.test(trimmedInputUrl)) return 'http(s) で始まるURLを入力してください';
+		if (!normalizeHttpUrlInput(trimmedInputUrl))
+			return 'http(s) または s3:// で始まるURLを入力してください';
 		return '';
 	});
 	const isUrlInputValid = $derived(trimmedInputUrl.length > 0 && !urlInputError);
@@ -166,6 +170,18 @@
 		}
 	};
 
+	const isGeoZarrUrl = (urlValue: string): boolean => {
+		const normalized = normalizeHttpUrlInput(urlValue);
+		if (!normalized) return false;
+		const lowerUrl = normalized.toLowerCase();
+		return (
+			lowerUrl.includes('.zarr') ||
+			lowerUrl.endsWith('/zarr.json') ||
+			lowerUrl.endsWith('/.zmetadata') ||
+			lowerUrl.endsWith('/.zgroup')
+		);
+	};
+
 	const isWmsOrWmtsUrl = async (urlValue: string): Promise<boolean> => {
 		let wmtsResult = await parseWmtsCapabilities(urlValue);
 
@@ -211,33 +227,43 @@
 			return;
 		}
 
-		if (!/^https?:\/\//i.test(trimmedUrl)) {
-			showNotification('http(s) で始まるURLを入力してください', 'error');
+		const normalizedInputUrl = normalizeHttpUrlInput(trimmedUrl);
+		if (!normalizedInputUrl) {
+			showNotification('http(s) または s3:// で始まるURLを入力してください', 'error');
+			return;
+		}
+		const normalizedGeoZarrUrl = normalizeGeoZarrUrl(normalizedInputUrl);
+
+		if (isGeoZarrUrl(trimmedUrl)) {
+			remoteGeoZarrUrl = normalizedGeoZarrUrl;
+			showDialogType = 'geozarr';
+			inputUrl = '';
+			hasTouchedUrlInput = false;
 			return;
 		}
 
-		if (isTilesetJsonUrl(trimmedUrl)) {
-			remoteTiles3dUrl = trimmedUrl;
+		if (isTilesetJsonUrl(normalizedInputUrl)) {
+			remoteTiles3dUrl = normalizedInputUrl;
 			showDialogType = '3dtiles';
 			inputUrl = '';
 			hasTouchedUrlInput = false;
 			return;
 		}
 
-		if (isXyzTileUrl(trimmedUrl)) {
-			const remoteFileNameFromUrl = getRemoteFileNameFromUrl(trimmedUrl);
+		if (isXyzTileUrl(normalizedInputUrl)) {
+			const remoteFileNameFromUrl = getRemoteFileNameFromUrl(normalizedInputUrl);
 			const matchedExtension = remoteFileNameFromUrl
 				? getTileUrlExtension(remoteFileNameFromUrl)
 				: null;
 
 			if (matchedExtension && RASTER_TILE_EXTENSIONS.has(matchedExtension)) {
-				remoteRasterUrl = trimmedUrl;
+				remoteRasterUrl = normalizedInputUrl;
 				showDialogType = 'raster';
 			} else if (matchedExtension && VECTOR_TILE_EXTENSIONS.has(matchedExtension)) {
-				remoteVectorUrl = trimmedUrl;
+				remoteVectorUrl = normalizedInputUrl;
 				showDialogType = 'vector';
 			} else {
-				pendingTileUrl = trimmedUrl;
+				pendingTileUrl = normalizedInputUrl;
 				showDialogType = 'tileurltype';
 			}
 			inputUrl = '';
@@ -245,17 +271,17 @@
 			return;
 		}
 
-		if (isWmsRequestTemplateUrl(trimmedUrl)) {
-			remoteRasterUrl = trimmedUrl;
+		if (isWmsRequestTemplateUrl(normalizedInputUrl)) {
+			remoteRasterUrl = normalizedInputUrl;
 			showDialogType = 'raster';
 			inputUrl = '';
 			hasTouchedUrlInput = false;
 			return;
 		}
 
-		const remoteFileNameFromUrl = getRemoteFileNameFromUrl(trimmedUrl);
+		const remoteFileNameFromUrl = getRemoteFileNameFromUrl(normalizedInputUrl);
 		if (remoteFileNameFromUrl && getMatchedExtension(remoteFileNameFromUrl) === '.pmtiles') {
-			remotePmtilesUrl = trimmedUrl;
+			remotePmtilesUrl = normalizedInputUrl;
 			showDialogType = 'pmtiles';
 			inputUrl = '';
 			hasTouchedUrlInput = false;
@@ -266,44 +292,44 @@
 		isProcessing.set(true);
 
 		try {
-			if (await isWmsOrWmtsUrl(trimmedUrl)) {
-				remoteWmtsUrl = trimmedUrl;
+			if (await isWmsOrWmtsUrl(normalizedInputUrl)) {
+				remoteWmtsUrl = normalizedInputUrl;
 				showDialogType = 'wmts';
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
 			}
 
-			if (looksLikeWfsUrl(trimmedUrl) && (await isWfsUrl(trimmedUrl))) {
-				remoteFeatureServiceUrl = trimmedUrl;
+			if (looksLikeWfsUrl(normalizedInputUrl) && (await isWfsUrl(normalizedInputUrl))) {
+				remoteFeatureServiceUrl = normalizedInputUrl;
 				showDialogType = 'featureservice';
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
 			}
 
-			if (await isOgcApiFeaturesUrl(trimmedUrl)) {
-				remoteFeatureServiceUrl = trimmedUrl;
+			if (await isOgcApiFeaturesUrl(normalizedInputUrl)) {
+				remoteFeatureServiceUrl = normalizedInputUrl;
 				showDialogType = 'featureservice';
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
 			}
 
-			if (await isWfsUrl(trimmedUrl)) {
-				remoteFeatureServiceUrl = trimmedUrl;
+			if (await isWfsUrl(normalizedInputUrl)) {
+				remoteFeatureServiceUrl = normalizedInputUrl;
 				showDialogType = 'featureservice';
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
 			}
 
-			const response = await fetchWithDevProxy(trimmedUrl);
+			const response = await fetchWithDevProxy(normalizedInputUrl);
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}`);
 			}
 
-			const remoteFileName = getRemoteFileName(trimmedUrl, response);
+			const remoteFileName = getRemoteFileName(normalizedInputUrl, response);
 			if (!remoteFileName) {
 				showNotification('URLから対応拡張子を判定できません', 'error');
 				return;

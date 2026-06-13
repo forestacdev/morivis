@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+	buildCategoricalMeta,
 	buildGeoZarrSampleWindows,
 	mergeBandDataRanges,
 	mergeSampleRangeWithFallback,
@@ -44,6 +45,25 @@ describe('GeoZarr bbox helpers', () => {
 				'https://us-west-2.opendata.source.coop/pangeo/geozarr-examples/TCI.zarr/.zmetadata'
 			)
 		).toBe('https://us-west-2.opendata.source.coop/pangeo/geozarr-examples/TCI.zarr');
+	});
+});
+
+describe('GeoZarr categorical helpers', () => {
+	it('flag_values と flag_meanings からカテゴリ metadata を作れる', () => {
+		expect(
+			buildCategoricalMeta('categorical_precipitation_type_surface', {
+				flag_values: [0, 1, 2, 3],
+				flag_meanings: 'no_precip rain snow freezing_rain'
+			})
+		).toEqual({
+			values: [0, 1, 2, 3],
+			labels: ['no_precip', 'rain', 'snow', 'freezing_rain'],
+			colors: ['#8dd3c7', '#ffffb3', '#bebada', '#fb8072']
+		});
+	});
+
+	it('カテゴリ情報が無ければ null を返す', () => {
+		expect(buildCategoricalMeta('dew_point_temperature_2m', { standard_name: 'dew_point_temperature' })).toBeNull();
 	});
 });
 

@@ -60,6 +60,7 @@
 		showZoneForm: boolean;
 		selectedEpsgCode: EpsgCode;
 		dropFile: File | FileList | null;
+		remoteGeoZarrUrl: string | null;
 		remotePmtilesUrl: string | null;
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
@@ -81,6 +82,7 @@
 		showZoneForm = $bindable(),
 		selectedEpsgCode,
 		dropFile = $bindable(),
+		remoteGeoZarrUrl = $bindable(),
 		remotePmtilesUrl = $bindable(),
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
@@ -118,7 +120,7 @@
 				<WcsForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'geozarr'}
-				<GeoZarrForm bind:showDataEntry bind:showDialogType />
+				<GeoZarrForm bind:showDataEntry bind:showDialogType bind:remoteGeoZarrUrl />
 			{/if}
 			{#if showDialogType === 'featureservice' || showDialogType === 'wfs' || showDialogType === 'ogcapifeatures'}
 				<FeatureServiceForm
