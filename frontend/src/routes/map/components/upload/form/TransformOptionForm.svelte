@@ -525,7 +525,7 @@
 	>
 		{#if isZoneVisible}
 			<ZoneMenu
-				{selectedEpsgCode}
+				bind:selectedEpsgCode
 				{poiData}
 				{canSwitchToGeoRef}
 				onSwitchToGeoRef={handleZoneToGeoRef}

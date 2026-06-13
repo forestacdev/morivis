@@ -13,7 +13,12 @@
 		onSwitchToGeoRef: () => void;
 	}
 
-	let { selectedEpsgCode, poiData, canSwitchToGeoRef, onSwitchToGeoRef }: Props = $props();
+	let {
+		selectedEpsgCode = $bindable(),
+		poiData,
+		canSwitchToGeoRef,
+		onSwitchToGeoRef
+	}: Props = $props();
 </script>
 
 {#if canSwitchToGeoRef}
