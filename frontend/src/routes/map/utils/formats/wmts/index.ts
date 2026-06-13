@@ -1,6 +1,6 @@
 import WMTSCapabilities from 'ol/format/WMTSCapabilities.js';
-import type { WmsTimeDimensionInfo } from './wms';
-import { parseTimeValues } from './wms';
+import type { WmsTimeDimensionInfo } from '../wms';
+import { parseTimeValues } from '../wms';
 
 export type MapLibreRasterSourceInfo = {
 	id: string; // レイヤーのIdentifierなどを利用
