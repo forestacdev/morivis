@@ -4,11 +4,11 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefData,
 		RasterRegistrationMode
 	} from '$routes/map/components/upload/form/transform/georef-types';
-	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,

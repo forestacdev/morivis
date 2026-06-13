@@ -14,7 +14,6 @@
 	import GeoParquetForm from '$routes/map/components/upload/form/GeoParquetForm.svelte';
 	import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
 	import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
-	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 	import GeoZarrForm from '$routes/map/components/upload/form/GeoZarrForm.svelte';
 	import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
@@ -48,6 +47,7 @@
 	import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 	import TileUrlTypeForm from '$routes/map/components/upload/form/TileUrlTypeForm.svelte';
 	import TopoJsonForm from '$routes/map/components/upload/form/TopoJsonForm.svelte';
+	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import TsvForm from '$routes/map/components/upload/form/TsvForm.svelte';
 	import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 	import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';

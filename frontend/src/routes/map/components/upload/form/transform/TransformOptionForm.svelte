@@ -10,13 +10,13 @@
 	import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 	import GeoRefMarker from '$routes/map/components/marker/GeoRefMarker.svelte';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefData,
 		GeoRefPreviewData,
 		RasterRegistrationMode
 	} from '$routes/map/components/upload/form/transform/georef-types';
 	import GeoRefMenu from '$routes/map/components/upload/form/transform/GeoRefMenu.svelte';
-	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import ZoneMenu from '$routes/map/components/upload/form/transform/ZoneMenu.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
@@ -95,7 +95,6 @@
 	];
 	const isZoneVisible = $derived(transformOptionMode === 'zone');
 	const isGeoRefVisible = $derived(transformOptionMode === 'georef');
-	const primaryLabel = $derived(isZoneVisible ? '決定' : '登録');
 
 	let originalBbox = $derived.by(() => focusBbox ?? null);
 	let poiData = $state<PoiData[]>([]);
@@ -541,16 +540,17 @@
 		{/if}
 
 		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2 pb-2">
-			<button onclick={handleCancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button
+			<button onclick={handleCancel} class="c-btn-sub cursor-pointer select-none p-4 text-lg"
+				>キャンセル</button
 			>
 			<button
 				onclick={handleConfirm}
 				disabled={$isProcessing}
-				class="c-btn-confirm min-w-[200px] p-4 text-lg {$isProcessing
+				class="c-btn-confirm min-w-[200px] p-4 select-none text-lg {$isProcessing
 					? 'cursor-not-allowed opacity-50'
 					: 'cursor-pointer'}"
 			>
-				{primaryLabel}
+				決定
 			</button>
 		</div>
 	</div>

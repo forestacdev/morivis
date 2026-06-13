@@ -30,8 +30,8 @@
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
-	import type { GeoRefPreviewData } from '$routes/map/components/upload/form/transform/georef-types';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type { GeoRefPreviewData } from '$routes/map/components/upload/form/transform/georef-types';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type {
 		AnyTiles3DEntry,
@@ -473,19 +473,6 @@
 						'text-justify': 'auto'
 					}
 				}
-				// {
-				// 	id: '@nowcast_data_layer',
-				// 	type: 'raster',
-				// 	source: 'nowcast_data',
-				// 	maxzoom: 22,
-				// 	minzoom: 4,
-				// 	paint: {
-				// 		'raster-opacity': 0.7,
-				// 		'raster-resampling': 'nearest',
-				// 		'raster-fade-duration': 0
-				// 	}
-				// }
-
 				// TODO: 描画レイヤー
 				// ...drawLayers
 				// {

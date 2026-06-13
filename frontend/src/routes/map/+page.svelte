@@ -53,11 +53,11 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
+	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefData,
 		GeoRefPreviewData
 	} from '$routes/map/components/upload/form/transform/georef-types';
-	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		findCatalogEntry,
 		geoDataEntries,

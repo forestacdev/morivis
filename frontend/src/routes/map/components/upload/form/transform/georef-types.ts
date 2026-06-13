@@ -12,11 +12,11 @@ export interface GeoRefData {
 	numBands: number;
 	imageWidth: number;
 	imageHeight: number;
-	bandMinMax: { min: number; max: number };
+	bandMinMax: { min: number; max: number; };
 	multiBandMinMax: {
-		r: { min: number; max: number };
-		g: { min: number; max: number };
-		b: { min: number; max: number };
+		r: { min: number; max: number; };
+		g: { min: number; max: number; };
+		b: { min: number; max: number; };
 	};
 	imageFile: File;
 	previewImageUrl?: string;
