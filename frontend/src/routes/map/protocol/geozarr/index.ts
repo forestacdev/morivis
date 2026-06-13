@@ -1,4 +1,5 @@
 import * as tilebelt from '@mapbox/tilebelt';
+import proj4 from 'proj4';
 import * as zarr from 'zarrita';
 
 import { convertCanvasToResult } from '$routes/map/protocol/farbling';
@@ -12,6 +13,7 @@ type GeoZarrArrayNode = {
 	shape: number[];
 	chunks: number[];
 	dtype?: string;
+	dimension_names?: string[];
 	attrs?: Record<string, unknown>;
 	attributes?: Record<string, unknown>;
 };
@@ -35,6 +37,20 @@ export interface GeoZarrRegistrationMeta {
 	dimensionNames: string[];
 }
 
+export interface GeoZarrArrayCandidate {
+	arrayPath: string;
+	groupPath: string;
+	score: number;
+	shape: number[];
+	dtype: string;
+	dimensionNames: string[];
+	longName: string | null;
+	shortName: string | null;
+	units: string | null;
+	category: 'measurements' | 'quality' | 'conditions' | 'coordinates' | 'other';
+	isRecommended: boolean;
+}
+
 interface GeoZarrSourceState extends GeoZarrRegistrationMeta {
 	array: GeoZarrArrayNode;
 	xIndex: number;
@@ -50,8 +66,25 @@ type GeoZarrListableStore = zarr.FetchStore & {
 	contents?: () => { path: string; kind: 'array' | 'group'; }[];
 };
 
+export const normalizeGeoZarrUrl = (url: string): string => {
+	const trimmed = url.trim();
+	if (!trimmed) return trimmed;
+
+	try {
+		const parsed = new URL(trimmed);
+		parsed.pathname = parsed.pathname
+			.replace(/\/(?:\.zmetadata|\.zgroup|\.zattrs|zarr\.json)$/iu, '')
+			.replace(/\/+$/u, '');
+		return parsed.toString();
+	} catch {
+		return trimmed
+			.replace(/\/(?:\.zmetadata|\.zgroup|\.zattrs|zarr\.json)$/iu, '')
+			.replace(/\/+$/u, '');
+	}
+};
+
 const createProxyFetchStore = async (url: string): Promise<GeoZarrListableStore> => {
-	const baseStore = new zarr.FetchStore(resolveAbsoluteRequestUrl(url), {
+	const baseStore = new zarr.FetchStore(resolveAbsoluteRequestUrl(normalizeGeoZarrUrl(url)), {
 		fetch: async (request) => {
 			const proxyUrl = new URL('/api/cog-proxy', window.location.origin);
 			proxyUrl.searchParams.set('url', request.url);
@@ -67,6 +100,9 @@ const normalizeArrayPath = (value?: string): string =>
 const getArrayAttrs = (array: GeoZarrArrayNode): Record<string, unknown> => {
 	return array.attrs ?? array.attributes ?? {};
 };
+
+const getNodeAttrs = (node: { attrs?: Record<string, unknown>; attributes?: Record<string, unknown>; }) =>
+	node.attrs ?? node.attributes ?? {};
 
 const parseBboxText = (value?: string | null): [number, number, number, number] | null => {
 	if (!value) return null;
@@ -85,9 +121,19 @@ const toStringArray = (value: unknown): string[] => {
 	return value.map((item) => String(item));
 };
 
+const getEopfAttrs = (attrs: Record<string, unknown>) => {
+	return attrs['_eopf_attrs'] && typeof attrs['_eopf_attrs'] === 'object'
+		? (attrs['_eopf_attrs'] as Record<string, unknown>)
+		: null;
+};
+
 const inferDimensionNames = (array: GeoZarrArrayNode): string[] => {
 	const attrs = getArrayAttrs(array);
+	const eopfAttrs = getEopfAttrs(attrs);
 	const candidates = [
+		array.dimension_names,
+		eopfAttrs?.['dimensions'],
+		eopfAttrs?.['coordinates'],
 		attrs['_ARRAY_DIMENSIONS'],
 		attrs['dimension_names'],
 		attrs['dimensions'],
@@ -101,10 +147,47 @@ const inferDimensionNames = (array: GeoZarrArrayNode): string[] => {
 };
 
 const isCoordinateLikePath = (path: string): boolean => {
-	return /(^|\/)(time|valid_time|step|latitude|lat|longitude|lon|level|levels|hybrid|hybrid_sigma_pressure|pressure)$/i
-		.test(
-			path
-		);
+	return /(^|\/)(time|valid_time|step|latitude|lat|longitude|lon|x|y|band|bands|angle|angles|detector|detectors|level|levels|hybrid|hybrid_sigma_pressure|pressure)$/i.test(
+		path
+	);
+};
+
+const getGeoZarrArrayCategory = (
+	path: string,
+	array: GeoZarrArrayNode
+): GeoZarrArrayCandidate['category'] => {
+	if (path.startsWith('measurements/')) return 'measurements';
+	if (path.startsWith('quality/')) return 'quality';
+	if (path.startsWith('conditions/')) return 'conditions';
+	if (array.shape.length < 2 || isCoordinateLikePath(path)) return 'coordinates';
+	return 'other';
+};
+
+const getMetadataString = (attrs: Record<string, unknown>, ...keys: string[]) => {
+	const eopfAttrs = getEopfAttrs(attrs);
+	for (const key of keys) {
+		const direct = attrs[key];
+		if (typeof direct === 'string' && direct.trim().length > 0) return direct.trim();
+		const nested = eopfAttrs?.[key];
+		if (typeof nested === 'string' && nested.trim().length > 0) return nested.trim();
+	}
+	return null;
+};
+
+const compareGeoZarrCandidates = (a: GeoZarrArrayCandidate, b: GeoZarrArrayCandidate) => {
+	if (a.isRecommended !== b.isRecommended) return a.isRecommended ? -1 : 1;
+	if (a.category !== b.category) {
+		const order = {
+			measurements: 0,
+			other: 1,
+			quality: 2,
+			conditions: 3,
+			coordinates: 4
+		} as const;
+		return order[a.category] - order[b.category];
+	}
+	if (a.score !== b.score) return b.score - a.score;
+	return a.arrayPath.localeCompare(b.arrayPath);
 };
 
 const scoreArrayCandidate = (path: string, array: GeoZarrArrayNode): number => {
@@ -117,6 +200,7 @@ const scoreArrayCandidate = (path: string, array: GeoZarrArrayNode): number => {
 	);
 
 	let score = 0;
+	if (array.shape.length < 2) return Number.NEGATIVE_INFINITY;
 	if (array.shape.length >= 2) score += 10;
 	if (hasX) score += 30;
 	if (hasY) score += 30;
@@ -247,13 +331,7 @@ const openGeoZarrArray = async (
 
 	await zarr.open(root, { kind: 'group' });
 
-	const paths = typeof store.contents === 'function'
-		? store
-			.contents()
-			.filter((entry) => entry.kind === 'array' && entry.path !== '/')
-			.map((entry) => entry.path.replace(/^\/+/, ''))
-		: [];
-
+	const candidates = await listGeoZarrArrayCandidates(url);
 	let bestCandidate:
 		| {
 			path: string;
@@ -262,13 +340,13 @@ const openGeoZarrArray = async (
 		}
 		| null = null;
 
-	for (const path of paths) {
+	for (const candidate of candidates) {
 		try {
-			const array =
-				(await zarr.open(root.resolve(path), { kind: 'array' })) as GeoZarrArrayNode;
-			const score = scoreArrayCandidate(path, array);
-			if (!bestCandidate || score > bestCandidate.score) {
-				bestCandidate = { path, array, score };
+			const array = (await zarr.open(root.resolve(candidate.arrayPath), {
+				kind: 'array'
+			})) as GeoZarrArrayNode;
+			if (!bestCandidate || candidate.score > bestCandidate.score) {
+				bestCandidate = { path: candidate.arrayPath, array, score: candidate.score };
 			}
 		} catch {
 			// skip
@@ -282,6 +360,58 @@ const openGeoZarrArray = async (
 	throw new Error(
 		'GeoZarr の配列を特定できませんでした。group ルートの可能性があります。配列パスを指定してください。'
 	);
+};
+
+export const listGeoZarrArrayCandidates = async (url: string): Promise<GeoZarrArrayCandidate[]> => {
+	const store = await createProxyFetchStore(url);
+	const root = zarr.root(store);
+
+	try {
+		await zarr.open(root, { kind: 'group' });
+	} catch {
+		return [];
+	}
+
+	const paths =
+		typeof store.contents === 'function'
+			? store
+					.contents()
+					.filter((entry) => entry.kind === 'array' && entry.path !== '/')
+					.map((entry) => entry.path.replace(/^\/+/, ''))
+			: [];
+
+	const candidates: GeoZarrArrayCandidate[] = [];
+
+	for (const path of paths) {
+		try {
+			const array = (await zarr.open(root.resolve(path), { kind: 'array' })) as GeoZarrArrayNode;
+			const attrs = getArrayAttrs(array);
+			const dimensionNames = inferDimensionNames(array);
+			const category = getGeoZarrArrayCategory(path, array);
+			const score = scoreArrayCandidate(path, array);
+			candidates.push({
+				arrayPath: path,
+				groupPath: getParentArrayPath(path) || '/',
+				score,
+				shape: [...array.shape],
+				dtype: array.dtype ?? 'unknown',
+				dimensionNames,
+				longName: getMetadataString(attrs, 'long_name', 'title', 'name'),
+				shortName: getMetadataString(attrs, 'short_name', 'standard_name'),
+				units: getMetadataString(attrs, 'units'),
+				category,
+				isRecommended:
+					category === 'measurements'
+					&& array.shape.length >= 2
+					&& Number.isFinite(score)
+					&& score >= 100
+			});
+		} catch {
+			// skip
+		}
+	}
+
+	return candidates.sort(compareGeoZarrCandidates);
 };
 
 const matchDimensionIndex = (names: string[], patterns: RegExp[]): number | null => {
@@ -305,10 +435,16 @@ const inferAxisIndexes = (array: GeoZarrArrayNode, dimensionNames: string[]) => 
 	return { xIndex, yIndex, bandIndex };
 };
 
-const parseBboxFromAttrs = (
+export const parseBboxFromAttrs = (
 	attrs: Record<string, unknown>
 ): [number, number, number, number] | null => {
-	const bboxCandidates = [attrs['proj:bbox'], attrs['bbox'], attrs['bounds'], attrs['extent']];
+	const bboxCandidates = [
+		attrs['spatial:bbox'],
+		attrs['proj:bbox'],
+		attrs['bbox'],
+		attrs['bounds'],
+		attrs['extent']
+	];
 	for (const candidate of bboxCandidates) {
 		if (!Array.isArray(candidate) || candidate.length < 4) continue;
 		const values = candidate
@@ -329,6 +465,142 @@ const parseBboxFromAttrs = (
 	}
 
 	return null;
+};
+
+export const parseProjectionCodeFromAttrs = (attrs: Record<string, unknown>): string | null => {
+	const candidates = [attrs['proj:code'], attrs['crs'], attrs['proj:epsg']];
+
+	for (const candidate of candidates) {
+		if (typeof candidate === 'string' && candidate.trim().length > 0) {
+			const trimmed = candidate.trim();
+			const epsgMatch = trimmed.match(/EPSG:\d+$/i) ?? trimmed.match(/EPSG\/0\/(\d+)$/i);
+			if (epsgMatch) {
+				return epsgMatch[1] ? `EPSG:${epsgMatch[1]}` : epsgMatch[0].toUpperCase();
+			}
+			return trimmed;
+		}
+
+		if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+			return `EPSG:${candidate}`;
+		}
+	}
+
+	return null;
+};
+
+const isGeographicBbox = (bbox: [number, number, number, number]) => {
+	return (
+		Math.abs(bbox[0]) <= 180
+		&& Math.abs(bbox[2]) <= 180
+		&& Math.abs(bbox[1]) <= 90
+		&& Math.abs(bbox[3]) <= 90
+	);
+};
+
+export const normalizeGeoZarrBbox = (
+	bbox: [number, number, number, number],
+	projectionCode: string | null
+): [number, number, number, number] => {
+	if (!projectionCode || /^EPSG:4326$/i.test(projectionCode) || isGeographicBbox(bbox)) {
+		return bbox;
+	}
+
+	try {
+		const corners = [
+			[bbox[0], bbox[1]],
+			[bbox[2], bbox[1]],
+			[bbox[2], bbox[3]],
+			[bbox[0], bbox[3]]
+		].map((corner) => proj4(projectionCode, 'EPSG:4326', corner as [number, number]));
+		const lons = corners.map((corner) => Number(corner[0])).filter((value) => Number.isFinite(value));
+		const lats = corners.map((corner) => Number(corner[1])).filter((value) => Number.isFinite(value));
+
+		if (lons.length !== 4 || lats.length !== 4) return bbox;
+
+		return [
+			Math.min(...lons),
+			Math.min(...lats),
+			Math.max(...lons),
+			Math.max(...lats)
+		];
+	} catch {
+		return bbox;
+	}
+};
+
+const readAncestorGroupMetadata = async (url: string, arrayPath: string) => {
+	const store = await createProxyFetchStore(url);
+	const root = zarr.root(store);
+	const normalizedPath = normalizeArrayPath(arrayPath);
+	const segments = normalizedPath ? normalizedPath.split('/') : [];
+
+	let bbox: [number, number, number, number] | null = null;
+	let projectionCode: string | null = null;
+
+	for (let depth = segments.length - 1; depth >= 0; depth--) {
+		const groupPath = segments.slice(0, depth).join('/');
+		try {
+			const group = (await zarr.open(
+				groupPath ? root.resolve(groupPath) : root,
+				{ kind: 'group' }
+			)) as {
+				attrs?: Record<string, unknown>;
+				attributes?: Record<string, unknown>;
+			};
+			const attrs = getNodeAttrs(group);
+			bbox ??= parseBboxFromAttrs(attrs);
+			projectionCode ??= parseProjectionCodeFromAttrs(attrs);
+			if (bbox && projectionCode) break;
+		} catch {
+			// skip
+		}
+	}
+
+	return { bbox, projectionCode };
+};
+
+const readDatasetGroupMetadata = async (url: string) => {
+	const store = await createProxyFetchStore(url);
+	const root = zarr.root(store);
+
+	const inspectGroup = async (groupPath: string) => {
+		try {
+			const group = (await zarr.open(groupPath ? root.resolve(groupPath) : root, {
+				kind: 'group'
+			})) as {
+				attrs?: Record<string, unknown>;
+				attributes?: Record<string, unknown>;
+			};
+			const attrs = getNodeAttrs(group);
+			const bbox = parseBboxFromAttrs(attrs);
+			const projectionCode = parseProjectionCodeFromAttrs(attrs);
+			if (bbox || projectionCode) {
+				return { bbox, projectionCode };
+			}
+		} catch {
+			// skip
+		}
+
+		return null;
+	};
+
+	const rootMeta = await inspectGroup('');
+	if (rootMeta?.bbox || rootMeta?.projectionCode) return rootMeta;
+
+	const paths =
+		typeof store.contents === 'function'
+			? store
+					.contents()
+					.filter((entry) => entry.kind === 'group' && entry.path !== '/')
+					.map((entry) => entry.path.replace(/^\/+/, ''))
+			: [];
+
+	for (const groupPath of paths) {
+		const meta = await inspectGroup(groupPath);
+		if (meta?.bbox || meta?.projectionCode) return meta;
+	}
+
+	return { bbox: null, projectionCode: null };
 };
 
 const getNumBands = (array: GeoZarrArrayNode, bandIndex: number | null): number => {
@@ -410,13 +682,28 @@ const inspectGeoZarrInternal = async (
 	arrayPath?: string,
 	bboxText?: string | null
 ): Promise<Omit<GeoZarrSourceState, 'array'>> => {
-	const { array, arrayPath: resolvedArrayPath } = await openGeoZarrArray(url, arrayPath);
+	const normalizedUrl = normalizeGeoZarrUrl(url);
+	const { array, arrayPath: resolvedArrayPath } = await openGeoZarrArray(normalizedUrl, arrayPath);
 	const attrs = getArrayAttrs(array);
 	const dimensionNames = inferDimensionNames(array);
 	const { xIndex, yIndex, bandIndex } = inferAxisIndexes(array, dimensionNames);
-	const bbox = parseBboxText(bboxText)
+	const { bbox: ancestorBbox, projectionCode } = await readAncestorGroupMetadata(
+		normalizedUrl,
+		resolvedArrayPath
+	);
+	const datasetMetadata =
+		ancestorBbox && projectionCode
+			? { bbox: ancestorBbox, projectionCode }
+			: await readDatasetGroupMetadata(normalizedUrl);
+	const rawBbox =
+		parseBboxText(bboxText)
 		?? parseBboxFromAttrs(attrs)
-		?? (await inferBboxFromCoordinateArrays(url, resolvedArrayPath, dimensionNames));
+		?? ancestorBbox
+		?? datasetMetadata.bbox
+		?? (await inferBboxFromCoordinateArrays(normalizedUrl, resolvedArrayPath, dimensionNames));
+	const bbox = rawBbox
+		? normalizeGeoZarrBbox(rawBbox, projectionCode ?? datasetMetadata.projectionCode)
+		: null;
 
 	if (!bbox) {
 		throw new Error(
@@ -473,7 +760,7 @@ const inspectGeoZarrInternal = async (
 	}
 
 	return {
-		url,
+		url: normalizedUrl,
 		arrayPath: resolvedArrayPath,
 		width,
 		height,
@@ -511,8 +798,9 @@ export const inspectGeoZarr = async (
 export const registerGeoZarr = async (
 	input: GeoZarrRegistrationInput
 ): Promise<GeoZarrRegistrationMeta> => {
-	const { array } = await openGeoZarrArray(input.url, input.arrayPath);
-	const inspected = await inspectGeoZarrInternal(input.url, input.arrayPath, input.bboxText);
+	const normalizedUrl = normalizeGeoZarrUrl(input.url);
+	const { array } = await openGeoZarrArray(normalizedUrl, input.arrayPath);
+	const inspected = await inspectGeoZarrInternal(normalizedUrl, input.arrayPath, input.bboxText);
 	const state: GeoZarrSourceState = {
 		...inspected,
 		array

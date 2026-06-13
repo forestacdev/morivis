@@ -38,8 +38,8 @@ const dbfBytes = readFileSync(resolve(fixtureDir, 'sample-point.dbf'));
 const prjText = readFileSync(resolve(fixtureDir, 'sample-point.prj'), 'utf8');
 const cpgText = readFileSync(resolve(fixtureDir, 'sample-point.cpg'), 'utf8');
 
-const createBinaryFile = (name: string, bytes: Buffer) =>
-	new File([bytes], name, { type: 'application/octet-stream' });
+const createBinaryFile = (name: string, bytes: Uint8Array) =>
+	new File([new Uint8Array(bytes)], name, { type: 'application/octet-stream' });
 
 const createTextFile = (name: string, text: string) => new File([text], name, { type: 'text/plain' });
 

@@ -9,7 +9,10 @@
 	import type { RasterGeoZarrEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import {
 		inspectGeoZarr,
+		listGeoZarrArrayCandidates,
+		normalizeGeoZarrUrl,
 		registerGeoZarr,
+		type GeoZarrArrayCandidate,
 		type GeoZarrRegistrationMeta
 	} from '$routes/map/protocol/geozarr';
 	import type { DialogType } from '$routes/map/types';
@@ -50,6 +53,12 @@
 	let errors = $state<Partial<Record<keyof FormSchema, string>>>({});
 	let isSubmitDisabled = $state(true);
 	let analyzed = $state<GeoZarrRegistrationMeta | null>(null);
+	let candidates = $state<GeoZarrArrayCandidate[]>([]);
+	let candidatesLoaded = $state(false);
+
+	const selectedCandidate = $derived.by(
+		() => candidates.find((candidate) => candidate.arrayPath === forms.arrayPath) ?? null
+	);
 
 	$effect(() => {
 		try {
@@ -80,8 +89,13 @@
 				showNotification('URLの形式が正しくありません', 'error');
 				return;
 			}
-			forms.url = normalizedUrl;
-			analyzed = await inspectGeoZarr(normalizedUrl, forms.arrayPath, forms.bbox || null);
+			forms.url = normalizeGeoZarrUrl(normalizedUrl);
+			candidates = await listGeoZarrArrayCandidates(forms.url);
+			candidatesLoaded = true;
+			if (!forms.arrayPath && candidates[0]) {
+				forms.arrayPath = candidates[0].arrayPath;
+			}
+			analyzed = await inspectGeoZarr(forms.url, forms.arrayPath, forms.bbox || null);
 			if (!forms.bbox) {
 				forms.bbox = analyzed.bbox.join(', ');
 			}
@@ -123,7 +137,7 @@
 				type: 'raster',
 				format: {
 					type: 'geozarr',
-					url: normalizedUrl,
+					url: metadata.url,
 					arrayPath: metadata.arrayPath || undefined
 				},
 				metaData: {
@@ -195,6 +209,25 @@
 	const resetAnalysis = () => {
 		analyzed = null;
 	};
+
+	const categoryLabel = (category: GeoZarrArrayCandidate['category']) => {
+		switch (category) {
+			case 'measurements':
+				return '推奨';
+			case 'quality':
+				return '品質';
+			case 'conditions':
+				return '補助';
+			case 'coordinates':
+				return '座標';
+			default:
+				return 'その他';
+		}
+	};
+
+	const onArrayPathChange = () => {
+		analyzed = null;
+	};
 </script>
 
 <div class="flex flex-col gap-4 overflow-y-auto pr-1">
@@ -208,6 +241,63 @@
 	<TextForm label="配列パス（任意）" bind:value={forms.arrayPath} error={errors.arrayPath} />
 	<TextForm label="bbox（任意）" bind:value={forms.bbox} error={errors.bbox} />
 
+	{#if candidates.length > 0}
+		<div class="flex flex-col gap-2">
+			<label class="text-sm font-medium text-gray-200" for="geozarr-array-select">
+				配列候補
+			</label>
+			<select
+				id="geozarr-array-select"
+				bind:value={forms.arrayPath}
+				class="c-text-form rounded-lg border border-gray-600 px-3 py-2 text-sm"
+				onchange={onArrayPathChange}
+			>
+				{#each candidates as candidate (candidate.arrayPath)}
+					<option value={candidate.arrayPath}>
+						[{categoryLabel(candidate.category)}] {candidate.arrayPath}
+					</option>
+				{/each}
+			</select>
+			<p class="text-xs leading-relaxed text-gray-400">
+				`measurements` は画像本体、`quality` は品質情報、`conditions` は補助データ、
+				`coordinates` は座標軸です。
+			</p>
+		</div>
+	{:else if candidatesLoaded}
+		<div class="rounded-lg border border-gray-700 bg-black/20 p-3 text-sm text-gray-300">
+			配列候補を一覧できませんでした。必要なら配列パスを手入力してください。
+		</div>
+	{/if}
+
+	{#if selectedCandidate}
+		<div transition:slide={{ duration: 180 }} class="bg-base rounded-lg p-3 text-sm">
+			<div class="flex items-center gap-2">
+				<span class="rounded bg-white/10 px-2 py-0.5 text-xs text-gray-200">
+					{categoryLabel(selectedCandidate.category)}
+				</span>
+				{#if selectedCandidate.isRecommended}
+					<span class="rounded bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-300">
+						自動選択候補
+					</span>
+				{/if}
+			</div>
+			<div class="mt-2 break-all">配列: {selectedCandidate.arrayPath}</div>
+			<div>グループ: {selectedCandidate.groupPath}</div>
+			{#if selectedCandidate.longName}
+				<div>説明: {selectedCandidate.longName}</div>
+			{/if}
+			{#if selectedCandidate.shortName}
+				<div>短縮名: {selectedCandidate.shortName}</div>
+			{/if}
+			{#if selectedCandidate.units}
+				<div>単位: {selectedCandidate.units}</div>
+			{/if}
+			<div>shape: {selectedCandidate.shape.join(' x ')}</div>
+			<div>dtype: {selectedCandidate.dtype}</div>
+			<div>次元: {selectedCandidate.dimensionNames.join(', ')}</div>
+		</div>
+	{/if}
+
 	<div class="flex gap-3">
 		<button class="c-btn-sub px-4 py-2" onclick={inspect} disabled={isSubmitDisabled}>
 			解析
@@ -220,6 +310,9 @@
 
 	{#if analyzed}
 		<div transition:slide={{ duration: 180 }} class="bg-base rounded-lg p-3 text-sm">
+			{#if selectedCandidate}
+				<div>分類: {categoryLabel(selectedCandidate.category)}</div>
+			{/if}
 			<div>配列: {analyzed.arrayPath || '/'}</div>
 			<div>サイズ: {analyzed.width} x {analyzed.height}</div>
 			<div>バンド数: {analyzed.numBands}</div>

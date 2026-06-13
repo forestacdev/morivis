@@ -494,7 +494,7 @@
 			type: 'raster',
 			format: {
 				type: 'geozarr',
-				url: asset.href,
+				url: metadata.url,
 				arrayPath: metadata.arrayPath || undefined
 			},
 			metaData: {
