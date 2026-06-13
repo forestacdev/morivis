@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { csvTextToGeojson, getCSVPreview } from '.';
+import { csvTextToGeojson, delimitedTextToGeojson, getCSVPreview, getDelimitedTextPreview } from '.';
 
 vi.mock('$routes/stores/notification', () => ({
 	showNotification: vi.fn()
@@ -32,5 +32,22 @@ describe('csv parser', () => {
 		await expect(csvTextToGeojson(readFixture('missing-columns.csv'), 'lat', 'lon')).rejects.toThrow(
 			`Latitude column 'lat' not found`
 		);
+	});
+
+	it('TSV をタブ区切りでプレビューと Point に変換できる', async () => {
+		const text = readFixture('sample.tsv');
+
+		const preview = await getDelimitedTextPreview(text, 5, { delimiter: '\t' });
+		expect(preview.headers).toEqual(['name', 'lat', 'lon']);
+		expect(preview.rows[0]).toMatchObject({ name: 'alpha', lat: 35.6895, lon: 139.6917 });
+
+		const geojson = await delimitedTextToGeojson(text, 'lat', 'lon', { delimiter: '\t' });
+		expect(geojson.features).toHaveLength(2);
+		expect(geojson.features[0]?.geometry).toEqual({
+			type: 'Point',
+			coordinates: [139.6917, 35.6895]
+		});
+		expect(geojson.features[1]?.geometry.type).toBe('Point');
+		expect(geojson.features[1]?.properties?.name).toBe('beta');
 	});
 });
