@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { fromArrayBuffer } from 'geotiff';
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
@@ -22,11 +21,11 @@
 	import type { DialogType } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
-		parseRasterBands,
 		getMinMax,
 		encodeAllBandsToTerrarium,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
+	import { analyzeGeoTiffInWorker } from '$routes/map/utils/formats/geotiff/analyze';
 	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
 	import {
 		parseEpsgFromAuxXml,
@@ -223,46 +222,6 @@
 		openGeoRefTransform(file);
 	};
 
-	const parseBboxFromGeoTiffImage = (
-		image: Awaited<ReturnType<Awaited<ReturnType<typeof fromArrayBuffer>>['getImage']>>,
-		width: number,
-		height: number
-	): [number, number, number, number] | null => {
-		try {
-			const imageBbox = image.getBoundingBox();
-			if (imageBbox && imageBbox.length === 4) {
-				return imageBbox as [number, number, number, number];
-			}
-		} catch {
-			// getBoundingBox に必要なメタデータが欠けている場合は origin/resolution にフォールバックする
-		}
-
-		try {
-			const [originX, originY] = image.getOrigin();
-			const [resolutionX, resolutionY] = image.getResolution();
-
-			if (
-				![originX, originY, resolutionX, resolutionY].every((value) => Number.isFinite(value)) ||
-				resolutionX === 0 ||
-				resolutionY === 0
-			) {
-				return null;
-			}
-
-			const maxX = originX + resolutionX * width;
-			const maxY = originY + resolutionY * height;
-
-			return [
-				Math.min(originX, maxX),
-				Math.min(originY, maxY),
-				Math.max(originX, maxX),
-				Math.max(originY, maxY)
-			];
-		} catch {
-			return null;
-		}
-	};
-
 	// ファイルドロップ時: 解析
 	$effect(() => {
 		if (imageFile) {
@@ -403,61 +362,45 @@
 
 		try {
 			const arrayBuffer = await file.arrayBuffer();
-			const tiff = await fromArrayBuffer(arrayBuffer);
-			const image = await tiff.getImage();
+			const result = await analyzeGeoTiffInWorker(arrayBuffer);
 
-			const width = image.getWidth();
-			const height = image.getHeight();
-			imageWidth = width;
-			imageHeight = height;
-
-			// bbox取得: まずGeoTIFF内蔵メタデータを試し、だめなら origin/resolution から組み立てる
-			rawBbox = parseBboxFromGeoTiffImage(image, width, height);
+			imageWidth = result.width;
+			imageHeight = result.height;
+			rawBbox = result.rawBbox;
 
 			// GeoTIFFにbboxがなければワールドファイル(.tfw)を探す
 			if (!rawBbox && dropFile instanceof FileList) {
 				const tfwFile = findMatchingWorldFile(dropFile, file);
 				if (tfwFile) {
-					rawBbox = await parseTfw(tfwFile, width, height);
+					rawBbox = await parseTfw(tfwFile, result.width, result.height);
 					hasTfw = true;
 				}
 			}
 
-			// ラスターデータ読み込み
-			const rasterData = await image.readRasters({ interleave: false });
-			const bands = parseRasterBands(rasterData);
-			numBands = bands.length;
+			numBands = result.numBands;
 
 			const id = `geotiff_${crypto.randomUUID()}`;
 			entryId = id;
 
-			// nodataの取得
-			const nodata =
-				image.fileDirectory.GDAL_NODATA !== undefined
-					? parseFloat(image.fileDirectory.GDAL_NODATA)
-					: null;
-			parsedNodata = nodata;
-
-			// 各バンドのmin/max計算
-			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, nodata));
-			dataRanges = ranges;
+			parsedNodata = result.nodata;
+			dataRanges = result.dataRanges;
 
 			// 表示用min/max
-			bandMinMax = ranges[0];
-			if (bands.length > 1) {
+			bandMinMax = result.dataRanges[0];
+			if (result.numBands > 1) {
 				multiBandMinMax = {
-					r: ranges[0],
-					g: ranges.length >= 2 ? ranges[1] : ranges[0],
-					b: ranges.length >= 3 ? ranges[2] : ranges[0]
+					r: result.dataRanges[0],
+					g: result.dataRanges.length >= 2 ? result.dataRanges[1] : result.dataRanges[0],
+					b: result.dataRanges.length >= 3 ? result.dataRanges[2] : result.dataRanges[0]
 				};
 			}
 
 			// 一時的にバンドデータを保持（registration時にTerrariumエンコード）
-			parsedBands = bands;
+			parsedBands = result.bands;
 
 			// サイズとバンド数をキャッシュ
-			GeoTiffCache.setSize(id, width, height);
-			GeoTiffCache.setNumBands(id, bands.length);
+			GeoTiffCache.setSize(id, result.width, result.height);
+			GeoTiffCache.setNumBands(id, result.numBands);
 
 			// aux.xmlからGeoTransform/EPSGコードを取得
 			let auxEpsg: EpsgCode | null = null;
@@ -472,7 +415,7 @@
 
 			// ワールドファイル・GeoTIFF内蔵bboxがなければaux.xmlのGeoTransformからbboxを取得
 			if (!rawBbox && auxContent) {
-				rawBbox = parseBboxFromAuxXml(auxContent, width, height);
+				rawBbox = parseBboxFromAuxXml(auxContent, result.width, result.height);
 			}
 
 			analyzed = true;

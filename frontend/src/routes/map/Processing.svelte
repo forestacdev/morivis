@@ -1,13 +1,53 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
+	import { scale } from 'svelte/transition';
+
 	import { isProcessing } from '$routes/stores/ui';
 
-	let container = $state<HTMLElement | null>(null);
+	const MIN_VISIBLE_MS = 500;
+
+	let visible = $state(false);
+	let shownAt = 0;
+	let hideTimer: ReturnType<typeof setTimeout> | null = null;
+
+	const clearHideTimer = () => {
+		if (hideTimer === null) return;
+		clearTimeout(hideTimer);
+		hideTimer = null;
+	};
+
+	const unsubscribe = isProcessing.subscribe((value) => {
+		if (value) {
+			clearHideTimer();
+			shownAt = Date.now();
+			visible = true;
+			return;
+		}
+
+		if (!visible) return;
+
+		const remaining = Math.max(0, MIN_VISIBLE_MS - (Date.now() - shownAt));
+		if (remaining === 0) {
+			visible = false;
+			return;
+		}
+
+		hideTimer = setTimeout(() => {
+			visible = false;
+			hideTimer = null;
+		}, remaining);
+	});
+
+	onDestroy(() => {
+		clearHideTimer();
+		unsubscribe();
+	});
 </script>
 
-{#if $isProcessing}
-	<div bind:this={container} class="fixed top-0 left-0 z-[9999] h-dvh w-full bg-black/50">
+{#if visible}
+	<div class="fixed top-0 left-0 z-[9999] h-dvh w-full bg-black/50">
 		<div class="flex h-full w-full items-center justify-center">
-			<div class="loader"></div>
+			<div class="loader" transition:scale={{ duration: 200 }}></div>
 		</div>
 	</div>
 {/if}
