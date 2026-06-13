@@ -54,6 +54,12 @@
 		const dotIndex = name.lastIndexOf('.');
 		return dotIndex > 0 && dotIndex < name.length - 1;
 	};
+	const isGtfsTextSet = (files: File[]) => {
+		const normalizedNames = new Set(files.map((file) => file.name.toLowerCase()));
+		return ['agency.txt', 'routes.txt', 'stops.txt', 'trips.txt', 'stop_times.txt'].every((name) =>
+			normalizedNames.has(name)
+		);
+	};
 	const getMeshFormatType = (path: string): MeshFormatType => {
 		const normalizedPath = path.toLowerCase();
 		if (normalizedPath.endsWith('.obj')) return 'obj';
@@ -497,6 +503,8 @@
 				}
 			} else if (files.some(isShapeFileRelated)) {
 				showDialogType = 'shp';
+			} else if (isGtfsTextSet(files)) {
+				showDialogType = 'gtfs';
 			} else {
 				const geoReferencedImageFile = findGeoReferencedImageFile(files);
 				if (geoReferencedImageFile) {

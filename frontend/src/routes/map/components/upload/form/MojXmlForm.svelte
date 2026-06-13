@@ -50,15 +50,15 @@
 	let rawGeojson: FeatureCollection | null = null;
 	let hasData = $state(false);
 
-	const mojFile = $derived.by(() => {
+	const mojFiles = $derived.by(() => {
 		if (!dropFile) return null;
-		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+		return dropFile instanceof FileList ? Array.from(dropFile) : [dropFile];
 	});
 
-	const entryName = $derived(mojFile?.name.replace(/\.[^.]+$/, '') ?? '地図XML');
+	const entryName = $derived(mojFiles?.[0]?.name.replace(/\.[^.]+$/, '') ?? '地図XML');
 
 	$effect(() => {
-		if (mojFile) {
+		if (mojFiles && mojFiles.length > 0) {
 			processFile();
 		}
 	});
@@ -88,12 +88,15 @@
 	};
 
 	const processFile = async () => {
-		if (!mojFile) return;
+		if (!mojFiles || mojFiles.length === 0) return;
 		isProcessing.set(true);
 
 		try {
-			const isZip = mojFile.name.toLowerCase().endsWith('.zip');
-			const xmlStrings = isZip ? await readXmlFromZip(mojFile) : [await mojFile.text()];
+			const zipFile = mojFiles.find((file) => file.name.toLowerCase().endsWith('.zip')) ?? null;
+			const xmlFiles = mojFiles.filter((file) => file.name.toLowerCase().endsWith('.xml'));
+			const xmlStrings = zipFile
+				? await readXmlFromZip(zipFile)
+				: await Promise.all(xmlFiles.map((file) => file.text()));
 
 			const geojson = await parseXmlStrings(xmlStrings);
 

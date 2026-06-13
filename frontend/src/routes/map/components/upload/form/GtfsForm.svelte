@@ -8,7 +8,7 @@
 	import type { FieldDef, VectorTemporalItem } from '$routes/map/data/types/vector/properties';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { loadGTFSFromZip } from '$routes/map/utils/formats/gtfs';
+	import { loadGTFSFromFiles, loadGTFSFromZip } from '$routes/map/utils/formats/gtfs';
 	import { readRoutes, readStops, readTimedStops } from '$routes/map/utils/formats/gtfs/parse';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -37,13 +37,18 @@
 
 	let gtfsData = $state<Awaited<ReturnType<typeof loadGTFSFromZip>> | null>(null);
 
-	const setFile = async (file: File) => {
-		setFileName = file.name.replace(/\.zip$/i, '');
+	const setFile = async (input: File | FileList) => {
+		const files = input instanceof FileList ? Array.from(input) : [input];
+		const primaryFile = files[0];
+		if (!primaryFile) return;
+
+		setFileName = primaryFile.name.replace(/\.zip$/i, '').replace(/\.txt$/i, '');
 		isProcessing.set(true);
 
 		try {
-			const buffer = await file.arrayBuffer();
-			const gtfs = await loadGTFSFromZip(buffer);
+			const gtfs = input instanceof FileList
+				? await loadGTFSFromFiles(files)
+				: await loadGTFSFromZip(await primaryFile.arrayBuffer());
 			gtfsData = gtfs;
 
 			agencyName = gtfs.agency[0]?.agency_name ?? '';
@@ -52,10 +57,8 @@
 			stopTimeCount = gtfs.stop_times.length;
 			hasShapes = gtfs.shapes !== null && gtfs.shapes.length > 0;
 		} catch (e) {
-			showNotification(
-				`GTFSの読み込みに失敗しました: ${e instanceof Error ? e.message : String(e)}`,
-				'error'
-			);
+			console.error('GTFS load failed:', e);
+			showNotification('GTFSの読み込みに失敗しました', 'error');
 			cancel();
 		} finally {
 			isProcessing.set(false);
@@ -64,8 +67,7 @@
 
 	$effect(() => {
 		if (dropFile) {
-			const file = dropFile instanceof FileList ? dropFile[0] : dropFile;
-			if (file) setFile(file);
+			setFile(dropFile);
 		}
 	});
 
@@ -264,6 +266,7 @@
 
 			showDialogType = null;
 		} catch (e) {
+			console.error('GTFS conversion failed:', e);
 			showNotification(
 				`GTFSの変換に失敗しました: ${e instanceof Error ? e.message : String(e)}`,
 				'error'

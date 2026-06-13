@@ -127,13 +127,39 @@ const USED_TABLES: TableName[] = ['agency', 'routes', 'stops', 'trips', 'stop_ti
 
 const REQUIRED_TABLES: TableName[] = ['agency', 'routes', 'stops', 'trips', 'stop_times'];
 
+const normalizeZipEntryName = (path: string): string => {
+	const normalizedPath = path.replace(/\\/g, '/').toLowerCase();
+	return normalizedPath.split('/').pop() ?? normalizedPath;
+};
+
+const hasGtfsTableSet = (entryNames: string[]): boolean => {
+	const normalizedNames = new Set(entryNames.map((entryName) => normalizeZipEntryName(entryName)));
+	return REQUIRED_TABLES.every((tableName) => normalizedNames.has(`${tableName}.txt`));
+};
+
+const collectGtfsTables = async (
+	files: { name: string; text(): Promise<string>; }[]
+): Promise<Map<string, string>> => {
+	const tables = new Map<string, string>();
+
+	for (const tableName of USED_TABLES) {
+		const fileName = `${tableName}.txt`;
+		const file = files.find((candidate) => candidate.name.toLowerCase() === fileName);
+		if (file) {
+			tables.set(tableName, await file.text());
+		}
+	}
+
+	return tables;
+};
+
 /**
  * ZIPファイルがGTFSかどうか判定する（必須テーブルの存在チェック）
  */
 export const isGtfsZip = async (file: File): Promise<boolean> => {
 	try {
 		const zip = await JSZip.loadAsync(file);
-		return REQUIRED_TABLES.every((name) => zip.file(`${name}.txt`) !== null);
+		return hasGtfsTableSet(Object.keys(zip.files));
 	} catch {
 		return false;
 	}
@@ -144,11 +170,13 @@ export const isGtfsZip = async (file: File): Promise<boolean> => {
  */
 export const loadGTFSFromZip = async (data: ArrayBuffer): Promise<GTFS> => {
 	const zip = await JSZip.loadAsync(data);
+	const entries = Object.entries(zip.files).filter(([, entry]) => !entry.dir);
 	const tables = new Map<string, string>();
 
 	for (const tableName of USED_TABLES) {
 		const fileName = `${tableName}.txt`;
-		const file = zip.file(fileName);
+		const matchedEntry = entries.find(([path]) => normalizeZipEntryName(path) === fileName)?.[1];
+		const file = matchedEntry ?? null;
 		if (file) {
 			tables.set(tableName, await file.async('string'));
 		}
@@ -156,6 +184,16 @@ export const loadGTFSFromZip = async (data: ArrayBuffer): Promise<GTFS> => {
 
 	if (tables.size === 0) {
 		throw new Error('GTFSの必須ファイルがZIP内に見つかりません');
+	}
+
+	return buildGTFS(tables);
+};
+
+export const loadGTFSFromFiles = async (files: File[]): Promise<GTFS> => {
+	const tables = await collectGtfsTables(files);
+
+	if (tables.size === 0) {
+		throw new Error('GTFSの必須ファイルが見つかりません');
 	}
 
 	return buildGTFS(tables);
