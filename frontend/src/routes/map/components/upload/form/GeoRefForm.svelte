@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import maplibregl from 'maplibre-gl';
+	import type { ImageSource } from 'maplibre-gl';
 	import { untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
@@ -67,6 +68,8 @@
 		dropFile = $bindable()
 	}: Props = $props();
 
+	const PREVIEW_SOURCE_ID = 'georef_image_preview';
+
 	let imageUrl = $state<string | null>(null);
 	const registrationModeOptions = [
 		{ key: 'raster', name: 'ラスター' },
@@ -94,10 +97,33 @@
 	const updatePreviewData = () => {
 		if (!showGeoRefForm || !imageUrl) return;
 
-		geoRefPreviewData = {
-			url: imageUrl,
-			coordinates: getCornerCoordinates()
-		};
+		if (!geoRefPreviewData || geoRefPreviewData.url !== imageUrl) {
+			geoRefPreviewData = {
+				url: imageUrl,
+				coordinates: getCornerCoordinates()
+			};
+			return;
+		}
+
+		geoRefPreviewData.coordinates = getCornerCoordinates();
+	};
+
+	let rafId: number | null = null;
+
+	const updatePreviewSource = () => {
+		if (rafId !== null || !imageUrl) return;
+		const nextImageUrl = imageUrl;
+
+		rafId = requestAnimationFrame(() => {
+			rafId = null;
+			const source = map.getSource(PREVIEW_SOURCE_ID) as ImageSource | undefined;
+			if (!source) return;
+
+			source.updateImage({
+				url: nextImageUrl,
+				coordinates: getCornerCoordinates()
+			});
+		});
 	};
 
 	const getBbox = (): [number, number, number, number] => {
@@ -157,7 +183,15 @@
 				}
 
 				// 画像プレビュー用URL
-				imageUrl = data.previewImageUrl ?? URL.createObjectURL(data.imageFile);
+				imageUrl =
+					data.previewImageUrl
+					?? generateThumbnail({
+							bands: data.parsedBands,
+							width: data.imageWidth,
+							height: data.imageHeight,
+							nodata: data.parsedNodata,
+							ranges: data.dataRanges
+						});
 				updatePreviewData();
 				initialized = true;
 			});
@@ -167,6 +201,7 @@
 	// コーナードラッグ: 各コーナー独立移動（回転・自由変形対応）
 	const onDragCorner = () => {
 		updatePreviewData();
+		updatePreviewSource();
 	};
 
 	const registration = async () => {
@@ -292,6 +327,10 @@
 			URL.revokeObjectURL(imageUrl);
 		}
 		imageUrl = null;
+		if (rafId !== null) {
+			cancelAnimationFrame(rafId);
+			rafId = null;
+		}
 	};
 
 	const cleanup = () => {

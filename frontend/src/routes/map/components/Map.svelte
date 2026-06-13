@@ -931,10 +931,10 @@
 	});
 
 	$effect(() => {
-		$state.snapshot(geoRefPreviewData);
-		if (showGeoRefForm) {
-			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
-		}
+		const previewUrl = showGeoRefForm ? geoRefPreviewData?.url ?? null : null;
+		previewUrl;
+		showGeoRefForm;
+		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 	});
 
 	// データプレビュー
