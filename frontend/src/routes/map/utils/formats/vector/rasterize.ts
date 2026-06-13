@@ -8,12 +8,12 @@ import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 const DEFAULT_WIDTH = 1024;
 const DEFAULT_HEIGHT = 1024;
 const PADDING_RATIO = 0.05;
-const BACKGROUND_COLOR = '#ffffff';
 const FILL_COLOR = 'rgba(59, 130, 246, 0.22)';
 const STROKE_COLOR = '#2563eb';
 const POINT_COLOR = '#dc2626';
 const POINT_RADIUS = 4;
 const LINE_WIDTH = 2;
+const VECTOR_NODATA = 0;
 
 const canvasToBlob = async (canvas: HTMLCanvasElement): Promise<Blob> => {
 	return new Promise<Blob>((resolve, reject) => {
@@ -155,8 +155,7 @@ export const featureCollectionToGeoRefData = async ({
 		throw new Error('キャンバスの初期化に失敗しました');
 	}
 
-	context.fillStyle = BACKGROUND_COLOR;
-	context.fillRect(0, 0, width, height);
+	context.clearRect(0, 0, width, height);
 	context.strokeStyle = STROKE_COLOR;
 	context.lineWidth = LINE_WIDTH;
 	context.fillStyle = FILL_COLOR;
@@ -187,13 +186,14 @@ export const featureCollectionToGeoRefData = async ({
 	}
 
 	const parsedBands: RasterBands = [rBand, gBand, bBand];
-	const dataRanges = parsedBands.map((band) => getMinMax(band, null));
+	const dataRanges = parsedBands.map((band) => getMinMax(band, VECTOR_NODATA));
 	const blob = await canvasToBlob(canvas);
 	const imageFile = new File([blob], `${entryName}.png`, { type: 'image/png' });
 	const previewImageUrl = generateThumbnail({
 		bands: parsedBands,
 		width,
 		height,
+		nodata: VECTOR_NODATA,
 		ranges: dataRanges
 	});
 
@@ -201,7 +201,7 @@ export const featureCollectionToGeoRefData = async ({
 		entryId: `georef_vector_${crypto.randomUUID()}`,
 		entryName,
 		parsedBands,
-		parsedNodata: null,
+		parsedNodata: VECTOR_NODATA,
 		dataRanges,
 		numBands: 3,
 		imageWidth: width,
