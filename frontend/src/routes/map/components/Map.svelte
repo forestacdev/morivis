@@ -124,6 +124,7 @@
 		contextMenuState: ContextMenuState | null;
 		isDragover: boolean;
 		geoRefPreviewData: GeoRefPreviewData | null;
+		previewOpacity: number;
 		focusFeature: (result: ResultData) => void;
 	}
 
@@ -157,6 +158,7 @@
 		contextMenuState = $bindable(),
 		isDragover = $bindable(),
 		geoRefPreviewData,
+		previewOpacity,
 		focusFeature
 	}: Props = $props();
 
@@ -273,7 +275,7 @@
 					type: 'raster',
 					source: 'georef_image_preview',
 					paint: {
-						'raster-opacity': 0.6
+						'raster-opacity': previewOpacity
 					}
 				}
 			];
@@ -938,7 +940,8 @@
 	$effect(() => {
 		requestStyleUpdateByDependency({
 			previewUrl: isGeoRefRegistrationActive ? (geoRefPreviewData?.url ?? null) : null,
-			showGeoRefTransform: isGeoRefRegistrationActive
+			showGeoRefTransform: isGeoRefRegistrationActive,
+			previewOpacity: isGeoRefRegistrationActive ? previewOpacity : null
 		});
 		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 	});

@@ -63,6 +63,7 @@
 		zoneBboxGeojsonData: FeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>;
 		geoRefData: GeoRefData | null;
 		geoRefPreviewData: GeoRefPreviewData | null;
+		previewOpacity: number;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		transformOptionMode: TransformOptionMode;
@@ -78,6 +79,7 @@
 		zoneBboxGeojsonData = $bindable(),
 		geoRefData = $bindable(),
 		geoRefPreviewData = $bindable(),
+		previewOpacity = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
 		transformOptionMode = $bindable(),
@@ -102,7 +104,7 @@
 	let imageUrl = $state<string | null>(null);
 	let initialized = $state(false);
 	let rafId: number | null = null;
-	let geoRefTransformMode = $state<GeoRefTransformMode>('projective');
+	let geoRefTransformMode = $state<GeoRefTransformMode>('aspect-locked');
 
 	let nw = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
 	let ne = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
@@ -147,6 +149,55 @@
 		sw = new maplibregl.LngLat(nextSw[0], nextSw[1]);
 	};
 
+	const fitToCurrentCorners = (duration = 0) => {
+		map.fitBounds(
+			[
+				[Math.min(nw.lng, sw.lng), Math.min(sw.lat, se.lat)],
+				[Math.max(ne.lng, se.lng), Math.max(nw.lat, ne.lat)]
+			],
+			{ padding: 80, duration }
+		);
+	};
+
+	const applyPreviewOpacity = () => {
+		if (transformOptionMode !== 'georef') return;
+		if (!map.getLayer(`@${PREVIEW_SOURCE_ID}`)) return;
+		map.setPaintProperty(`@${PREVIEW_SOURCE_ID}`, 'raster-opacity', previewOpacity);
+	};
+
+	const initializeGeoRefCorners = (data: GeoRefData) => {
+		if (data.initialCorners) {
+			setCornerCoordinates(data.initialCorners);
+			fitToCurrentCorners(0);
+			return;
+		}
+
+		const center = map.getCenter();
+		const bounds = map.getBounds();
+		const viewWidth = bounds.getEast() - bounds.getWest();
+		const viewHeight = bounds.getNorth() - bounds.getSouth();
+		const cosLat = Math.cos((center.lat * Math.PI) / 180);
+		const aspect = data.imageWidth / data.imageHeight;
+		const size = Math.min(viewWidth, viewHeight) * 0.3;
+
+		let halfW: number;
+		let halfH: number;
+		if (aspect >= 1) {
+			halfW = size / 2 / cosLat;
+			halfH = size / (2 * aspect);
+		} else {
+			halfW = (size * aspect) / 2 / cosLat;
+			halfH = size / 2;
+		}
+
+		setCornerCoordinates([
+			[center.lng - halfW, center.lat + halfH],
+			[center.lng + halfW, center.lat + halfH],
+			[center.lng + halfW, center.lat - halfH],
+			[center.lng - halfW, center.lat - halfH]
+		]);
+	};
+
 	const resetZone = () => {
 		transformOptionMode = null;
 		focusBbox = null;
@@ -176,7 +227,8 @@
 	const cleanupGeoRef = () => {
 		removePreview();
 		initialized = false;
-		geoRefTransformMode = 'projective';
+		geoRefTransformMode = 'aspect-locked';
+		previewOpacity = 0.6;
 		transformOptionMode = null;
 		geoRefData = null;
 		showDialogType = null;
@@ -389,41 +441,10 @@
 		if (geoRefData && transformOptionMode === 'georef' && !initialized) {
 			const data = geoRefData;
 			untrack(() => {
-				geoRefTransformMode = 'projective';
+				geoRefTransformMode = 'aspect-locked';
+				previewOpacity = 0.6;
 				showDataMenu.set(false);
-				if (data.initialCorners) {
-					setCornerCoordinates(data.initialCorners);
-					map.fitBounds(
-						[
-							[Math.min(nw.lng, sw.lng), Math.min(sw.lat, se.lat)],
-							[Math.max(ne.lng, se.lng), Math.max(nw.lat, ne.lat)]
-						],
-						{ padding: 80, duration: 0 }
-					);
-				} else {
-					const center = map.getCenter();
-					const bounds = map.getBounds();
-					const viewWidth = bounds.getEast() - bounds.getWest();
-					const viewHeight = bounds.getNorth() - bounds.getSouth();
-					const cosLat = Math.cos((center.lat * Math.PI) / 180);
-					const aspect = data.imageWidth / data.imageHeight;
-					const size = Math.min(viewWidth, viewHeight) * 0.3;
-
-					let halfW: number;
-					let halfH: number;
-					if (aspect >= 1) {
-						halfW = size / 2 / cosLat;
-						halfH = size / (2 * aspect);
-					} else {
-						halfW = (size * aspect) / 2 / cosLat;
-						halfH = size / 2;
-					}
-
-					nw = new maplibregl.LngLat(center.lng - halfW, center.lat + halfH);
-					ne = new maplibregl.LngLat(center.lng + halfW, center.lat + halfH);
-					se = new maplibregl.LngLat(center.lng + halfW, center.lat - halfH);
-					sw = new maplibregl.LngLat(center.lng - halfW, center.lat - halfH);
-				}
+				initializeGeoRefCorners(data);
 
 				imageUrl =
 					data.previewImageUrl ??
@@ -447,9 +468,38 @@
 		}
 	});
 
+	$effect(() => {
+		applyPreviewOpacity();
+	});
+
+	$effect(() => {
+		if (transformOptionMode !== 'georef') return;
+
+		const handleStyleData = () => {
+			applyPreviewOpacity();
+		};
+
+		map.on('styledata', handleStyleData);
+		return () => {
+			map.off('styledata', handleStyleData);
+		};
+	});
+
 	const bboxDisplay = $derived.by(() => {
 		const bbox = getBbox();
 		return `[${bbox.map((value) => value.toFixed(6)).join(', ')}]`;
+	});
+
+	const cornerDisplay = $derived.by(() => [
+		{ label: 'NW', value: [nw.lng, nw.lat] as [number, number] },
+		{ label: 'NE', value: [ne.lng, ne.lat] as [number, number] },
+		{ label: 'SE', value: [se.lng, se.lat] as [number, number] },
+		{ label: 'SW', value: [sw.lng, sw.lat] as [number, number] }
+	]);
+
+	const centerDisplay = $derived.by(() => {
+		const bbox = getBbox();
+		return [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2] as [number, number];
 	});
 
 	const transModeOptions = [
@@ -469,7 +519,18 @@
 		{#if transformOptionMode === 'zone'}
 			<ZoneMenu bind:selectedEpsgCode {poiData} />
 		{:else if transformOptionMode === 'georef' && geoRefData}
-			<GeoRefMenu {geoRefData} {bboxDisplay} bind:geoRefTransformMode {registrationModeOptions} />
+			<GeoRefMenu
+				{geoRefData}
+				{bboxDisplay}
+				{cornerDisplay}
+				{centerDisplay}
+				bind:geoRefTransformMode
+				bind:previewOpacity
+				{registrationModeOptions}
+				onRefit={() => {
+					fitToCurrentCorners(300);
+				}}
+			/>
 		{/if}
 
 		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2 pb-2">

@@ -250,12 +250,14 @@
 
 	let geoRefData = $state.raw<GeoRefData | null>(null);
 	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
+	let geoRefPreviewOpacity = $state(0.6);
 
 	const closeGeoRefUi = () => {
 		if (geoRefData?.sourceFeatureCollectionId) {
 			GeoRefVectorSourceCache.remove(geoRefData.sourceFeatureCollectionId);
 		}
 		geoRefPreviewData = null;
+		geoRefPreviewOpacity = 0.6;
 		transformOptionMode = null;
 		geoRefData = null;
 		showDialogType = null;
@@ -1129,6 +1131,7 @@
 				bind:contextMenuState
 				bind:isDragover
 				{geoRefPreviewData}
+				previewOpacity={geoRefPreviewOpacity}
 				{searchResults}
 				{selectedEpsgCode}
 				{zoneBboxGeojsonData}
@@ -1210,6 +1213,7 @@
 						bind:contextMenuState
 						bind:isDragover
 						{geoRefPreviewData}
+						previewOpacity={geoRefPreviewOpacity}
 						{searchResults}
 						{selectedEpsgCode}
 						{zoneBboxGeojsonData}
@@ -1342,18 +1346,21 @@
 		bind:zoneBboxGeojsonData
 		bind:geoRefData
 		bind:geoRefPreviewData
+		bind:previewOpacity={geoRefPreviewOpacity}
 		bind:showDialogType
 		bind:dropFile
 		bind:transformOptionMode
 		onZoneConfirm={(epsgCode: EpsgCode) => {
 			geoRefData = null;
 			geoRefPreviewData = null;
+			geoRefPreviewOpacity = 0.6;
 			transformOptionMode = null;
 			zoneConfirmedEpsg = epsgCode;
 			debugLog.info(`Zone確定: epsg=${epsgCode}`);
 		}}
 		onZoneGeoRef={(epsgCode: EpsgCode) => {
 			geoRefPreviewData = null;
+			geoRefPreviewOpacity = 0.6;
 			selectedEpsgCode = epsgCode;
 			transformOptionMode = 'georef';
 			debugLog.info(`GeoRef切替: epsg=${epsgCode}`);
