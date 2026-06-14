@@ -400,6 +400,20 @@ export class ThreeJsLayerManager {
 		}
 	};
 
+	private setOnlyEntryVisible = (entryId: string, visible: boolean) => {
+		const applyVisibility = (group: THREE.Group | null) => {
+			if (!group) return;
+			group.traverse((child) => {
+				if (child.userData.entryId) {
+					child.visible = child.userData.entryId === entryId && visible;
+				}
+			});
+		};
+
+		applyVisibility(this.modelGroup);
+		applyVisibility(this.previewModelGroup);
+	};
+
 	/** カスタムレイヤーを作成（初期化用） */
 	createLayer(): CustomLayerInterface {
 		return {
@@ -500,12 +514,7 @@ export class ThreeJsLayerManager {
 					);
 					this.camera!.projectionMatrix = projectionMatrix.multiply(modelMatrix);
 
-					this.modelGroup!.traverse((child) => {
-						if (child.userData.entryId) {
-							child.visible = child.userData.entryId === loaded.entry.id
-								&& (loaded.entry.style.visible ?? true);
-						}
-					});
+					this.setOnlyEntryVisible(loaded.entry.id, loaded.entry.style.visible ?? true);
 
 					this.renderer!.resetState();
 					this.renderer!.render(this.scene!, this.camera!);

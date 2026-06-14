@@ -5,6 +5,7 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import { createMeshModelEntry } from '$routes/map/data/entries/_factories';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
@@ -23,12 +24,14 @@
 		getMinMax,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
+	import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
 	import {
 		parseLandXml,
 		landXmlFileToDem,
 		type LandXmlSurface,
 		type LandXmlParseResult
 	} from '$routes/map/utils/formats/landxml';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -43,6 +46,7 @@
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		geoRefData: GeoRefData | null;
 	}
 
 	let {
@@ -52,7 +56,8 @@
 		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		geoRefData = $bindable()
 	}: Props = $props();
 
 	let parseResult = $state<LandXmlParseResult | null>(null);
@@ -196,6 +201,68 @@
 		showNotification('3Dメッシュを生成しました', 'success');
 	};
 
+	const prepareGeoRefData = async (projString: string) => {
+		if (!xmlFile) return false;
+
+		const demResult = await landXmlFileToDem(
+			xmlFile,
+			Number(selectedSurfaceIndex),
+			demResolution,
+			projString
+		);
+
+		const { data, width, height, nodata } = demResult;
+		const bands: RasterBands = [data];
+		const ranges: BandDataRange[] = [getMinMax(data, nodata)];
+
+		if (registrationMode === 'mesh') {
+			const meshHeightSampling = sampleRasterMeshHeights({
+				band: data,
+				width,
+				height,
+				nodata,
+				bounds: demResult.bbox,
+				baseValue: ranges[0].min,
+				autoHeightScale: true
+			});
+
+			geoRefData = createRasterGeoRefData({
+				entryId: `geotiff_${crypto.randomUUID()}`,
+				entryName: `${entryName}_${selectedSurface?.name || 'surface'}_mesh`,
+				parsedBands: bands,
+				parsedNodata: nodata,
+				dataRanges: ranges,
+				imageWidth: width,
+				imageHeight: height,
+				imageFile: xmlFile,
+				registrationMode: 'mesh',
+				meshConfig: {
+					baseValue: meshHeightSampling.effectiveBaseValue,
+					heightScale: meshHeightSampling.effectiveHeightScale,
+					attribution: 'LandXML 3D Mesh',
+					opacity: 0.7,
+					shadingEnabled: false,
+					heightColorRampEnabled: true
+				}
+			});
+		} else {
+			geoRefData = createRasterGeoRefData({
+				entryId: `geotiff_${crypto.randomUUID()}`,
+				entryName: `${entryName}_dem`,
+				parsedBands: bands,
+				parsedNodata: nodata,
+				dataRanges: ranges,
+				imageWidth: width,
+				imageHeight: height,
+				imageFile: xmlFile,
+				registrationMode: 'raster'
+			});
+		}
+
+		showDialogType = null;
+		return true;
+	};
+
 	/** DEM生成してエントリ作成 */
 	const createDemEntry = async (projString?: string) => {
 		if (!xmlFile) return;
@@ -320,6 +387,35 @@
 				createDemEntry(projString);
 			});
 		}
+	});
+
+	$effect(() => {
+		if (
+			transformOptionMode !== 'georef'
+			|| geoRefData
+			|| showDialogType !== 'landxml'
+			|| !xmlFile
+			|| !selectedSurface
+		) {
+			return;
+		}
+
+		const projString = getProjContext(selectedEpsgCode);
+		if (!projString) return;
+
+		isProcessing.set(true);
+		prepareGeoRefData(projString)
+			.then((prepared) => {
+				if (!prepared) return;
+				showNotification('LandXML の位置合わせを設定してください', 'info');
+			})
+			.catch((error) => {
+				showNotification('LandXML の位置合わせデータ生成に失敗しました', 'error');
+				console.error(error);
+			})
+			.finally(() => {
+				isProcessing.set(false);
+			});
 	});
 </script>
 

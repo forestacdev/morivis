@@ -96,7 +96,7 @@
 					<img
 						src={previewSrc}
 						alt={layerEntry.metaData.name}
-						class="c-no-drag-icon absolute top-0 left-0 h-full w-full scale-200 cursor-pointer text-left text-sm"
+						class="c-no-drag-icon absolute top-0 left-0 h-full w-full scale-200 cursor-pointer object-cover text-left text-sm"
 						style="opacity: {item.value};"
 					/>
 				</div>

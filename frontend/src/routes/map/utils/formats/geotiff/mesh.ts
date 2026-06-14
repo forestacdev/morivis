@@ -400,7 +400,7 @@ export const createRasterMeshEntry = async (
 			color: '#ffffff',
 			shading: { ...DEFAULT_MESH_SHADING },
 			heightColorRamp: {
-				enabled: false,
+				enabled: true,
 				colorMap: 'jet',
 				min: minHeight,
 				max: maxHeight,

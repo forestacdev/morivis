@@ -40,8 +40,8 @@
 		type EpsgCode,
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
-	import { mapStore } from '$routes/stores/map';
 	import { debugLog } from '$routes/stores/debug';
+	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, showDataMenu } from '$routes/stores/ui';
 
@@ -183,9 +183,7 @@
 			const corners = getCornerCoordinates();
 			await onGeoRefConfirm({ bbox, corners });
 		} catch (error) {
-			debugLog.error(
-				`GeoRef確定失敗: ${error instanceof Error ? error.message : String(error)}`
-			);
+			debugLog.error(`GeoRef確定失敗: ${error instanceof Error ? error.message : String(error)}`);
 			showNotification(
 				error instanceof Error ? error.message : 'エンコードに失敗しました',
 				'error'
@@ -423,7 +421,7 @@
 {#if transformOptionMode}
 	<div
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
-		class="w-side-menu bg-main absolute top-0 left-0 z-30 flex h-full flex-col items-center justify-center p-4 text-base"
+		class="w-side-menu bg-main absolute top-0 left-0 z-30 flex h-full flex-col items-center justify-between p-4 text-base"
 	>
 		<div class="w-full mb-4">
 			<HorizontalSelectBox bind:group={transformOptionMode} options={transModeOptions} />

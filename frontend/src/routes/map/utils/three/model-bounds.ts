@@ -11,7 +11,7 @@ import { findCenterTile } from '$routes/map/utils/map/tile';
 import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transform';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 
-interface ComputeUploadedModelMetaParams {
+export interface ComputeUploadedModelMetaParams {
 	file: File;
 	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc';
 	style: Pick<MeshStyle, 'transform'>;
@@ -19,7 +19,7 @@ interface ComputeUploadedModelMetaParams {
 	normalizeToLocalOrigin?: boolean;
 }
 
-interface UploadedModelMeta {
+export interface UploadedModelMeta {
 	bounds: [number, number, number, number];
 	xyzImageTile: TileXYZ;
 	scaleMultiplier: number;
