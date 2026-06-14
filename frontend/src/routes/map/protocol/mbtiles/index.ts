@@ -5,8 +5,8 @@
  *
  * URL形式: mbtiles://{entryId}/{z}/{x}/{y}
  */
-import { asset } from '$app/paths';
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 
 const PROTOCOL_NAME = 'mbtiles';
 const createAbortError = () => new Error('Request aborted');
@@ -35,7 +35,7 @@ const getCachedDb = (entryId: string): Database | undefined => {
 const getSql = (): Promise<SqlJsStatic> => {
 	if (!sqlPromise) {
 		sqlPromise = initSqlJs({
-			locateFile: () => asset('/sql-wasm.wasm')
+			locateFile: () => resolveStaticAssetPath('/sql-wasm.wasm')
 		});
 	}
 	return sqlPromise;

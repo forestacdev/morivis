@@ -1,5 +1,3 @@
-import { asset } from '$app/paths';
-import maplibregl from 'maplibre-gl';
 import * as THREE from 'three';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -8,7 +6,7 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import type { MeshStyle } from '$routes/map/data/types/model';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
-import { createMercatorModelMatrix } from '$routes/map/utils/three/model-transform';
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 
 export interface ComputeUploadedModelMetaParams {
@@ -17,6 +15,7 @@ export interface ComputeUploadedModelMetaParams {
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 	normalizeToLocalOrigin?: boolean;
+	terrainEnabled?: boolean;
 }
 
 export interface UploadedModelMeta {
@@ -32,9 +31,10 @@ const gltfLoader = new GLTFLoader();
 const objLoader = new OBJLoader();
 const MIN_MODEL_MAX_DIMENSION_METERS = 1;
 const TARGET_MODEL_MAX_DIMENSION_METERS = 5;
-const DRACO_DECODER_PATH = asset('/draco/gltf/');
-const IFC_WASM_PATH = asset('/web-ifc/');
-const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
+const EARTH_CIRCUMFERENCE = 40075016.68557849;
+const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
+const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
+const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
 const dracoLoader = new DRACOLoader();
 let rhino3dmLoaderModulePromise:
 	| Promise<
@@ -407,12 +407,75 @@ const mercatorYToLat = (y: number) => {
 	return THREE.MathUtils.radToDeg(Math.atan(Math.sinh(n)));
 };
 
+const lngToMercatorX = (lng: number) => (lng + 180) / 360;
+
+const latToMercatorY = (lat: number) =>
+	(180
+		- (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + THREE.MathUtils.degToRad(lat) / 2)))
+	/ 360;
+
+const meterInMercatorCoordinateUnits = (lat: number) =>
+	1 / (EARTH_CIRCUMFERENCE * Math.cos(THREE.MathUtils.degToRad(lat)));
+
+const createUploadedModelMercatorMatrix = (
+	style: Pick<MeshStyle, 'transform'>,
+	terrainEnabled = false
+): THREE.Matrix4 => {
+	const {
+		lng,
+		lat,
+		altitude,
+		heightOffset,
+		heightScale,
+		baseScale,
+		baseRotationX,
+		baseRotationY,
+		baseRotationZ,
+		scale,
+		rotationX,
+		rotationY,
+		rotationZ
+	} = style.transform;
+
+	const effectiveAltitude = (terrainEnabled ? altitude : 0) + (heightOffset ?? 0);
+	const mercatorScale = meterInMercatorCoordinateUnits(lat);
+	const mercatorX = lngToMercatorX(lng);
+	const mercatorY = latToMercatorY(lat);
+	const mercatorZ = effectiveAltitude * mercatorScale;
+
+	const rotationXMatrix = new THREE.Matrix4().makeRotationAxis(
+		new THREE.Vector3(1, 0, 0),
+		((baseRotationX ?? 0) + rotationX) * (Math.PI / 180)
+	);
+	const rotationYMatrix = new THREE.Matrix4().makeRotationAxis(
+		new THREE.Vector3(0, 1, 0),
+		((baseRotationY ?? 0) + rotationY) * (Math.PI / 180)
+	);
+	const rotationZMatrix = new THREE.Matrix4().makeRotationAxis(
+		new THREE.Vector3(0, 0, 1),
+		((baseRotationZ ?? 0) + rotationZ) * (Math.PI / 180)
+	);
+	const scaleMatrix = new THREE.Matrix4().makeScale(
+		mercatorScale * (baseScale ?? 1) * scale,
+		-mercatorScale * (baseScale ?? 1) * scale * (heightScale ?? 1),
+		-mercatorScale * (baseScale ?? 1) * scale
+	);
+
+	return new THREE.Matrix4()
+		.makeTranslation(mercatorX, mercatorY, mercatorZ)
+		.multiply(rotationXMatrix)
+		.multiply(rotationYMatrix)
+		.multiply(rotationZMatrix)
+		.multiply(scaleMatrix);
+};
+
 export const computeUploadedModelMeta = async ({
 	file,
 	format,
 	style,
 	resourceUrls,
-	normalizeToLocalOrigin
+	normalizeToLocalOrigin,
+	terrainEnabled = false
 }: ComputeUploadedModelMetaParams): Promise<UploadedModelMeta> => {
 	const { object, animationNames } = await getUploadedModelObject(
 		file,
@@ -439,16 +502,15 @@ export const computeUploadedModelMeta = async ({
 			? TARGET_MODEL_MAX_DIMENSION_METERS / localMaxDimension
 			: 1;
 
-	const modelMatrix = createMercatorModelMatrix({
-		type: 'mesh',
-		opacity: 1,
-		wireframe: false,
-		color: '#ffffff',
-		transform: {
-			...style.transform,
-			baseScale: (style.transform.baseScale ?? 1) * scaleMultiplier
-		}
-	});
+	const modelMatrix = createUploadedModelMercatorMatrix(
+		{
+			transform: {
+				...style.transform,
+				baseScale: (style.transform.baseScale ?? 1) * scaleMultiplier
+			}
+		},
+		terrainEnabled
+	);
 	const corners = [
 		new THREE.Vector3(box.min.x, box.min.y, box.min.z),
 		new THREE.Vector3(box.min.x, box.min.y, box.max.z),

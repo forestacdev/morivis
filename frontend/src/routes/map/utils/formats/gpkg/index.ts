@@ -5,10 +5,9 @@
  * References:
  * - https://www.ogc.org/standards/geopackage/
  */
-import { asset } from '$app/paths';
-
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import type { RasterBands } from '$routes/map/utils/formats/geotiff';
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 
 export interface GeoJSONFeature {
 	type: 'Feature';
@@ -102,7 +101,7 @@ const sendCommand = <T>(msg: Record<string, any>, transfer?: Transferable[]): Pr
  * 以降の getGpkgInfoFromOpen / gpkgToGeoJsonFromOpen 等はデータ転送なしで高速
  */
 export const openGpkg = async (data: Uint8Array): Promise<void> => {
-	const wasmUrl = asset('/sql-wasm.wasm');
+	const wasmUrl = resolveStaticAssetPath('/sql-wasm.wasm');
 	const copy = new Uint8Array(data);
 	await sendCommand<boolean>({ type: 'open', data: copy, wasmUrl }, [copy.buffer]);
 };

@@ -5,8 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const wasmPath = resolve(import.meta.dirname, '../../../../../../static/sql-wasm.wasm');
 
-vi.mock('$app/paths', () => ({
-	asset: (path: string) => {
+vi.mock('$routes/map/utils/platform/asset-path', () => ({
+	resolveStaticAssetPath: (path: string) => {
 		if (path === '/sql-wasm.wasm') {
 			return `file://${wasmPath}`;
 		}

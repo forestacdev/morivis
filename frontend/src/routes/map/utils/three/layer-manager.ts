@@ -1,4 +1,3 @@
-import { asset } from '$app/paths';
 import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import {
 	DEFAULT_MESH_SHADING,
@@ -7,6 +6,7 @@ import {
 	type MeshStyle
 } from '$routes/map/data/types/model';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import {
 	calculateModelTransform,
 	type ModelTransform
@@ -19,9 +19,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
-const DRACO_DECODER_PATH = asset('/draco/gltf/');
-const IFC_WASM_PATH = asset('/web-ifc/');
-const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
+const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
+const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
+const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
 let rhino3dmLoaderModulePromise:
 	| Promise<
 		typeof import('three/addons/loaders/3DMLoader.js')
