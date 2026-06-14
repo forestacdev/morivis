@@ -340,7 +340,7 @@
 				resolvedBbox = rawBbox;
 				GeoTiffCache.setBbox(id, rawBbox);
 			} else if (rawBbox && auxEpsg) {
-				convertBboxWithEpsg(auxEpsg);
+				await convertBboxWithEpsg(auxEpsg);
 				showNotification(`aux.xmlから座標系 EPSG:${auxEpsg} を検出しました`, 'success');
 			}
 
@@ -427,7 +427,7 @@
 				GeoTiffCache.setBbox(id, rawBbox);
 			} else if (rawBbox && auxEpsg) {
 				// aux.xmlに座標系があれば自動変換
-				convertBboxWithEpsg(auxEpsg);
+				await convertBboxWithEpsg(auxEpsg);
 				showNotification(`aux.xmlから座標系 EPSG:${auxEpsg} を検出しました`, 'success');
 			}
 

@@ -4,6 +4,7 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import { createMeshModelEntry } from '$routes/map/data/entries/_factories';
@@ -455,18 +456,15 @@
 	</div>
 
 	{#if registrationMode === 'dem'}
-		<div class="flex w-full items-center gap-2 p-2">
-			<label class="flex grow flex-col gap-1">
-				<span class="text-sm text-gray-300">解像度 (長辺ピクセル数)</span>
-				<input
-					type="number"
-					step="1"
-					min="64"
-					max="4096"
-					bind:value={demResolution}
-					class="bg-sub rounded border border-gray-600 p-2 text-white"
-				/>
-			</label>
+		<div class="w-full p-2">
+			<RangeSlider
+				label="解像度"
+				bind:value={demResolution}
+				min={64}
+				max={4096}
+				step={64}
+				isInt={true}
+			/>
 		</div>
 	{:else if selectedSurface}
 		<div class="w-full p-2 text-sm text-gray-300">
