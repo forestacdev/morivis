@@ -26,7 +26,8 @@
 		"preinstall": "npx only-allow pnpm",
 		"msw:init": "msw init static --save=false",
 		"generate-pwa-assets": "pwa-assets-generator",
-		"typedoc": "npx typedoc --plugin typedoc-plugin-markdown",
+		"typedoc": "pnpm exec typedoc",
+		"typedoc:markdown": "pnpm exec typedoc --plugin typedoc-plugin-markdown --out docs-markdown",
 		"typedoc:json": "pnpm exec typedoc --json docs/typedoc.json",
 		"typedoc:diagram": "pnpm run typedoc:json && node ./scripts/generate-typedoc-mermaid.mjs && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i ./docs/architecture/diagrams/morivis-layer-entry-hierarchy.mmd -o ./docs/architecture/diagrams/morivis-layer-entry-hierarchy.svg && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i ./docs/architecture/diagrams/morivis-layer-entry-hierarchy.mmd -o ./docs/architecture/diagrams/morivis-layer-entry-hierarchy.png -b transparent && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i ./docs/architecture/diagrams/morivis-vector-entry-detail.mmd -o ./docs/architecture/diagrams/morivis-vector-entry-detail.svg && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i ./docs/architecture/diagrams/morivis-vector-entry-detail.mmd -o ./docs/architecture/diagrams/morivis-vector-entry-detail.png -b transparent && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i ./docs/architecture/diagrams/morivis-raster-entry-detail.mmd -o ./docs/architecture/diagrams/morivis-raster-entry-detail.svg && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i ./docs/architecture/diagrams/morivis-raster-entry-detail.mmd -o ./docs/architecture/diagrams/morivis-raster-entry-detail.png -b transparent && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i ./docs/architecture/diagrams/morivis-model-entry-detail.mmd -o ./docs/architecture/diagrams/morivis-model-entry-detail.svg && pnpm exec mmdc -p ./.mmdc-puppeteer.json -i ./docs/architecture/diagrams/morivis-model-entry-detail.mmd -o ./docs/architecture/diagrams/morivis-model-entry-detail.png -b transparent"
 	},

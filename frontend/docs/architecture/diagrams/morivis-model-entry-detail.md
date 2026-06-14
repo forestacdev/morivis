@@ -1,0 +1,31 @@
+# Morivis Model Entry Detail
+
+TypeDoc JSON の型階層に、model の主要分類と mesh format / deck vector 分岐、および three.js / deck.gl への描画先を補って整理した詳細図です。
+
+```mermaid
+flowchart TD
+    MorivisModelEntry["MorivisModelEntry"] --> MeshEntry["MeshEntry"]
+    MorivisModelEntry["MorivisModelEntry"] --> Tiles3DEntry["Tiles3DEntry"]
+    MorivisModelEntry["MorivisModelEntry"] --> PointCloudEntry["PointCloudEntry"]
+    MorivisModelEntry["MorivisModelEntry"] --> DeckVectorEntry["DeckVectorEntry"]
+    DeckVectorEntry["DeckVectorEntry"] --> GeoArrowEntry["GeoArrowEntry"]
+    DeckVectorEntry["DeckVectorEntry"] --> GeoJson3DEntry["GeoJson3DEntry"]
+    MeshEntry["MeshEntry"] --> glTF["glTF"]
+    MeshEntry["MeshEntry"] --> OBJ["OBJ"]
+    MeshEntry["MeshEntry"] --> 3DS["3DS"]
+    MeshEntry["MeshEntry"] --> DAE["DAE"]
+    MeshEntry["MeshEntry"] --> 3DM["3DM"]
+    MeshEntry["MeshEntry"] --> FBX["FBX"]
+    MeshEntry["MeshEntry"] --> DRC["DRC"]
+    MeshEntry["MeshEntry"] --> 3MF["3MF"]
+    MeshEntry["MeshEntry"] --> AMF["AMF"]
+    MeshEntry["MeshEntry"] --> IFC["IFC"]
+    Tiles3DEntry["Tiles3DEntry"] --> 3D_Tiles["3D Tiles"]
+    PointCloudEntry["PointCloudEntry"] --> Point_Cloud["Point Cloud"]
+    GeoArrowEntry["GeoArrowEntry"] --> GeoArrow["GeoArrow"]
+    GeoJson3DEntry["GeoJson3DEntry"] --> GeoJSON_3D["GeoJSON 3D"]
+    MeshEntry["MeshEntry"] --> three_js["three.js"]
+    Tiles3DEntry["Tiles3DEntry"] --> deck_gl["deck.gl"]
+    PointCloudEntry["PointCloudEntry"] --> deck_gl["deck.gl"]
+    DeckVectorEntry["DeckVectorEntry"] --> deck_gl["deck.gl"]
+```

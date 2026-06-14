@@ -57,8 +57,16 @@ docs-serve:
 typedoc:
     cd frontend && pnpm run typedoc
 
+typedoc-markdown:
+    cd frontend && pnpm run typedoc:markdown
+
 typedoc-diagram:
     cd frontend && pnpm run typedoc:diagram
+
+typedoc-all:
+    just typedoc
+    just typedoc-markdown
+    just typedoc-diagram
 
 # node_modules含む完全クリア & 再インストール & dev再起動
 clean-all:

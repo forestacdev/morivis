@@ -1,0 +1,37 @@
+# Morivis Vector Entry Detail
+
+TypeDoc JSON の型階層に、geometry ごとで共通に扱う format 群を補って整理した vector 詳細図です。
+
+```mermaid
+flowchart TD
+    MorivisVectorEntry["MorivisVectorEntry"] --> VectorPolygonEntry["VectorPolygonEntry"]
+    MorivisVectorEntry["MorivisVectorEntry"] --> VectorLineEntry["VectorLineEntry"]
+    MorivisVectorEntry["MorivisVectorEntry"] --> VectorPointEntry["VectorPointEntry"]
+    VectorPolygonEntry["VectorPolygonEntry"] --> GeoJSON["GeoJSON"]
+    VectorPolygonEntry["VectorPolygonEntry"] --> MVT["MVT"]
+    VectorPolygonEntry["VectorPolygonEntry"] --> PMTiles["PMTiles"]
+    VectorPolygonEntry["VectorPolygonEntry"] --> MBTiles["MBTiles"]
+    VectorPolygonEntry["VectorPolygonEntry"] --> FlatGeobuf["FlatGeobuf"]
+    VectorPolygonEntry["VectorPolygonEntry"] --> GeoJSON_Tile["GeoJSON Tile"]
+    VectorPolygonEntry["VectorPolygonEntry"] --> ArcGIS_FeatureServer["ArcGIS FeatureServer"]
+    VectorPolygonEntry["VectorPolygonEntry"] --> OGC_API_Features["OGC API Features"]
+    VectorPolygonEntry["VectorPolygonEntry"] --> WFS["WFS"]
+    VectorLineEntry["VectorLineEntry"] --> GeoJSON["GeoJSON"]
+    VectorLineEntry["VectorLineEntry"] --> MVT["MVT"]
+    VectorLineEntry["VectorLineEntry"] --> PMTiles["PMTiles"]
+    VectorLineEntry["VectorLineEntry"] --> MBTiles["MBTiles"]
+    VectorLineEntry["VectorLineEntry"] --> FlatGeobuf["FlatGeobuf"]
+    VectorLineEntry["VectorLineEntry"] --> GeoJSON_Tile["GeoJSON Tile"]
+    VectorLineEntry["VectorLineEntry"] --> ArcGIS_FeatureServer["ArcGIS FeatureServer"]
+    VectorLineEntry["VectorLineEntry"] --> OGC_API_Features["OGC API Features"]
+    VectorLineEntry["VectorLineEntry"] --> WFS["WFS"]
+    VectorPointEntry["VectorPointEntry"] --> GeoJSON["GeoJSON"]
+    VectorPointEntry["VectorPointEntry"] --> MVT["MVT"]
+    VectorPointEntry["VectorPointEntry"] --> PMTiles["PMTiles"]
+    VectorPointEntry["VectorPointEntry"] --> MBTiles["MBTiles"]
+    VectorPointEntry["VectorPointEntry"] --> FlatGeobuf["FlatGeobuf"]
+    VectorPointEntry["VectorPointEntry"] --> GeoJSON_Tile["GeoJSON Tile"]
+    VectorPointEntry["VectorPointEntry"] --> ArcGIS_FeatureServer["ArcGIS FeatureServer"]
+    VectorPointEntry["VectorPointEntry"] --> OGC_API_Features["OGC API Features"]
+    VectorPointEntry["VectorPointEntry"] --> WFS["WFS"]
+```
