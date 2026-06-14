@@ -8,7 +8,6 @@ import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 
 const DEFAULT_WIDTH = 1024;
 const DEFAULT_HEIGHT = 1024;
-const PADDING_RATIO = 0.05;
 const FILL_COLOR = 'rgba(220, 38, 38, 0.22)';
 const STROKE_COLOR = '#dc2626';
 const POINT_COLOR = '#dc2626';
@@ -32,16 +31,10 @@ const createProjector = (bbox: [number, number, number, number], width: number, 
 	const [minX, minY, maxX, maxY] = bbox;
 	const spanX = Math.max(maxX - minX, Number.EPSILON);
 	const spanY = Math.max(maxY - minY, Number.EPSILON);
-	const paddedMinX = minX - spanX * PADDING_RATIO;
-	const paddedMaxX = maxX + spanX * PADDING_RATIO;
-	const paddedMinY = minY - spanY * PADDING_RATIO;
-	const paddedMaxY = maxY + spanY * PADDING_RATIO;
-	const paddedSpanX = Math.max(paddedMaxX - paddedMinX, Number.EPSILON);
-	const paddedSpanY = Math.max(paddedMaxY - paddedMinY, Number.EPSILON);
 
 	return (coordinate: number[]): [number, number] => {
-		const x = ((coordinate[0] - paddedMinX) / paddedSpanX) * width;
-		const y = height - ((coordinate[1] - paddedMinY) / paddedSpanY) * height;
+		const x = ((coordinate[0] - minX) / spanX) * width;
+		const y = height - ((coordinate[1] - minY) / spanY) * height;
 		return [x, y];
 	};
 };
