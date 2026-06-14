@@ -6,6 +6,7 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
@@ -563,18 +564,15 @@
 		</div>
 
 		{#if registrationMode === 'raster'}
-			<div class="flex w-full items-center gap-2 px-2">
-				<label class="flex grow flex-col gap-1">
-					<span class="text-sm text-gray-300">解像度 (長辺ピクセル数)</span>
-					<input
-						type="number"
-						step="1"
-						min="128"
-						max="4096"
-						bind:value={rasterResolution}
-						class="bg-sub rounded border border-gray-600 p-2 text-white"
-					/>
-				</label>
+			<div class="w-full px-2">
+				<RangeSlider
+					label="ピクセルサイズ"
+					bind:value={rasterResolution}
+					min={128}
+					max={4096}
+					step={128}
+					isInt={true}
+				/>
 			</div>
 			<div class="w-full px-2 text-xs text-gray-400">
 				各セルの最大標高で 1 バンド DEM を生成します。

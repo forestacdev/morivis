@@ -11,6 +11,21 @@ export interface RasterizePointCloudResult {
 	nodata: number;
 }
 
+const DIRECT_HIT_NONE = Number.NEGATIVE_INFINITY;
+
+const resolveInfluenceRadius = (
+	pointCount: number,
+	width: number,
+	height: number
+): number => {
+	const pixelCount = Math.max(1, width * height);
+	const pointsPerPixel = pointCount / pixelCount;
+
+	if (pointsPerPixel >= 1) return 1;
+	if (pointsPerPixel >= 0.25) return 1.5;
+	return 2;
+};
+
 const buildInteriorMask = (
 	band: Float32Array,
 	width: number,
@@ -161,8 +176,11 @@ export const rasterizePointCloudToDem = ({
 }: RasterizePointCloudParams): RasterizePointCloudResult => {
 	const { width, height } = resolveRasterSize(bbox, longEdgePixels);
 	const nodata = -9999;
-	const band = new Float32Array(width * height);
-	band.fill(nodata);
+	const size = width * height;
+	const band = new Float32Array(size);
+	const weightSum = new Float32Array(size);
+	const directHitMax = new Float32Array(size);
+	directHitMax.fill(DIRECT_HIT_NONE);
 
 	const minX = bbox[0];
 	const minY = bbox[1];
@@ -170,6 +188,9 @@ export const rasterizePointCloudToDem = ({
 	const maxY = bbox[3];
 	const spanX = Math.max(maxX - minX, 1e-9);
 	const spanY = Math.max(maxY - minY, 1e-9);
+	const pointCount = Math.floor(positions.length / 3);
+	const influenceRadius = resolveInfluenceRadius(pointCount, width, height);
+	const influenceRadiusSq = influenceRadius * influenceRadius;
 
 	for (let i = 0; i < positions.length; i += 3) {
 		const x = positions[i];
@@ -180,19 +201,49 @@ export const rasterizePointCloudToDem = ({
 
 		const normalizedX = (x - minX) / spanX;
 		const normalizedY = (maxY - y) / spanY;
-		const pixelX = Math.min(width - 1, Math.max(0, Math.floor(normalizedX * width)));
-		const pixelY = Math.min(height - 1, Math.max(0, Math.floor(normalizedY * height)));
-		const index = pixelY * width + pixelX;
-		const current = band[index];
+		const gridX = Math.min(width - 1, Math.max(0, normalizedX * Math.max(width - 1, 1)));
+		const gridY = Math.min(height - 1, Math.max(0, normalizedY * Math.max(height - 1, 1)));
 
-		if (current === nodata || z > current) {
-			band[index] = z;
+		const directPixelX = Math.min(width - 1, Math.max(0, Math.round(gridX)));
+		const directPixelY = Math.min(height - 1, Math.max(0, Math.round(gridY)));
+		const directIndex = directPixelY * width + directPixelX;
+		if (z > directHitMax[directIndex]) {
+			directHitMax[directIndex] = z;
+		}
+
+		const minPixelX = Math.max(0, Math.floor(gridX - influenceRadius));
+		const maxPixelX = Math.min(width - 1, Math.ceil(gridX + influenceRadius));
+		const minPixelY = Math.max(0, Math.floor(gridY - influenceRadius));
+		const maxPixelY = Math.min(height - 1, Math.ceil(gridY + influenceRadius));
+
+		for (let pixelY = minPixelY; pixelY <= maxPixelY; pixelY++) {
+			const dy = pixelY - gridY;
+			for (let pixelX = minPixelX; pixelX <= maxPixelX; pixelX++) {
+				const dx = pixelX - gridX;
+				const distanceSq = dx * dx + dy * dy;
+				if (distanceSq > influenceRadiusSq) continue;
+
+				const index = pixelY * width + pixelX;
+				const weight = distanceSq < 1e-6 ? 1e6 : 1 / distanceSq;
+				band[index] += z * weight;
+				weightSum[index] += weight;
+			}
 		}
 	}
 
-	// TODO: GDAL gdal_grid の invdistnn 風補間に寄せるなら、500万点級でも耐えられるよう
-	// spatial hash などの空間インデックス前提で worker 内実装に置き換える。
-	// 現状は nearest 系に寄せて、点が落ちなかった内部セルを最近傍値で埋めている。
+	for (let index = 0; index < size; index++) {
+		if (weightSum[index] <= 0) {
+			band[index] = nodata;
+			continue;
+		}
+
+		const averaged = band[index] / weightSum[index];
+		const directHit = directHitMax[index];
+		band[index] = directHit === DIRECT_HIT_NONE ? averaged : Math.max(averaged, directHit);
+	}
+
+	// TODO: さらに GDAL gdal_grid の invdistnn に寄せるなら、近傍探索を全点走査ではなく
+	// spatial hash / grid index 前提へ差し替える。現状は worker 内で局所セルへ重み配分する簡易版。
 	const interiorMask = buildInteriorMask(band, width, height, nodata);
 	fillMaskedNodataByNearest(band, width, height, nodata, interiorMask);
 
