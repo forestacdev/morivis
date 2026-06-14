@@ -86,6 +86,7 @@
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
+	import { GeoRefVectorSourceCache } from '$routes/map/utils/cache/georef-vector-source-cache';
 	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
@@ -245,10 +246,13 @@
 	let transformOptionMode = $state<'zone' | 'georef' | null>(null);
 	let isPreparingGeoRefData = $state(false);
 
-	let geoRefData = $state<GeoRefData | null>(null);
+	let geoRefData = $state.raw<GeoRefData | null>(null);
 	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
 
 	const closeGeoRefUi = () => {
+		if (geoRefData?.sourceFeatureCollectionId) {
+			GeoRefVectorSourceCache.remove(geoRefData.sourceFeatureCollectionId);
+		}
 		geoRefPreviewData = null;
 		transformOptionMode = null;
 		geoRefData = null;
@@ -270,15 +274,17 @@
 
 			if (
 				data.sourceType === 'vector' &&
-				data.sourceFeatureCollection &&
+				data.sourceFeatureCollectionId &&
 				data.initialCorners
 			) {
-				const plainSourceFeatureCollection = JSON.parse(
-					JSON.stringify(data.sourceFeatureCollection)
-				) as AppFeatureCollection;
+				const sourceFeatureCollection = GeoRefVectorSourceCache.get(data.sourceFeatureCollectionId);
+				if (!sourceFeatureCollection) {
+					throw new Error('GeoRefベクターの元データが見つかりません');
+				}
+
 				const plainCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
 				const warpedGeojson = await warpGeoJSONByCornersParallel(
-					plainSourceFeatureCollection,
+					sourceFeatureCollection,
 					data.initialCorners,
 					plainCorners
 				);

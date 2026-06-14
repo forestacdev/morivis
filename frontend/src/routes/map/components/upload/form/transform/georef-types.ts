@@ -1,4 +1,3 @@
-import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import type { RasterBands } from '$routes/map/utils/formats/geotiff';
 import type { GeoRefCorners } from '$routes/map/utils/transform/georef/homography';
@@ -25,7 +24,7 @@ export interface GeoRefData {
 	imageFile: File;
 	previewImageUrl?: string;
 	initialCorners?: GeoRefCorners;
-	sourceFeatureCollection?: FeatureCollection;
+	sourceFeatureCollectionId?: string;
 	registrationMode: RasterRegistrationMode;
 }
 
