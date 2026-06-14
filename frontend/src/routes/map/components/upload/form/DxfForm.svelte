@@ -20,7 +20,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { dxfFileToGeoJsonBrowser } from '$routes/map/utils/formats/dxf';
+	import { dxfFileToGeoJsonInWorker } from '$routes/map/utils/formats/dxf/analyze';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -90,7 +90,7 @@
 	$effect(() => {
 		if (dxfFile) {
 			isProcessing.set(true);
-			dxfFileToGeoJsonBrowser(dxfFile)
+			dxfFileToGeoJsonInWorker(dxfFile)
 				.then((geojson) => {
 					rawGeojson = geojson as unknown as FeatureCollection;
 					const types = getGeometryTypes(rawGeojson!);

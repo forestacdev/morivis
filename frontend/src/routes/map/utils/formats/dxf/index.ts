@@ -1,5 +1,6 @@
 import DxfParser from 'dxf-parser';
-import type { Feature, FeatureCollection, Geometry } from 'geojson';
+import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
+import type { AnyGeometry } from '$routes/map/types/geometry';
 
 /**
  * DXFファイルの内容をGeoJSONに変換
@@ -31,7 +32,7 @@ export const dxfToGeoJson = (dxfText: string): FeatureCollection => {
  * DXFエンティティをGeoJSON Featureに変換
  */
 const entityToFeature = (entity: any): Feature | null => {
-	let geometry: Geometry | null = null;
+	let geometry: AnyGeometry | null = null;
 	const colorHex = entity.color != null
 		? `#${(entity.color as number).toString(16).padStart(6, '0')}`
 		: undefined;
@@ -177,8 +178,8 @@ const approximateCircle = (
 	cy: number,
 	radius: number,
 	segments: number = 36
-): number[][] => {
-	const coords: number[][] = [];
+): [number, number][] => {
+	const coords: [number, number][] = [];
 
 	for (let i = 0; i <= segments; i++) {
 		const angle = (i / segments) * Math.PI * 2;
@@ -200,8 +201,8 @@ const approximateArc = (
 	startAngle: number,
 	endAngle: number,
 	segments: number = 36
-): number[][] => {
-	const coords: number[][] = [];
+): [number, number][] => {
+	const coords: [number, number][] = [];
 
 	// 角度を正規化（DXFはラジアン）
 	const angle1 = startAngle;
@@ -235,8 +236,8 @@ const approximateEllipse = (
 	startAngle: number,
 	endAngle: number,
 	segments: number = 36
-): number[][] => {
-	const coords: number[][] = [];
+): [number, number][] => {
+	const coords: [number, number][] = [];
 
 	const majorRadius = Math.sqrt(majorAxisEndPoint.x ** 2 + majorAxisEndPoint.y ** 2);
 	const minorRadius = majorRadius * axisRatio;
@@ -276,8 +277,13 @@ const approximateEllipse = (
 const readFileAsText = async (file: File): Promise<string> => {
 	const buffer = await file.arrayBuffer();
 
-	// まずUTF-8で試行
+	return readArrayBufferAsText(buffer);
+};
+
+export const readArrayBufferAsText = (buffer: ArrayBuffer): string => {
 	const utf8Text = new TextDecoder('utf-8').decode(buffer);
+
+	// まずUTF-8で試行
 	if (!utf8Text.includes('\uFFFD')) {
 		return utf8Text;
 	}
@@ -295,10 +301,13 @@ const readFileAsText = async (file: File): Promise<string> => {
 	}
 };
 
+export const dxfArrayBufferToGeoJson = (buffer: ArrayBuffer): FeatureCollection => {
+	return dxfToGeoJson(readArrayBufferAsText(buffer));
+};
+
 /**
  * ブラウザでのファイル読み込み用
  */
 export const dxfFileToGeoJsonBrowser = async (file: File): Promise<FeatureCollection> => {
-	const text = await readFileAsText(file);
-	return dxfToGeoJson(text);
+	return dxfArrayBufferToGeoJson(await file.arrayBuffer());
 };

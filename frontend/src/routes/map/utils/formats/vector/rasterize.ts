@@ -13,7 +13,7 @@ const FILL_COLOR = 'rgba(220, 38, 38, 0.22)';
 const STROKE_COLOR = '#dc2626';
 const POINT_COLOR = '#dc2626';
 const POINT_RADIUS = 4;
-const LINE_WIDTH = 2;
+const LINE_WIDTH = 1;
 const VECTOR_NODATA = 0;
 
 const canvasToBlob = async (canvas: HTMLCanvasElement): Promise<Blob> => {

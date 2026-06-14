@@ -17,7 +17,8 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { convertDMFileToGeoJSON, getDMInfo, type DMInfo } from '$routes/map/utils/formats/dm';
+	import type { DMInfo } from '$routes/map/utils/formats/dm';
+	import { analyzeDmFileInWorker } from '$routes/map/utils/formats/dm/analyze';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -155,14 +156,10 @@
 	$effect(() => {
 		if (dmFile) {
 			isProcessing.set(true);
-			getDMInfo(dmFile).then((info) => {
-				zoneInfo = info;
-				// selectedEpsgCode = String(6668 + info.defaultZone) as EpsgCode;
-			});
-
-			convertDMFileToGeoJSON(dmFile, {})
-				.then((dmResult) => {
-					rawGeojson = dmResult as unknown as FeatureCollection;
+			analyzeDmFileInWorker(dmFile)
+				.then(({ geojson, info }) => {
+					zoneInfo = info;
+					rawGeojson = geojson as unknown as FeatureCollection;
 					const types = getDmGeometryTypes(rawGeojson);
 
 					if (types.length === 1) {
