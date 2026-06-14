@@ -62,7 +62,7 @@
 		transformOptionMode: TransformOptionMode;
 		onZoneConfirm: (epsgCode: EpsgCode) => void;
 		onZoneGeoRef: (epsgCode: EpsgCode) => void;
-		onGeoRefConfirm: (payload: GeoRefConfirmPayload) => void;
+		onGeoRefConfirm: (payload: GeoRefConfirmPayload) => Promise<void>;
 	}
 
 	let {
@@ -181,7 +181,7 @@
 			);
 			const bbox = getBbox();
 			const corners = getCornerCoordinates();
-			onGeoRefConfirm({ bbox, corners });
+			await onGeoRefConfirm({ bbox, corners });
 		} catch (error) {
 			debugLog.error(
 				`GeoRef確定失敗: ${error instanceof Error ? error.message : String(error)}`

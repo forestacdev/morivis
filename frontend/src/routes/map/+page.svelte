@@ -1277,7 +1277,7 @@
 		}}
 		onGeoRefConfirm={(payload: GeoRefConfirmPayload) => {
 			debugLog.info(`GeoRef確定値受信: bbox=${payload.bbox.join(',')}`);
-			void finalizeGeoRefEntry(payload);
+			return finalizeGeoRefEntry(payload);
 		}}
 	/>
 {/if}
