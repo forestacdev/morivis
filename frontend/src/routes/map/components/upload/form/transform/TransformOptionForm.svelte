@@ -19,6 +19,7 @@
 		GeoRefConfirmPayload,
 		GeoRefData,
 		GeoRefPreviewData,
+		GeoRefTransformMode,
 		RasterRegistrationMode
 	} from '$routes/map/components/upload/form/transform/georef-types';
 	import GeoRefMenu from '$routes/map/components/upload/form/transform/GeoRefMenu.svelte';
@@ -40,6 +41,11 @@
 		type EpsgCode,
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
+	import {
+		applyAspectLockedGeoRefDrag,
+		getGeoRefAspectRatio,
+		type GeoRefCornerKey
+	} from '$routes/map/utils/transform/georef/aspect-locked';
 	import { debugLog } from '$routes/stores/debug';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -96,6 +102,7 @@
 	let imageUrl = $state<string | null>(null);
 	let initialized = $state(false);
 	let rafId: number | null = null;
+	let geoRefTransformMode = $state<GeoRefTransformMode>('projective');
 
 	let nw = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
 	let ne = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
@@ -118,6 +125,26 @@
 		const lngs = [nw.lng, ne.lng, se.lng, sw.lng];
 		const lats = [nw.lat, ne.lat, se.lat, sw.lat];
 		return [Math.min(...lngs), Math.min(...lats), Math.max(...lngs), Math.max(...lats)];
+	};
+
+	const clampCornerCoordinate = ([lng, lat]: [number, number]): [number, number] => [
+		Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, lng)),
+		Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, lat))
+	];
+
+	const setCornerCoordinates = (
+		corners: [[number, number], [number, number], [number, number], [number, number]]
+	) => {
+		const [nextNw, nextNe, nextSe, nextSw] = corners.map(clampCornerCoordinate) as [
+			[number, number],
+			[number, number],
+			[number, number],
+			[number, number]
+		];
+		nw = new maplibregl.LngLat(nextNw[0], nextNw[1]);
+		ne = new maplibregl.LngLat(nextNe[0], nextNe[1]);
+		se = new maplibregl.LngLat(nextSe[0], nextSe[1]);
+		sw = new maplibregl.LngLat(nextSw[0], nextSw[1]);
 	};
 
 	const resetZone = () => {
@@ -149,6 +176,7 @@
 	const cleanupGeoRef = () => {
 		removePreview();
 		initialized = false;
+		geoRefTransformMode = 'projective';
 		transformOptionMode = null;
 		geoRefData = null;
 		showDialogType = null;
@@ -221,6 +249,20 @@
 				coordinates: getCornerCoordinates()
 			});
 		});
+	};
+
+	const handleGeoRefCornerDrag = (cornerKey: GeoRefCornerKey, lngLat: maplibregl.LngLat) => {
+		if (geoRefTransformMode === 'aspect-locked' && geoRefData) {
+			const nextCorners = applyAspectLockedGeoRefDrag(
+				getCornerCoordinates(),
+				cornerKey,
+				[lngLat.lng, lngLat.lat],
+				getGeoRefAspectRatio(geoRefData.imageWidth, geoRefData.imageHeight)
+			);
+			setCornerCoordinates(nextCorners);
+		}
+
+		onDragCorner();
 	};
 
 	$effect(() => {
@@ -347,12 +389,10 @@
 		if (geoRefData && transformOptionMode === 'georef' && !initialized) {
 			const data = geoRefData;
 			untrack(() => {
+				geoRefTransformMode = 'projective';
 				showDataMenu.set(false);
 				if (data.initialCorners) {
-					nw = new maplibregl.LngLat(data.initialCorners[0][0], data.initialCorners[0][1]);
-					ne = new maplibregl.LngLat(data.initialCorners[1][0], data.initialCorners[1][1]);
-					se = new maplibregl.LngLat(data.initialCorners[2][0], data.initialCorners[2][1]);
-					sw = new maplibregl.LngLat(data.initialCorners[3][0], data.initialCorners[3][1]);
+					setCornerCoordinates(data.initialCorners);
 					map.fitBounds(
 						[
 							[Math.min(nw.lng, sw.lng), Math.min(sw.lat, se.lat)],
@@ -413,7 +453,7 @@
 	});
 
 	const transModeOptions = [
-		{ key: 'zone', name: '投影法' },
+		{ key: 'zone', name: '投影法選択' },
 		{ key: 'georef', name: '位置合わせ' }
 	] as { key: ActiveTransformOptionMode; name: string }[];
 </script>
@@ -429,7 +469,7 @@
 		{#if transformOptionMode === 'zone'}
 			<ZoneMenu bind:selectedEpsgCode {poiData} />
 		{:else if transformOptionMode === 'georef' && geoRefData}
-			<GeoRefMenu {geoRefData} {bboxDisplay} {registrationModeOptions} />
+			<GeoRefMenu {geoRefData} {bboxDisplay} bind:geoRefTransformMode {registrationModeOptions} />
 		{/if}
 
 		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2 pb-2">
@@ -461,9 +501,37 @@
 			/>
 		{/each}
 	{:else if transformOptionMode === 'georef' && geoRefData}
-		<GeoRefMarker {map} bind:lngLat={nw} label="NW" onDrag={onDragCorner} />
-		<GeoRefMarker {map} bind:lngLat={ne} label="NE" onDrag={onDragCorner} />
-		<GeoRefMarker {map} bind:lngLat={se} label="SE" onDrag={onDragCorner} />
-		<GeoRefMarker {map} bind:lngLat={sw} label="SW" onDrag={onDragCorner} />
+		<GeoRefMarker
+			{map}
+			bind:lngLat={nw}
+			label="NW"
+			onDrag={(lngLat) => {
+				handleGeoRefCornerDrag('nw', lngLat);
+			}}
+		/>
+		<GeoRefMarker
+			{map}
+			bind:lngLat={ne}
+			label="NE"
+			onDrag={(lngLat) => {
+				handleGeoRefCornerDrag('ne', lngLat);
+			}}
+		/>
+		<GeoRefMarker
+			{map}
+			bind:lngLat={se}
+			label="SE"
+			onDrag={(lngLat) => {
+				handleGeoRefCornerDrag('se', lngLat);
+			}}
+		/>
+		<GeoRefMarker
+			{map}
+			bind:lngLat={sw}
+			label="SW"
+			onDrag={(lngLat) => {
+				handleGeoRefCornerDrag('sw', lngLat);
+			}}
+		/>
 	{/if}
 {/if}

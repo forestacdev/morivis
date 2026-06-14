@@ -4,22 +4,29 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import type {
 		GeoRefData,
+		GeoRefTransformMode,
 		RasterRegistrationMode
 	} from '$routes/map/components/upload/form/transform/georef-types';
 
 	interface Props {
 		geoRefData: GeoRefData;
 		bboxDisplay: string;
+		geoRefTransformMode: GeoRefTransformMode;
 		registrationModeOptions: { key: RasterRegistrationMode; name: string }[];
 	}
 
-	let { geoRefData, bboxDisplay, registrationModeOptions }: Props = $props();
-</script>
+	let {
+		geoRefData,
+		bboxDisplay,
+		geoRefTransformMode = $bindable(),
+		registrationModeOptions
+	}: Props = $props();
 
-<div class="flex shrink-0 items-center justify-between gap-2 overflow-auto pb-4">
-	<Icon icon="ph:polygon-fill" class="h-8 w-8" />
-	<span class="text-2xl font-bold">画像の位置合わせ</span>
-</div>
+	const transformModeOptions: { key: GeoRefTransformMode; name: string }[] = [
+		{ key: 'projective', name: '自由変形' },
+		{ key: 'aspect-locked', name: '縦横比固定' }
+	];
+</script>
 
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
@@ -41,6 +48,17 @@
 			</p>
 		</div>
 	{/if}
+
+	<div class="w-full px-2">
+		<HorizontalSelectBox
+			label="位置合わせ"
+			options={transformModeOptions}
+			bind:group={geoRefTransformMode}
+		/>
+		<p class="mt-2 text-xs text-gray-400">
+			縦横比固定では、元画像の比率を保ったまま回転と拡大縮小で合わせます
+		</p>
+	</div>
 
 	<div class="w-full px-2 text-sm text-gray-300">
 		<p class="mb-2 text-yellow-400">

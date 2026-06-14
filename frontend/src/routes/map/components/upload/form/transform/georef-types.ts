@@ -6,6 +6,7 @@ import type { RasterDiscreteDimension } from '$routes/map/data/types/raster';
 
 export type RasterRegistrationMode = 'raster' | 'mesh';
 export type GeoRefSourceType = 'raster' | 'vector' | 'pointcloud';
+export type GeoRefTransformMode = 'projective' | 'aspect-locked';
 
 export interface GeoRefMeshConfig {
 	baseValue?: number;

@@ -58,8 +58,6 @@
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		transformOptionMode: 'zone' | 'georef' | null;
-		canSwitchToZone: boolean;
-		onSelectTab: (tab: 'zone' | 'georef') => void;
 	}
 
 	let {
@@ -69,9 +67,7 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		transformOptionMode,
-		canSwitchToZone,
-		onSelectTab
+		transformOptionMode
 	}: Props = $props();
 
 	const PREVIEW_SOURCE_ID = 'georef_image_preview';
@@ -364,15 +360,6 @@
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="w-side-menu bg-main absolute top-0 left-0 z-30 flex h-full flex-col items-center justify-center p-4 text-base"
 	>
-		{#if canSwitchToZone}
-			<div class="mb-4 grid w-full shrink-0 grid-cols-2 gap-2">
-				<button onclick={() => onSelectTab('zone')} class="c-btn-sub cursor-pointer p-3 text-base">
-					投影法選択
-				</button>
-				<button class="c-btn-confirm p-3 text-base">位置合わせ</button>
-			</div>
-		{/if}
-
 		<div
 			class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 		>
