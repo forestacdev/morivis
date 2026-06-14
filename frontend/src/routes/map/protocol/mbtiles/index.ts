@@ -5,8 +5,8 @@
  *
  * URL形式: mbtiles://{entryId}/{z}/{x}/{y}
  */
-import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 
 const PROTOCOL_NAME = 'mbtiles';
 const createAbortError = () => new Error('Request aborted');

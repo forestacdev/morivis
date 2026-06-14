@@ -1,5 +1,5 @@
-import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 import type { MBTilesMetadata, MBTilesVectorLayer } from './index';
 
 type MetadataWorkerRequest = {

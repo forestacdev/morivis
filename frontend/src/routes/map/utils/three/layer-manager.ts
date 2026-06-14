@@ -5,8 +5,8 @@ import {
 	type MeshShadingStyle,
 	type MeshStyle
 } from '$routes/map/data/types/model';
-import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import {
 	calculateModelTransform,
 	type ModelTransform

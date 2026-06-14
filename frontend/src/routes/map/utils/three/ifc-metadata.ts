@@ -1,5 +1,5 @@
-import { type EpsgCode, getProjContext } from '$routes/map/utils/proj/dict';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import { type EpsgCode, getProjContext } from '$routes/map/utils/proj/dict';
 import proj4 from 'proj4';
 
 // IFC georeferencing helper for future use.
