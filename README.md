@@ -22,6 +22,9 @@
   <a href="https://github.com/forestacdev/morivis/actions/workflows/frontend-pull-request-check.yml">
     <img src="https://github.com/forestacdev/morivis/actions/workflows/frontend-pull-request-check.yml/badge.svg" alt="frontend pull request check">
   </a>
+  <a href="https://github.com/forestacdev/morivis/actions/workflows/frontend-vitest.yml">
+    <img src="https://github.com/forestacdev/morivis/actions/workflows/frontend-vitest.yml/badge.svg" alt="frontend vitest">
+  </a>
 </p>
 
 <h1 align="center">morivis</h1>
