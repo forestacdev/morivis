@@ -1378,6 +1378,13 @@ export const convertDMFileToGeoJSON = async (
 	options?: ConvertOptions
 ): Promise<DMGeoJSON> => {
 	const buffer = await file.arrayBuffer();
+	return convertDMArrayBufferToGeoJSON(buffer, options);
+};
+
+export const convertDMArrayBufferToGeoJSON = async (
+	buffer: ArrayBuffer,
+	options?: ConvertOptions
+): Promise<DMGeoJSON> => {
 	const text = decodeShiftJIS(buffer);
 	return convertDMtoGeoJSON(text, options);
 };
@@ -1398,6 +1405,10 @@ export interface DMInfo {
  */
 export const getDMInfo = async (file: File): Promise<DMInfo> => {
 	const buffer = await file.arrayBuffer();
+	return getDMInfoFromArrayBuffer(buffer);
+};
+
+export const getDMInfoFromArrayBuffer = async (buffer: ArrayBuffer): Promise<DMInfo> => {
 	const text = decodeShiftJIS(buffer);
 	const { records, isExtended } = parseRecords(text);
 

@@ -3,14 +3,14 @@
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createTiles3DEntry } from '$routes/map/data/entries/model';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { fetchTileset3DBbox } from '$routes/map/utils/tiles3d/bounds';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		remoteTiles3dUrl: string | null;
 	}

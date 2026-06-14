@@ -4,6 +4,10 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
@@ -12,11 +16,11 @@
 		groupPropertyByGeometryType,
 		buildDxfStyle
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { dxfFileToGeoJsonBrowser } from '$routes/map/utils/formats/dxf';
+	import { dxfFileToGeoJsonInWorker } from '$routes/map/utils/formats/dxf/analyze';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -24,23 +28,25 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -84,7 +90,7 @@
 	$effect(() => {
 		if (dxfFile) {
 			isProcessing.set(true);
-			dxfFileToGeoJsonBrowser(dxfFile)
+			dxfFileToGeoJsonInWorker(dxfFile)
 				.then((geojson) => {
 					rawGeojson = geojson as unknown as FeatureCollection;
 					const types = getGeometryTypes(rawGeojson!);
@@ -134,9 +140,27 @@
 		}
 	});
 
-	// 「決定」→ ZoneFormを表示
-	const openZoneForm = () => {
-		showZoneForm = true;
+	// 「決定」→ 座標系選択UIを表示
+	const openZoneSelection = () => {
+		if (rawGeojson && selectedGeometryType) {
+			let filtered = filterByGeometryType(
+				rawGeojson,
+				selectedGeometryType as VectorEntryGeometryType
+			);
+			if (selectedLayers.length > 0) {
+				filtered = filterByProperty(filtered, selectedLayers, extractLayer);
+			}
+			pendingZoneGeoRefData = {
+				featureCollection: filtered as FeatureCollection,
+				entryName: dxfFile?.name.replace(/\.[^.]+$/, '') ?? 'DXFデータ'
+			};
+		} else if (rawGeojson) {
+			pendingZoneGeoRefData = {
+				featureCollection: rawGeojson,
+				entryName: dxfFile?.name.replace(/\.[^.]+$/, '') ?? 'DXFデータ'
+			};
+		}
+		transformOptionMode = 'zone';
 		if (rawGeojson && selectedGeometryType) {
 			let filtered = filterByGeometryType(
 				rawGeojson,
@@ -151,7 +175,7 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// 座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!dxfFile || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);
@@ -243,7 +267,7 @@
 		{#if entityTypesByGeometryType[selectedGeometryType]?.length}
 			<div class="flex w-full flex-wrap items-center gap-1 px-2">
 				<span class="text-xs text-gray-400">含まれる要素:</span>
-				{#each entityTypesByGeometryType[selectedGeometryType] as et}
+				{#each entityTypesByGeometryType[selectedGeometryType] as et (et)}
 					<span class="rounded bg-gray-700 px-1.5 py-0.5 text-xs text-gray-300">{et}</span>
 				{/each}
 			</div>
@@ -272,7 +296,7 @@
 				</div>
 			</div>
 			<div class="flex flex-col gap-1">
-				{#each layersByGeometryType[selectedGeometryType] as layer}
+				{#each layersByGeometryType[selectedGeometryType] as layer (layer)}
 					<Checkbox label={layer} bind:value={layerChecked[layer]} />
 				{/each}
 			</div>
@@ -283,7 +307,7 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
-		onclick={openZoneForm}
+		onclick={openZoneSelection}
 		disabled={$isProcessing || !selectedGeometryType || selectedLayers.length === 0}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
 		!selectedGeometryType ||

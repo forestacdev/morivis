@@ -8,11 +8,11 @@
 
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 	import type {
-		RasterEntry,
+		MorivisRasterEntry,
 		RasterCategoricalStyle,
 		RasterBaseMapStyle,
 		RasterDemStyle,
-		RasterDemEntry,
+		DemRasterEntry,
 		RasterTiffStyle,
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
@@ -24,7 +24,7 @@
 	} from '$routes/map/utils/style/raster-preset';
 
 	interface Props {
-		layerEntry: RasterEntry<
+		layerEntry: MorivisRasterEntry<
 			| RasterCategoricalStyle
 			| RasterBaseMapStyle
 			| RasterDemStyle
@@ -128,10 +128,10 @@
 	{:else if style.type === 'categorical'}
 		<CategoricalLegend {style} />
 	{:else if style.type === 'dem'}
-		<DemOption bind:layerEntry={layerEntry as RasterDemEntry} bind:showColorOption />
+		<DemOption bind:layerEntry={layerEntry as DemRasterEntry} bind:showColorOption />
 	{:else if style.type === 'tiff'}
 		<TiffOption
-			bind:layerEntry={layerEntry as RasterEntry<RasterTiffStyle>}
+			bind:layerEntry={layerEntry as MorivisRasterEntry<RasterTiffStyle>}
 			bind:showColorOption
 			bind:showDimensionOption
 		/>

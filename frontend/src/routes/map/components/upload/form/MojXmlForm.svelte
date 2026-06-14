@@ -4,12 +4,16 @@
 	import proj4 from 'proj4';
 	import { untrack } from 'svelte';
 
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
 		filterByGeometryType
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -22,12 +26,13 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 		selectedEpsgCode: EpsgCode;
 	}
 
@@ -35,36 +40,37 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable(),
 		selectedEpsgCode = $bindable()
 	}: Props = $props();
 
 	let rawGeojson: FeatureCollection | null = null;
 	let hasData = $state(false);
 
-	const mojFile = $derived.by(() => {
+	const mojFiles = $derived.by(() => {
 		if (!dropFile) return null;
-		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+		return dropFile instanceof FileList ? Array.from(dropFile) : [dropFile];
 	});
 
-	const entryName = $derived(mojFile?.name.replace(/\.[^.]+$/, '') ?? '地図XML');
+	const entryName = $derived(mojFiles?.[0]?.name.replace(/\.[^.]+$/, '') ?? '地図XML');
 
 	$effect(() => {
-		if (mojFile) {
+		if (mojFiles && mojFiles.length > 0) {
 			processFile();
 		}
 	});
 
-	const parseXmlStrings = (xmlStrings: string[]): FeatureCollection => {
+	const parseXmlStrings = async (xmlStrings: string[]): Promise<FeatureCollection> => {
 		const allFeatures: FeatureCollection['features'] = [];
 		for (const xmlString of xmlStrings) {
-			const geojson = parseMojXml(
+			const geojson = (await parseMojXml(
 				xmlString,
 				{ includeArbitraryCrs: true },
 				proj4
-			) as unknown as FeatureCollection;
+			)) as unknown as FeatureCollection;
 			allFeatures.push(...geojson.features);
 		}
 		return { type: 'FeatureCollection', features: allFeatures };
@@ -82,14 +88,17 @@
 	};
 
 	const processFile = async () => {
-		if (!mojFile) return;
+		if (!mojFiles || mojFiles.length === 0) return;
 		isProcessing.set(true);
 
 		try {
-			const isZip = mojFile.name.toLowerCase().endsWith('.zip');
-			const xmlStrings = isZip ? await readXmlFromZip(mojFile) : [await mojFile.text()];
+			const zipFile = mojFiles.find((file) => file.name.toLowerCase().endsWith('.zip')) ?? null;
+			const xmlFiles = mojFiles.filter((file) => file.name.toLowerCase().endsWith('.xml'));
+			const xmlStrings = zipFile
+				? await readXmlFromZip(zipFile)
+				: await Promise.all(xmlFiles.map((file) => file.text()));
 
-			const geojson = parseXmlStrings(xmlStrings);
+			const geojson = await parseXmlStrings(xmlStrings);
 
 			if (!geojson.features.length) {
 				showNotification('フィーチャが見つかりませんでした', 'error');
@@ -123,13 +132,17 @@
 		const bbox = turfBbox(filtered);
 
 		if (!bbox || !isBboxValid(bbox)) {
-			// 任意座標系 → 確認ダイアログを表示してからZoneFormへ
+			// 任意座標系 → 確認ダイアログを表示してから座標系選択へ
 			await showConfirmDialog({
 				message: 'このファイルは任意座標系のため、地図上の正しい位置に表示できません。',
 				confirmText: 'OK',
 				confirmOnly: true
 			});
-			showZoneForm = true;
+			pendingZoneGeoRefData = {
+				featureCollection: filtered,
+				entryName
+			};
+			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 			return;
 		}
@@ -152,7 +165,7 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// 座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!rawGeojson) return;
 		isProcessing.set(true);

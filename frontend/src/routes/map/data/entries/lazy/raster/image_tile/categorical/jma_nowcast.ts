@@ -6,7 +6,7 @@ import {
 } from '$routes/map/api/nowcast';
 
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
-import type { GeoDataEntryCatalogItem } from '$routes/map/data/types';
+import type { MorivisLayerEntryCatalogItem } from '$routes/map/data/types';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const config: JmaNowcastConfig = {
@@ -57,7 +57,7 @@ const entry = applyNowcastCategoricalStyle(
 	createJmaNowcastFallbackEntry(config) as unknown as RasterImageEntry<RasterCategoricalStyle>
 );
 
-const catalogItem: GeoDataEntryCatalogItem = {
+const catalogItem: MorivisLayerEntryCatalogItem = {
 	entry,
 	loadEntry: async () =>
 		applyNowcastCategoricalStyle(

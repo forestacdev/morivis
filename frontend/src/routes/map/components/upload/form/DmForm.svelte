@@ -4,16 +4,21 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		filterByProperty,
 		buildDmStyle
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { convertDMFileToGeoJSON, getDMInfo, type DMInfo } from '$routes/map/utils/formats/dm';
+	import type { DMInfo } from '$routes/map/utils/formats/dm';
+	import { analyzeDmFileInWorker } from '$routes/map/utils/formats/dm/analyze';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -21,23 +26,25 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Partial<Record<VectorEntryGeometryType, string>> = {
@@ -149,14 +156,10 @@
 	$effect(() => {
 		if (dmFile) {
 			isProcessing.set(true);
-			getDMInfo(dmFile).then((info) => {
-				zoneInfo = info;
-				// selectedEpsgCode = String(6668 + info.defaultZone) as EpsgCode;
-			});
-
-			convertDMFileToGeoJSON(dmFile, {})
-				.then((dmResult) => {
-					rawGeojson = dmResult as unknown as FeatureCollection;
+			analyzeDmFileInWorker(dmFile)
+				.then(({ geojson, info }) => {
+					zoneInfo = info;
+					rawGeojson = geojson as unknown as FeatureCollection;
 					const types = getDmGeometryTypes(rawGeojson);
 
 					if (types.length === 1) {
@@ -208,9 +211,27 @@
 		}
 	});
 
-	// 「決定」→ ZoneFormを表示
-	const openZoneForm = () => {
-		showZoneForm = true;
+	// 「決定」→ 座標系選択UIを表示
+	const openZoneSelection = () => {
+		if (rawGeojson && selectedGeometryType) {
+			let filtered = filterDmByGeometryType(
+				rawGeojson,
+				selectedGeometryType as VectorEntryGeometryType
+			);
+			if (selectedClassNames.length > 0) {
+				filtered = filterByProperty(filtered, selectedClassNames, extractClassName);
+			}
+			pendingZoneGeoRefData = {
+				featureCollection: filtered as FeatureCollection,
+				entryName: zoneInfo?.drawingName || dmFile?.name || 'DMデータ'
+			};
+		} else if (rawGeojson) {
+			pendingZoneGeoRefData = {
+				featureCollection: rawGeojson,
+				entryName: zoneInfo?.drawingName || dmFile?.name || 'DMデータ'
+			};
+		}
+		transformOptionMode = 'zone';
 
 		// フィルタ結果でbboxを計算（rawGeojsonは上書きしない）
 		if (rawGeojson && selectedGeometryType) {
@@ -227,7 +248,7 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → フィルタ → 座標変換 → エントリ作成
+	// 座標系選択後 → フィルタ → 座標変換 → エントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!dmFile || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);
@@ -326,7 +347,7 @@
 		{#if dataTypesByGeometryType[selectedGeometryType]?.length}
 			<div class="flex w-full flex-wrap items-center gap-1 px-2">
 				<span class="text-xs text-gray-400">含まれる要素:</span>
-				{#each dataTypesByGeometryType[selectedGeometryType] as dt}
+				{#each dataTypesByGeometryType[selectedGeometryType] as dt (dt)}
 					<span class="rounded bg-gray-700 px-1.5 py-0.5 text-xs text-gray-300">{dt}</span>
 				{/each}
 			</div>
@@ -359,7 +380,7 @@
 					const codeA = parseInt(classCodeMap[a] ?? '9999', 10);
 					const codeB = parseInt(classCodeMap[b] ?? '9999', 10);
 					return codeA - codeB;
-				}) as className}
+				}) as className (className)}
 					<Checkbox
 						label={classCodeMap[className]
 							? `${className} (${classCodeMap[className]})`
@@ -375,7 +396,7 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
-		onclick={openZoneForm}
+		onclick={openZoneSelection}
 		disabled={$isProcessing || !selectedGeometryType || selectedClassNames.length === 0}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
 		!selectedGeometryType ||

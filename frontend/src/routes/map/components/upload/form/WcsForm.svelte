@@ -12,7 +12,7 @@
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterBaseMapStyle, RasterWcsEntry } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 	import {
@@ -31,7 +31,7 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 	}

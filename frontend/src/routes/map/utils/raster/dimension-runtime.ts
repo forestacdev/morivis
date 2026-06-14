@@ -1,6 +1,6 @@
 import type { SourceSpecification } from 'maplibre-gl';
 
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import {
 	replaceDimensionPlaceholder,
 	resolveDimensionPlaceholders
@@ -18,17 +18,17 @@ type RuntimeDimensionUpdate =
 		data: string;
 	};
 
-export const getRasterDimensionCurrentIndex = (entry: GeoDataEntry) => {
+export const getRasterDimensionCurrentIndex = (entry: MorivisLayerEntry) => {
 	if (entry.type !== 'raster') return undefined;
 	return entry.state?.dimension?.currentIndex;
 };
 
-export const getRasterDimension = (entry: GeoDataEntry) => {
+export const getRasterDimension = (entry: MorivisLayerEntry) => {
 	if (entry.type !== 'raster') return undefined;
 	return entry.properties?.temporal?.dimension;
 };
 
-export const getRasterDimensionValue = (entry: GeoDataEntry) => {
+export const getRasterDimensionValue = (entry: MorivisLayerEntry) => {
 	const dimension = getRasterDimension(entry);
 	const currentIndex = getRasterDimensionCurrentIndex(entry);
 
@@ -56,7 +56,7 @@ const hasDimensionPlaceholder = (value: unknown): boolean => {
 	return false;
 };
 
-export const canApplyRasterDimensionRuntimeUpdate = (entry: GeoDataEntry) => {
+export const canApplyRasterDimensionRuntimeUpdate = (entry: MorivisLayerEntry) => {
 	if (entry.type !== 'raster') return false;
 
 	const dimensionValue = getRasterDimensionValue(entry);
@@ -77,7 +77,9 @@ export const canApplyRasterDimensionRuntimeUpdate = (entry: GeoDataEntry) => {
 	return canUpdateMainSource || canUpdateAuxiliarySource;
 };
 
-export const getRasterDimensionRuntimeUpdates = (entry: GeoDataEntry): RuntimeDimensionUpdate[] => {
+export const getRasterDimensionRuntimeUpdates = (
+	entry: MorivisLayerEntry
+): RuntimeDimensionUpdate[] => {
 	if (entry.type !== 'raster') return [];
 
 	const dimensionValue = getRasterDimensionValue(entry);
@@ -132,7 +134,7 @@ export const getRasterDimensionRuntimeUpdates = (entry: GeoDataEntry): RuntimeDi
 	return updates;
 };
 
-export const getLayerWatchStyleTarget = (entry: GeoDataEntry) => {
+export const getLayerWatchStyleTarget = (entry: MorivisLayerEntry) => {
 	return {
 		...entry.style
 	};

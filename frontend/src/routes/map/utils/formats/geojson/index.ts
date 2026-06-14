@@ -1,3 +1,10 @@
+/**
+ * Format spec:
+ * - https://datatracker.ietf.org/doc/html/rfc7946
+ *
+ * References:
+ * - https://flatgeobuf.org/
+ */
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry, Geometry, GeometryCollection } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';

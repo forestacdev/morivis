@@ -1,4 +1,4 @@
-import { asset } from '$app/paths';
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { type EpsgCode, getProjContext } from '$routes/map/utils/proj/dict';
 import proj4 from 'proj4';
 
@@ -11,7 +11,7 @@ import proj4 from 'proj4';
 // IfcMapConversion:
 // https://standards.buildingsmart.org/IFC/RELEASE/IFC4/ADD1/HTML/schema/ifcrepresentationresource/lexical/ifcmapconversion.htm
 
-const IFC_WASM_PATH = asset('/web-ifc/');
+const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
 
 export type IfcPlacementQuality = 'exact' | 'requires_epsg' | 'approximate' | 'normalized';
 

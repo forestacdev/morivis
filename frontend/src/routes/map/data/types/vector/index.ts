@@ -10,6 +10,7 @@ import type { AuxiliaryLayersData } from '$routes/map/data/types/index';
 import type { VectorProperties } from '$routes/map/data/types/vector/properties';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
+/** vector entry の取得方式。geometry の分類とは独立して扱う。 */
 export type VectorFormatType =
 	| 'geojson'
 	| 'mvt'
@@ -21,6 +22,7 @@ export type VectorFormatType =
 	| 'ogc-feature'
 	| 'wfs-feature';
 
+/** vector entry の主分類軸。morivis では vector を geometry ベースで分ける。 */
 export type VectorEntryGeometryType = 'Point' | 'LineString' | 'Polygon';
 
 export interface VectorInteraction {
@@ -95,4 +97,15 @@ export interface PointEntry<T> extends BaseVectorEntry {
 	auxiliaryLayers?: AuxiliaryLayersData;
 }
 
-export type VectorEntry<T> = PolygonEntry<T> | LineStringEntry<T> | PointEntry<T>;
+/** 面地物として扱う vector entry。format は取得方式、style は polygon 表現を持つ。 */
+export type VectorPolygonEntry<T> = PolygonEntry<T>;
+/** 線地物として扱う vector entry。format は取得方式、style は line 表現を持つ。 */
+export type VectorLineEntry<T> = LineStringEntry<T>;
+/** 点地物として扱う vector entry。format は取得方式、style は point 表現を持つ。 */
+export type VectorPointEntry<T> = PointEntry<T>;
+
+/** morivis の vector 系内部モデル。geometry を主分類軸として point / line / polygon に分かれる。 */
+export type MorivisVectorEntry<T> =
+	| VectorPolygonEntry<T>
+	| VectorLineEntry<T>
+	| VectorPointEntry<T>;

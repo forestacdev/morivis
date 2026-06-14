@@ -9,13 +9,13 @@
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import { isBBoxInside } from '$routes/map/utils/map/bbox';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 	}
 
 	let { showDataEntry = $bindable() }: Props = $props();

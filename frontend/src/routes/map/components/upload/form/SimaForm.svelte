@@ -4,6 +4,10 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
@@ -13,7 +17,7 @@
 		buildCadStyle
 	} from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -30,23 +34,25 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -125,7 +131,7 @@
 						layersByGeometryType = groupPropertyByGeometryType(rawGeojson, extractSimaLayer);
 						const layers = layersByGeometryType[selectedGeometryType] ?? [];
 						if (layers.length <= 1) {
-							openZoneForm();
+							openZoneSelection();
 							return;
 						}
 					} else {
@@ -152,13 +158,19 @@
 		}
 	});
 
-	// 「決定」→ ZoneFormを表示
-	const openZoneForm = () => {
-		showZoneForm = true;
+	// 「決定」→ 座標系選択UIを表示
+	const openZoneSelection = () => {
+		if (rawGeojson) {
+			pendingZoneGeoRefData = {
+				featureCollection: rawGeojson,
+				entryName: simaFile?.name.replace(/\.[^.]+$/, '') ?? 'SIMAデータ'
+			};
+		}
+		transformOptionMode = 'zone';
 		focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// 座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!simaFile || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);
@@ -279,7 +291,7 @@
 				</div>
 			</div>
 			<div class="flex flex-col gap-1">
-				{#each layersByGeometryType[selectedGeometryType] as layer}
+				{#each layersByGeometryType[selectedGeometryType] as layer (layer)}
 					<Checkbox label={layer} bind:value={layerChecked[layer]} />
 				{/each}
 			</div>
@@ -290,7 +302,7 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
-		onclick={openZoneForm}
+		onclick={openZoneSelection}
 		disabled={$isProcessing || !selectedGeometryType}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
 		!selectedGeometryType

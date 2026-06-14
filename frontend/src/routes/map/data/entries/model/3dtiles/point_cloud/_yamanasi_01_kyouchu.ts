@@ -1,6 +1,6 @@
-import type { ModelTiles3DEntry, PointCloudStyle } from '$routes/map/data/types/model';
+import type { PointCloudStyle, Tiles3DEntry } from '$routes/map/data/types/model';
 
-const entry: ModelTiles3DEntry<PointCloudStyle> = {
+const entry: Tiles3DEntry<PointCloudStyle> = {
 	id: 'yamanasi_01_kyouchu',
 	type: 'model',
 	format: {

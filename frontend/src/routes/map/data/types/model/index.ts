@@ -128,6 +128,7 @@ export interface GeoArrowStyle {
 	color: string;
 }
 
+/** mesh 系 model entry の入力形式。主に three.js 側で読む 3D モデル形式を表す。 */
 export type MeshFormatType =
 	| 'gltf'
 	| 'obj'
@@ -140,7 +141,7 @@ export type MeshFormatType =
 	| 'amf'
 	| 'ifc';
 
-export interface ModelMeshEntry<T> extends BaseModelEntry {
+export interface MeshEntry<T> extends BaseModelEntry {
 	format: {
 		type: MeshFormatType;
 		url: string;
@@ -151,7 +152,7 @@ export interface ModelMeshEntry<T> extends BaseModelEntry {
 	style: T;
 }
 
-export interface ModelTiles3DEntry<T> extends BaseModelEntry {
+export interface Tiles3DEntry<T> extends BaseModelEntry {
 	format: {
 		type: '3d-tiles';
 		url: string;
@@ -159,7 +160,7 @@ export interface ModelTiles3DEntry<T> extends BaseModelEntry {
 	style: T;
 }
 
-export interface ModelPointCloudEntry extends BaseModelEntry {
+export interface PointCloudEntry extends BaseModelEntry {
 	format: {
 		type: 'point-cloud';
 		/** Blob URL of the LAS/LAZ file (未変換時) */
@@ -174,7 +175,7 @@ export interface ModelPointCloudEntry extends BaseModelEntry {
 	style: PointCloudStyle;
 }
 
-export interface ModelGeoArrowEntry extends BaseModelEntry {
+export interface GeoArrowEntry extends BaseModelEntry {
 	format: {
 		type: 'geoarrow';
 		table: Table;
@@ -183,7 +184,7 @@ export interface ModelGeoArrowEntry extends BaseModelEntry {
 	style: GeoArrowStyle;
 }
 
-export interface ModelGeoJson3DEntry extends BaseModelEntry {
+export interface GeoJson3DEntry extends BaseModelEntry {
 	format: {
 		type: 'geojson-3d';
 		data: FeatureCollection;
@@ -192,22 +193,27 @@ export interface ModelGeoJson3DEntry extends BaseModelEntry {
 	style: GeoArrowStyle;
 }
 
-export type ModelDeckVectorEntry = ModelGeoArrowEntry | ModelGeoJson3DEntry;
+/** deck.gl 側で扱うベクター系 3D entry。 */
+export type DeckVectorEntry = GeoArrowEntry | GeoJson3DEntry;
 
-export type AnyModelMeshEntry = ModelMeshEntry<MeshStyle> | ModelMeshEntry<PointCloudStyle>;
+export type AnyMeshEntry = MeshEntry<MeshStyle> | MeshEntry<PointCloudStyle>;
 
-export type AnyModelTiles3DEntry =
-	| ModelTiles3DEntry<MeshStyle>
-	| ModelTiles3DEntry<PointCloudStyle>;
+export type AnyTiles3DEntry =
+	| Tiles3DEntry<MeshStyle>
+	| Tiles3DEntry<PointCloudStyle>;
 
-export type MeshStyleEntry = ModelMeshEntry<MeshStyle> | ModelTiles3DEntry<MeshStyle>;
+export type MeshStyleEntry = MeshEntry<MeshStyle> | Tiles3DEntry<MeshStyle>;
 export type PointCloudStyleEntry =
-	| ModelMeshEntry<PointCloudStyle>
-	| ModelTiles3DEntry<PointCloudStyle>
-	| ModelPointCloudEntry;
+	| MeshEntry<PointCloudStyle>
+	| Tiles3DEntry<PointCloudStyle>
+	| PointCloudEntry;
 
-export type AnyModelEntry =
-	| AnyModelMeshEntry
-	| AnyModelTiles3DEntry
-	| ModelPointCloudEntry
-	| ModelDeckVectorEntry;
+/**
+ * morivis の model 系内部モデル。
+ * object / runtime を主分類軸とし、three.js 系と deck.gl 系の分岐元になる。
+ */
+export type MorivisModelEntry =
+	| AnyMeshEntry
+	| AnyTiles3DEntry
+	| PointCloudEntry
+	| DeckVectorEntry;

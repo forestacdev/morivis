@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import {
 	getVectorTemporalItems,
 	hasVectorTemporalSourceBehavior
@@ -12,25 +12,25 @@ type VectorRuntimeDimensionUpdate = {
 	data: FeatureCollection;
 };
 
-export const getVectorDimensionCurrentIndex = (entry: GeoDataEntry) => {
+export const getVectorDimensionCurrentIndex = (entry: MorivisLayerEntry) => {
 	if (entry.type !== 'vector') return undefined;
 	return entry.state?.dimension?.currentIndex;
 };
 
-export const getVectorDimension = (entry: GeoDataEntry) => {
+export const getVectorDimension = (entry: MorivisLayerEntry) => {
 	if (entry.type !== 'vector') return undefined;
 	if (!hasVectorTemporalSourceBehavior(entry.properties.temporal)) return undefined;
 	return entry.properties.temporal?.dimension;
 };
 
-export const getVectorDimensionValue = (entry: GeoDataEntry) => {
+export const getVectorDimensionValue = (entry: MorivisLayerEntry) => {
 	const dimension = getVectorDimension(entry);
 	const currentIndex = getVectorDimensionCurrentIndex(entry);
 	if (!dimension || currentIndex == null) return undefined;
 	return dimension.values[currentIndex];
 };
 
-export const canApplyVectorDimensionRuntimeUpdate = (entry: GeoDataEntry) => {
+export const canApplyVectorDimensionRuntimeUpdate = (entry: MorivisLayerEntry) => {
 	if (entry.type !== 'vector') return false;
 	if (entry.format.type !== 'geojson') return false;
 	if (!entry.format.runtimeSource) return false;
@@ -39,7 +39,7 @@ export const canApplyVectorDimensionRuntimeUpdate = (entry: GeoDataEntry) => {
 };
 
 export const getVectorDimensionRuntimeUpdates = async (
-	entry: GeoDataEntry
+	entry: MorivisLayerEntry
 ): Promise<VectorRuntimeDimensionUpdate[]> => {
 	if (!canApplyVectorDimensionRuntimeUpdate(entry)) return [];
 
@@ -58,7 +58,7 @@ export const getVectorDimensionRuntimeUpdates = async (
 	];
 };
 
-export const getVectorDimensionItems = (entry: GeoDataEntry) => {
+export const getVectorDimensionItems = (entry: MorivisLayerEntry) => {
 	if (entry.type !== 'vector') return [];
 	return getVectorTemporalItems(entry.properties.temporal);
 };

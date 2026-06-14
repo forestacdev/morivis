@@ -6,12 +6,13 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		filterByGeometryType,
 		getGeometryTypes
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -28,10 +29,10 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		remoteOgcApiFeaturesUrl: string | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
@@ -41,7 +42,7 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		remoteOgcApiFeaturesUrl = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable()
@@ -203,7 +204,7 @@
 
 		const bbox = turfBbox(geojson) as [number, number, number, number];
 		if (!bbox || !isBboxValid(bbox)) {
-			showZoneForm = true;
+			transformOptionMode = 'zone';
 			focusBbox = bbox;
 			return;
 		}

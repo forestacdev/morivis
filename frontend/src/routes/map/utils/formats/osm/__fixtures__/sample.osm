@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="morivis-test">
+  <node id="1" lat="35.6895" lon="139.6917">
+    <tag k="name" v="Test Node" />
+    <tag k="amenity" v="cafe" />
+  </node>
+  <node id="2" lat="35.6896" lon="139.6918" />
+  <node id="3" lat="35.6897" lon="139.6919" />
+  <way id="10">
+    <nd ref="1" />
+    <nd ref="2" />
+    <nd ref="3" />
+    <tag k="highway" v="service" />
+  </way>
+</osm>

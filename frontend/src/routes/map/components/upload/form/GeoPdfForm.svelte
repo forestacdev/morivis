@@ -3,11 +3,12 @@
 	import { untrack } from 'svelte';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
-	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createGeoJsonEntry, getGeometryTypes } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
@@ -25,16 +26,17 @@
 		encodeAllBandsToTerrarium,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showGeoRefForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		geoRefData: GeoRefData | null;
 	}
 
@@ -42,7 +44,7 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showGeoRefForm = $bindable(),
+		transformOptionMode = $bindable(),
 		geoRefData = $bindable()
 	}: Props = $props();
 
@@ -139,21 +141,18 @@
 			GeoTiffCache.setSize(id, width, height);
 			GeoTiffCache.setNumBands(id, 3);
 
-			geoRefData = {
+			geoRefData = createRasterGeoRefData({
 				entryId: id,
 				entryName,
 				parsedBands: bands,
 				parsedNodata: null,
 				dataRanges: ranges,
-				numBands: 3,
 				imageWidth: width,
 				imageHeight: height,
-				bandMinMax: ranges[0],
-				multiBandMinMax: { r: ranges[0], g: ranges[1], b: ranges[2] },
 				imageFile: file,
 				registrationMode: 'raster'
-			};
-			showGeoRefForm = true;
+			});
+			transformOptionMode = 'georef';
 			showDialogType = null;
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : '画像の解析に失敗しました', 'error');
@@ -289,21 +288,18 @@
 			type: 'image/png'
 		});
 
-		geoRefData = {
+		geoRefData = createRasterGeoRefData({
 			entryId: id,
 			entryName,
 			parsedBands: bands,
 			parsedNodata: null,
 			dataRanges: ranges,
-			numBands: 3,
 			imageWidth: width,
 			imageHeight: height,
-			bandMinMax: ranges[0],
-			multiBandMinMax: { r: ranges[0], g: ranges[1], b: ranges[2] },
 			imageFile: pngFile,
 			registrationMode: 'raster'
-		};
-		showGeoRefForm = true;
+		});
+		transformOptionMode = 'georef';
 		showDialogType = null;
 	};
 
@@ -591,7 +587,7 @@
 				ベクターデータに複数のジオメトリ種別が含まれています。
 			</div>
 			<div class="flex flex-col gap-2">
-				{#each vectorGeoTypes as geoType}
+				{#each vectorGeoTypes as geoType (geoType)}
 					<button
 						onclick={() => registerAsVector(geoType)}
 						disabled={$isProcessing}

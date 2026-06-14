@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { fromArrayBuffer } from 'geotiff';
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefData,
 		RasterRegistrationMode
-	} from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	} from '$routes/map/components/upload/form/transform/georef-types';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -16,21 +16,22 @@
 		WEB_MERCATOR_MAX_LNG
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
-		parseRasterBands,
 		getMinMax,
 		encodeAllBandsToTerrarium,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
-	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
+	import { analyzeGeoTiffInWorker } from '$routes/map/utils/formats/geotiff/analyze';
+	import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
 	import {
 		parseEpsgFromAuxXml,
 		parseBboxFromAuxXml
 	} from '$routes/map/utils/formats/raster/aux-xml';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import {
 		findGeoReferencedImageFile,
 		findMatchingAuxXmlFile,
@@ -39,20 +40,19 @@
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
-	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { transformBboxInWorker } from '$routes/map/utils/proj/transform-bbox';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
-		showGeoRefForm: boolean;
 		geoRefData: GeoRefData | null;
 	}
 
@@ -60,11 +60,10 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
-		showGeoRefForm = $bindable(),
 		geoRefData = $bindable()
 	}: Props = $props();
 
@@ -171,33 +170,21 @@
 		}
 	};
 
-	const openGeoRefForm = (file: File) => {
+	const openGeoRefTransform = (file: File) => {
 		if (!parsedBands) return;
 
-		const previewImageUrl = generateThumbnail({
-			bands: parsedBands,
-			width: imageWidth,
-			height: imageHeight,
-			nodata: parsedNodata,
-			ranges: dataRanges
-		});
-
-		geoRefData = {
+		geoRefData = createRasterGeoRefData({
 			entryId,
 			entryName,
 			parsedBands,
 			parsedNodata,
 			dataRanges,
-			numBands,
 			imageWidth,
 			imageHeight,
-			bandMinMax,
-			multiBandMinMax,
 			imageFile: file,
-			previewImageUrl,
 			registrationMode
-		};
-		showGeoRefForm = true;
+		});
+		transformOptionMode = 'georef';
 		showDialogType = null;
 	};
 
@@ -216,52 +203,12 @@
 		if (rawBbox) {
 			showNotification('座標系が不明です。投影法を選択してください', 'warning');
 			focusBbox = rawBbox;
-			showZoneForm = true;
+			transformOptionMode = 'zone';
 			return;
 		}
 
 		showNotification('位置情報がありません。位置合わせフォームへ移動します', 'warning');
-		openGeoRefForm(file);
-	};
-
-	const parseBboxFromGeoTiffImage = (
-		image: Awaited<ReturnType<Awaited<ReturnType<typeof fromArrayBuffer>>['getImage']>>,
-		width: number,
-		height: number
-	): [number, number, number, number] | null => {
-		try {
-			const imageBbox = image.getBoundingBox();
-			if (imageBbox && imageBbox.length === 4) {
-				return imageBbox as [number, number, number, number];
-			}
-		} catch {
-			// getBoundingBox に必要なメタデータが欠けている場合は origin/resolution にフォールバックする
-		}
-
-		try {
-			const [originX, originY] = image.getOrigin();
-			const [resolutionX, resolutionY] = image.getResolution();
-
-			if (
-				![originX, originY, resolutionX, resolutionY].every((value) => Number.isFinite(value)) ||
-				resolutionX === 0 ||
-				resolutionY === 0
-			) {
-				return null;
-			}
-
-			const maxX = originX + resolutionX * width;
-			const maxY = originY + resolutionY * height;
-
-			return [
-				Math.min(originX, maxX),
-				Math.min(originY, maxY),
-				Math.max(originX, maxX),
-				Math.max(originY, maxY)
-			];
-		} catch {
-			return null;
-		}
+		openGeoRefTransform(file);
 	};
 
 	// ファイルドロップ時: 解析
@@ -280,6 +227,18 @@
 	$effect(() => {
 		if (!canCreateMesh && registrationMode !== 'raster') {
 			registrationMode = 'raster';
+		}
+	});
+
+	$effect(() => {
+		if (
+			transformOptionMode === 'georef' &&
+			!geoRefData &&
+			showDialogType === 'geotiff' &&
+			imageFile &&
+			parsedBands
+		) {
+			openGeoRefTransform(imageFile);
 		}
 	});
 
@@ -381,7 +340,7 @@
 				resolvedBbox = rawBbox;
 				GeoTiffCache.setBbox(id, rawBbox);
 			} else if (rawBbox && auxEpsg) {
-				convertBboxWithEpsg(auxEpsg);
+				await convertBboxWithEpsg(auxEpsg);
 				showNotification(`aux.xmlから座標系 EPSG:${auxEpsg} を検出しました`, 'success');
 			}
 
@@ -404,61 +363,45 @@
 
 		try {
 			const arrayBuffer = await file.arrayBuffer();
-			const tiff = await fromArrayBuffer(arrayBuffer);
-			const image = await tiff.getImage();
+			const result = await analyzeGeoTiffInWorker(arrayBuffer);
 
-			const width = image.getWidth();
-			const height = image.getHeight();
-			imageWidth = width;
-			imageHeight = height;
-
-			// bbox取得: まずGeoTIFF内蔵メタデータを試し、だめなら origin/resolution から組み立てる
-			rawBbox = parseBboxFromGeoTiffImage(image, width, height);
+			imageWidth = result.width;
+			imageHeight = result.height;
+			rawBbox = result.rawBbox;
 
 			// GeoTIFFにbboxがなければワールドファイル(.tfw)を探す
 			if (!rawBbox && dropFile instanceof FileList) {
 				const tfwFile = findMatchingWorldFile(dropFile, file);
 				if (tfwFile) {
-					rawBbox = await parseTfw(tfwFile, width, height);
+					rawBbox = await parseTfw(tfwFile, result.width, result.height);
 					hasTfw = true;
 				}
 			}
 
-			// ラスターデータ読み込み
-			const rasterData = await image.readRasters({ interleave: false });
-			const bands = parseRasterBands(rasterData);
-			numBands = bands.length;
+			numBands = result.numBands;
 
 			const id = `geotiff_${crypto.randomUUID()}`;
 			entryId = id;
 
-			// nodataの取得
-			const nodata =
-				image.fileDirectory.GDAL_NODATA !== undefined
-					? parseFloat(image.fileDirectory.GDAL_NODATA)
-					: null;
-			parsedNodata = nodata;
-
-			// 各バンドのmin/max計算
-			const ranges: BandDataRange[] = bands.map((band) => getMinMax(band, nodata));
-			dataRanges = ranges;
+			parsedNodata = result.nodata;
+			dataRanges = result.dataRanges;
 
 			// 表示用min/max
-			bandMinMax = ranges[0];
-			if (bands.length > 1) {
+			bandMinMax = result.dataRanges[0];
+			if (result.numBands > 1) {
 				multiBandMinMax = {
-					r: ranges[0],
-					g: ranges.length >= 2 ? ranges[1] : ranges[0],
-					b: ranges.length >= 3 ? ranges[2] : ranges[0]
+					r: result.dataRanges[0],
+					g: result.dataRanges.length >= 2 ? result.dataRanges[1] : result.dataRanges[0],
+					b: result.dataRanges.length >= 3 ? result.dataRanges[2] : result.dataRanges[0]
 				};
 			}
 
 			// 一時的にバンドデータを保持（registration時にTerrariumエンコード）
-			parsedBands = bands;
+			parsedBands = result.bands;
 
 			// サイズとバンド数をキャッシュ
-			GeoTiffCache.setSize(id, width, height);
-			GeoTiffCache.setNumBands(id, bands.length);
+			GeoTiffCache.setSize(id, result.width, result.height);
+			GeoTiffCache.setNumBands(id, result.numBands);
 
 			// aux.xmlからGeoTransform/EPSGコードを取得
 			let auxEpsg: EpsgCode | null = null;
@@ -473,7 +416,7 @@
 
 			// ワールドファイル・GeoTIFF内蔵bboxがなければaux.xmlのGeoTransformからbboxを取得
 			if (!rawBbox && auxContent) {
-				rawBbox = parseBboxFromAuxXml(auxContent, width, height);
+				rawBbox = parseBboxFromAuxXml(auxContent, result.width, result.height);
 			}
 
 			analyzed = true;
@@ -484,7 +427,7 @@
 				GeoTiffCache.setBbox(id, rawBbox);
 			} else if (rawBbox && auxEpsg) {
 				// aux.xmlに座標系があれば自動変換
-				convertBboxWithEpsg(auxEpsg);
+				await convertBboxWithEpsg(auxEpsg);
 				showNotification(`aux.xmlから座標系 EPSG:${auxEpsg} を検出しました`, 'success');
 			}
 
@@ -497,19 +440,21 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → bbox座標変換 → 自動登録
+	// 座標系選択後 → bbox座標変換 → 自動登録
 	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'geotiff') {
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
-				convertBboxWithEpsg(epsg);
-				registration();
+				void (async () => {
+					await convertBboxWithEpsg(epsg);
+					await registration();
+				})();
 			});
 		}
 	});
 
-	const convertBboxWithEpsg = (epsgCode: EpsgCode) => {
+	const convertBboxWithEpsg = async (epsgCode: EpsgCode) => {
 		if (!rawBbox) return;
 
 		try {
@@ -525,7 +470,7 @@
 				];
 			} else {
 				const prjContent = getProjContext(epsgCode);
-				transformed = transformBbox(rawBbox, prjContent);
+				transformed = await transformBboxInWorker(rawBbox, prjContent);
 			}
 
 			if (!isBboxValid(transformed)) {
@@ -553,9 +498,9 @@
 		if (!resolvedBbox) {
 			if (rawBbox) {
 				focusBbox = rawBbox;
-				showZoneForm = true;
+				transformOptionMode = 'zone';
 			} else if (imageFile) {
-				openGeoRefForm(imageFile);
+				openGeoRefTransform(imageFile);
 			}
 			return;
 		}
@@ -571,7 +516,7 @@
 			});
 
 			if (registrationMode === 'mesh' && numBands === 1) {
-				const entry = await createRasterMeshEntry({
+				const entry = await createRasterMeshEntryInWorker({
 					id: entryId,
 					name: entryName || 'GeoTIFF 3Dメッシュ',
 					band: parsedBands[0],

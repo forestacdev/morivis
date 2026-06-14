@@ -3,8 +3,8 @@ import turfBbox from '@turf/bbox';
 import { createAdjustableRange } from '$routes/map/data/types';
 import type {
 	GeoJsonMetaData,
+	MorivisVectorEntry,
 	TileMetaData,
-	VectorEntry,
 	VectorEntryGeometryType
 } from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -528,7 +528,7 @@ export const createGeoJsonEntry = async (
 		defaultColor?: string;
 		coverImage?: string;
 	}
-): Promise<VectorEntry<GeoJsonMetaData> | undefined> => {
+): Promise<MorivisVectorEntry<GeoJsonMetaData> | undefined> => {
 	const normalizedData = await notifySelfIntersectingPolygons(data);
 	const repairedBbox = turfBbox(normalizedData) as [number, number, number, number];
 
@@ -659,7 +659,7 @@ export const createVectorTileEntry = (
 		minZoom?: number;
 		maxZoom?: number;
 	}
-): VectorEntry<TileMetaData> | undefined => {
+): MorivisVectorEntry<TileMetaData> | undefined => {
 	const bounds = options?.bounds ?? DEFAULT_CUSTOM_META_DATA.bounds;
 	const metaData: TileMetaData = {
 		...DEFAULT_CUSTOM_META_DATA,
@@ -722,7 +722,7 @@ export const createGeoJsonTileEntry = (
 	entryGeometryType: VectorEntryGeometryType,
 	color: string = getRandomColor(),
 	options?: { bounds?: [number, number, number, number]; }
-): VectorEntry<TileMetaData> | undefined => {
+): MorivisVectorEntry<TileMetaData> | undefined => {
 	const entry = createVectorTileEntry(
 		name,
 		url,
@@ -740,7 +740,7 @@ export const createGeoJsonTileEntry = (
 			...entry.format,
 			type: 'geojsontile' as const
 		}
-	} as VectorEntry<TileMetaData>;
+	} as MorivisVectorEntry<TileMetaData>;
 };
 
 export const createOgcFeatureTileEntry = (
@@ -749,7 +749,7 @@ export const createOgcFeatureTileEntry = (
 	entryGeometryType: VectorEntryGeometryType,
 	options?: { bounds?: [number, number, number, number]; },
 	color: string = getRandomColor()
-): VectorEntry<TileMetaData> | undefined => {
+): MorivisVectorEntry<TileMetaData> | undefined => {
 	const entry = createVectorTileEntry(
 		name,
 		url,
@@ -767,7 +767,7 @@ export const createOgcFeatureTileEntry = (
 			...entry.format,
 			type: 'ogc-feature' as const
 		}
-	} as VectorEntry<TileMetaData>;
+	} as MorivisVectorEntry<TileMetaData>;
 };
 
 export const createWfsFeatureTileEntry = (
@@ -776,7 +776,7 @@ export const createWfsFeatureTileEntry = (
 	entryGeometryType: VectorEntryGeometryType,
 	options?: { bounds?: [number, number, number, number]; },
 	color: string = getRandomColor()
-): VectorEntry<TileMetaData> | undefined => {
+): MorivisVectorEntry<TileMetaData> | undefined => {
 	const entry = createVectorTileEntry(
 		name,
 		url,
@@ -794,7 +794,7 @@ export const createWfsFeatureTileEntry = (
 			...entry.format,
 			type: 'wfs-feature' as const
 		}
-	} as VectorEntry<TileMetaData>;
+	} as MorivisVectorEntry<TileMetaData>;
 };
 
 // --- PMTiles ベクターエントリ作成 ---
@@ -806,7 +806,7 @@ export const createVectorPmtilesEntry = (
 	entryGeometryType: VectorEntryGeometryType,
 	color: string = getRandomColor(),
 	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number; }
-): VectorEntry<TileMetaData> | undefined => {
+): MorivisVectorEntry<TileMetaData> | undefined => {
 	const entry = createVectorTileEntry(name, url, sourceLayer, entryGeometryType, color);
 	if (!entry) return undefined;
 
@@ -827,7 +827,7 @@ export const createVectorPmtilesEntry = (
 				? findCenterTile(options.bounds)
 				: entry.metaData.xyzImageTile
 		}
-	} as VectorEntry<TileMetaData>;
+	} as MorivisVectorEntry<TileMetaData>;
 };
 
 // --- プロパティフィルタリング ---

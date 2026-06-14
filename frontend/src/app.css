@@ -24,6 +24,9 @@ body {
 	--color-accent: #59b68e;
 	--color-main-accent: #348163;
 	--color-main-accent: #3e9473;
+	--color-error: #b63737;
+	--color-warning: #afa936;
+	--color-success: #3e948d;
 	--font-noto: Noto Sans JP;
 	--text-color-primary: #f1f1f1;
 	/* --breakpoint-lg: 1024px; */

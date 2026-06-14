@@ -12,11 +12,11 @@
 
 	const getBgClass = (type: NotificationMessage['type']) =>
 		type === 'error'
-			? 'bg-red-500 text-base'
+			? 'bg-error text-base'
 			: type === 'success'
-				? 'bg-[#348163] text-base'
+				? 'bg-main-accent text-base'
 				: type === 'warning'
-					? 'bg-yellow-500 text-base'
+					? 'bg-warning text-base'
 					: 'bg-main text-base';
 
 	const scheduleRemove = (msg: NotificationMessage) => {

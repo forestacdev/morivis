@@ -77,6 +77,7 @@ export interface TileXYZ {
 	z: ZoomLevel;
 }
 
+/** raster entry の配信・格納方式。可視化の種類とは独立して扱う。 */
 export type RasterFormatType =
 	| 'image'
 	| 'pmtiles'
@@ -88,6 +89,7 @@ export type RasterFormatType =
 
 export type TileSize = 512 | 256;
 
+/** raster entry の主分類軸。morivis では raster を visualization ベースで分ける。 */
 export type RasterStyleType = 'basemap' | 'categorical' | 'dem' | 'tiff' | 'cad';
 
 export interface BaseRasterStyle {
@@ -239,9 +241,14 @@ export interface RasterBandProperties {
 	sampleRanges?: { min: number; max: number; }[];
 }
 
+export interface RasterCategoryProperties {
+	values: number[];
+}
+
 export interface RasterProperties {
 	temporal?: RasterTemporalProperties;
 	bands?: RasterBandProperties;
+	categories?: RasterCategoryProperties;
 }
 
 export interface RasterInteraction {
@@ -322,12 +329,25 @@ export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
 	};
 	style: T;
 }
-export type RasterEntry<T> =
+/**
+ * morivis の raster 系内部モデル。
+ * 配信形式は `format.type`、可視化の種類は `style.type` で表す。
+ */
+export type MorivisRasterEntry<T> =
 	| RasterImageEntry<T>
 	| RasterPMTilesEntry<T>
 	| RasterMBTilesEntry<T>
 	| RasterCogEntry<T>
 	| RasterWcsEntry<T>
 	| RasterGeoZarrEntry<T>;
-export type RasterDemEntry = RasterEntry<RasterDemStyle>;
-export type RasterCadEntry = RasterEntry<RasterCadStyle>;
+
+/** 背景地図として扱う raster entry。 */
+export type BaseMapRasterEntry = MorivisRasterEntry<RasterBaseMapStyle>;
+/** カテゴリや凡例画像を持つ raster entry。 */
+export type CategoricalRasterEntry = MorivisRasterEntry<RasterCategoricalStyle>;
+/** 陰影・傾斜量などの DEM 可視化を持つ raster entry。 */
+export type DemRasterEntry = MorivisRasterEntry<RasterDemStyle>;
+/** GeoTIFF 系のバンド可視化を持つ raster entry。 */
+export type TiffRasterEntry = MorivisRasterEntry<RasterTiffStyle>;
+/** CAD 的な線表現を持つ raster entry。 */
+export type CadRasterEntry = MorivisRasterEntry<RasterCadStyle>;

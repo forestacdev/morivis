@@ -3,7 +3,7 @@
 	import FeaturePanelHeader from '$routes/map/components/feature_menu/FeaturePanelHeader.svelte';
 	import FeaturePanelSummaryBody from '$routes/map/components/feature_menu/FeaturePanelSummaryBody.svelte';
 	import FeaturePanelTabs from '$routes/map/components/feature_menu/FeaturePanelTabs.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import type {
 		FeatureMenuData,
@@ -13,7 +13,7 @@
 
 	interface Props {
 		featureMenuData: FeatureMenuData | null;
-		layerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
 		showSelectionMarker: boolean;
 		summary: FeaturePanelSummaryData | null;
 		showSummaryTab: boolean;

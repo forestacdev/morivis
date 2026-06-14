@@ -6,6 +6,10 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		createOgcFeatureTileEntry,
@@ -13,7 +17,7 @@
 		filterByGeometryType,
 		getGeometryTypes
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -40,13 +44,14 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		remoteFeatureServiceUrl: string | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	type FeatureServiceType = 'wfs' | 'ogcapifeatures' | null;
@@ -55,10 +60,11 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		remoteFeatureServiceUrl = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 	void selectedEpsgCode;
 
@@ -406,7 +412,11 @@
 				fetchedBbox: bbox,
 				reason: 'bbox contains non-finite values or invalid ordering'
 			});
-			showZoneForm = true;
+			pendingZoneGeoRefData = {
+				featureCollection: geojson,
+				entryName
+			};
+			transformOptionMode = 'zone';
 			focusBbox = bbox;
 			return;
 		}

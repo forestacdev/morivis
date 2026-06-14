@@ -18,7 +18,7 @@
 		FAC_BOUNDS
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import type { PrefectureCode } from '$routes/map/data/pref';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import { isBBoxOverlapping } from '$routes/map/utils/map/bbox';
@@ -31,8 +31,6 @@
 		showXYZTileLayer,
 		showRoadLayer,
 		showBoundaryLayer,
-		showPoiLayer,
-		showStreetViewLayer,
 		showCloudLayer
 	} from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
@@ -40,9 +38,9 @@
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {
-		layerEntries: GeoDataEntry[];
-		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
-		tempLayerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
+		showDataEntry: MorivisLayerEntry | null; // データメニューの表示状態
+		tempLayerEntries: MorivisLayerEntry[];
 		featureMenuData: FeatureMenuData | null;
 	}
 
@@ -510,9 +508,6 @@
 					<!-- 余白 -->
 					<div class="h-[300px] w-full shrink-0"></div>
 				{:else if selectedTab === 'map-display'}
-					<!-- <MapSettingItem>
-						<Switch label="アカデミー施設等" bind:value={$showPoiLayer} />
-					</MapSettingItem> -->
 					<MapSettingItem>
 						<Switch label="境界線" bind:value={$showBoundaryLayer} />
 					</MapSettingItem>

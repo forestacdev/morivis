@@ -1,10 +1,11 @@
 <script lang="ts">
+	import turfBbox from '@turf/bbox';
 	import turfBearing from '@turf/bearing';
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
 	import maplibregl from 'maplibre-gl';
 	import type { LngLat } from 'maplibre-gl';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { slide } from 'svelte/transition';
 
@@ -52,16 +53,30 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
-	import type { GeoRefData } from '$routes/map/components/upload/form/GeoRefForm.svelte';
+	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type {
+		GeoRefConfirmPayload,
+		GeoRefData,
+		GeoRefPreviewData
+	} from '$routes/map/components/upload/form/transform/georef-types';
 	import {
 		findCatalogEntry,
 		geoDataEntries,
 		isLazyCatalogEntry,
 		needsLazyHydration,
-		resolveGeoDataEntry
+		resolveMorivisLayerEntry
 	} from '$routes/map/data/entries';
-	import type { GeoDataEntry } from '$routes/map/data/types';
-	import type { RasterEntry, RasterDemStyle } from '$routes/map/data/types/raster';
+	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+	import { createPointCloudEntry } from '$routes/map/data/entries/model';
+	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type {
+		MorivisRasterEntry,
+		RasterDemStyle,
+		RasterImageEntry,
+		RasterTiffStyle
+	} from '$routes/map/data/types/raster';
 	import type { GeoJsonMetaData, PointEntry, TileMetaData } from '$routes/map/data/types/vector';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import {
@@ -75,22 +90,42 @@
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
+	import { GeoRefVectorSourceCache } from '$routes/map/utils/cache/georef-vector-source-cache';
+	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
+	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
+	import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
+	import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
+	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
+	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import {
 		getPopupImageFieldKey,
 		resolveGeneratedPoiIconUrl,
 		resolvePopupImageUrl
 	} from '$routes/map/utils/icon';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
 	import {
 		get3dParams,
 		getParams,
 		getStreetViewParams
 	} from '$routes/map/utils/platform/url-params';
-	import type { EpsgCode, EpsgInfoWithCode } from '$routes/map/utils/proj/dict';
+	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
+	import {
+		getProjContext,
+		type EpsgCode,
+		type EpsgInfoWithCode
+	} from '$routes/map/utils/proj/dict';
+	import {
+		warpGeoJSONByCornersParallel,
+		warpPointCloudByCornersParallel
+	} from '$routes/map/utils/transform/georef';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
+	import { debugLog } from '$routes/stores/debug';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
+	import { showNotification } from '$routes/stores/notification';
 	import { themeMode } from '$routes/stores/theme';
 	import {
 		isBlocked,
@@ -99,31 +134,29 @@
 		showOtherMenu,
 		showInfoDialog,
 		showSearchMenu,
-		showTermsDialog
+		showTermsDialog,
+		isProcessing
 	} from '$routes/stores/ui';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
 	// アップロード関連コンポーネント（PC時のみ動的ロード）
 	let UploadDialog = $state.raw<any>(null);
-	let ZoneForm = $state.raw<any>(null);
-	let GeoRefForm = $state.raw<any>(null);
+	let TransformOptionForm = $state.raw<any>(null);
 
 	const isPc = typeof window !== 'undefined' && checkPc();
 	if (isPc) {
 		Promise.all([
 			import('$routes/map/components/upload/BaseDialog.svelte'),
-			import('$routes/map/components/upload/form/ZoneForm.svelte'),
-			import('$routes/map/components/upload/form/GeoRefForm.svelte')
-		]).then(([uploadMod, zoneMod, georefMod]) => {
+			import('$routes/map/components/upload/form/transform/TransformOptionForm.svelte')
+		]).then(([uploadMod, transformOptionMod]) => {
 			UploadDialog = uploadMod.default;
-			ZoneForm = zoneMod.default;
-			GeoRefForm = georefMod.default;
+			TransformOptionForm = transformOptionMod.default;
 		});
 	}
 
-	let tempLayerEntries = $state<GeoDataEntry[]>([]); // 一時レイヤーデータ
+	let tempLayerEntries = $state<MorivisLayerEntry[]>([]); // 一時レイヤーデータ
 
-	const getLayerEntriesData = (): GeoDataEntry[] => {
+	const getLayerEntriesData = (): MorivisLayerEntry[] => {
 		// tempが空の場合は定数のみ返す
 		if (tempLayerEntries.length === 0) {
 			return geoDataEntries;
@@ -131,13 +164,10 @@
 		return [...geoDataEntries, ...tempLayerEntries];
 	};
 
-	let demEntries = $derived.by(() => {
-		return geoDataEntries.filter((entry) => entry.type === 'raster' && entry.style.type === 'dem');
-	}) as RasterEntry<RasterDemStyle>[];
-
-	let layerEntries = $state<GeoDataEntry[]>([]); // アクティブなレイヤーデータ
-	let showDataEntry = $state<GeoDataEntry | null>(null); // プレビュー用のデータ
+	let layerEntries = $state<MorivisLayerEntry[]>([]); // アクティブなレイヤーデータ
+	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<File | FileList | null>(null); // ドロップしたファイル
+	let remoteGeoZarrUrl = $state<string | null>(null);
 	let remotePmtilesUrl = $state<string | null>(null);
 	let remoteRasterUrl = $state<string | null>(null);
 	let remoteVectorUrl = $state<string | null>(null);
@@ -207,7 +237,6 @@
 
 	let showDialogType = $state<DialogType>(null);
 	let showDebugWindow = $state<boolean>(false); // デバッグウィンドウの表示
-	let showZoneForm = $state<boolean>(false); // 座標系フォームの表示状態
 	let selectedEpsgCode = $state<EpsgCode>('3857'); //
 	let focusBbox = $state<[number, number, number, number] | null>(null); // フォーカスするバウンディングボックス
 	let zoneBboxGeojsonData = $state<
@@ -218,10 +247,315 @@
 	});
 
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
+	let pendingZoneGeoRefData = $state.raw<PendingZoneGeoRefData | null>(null);
+	let transformOptionMode = $state<'zone' | 'georef' | null>(null);
+	let isPreparingGeoRefData = $state(false);
 
-	// ジオリファレンスフォーム
-	let showGeoRefForm = $state<boolean>(false);
-	let geoRefData = $state<GeoRefData | null>(null);
+	let geoRefData = $state.raw<GeoRefData | null>(null);
+	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
+	let geoRefPreviewOpacity = $state(0.6);
+
+	const closeGeoRefUi = () => {
+		if (geoRefData?.sourceFeatureCollectionId) {
+			GeoRefVectorSourceCache.remove(geoRefData.sourceFeatureCollectionId);
+		}
+		geoRefPreviewData = null;
+		geoRefPreviewOpacity = 0.6;
+		transformOptionMode = null;
+		geoRefData = null;
+		showDialogType = null;
+		dropFile = null;
+	};
+
+	const finalizeGeoRefEntry = async (payload: GeoRefConfirmPayload) => {
+		if (!geoRefData) return;
+
+		isProcessing.set(true);
+		try {
+			const data = geoRefData;
+			const { bbox, corners } = payload;
+
+			debugLog.info(
+				`+page finalizeGeoRefEntry開始: id=${data.entryId}, mode=${data.registrationMode}, size=${data.imageWidth}x${data.imageHeight}`
+			);
+
+			if (data.sourceType === 'vector' && data.sourceFeatureCollectionId && data.initialCorners) {
+				const sourceFeatureCollection = GeoRefVectorSourceCache.get(data.sourceFeatureCollectionId);
+				if (!sourceFeatureCollection) {
+					throw new Error('GeoRefベクターの元データが見つかりません');
+				}
+
+				const plainCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
+				const warpedGeojson = await warpGeoJSONByCornersParallel(
+					sourceFeatureCollection,
+					data.initialCorners,
+					plainCorners
+				);
+				const warpedType = geometryTypeToEntryType(warpedGeojson as AppFeatureCollection);
+				const warpedBbox = turfBbox(warpedGeojson as AppFeatureCollection) as [
+					number,
+					number,
+					number,
+					number
+				];
+
+				if (!warpedType || !isBboxValid(warpedBbox)) {
+					throw new Error('GeoRefベクター変形後のデータが不正です');
+				}
+
+				const warpedEntry = await createGeoJsonEntry(
+					warpedGeojson as AppFeatureCollection,
+					warpedType,
+					data.entryName,
+					warpedBbox
+				);
+
+				if (!warpedEntry) {
+					throw new Error('GeoRefベクターのエントリ生成に失敗しました');
+				}
+
+				debugLog.info(
+					`+page finalizeGeoRefEntry ベクター生成: id=${warpedEntry.id}, bounds=${warpedBbox.join(',')}`
+				);
+				closeGeoRefUi();
+				showDataEntry = warpedEntry;
+				showNotification('ベクターの位置を設定しました', 'success');
+				return;
+			}
+
+			if (data.sourceType === 'pointcloud' && data.pointCloudConfig) {
+				const sourceBbox = data.pointCloudConfig.sourceBbox;
+				const sourceCorners = [
+					[sourceBbox[0], sourceBbox[3]],
+					[sourceBbox[2], sourceBbox[3]],
+					[sourceBbox[2], sourceBbox[1]],
+					[sourceBbox[0], sourceBbox[1]]
+				] as typeof corners;
+				const plainCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
+				const warpedPositions = await warpPointCloudByCornersParallel(
+					data.pointCloudConfig.positions,
+					sourceCorners,
+					plainCorners
+				);
+				const pointCloudEntry = createPointCloudEntry(
+					data.entryName || '点群データ',
+					{
+						positions: warpedPositions,
+						colors: data.pointCloudConfig.colors,
+						pointCount: data.pointCloudConfig.pointCount
+					},
+					bbox
+				);
+
+				debugLog.info(
+					`+page finalizeGeoRefEntry 点群生成: id=${pointCloudEntry.id}, bounds=${bbox.join(',')}`
+				);
+				closeGeoRefUi();
+				showDataEntry = pointCloudEntry;
+				showNotification('点群の位置を設定しました', 'success');
+				return;
+			}
+
+			GeoTiffCache.setBbox(data.entryId, bbox);
+			GeoTiffCache.setSize(data.entryId, data.imageWidth, data.imageHeight);
+			GeoTiffCache.setNumBands(data.entryId, data.numBands);
+
+			const mapImage = generateThumbnail({
+				bands: data.parsedBands,
+				width: data.imageWidth,
+				height: data.imageHeight
+			});
+
+			if (data.registrationMode === 'mesh' && data.numBands === 1) {
+				const entry = await createRasterMeshEntryInWorker({
+					id: data.entryId,
+					name: data.entryName || 'GeoTIFF 3Dメッシュ',
+					band: data.parsedBands[0],
+					width: data.imageWidth,
+					height: data.imageHeight,
+					nodata: data.parsedNodata,
+					bounds: bbox,
+					corners,
+					mapImage,
+					baseValue: data.meshConfig?.baseValue,
+					heightScale: data.meshConfig?.heightScale,
+					autoHeightScale: data.meshConfig?.autoHeightScale
+				});
+
+				if (data.meshConfig?.attribution) {
+					entry.metaData.attribution = data.meshConfig.attribution;
+				}
+				if (data.meshConfig?.opacity != null) {
+					entry.style.opacity = data.meshConfig.opacity;
+				}
+				if (entry.style.shading && data.meshConfig?.shadingEnabled != null) {
+					entry.style.shading = {
+						...entry.style.shading,
+						enabled: data.meshConfig.shadingEnabled
+					};
+				}
+				if (entry.style.heightColorRamp && data.meshConfig?.heightColorRampEnabled != null) {
+					entry.style.heightColorRamp = {
+						...entry.style.heightColorRamp,
+						enabled: data.meshConfig.heightColorRampEnabled
+					};
+				}
+				if (data.meshConfig?.temporalDimension) {
+					entry.state = {
+						...entry.state,
+						dimension: {
+							currentIndex: data.meshConfig.initialDimensionIndex ?? 0
+						}
+					};
+					entry.properties = {
+						...entry.properties,
+						temporal: {
+							dimension: data.meshConfig.temporalDimension
+						}
+					};
+
+					const cachedEntry = NetCDFDataCache.get(data.entryId);
+					if (cachedEntry && data.meshConfig.heightScale != null) {
+						cachedEntry.meshConfig = {
+							baseValue: data.meshConfig.baseValue ?? 0,
+							heightScale: data.meshConfig.heightScale,
+							maxGridSize: 192
+						};
+					}
+				}
+
+				debugLog.info(`+page finalizeGeoRefEntry メッシュ生成: id=${entry.id}`);
+				closeGeoRefUi();
+				showDataEntry = entry;
+				showNotification('3Dメッシュを生成しました', 'success');
+				return;
+			}
+
+			await encodeAllBandsToTerrarium(
+				data.entryId,
+				data.parsedBands,
+				data.imageWidth,
+				data.imageHeight,
+				data.parsedNodata,
+				data.dataRanges
+			);
+
+			const isSingleBand = data.numBands === 1;
+			const entry: RasterImageEntry<RasterTiffStyle> = {
+				id: data.entryId,
+				type: 'raster',
+				format: {
+					type: 'image',
+					url: ''
+				},
+				metaData: {
+					...DEFAULT_CUSTOM_META_DATA,
+					attribution: 'GeoTIFF',
+					name: data.entryName || '画像データ',
+					tileSize: 256,
+					bounds: bbox,
+					imageCorners: corners,
+					xyzImageTile: findCenterTile(bbox),
+					mapImage
+				},
+				properties: {
+					bands: {
+						numBands: data.numBands
+					}
+				},
+				interaction: {
+					...DEFAULT_RASTER_BASEMAP_INTERACTION
+				},
+				style: {
+					type: 'tiff',
+					opacity: 1,
+					visible: true,
+					visualization: {
+						mode: isSingleBand ? 'single' : 'multi',
+						uniformsData: {
+							single: {
+								index: 0,
+								min: data.bandMinMax.min,
+								max: data.bandMinMax.max,
+								colorMap: 'jet'
+							},
+							multi: {
+								r: { index: 0, min: data.multiBandMinMax.r.min, max: data.multiBandMinMax.r.max },
+								g: {
+									index: data.numBands >= 2 ? 1 : 0,
+									min: data.multiBandMinMax.g.min,
+									max: data.multiBandMinMax.g.max
+								},
+								b: {
+									index: data.numBands >= 3 ? 2 : 0,
+									min: data.multiBandMinMax.b.min,
+									max: data.multiBandMinMax.b.max
+								}
+							}
+						}
+					}
+				}
+			};
+
+			debugLog.info(
+				`+page finalizeGeoRefEntry ラスター生成: id=${entry.id}, bounds=${bbox.join(',')}`
+			);
+			closeGeoRefUi();
+			showDataEntry = entry;
+			showNotification('画像の位置を設定しました', 'success');
+		} catch (error) {
+			debugLog.error(
+				`+page finalizeGeoRefEntry失敗: ${error instanceof Error ? error.message : String(error)}`
+			);
+			showNotification(
+				error instanceof Error ? error.message : 'エンコードに失敗しました',
+				'error'
+			);
+			console.error(error);
+		} finally {
+			isProcessing.set(false);
+		}
+	};
+
+	const openPendingZoneGeoRef = async (pendingData: PendingZoneGeoRefData, epsgCode: EpsgCode) => {
+		isProcessing.set(true);
+		isPreparingGeoRefData = true;
+		debugLog.info(
+			`GeoRef準備開始: entryName=${pendingData.entryName}, epsg=${epsgCode}, featureCount=${pendingData.featureCollection.features.length}`
+		);
+
+		try {
+			const prjContent = getProjContext(epsgCode);
+			const transformedGeojson = (await transformGeoJSONParallel(
+				pendingData.featureCollection,
+				prjContent
+			)) as FeatureCollection;
+			const bbox = turfBbox(transformedGeojson);
+
+			if (!bbox || !isBboxValid(bbox)) {
+				debugLog.warn(`GeoRef準備中断: bbox不正 entryName=${pendingData.entryName}`);
+				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
+				return;
+			}
+
+			geoRefData = await featureCollectionToGeoRefData({
+				featureCollection: transformedGeojson as AppFeatureCollection,
+				entryName: pendingData.entryName
+			});
+			debugLog.info(
+				`GeoRef画像生成完了: id=${geoRefData.entryId}, width=${geoRefData.imageWidth}, height=${geoRefData.imageHeight}`
+			);
+			transformOptionMode = 'georef';
+			showDialogType = null;
+		} catch (error) {
+			debugLog.error(`GeoRef準備失敗: ${error instanceof Error ? error.message : String(error)}`);
+			showNotification('GeoJSON画像の作成中にエラーが発生しました', 'error');
+			console.error(error);
+		} finally {
+			isPreparingGeoRefData = false;
+			isProcessing.set(false);
+		}
+	};
 
 	// 検索ワード
 	let inputSearchWord = $state<string>('');
@@ -241,6 +575,40 @@
 		}
 
 		return null;
+	});
+
+	$effect(() => {
+		if (transformOptionMode === null) {
+			pendingZoneGeoRefData = null;
+		}
+	});
+
+	$effect(() => {
+		if (
+			transformOptionMode !== 'georef' ||
+			geoRefData ||
+			!pendingZoneGeoRefData ||
+			isPreparingGeoRefData
+		) {
+			return;
+		}
+
+		const pendingData = pendingZoneGeoRefData;
+		const epsg = selectedEpsgCode;
+		debugLog.info(`GeoRef自動生成トリガー: epsg=${epsg}, entryName=${pendingData.entryName}`);
+		void openPendingZoneGeoRef(pendingData, epsg);
+	});
+
+	$effect(() => {
+		const entry = showDataEntry;
+		if (!entry) {
+			debugLog.info('showDataEntry=null');
+			return;
+		}
+
+		debugLog.info(
+			`showDataEntry set: id=${entry.id}, type=${entry.type}, name=${entry.metaData.name}`
+		);
 	});
 
 	let mobileLayerFeatureSummaryPromise = $derived.by(() => {
@@ -307,7 +675,7 @@
 	});
 
 	$effect(() => {
-		if (showDataEntry || showGeoRefForm || showZoneForm) {
+		if (showDataEntry || transformOptionMode) {
 			themeMode.setMode('preview');
 		} else {
 			themeMode.setMode('default');
@@ -521,9 +889,9 @@
 	});
 
 	const mergeResolvedLayerEntry = (
-		currentEntry: GeoDataEntry,
-		resolvedEntry: GeoDataEntry
-	): GeoDataEntry => {
+		currentEntry: MorivisLayerEntry,
+		resolvedEntry: MorivisLayerEntry
+	): MorivisLayerEntry => {
 		if (currentEntry.id !== resolvedEntry.id || currentEntry.type !== resolvedEntry.type) {
 			return resolvedEntry;
 		}
@@ -533,10 +901,10 @@
 			style: currentEntry.style,
 			interaction: currentEntry.interaction,
 			...('state' in currentEntry ? { state: currentEntry.state } : {})
-		} as GeoDataEntry;
+		} as MorivisLayerEntry;
 	};
 
-	const replaceLayerEntry = (entryId: string, resolvedEntry: GeoDataEntry) => {
+	const replaceLayerEntry = (entryId: string, resolvedEntry: MorivisLayerEntry) => {
 		if (!$activeLayerIdsStore.includes(entryId)) return;
 
 		layerEntries = layerEntries.map((entry) => {
@@ -545,7 +913,7 @@
 		});
 	};
 
-	const replaceShowDataEntry = (resolvedEntry: GeoDataEntry) => {
+	const replaceShowDataEntry = (resolvedEntry: MorivisLayerEntry) => {
 		if (!showDataEntry || showDataEntry.id !== resolvedEntry.id) return;
 		showDataEntry = mergeResolvedLayerEntry(showDataEntry, resolvedEntry);
 	};
@@ -556,7 +924,7 @@
 		if (!isLazyCatalogEntry(entryId) || pendingLazyEntryIds.has(entryId)) return;
 
 		pendingLazyEntryIds.add(entryId);
-		void resolveGeoDataEntry(entryId)
+		void resolveMorivisLayerEntry(entryId)
 			.then((resolvedEntry) => {
 				if (!resolvedEntry) return;
 				replaceLayerEntry(entryId, resolvedEntry);
@@ -575,7 +943,7 @@
 		if (!entryId || !isLazyCatalogEntry(entryId)) return;
 		if (!needsLazyHydration(previewEntry)) return;
 
-		void resolveGeoDataEntry(entryId)
+		void resolveMorivisLayerEntry(entryId)
 			.then((resolvedEntry) => {
 				if (!resolvedEntry) return;
 				replaceShowDataEntry(resolvedEntry);
@@ -753,14 +1121,15 @@
 				bind:dropFile
 				bind:showDialogType
 				bind:drawGeojsonData
-				bind:showZoneForm
+				{transformOptionMode}
 				bind:focusBbox
 				bind:isExternalCameraUpdate
 				bind:selectedSearchId
 				bind:selectedSearchResultData
 				bind:contextMenuState
 				bind:isDragover
-				{showGeoRefForm}
+				{geoRefPreviewData}
+				previewOpacity={geoRefPreviewOpacity}
 				{searchResults}
 				{selectedEpsgCode}
 				{zoneBboxGeojsonData}
@@ -834,14 +1203,15 @@
 						bind:dropFile
 						bind:showDialogType
 						bind:drawGeojsonData
-						bind:showZoneForm
+						{transformOptionMode}
 						bind:focusBbox
 						bind:isExternalCameraUpdate
 						bind:selectedSearchId
 						bind:selectedSearchResultData
 						bind:contextMenuState
 						bind:isDragover
-						{showGeoRefForm}
+						{geoRefPreviewData}
+						previewOpacity={geoRefPreviewOpacity}
 						{searchResults}
 						{selectedEpsgCode}
 						{zoneBboxGeojsonData}
@@ -901,11 +1271,12 @@
 
 			<PreviewMenu bind:showDataEntry />
 
-			{#if !showZoneForm}
+			{#if !transformOptionMode}
 				<DataMenu
 					bind:showDataEntry
 					bind:dropFile
 					bind:showDialogType
+					bind:remoteGeoZarrUrl
 					bind:remotePmtilesUrl
 					bind:remoteRasterUrl
 					bind:remoteVectorUrl
@@ -945,6 +1316,7 @@
 		bind:showDataEntry
 		bind:tempLayerEntries
 		bind:dropFile
+		bind:remoteGeoZarrUrl
 		bind:remotePmtilesUrl
 		bind:remoteRasterUrl
 		bind:remoteVectorUrl
@@ -952,11 +1324,11 @@
 		bind:remoteWmtsUrl
 		bind:remoteFeatureServiceUrl
 		bind:pendingTileUrl
-		bind:showZoneForm
+		bind:transformOptionMode
 		bind:focusBbox
 		bind:isDragover
 		bind:zoneConfirmedEpsg
-		bind:showGeoRefForm
+		bind:pendingZoneGeoRefData
 		bind:geoRefData
 		{selectedEpsgCode}
 	/>
@@ -964,27 +1336,37 @@
 
 <ImagePreviewDialog bind:imagePreviewUrl bind:imageBounds />
 
-{#if map && ZoneForm}
-	<ZoneForm
+{#if map && transformOptionMode && TransformOptionForm}
+	<TransformOptionForm
 		{map}
-		bind:showZoneForm
 		bind:selectedEpsgCode
 		bind:focusBbox
 		bind:zoneBboxGeojsonData
-		onConfirm={(epsgCode: EpsgCode) => {
-			zoneConfirmedEpsg = epsgCode;
-		}}
-	/>
-{/if}
-
-{#if map && showGeoRefForm && geoRefData && GeoRefForm}
-	<GeoRefForm
-		{map}
-		bind:showGeoRefForm
 		bind:geoRefData
-		bind:showDataEntry
+		bind:geoRefPreviewData
+		bind:previewOpacity={geoRefPreviewOpacity}
 		bind:showDialogType
 		bind:dropFile
+		bind:transformOptionMode
+		onZoneConfirm={(epsgCode: EpsgCode) => {
+			geoRefData = null;
+			geoRefPreviewData = null;
+			geoRefPreviewOpacity = 0.6;
+			transformOptionMode = null;
+			zoneConfirmedEpsg = epsgCode;
+			debugLog.info(`Zone確定: epsg=${epsgCode}`);
+		}}
+		onZoneGeoRef={(epsgCode: EpsgCode) => {
+			geoRefPreviewData = null;
+			geoRefPreviewOpacity = 0.6;
+			selectedEpsgCode = epsgCode;
+			transformOptionMode = 'georef';
+			debugLog.info(`GeoRef切替: epsg=${epsgCode}`);
+		}}
+		onGeoRefConfirm={(payload: GeoRefConfirmPayload) => {
+			debugLog.info(`GeoRef確定値受信: bbox=${payload.bbox.join(',')}`);
+			return finalizeGeoRefEntry(payload);
+		}}
 	/>
 {/if}
 

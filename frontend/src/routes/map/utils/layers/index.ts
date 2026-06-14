@@ -21,7 +21,7 @@ import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/la
 import { clickableRasterIds, clickableVectorIds } from '$routes/stores';
 
 import { geoDataEntries } from '$routes/map/data/entries';
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { IconImageSource } from '$routes/map/data/types/vector/properties';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
 
@@ -46,7 +46,6 @@ import {
 	showCloudLayer,
 	showHillshadeLayer,
 	showLabelLayer,
-	showPoiLayer,
 	showRoadLayer,
 	showStreetViewLayer
 } from '$routes/stores/layers';
@@ -155,7 +154,7 @@ export const createVectorLayer = (
 
 // layersの作成
 export const createLayersItems = (
-	_dataEntries: GeoDataEntry[],
+	_dataEntries: MorivisLayerEntry[],
 	_type: 'main' | 'preview' = 'main'
 ): LayerSpecification[] => {
 	const symbolLayerItems: LayerSpecification[] = [];

@@ -29,12 +29,30 @@ const toAbsoluteUrl = (url: string): string => {
 	return new URL(url, baseUrl).toString();
 };
 
+const normalizeStorageSchemeUrl = (value: string): string => {
+	if (!/^s3:\/\//iu.test(value)) return value;
+
+	const withoutScheme = value.replace(/^s3:\/\//iu, '');
+	const slashIndex = withoutScheme.indexOf('/');
+	if (slashIndex < 0) return `https://${withoutScheme}`;
+
+	const host = withoutScheme.slice(0, slashIndex);
+	const path = withoutScheme.slice(slashIndex + 1);
+
+	if (host.includes('.')) {
+		return `https://${host}/${path}`;
+	}
+
+	return `https://${host}.s3.amazonaws.com/${path}`;
+};
+
 export const normalizeHttpUrlInput = (value: string): string | null => {
 	const normalized = value.trim();
 	if (!normalized) return null;
 
-	const withProtocol = /^[a-z][a-z0-9+.-]*:\/\//iu.test(normalized)
-		? normalized
+	const storageNormalized = normalizeStorageSchemeUrl(normalized);
+	const withProtocol = /^[a-z][a-z0-9+.-]*:\/\//iu.test(storageNormalized)
+		? storageNormalized
 		: `https://${normalized}`;
 
 	try {

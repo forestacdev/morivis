@@ -1,6 +1,10 @@
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { createRasterEntry } from '$routes/map/data/entries/raster';
-import type { RasterBaseMapStyle, RasterEntry, TileXYZ } from '$routes/map/data/types/raster';
+import type {
+	MorivisRasterEntry,
+	RasterBaseMapStyle,
+	TileXYZ
+} from '$routes/map/data/types/raster';
 import type { Tag } from '$routes/map/data/types/tags';
 
 export interface HimawariTargetTime {
@@ -91,7 +95,7 @@ export const getHimawariImageUrl = (basetime: string | number, band = 'B13', pro
 
 export const createHimawariRasterEntry = async (
 	config: HimawariProductConfig
-): Promise<RasterEntry<RasterBaseMapStyle>> => {
+): Promise<MorivisRasterEntry<RasterBaseMapStyle>> => {
 	const times = await getHimawariSatimgTimes();
 	const basetimes = normalizeHimawariBasetimes(times);
 
@@ -129,7 +133,7 @@ export const createHimawariRasterEntry = async (
 
 export const createHimawariFallbackEntry = (
 	config: HimawariProductConfig
-): RasterEntry<RasterBaseMapStyle> => {
+): MorivisRasterEntry<RasterBaseMapStyle> => {
 	const entry = createRasterEntry(
 		config.name,
 		getHimawariImageUrl('{morivis:dimension}', config.band, config.prod),
@@ -160,7 +164,7 @@ export const createHimawariFallbackEntry = (
 
 export const loadHimawariRasterEntry = async (
 	config: HimawariProductConfig
-): Promise<RasterEntry<RasterBaseMapStyle>> => {
+): Promise<MorivisRasterEntry<RasterBaseMapStyle>> => {
 	try {
 		return await createHimawariRasterEntry(config);
 	} catch (error) {

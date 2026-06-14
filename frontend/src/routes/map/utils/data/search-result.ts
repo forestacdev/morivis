@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 
 export type ResultData = ResultPoiData | ResultCoordinateData | ResultAddressData | ResultLayerData;
 
@@ -36,7 +36,7 @@ export interface ResultLayerData {
 	name: string;
 	layerId: string;
 	location: string;
-	data: GeoDataEntry;
+	data: MorivisLayerEntry;
 }
 
 export type SearchGeojsonData = {

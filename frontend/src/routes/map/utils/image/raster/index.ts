@@ -8,13 +8,13 @@ import {
 	DEM_DATA_TYPE,
 	type DemDataTypeKey,
 	type DemRangeColorStyle,
-	type RasterDemEntry,
+	type DemRasterEntry,
 	type RasterDemStyle
 } from '$routes/map/data/types/raster';
 import {
+	type CadRasterEntry,
 	DEM_STYLE_TYPE,
-	type DemStyleMode,
-	type RasterCadEntry
+	type DemStyleMode
 } from '$routes/map/data/types/raster';
 import { replaceDimensionPlaceholder } from '$routes/map/utils/dimension';
 import { TileProxy } from '$routes/map/utils/image';
@@ -175,7 +175,7 @@ export const getRasterImageUrl = async (
 		if (demType) {
 			const cacheKey = getRasterCoverCacheKey(_layerEntry, url);
 			const convertUrl = await getOrCreateRasterCoverImage(cacheKey, async () => {
-				return await generateDemCoverImage(url, _layerEntry as RasterDemEntry);
+				return await generateDemCoverImage(url, _layerEntry as DemRasterEntry);
 			});
 			return await validateRasterPreviewUrl(convertUrl);
 		}
@@ -274,12 +274,12 @@ export const generatePmtilesImageUrl = async (
 			const demType = _layerEntry.style.visualization.demType as DemDataTypeKey;
 
 			if (demType) {
-				convertUrl = await generateDemCoverImage('none', _layerEntry as RasterDemEntry);
+				convertUrl = await generateDemCoverImage('none', _layerEntry as DemRasterEntry);
 			}
 		} else if (_layerEntry.style.type === 'cad') {
 			convertUrl = await replaceColorInImage(
 				_layerEntry.format.url,
-				_layerEntry as RasterCadEntry
+				_layerEntry as CadRasterEntry
 			);
 		} else {
 			const tile = _layerEntry.metaData.xyzImageTile ?? IMAGE_TILE_XYZ;
@@ -377,7 +377,7 @@ const getSharedDemWorker = (): Worker => {
 // TODO 共通化
 export const generateDemCoverImage = async (
 	imageUrl: string,
-	_entry: RasterDemEntry
+	_entry: DemRasterEntry
 ): Promise<string> => {
 	const { style, metaData } = _entry;
 	const visualization = style.visualization;
@@ -515,7 +515,7 @@ export const generateDemCoverImage = async (
 };
 
 // 色と画像urlを引数に画像の特定の色を変える関数
-const replaceColorInImage = async (imageUrl: string, _entry: RasterCadEntry): Promise<string> => {
+const replaceColorInImage = async (imageUrl: string, _entry: CadRasterEntry): Promise<string> => {
 	const tileId = createClientId();
 	const worker = new Worker(new URL('./image_replacement_color.worker.ts', import.meta.url), {
 		type: 'module'

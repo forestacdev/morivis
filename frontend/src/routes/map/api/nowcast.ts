@@ -1,7 +1,11 @@
 // https://www.jma.go.jp/jma/kishou/know/kurashi/highres_nowcast.html
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import { createRasterEntry } from '$routes/map/data/entries/raster';
-import type { RasterBaseMapStyle, RasterEntry, TileXYZ } from '$routes/map/data/types/raster';
+import type {
+	MorivisRasterEntry,
+	RasterBaseMapStyle,
+	TileXYZ
+} from '$routes/map/data/types/raster';
 import type { Tag } from '$routes/map/data/types/tags';
 
 /**
@@ -210,7 +214,7 @@ const createFixedNowcastTileUrl = (basetime: string, tileZoom: number) =>
 	`https://www.jma.go.jp/bosai/jmatile/data/nowc/${basetime}/none/${basetime}/surf/hrpns/${tileZoom}/{x}/{y}.png`;
 
 // NOTE: 高解像度降水ナウキャストは、ズームレベル 4, 6, 8 でタイルが提供されている
-const attachNowcastZoomSplitLayers = (entry: RasterEntry<RasterBaseMapStyle>) => {
+const attachNowcastZoomSplitLayers = (entry: MorivisRasterEntry<RasterBaseMapStyle>) => {
 	entry.format.url = createFixedNowcastTileUrl('{morivis:dimension}', 8);
 	entry.metaData.minZoom = 8;
 	entry.metaData.maxZoom = 8;
@@ -256,7 +260,7 @@ const attachNowcastZoomSplitLayers = (entry: RasterEntry<RasterBaseMapStyle>) =>
 
 export const createJmaNowcastRasterEntry = async (
 	config: JmaNowcastConfig
-): Promise<RasterEntry<RasterBaseMapStyle>> => {
+): Promise<MorivisRasterEntry<RasterBaseMapStyle>> => {
 	const tiles = await getJmaTileUrls();
 	const basetimes = tiles.map((tile) => tile.basetime);
 
@@ -291,7 +295,7 @@ export const createJmaNowcastRasterEntry = async (
 
 export const createJmaNowcastFallbackEntry = (
 	config: JmaNowcastConfig
-): RasterEntry<RasterBaseMapStyle> => {
+): MorivisRasterEntry<RasterBaseMapStyle> => {
 	const fallbackBasetime = getCurrentNowcastFallbackBasetime();
 	const entry = createRasterEntry(config.name, createNowcastTileUrl('{morivis:dimension}'), {
 		tileSize: 256,
@@ -320,7 +324,7 @@ export const createJmaNowcastFallbackEntry = (
 
 export const loadJmaNowcastRasterEntry = async (
 	config: JmaNowcastConfig
-): Promise<RasterEntry<RasterBaseMapStyle>> => {
+): Promise<MorivisRasterEntry<RasterBaseMapStyle>> => {
 	try {
 		return await createJmaNowcastRasterEntry(config);
 	} catch (error) {

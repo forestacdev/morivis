@@ -6,14 +6,14 @@
 
 	import { lonLatToAddress } from '$routes/map/api/address';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
 
 	interface Props {
 		clickedLayerIds: string[];
 		clickedLayerFeaturesData: ClickedLayerFeaturesData[] | null;
 		featureMenuData: FeatureMenuData | null;
-		layerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
 		clickedLngLat: LngLat | null;
 	}
 

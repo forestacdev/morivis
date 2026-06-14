@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
-import type { MeshStyle, ModelMeshEntry } from '$routes/map/data/types/model';
+import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 
@@ -14,7 +14,7 @@ export type RasterMeshCornerCoordinates = [
 	[number, number]
 ];
 
-interface CreateRasterMeshEntryParams {
+export interface CreateRasterMeshEntryParams {
 	id: string;
 	name: string;
 	band: ArrayLike<number>;
@@ -30,7 +30,7 @@ interface CreateRasterMeshEntryParams {
 	autoHeightScale?: boolean;
 }
 
-interface RasterMeshGeometry {
+export interface RasterMeshGeometry {
 	glb: ArrayBuffer;
 	center: { lng: number; lat: number; };
 	minHeight: number;
@@ -240,7 +240,7 @@ const exportMeshToGlb = async (mesh: THREE.Mesh): Promise<ArrayBuffer> => {
 	});
 };
 
-const buildRasterMeshGeometry = async ({
+export const buildRasterMeshGeometry = async ({
 	band,
 	width,
 	height,
@@ -371,7 +371,7 @@ const buildRasterMeshGeometry = async ({
 
 export const createRasterMeshEntry = async (
 	params: CreateRasterMeshEntryParams
-): Promise<ModelMeshEntry<MeshStyle>> => {
+): Promise<MeshEntry<MeshStyle>> => {
 	const { id, name, bounds, mapImage } = params;
 	const { glb, center, minHeight, maxHeight } = await buildRasterMeshGeometry(params);
 	const url = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }));
@@ -400,7 +400,7 @@ export const createRasterMeshEntry = async (
 			color: '#ffffff',
 			shading: { ...DEFAULT_MESH_SHADING },
 			heightColorRamp: {
-				enabled: false,
+				enabled: true,
 				colorMap: 'jet',
 				min: minHeight,
 				max: maxHeight,

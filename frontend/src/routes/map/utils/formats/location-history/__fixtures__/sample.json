@@ -1,0 +1,44 @@
+[
+	{
+		"startTime": "2024-01-02T03:04:05Z",
+		"endTime": "2024-01-02T04:04:05Z",
+		"visit": {
+			"hierarchyLevel": "1",
+			"probability": "0.9",
+			"topCandidate": {
+				"probability": "0.8",
+				"semanticType": "home",
+				"placeID": "place-1",
+				"placeLocation": "geo:35.6895,139.6917"
+			}
+		}
+	},
+	{
+		"startTime": "2024-01-02T05:00:00Z",
+		"endTime": "2024-01-02T05:30:00Z",
+		"activity": {
+			"probability": "0.7",
+			"start": "geo:35.6895,139.6917",
+			"end": "geo:35.6990,139.7000",
+			"distanceMeters": "1200",
+			"topCandidate": {
+				"type": "WALKING",
+				"probability": "0.6"
+			}
+		}
+	},
+	{
+		"startTime": "2024-01-02T06:00:00Z",
+		"endTime": "2024-01-02T06:20:00Z",
+		"timelinePath": [
+			{
+				"point": "geo:35.7000,139.7100",
+				"durationMinutesOffsetFromStartTime": "0"
+			},
+			{
+				"point": "geo:35.7050,139.7150",
+				"durationMinutesOffsetFromStartTime": "10"
+			}
+		]
+	}
+]

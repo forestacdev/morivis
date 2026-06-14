@@ -10,15 +10,15 @@ import {
 import type {
 	DemRangeColorStyle,
 	DerivedBandData,
-	RasterDemStyle,
-	RasterEntry
+	MorivisRasterEntry,
+	RasterDemStyle
 } from '$routes/map/data/types/raster';
 import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 
 import {
 	createAdjustableRange,
-	type GeoDataEntry,
-	getAdjustableRangeValue
+	getAdjustableRangeValue,
+	type MorivisLayerEntry
 } from '$routes/map/data/types';
 import {
 	selectedBaseMap,
@@ -285,7 +285,7 @@ export const getRasterTiffImageSource = async (
 };
 
 export const createSourcesItems = async (
-	_dataEntries: GeoDataEntry[],
+	_dataEntries: MorivisLayerEntry[],
 	_type: 'main' | 'preview' = 'main'
 ): Promise<{ [_: string]: SourceSpecification; }> => {
 	// 各エントリの非同期処理結果を配列に格納
@@ -510,7 +510,27 @@ export const createSourcesItems = async (
 							coordinates: getBoundingBoxCorners(metaData.bounds)
 						} satisfies ImageSourceSpecification;
 					} else if (format.type === 'geozarr') {
-						if (style.type === 'tiff') {
+						if (style.type === 'categorical' && style.legend.type === 'category') {
+							const categoricalValues = entry.properties?.categories?.values.join('|')
+								?? style.legend.labels.map((_, index) => index).join('|');
+							const categoricalColors = style.legend.colors.join('|');
+							const tileUrl =
+								`geozarr://tile?entryId=${entry.id}&mode=categorical&bandIndex=0&values=${
+									encodeURIComponent(categoricalValues)
+								}&colors=${
+									encodeURIComponent(categoricalColors)
+								}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+
+							items[sourceId] = {
+								type: 'raster',
+								tiles: [tileUrl],
+								maxzoom: metaData.maxZoom,
+								minzoom: metaData.minZoom,
+								tileSize: metaData.tileSize,
+								attribution: metaData.attribution,
+								bounds: metaData.bounds
+							} as RasterSourceSpecification;
+						} else if (style.type === 'tiff') {
 							const visualization = style.visualization;
 							const mode = visualization.mode;
 							let tileUrl: string;
@@ -765,7 +785,7 @@ export const createSourcesItems = async (
 };
 
 export const createTerrainSources = async (
-	_dataEntries: RasterEntry<RasterDemStyle>[],
+	_dataEntries: MorivisRasterEntry<RasterDemStyle>[],
 	_id: string
 ): Promise<{ [_: string]: RasterDEMSourceSpecification; }> => {
 	const sourceItems: { [_: string]: RasterDEMSourceSpecification; } = {};

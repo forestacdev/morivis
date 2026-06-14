@@ -1,0 +1,23 @@
+{
+	"type": "FeatureCollection",
+	"features": [
+		{
+			"type": "Feature",
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [
+					[139.6917, 35.6895],
+					[139.6920, 35.6898]
+				]
+			},
+			"properties": {
+				"name": "Test Trajectory",
+				"datetimes": [
+					"2024-01-02T03:04:05Z",
+					"2024-01-02T03:09:05Z"
+				],
+				"speed": [1.2, 1.5]
+			}
+		}
+	]
+}

@@ -5,12 +5,12 @@
 	import { onMount, onDestroy } from 'svelte';
 
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { isBBoxInside } from '$routes/map/utils/map/bbox';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 	}
 
 	let { showDataEntry = $bindable() }: Props = $props();
@@ -19,7 +19,7 @@
 	let hasBbox = $state<boolean>(true);
 
 	const createMapStyle = async (
-		_showDataEntry: GeoDataEntry
+		_showDataEntry: MorivisLayerEntry
 	): Promise<{
 		style: StyleSpecification;
 		bbox: [number, number, number, number] | null;

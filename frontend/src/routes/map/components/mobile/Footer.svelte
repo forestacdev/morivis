@@ -4,7 +4,7 @@
 
 	import MobileCompass from './MobileCompass.svelte';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { isStreetView, isStyleEdit } from '$routes/stores';
 	import {
@@ -14,7 +14,7 @@
 		isActiveMobileMenu
 	} from '$routes/stores/ui';
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		featureMenuData: FeatureMenuData | null;
 	}
 
@@ -143,7 +143,8 @@
 				<span class="text-xs">レイヤ</span>
 			</button>
 
-			<div
+			<button
+				type="button"
 				ontouchstart={handleTouchStart}
 				ontouchmove={handleTouchMove}
 				ontouchend={handleTouchEnd}
@@ -161,7 +162,7 @@
 						class="c-ripple-effect2 pointer-events-none absolute h-[50px] w-[50px] rounded-full border-2 border-amber-50"
 					></div>
 				{/if}
-			</div>
+			</button>
 
 			<button
 				class="flex h-full w-full cursor-pointer flex-col items-center justify-center"

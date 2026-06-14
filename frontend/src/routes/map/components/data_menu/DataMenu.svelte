@@ -8,16 +8,17 @@
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries, layerDataFuse } from '$routes/map/data/entries';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import { encode } from '$routes/map/utils/data/normalize';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
+		remoteGeoZarrUrl: string | null;
 		remotePmtilesUrl: string | null;
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
@@ -31,6 +32,7 @@
 		showDataEntry = $bindable(),
 		dropFile = $bindable(),
 		showDialogType = $bindable(),
+		remoteGeoZarrUrl = $bindable(),
 		remotePmtilesUrl = $bindable(),
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
@@ -41,7 +43,7 @@
 	}: Props = $props();
 
 	// export let mapBearing: number;
-	let filterDataEntries = $state<GeoDataEntry[]>([]);
+	let filterDataEntries = $state<MorivisLayerEntry[]>([]);
 
 	let searchWord = $state<string>(''); // 検索ワード
 	let showAddedData = $state<boolean>(false); // 追加済みデータの表示切替
@@ -113,6 +115,7 @@
 	let itemWidth = $state<number>(300); // item Height + grid margin & padding
 	let listContainer = $state<HTMLDivElement | null>(null);
 	let hasScrolledCatalog = $state(false);
+	let isShowDataMenuInitialized = $state(false);
 
 	$effect(() => {
 		if (gridWidth > itemWidth * 2) {
@@ -140,6 +143,11 @@
 
 	// 閉じられたときの処理
 	showDataMenu.subscribe((value) => {
+		if (!isShowDataMenuInitialized) {
+			isShowDataMenuInitialized = true;
+			return;
+		}
+
 		if (!value) {
 			selected = 'system';
 			showDataEntry = null;
@@ -318,6 +326,7 @@
 				bind:showDataEntry
 				bind:dropFile
 				bind:showDialogType
+				bind:remoteGeoZarrUrl
 				bind:remotePmtilesUrl
 				bind:remoteRasterUrl
 				bind:remoteVectorUrl

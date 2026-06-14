@@ -9,7 +9,7 @@
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import type {
-		VectorEntry,
+		MorivisVectorEntry,
 		GeoJsonMetaData,
 		TileMetaData,
 		VectorTemporalFilterState
@@ -27,7 +27,7 @@
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
-		layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData>;
+		layerEntry: MorivisVectorEntry<GeoJsonMetaData | TileMetaData>;
 		showDimensionOption: boolean;
 	}
 

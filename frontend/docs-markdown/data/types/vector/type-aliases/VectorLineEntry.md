@@ -1,0 +1,19 @@
+[**morivis TypeDoc**](../../../../README.md)
+
+***
+
+[morivis TypeDoc](../../../../README.md) / [data/types/vector](../README.md) / VectorLineEntry
+
+# Type Alias: VectorLineEntry\<T\>
+
+> **VectorLineEntry**\<`T`\> = [`LineStringEntry`](../interfaces/LineStringEntry.md)\<`T`\>
+
+Defined in: [frontend/src/routes/map/data/types/vector/index.ts:103](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/vector/index.ts#L103)
+
+線地物として扱う vector entry。format は取得方式、style は line 表現を持つ。
+
+## Type Parameters
+
+### T
+
+`T`

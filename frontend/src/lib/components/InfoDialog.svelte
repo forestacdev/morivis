@@ -6,7 +6,7 @@
 	import { getMorivisContributors, type GitHubContributor } from '$routes/map/api/github';
 	import { entries } from '$routes/map/data/entries';
 	import { getAttribution } from '$routes/map/data/entries/_meta_data/_attribution';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { showInfoDialog } from '$routes/stores/ui';
 
 	interface DataProviderItem {
@@ -27,7 +27,7 @@
 	const dataProviders = (() => {
 		const providerMap = new Map<string, DataProviderItem>();
 
-		entries.forEach((entry: GeoDataEntry) => {
+		entries.forEach((entry: MorivisLayerEntry) => {
 			if (entry.metaData.isUserUploaded) return;
 
 			const attribution = getAttribution(entry.metaData.attribution);

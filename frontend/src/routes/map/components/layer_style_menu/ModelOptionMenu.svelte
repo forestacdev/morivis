@@ -4,16 +4,16 @@
 	import PointCloudOption from './model_option/PoinbtCloudOption..svelte';
 
 	import type {
-		AnyModelEntry,
-		ModelDeckVectorEntry,
-		ModelMeshEntry,
+		MorivisModelEntry,
+		DeckVectorEntry,
+		MeshEntry,
 		MeshStyle,
 		PointCloudStyleEntry
 	} from '$routes/map/data/types/model';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
-		layerEntry: AnyModelEntry;
+		layerEntry: MorivisModelEntry;
 		showColorOption: boolean;
 		showDimensionOption: boolean;
 	}
@@ -27,7 +27,7 @@
 	$effect(() => {
 		if (layerEntry.type !== 'model' || layerEntry.style.type !== 'mesh') return;
 		$state.snapshot(layerEntry.style);
-		mapStore.setModelStyle(layerEntry as ModelMeshEntry<MeshStyle>);
+		mapStore.setModelStyle(layerEntry as MeshEntry<MeshStyle>);
 	});
 </script>
 
@@ -38,13 +38,13 @@
 	{/if}
 
 	{#if layerEntry.style.type === 'geoarrow'}
-		<GeoArrowOption bind:layerEntry={layerEntry as ModelDeckVectorEntry} bind:showColorOption />
+		<GeoArrowOption bind:layerEntry={layerEntry as DeckVectorEntry} bind:showColorOption />
 	{/if}
 
 	{#if layerEntry.style.type === 'mesh'}
 		<!-- Model options go here -->
 		<MeshOption
-			bind:layerEntry={layerEntry as ModelMeshEntry<MeshStyle>}
+			bind:layerEntry={layerEntry as MeshEntry<MeshStyle>}
 			bind:showColorOption
 			bind:showDimensionOption
 		/>

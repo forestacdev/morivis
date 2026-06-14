@@ -1,0 +1,12 @@
+Version 300
+Charset "WindowsJapanese"
+Delimiter ","
+CoordSys Earth Projection 1, 0
+Columns 2
+  name Char(32)
+  kind Char(16)
+Data
+Point 139.6917 35.6895
+Pline 2
+139.6917 35.6895
+139.692 35.6898

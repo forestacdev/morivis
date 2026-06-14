@@ -4,7 +4,7 @@ import {
 	type HimawariProductConfig,
 	loadHimawariRasterEntry
 } from '$routes/map/api/himawari';
-import type { GeoDataEntryCatalogItem } from '$routes/map/data/types';
+import type { MorivisLayerEntryCatalogItem } from '$routes/map/data/types';
 
 const config: HimawariProductConfig = {
 	id: 'himawari_b03',
@@ -21,7 +21,7 @@ const config: HimawariProductConfig = {
 
 const entry = createHimawariFallbackEntry(config);
 
-const catalogItem: GeoDataEntryCatalogItem = {
+const catalogItem: MorivisLayerEntryCatalogItem = {
 	entry,
 	loadEntry: () => loadHimawariRasterEntry(config)
 };

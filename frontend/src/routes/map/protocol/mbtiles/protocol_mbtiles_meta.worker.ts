@@ -1,4 +1,4 @@
-import { asset } from '$app/paths';
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 import type { MBTilesMetadata, MBTilesVectorLayer } from './index';
 
@@ -20,7 +20,7 @@ let sqlPromise: Promise<SqlJsStatic> | null = null;
 const getSql = (): Promise<SqlJsStatic> => {
 	if (!sqlPromise) {
 		sqlPromise = initSqlJs({
-			locateFile: () => asset('/sql-wasm.wasm')
+			locateFile: () => resolveStaticAssetPath('/sql-wasm.wasm')
 		});
 	}
 	return sqlPromise;

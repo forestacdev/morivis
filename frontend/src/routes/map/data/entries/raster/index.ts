@@ -6,10 +6,10 @@ import {
 
 import type {
 	DemDataTypeKey,
+	MorivisRasterEntry,
 	RasterBaseMapStyle,
 	RasterDemStyle,
 	RasterDiscreteDimension,
-	RasterEntry,
 	RasterPMTilesEntry
 } from '$routes/map/data/types/raster';
 
@@ -27,7 +27,7 @@ export const createRasterEntry = (
 		bounds?: [number, number, number, number];
 		timeDimension?: { values: string[]; labels?: string[]; };
 	}
-): RasterEntry<RasterBaseMapStyle> => {
+): MorivisRasterEntry<RasterBaseMapStyle> => {
 	const timeDimension: RasterDiscreteDimension | undefined = options?.timeDimension
 		? {
 			type: 'time',
@@ -36,7 +36,7 @@ export const createRasterEntry = (
 		}
 		: undefined;
 
-	const entry: RasterEntry<RasterBaseMapStyle> = {
+	const entry: MorivisRasterEntry<RasterBaseMapStyle> = {
 		id: 'raster_' + crypto.randomUUID(),
 		type: 'raster',
 		format: {
@@ -87,7 +87,7 @@ export const createDemRasterEntry = (
 		bounds?: [number, number, number, number];
 		demType?: DemDataTypeKey;
 	}
-): RasterEntry<RasterDemStyle> => ({
+): MorivisRasterEntry<RasterDemStyle> => ({
 	id: 'dem_' + crypto.randomUUID(),
 	type: 'raster',
 	format: {

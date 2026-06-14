@@ -3,12 +3,16 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
 		filterByGeometryType
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
@@ -20,23 +24,25 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -103,7 +109,11 @@
 		const bbox = turfBbox(filtered);
 
 		if (!bbox || !isBboxValid(bbox)) {
-			showZoneForm = true;
+			pendingZoneGeoRefData = {
+				featureCollection: filtered,
+				entryName
+			};
+			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 			return;
 		}

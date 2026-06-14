@@ -3,6 +3,10 @@ import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { PMTiles } from 'pmtiles';
 
 const pmCache = new Map<string, PMTiles>();
+const createAbortError = () => new Error('Request aborted');
+const throwIfAborted = (signal: AbortSignal) => {
+	if (signal.aborted) throw createAbortError();
+};
 
 const loadImagePmtiles = async (
 	src: string,
@@ -77,6 +81,7 @@ class WorkerProtocol {
 
 	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array; }> {
 		try {
+			throwIfAborted(controller.signal);
 			const x = parseInt(url.searchParams.get('x') || '0', 10);
 			const y = parseInt(url.searchParams.get('y') || '0', 10);
 			const z = parseInt(url.searchParams.get('z') || '0', 10);
@@ -92,16 +97,28 @@ class WorkerProtocol {
 			} else if (formatType === 'image') {
 				image = await loadImage(baseUrl, controller.signal);
 			}
+			throwIfAborted(controller.signal);
 
 			return new Promise((resolve, reject) => {
-				const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
-				this.pendingRequests.set(tileId, { resolve, reject, controller });
-				this.worker.postMessage({ image, demTypeNumber, id: tileId, tileSize });
-
-				controller.signal.addEventListener('abort', () => {
+				let settled = false;
+				const finish = (callback: () => void) => {
+					if (settled) return;
+					settled = true;
 					this.pendingRequests.delete(tileId);
-					reject(new Error('Request aborted'));
+					controller.signal.removeEventListener('abort', handleAbort);
+					callback();
+				};
+				const handleAbort = () => {
+					finish(() => reject(createAbortError()));
+				};
+				const demTypeNumber = DEM_DATA_TYPE[demType as DemDataTypeKey];
+				this.pendingRequests.set(tileId, {
+					resolve: (value) => finish(() => resolve(value)),
+					reject: (reason) => finish(() => reject(reason)),
+					controller
 				});
+				this.worker.postMessage({ image, demTypeNumber, id: tileId, tileSize });
+				controller.signal.addEventListener('abort', handleAbort, { once: true });
 			});
 		} catch (error) {
 			return Promise.reject(error);
@@ -133,6 +150,14 @@ class WorkerProtocol {
 		});
 		this.pendingRequests.clear();
 	};
+
+	cancelAllRequests = () => {
+		this.pendingRequests.forEach(({ controller, reject }) => {
+			controller.abort();
+			reject(createAbortError());
+		});
+		this.pendingRequests.clear();
+	};
 }
 
 const worker = new Worker(new URL('./protocol_terrain.worker.ts', import.meta.url), {
@@ -147,6 +172,7 @@ export const terrainProtocol = (protocolName: string) => {
 			const urlWithoutProtocol = params.url.replace(`${protocolName}://`, '');
 			const url = new URL(urlWithoutProtocol);
 			return workerProtocol.request(url, abortController);
-		}
+		},
+		cancelAllRequests: workerProtocol.cancelAllRequests
 	};
 };

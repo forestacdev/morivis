@@ -1,11 +1,11 @@
-import { asset } from '$app/paths';
 import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import {
 	DEFAULT_MESH_SHADING,
+	type MeshEntry,
 	type MeshShadingStyle,
-	type MeshStyle,
-	type ModelMeshEntry
+	type MeshStyle
 } from '$routes/map/data/types/model';
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import {
 	calculateModelTransform,
@@ -19,9 +19,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
-const DRACO_DECODER_PATH = asset('/draco/gltf/');
-const IFC_WASM_PATH = asset('/web-ifc/');
-const RHINO3DM_LIBRARY_PATH = asset('/rhino3dm/');
+const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
+const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
+const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
 let rhino3dmLoaderModulePromise:
 	| Promise<
 		typeof import('three/addons/loaders/3DMLoader.js')
@@ -92,7 +92,7 @@ const loadAmfLoaderModule = async () => {
 };
 
 interface LoadedModel {
-	entry: ModelMeshEntry<MeshStyle>;
+	entry: MeshEntry<MeshStyle>;
 	object: THREE.Object3D;
 	transform: ModelTransform;
 	mixer?: THREE.AnimationMixer;
@@ -400,6 +400,20 @@ export class ThreeJsLayerManager {
 		}
 	};
 
+	private setOnlyEntryVisible = (entryId: string, visible: boolean) => {
+		const applyVisibility = (group: THREE.Group | null) => {
+			if (!group) return;
+			group.traverse((child) => {
+				if (child.userData.entryId) {
+					child.visible = child.userData.entryId === entryId && visible;
+				}
+			});
+		};
+
+		applyVisibility(this.modelGroup);
+		applyVisibility(this.previewModelGroup);
+	};
+
 	/** カスタムレイヤーを作成（初期化用） */
 	createLayer(): CustomLayerInterface {
 		return {
@@ -500,12 +514,7 @@ export class ThreeJsLayerManager {
 					);
 					this.camera!.projectionMatrix = projectionMatrix.multiply(modelMatrix);
 
-					this.modelGroup!.traverse((child) => {
-						if (child.userData.entryId) {
-							child.visible = child.userData.entryId === loaded.entry.id
-								&& (loaded.entry.style.visible ?? true);
-						}
-					});
+					this.setOnlyEntryVisible(loaded.entry.id, loaded.entry.style.visible ?? true);
 
 					this.renderer!.resetState();
 					this.renderer!.render(this.scene!, this.camera!);
@@ -523,7 +532,7 @@ export class ThreeJsLayerManager {
 	}
 
 	/** モデルを追加。プレビューに同じIDのモデルがあれば再利用する */
-	addModel(entry: ModelMeshEntry<MeshStyle>, _type: 'main' | 'preview' = 'main'): Promise<void> {
+	addModel(entry: MeshEntry<MeshStyle>, _type: 'main' | 'preview' = 'main'): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!this.modelGroup || !this.previewModelGroup) {
 				reject(new Error('modelGroup not initialized'));
@@ -849,11 +858,11 @@ export class ThreeJsLayerManager {
 	}
 
 	/** 複数のモデルを追加 */
-	async addModels(entries: ModelMeshEntry<MeshStyle>[]): Promise<void> {
+	async addModels(entries: MeshEntry<MeshStyle>[]): Promise<void> {
 		await Promise.all(entries.map((entry) => this.addModel(entry)));
 	}
 
-	updateTransform(entries: ModelMeshEntry<MeshStyle>[]): void {
+	updateTransform(entries: MeshEntry<MeshStyle>[]): void {
 		entries.forEach((entry) => {
 			const loaded = this.loadedModels.get(entry.id);
 			if (!loaded) return;
@@ -895,7 +904,7 @@ export class ThreeJsLayerManager {
 	}
 
 	/** モデルを入れ替え（既存をすべて削除して新しいモデルを追加） */
-	async replaceModels(entries: ModelMeshEntry<MeshStyle>[]): Promise<void> {
+	async replaceModels(entries: MeshEntry<MeshStyle>[]): Promise<void> {
 		this.clearAllModels();
 		await this.addModels(entries);
 	}
@@ -942,7 +951,7 @@ export class ThreeJsLayerManager {
 		this.syncAnimationState(loaded);
 	}
 
-	setModelAnimationState(entry: ModelMeshEntry<MeshStyle>): void {
+	setModelAnimationState(entry: MeshEntry<MeshStyle>): void {
 		const loaded = this.loadedModels.get(entry.id);
 		if (!loaded) return;
 		loaded.entry = entry;

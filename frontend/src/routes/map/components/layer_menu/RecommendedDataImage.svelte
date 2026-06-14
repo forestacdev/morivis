@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { getLayerType } from '$routes/map/utils/entries';
 	import { getLayerImage, type ImageResult } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 
 	interface Props {
-		dataEntry: GeoDataEntry;
+		dataEntry: MorivisLayerEntry;
 		isSelected: boolean;
 	}
 

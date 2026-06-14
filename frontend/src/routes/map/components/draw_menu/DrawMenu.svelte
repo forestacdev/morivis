@@ -15,13 +15,13 @@
 	} from 'terra-draw';
 	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/map/types/draw';
 	import { downloadGeojson } from '$routes/map/utils/formats/geojson';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
-		layerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
 		drawGeojsonData: DrawGeojsonData;
 	}
 

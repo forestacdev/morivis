@@ -2,13 +2,13 @@
 	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { ImageResult } from '$routes/map/utils/image';
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 
 	interface Props {
-		layerEntry: GeoDataEntry;
+		layerEntry: MorivisLayerEntry;
 		rounded?: boolean;
 	}
 	let { layerEntry, rounded = true }: Props = $props();

@@ -3,9 +3,10 @@
 	import type { Table } from 'apache-arrow';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { createGeoArrowEntry } from '$routes/map/data/entries/model';
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import {
@@ -17,10 +18,10 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: string;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: string | null;
@@ -30,7 +31,7 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable()
@@ -109,7 +110,7 @@
 
 		const geometryType = selectedGeometryType as VectorEntryGeometryType;
 		const bounds = getGeoArrowBounds(geoArrowTable, geometryType);
-		let entry: GeoDataEntry | undefined;
+		let entry: MorivisLayerEntry | undefined;
 
 		if (selectedRenderMode === 'deck') {
 			entry = createGeoArrowEntry(entryName, geoArrowTable, geometryType, bounds ?? undefined);
@@ -139,7 +140,7 @@
 	const cancel = () => {
 		dropFile = null;
 		showDialogType = null;
-		showZoneForm = false;
+		transformOptionMode = null;
 		focusBbox = null;
 	};
 </script>

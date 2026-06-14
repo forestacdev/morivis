@@ -1,0 +1,29 @@
+name: frontend-vitest
+
+on:
+  pull_request:
+    paths:
+      - "frontend/**"
+      - ".github/workflows/frontend-vitest.yml"
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - name: Node setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: "frontend/pnpm-lock.yaml"
+
+      - name: Run Vitest
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          cp .env.example .env
+          pnpm run test:unit -- --run

@@ -3,16 +3,20 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
 		filterByGeometryType
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { gmlFileToGeoJson } from '$routes/map/utils/formats/gml';
+	import { gmlFileToGeoJsonInWorker } from '$routes/map/utils/formats/gml/analyze';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -20,23 +24,25 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -61,11 +67,37 @@
 
 	/** 複数ファイルをパースしてマージ */
 	const parseAllFiles = async (files: File[]): Promise<FeatureCollection> => {
-		const results = await Promise.all(files.map((f) => gmlFileToGeoJson(f)));
+		const results = await Promise.all(files.map((f) => gmlFileToGeoJsonInWorker(f)));
 		return {
 			type: 'FeatureCollection',
 			features: results.flatMap((r) => r.features)
 		};
+	};
+
+	const createGmlEntry = async (
+		geojson: FeatureCollection,
+		geometryType: VectorEntryGeometryType,
+		bbox: [number, number, number, number]
+	) => {
+		const entry = await createGeoJsonEntry(geojson, geometryType, entryName, bbox, undefined, {
+			attribution: 'GML'
+		});
+
+		if (entry && geometryType === 'LineString' && entry.style.type === 'line') {
+			entry.style.width.key = '単一';
+			entry.style.width.expressions = [
+				{
+					type: 'single',
+					key: '単一',
+					name: '単一',
+					mapping: {
+						value: 1
+					}
+				}
+			];
+		}
+
+		return entry;
 	};
 
 	// ファイルドロップ時: GML → GeoJSON → ジオメトリタイプ確認
@@ -113,16 +145,17 @@
 		const bbox = turfBbox(filtered);
 
 		if (!bbox || !isBboxValid(bbox)) {
-			showZoneForm = true;
+			pendingZoneGeoRefData = {
+				featureCollection: filtered,
+				entryName
+			};
+			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 		} else {
-			const entry = await createGeoJsonEntry(
+			const entry = await createGmlEntry(
 				filtered,
 				selectedGeometryType as VectorEntryGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				undefined,
-				{ attribution: 'GML' }
+				bbox as [number, number, number, number]
 			);
 
 			if (entry) {
@@ -135,7 +168,7 @@
 		}
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// 座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (gmlFiles.length === 0 || !rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);
@@ -163,13 +196,10 @@
 				return;
 			}
 
-			const entry = await createGeoJsonEntry(
+			const entry = await createGmlEntry(
 				geojsonData,
 				selectedGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				undefined,
-				{ attribution: 'GML' }
+				bbox as [number, number, number, number]
 			);
 
 			if (entry) {

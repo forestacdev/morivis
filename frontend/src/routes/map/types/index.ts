@@ -1,4 +1,4 @@
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type {
 	ResultAddressData,
 	ResultCoordinateData,
@@ -393,7 +393,7 @@ export const SUPPORTED_FILE_ACCEPT = [
 ].join(',');
 
 export interface ClickedLayerFeaturesData {
-	layerEntry: GeoDataEntry;
+	layerEntry: MorivisLayerEntry;
 	feature: MapGeoJSONFeature;
 	featureId: string | number;
 }

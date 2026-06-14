@@ -1,10 +1,10 @@
 import { getLayerIconName } from '$lib/icons';
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 // 配列を自動ソートする ラスターが下になるように
 export type LayerType = 'model' | 'point' | 'line' | 'polygon' | 'raster';
 
 /** レイヤータイプの取得 */
-export const getLayerType = (_dataEntry: GeoDataEntry): LayerType | undefined => {
+export const getLayerType = (_dataEntry: MorivisLayerEntry): LayerType | undefined => {
 	if (_dataEntry.type === 'raster') {
 		if (_dataEntry.style.type === 'cad') {
 			return 'line';

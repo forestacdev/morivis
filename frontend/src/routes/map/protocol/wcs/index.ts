@@ -7,6 +7,10 @@ import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 
 const TILE_CACHE_LIMIT = 256;
 const tileCache = new Map<string, Uint8Array>();
+const createAbortError = () => new Error('Request aborted');
+const throwIfAborted = (signal: AbortSignal) => {
+	if (signal.aborted) throw createAbortError();
+};
 
 const DIRECT_IMAGE_CONTENT_TYPE_RE = /^image\/(png|jpeg|jpg|webp|gif|bmp)/i;
 const TIFF_CONTENT_TYPE_RE = /image\/tiff|geotiff|tif/i;
@@ -72,8 +76,10 @@ const parseRanges = (value: string | null): number[] => {
 const renderTiffToPngBytes = async (
 	buffer: ArrayBuffer,
 	tileSize: number,
-	requestedRanges?: { mins: number[]; maxs: number[]; }
+	requestedRanges?: { mins: number[]; maxs: number[]; },
+	signal?: AbortSignal
 ): Promise<Uint8Array> => {
+	if (signal) throwIfAborted(signal);
 	const tiff = await fromArrayBuffer(buffer);
 	const image = await tiff.getImage();
 	const nodata = image.getGDALNoData();
@@ -90,6 +96,7 @@ const renderTiffToPngBytes = async (
 		...readOptions,
 		samples: sampleIndexes
 	})) as ArrayLike<number>[];
+	if (signal) throwIfAborted(signal);
 
 	const rgba = new Uint8ClampedArray(tileSize * tileSize * 4);
 
@@ -162,6 +169,7 @@ const renderTiffToPngBytes = async (
 	context.putImageData(new ImageData(rgba, tileSize, tileSize), 0, 0);
 
 	const result = await convertCanvasToResult(canvas);
+	if (signal) throwIfAborted(signal);
 	if (result instanceof Blob) {
 		return toUint8Array(result);
 	}
@@ -173,6 +181,7 @@ const renderTiffToPngBytes = async (
 	}
 	fallbackContext.drawImage(result, 0, 0);
 	const blob = await fallbackCanvas.convertToBlob({ type: 'image/png' });
+	if (signal) throwIfAborted(signal);
 	return toUint8Array(blob);
 };
 
@@ -196,6 +205,7 @@ class WcsProtocolHandler {
 	>();
 
 	async request(url: URL, abortController: AbortController): Promise<{ data: Uint8Array; }> {
+		throwIfAborted(abortController.signal);
 		const x = Number.parseInt(url.searchParams.get('x') ?? '0', 10);
 		const y = Number.parseInt(url.searchParams.get('y') ?? '0', 10);
 		const z = Number.parseInt(url.searchParams.get('z') ?? '0', 10);
@@ -244,6 +254,7 @@ class WcsProtocolHandler {
 			const response = await fetchWithDevProxy(requestUrl, {
 				signal: abortController.signal
 			});
+			throwIfAborted(abortController.signal);
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}`);
 			}
@@ -260,18 +271,27 @@ class WcsProtocolHandler {
 				TIFF_CONTENT_TYPE_RE.test(contentType)
 				|| TIFF_CONTENT_TYPE_RE.test(outputFormat)
 			) {
-				data = await renderTiffToPngBytes(await response.arrayBuffer(), tileSize, {
-					mins: bandMins,
-					maxs: bandMaxs
-				});
+				const buffer = await response.arrayBuffer();
+				throwIfAborted(abortController.signal);
+				data = await renderTiffToPngBytes(
+					buffer,
+					tileSize,
+					{
+						mins: bandMins,
+						maxs: bandMaxs
+					},
+					abortController.signal
+				);
 			} else if (XML_CONTENT_TYPE_RE.test(contentType)) {
 				const text = await response.text();
+				throwIfAborted(abortController.signal);
 				throw new Error(
 					extractServiceException(text) ?? 'WCS が画像ではなく XML/HTML を返しました'
 				);
 			} else {
 				data = new Uint8Array(await response.arrayBuffer());
 			}
+			throwIfAborted(abortController.signal);
 
 			setTileCache(cacheKey, data);
 			return { data: cloneUint8Array(data) };

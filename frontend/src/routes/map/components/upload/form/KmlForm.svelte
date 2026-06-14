@@ -3,6 +3,10 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import {
@@ -10,7 +14,7 @@
 		getGeometryTypes,
 		filterByGeometryType
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import {
@@ -41,23 +45,25 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -224,7 +230,7 @@
 		}
 	});
 
-	const getTemporalItemsFromEntry = (entry: GeoDataEntry): VectorTemporalItem[] => {
+	const getTemporalItemsFromEntry = (entry: MorivisLayerEntry): VectorTemporalItem[] => {
 		if (entry.type !== 'vector') return [];
 		if (entry.format.type !== 'geojson') return [];
 
@@ -259,7 +265,7 @@
 		return Array.from(values.values()).sort((a, b) => a.timestamp - b.timestamp);
 	};
 
-	const applyKmlTemporalProperties = (entry: GeoDataEntry) => {
+	const applyKmlTemporalProperties = (entry: MorivisLayerEntry) => {
 		if (entry.type !== 'vector') return;
 
 		entry.properties.fields = entry.properties.fields.map((field) =>
@@ -332,7 +338,11 @@
 		const bbox = turfBbox(filtered);
 
 		if (!bbox || !isBboxValid(bbox)) {
-			showZoneForm = true;
+			pendingZoneGeoRefData = {
+				featureCollection: filtered,
+				entryName
+			};
+			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 		} else {
 			const defaultColor = kmlResult

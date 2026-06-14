@@ -1,7 +1,7 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_3DTILES_PATH } from '$routes/constants';
-import type { ModelTiles3DEntry, PointCloudStyle } from '$routes/map/data/types/model';
+import type { PointCloudStyle, Tiles3DEntry } from '$routes/map/data/types/model';
 
-const entry: ModelTiles3DEntry<PointCloudStyle> = {
+const entry: Tiles3DEntry<PointCloudStyle> = {
 	id: 'ensyurin_owl_3dtiles',
 	type: 'model',
 	format: {

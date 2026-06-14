@@ -4,7 +4,7 @@
 	import { fly, slide, scale } from 'svelte/transition';
 
 	import LayerItem from '$routes/map/components/layer_menu/LayerItem.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { getLayerIcon, TYPE_LABELS, type LayerType } from '$routes/map/utils/entries';
 	import { isStyleEdit } from '$routes/stores';
@@ -13,10 +13,10 @@
 	interface Props {
 		layerType: LayerType;
 		lastLayerType: LayerType | null;
-		typeEntries: GeoDataEntry[];
+		typeEntries: MorivisLayerEntry[];
 		layerInRangeMap: Record<string, boolean>;
-		showDataEntry: GeoDataEntry | null; // データメニューの表示状態
-		tempLayerEntries: GeoDataEntry[];
+		showDataEntry: MorivisLayerEntry | null; // データメニューの表示状態
+		tempLayerEntries: MorivisLayerEntry[];
 		enableFlip: boolean;
 		isDraggingLayerType: LayerType | null; // ドラッグ中のレイヤータイプ
 		isHoveredLayerType: LayerType | null; // ホバー中のレイヤータイプ

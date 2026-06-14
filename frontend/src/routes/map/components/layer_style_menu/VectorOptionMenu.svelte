@@ -6,7 +6,7 @@
 	import TemporalFilterControl from './vecter_option/TemporalFilterControl.svelte';
 
 	import type {
-		VectorEntry,
+		MorivisVectorEntry,
 		PolygonEntry,
 		LineStringEntry,
 		PointEntry,
@@ -19,7 +19,7 @@
 	} from '$routes/map/data/types/vector/properties';
 
 	interface Props {
-		layerEntry: VectorEntry<GeoJsonMetaData | TileMetaData>;
+		layerEntry: MorivisVectorEntry<GeoJsonMetaData | TileMetaData>;
 		showColorOption: boolean;
 		showDimensionOption: boolean;
 	}

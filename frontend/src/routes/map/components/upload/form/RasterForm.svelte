@@ -5,12 +5,12 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createRasterEntry, createDemRasterEntry } from '$routes/map/data/entries/raster';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DemDataTypeKey } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		remoteRasterUrl: string | null;
 	}

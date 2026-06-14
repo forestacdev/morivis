@@ -11,7 +11,7 @@
 
 	import { ICONS } from '$lib/icons';
 	import { geoDataEntries } from '$routes/map/data/entries';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { Region } from '$routes/map/data/types/location';
 	import { isBBoxOverlapping } from '$routes/map/utils/map/bbox';
 	import { checkMobileWidth } from '$routes/map/utils/platform/viewport';
@@ -21,7 +21,7 @@
 	import { showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		isLayerDragging: boolean;
 		isDeleteOverlayActive: boolean;
 		setRecommendedDataDragging: (value: boolean) => void;
@@ -189,7 +189,7 @@
 		}
 	});
 
-	const addData = (dataEntry: GeoDataEntry) => {
+	const addData = (dataEntry: MorivisLayerEntry) => {
 		if (checkMobileWidth()) {
 			activeLayerIdsStore.add(dataEntry.id);
 			return;
@@ -198,7 +198,7 @@
 		}
 	};
 
-	const onDragStart = (e: DragEvent, dataEntry: GeoDataEntry) => {
+	const onDragStart = (e: DragEvent, dataEntry: MorivisLayerEntry) => {
 		if (!e.dataTransfer) return;
 		e.dataTransfer.effectAllowed = 'copy';
 		e.dataTransfer.setData('application/x-entry-id', dataEntry.id);

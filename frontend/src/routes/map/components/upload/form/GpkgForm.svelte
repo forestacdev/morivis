@@ -3,6 +3,10 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import {
@@ -10,7 +14,7 @@
 		getGeometryTypes,
 		filterByGeometryType
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { ColorMatchExpression } from '$routes/map/data/types/vector/style';
@@ -36,23 +40,25 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -214,58 +220,19 @@
 						resolvedBbox = transformed;
 					}
 				} catch {
-					// 変換失敗時はZoneFormへ
+					// 変換失敗時は座標系選択へ
 				}
 			}
 
 			if (!isBboxValid(resolvedBbox)) {
 				closeGpkg();
-				showZoneForm = true;
+				transformOptionMode = 'zone';
 				focusBbox = result.bounds;
 				rasterReady = false;
 				return;
 			}
 
 			GeoTiffCache.setBbox(id, resolvedBbox);
-
-			// サムネイル生成
-			const thumbSize = 512;
-			const thumbCanvas = new OffscreenCanvas(thumbSize, thumbSize);
-			const thumbCtx = thumbCanvas.getContext('2d')!;
-			const thumbImg = thumbCtx.createImageData(thumbSize, thumbSize);
-			const thumbData = thumbImg.data;
-			const hasRgb = result.bands.length >= 3;
-			const size = Math.min(result.width, result.height);
-			const sx = Math.floor((result.width - size) / 2);
-			const sy = Math.floor((result.height - size) / 2);
-
-			for (let ty = 0; ty < thumbSize; ty++) {
-				for (let tx = 0; tx < thumbSize; tx++) {
-					const srcX = sx + Math.floor((tx * size) / thumbSize);
-					const srcY = sy + Math.floor((ty * size) / thumbSize);
-					const srcIdx = srcY * result.width + srcX;
-					const dstIdx = (ty * thumbSize + tx) * 4;
-
-					if (hasRgb) {
-						thumbData[dstIdx] = result.bands[0][srcIdx];
-						thumbData[dstIdx + 1] = result.bands[1][srcIdx];
-						thumbData[dstIdx + 2] = result.bands[2][srcIdx];
-					} else {
-						const v = result.bands[0][srcIdx];
-						thumbData[dstIdx] = v;
-						thumbData[dstIdx + 1] = v;
-						thumbData[dstIdx + 2] = v;
-					}
-					thumbData[dstIdx + 3] = 255;
-				}
-			}
-			thumbCtx.putImageData(thumbImg, 0, 0);
-			const tempCanvas = document.createElement('canvas');
-			tempCanvas.width = thumbSize;
-			tempCanvas.height = thumbSize;
-			const tempCtx = tempCanvas.getContext('2d')!;
-			tempCtx.putImageData(thumbImg, 0, 0);
-			const mapImage = tempCanvas.toDataURL('image/png');
 
 			await encodeAllBandsToTerrarium(
 				id,
@@ -290,7 +257,7 @@
 					tileSize: 256,
 					bounds: resolvedBbox,
 					xyzImageTile: findCenterTile(resolvedBbox),
-					mapImage
+					mapImage: result.mapImage
 				},
 				properties: {
 					bands: {
@@ -394,7 +361,11 @@
 			}
 			closeGpkg();
 			gpkgBuffer = null;
-			showZoneForm = true;
+			pendingZoneGeoRefData = {
+				featureCollection: filtered as FeatureCollection,
+				entryName
+			};
+			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 		} else {
 			const entry = await createGeoJsonEntry(
@@ -421,7 +392,7 @@
 		return false;
 	};
 
-	// ZoneFormで座標系選択後 → 座標変換してエントリ作成
+	// 座標系選択後 → 座標変換してエントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!rawGeojson || !selectedGeometryType) return;
 		isProcessing.set(true);

@@ -3,14 +3,14 @@
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createGlbEntry } from '$routes/map/data/entries/model';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
-	import { computeUploadedModelMeta } from '$routes/map/utils/three/model-bounds';
+	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 	}
@@ -159,7 +159,7 @@
 				}
 
 				try {
-					const uploadedModelMeta = await computeUploadedModelMeta({
+					const uploadedModelMeta = await computeUploadedModelMetaInWorker({
 						file: glbFile,
 						format: isObj
 							? 'obj'

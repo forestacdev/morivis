@@ -30,13 +30,15 @@
 	import SelectionPopup from '$routes/map/components/popup/SelectionPopup.svelte';
 	import Tooltip from '$routes/map/components/popup/Tooltip.svelte';
 	import FileManager from '$routes/map/components/upload/FileManager.svelte';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type { GeoRefPreviewData } from '$routes/map/components/upload/form/transform/georef-types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type {
-		AnyModelTiles3DEntry,
-		ModelDeckVectorEntry,
-		ModelPointCloudEntry
+		AnyTiles3DEntry,
+		DeckVectorEntry,
+		PointCloudEntry
 	} from '$routes/map/data/types/model';
-	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
 		RasterBaseMapStyle,
 		RasterCogEntry,
@@ -86,7 +88,6 @@
 		showCloudLayer,
 		type BaseMapType,
 		showBoundaryLayer,
-		showPoiLayer,
 		activeLayerIdsStore
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
@@ -95,8 +96,8 @@
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
-		layerEntries: GeoDataEntry[];
-		tempLayerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
+		tempLayerEntries: MorivisLayerEntry[];
 		streetViewLineData: FeatureCollection;
 		streetViewPointData: StreetViewPointGeoJson;
 		drawGeojsonData: DrawGeojsonData;
@@ -108,10 +109,10 @@
 		showAngleMarker: boolean;
 		angleMarkerLngLat: LngLat;
 		cameraBearing: number; // カメラの向き
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		dropFile: File | FileList | null;
 		showDialogType: DialogType;
-		showZoneForm: boolean; // 座標系選択ダイアログの表示状態
+		transformOptionMode: TransformOptionMode;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		zoneBboxGeojsonData: FeatureCollection; // 座標系選択用GeoJSON
@@ -122,7 +123,8 @@
 		searchResults: ResultData[] | null;
 		contextMenuState: ContextMenuState | null;
 		isDragover: boolean;
-		showGeoRefForm: boolean;
+		geoRefPreviewData: GeoRefPreviewData | null;
+		previewOpacity: number;
 		focusFeature: (result: ResultData) => void;
 	}
 
@@ -144,7 +146,7 @@
 		dropFile = $bindable(),
 		showDialogType = $bindable(),
 		drawGeojsonData = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode,
 		focusBbox = $bindable(),
 		selectedEpsgCode,
 		zoneBboxGeojsonData,
@@ -155,9 +157,13 @@
 		searchResults,
 		contextMenuState = $bindable(),
 		isDragover = $bindable(),
-		showGeoRefForm,
+		geoRefPreviewData,
+		previewOpacity,
 		focusFeature
 	}: Props = $props();
+
+	const isZoneRegistrationActive = $derived(transformOptionMode === 'zone');
+	const isGeoRefRegistrationActive = $derived(transformOptionMode === 'georef');
 
 	// 監視用のデータを保持
 	let layerWatchTargets = $derived.by(() => {
@@ -206,17 +212,19 @@
 	// 	]
 	// });
 	// mapStyleの作成
-	const createMapStyle = async (_dataEntries: GeoDataEntry[]): Promise<StyleSpecification> => {
+	const createMapStyle = async (_dataEntries: MorivisLayerEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
-		const sources = !showDataEntry && !showZoneForm ? await createSourcesItems(_dataEntries) : {};
-		const layers = !showDataEntry && !showZoneForm ? await createLayersItems(_dataEntries) : [];
+		const sources =
+			!showDataEntry && !isZoneRegistrationActive ? await createSourcesItems(_dataEntries) : {};
+		const layers =
+			!showDataEntry && !isZoneRegistrationActive ? await createLayersItems(_dataEntries) : [];
 
 		if (!import.meta.env.PROD) {
 			console.log('debug:entries', _dataEntries);
 		}
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
-		if (showDataEntry || showZoneForm) {
+		if (showDataEntry || isZoneRegistrationActive) {
 			previewSources = {
 				...previewSources,
 				// preview_base_1: {
@@ -245,10 +253,57 @@
 				// }
 			};
 		}
+		if (isGeoRefRegistrationActive && geoRefPreviewData) {
+			previewSources = {
+				...previewSources,
+				georef_image_preview: {
+					type: 'image',
+					url: geoRefPreviewData.url,
+					coordinates: geoRefPreviewData.coordinates
+				} satisfies SourceSpecification
+			};
+		}
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
-		if (showDataEntry || showZoneForm) {
+		if (showDataEntry || isZoneRegistrationActive) {
 			previewLayers = [...previewBaseLayers, ...previewLayers];
 		}
+		if (isGeoRefRegistrationActive && geoRefPreviewData) {
+			previewLayers = [
+				...previewLayers,
+				{
+					id: '@georef_image_preview',
+					type: 'raster',
+					source: 'georef_image_preview',
+					paint: {
+						'raster-opacity': previewOpacity
+					}
+				}
+			];
+		}
+		const zoneLayers: LayerSpecification[] = isZoneRegistrationActive
+			? [
+					{
+						id: '@zone_bbox_select',
+						type: 'fill',
+						source: 'zone_bbox',
+						filter: ['all', ['==', '$type', 'Polygon'], ['==', 'code', selectedEpsgCode]],
+						paint: {
+							'fill-color': 'red',
+							'fill-opacity': 0.5
+						}
+					},
+					{
+						id: '@zone_bbox',
+						type: 'line',
+						source: 'zone_bbox',
+						filter: ['==', '$type', 'Polygon'],
+						paint: {
+							'line-color': 'white',
+							'line-width': 1
+						}
+					}
+				]
+			: [];
 
 		const xyzTileSources: Record<string, SourceSpecification> = $showXYZTileLayer
 			? {
@@ -383,26 +438,7 @@
 				},
 
 				// 座標系選択のフィーチャー
-				{
-					id: '@zone_bbox_select',
-					type: 'fill',
-					source: 'zone_bbox',
-					filter: ['all', ['==', '$type', 'Polygon'], ['==', 'code', selectedEpsgCode]],
-					paint: {
-						'fill-color': 'red',
-						'fill-opacity': 0.5
-					}
-				},
-				{
-					id: '@zone_bbox',
-					type: 'line',
-					source: 'zone_bbox',
-					filter: ['==', '$type', 'Polygon'],
-					paint: {
-						'line-color': 'white',
-						'line-width': 1
-					}
-				},
+				...zoneLayers,
 
 				// 検索マーカー
 				{
@@ -439,19 +475,6 @@
 						'text-justify': 'auto'
 					}
 				}
-				// {
-				// 	id: '@nowcast_data_layer',
-				// 	type: 'raster',
-				// 	source: 'nowcast_data',
-				// 	maxzoom: 22,
-				// 	minzoom: 4,
-				// 	paint: {
-				// 		'raster-opacity': 0.7,
-				// 		'raster-resampling': 'nearest',
-				// 		'raster-fade-duration': 0
-				// 	}
-				// }
-
 				// TODO: 描画レイヤー
 				// ...drawLayers
 				// {
@@ -537,19 +560,21 @@
 	let styleUpdateId = 0;
 	const styleUpdateUnsubscribers: Unsubscriber[] = [];
 
-	const getMapStyleEntries = (entries: GeoDataEntry[]) => {
+	const getMapStyleEntries = (entries: MorivisLayerEntry[]) => {
 		return entries.filter((entry) => entry.type !== 'model');
 	};
 
-	const isWcsEntry = (entry: GeoDataEntry): entry is RasterWcsEntry<RasterBaseMapStyle> => {
+	const isWcsEntry = (entry: MorivisLayerEntry): entry is RasterWcsEntry<RasterBaseMapStyle> => {
 		return entry.type === 'raster' && entry.format.type === 'wcs';
 	};
 
-	const isViewportCogEntry = (entry: GeoDataEntry): entry is RasterCogEntry<RasterTiffStyle> => {
+	const isViewportCogEntry = (
+		entry: MorivisLayerEntry
+	): entry is RasterCogEntry<RasterTiffStyle> => {
 		return entry.type === 'raster' && entry.format.type === 'cog' && entry.format.mode !== 'tile';
 	};
 
-	const refreshWcsEntries = async (entries: GeoDataEntry[]) => {
+	const refreshWcsEntries = async (entries: MorivisLayerEntry[]) => {
 		const map = mapStore.getMap();
 		if (!map) return;
 
@@ -578,7 +603,7 @@
 		);
 	};
 
-	const refreshCogEntries = async (entries: GeoDataEntry[]) => {
+	const refreshCogEntries = async (entries: MorivisLayerEntry[]) => {
 		const map = mapStore.getMap();
 		if (!map) return;
 
@@ -596,12 +621,15 @@
 		);
 	};
 
-	const setStyleDebounce = debounce(async (entries: GeoDataEntry[]) => {
+	const DEFAULT_SET_STYLE_DEBOUNCE_MS = 100;
+	const setStyleDebounceHandlers: Record<number, (entries: MorivisLayerEntry[]) => void> = {};
+
+	const setStyle = async (entries: MorivisLayerEntry[]) => {
 		const updateId = ++styleUpdateId;
 		const mapLibreEntry = getMapStyleEntries(entries);
 
 		// esri-featureプロトコルの動的管理
-		const isGeojsonTileEntry = (e: GeoDataEntry) =>
+		const isGeojsonTileEntry = (e: MorivisLayerEntry) =>
 			e.type === 'vector' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'geojsontile';
@@ -614,7 +642,7 @@
 			mapStore.releaseGeojsonProtocol();
 		}
 
-		const isEsriEntry = (e: GeoDataEntry) =>
+		const isEsriEntry = (e: MorivisLayerEntry) =>
 			e.type === 'vector' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'esri-feature';
@@ -626,7 +654,7 @@
 			mapStore.releaseEsriProtocol();
 		}
 
-		const isOgcFeatureEntry = (e: GeoDataEntry) =>
+		const isOgcFeatureEntry = (e: MorivisLayerEntry) =>
 			e.type === 'vector' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'ogc-feature';
@@ -639,7 +667,7 @@
 			mapStore.releaseOgcFeatureProtocol();
 		}
 
-		const isWfsFeatureEntry = (e: GeoDataEntry) =>
+		const isWfsFeatureEntry = (e: MorivisLayerEntry) =>
 			e.type === 'vector' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'wfs-feature';
@@ -652,15 +680,15 @@
 			mapStore.releaseWfsFeatureProtocol();
 		}
 
-		const isCogEntry = (e: GeoDataEntry) =>
+		const isCogEntry = (e: MorivisLayerEntry) =>
 			e.type === 'raster' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'cog';
-		const isGeoZarrEntry = (e: GeoDataEntry) =>
+		const isGeoZarrEntry = (e: MorivisLayerEntry) =>
 			e.type === 'raster' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'geozarr';
-		const isCogTileEntry = (e: GeoDataEntry) =>
+		const isCogTileEntry = (e: MorivisLayerEntry) =>
 			isCogEntry(e) && (e as { format: { mode?: 'tile' | 'viewport' } }).format.mode === 'tile';
 		const hasGeoZarrLayer =
 			entries.some(isGeoZarrEntry) || (showDataEntry && isGeoZarrEntry(showDataEntry));
@@ -697,7 +725,7 @@
 			);
 		}
 
-		const isMbtilesEntry = (e: GeoDataEntry) =>
+		const isMbtilesEntry = (e: MorivisLayerEntry) =>
 			'format' in e && (e as { format: { type: string } }).format.type === 'mbtiles';
 		const hasMbtilesLayer =
 			entries.some(isMbtilesEntry) || (showDataEntry && isMbtilesEntry(showDataEntry));
@@ -708,7 +736,7 @@
 			mapStore.releaseMbtilesProtocol();
 		}
 
-		const isDemEntry = (e: GeoDataEntry) =>
+		const isDemEntry = (e: MorivisLayerEntry) =>
 			e.type === 'raster' &&
 			'style' in e &&
 			(e as { style: { type: string } }).style.type === 'dem';
@@ -727,7 +755,7 @@
 			mapStore.releaseTileIndexProtocol();
 		}
 
-		const mapStyle = await createMapStyle(mapLibreEntry as GeoDataEntry[]);
+		const mapStyle = await createMapStyle(mapLibreEntry as MorivisLayerEntry[]);
 		// 後から開始した更新がある場合、この結果は古いので破棄する。
 		if (updateId !== styleUpdateId) return;
 
@@ -739,51 +767,51 @@
 		await refreshCogEntries(entries);
 
 		const tiles3dEntry =
-			showDataEntry || showZoneForm
+			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
-					) as AnyModelTiles3DEntry[]);
+					) as AnyTiles3DEntry[]);
 
 		if (
 			showDataEntry &&
 			showDataEntry.type === 'model' &&
-			(showDataEntry as AnyModelTiles3DEntry).format.type === '3d-tiles'
+			(showDataEntry as AnyTiles3DEntry).format.type === '3d-tiles'
 		) {
-			tiles3dEntry.push(showDataEntry as AnyModelTiles3DEntry);
+			tiles3dEntry.push(showDataEntry as AnyTiles3DEntry);
 		}
 
 		const pointCloudEntries =
-			showDataEntry || showZoneForm
+			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
-					) as ModelPointCloudEntry[]);
+					) as PointCloudEntry[]);
 
 		if (
 			showDataEntry &&
 			showDataEntry.type === 'model' &&
-			(showDataEntry as ModelPointCloudEntry).format.type === 'point-cloud'
+			(showDataEntry as PointCloudEntry).format.type === 'point-cloud'
 		) {
-			pointCloudEntries.push(showDataEntry as ModelPointCloudEntry);
+			pointCloudEntries.push(showDataEntry as PointCloudEntry);
 		}
 
 		const deckVectorEntries =
-			showDataEntry || showZoneForm
+			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) =>
 							entry.type === 'model' &&
 							(entry.format.type === 'geoarrow' || entry.format.type === 'geojson-3d')
-					) as ModelDeckVectorEntry[]);
+					) as DeckVectorEntry[]);
 
 		if (
 			showDataEntry &&
 			showDataEntry.type === 'model' &&
-			((showDataEntry as ModelDeckVectorEntry).format.type === 'geoarrow' ||
-				(showDataEntry as ModelDeckVectorEntry).format.type === 'geojson-3d')
+			((showDataEntry as DeckVectorEntry).format.type === 'geoarrow' ||
+				(showDataEntry as DeckVectorEntry).format.type === 'geojson-3d')
 		) {
-			deckVectorEntries.push(showDataEntry as ModelDeckVectorEntry);
+			deckVectorEntries.push(showDataEntry as DeckVectorEntry);
 		}
 
 		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries, deckVectorEntries);
@@ -791,7 +819,7 @@
 		if (updateId !== styleUpdateId) return;
 
 		const meshEntries =
-			showDataEntry || showZoneForm
+			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) =>
@@ -806,11 +834,11 @@
 								entry.format.type === '3mf' ||
 								entry.format.type === 'amf' ||
 								entry.format.type === 'ifc')
-					) as ModelMeshEntry<MeshStyle>[]);
+					) as MeshEntry<MeshStyle>[]);
 
 		const previewMeshEntry =
 			showDataEntry && showDataEntry.type === 'model' && showDataEntry.style.type === 'mesh'
-				? (showDataEntry as ModelMeshEntry<MeshStyle>)
+				? (showDataEntry as MeshEntry<MeshStyle>)
 				: null;
 
 		// setThreeLayerの直前にも確認して、古いモデル状態の上書きを防ぐ。
@@ -822,20 +850,35 @@
 		mapStore.terrainReload();
 
 		if (!maplibreMap) return;
-	}, 100);
+	};
+
+	const getSetStyleDebounceHandler = (wait = DEFAULT_SET_STYLE_DEBOUNCE_MS) => {
+		const existingHandler = setStyleDebounceHandlers[wait];
+		if (existingHandler) return existingHandler;
+
+		const handler = debounce((entries: MorivisLayerEntry[]) => {
+			void setStyle(entries);
+		}, wait);
+		setStyleDebounceHandlers[wait] = handler;
+		return handler;
+	};
+
+	const setStyleDebounce = (entries: MorivisLayerEntry[], wait?: number) => {
+		getSetStyleDebounceHandler(wait)(entries);
+	};
 
 	const requestStyleUpdateByDependency = (_dependency: unknown) => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
+		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 	};
 
 	const syncHighlightLayers = () => {
-		if (showDataEntry || showZoneForm) {
+		if (showDataEntry || isZoneRegistrationActive) {
 			mapStore.clearHighlightLayers();
 			return;
 		}
 
 		const highlightLayers = createHighlightLayerItems(
-			getMapStyleEntries(layerEntries as GeoDataEntry[])
+			getMapStyleEntries(layerEntries as MorivisLayerEntry[])
 		);
 		mapStore.setHighlightLayers(highlightLayers);
 	};
@@ -843,45 +886,42 @@
 	// レイヤーの更新を監視
 	$effect(() => {
 		$state.snapshot(layerWatchTargets);
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
+		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 	});
 
 	styleUpdateUnsubscribers.push(
 		selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
-		// showPoiLayer.subscribe(() => {
-		// 	setStyleDebounce(layerEntries as GeoDataEntry[]);
-		// }),
 		showBoundaryLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showHillshadeLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showLabelLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showRoadLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showXYZTileLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showCloudLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		})
 	);
 	// ストリートビューの表示
 	styleUpdateUnsubscribers.push(
 		showStreetViewLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
 		})
 	);
 
 	styleUpdateUnsubscribers.push(
 		mapStore.onTerrain(() => {
-			setStyleDebounce(layerEntries as GeoDataEntry[]);
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		})
 	);
 
@@ -897,9 +937,18 @@
 		requestStyleUpdateByDependency(searchGeojsonData);
 	});
 
+	$effect(() => {
+		requestStyleUpdateByDependency({
+			previewUrl: isGeoRefRegistrationActive ? (geoRefPreviewData?.url ?? null) : null,
+			showGeoRefTransform: isGeoRefRegistrationActive,
+			previewOpacity: isGeoRefRegistrationActive ? previewOpacity : null
+		});
+		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+	});
+
 	// データプレビュー
 	$effect(() => {
-		setStyleDebounce(layerEntries as GeoDataEntry[]);
+		setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
 		threeJsManager.setGroupVisibility(!showDataEntry);
 	});
 
@@ -1008,7 +1057,7 @@
 	onDragleave={dragleave}
 	{onDropFile}
 	{onDropEntryId}
-	disabled={showGeoRefForm}
+	disabled={isGeoRefRegistrationActive}
 	class="h-full w-full"
 >
 	<div
@@ -1041,7 +1090,7 @@
 				: ' opacity-0'}"
 		></div>
 
-		{#if !$isStreetView && !showDataEntry && !showZoneForm && !showGeoRefForm && !$showDataMenu}
+		{#if !$isStreetView && !showDataEntry && !transformOptionMode && !$showDataMenu}
 			<!-- PC用地図コントロール -->
 			<div class="absolute right-0 bottom-0 max-lg:hidden">
 				<Compass />
@@ -1066,7 +1115,6 @@
 		bind:tempLayerEntries
 		bind:showDataEntry
 		bind:showDialogType
-		bind:showZoneForm
 		bind:focusBbox
 	/>
 

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<地図 xmlns="http://www.moj.go.jp/MINJI/tizuxml" xmlns:zmn="http://www.moj.go.jp/MINJI/tizuzumen">
+  <地図名>テスト地図</地図名>
+  <市区町村コード>13101</市区町村コード>
+  <市区町村名>千代田区</市区町村名>
+  <座標系>任意座標系</座標系>
+  <測地系判別>任意</測地系判別>
+  <空間属性>
+    <zmn:GM_Point id="p1">
+      <zmn:DirectPosition>
+        <zmn:X>0</zmn:X>
+        <zmn:Y>0</zmn:Y>
+      </zmn:DirectPosition>
+    </zmn:GM_Point>
+    <zmn:GM_Point id="p2">
+      <zmn:DirectPosition>
+        <zmn:X>10</zmn:X>
+        <zmn:Y>0</zmn:Y>
+      </zmn:DirectPosition>
+    </zmn:GM_Point>
+    <zmn:GM_Point id="p3">
+      <zmn:DirectPosition>
+        <zmn:X>10</zmn:X>
+        <zmn:Y>10</zmn:Y>
+      </zmn:DirectPosition>
+    </zmn:GM_Point>
+    <zmn:GM_Point id="p4">
+      <zmn:DirectPosition>
+        <zmn:X>0</zmn:X>
+        <zmn:Y>10</zmn:Y>
+      </zmn:DirectPosition>
+    </zmn:GM_Point>
+
+    <zmn:GM_Curve id="c1">
+      <zmn:GM_PointArray.column>
+        <zmn:GM_Position.indirect>
+          <zmn:GM_PointRef idref="p1" />
+        </zmn:GM_Position.indirect>
+      </zmn:GM_PointArray.column>
+    </zmn:GM_Curve>
+    <zmn:GM_Curve id="c2">
+      <zmn:GM_PointArray.column>
+        <zmn:GM_Position.indirect>
+          <zmn:GM_PointRef idref="p2" />
+        </zmn:GM_Position.indirect>
+      </zmn:GM_PointArray.column>
+    </zmn:GM_Curve>
+    <zmn:GM_Curve id="c3">
+      <zmn:GM_PointArray.column>
+        <zmn:GM_Position.indirect>
+          <zmn:GM_PointRef idref="p3" />
+        </zmn:GM_Position.indirect>
+      </zmn:GM_PointArray.column>
+    </zmn:GM_Curve>
+    <zmn:GM_Curve id="c4">
+      <zmn:GM_PointArray.column>
+        <zmn:GM_Position.indirect>
+          <zmn:GM_PointRef idref="p4" />
+        </zmn:GM_Position.indirect>
+      </zmn:GM_PointArray.column>
+    </zmn:GM_Curve>
+
+    <zmn:GM_Surface id="s1">
+      <zmn:GM_Polygon>
+        <zmn:GM_SurfaceBoundary.exterior>
+          <zmn:GM_Ring>
+            <zmn:GM_CurveRef idref="c1" />
+            <zmn:GM_CurveRef idref="c2" />
+            <zmn:GM_CurveRef idref="c3" />
+            <zmn:GM_CurveRef idref="c4" />
+          </zmn:GM_Ring>
+        </zmn:GM_SurfaceBoundary.exterior>
+      </zmn:GM_Polygon>
+    </zmn:GM_Surface>
+  </空間属性>
+  <主題属性>
+    <筆 id="f1">
+      <形状 idref="s1" />
+      <地番>1-1</地番>
+      <大字名>テスト大字</大字名>
+    </筆>
+  </主題属性>
+</地図>

@@ -3,16 +3,20 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		createGeoJsonEntry,
 		getGeometryTypes,
 		filterByGeometryType
 	} from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { geoParquetFileToGeoJson } from '$routes/map/utils/formats/geoparquet';
+	import { geoParquetFileToGeoJsonInWorker } from '$routes/map/utils/formats/geoparquet/analyze';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -20,23 +24,25 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
@@ -60,7 +66,7 @@
 	$effect(() => {
 		if (geoParquetFile) {
 			isProcessing.set(true);
-			geoParquetFileToGeoJson(geoParquetFile)
+			geoParquetFileToGeoJsonInWorker(geoParquetFile)
 				.then((result) => {
 					rawGeojson = result.geojson;
 					sourceEpsgCode = result.sourceEpsgCode;
@@ -135,7 +141,11 @@
 					return;
 				}
 
-				showZoneForm = true;
+				pendingZoneGeoRefData = {
+					featureCollection: geojson,
+					entryName
+				};
+				transformOptionMode = 'zone';
 				focusBbox = bbox as [number, number, number, number];
 				return;
 			}

@@ -10,7 +10,7 @@
 
 	import type { WikiArticle } from '$routes/map/api/wikipedia';
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import type {
 		FeaturePanelData,
@@ -23,7 +23,7 @@
 
 	interface Props {
 		panelData: FeaturePanelData | null;
-		layerEntries: GeoDataEntry[];
+		layerEntries: MorivisLayerEntry[];
 		showSelectionMarker: boolean;
 		onClose: () => void;
 	}
@@ -128,7 +128,7 @@
 
 	const getPanelContentData = async (
 		data: FeaturePanelData | null,
-		entries: GeoDataEntry[]
+		entries: MorivisLayerEntry[]
 	): Promise<PanelContentData | null> => {
 		if (!data) return null;
 

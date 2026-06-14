@@ -7,14 +7,14 @@
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createPmtilesRasterEntry } from '$routes/map/data/entries/raster';
 	import { createVectorPmtilesEntry } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType } from '$routes/map/types';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
 		remotePmtilesUrl: string | null;

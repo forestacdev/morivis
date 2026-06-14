@@ -3,6 +3,11 @@ import { DEM_STYLE_TYPE } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { TileImageManager } from '../image';
 
+const createAbortError = () => new Error('Request aborted');
+const throwIfAborted = (signal: AbortSignal) => {
+	if (signal.aborted) throw createAbortError();
+};
+
 const getDemProtocolColorArray = (
 	colorMapCache: ColorMapManager,
 	searchParams: URLSearchParams
@@ -41,6 +46,7 @@ class WorkerProtocol {
 	}
 
 	async request(url: URL, controller: AbortController): Promise<{ data: Uint8Array; }> {
+		throwIfAborted(controller.signal);
 		const x = parseInt(url.searchParams.get('x') || '0', 10);
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
@@ -69,6 +75,7 @@ class WorkerProtocol {
 				formatType,
 				controller
 			);
+			throwIfAborted(controller.signal);
 			const elevationColorArray = getDemProtocolColorArray(
 				this.colorMapCache,
 				url.searchParams
@@ -76,7 +83,22 @@ class WorkerProtocol {
 			const max = parseFloat(url.searchParams.get('max') || '10000');
 			const min = parseFloat(url.searchParams.get('min') || '0');
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(requestId, { resolve, reject, controller });
+				let settled = false;
+				const finish = (callback: () => void) => {
+					if (settled) return;
+					settled = true;
+					this.pendingRequests.delete(requestId);
+					controller.signal.removeEventListener('abort', handleAbort);
+					callback();
+				};
+				const handleAbort = () => {
+					finish(() => reject(createAbortError()));
+				};
+				this.pendingRequests.set(requestId, {
+					resolve: (value) => finish(() => resolve(value)),
+					reject: (reason) => finish(() => reject(reason)),
+					controller
+				});
 
 				this.worker.postMessage({
 					tileId: requestId,
@@ -90,6 +112,7 @@ class WorkerProtocol {
 					tileSize,
 					encodeType
 				});
+				controller.signal.addEventListener('abort', handleAbort, { once: true });
 			});
 		} else if (mode === 'slope' || mode === 'aspect' || mode === 'curvature') {
 			const images = await this.tileCache.getAdjacentTilesWithImages(
@@ -101,6 +124,7 @@ class WorkerProtocol {
 				formatType,
 				controller
 			);
+			throwIfAborted(controller.signal);
 
 			const elevationColorArray = getDemProtocolColorArray(
 				this.colorMapCache,
@@ -116,7 +140,22 @@ class WorkerProtocol {
 			const min = parseFloat(url.searchParams.get('min') || '0');
 
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(requestId, { resolve, reject, controller });
+				let settled = false;
+				const finish = (callback: () => void) => {
+					if (settled) return;
+					settled = true;
+					this.pendingRequests.delete(requestId);
+					controller.signal.removeEventListener('abort', handleAbort);
+					callback();
+				};
+				const handleAbort = () => {
+					finish(() => reject(createAbortError()));
+				};
+				this.pendingRequests.set(requestId, {
+					resolve: (value) => finish(() => resolve(value)),
+					reject: (reason) => finish(() => reject(reason)),
+					controller
+				});
 
 				this.worker.postMessage({
 					tileId: requestId,
@@ -135,6 +174,7 @@ class WorkerProtocol {
 					tileSize,
 					encodeType
 				});
+				controller.signal.addEventListener('abort', handleAbort, { once: true });
 			});
 		} else {
 			const image = await this.tileCache.getSingleTileImage(
@@ -146,9 +186,25 @@ class WorkerProtocol {
 				formatType,
 				controller
 			);
+			throwIfAborted(controller.signal);
 
 			return new Promise((resolve, reject) => {
-				this.pendingRequests.set(requestId, { resolve, reject, controller });
+				let settled = false;
+				const finish = (callback: () => void) => {
+					if (settled) return;
+					settled = true;
+					this.pendingRequests.delete(requestId);
+					controller.signal.removeEventListener('abort', handleAbort);
+					callback();
+				};
+				const handleAbort = () => {
+					finish(() => reject(createAbortError()));
+				};
+				this.pendingRequests.set(requestId, {
+					resolve: (value) => finish(() => resolve(value)),
+					reject: (reason) => finish(() => reject(reason)),
+					controller
+				});
 
 				this.worker.postMessage({
 					tileId: requestId,
@@ -157,6 +213,7 @@ class WorkerProtocol {
 					demTypeNumber,
 					tileSize
 				});
+				controller.signal.addEventListener('abort', handleAbort, { once: true });
 			});
 		}
 	}

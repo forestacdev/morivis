@@ -29,6 +29,10 @@ preview:
     @lsof -ti:4173 && echo "Port 4173 is in use, killing process..." && npx kill-port 4173 || echo "Port 4173 is free"
     pnpm run preview
 
+# テスト
+test:
+    cd frontend && pnpm run test:unit
+
 # フォーマット
 format:
     cd frontend && pnpm run format
@@ -40,9 +44,29 @@ lint:
 lint-errors:
     cd frontend && pnpm exec eslint . --quiet
 
+knip:
+    cd frontend && pnpm run knip
+
+knip-compact:
+    cd frontend && pnpm run knip -- --reporter compact
+
+docs-serve:
+    cd frontend && pnpm run docs:serve
+
 # typedocの更新
 typedoc:
     cd frontend && pnpm run typedoc
+
+typedoc-markdown:
+    cd frontend && pnpm run typedoc:markdown
+
+typedoc-diagram:
+    cd frontend && pnpm run typedoc:diagram
+
+typedoc-all:
+    just typedoc
+    just typedoc-markdown
+    just typedoc-diagram
 
 # node_modules含む完全クリア & 再インストール & dev再起動
 clean-all:

@@ -7,10 +7,15 @@
 	import ShapeFileFormInput from './ShapeFileFormInput.svelte';
 
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
+	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { shpFileToGeojson, readCpgEncoding } from '$routes/map/utils/formats/shp';
 	import { isBboxValid, isBbox2D } from '$routes/map/utils/map/bbox';
 	import { readPrjFileContent } from '$routes/map/utils/proj';
@@ -19,26 +24,30 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean; // 座標系フォームの表示状態
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
 		isDragover: boolean;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
+
+	const isZoneSelectionVisible = $derived(transformOptionMode === 'zone');
 
 	const shpValidation = yup.object().shape({
 		shpFile: yup
@@ -266,7 +275,11 @@
 			const bbox = turfBbox(geojsonData);
 
 			if (!isBbox2D(bbox) || !isBboxValid(bbox)) {
-				showZoneForm = true;
+				pendingZoneGeoRefData = {
+					featureCollection: geojsonData as unknown as FeatureCollection,
+					entryName: forms.shpName
+				};
+				transformOptionMode = 'zone';
 				focusBbox = isBbox2D(bbox) ? bbox : null;
 				return;
 			}
@@ -401,7 +414,7 @@
 		<div
 			transition:fade={{ duration: 200 }}
 			class="c-bg absolute bottom-0 z-30 grid h-full w-full place-items-center
-         {showZoneForm ? 'pointer-events-none opacity-0' : ''}"
+         {isZoneSelectionVisible ? 'pointer-events-none opacity-0' : ''}"
 		>
 			<div class="flex shrink-0 flex-col items-center gap-3 overflow-auto pt-8 pb-2">
 				<span class="text-3xl font-bold text-white">シェープファイルの登録</span>
@@ -409,7 +422,7 @@
 			</div>
 
 			<div class="shp-circle-layout relative" style="--distance: {distance}px;">
-				{#each circleItems as item, i}
+				{#each circleItems as item, i (item.key)}
 					<div
 						class="shp-circle-item absolute {collapsing ? 'collapsing' : ''}"
 						style="left: {starPoints[i].x}px; top: {starPoints[i]
@@ -468,7 +481,7 @@
 					viewBox="0 0 400 400"
 				>
 					<!-- 1. 五角形の外枠（隣接同士がセットされたら実線） -->
-					{#each pentagonEdges as [from, to]}
+					{#each pentagonEdges as [from, to] (`${from}-${to}`)}
 						{@const bothSet = !!filesArray[from] && !!filesArray[to]}
 						{@const lineColor = bothSet
 							? hasFilenameMatchError
@@ -487,7 +500,7 @@
 						/>
 					{/each}
 					<!-- 2. 内側の三角形（各辺は両端がセットされたら実線） -->
-					{#each triangleEdges as [from, to]}
+					{#each triangleEdges as [from, to] (`${from}-${to}`)}
 						{@const bothSet = !!filesArray[from] && !!filesArray[to]}
 						{@const lineColor = bothSet
 							? hasFilenameMatchError

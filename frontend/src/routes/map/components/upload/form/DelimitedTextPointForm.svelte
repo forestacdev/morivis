@@ -2,8 +2,12 @@
 	import turfBbox from '@turf/bbox';
 	import { untrack } from 'svelte';
 
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
-	import type { GeoDataEntry } from '$routes/map/data/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import {
@@ -19,13 +23,14 @@
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: GeoDataEntry | null;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
-		showZoneForm: boolean;
+		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 		formatName: string;
 		dialogTypeValue: Exclude<DialogType, null>;
 		delimiter: string;
@@ -36,10 +41,11 @@
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		showZoneForm = $bindable(),
+		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
+		pendingZoneGeoRefData = $bindable(),
 		formatName,
 		dialogTypeValue,
 		delimiter,
@@ -109,7 +115,11 @@
 				const bbox = turfBbox(geojson);
 
 				if (!bbox || !isBboxValid(bbox)) {
-					showZoneForm = true;
+					pendingZoneGeoRefData = {
+						featureCollection: geojson,
+						entryName
+					};
+					transformOptionMode = 'zone';
 					focusBbox = bbox as [number, number, number, number];
 					return;
 				}

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
-	import type { ModelDeckVectorEntry } from '$routes/map/data/types/model';
+	import type { DeckVectorEntry } from '$routes/map/data/types/model';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
-		layerEntry: ModelDeckVectorEntry;
+		layerEntry: DeckVectorEntry;
 		showColorOption: boolean;
 	}
 

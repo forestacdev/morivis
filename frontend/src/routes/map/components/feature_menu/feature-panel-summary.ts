@@ -13,7 +13,7 @@ import {
 	ProtectionForestTypes
 } from '$routes/map/data/forest/protection_forest';
 import { getTimberSpeciesData } from '$routes/map/data/forest/timber_species';
-import type { GeoDataEntry } from '$routes/map/data/types';
+import type { MorivisLayerEntry } from '$routes/map/data/types';
 import { formatFieldValue } from '$routes/map/data/types/vector/properties';
 import type {
 	FeatureMenuData,
@@ -37,7 +37,7 @@ export const hasFeaturePanelSummaryContent = (summary: FeaturePanelSummaryData):
 // _prop_data.ts の静的メディア定義を FeaturePanel 用メディア形式に変換する。
 const convertMediaData = (
 	media: MediaData,
-	targetLayer: GeoDataEntry | null
+	targetLayer: MorivisLayerEntry | null
 ): FeaturePanelMedia => {
 	if (media.type === 'image') {
 		return {
@@ -76,7 +76,7 @@ const convertMediaData = (
 // メディア表示は 静的定義 -> 属性画像 -> iNaturalist 画像 の順で解決する。
 const getLayerFeatureMedia = async (
 	featureMenuData: FeatureMenuData,
-	targetLayer: GeoDataEntry | null,
+	targetLayer: MorivisLayerEntry | null,
 	iNaturalistData?: Awaited<ReturnType<typeof getImageByName>> | null
 ): Promise<FeaturePanelMedia[]> => {
 	const data = featureMenuData.properties
@@ -177,7 +177,7 @@ const getTaxonomyItemsForINaturalist = async (
 
 // 国有林レイヤーでは、保安林種別名から保安林説明辞書を引けるようにする。
 const getProtectionForestDescription = (
-	targetLayer: GeoDataEntry | null,
+	targetLayer: MorivisLayerEntry | null,
 	featureMenuData: FeatureMenuData
 ): { name?: string; description?: string; } | null => {
 	if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData.properties) {
@@ -206,7 +206,7 @@ const getProtectionForestDescription = (
 
 // 樹種名が木材辞書にあれば、木材画像と分布説明を概要欄に追加する。
 const getTimberSpeciesSummary = (
-	targetLayer: GeoDataEntry | null,
+	targetLayer: MorivisLayerEntry | null,
 	featureMenuData: FeatureMenuData
 ):
 	| {
@@ -257,7 +257,7 @@ const getTimberSpeciesSummary = (
 // 通常の地物クリック時に表示する概要情報をここで集約して組み立てる。
 export const getLayerFeaturePanelSummary = async (
 	featureMenuData: FeatureMenuData,
-	layerEntries: GeoDataEntry[]
+	layerEntries: MorivisLayerEntry[]
 ): Promise<FeaturePanelSummaryData | null> => {
 	const targetLayer = layerEntries.find((entry) => entry.id === featureMenuData.layerId) ?? null;
 	const data = featureMenuData.properties

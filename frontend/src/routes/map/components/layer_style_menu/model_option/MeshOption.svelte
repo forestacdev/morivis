@@ -11,13 +11,13 @@
 	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
 	import { createAdjustableRange } from '$routes/map/data/types';
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
-	import type { ModelMeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	import { mapStore } from '$routes/stores/map';
 	interface Props {
-		layerEntry: ModelMeshEntry<MeshStyle>;
+		layerEntry: MeshEntry<MeshStyle>;
 		showColorOption: boolean;
 		showDimensionOption: boolean;
 	}
