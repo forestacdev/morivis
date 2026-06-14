@@ -8,34 +8,12 @@ import type { CreateRasterMeshEntryParams, RasterMeshGeometry } from './mesh';
 import MeshWorker from './mesh.worker?worker';
 import type { MeshWorkerResponse } from './mesh.worker';
 
-const cloneArrayLike = (band: CreateRasterMeshEntryParams['band']) => {
-	if (ArrayBuffer.isView(band)) {
-		if (band instanceof Float32Array) return new Float32Array(band);
-		if (band instanceof Float64Array) return new Float64Array(band);
-		if (band instanceof Uint8Array) return new Uint8Array(band);
-		if (band instanceof Uint8ClampedArray) return new Uint8ClampedArray(band);
-		if (band instanceof Uint16Array) return new Uint16Array(band);
-		if (band instanceof Uint32Array) return new Uint32Array(band);
-		if (band instanceof Int8Array) return new Int8Array(band);
-		if (band instanceof Int16Array) return new Int16Array(band);
-		if (band instanceof Int32Array) return new Int32Array(band);
-	}
-
-	return Array.from(band);
-};
-
 export const createRasterMeshEntryInWorker = async (
 	params: CreateRasterMeshEntryParams
 ): Promise<MeshEntry<MeshStyle>> => {
 	const { id, name, bounds, mapImage } = params;
-	// TODO: parsedBands を state で再利用しない設計に寄せられれば、この clone は不要。
-	// 元ラスタはキャッシュで保持し、worker には毎回所有権を渡せる専用バッファを渡す形にしたい。
-	const band = cloneArrayLike(params.band);
-	const transfer = ArrayBuffer.isView(band)
-		? [band.buffer]
-		: undefined;
 	const workerParams: Omit<CreateRasterMeshEntryParams, 'id' | 'name' | 'mapImage'> = {
-		band,
+		band: params.band,
 		width: params.width,
 		height: params.height,
 		nodata: params.nodata,
@@ -54,8 +32,7 @@ export const createRasterMeshEntryInWorker = async (
 		RasterMeshGeometry
 	>(MeshWorker, workerParams, {
 		errorPrefix: 'Raster mesh worker error',
-		mapResponse: (response) => (response as { result: RasterMeshGeometry; }).result,
-		transfer
+		mapResponse: (response) => (response as { result: RasterMeshGeometry; }).result
 	});
 	const url = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }));
 
