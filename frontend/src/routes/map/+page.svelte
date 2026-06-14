@@ -92,10 +92,11 @@
 	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
 	import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
 	import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
+	import { createPointCloudEntry } from '$routes/map/data/entries/model';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
-	import { warpGeoJSONByCornersParallel } from '$routes/map/utils/transform/georef';
+	import { warpGeoJSONByCornersParallel, warpPointCloudByCornersParallel } from '$routes/map/utils/transform/georef';
 	import {
 		getPopupImageFieldKey,
 		resolveGeneratedPoiIconUrl,
@@ -318,6 +319,39 @@
 				closeGeoRefUi();
 				showDataEntry = warpedEntry;
 				showNotification('ベクターの位置を設定しました', 'success');
+				return;
+			}
+
+			if (data.sourceType === 'pointcloud' && data.pointCloudConfig) {
+				const sourceBbox = data.pointCloudConfig.sourceBbox;
+				const sourceCorners = [
+					[sourceBbox[0], sourceBbox[3]],
+					[sourceBbox[2], sourceBbox[3]],
+					[sourceBbox[2], sourceBbox[1]],
+					[sourceBbox[0], sourceBbox[1]]
+				] as typeof corners;
+				const plainCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
+				const warpedPositions = await warpPointCloudByCornersParallel(
+					data.pointCloudConfig.positions,
+					sourceCorners,
+					plainCorners
+				);
+				const pointCloudEntry = createPointCloudEntry(
+					data.entryName || '点群データ',
+					{
+						positions: warpedPositions,
+						colors: data.pointCloudConfig.colors,
+						pointCount: data.pointCloudConfig.pointCount
+					},
+					bbox
+				);
+
+				debugLog.info(
+					`+page finalizeGeoRefEntry 点群生成: id=${pointCloudEntry.id}, bounds=${bbox.join(',')}`
+				);
+				closeGeoRefUi();
+				showDataEntry = pointCloudEntry;
+				showNotification('点群の位置を設定しました', 'success');
 				return;
 			}
 

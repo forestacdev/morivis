@@ -18,6 +18,7 @@ interface CreateRasterGeoRefDataParams {
 	imageHeight: number;
 	imageFile: File;
 	registrationMode: RasterRegistrationMode;
+	allowRegistrationModeChange?: boolean;
 	meshConfig?: GeoRefMeshConfig;
 }
 
@@ -31,6 +32,7 @@ export const createRasterGeoRefData = ({
 	imageHeight,
 	imageFile,
 	registrationMode,
+	allowRegistrationModeChange,
 	meshConfig
 }: CreateRasterGeoRefDataParams): GeoRefData => {
 	const firstRange = dataRanges[0] ?? { min: 0, max: 255 };
@@ -62,6 +64,7 @@ export const createRasterGeoRefData = ({
 			ranges: dataRanges
 		}),
 		registrationMode,
+		allowRegistrationModeChange,
 		meshConfig
 	};
 };

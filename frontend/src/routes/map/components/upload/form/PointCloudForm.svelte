@@ -5,14 +5,28 @@
 	import { PLYLoader } from '@loaders.gl/ply';
 	import { untrack } from 'svelte';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
+	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
+	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import {
+		encodeAllBandsToTerrarium,
+		getMinMax,
+		type RasterBands
+	} from '$routes/map/utils/formats/geotiff';
 	import { parseObjPointCloudFile } from '$routes/map/utils/formats/obj';
+	import { rasterizePointCloudToDemInWorker } from '$routes/map/utils/formats/pointcloud/rasterize';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { parseXyzFile } from '$routes/map/utils/formats/xyz';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { transformPointCloudParallel } from '$routes/map/utils/proj/pointcloud_transformer';
@@ -27,6 +41,7 @@
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
+		geoRefData: GeoRefData | null;
 	}
 
 	let {
@@ -36,7 +51,8 @@
 		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
-		zoneConfirmedEpsg = $bindable()
+		zoneConfirmedEpsg = $bindable(),
+		geoRefData = $bindable()
 	}: Props = $props();
 
 	let entryName = $state('');
@@ -48,6 +64,14 @@
 	let resolvedPositions = $state<Float32Array | null>(null);
 	let resolvedColors = $state<Uint8Array | undefined>(undefined);
 	let needsTransform = $state(false);
+	let registrationMode = $state<'pointcloud' | 'raster'>('pointcloud');
+	let rasterResolution = $state(1024);
+	let pendingRegistrationAfterTransform = $state(false);
+
+	const registrationModeOptions = [
+		{ key: 'pointcloud', name: '点群' },
+		{ key: 'raster', name: 'DEMラスター' }
+	];
 
 	const pointCloudFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -76,6 +100,17 @@
 
 	const isTextPointCloudFile = (fileName: string) => /\.(xyz|txt)$/i.test(fileName);
 	const isObjPointCloudFile = (fileName: string) => /\.obj$/i.test(fileName);
+	const getPointCloudErrorMessage = (error: unknown) => {
+		if (!(error instanceof Error)) {
+			return '点群ファイルの解析に失敗しました';
+		}
+
+		if (error.message.includes('Only file versions <= 1.3 are supported at this time')) {
+			return 'この LAS/LAZ ファイルのバージョンには未対応です。現在は 1.3 以下のみ対応しています。';
+		}
+
+		return error.message;
+	};
 
 	const analyzePointCloud = async (file: File) => {
 		isProcessing.set(true);
@@ -86,6 +121,7 @@
 		resolvedPositions = null;
 		resolvedColors = undefined;
 		needsTransform = false;
+		pendingRegistrationAfterTransform = false;
 
 		try {
 			let positions: Float32Array | null = null;
@@ -169,16 +205,11 @@
 				needsTransform = true;
 				if (positions) resolvedPositions = positions;
 				resolvedColors = colors;
-				transformOptionMode = 'zone';
-				focusBbox = rawBbox;
 			} else {
 				showNotification('位置情報が取得できませんでした', 'error');
 			}
 		} catch (e) {
-			showNotification(
-				e instanceof Error ? e.message : '点群ファイルの解析に失敗しました',
-				'error'
-			);
+			showNotification(getPointCloudErrorMessage(e), 'error');
 			console.error(e);
 		} finally {
 			isProcessing.set(false);
@@ -239,8 +270,12 @@
 				'success'
 			);
 
-			// 変換完了後に自動登録
-			registration();
+			if (pendingRegistrationAfterTransform) {
+				pendingRegistrationAfterTransform = false;
+				await registration();
+				return;
+			}
+
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : '座標変換に失敗しました', 'error');
 			console.error(e);
@@ -251,8 +286,162 @@
 
 	const transformPositions = transformPointCloudParallel;
 
-	const registration = () => {
-		if (!analyzed || !resolvedPositions || !resolvedBbox || !pointCount) return;
+	const preparePointCloudRasterGeoRef = async () => {
+		if (!resolvedPositions || !pointCloudFile) return false;
+		const sourceBbox = resolvedBbox ?? rawBbox;
+		if (!sourceBbox) return false;
+
+		const { band, width, height, nodata } = await rasterizePointCloudToDemInWorker({
+			positions: resolvedPositions,
+			bbox: sourceBbox,
+			longEdgePixels: rasterResolution
+		});
+		const id = `geotiff_${crypto.randomUUID()}`;
+		const bands: RasterBands = [band];
+		const ranges: BandDataRange[] = [getMinMax(band, nodata)];
+
+		geoRefData = createRasterGeoRefData({
+			entryId: id,
+			entryName: `${entryName || '点群データ'}_dem`,
+			parsedBands: bands,
+			parsedNodata: nodata,
+			dataRanges: ranges,
+			imageWidth: width,
+			imageHeight: height,
+			imageFile: pointCloudFile,
+			registrationMode: 'raster',
+			allowRegistrationModeChange: false
+		});
+		showDialogType = null;
+		return true;
+	};
+
+	const preparePointCloudDirectGeoRef = async () => {
+		if (!resolvedPositions || !pointCloudFile) return false;
+		const sourceBbox = resolvedBbox ?? rawBbox;
+		if (!sourceBbox) return false;
+
+		const { band, width, height, nodata } = await rasterizePointCloudToDemInWorker({
+			positions: resolvedPositions,
+			bbox: sourceBbox,
+			longEdgePixels: rasterResolution
+		});
+		const ranges: BandDataRange[] = [getMinMax(band, nodata)];
+
+		geoRefData = {
+			...createRasterGeoRefData({
+				entryId: `pointcloud_georef_${crypto.randomUUID()}`,
+				entryName: entryName || '点群データ',
+				parsedBands: [band],
+				parsedNodata: nodata,
+				dataRanges: ranges,
+				imageWidth: width,
+				imageHeight: height,
+				imageFile: pointCloudFile,
+				registrationMode: 'raster',
+				allowRegistrationModeChange: false
+			}),
+			sourceType: 'pointcloud',
+			pointCloudConfig: {
+				positions: resolvedPositions,
+				colors: resolvedColors,
+				pointCount: pointCount ?? resolvedPositions.length / 3,
+				sourceBbox
+			}
+		};
+		showDialogType = null;
+		return true;
+	};
+
+	const registration = async () => {
+		if (!analyzed || !resolvedPositions || !pointCount) return;
+
+		if (!resolvedBbox) {
+			if (!rawBbox || !needsTransform) return;
+			pendingRegistrationAfterTransform = true;
+			transformOptionMode = 'zone';
+			focusBbox = rawBbox;
+			showNotification('投影法を選択してください', 'warning');
+			return;
+		}
+
+		if (registrationMode === 'raster') {
+			isProcessing.set(true);
+
+			try {
+				const { band, width, height, nodata } = await rasterizePointCloudToDemInWorker({
+					positions: resolvedPositions,
+					bbox: resolvedBbox,
+					longEdgePixels: rasterResolution
+				});
+				const id = `geotiff_${crypto.randomUUID()}`;
+				const bands: RasterBands = [band];
+				const ranges: BandDataRange[] = [getMinMax(band, nodata)];
+
+				await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
+
+				GeoTiffCache.setBbox(id, resolvedBbox);
+				GeoTiffCache.markAs4326(id);
+				GeoTiffCache.setRawBbox(id, resolvedBbox);
+
+				const entry: RasterImageEntry<RasterTiffStyle> = {
+					id,
+					type: 'raster',
+					format: { type: 'image', url: '' },
+					metaData: {
+						...DEFAULT_CUSTOM_META_DATA,
+						attribution: 'Point Cloud DEM',
+						name: `${entryName || '点群データ'}_dem`,
+						tileSize: 256,
+						bounds: resolvedBbox,
+						xyzImageTile: findCenterTile(resolvedBbox)
+					},
+					properties: {
+						bands: {
+							numBands: 1
+						}
+					},
+					interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
+					style: {
+						type: 'tiff',
+						opacity: 1,
+						visible: true,
+						visualization: {
+							mode: 'single',
+							uniformsData: {
+								single: {
+									index: 0,
+									min: ranges[0].min,
+									max: ranges[0].max,
+									colorMap: 'jet'
+								},
+								multi: {
+									r: { index: 0, min: ranges[0].min, max: ranges[0].max },
+									g: { index: 0, min: ranges[0].min, max: ranges[0].max },
+									b: { index: 0, min: ranges[0].min, max: ranges[0].max }
+								}
+							}
+						}
+					}
+				};
+
+				showDataEntry = entry;
+				showDialogType = null;
+				dropFile = null;
+				parsedArrayBuffer = null;
+				showNotification('点群から DEM ラスターを生成しました', 'success');
+				return;
+			} catch (e) {
+				showNotification(
+					e instanceof Error ? e.message : '点群の GeoTIFF 化に失敗しました',
+					'error'
+				);
+				console.error(e);
+				return;
+			} finally {
+				isProcessing.set(false);
+			}
+		}
 
 		const entry = createPointCloudEntry(
 			entryName || '点群データ',
@@ -271,6 +460,38 @@
 		showNotification('点群ファイルを読み込みました', 'success');
 	};
 
+	$effect(() => {
+		if (
+			transformOptionMode !== 'georef'
+			|| geoRefData
+			|| showDialogType !== 'pointcloud'
+			|| !analyzed
+		) {
+			return;
+		}
+
+		isProcessing.set(true);
+		(registrationMode === 'raster'
+			? preparePointCloudRasterGeoRef()
+			: preparePointCloudDirectGeoRef())
+			.then((prepared) => {
+				if (!prepared) return;
+				showNotification(
+					registrationMode === 'raster'
+						? '点群DEMの位置合わせを設定してください'
+						: '点群の位置合わせを設定してください',
+					'info'
+				);
+			})
+			.catch((error) => {
+				showNotification('点群DEMの位置合わせデータ生成に失敗しました', 'error');
+				console.error(error);
+			})
+			.finally(() => {
+				isProcessing.set(false);
+			});
+	});
+
 	const cancel = () => {
 		resolvedPositions = null;
 		resolvedColors = undefined;
@@ -278,6 +499,7 @@
 		showDialogType = null;
 		dropFile = null;
 	};
+
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
@@ -315,6 +537,34 @@
 				</div>
 			{/if}
 		</div>
+
+		<div class="w-full p-2">
+			<HorizontalSelectBox
+				label="登録方法"
+				bind:group={registrationMode}
+				options={registrationModeOptions}
+			/>
+		</div>
+
+		{#if registrationMode === 'raster'}
+			<div class="flex w-full items-center gap-2 px-2">
+				<label class="flex grow flex-col gap-1">
+					<span class="text-sm text-gray-300">解像度 (長辺ピクセル数)</span>
+					<input
+						type="number"
+						step="1"
+						min="128"
+						max="4096"
+						bind:value={rasterResolution}
+						class="bg-sub rounded border border-gray-600 p-2 text-white"
+					/>
+				</label>
+			</div>
+			<div class="w-full px-2 text-xs text-gray-400">
+				各セルの最大標高で 1 バンド DEM を生成します。
+			</div>
+		{/if}
+
 	{/if}
 </div>
 
@@ -322,8 +572,8 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
 	<button
 		onclick={registration}
-		disabled={!analyzed || !resolvedBbox || $isProcessing}
-		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed || !resolvedBbox || $isProcessing
+		disabled={!analyzed || (!resolvedBbox && !rawBbox) || $isProcessing}
+		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed || (!resolvedBbox && !rawBbox) || $isProcessing
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>

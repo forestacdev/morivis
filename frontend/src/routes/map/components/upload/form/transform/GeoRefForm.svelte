@@ -23,6 +23,7 @@
 	export type RasterRegistrationMode = 'raster' | 'mesh';
 
 	export interface GeoRefData {
+		sourceType: 'raster' | 'vector' | 'pointcloud';
 		entryId: string;
 		entryName: string;
 		parsedBands: RasterBands;
@@ -41,6 +42,7 @@
 		previewImageUrl?: string;
 		initialCorners?: [[number, number], [number, number], [number, number], [number, number]];
 		registrationMode: RasterRegistrationMode;
+		allowRegistrationModeChange?: boolean;
 	}
 
 	export interface GeoRefPreviewData {
@@ -379,7 +381,7 @@
 				<div>サイズ: {geoRefData.imageWidth} × {geoRefData.imageHeight} px</div>
 			</div>
 
-			{#if geoRefData.numBands === 1}
+			{#if geoRefData.sourceType === 'raster' && geoRefData.numBands === 1 && geoRefData.allowRegistrationModeChange !== false}
 				<div class="w-full px-2">
 					<HorizontalSelectBox
 						label="登録方法"

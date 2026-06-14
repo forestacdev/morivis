@@ -192,6 +192,7 @@
 					bind:transformOptionMode
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
+					bind:geoRefData
 					{selectedEpsgCode}
 				/>
 			{/if}

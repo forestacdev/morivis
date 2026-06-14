@@ -29,7 +29,7 @@
 		<div>サイズ: {geoRefData.imageWidth} × {geoRefData.imageHeight} px</div>
 	</div>
 
-	{#if geoRefData.numBands === 1}
+	{#if geoRefData.sourceType === 'raster' && geoRefData.numBands === 1 && geoRefData.allowRegistrationModeChange !== false}
 		<div class="w-full px-2">
 			<HorizontalSelectBox
 				label="登録方法"

@@ -5,7 +5,7 @@ import type { GeoRefCorners } from '$routes/map/utils/transform/georef/homograph
 import type { RasterDiscreteDimension } from '$routes/map/data/types/raster';
 
 export type RasterRegistrationMode = 'raster' | 'mesh';
-export type GeoRefSourceType = 'raster' | 'vector';
+export type GeoRefSourceType = 'raster' | 'vector' | 'pointcloud';
 
 export interface GeoRefMeshConfig {
 	baseValue?: number;
@@ -17,6 +17,13 @@ export interface GeoRefMeshConfig {
 	heightColorRampEnabled?: boolean;
 	temporalDimension?: RasterDiscreteDimension;
 	initialDimensionIndex?: number;
+}
+
+export interface GeoRefPointCloudConfig {
+	positions: Float32Array;
+	colors?: Uint8Array;
+	pointCount: number;
+	sourceBbox: [number, number, number, number];
 }
 
 export interface GeoRefData {
@@ -40,7 +47,9 @@ export interface GeoRefData {
 	initialCorners?: GeoRefCorners;
 	sourceFeatureCollectionId?: string;
 	registrationMode: RasterRegistrationMode;
+	allowRegistrationModeChange?: boolean;
 	meshConfig?: GeoRefMeshConfig;
+	pointCloudConfig?: GeoRefPointCloudConfig;
 }
 
 export interface GeoRefPreviewData {

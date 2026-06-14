@@ -1,6 +1,7 @@
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
 import type { GeoRefCorners } from './homography';
+export { warpPointCloudByCornersParallel } from './warp-pointcloud';
 
 const NUM_WORKERS = 4;
 
