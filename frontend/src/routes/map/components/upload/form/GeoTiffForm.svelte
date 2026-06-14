@@ -26,7 +26,7 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { analyzeGeoTiffInWorker } from '$routes/map/utils/formats/geotiff/analyze';
-	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
+	import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
 	import {
 		parseEpsgFromAuxXml,
 		parseBboxFromAuxXml
@@ -39,7 +39,7 @@
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
-	import { transformBbox } from '$routes/map/utils/proj';
+	import { transformBboxInWorker } from '$routes/map/utils/proj/transform-bbox';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -446,13 +446,15 @@
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
-				convertBboxWithEpsg(epsg);
-				registration();
+				void (async () => {
+					await convertBboxWithEpsg(epsg);
+					await registration();
+				})();
 			});
 		}
 	});
 
-	const convertBboxWithEpsg = (epsgCode: EpsgCode) => {
+	const convertBboxWithEpsg = async (epsgCode: EpsgCode) => {
 		if (!rawBbox) return;
 
 		try {
@@ -468,7 +470,7 @@
 				];
 			} else {
 				const prjContent = getProjContext(epsgCode);
-				transformed = transformBbox(rawBbox, prjContent);
+				transformed = await transformBboxInWorker(rawBbox, prjContent);
 			}
 
 			if (!isBboxValid(transformed)) {
@@ -514,7 +516,7 @@
 			});
 
 			if (registrationMode === 'mesh' && numBands === 1) {
-				const entry = await createRasterMeshEntry({
+				const entry = await createRasterMeshEntryInWorker({
 					id: entryId,
 					name: entryName || 'GeoTIFF 3Dメッシュ',
 					band: parsedBands[0],

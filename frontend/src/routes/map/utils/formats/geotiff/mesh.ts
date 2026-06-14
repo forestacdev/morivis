@@ -14,7 +14,7 @@ export type RasterMeshCornerCoordinates = [
 	[number, number]
 ];
 
-interface CreateRasterMeshEntryParams {
+export interface CreateRasterMeshEntryParams {
 	id: string;
 	name: string;
 	band: ArrayLike<number>;
@@ -30,7 +30,7 @@ interface CreateRasterMeshEntryParams {
 	autoHeightScale?: boolean;
 }
 
-interface RasterMeshGeometry {
+export interface RasterMeshGeometry {
 	glb: ArrayBuffer;
 	center: { lng: number; lat: number; };
 	minHeight: number;
@@ -240,7 +240,7 @@ const exportMeshToGlb = async (mesh: THREE.Mesh): Promise<ArrayBuffer> => {
 	});
 };
 
-const buildRasterMeshGeometry = async ({
+export const buildRasterMeshGeometry = async ({
 	band,
 	width,
 	height,

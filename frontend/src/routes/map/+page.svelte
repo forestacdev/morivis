@@ -90,7 +90,7 @@
 	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
-	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
+	import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
@@ -331,7 +331,7 @@
 			});
 
 			if (data.registrationMode === 'mesh' && data.numBands === 1) {
-				const entry = await createRasterMeshEntry({
+				const entry = await createRasterMeshEntryInWorker({
 					id: data.entryId,
 					name: data.entryName || 'GeoTIFF 3Dメッシュ',
 					band: data.parsedBands[0],
