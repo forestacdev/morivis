@@ -12,7 +12,7 @@
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
-	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import { createAdjustableRange, type MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
@@ -413,12 +413,28 @@
 									index: 0,
 									min: ranges[0].min,
 									max: ranges[0].max,
+									range: createAdjustableRange(ranges[0].min, ranges[0].max),
 									colorMap: 'jet'
 								},
 								multi: {
-									r: { index: 0, min: ranges[0].min, max: ranges[0].max },
-									g: { index: 0, min: ranges[0].min, max: ranges[0].max },
-									b: { index: 0, min: ranges[0].min, max: ranges[0].max }
+									r: {
+										index: 0,
+										min: ranges[0].min,
+										max: ranges[0].max,
+										range: createAdjustableRange(ranges[0].min, ranges[0].max)
+									},
+									g: {
+										index: 0,
+										min: ranges[0].min,
+										max: ranges[0].max,
+										range: createAdjustableRange(ranges[0].min, ranges[0].max)
+									},
+									b: {
+										index: 0,
+										min: ranges[0].min,
+										max: ranges[0].max,
+										range: createAdjustableRange(ranges[0].min, ranges[0].max)
+									}
 								}
 							}
 						}
