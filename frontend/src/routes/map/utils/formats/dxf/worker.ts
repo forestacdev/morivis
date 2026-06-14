@@ -19,9 +19,11 @@ self.onmessage = async (event: MessageEvent<DxfWorkerRequest>) => {
 		const result = dxfArrayBufferToGeoJson(event.data.arrayBuffer);
 		postMessage({ result } satisfies DxfWorkerSuccessResponse);
 	} catch (error) {
-		postMessage({
-			error: error instanceof Error ? error.message : String(error)
-		} satisfies DxfWorkerErrorResponse);
+		postMessage(
+			{
+				error: error instanceof Error ? error.message : String(error)
+			} satisfies DxfWorkerErrorResponse
+		);
 	}
 };
 

@@ -5,10 +5,18 @@ import { rasterizePointCloudToDem } from './rasterize-core';
 describe('rasterizePointCloudToDem', () => {
 	it('点が疎でも周辺セルへ距離加重で高さが入る', () => {
 		const positions = new Float32Array([
-			0, 0, 10,
-			2, 0, 20,
-			0, 2, 30,
-			2, 2, 40
+			0,
+			0,
+			10,
+			2,
+			0,
+			20,
+			0,
+			2,
+			30,
+			2,
+			2,
+			40
 		]);
 
 		const result = rasterizePointCloudToDem({

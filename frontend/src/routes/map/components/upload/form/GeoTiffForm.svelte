@@ -31,17 +31,17 @@
 		parseEpsgFromAuxXml,
 		parseBboxFromAuxXml
 	} from '$routes/map/utils/formats/raster/aux-xml';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import {
 		findGeoReferencedImageFile,
 		findMatchingAuxXmlFile,
 		findMatchingWorldFile
 	} from '$routes/map/utils/formats/raster/sidecar';
-	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
-	import { transformBboxInWorker } from '$routes/map/utils/proj/transform-bbox';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { transformBboxInWorker } from '$routes/map/utils/proj/transform-bbox';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -232,11 +232,11 @@
 
 	$effect(() => {
 		if (
-			transformOptionMode === 'georef'
-			&& !geoRefData
-			&& showDialogType === 'geotiff'
-			&& imageFile
-			&& parsedBands
+			transformOptionMode === 'georef' &&
+			!geoRefData &&
+			showDialogType === 'geotiff' &&
+			imageFile &&
+			parsedBands
 		) {
 			openGeoRefTransform(imageFile);
 		}

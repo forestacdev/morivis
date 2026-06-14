@@ -1,6 +1,6 @@
-import DxfParser from 'dxf-parser';
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
+import DxfParser from 'dxf-parser';
 
 /**
  * DXFファイルの内容をGeoJSONに変換

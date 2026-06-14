@@ -133,7 +133,9 @@ const normalizeZipEntryName = (path: string): string => {
 };
 
 const hasGtfsTableSet = (entryNames: string[]): boolean => {
-	const normalizedNames = new Set(entryNames.map((entryName) => normalizeZipEntryName(entryName)));
+	const normalizedNames = new Set(
+		entryNames.map((entryName) => normalizeZipEntryName(entryName))
+	);
 	return REQUIRED_TABLES.every((tableName) => normalizedNames.has(`${tableName}.txt`));
 };
 
@@ -175,7 +177,8 @@ export const loadGTFSFromZip = async (data: ArrayBuffer): Promise<GTFS> => {
 
 	for (const tableName of USED_TABLES) {
 		const fileName = `${tableName}.txt`;
-		const matchedEntry = entries.find(([path]) => normalizeZipEntryName(path) === fileName)?.[1];
+		const matchedEntry = entries.find(([path]) => normalizeZipEntryName(path) === fileName)
+			?.[1];
 		const file = matchedEntry ?? null;
 		if (file) {
 			tables.set(tableName, await file.async('string'));

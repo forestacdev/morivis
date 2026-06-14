@@ -1,7 +1,4 @@
-import {
-	rasterizePointCloudToDem,
-	type RasterizePointCloudParams
-} from './rasterize-core';
+import { type RasterizePointCloudParams, rasterizePointCloudToDem } from './rasterize-core';
 
 onmessage = (event: MessageEvent<RasterizePointCloudParams>) => {
 	try {

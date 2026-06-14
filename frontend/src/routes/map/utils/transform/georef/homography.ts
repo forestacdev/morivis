@@ -23,7 +23,10 @@ const solveLinearSystem = (matrix: number[][], values: number[]): number[] => {
 	for (let pivotIndex = 0; pivotIndex < size; pivotIndex += 1) {
 		let maxRowIndex = pivotIndex;
 		for (let rowIndex = pivotIndex + 1; rowIndex < size; rowIndex += 1) {
-			if (Math.abs(augmented[rowIndex][pivotIndex]) > Math.abs(augmented[maxRowIndex][pivotIndex])) {
+			if (
+				Math.abs(augmented[rowIndex][pivotIndex])
+					> Math.abs(augmented[maxRowIndex][pivotIndex])
+			) {
 				maxRowIndex = rowIndex;
 			}
 		}

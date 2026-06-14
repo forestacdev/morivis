@@ -46,9 +46,10 @@
 		isProcessing.set(true);
 
 		try {
-			const gtfs = input instanceof FileList
-				? await loadGTFSFromFiles(files)
-				: await loadGTFSFromZip(await primaryFile.arrayBuffer());
+			const gtfs =
+				input instanceof FileList
+					? await loadGTFSFromFiles(files)
+					: await loadGTFSFromZip(await primaryFile.arrayBuffer());
 			gtfsData = gtfs;
 
 			agencyName = gtfs.agency[0]?.agency_name ?? '';

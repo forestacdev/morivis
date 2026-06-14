@@ -1,10 +1,12 @@
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 
-import DxfWorker from './worker?worker';
 import type { DxfWorkerResponse } from './worker';
+import DxfWorker from './worker?worker';
 
-export const dxfArrayBufferToGeoJsonInWorker = (arrayBuffer: ArrayBuffer): Promise<FeatureCollection> =>
+export const dxfArrayBufferToGeoJsonInWorker = (
+	arrayBuffer: ArrayBuffer
+): Promise<FeatureCollection> =>
 	runSingleShotWorker<{ arrayBuffer: ArrayBuffer; }, DxfWorkerResponse, FeatureCollection>(
 		DxfWorker,
 		{ arrayBuffer },

@@ -1,5 +1,5 @@
-import AnalyzeGrib2Worker from './worker?worker';
 import type { Grib2ParsedMessage } from './worker';
+import AnalyzeGrib2Worker from './worker?worker';
 
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 

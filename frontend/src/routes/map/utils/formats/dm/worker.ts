@@ -23,14 +23,18 @@ self.onmessage = async (event: MessageEvent<DmWorkerRequest>) => {
 			getDMInfoFromArrayBuffer(arrayBuffer)
 		]);
 
-		postMessage({
-			geojson,
-			info
-		} satisfies DmWorkerSuccessResponse);
+		postMessage(
+			{
+				geojson,
+				info
+			} satisfies DmWorkerSuccessResponse
+		);
 	} catch (error) {
-		postMessage({
-			error: error instanceof Error ? error.message : String(error)
-		} satisfies DmWorkerErrorResponse);
+		postMessage(
+			{
+				error: error instanceof Error ? error.message : String(error)
+			} satisfies DmWorkerErrorResponse
+		);
 	}
 };
 

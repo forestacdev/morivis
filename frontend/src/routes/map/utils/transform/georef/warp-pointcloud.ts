@@ -36,7 +36,9 @@ export const warpPointCloudByCornersParallel = (
 			const worker = new WarpPointCloudWorker();
 			workers.push(worker);
 
-			worker.onmessage = (event: MessageEvent<{ positions?: Float32Array; error?: string; }>) => {
+			worker.onmessage = (
+				event: MessageEvent<{ positions?: Float32Array; error?: string; }>
+			) => {
 				if (rejected) return;
 				if (event.data.error) {
 					rejected = true;

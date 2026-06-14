@@ -1,7 +1,7 @@
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 
-import TransformBboxWorker from './transform-bbox.worker?worker';
 import type { TransformBboxWorkerResponse } from './transform-bbox.worker';
+import TransformBboxWorker from './transform-bbox.worker?worker';
 
 export const transformBboxInWorker = (
 	bbox: [number, number, number, number],
@@ -15,6 +15,7 @@ export const transformBboxInWorker = (
 		[number, number, number, number]
 	>(TransformBboxWorker, { bbox: plainBbox, prjContent }, {
 		errorPrefix: 'BBox transform worker error',
-		mapResponse: (response) => (response as { result: [number, number, number, number]; }).result
+		mapResponse: (response) =>
+			(response as { result: [number, number, number, number]; }).result
 	});
 };

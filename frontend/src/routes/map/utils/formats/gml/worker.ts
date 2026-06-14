@@ -18,9 +18,11 @@ self.onmessage = async (event: MessageEvent<GmlWorkerRequest>) => {
 		const result = await gmlTextToGeoJson(event.data.text);
 		postMessage({ result } satisfies GmlWorkerSuccessResponse);
 	} catch (error) {
-		postMessage({
-			error: error instanceof Error ? error.message : String(error)
-		} satisfies GmlWorkerErrorResponse);
+		postMessage(
+			{
+				error: error instanceof Error ? error.message : String(error)
+			} satisfies GmlWorkerErrorResponse
+		);
 	}
 };
 

@@ -1,11 +1,8 @@
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 
-import {
-	type ComputeUploadedModelMetaParams,
-	type UploadedModelMeta
-} from './model-bounds';
-import ModelBoundsWorker from './model-bounds.worker?worker';
+import { type ComputeUploadedModelMetaParams, type UploadedModelMeta } from './model-bounds';
 import type { ModelBoundsWorkerResponse } from './model-bounds.worker';
+import ModelBoundsWorker from './model-bounds.worker?worker';
 
 export const computeUploadedModelMetaInWorker = (
 	params: ComputeUploadedModelMetaParams

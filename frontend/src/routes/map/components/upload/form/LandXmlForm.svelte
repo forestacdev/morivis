@@ -392,11 +392,11 @@
 
 	$effect(() => {
 		if (
-			transformOptionMode !== 'georef'
-			|| geoRefData
-			|| showDialogType !== 'landxml'
-			|| !xmlFile
-			|| !selectedSurface
+			transformOptionMode !== 'georef' ||
+			geoRefData ||
+			showDialogType !== 'landxml' ||
+			!xmlFile ||
+			!selectedSurface
 		) {
 			return;
 		}

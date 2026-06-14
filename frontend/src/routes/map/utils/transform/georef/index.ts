@@ -22,7 +22,9 @@ export const warpGeoJSONByCornersParallel = (
 	sourceCorners: GeoRefCorners,
 	targetCorners: GeoRefCorners
 ): Promise<FeatureCollection> => {
-	const plainFeatureCollection = JSON.parse(JSON.stringify(featureCollection)) as FeatureCollection;
+	const plainFeatureCollection = JSON.parse(
+		JSON.stringify(featureCollection)
+	) as FeatureCollection;
 	const plainSourceCorners = sourceCorners.map(([x, y]) => [x, y]) as GeoRefCorners;
 	const plainTargetCorners = targetCorners.map(([x, y]) => [x, y]) as GeoRefCorners;
 	const features = plainFeatureCollection.features;

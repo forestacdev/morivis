@@ -20,8 +20,7 @@ const warpPolygon = (
 	coordinates: [number, number][][],
 	sourceCorners: GeoRefCorners,
 	targetCorners: GeoRefCorners
-): [number, number][][] =>
-	coordinates.map((ring) => warpLine(ring, sourceCorners, targetCorners));
+): [number, number][][] => coordinates.map((ring) => warpLine(ring, sourceCorners, targetCorners));
 
 const warpGeometry = (
 	geometry: AnyGeometry | GeometryCollection,

@@ -1,8 +1,8 @@
-import type { DMGeoJSON, DMInfo } from '.';
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
+import type { DMGeoJSON, DMInfo } from '.';
 
-import DmWorker from './worker?worker';
 import type { DmWorkerResponse } from './worker';
+import DmWorker from './worker?worker';
 
 export interface DmAnalyzeResult {
 	geojson: DMGeoJSON;

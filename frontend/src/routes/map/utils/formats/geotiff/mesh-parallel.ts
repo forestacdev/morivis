@@ -5,8 +5,8 @@ import { findCenterTile } from '$routes/map/utils/map/tile';
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 
 import type { CreateRasterMeshEntryParams, RasterMeshGeometry } from './mesh';
-import MeshWorker from './mesh.worker?worker';
 import type { MeshWorkerResponse } from './mesh.worker';
+import MeshWorker from './mesh.worker?worker';
 
 export const createRasterMeshEntryInWorker = async (
 	params: CreateRasterMeshEntryParams
@@ -19,7 +19,9 @@ export const createRasterMeshEntryInWorker = async (
 		nodata: params.nodata,
 		bounds: [bounds[0], bounds[1], bounds[2], bounds[3]],
 		corners: params.corners
-			? params.corners.map(([lng, lat]) => [lng, lat]) as CreateRasterMeshEntryParams['corners']
+			? params.corners.map((
+				[lng, lat]
+			) => [lng, lat]) as CreateRasterMeshEntryParams['corners']
 			: undefined,
 		maxGridSize: params.maxGridSize,
 		baseValue: params.baseValue,

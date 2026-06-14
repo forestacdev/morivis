@@ -15,7 +15,7 @@ interface RunSingleShotWorkerOptions<TResponse, TResult> {
 }
 
 export const runSingleShotWorker = <TRequest, TResponse, TResult>(
-	WorkerConstructor: new () => Worker,
+	WorkerConstructor: new() => Worker,
 	request: TRequest,
 	options: RunSingleShotWorkerOptions<TResponse, TResult>
 ): Promise<TResult> =>

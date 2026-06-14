@@ -66,6 +66,10 @@
 		needsLazyHydration,
 		resolveMorivisLayerEntry
 	} from '$routes/map/data/entries';
+	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
+	import { createPointCloudEntry } from '$routes/map/data/entries/model';
+	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type {
 		MorivisRasterEntry,
@@ -87,16 +91,13 @@
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
 	import { GeoRefVectorSourceCache } from '$routes/map/utils/cache/georef-vector-source-cache';
-	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
 	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
 	import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
 	import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
-	import { createPointCloudEntry } from '$routes/map/data/entries/model';
-	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
-	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
-	import { warpGeoJSONByCornersParallel, warpPointCloudByCornersParallel } from '$routes/map/utils/transform/georef';
+	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import {
 		getPopupImageFieldKey,
 		resolveGeneratedPoiIconUrl,
@@ -116,10 +117,12 @@
 		type EpsgCode,
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
+	import {
+		warpGeoJSONByCornersParallel,
+		warpPointCloudByCornersParallel
+	} from '$routes/map/utils/transform/georef';
 	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
 	import { debugLog } from '$routes/stores/debug';
-	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
-	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -276,11 +279,7 @@
 				`+page finalizeGeoRefEntry開始: id=${data.entryId}, mode=${data.registrationMode}, size=${data.imageWidth}x${data.imageHeight}`
 			);
 
-			if (
-				data.sourceType === 'vector' &&
-				data.sourceFeatureCollectionId &&
-				data.initialCorners
-			) {
+			if (data.sourceType === 'vector' && data.sourceFeatureCollectionId && data.initialCorners) {
 				const sourceFeatureCollection = GeoRefVectorSourceCache.get(data.sourceFeatureCollectionId);
 				if (!sourceFeatureCollection) {
 					throw new Error('GeoRefベクターの元データが見つかりません');
@@ -395,10 +394,7 @@
 						enabled: data.meshConfig.shadingEnabled
 					};
 				}
-				if (
-					entry.style.heightColorRamp &&
-					data.meshConfig?.heightColorRampEnabled != null
-				) {
+				if (entry.style.heightColorRamp && data.meshConfig?.heightColorRampEnabled != null) {
 					entry.style.heightColorRamp = {
 						...entry.style.heightColorRamp,
 						enabled: data.meshConfig.heightColorRampEnabled
@@ -501,7 +497,9 @@
 				}
 			};
 
-			debugLog.info(`+page finalizeGeoRefEntry ラスター生成: id=${entry.id}, bounds=${bbox.join(',')}`);
+			debugLog.info(
+				`+page finalizeGeoRefEntry ラスター生成: id=${entry.id}, bounds=${bbox.join(',')}`
+			);
 			closeGeoRefUi();
 			showDataEntry = entry;
 			showNotification('画像の位置を設定しました', 'success');
@@ -550,9 +548,7 @@
 			transformOptionMode = 'georef';
 			showDialogType = null;
 		} catch (error) {
-			debugLog.error(
-				`GeoRef準備失敗: ${error instanceof Error ? error.message : String(error)}`
-			);
+			debugLog.error(`GeoRef準備失敗: ${error instanceof Error ? error.message : String(error)}`);
 			showNotification('GeoJSON画像の作成中にエラーが発生しました', 'error');
 			console.error(error);
 		} finally {
@@ -610,7 +606,9 @@
 			return;
 		}
 
-		debugLog.info(`showDataEntry set: id=${entry.id}, type=${entry.type}, name=${entry.metaData.name}`);
+		debugLog.info(
+			`showDataEntry set: id=${entry.id}, type=${entry.type}, name=${entry.metaData.name}`
+		);
 	});
 
 	let mobileLayerFeatureSummaryPromise = $derived.by(() => {

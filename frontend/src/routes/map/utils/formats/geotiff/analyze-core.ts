@@ -21,7 +21,7 @@ export interface GeoTiffAnalyzeWorkerResponse {
 	rawBbox: [number, number, number, number] | null;
 	numBands: number;
 	nodata: number | null;
-	dataRanges: { min: number; max: number }[];
+	dataRanges: { min: number; max: number; }[];
 	bandBuffers: ArrayBuffer[];
 	bandTypes: string[];
 }

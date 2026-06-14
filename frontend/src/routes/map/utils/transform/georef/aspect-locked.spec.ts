@@ -36,7 +36,12 @@ describe('applyAspectLockedGeoRefDrag', () => {
 			[0, 2]
 		];
 
-		const result = applyAspectLockedPlaneDrag(corners, 'ne', [6, -1], getGeoRefAspectRatio(4, 2));
+		const result = applyAspectLockedPlaneDrag(
+			corners,
+			'ne',
+			[6, -1],
+			getGeoRefAspectRatio(4, 2)
+		);
 		const width = edgeLength(result[0], result[1]);
 		const height = edgeLength(result[0], result[3]);
 
@@ -53,7 +58,12 @@ describe('applyAspectLockedGeoRefDrag', () => {
 			[140, 61]
 		];
 
-		const result = applyAspectLockedGeoRefDrag(corners, 'se', [143, 61.5], getGeoRefAspectRatio(4, 2));
+		const result = applyAspectLockedGeoRefDrag(
+			corners,
+			'se',
+			[143, 61.5],
+			getGeoRefAspectRatio(4, 2)
+		);
 
 		expect(result[0][0]).toBeCloseTo(140, 6);
 		expect(result[0][1]).toBeCloseTo(60, 6);

@@ -18,9 +18,11 @@ self.onmessage = async (event: MessageEvent<GeoParquetWorkerRequest>) => {
 		const result = await geoParquetArrayBufferToGeoJson(event.data.arrayBuffer);
 		postMessage({ result } satisfies GeoParquetWorkerSuccessResponse);
 	} catch (error) {
-		postMessage({
-			error: error instanceof Error ? error.message : String(error)
-		} satisfies GeoParquetWorkerErrorResponse);
+		postMessage(
+			{
+				error: error instanceof Error ? error.message : String(error)
+			} satisfies GeoParquetWorkerErrorResponse
+		);
 	}
 };
 

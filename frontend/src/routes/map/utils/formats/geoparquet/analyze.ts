@@ -1,6 +1,6 @@
 import type { GeoParquetReadResult } from '.';
-import GeoParquetWorker from './worker?worker';
 import type { GeoParquetWorkerResponse } from './worker';
+import GeoParquetWorker from './worker?worker';
 
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 

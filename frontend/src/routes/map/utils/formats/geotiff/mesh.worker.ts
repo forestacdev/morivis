@@ -20,9 +20,11 @@ self.onmessage = async (event: MessageEvent<MeshWorkerRequest>) => {
 		const result = await buildRasterMeshGeometry(event.data);
 		workerScope.postMessage({ result } satisfies MeshWorkerSuccessResponse, [result.glb]);
 	} catch (error) {
-		postMessage({
-			error: error instanceof Error ? error.message : String(error)
-		} satisfies MeshWorkerErrorResponse);
+		postMessage(
+			{
+				error: error instanceof Error ? error.message : String(error)
+			} satisfies MeshWorkerErrorResponse
+		);
 	}
 };
 

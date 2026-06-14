@@ -24,10 +24,7 @@
 		getMinMax,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
-	import {
-		sampleRasterMeshHeights
-	} from '$routes/map/utils/formats/geotiff/mesh';
-	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
+	import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
 	import {
 		parseNetCDF,
 		extractRasterData,
@@ -37,6 +34,7 @@
 		type NetCDFVariableInfo
 	} from '$routes/map/utils/formats/netcdf';
 	import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';

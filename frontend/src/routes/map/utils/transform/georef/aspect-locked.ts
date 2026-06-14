@@ -134,7 +134,9 @@ export const applyAspectLockedPlaneDrag = (
 ): GeoRefCorners => {
 	if (aspectRatio <= 0) return currentCorners;
 
-	const nextCorners = currentCorners.map((point) => [point[0], point[1]] as Point) as GeoRefCorners;
+	const nextCorners = currentCorners.map((point) =>
+		[point[0], point[1]] as Point
+	) as GeoRefCorners;
 	nextCorners[CORNER_INDEX[draggedCorner]] = [draggedPosition[0], draggedPosition[1]];
 
 	const oppositeCorner = OPPOSITE_CORNER[draggedCorner];
@@ -175,7 +177,9 @@ export const applyAspectLockedGeoRefDrag = (
 	draggedPosition: Point,
 	aspectRatio: number
 ): GeoRefCorners => {
-	const mercatorCorners = currentCorners.map((point) => projectToMercatorPlane(point)) as GeoRefCorners;
+	const mercatorCorners = currentCorners.map((point) =>
+		projectToMercatorPlane(point)
+	) as GeoRefCorners;
 	const mercatorDraggedPosition = projectToMercatorPlane(draggedPosition);
 	const nextMercatorCorners = applyAspectLockedPlaneDrag(
 		mercatorCorners,

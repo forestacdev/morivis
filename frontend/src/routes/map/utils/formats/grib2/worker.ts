@@ -65,9 +65,11 @@ const addForecastOffset = (referenceTime: Date, forecastTime: number, timeRangeU
 };
 
 const formatTemporalLabel = (date: Date) => {
-	return `${date.getFullYear()}/${pad2(date.getMonth() + 1)}/${pad2(date.getDate())} ${pad2(
-		date.getHours()
-	)}:${pad2(date.getMinutes())}`;
+	return `${date.getFullYear()}/${pad2(date.getMonth() + 1)}/${pad2(date.getDate())} ${
+		pad2(
+			date.getHours()
+		)
+	}:${pad2(date.getMinutes())}`;
 };
 
 const parseGrib2Messages = (arrayBuffer: ArrayBuffer): Grib2ParsedMessage[] => {
@@ -77,11 +79,17 @@ const parseGrib2Messages = (arrayBuffer: ArrayBuffer): Grib2ParsedMessage[] => {
 	return records.map((record, index) => {
 		const meta = record.metadata;
 		const paramName = meta.parameterName ?? `Param ${meta.parameterNumber}`;
-		const validTime = addForecastOffset(meta.referenceTime, meta.forecastTime, meta.timeRangeUnit);
+		const validTime = addForecastOffset(
+			meta.referenceTime,
+			meta.forecastTime,
+			meta.timeRangeUnit
+		);
 
 		return {
 			index,
-			label: `${formatTemporalLabel(validTime)} ${paramName} (${meta.nx}x${meta.ny}) Level:${meta.levelType}=${meta.levelValue}`,
+			label: `${
+				formatTemporalLabel(validTime)
+			} ${paramName} (${meta.nx}x${meta.ny}) Level:${meta.levelType}=${meta.levelValue}`,
 			parameterNumber: meta.parameterNumber,
 			levelType: meta.levelType,
 			levelValue: meta.levelValue,
@@ -108,9 +116,11 @@ self.onmessage = async (event: MessageEvent<Grib2WorkerRequest>) => {
 			transfer: messages.map((message) => message.values.buffer)
 		});
 	} catch (error) {
-		postMessage({
-			error: error instanceof Error ? error.message : String(error)
-		} satisfies Grib2WorkerErrorResponse);
+		postMessage(
+			{
+				error: error instanceof Error ? error.message : String(error)
+			} satisfies Grib2WorkerErrorResponse
+		);
 	}
 };
 

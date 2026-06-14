@@ -18,9 +18,11 @@ self.onmessage = (event: MessageEvent<TransformBboxWorkerRequest>) => {
 		const result = transformBbox(event.data.bbox, event.data.prjContent);
 		postMessage({ result } satisfies TransformBboxWorkerSuccessResponse);
 	} catch (error) {
-		postMessage({
-			error: error instanceof Error ? error.message : String(error)
-		} satisfies TransformBboxWorkerErrorResponse);
+		postMessage(
+			{
+				error: error instanceof Error ? error.message : String(error)
+			} satisfies TransformBboxWorkerErrorResponse
+		);
 	}
 };
 

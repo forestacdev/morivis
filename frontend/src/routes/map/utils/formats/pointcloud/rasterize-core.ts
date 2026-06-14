@@ -152,7 +152,7 @@ const fillMaskedNodataByNearest = (
 const resolveRasterSize = (
 	bbox: [number, number, number, number],
 	longEdgePixels: number
-): { width: number; height: number } => {
+): { width: number; height: number; } => {
 	const spanX = Math.max(Math.abs(bbox[2] - bbox[0]), 1e-9);
 	const spanY = Math.max(Math.abs(bbox[3] - bbox[1]), 1e-9);
 

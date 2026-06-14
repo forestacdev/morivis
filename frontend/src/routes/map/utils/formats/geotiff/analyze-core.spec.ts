@@ -1,15 +1,18 @@
-import { describe, expect, it } from 'vitest';
 import type { ReadRasterResult } from 'geotiff';
+import { describe, expect, it } from 'vitest';
 
 import { parseBboxFromGeoTiffImage } from './analyze-core';
 
-const createImageStub = (overrides: Partial<{
-	getBoundingBox: () => [number, number, number, number];
-	getOrigin: () => [number, number];
-	getResolution: () => [number, number];
-}>) => ({
+const createImageStub = (
+	overrides: Partial<{
+		getBoundingBox: () => [number, number, number, number];
+		getOrigin: () => [number, number];
+		getResolution: () => [number, number];
+	}>
+) => ({
 	fileDirectory: {},
-	getBoundingBox: overrides.getBoundingBox ?? (() => [1, 2, 3, 4] as [number, number, number, number]),
+	getBoundingBox: overrides.getBoundingBox
+		?? (() => [1, 2, 3, 4] as [number, number, number, number]),
 	getOrigin: overrides.getOrigin ?? (() => [0, 0] as [number, number]),
 	getResolution: overrides.getResolution ?? (() => [1, -1] as [number, number]),
 	getWidth: () => 0,

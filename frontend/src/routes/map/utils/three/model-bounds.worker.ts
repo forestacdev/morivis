@@ -17,9 +17,11 @@ self.onmessage = async (event: MessageEvent<ComputeUploadedModelMetaParams>) => 
 		const result = await computeUploadedModelMeta(event.data);
 		postMessage({ result } satisfies ModelBoundsWorkerSuccessResponse);
 	} catch (error) {
-		postMessage({
-			error: error instanceof Error ? error.message : String(error)
-		} satisfies ModelBoundsWorkerErrorResponse);
+		postMessage(
+			{
+				error: error instanceof Error ? error.message : String(error)
+			} satisfies ModelBoundsWorkerErrorResponse
+		);
 	}
 };
 

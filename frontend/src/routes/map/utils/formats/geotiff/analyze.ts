@@ -1,8 +1,8 @@
 import type { TypedArray } from 'geotiff';
 
-import AnalyzeGeoTiffWorker from './analyze.worker?worker';
-import type { GeoTiffAnalyzeWorkerResponse } from './analyze.worker';
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
+import type { GeoTiffAnalyzeWorkerResponse } from './analyze.worker';
+import AnalyzeGeoTiffWorker from './analyze.worker?worker';
 
 export interface GeoTiffAnalyzeResult {
 	width: number;
@@ -10,7 +10,7 @@ export interface GeoTiffAnalyzeResult {
 	rawBbox: [number, number, number, number] | null;
 	numBands: number;
 	nodata: number | null;
-	dataRanges: { min: number; max: number }[];
+	dataRanges: { min: number; max: number; }[];
 	bands: TypedArray[];
 }
 

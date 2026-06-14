@@ -11,8 +11,8 @@
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
-	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
+	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createAdjustableRange, type MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType } from '$routes/map/types';
@@ -276,7 +276,6 @@
 				await registration();
 				return;
 			}
-
 		} catch (e) {
 			showNotification(e instanceof Error ? e.message : '座標変換に失敗しました', 'error');
 			console.error(e);
@@ -479,10 +478,10 @@
 
 	$effect(() => {
 		if (
-			transformOptionMode !== 'georef'
-			|| geoRefData
-			|| showDialogType !== 'pointcloud'
-			|| !analyzed
+			transformOptionMode !== 'georef' ||
+			geoRefData ||
+			showDialogType !== 'pointcloud' ||
+			!analyzed
 		) {
 			return;
 		}
@@ -490,7 +489,8 @@
 		isProcessing.set(true);
 		(registrationMode === 'raster'
 			? preparePointCloudRasterGeoRef()
-			: preparePointCloudDirectGeoRef())
+			: preparePointCloudDirectGeoRef()
+		)
 			.then((prepared) => {
 				if (!prepared) return;
 				showNotification(
@@ -516,7 +516,6 @@
 		showDialogType = null;
 		dropFile = null;
 	};
-
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
@@ -578,7 +577,6 @@
 				各セルの最大標高で 1 バンド DEM を生成します。
 			</div>
 		{/if}
-
 	{/if}
 </div>
 
@@ -587,7 +585,9 @@
 	<button
 		onclick={registration}
 		disabled={!analyzed || (!resolvedBbox && !rawBbox) || $isProcessing}
-		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed || (!resolvedBbox && !rawBbox) || $isProcessing
+		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed ||
+		(!resolvedBbox && !rawBbox) ||
+		$isProcessing
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>

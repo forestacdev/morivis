@@ -1,8 +1,8 @@
 import type { Opacity } from '$routes/map/data/types';
+import type { RasterDiscreteDimension } from '$routes/map/data/types/raster';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import type { RasterBands } from '$routes/map/utils/formats/geotiff';
 import type { GeoRefCorners } from '$routes/map/utils/transform/georef/homography';
-import type { RasterDiscreteDimension } from '$routes/map/data/types/raster';
 
 export type RasterRegistrationMode = 'raster' | 'mesh';
 export type GeoRefSourceType = 'raster' | 'vector' | 'pointcloud';
