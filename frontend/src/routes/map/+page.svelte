@@ -91,6 +91,7 @@
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
 	import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
+	import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
@@ -340,8 +341,56 @@
 					nodata: data.parsedNodata,
 					bounds: bbox,
 					corners,
-					mapImage
+					mapImage,
+					baseValue: data.meshConfig?.baseValue,
+					heightScale: data.meshConfig?.heightScale,
+					autoHeightScale: data.meshConfig?.autoHeightScale
 				});
+
+				if (data.meshConfig?.attribution) {
+					entry.metaData.attribution = data.meshConfig.attribution;
+				}
+				if (data.meshConfig?.opacity != null) {
+					entry.style.opacity = data.meshConfig.opacity;
+				}
+				if (entry.style.shading && data.meshConfig?.shadingEnabled != null) {
+					entry.style.shading = {
+						...entry.style.shading,
+						enabled: data.meshConfig.shadingEnabled
+					};
+				}
+				if (
+					entry.style.heightColorRamp &&
+					data.meshConfig?.heightColorRampEnabled != null
+				) {
+					entry.style.heightColorRamp = {
+						...entry.style.heightColorRamp,
+						enabled: data.meshConfig.heightColorRampEnabled
+					};
+				}
+				if (data.meshConfig?.temporalDimension) {
+					entry.state = {
+						...entry.state,
+						dimension: {
+							currentIndex: data.meshConfig.initialDimensionIndex ?? 0
+						}
+					};
+					entry.properties = {
+						...entry.properties,
+						temporal: {
+							dimension: data.meshConfig.temporalDimension
+						}
+					};
+
+					const cachedEntry = NetCDFDataCache.get(data.entryId);
+					if (cachedEntry && data.meshConfig.heightScale != null) {
+						cachedEntry.meshConfig = {
+							baseValue: data.meshConfig.baseValue ?? 0,
+							heightScale: data.meshConfig.heightScale,
+							maxGridSize: 192
+						};
+					}
+				}
 
 				debugLog.info(`+page finalizeGeoRefEntry メッシュ生成: id=${entry.id}`);
 				closeGeoRefUi();

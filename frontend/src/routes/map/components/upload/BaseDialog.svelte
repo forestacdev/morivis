@@ -199,7 +199,13 @@
 				<MBTilesForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'netcdf'}
-				<NetCDFForm bind:showDataEntry bind:showDialogType bind:dropFile />
+				<NetCDFForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:transformOptionMode
+					bind:geoRefData
+				/>
 			{/if}
 			{#if showDialogType === 'grib2'}
 				<Grib2Form bind:showDataEntry bind:showDialogType bind:dropFile />
@@ -208,7 +214,13 @@
 				<HritForm bind:showDataEntry bind:showDialogType bind:dropFile />
 			{/if}
 			{#if showDialogType === 'demxml'}
-				<DemXmlForm bind:showDataEntry bind:showDialogType bind:dropFile />
+				<DemXmlForm
+					bind:showDataEntry
+					bind:showDialogType
+					bind:dropFile
+					bind:transformOptionMode
+					bind:geoRefData
+				/>
 			{/if}
 			{#if showDialogType === 'pmtiles'}
 				<PmtilesForm bind:showDataEntry bind:showDialogType bind:dropFile bind:remotePmtilesUrl />

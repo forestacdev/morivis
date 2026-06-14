@@ -4,6 +4,8 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -23,9 +25,9 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import {
-		createRasterMeshEntry,
 		sampleRasterMeshHeights
 	} from '$routes/map/utils/formats/geotiff/mesh';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import {
 		parseNetCDF,
 		extractRasterData,
@@ -36,7 +38,6 @@
 	} from '$routes/map/utils/formats/netcdf';
 	import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
-	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -45,12 +46,16 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
+		transformOptionMode: TransformOptionMode;
+		geoRefData: GeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		dropFile = $bindable()
+		dropFile = $bindable(),
+		transformOptionMode = $bindable(),
+		geoRefData = $bindable()
 	}: Props = $props();
 
 	let entryName = $state('');
@@ -180,7 +185,6 @@
 
 			// NetCDFの座標はWGS84（4326）
 			const rawBbox: [number, number, number, number] = bbox ?? [-180, -90, 180, 90];
-			const hasValidBbox = bbox ? isBboxValid(bbox) : false;
 
 			// サムネイル画像を生成（メルカトル補正）
 			const mapImage = generateThumbnail({
@@ -242,11 +246,6 @@
 			}
 
 			if (registrationMode === 'mesh') {
-				if (!hasValidBbox) {
-					showNotification('3Dメッシュ化には有効な座標範囲が必要です', 'error');
-					return;
-				}
-
 				const meshHeightSampling = sampleRasterMeshHeights({
 					band: data,
 					width,
@@ -256,67 +255,34 @@
 					baseValue: ranges[0].min,
 					autoHeightScale: true
 				});
-
-				const entry = await createRasterMeshEntry({
-					id,
-					name: entryName || `${longName} 3Dメッシュ`,
-					band: data,
-					width,
-					height,
-					nodata,
-					bounds: resolvedBbox,
-					mapImage,
-					baseValue: meshHeightSampling.effectiveBaseValue,
-					heightScale: meshHeightSampling.effectiveHeightScale
-				});
-				if (entry.style.shading) {
-					entry.style.shading = {
-						enabled: false,
-						shadeStrength: entry.style.shading.shadeStrength,
-						ambientStrength: entry.style.shading.ambientStrength,
-						azimuthDeg: entry.style.shading.azimuthDeg,
-						elevationDeg: entry.style.shading.elevationDeg
-					};
+				if (!ncFile) {
+					throw new Error('NetCDFファイルが見つかりません');
 				}
-				if (entry.style.heightColorRamp) {
-					entry.style.heightColorRamp = {
-						enabled: true,
-						colorMap: entry.style.heightColorRamp.colorMap,
-						min: entry.style.heightColorRamp.min,
-						max: entry.style.heightColorRamp.max,
-						sourceMin: entry.style.heightColorRamp.sourceMin,
-						sourceMax: entry.style.heightColorRamp.sourceMax,
-						sourceSign: entry.style.heightColorRamp.sourceSign
-					};
-				}
-				entry.style.opacity = 0.7;
 
-				showDataEntry = entry;
-				if (dimension) {
-					entry.state = {
-						...entry.state,
-						dimension: {
-							currentIndex: initialDimensionIndex
-						}
-					};
-					entry.properties = {
-						...entry.properties,
-						temporal: {
-							dimension
-						}
-					};
-					const cachedEntry = NetCDFDataCache.get(id);
-					if (cachedEntry) {
-						cachedEntry.meshConfig = {
-							baseValue: meshHeightSampling.effectiveBaseValue,
-							heightScale: meshHeightSampling.effectiveHeightScale,
-							maxGridSize: 192
-						};
+				geoRefData = createRasterGeoRefData({
+					entryId: id,
+					entryName: entryName || `${longName} 3Dメッシュ`,
+					parsedBands: bands,
+					parsedNodata: nodata,
+					dataRanges: ranges,
+					imageWidth: width,
+					imageHeight: height,
+					imageFile: ncFile,
+					registrationMode,
+					meshConfig: {
+						baseValue: meshHeightSampling.effectiveBaseValue,
+						heightScale: meshHeightSampling.effectiveHeightScale,
+						attribution: 'NetCDF 3D Mesh',
+						opacity: 0.7,
+						shadingEnabled: false,
+						heightColorRampEnabled: true,
+						temporalDimension: dimension,
+						initialDimensionIndex
 					}
-				}
+				});
 				showDialogType = null;
-				dropFile = null;
-				showNotification(`NetCDF変数「${longName}」の3Dメッシュを生成しました`, 'success');
+				transformOptionMode = 'georef';
+				showNotification(`NetCDF変数「${longName}」の位置合わせを設定してください`, 'info');
 				return;
 			}
 

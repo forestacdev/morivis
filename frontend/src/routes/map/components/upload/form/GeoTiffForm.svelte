@@ -36,6 +36,7 @@
 		findMatchingAuxXmlFile,
 		findMatchingWorldFile
 	} from '$routes/map/utils/formats/raster/sidecar';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
@@ -172,30 +173,17 @@
 	const openGeoRefTransform = (file: File) => {
 		if (!parsedBands) return;
 
-		const previewImageUrl = generateThumbnail({
-			bands: parsedBands,
-			width: imageWidth,
-			height: imageHeight,
-			nodata: parsedNodata,
-			ranges: dataRanges
-		});
-
-		geoRefData = {
-			sourceType: 'raster',
+		geoRefData = createRasterGeoRefData({
 			entryId,
 			entryName,
 			parsedBands,
 			parsedNodata,
 			dataRanges,
-			numBands,
 			imageWidth,
 			imageHeight,
-			bandMinMax,
-			multiBandMinMax,
 			imageFile: file,
-			previewImageUrl,
 			registrationMode
-		};
+		});
 		transformOptionMode = 'georef';
 		showDialogType = null;
 	};
@@ -239,6 +227,18 @@
 	$effect(() => {
 		if (!canCreateMesh && registrationMode !== 'raster') {
 			registrationMode = 'raster';
+		}
+	});
+
+	$effect(() => {
+		if (
+			transformOptionMode === 'georef'
+			&& !geoRefData
+			&& showDialogType === 'geotiff'
+			&& imageFile
+			&& parsedBands
+		) {
+			openGeoRefTransform(imageFile);
 		}
 	});
 

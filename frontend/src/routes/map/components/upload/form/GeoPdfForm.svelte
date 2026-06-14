@@ -26,6 +26,7 @@
 		encodeAllBandsToTerrarium,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
@@ -140,21 +141,17 @@
 			GeoTiffCache.setSize(id, width, height);
 			GeoTiffCache.setNumBands(id, 3);
 
-			geoRefData = {
-				sourceType: 'raster',
+			geoRefData = createRasterGeoRefData({
 				entryId: id,
 				entryName,
 				parsedBands: bands,
 				parsedNodata: null,
 				dataRanges: ranges,
-				numBands: 3,
 				imageWidth: width,
 				imageHeight: height,
-				bandMinMax: ranges[0],
-				multiBandMinMax: { r: ranges[0], g: ranges[1], b: ranges[2] },
 				imageFile: file,
 				registrationMode: 'raster'
-			};
+			});
 			transformOptionMode = 'georef';
 			showDialogType = null;
 		} catch (e) {
@@ -291,21 +288,17 @@
 			type: 'image/png'
 		});
 
-		geoRefData = {
-			sourceType: 'raster',
+		geoRefData = createRasterGeoRefData({
 			entryId: id,
 			entryName,
 			parsedBands: bands,
 			parsedNodata: null,
 			dataRanges: ranges,
-			numBands: 3,
 			imageWidth: width,
 			imageHeight: height,
-			bandMinMax: ranges[0],
-			multiBandMinMax: { r: ranges[0], g: ranges[1], b: ranges[2] },
 			imageFile: pngFile,
 			registrationMode: 'raster'
-		};
+		});
 		transformOptionMode = 'georef';
 		showDialogType = null;
 	};

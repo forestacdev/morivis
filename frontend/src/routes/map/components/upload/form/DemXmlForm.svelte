@@ -4,7 +4,11 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
-	import type { RasterRegistrationMode } from '$routes/map/components/upload/form/transform/georef-types';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type {
+		GeoRefData,
+		RasterRegistrationMode
+	} from '$routes/map/components/upload/form/transform/georef-types';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -23,9 +27,8 @@
 		getMinMax,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
-	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
+	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
-	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -34,12 +37,16 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: File | FileList | null;
+		transformOptionMode: TransformOptionMode;
+		geoRefData: GeoRefData | null;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		dropFile = $bindable()
+		dropFile = $bindable(),
+		transformOptionMode = $bindable(),
+		geoRefData = $bindable()
 	}: Props = $props();
 
 	let entryName = $state('');
@@ -134,6 +141,7 @@
 
 	const registration = async () => {
 		if (!analyzed || !demResult) return;
+		if (!inputFiles || inputFiles.length === 0) return;
 
 		isProcessing.set(true);
 
@@ -153,30 +161,31 @@
 				Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, bbox[2])),
 				Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, bbox[3]))
 			];
+			const bands: RasterBands = [data];
+			const ranges: BandDataRange[] = [getMinMax(data, nodata)];
 
 			if (registrationMode === 'mesh') {
-				const entry = await createRasterMeshEntry({
-					id: `mesh_${crypto.randomUUID()}`,
-					name: entryName || '基盤地図DEM 3Dメッシュ',
-					band: data,
-					width,
-					height,
-					nodata,
-					bounds: resolvedBbox,
-					mapImage
+				geoRefData = createRasterGeoRefData({
+					entryId: `geotiff_${crypto.randomUUID()}`,
+					entryName: entryName || '基盤地図DEM 3Dメッシュ',
+					parsedBands: bands,
+					parsedNodata: nodata,
+					dataRanges: ranges,
+					imageWidth: width,
+					imageHeight: height,
+					imageFile: inputFiles[0],
+					registrationMode,
+					meshConfig: {
+						attribution: '基盤地図DEM 3D Mesh'
+					}
 				});
-				entry.metaData.attribution = '基盤地図DEM 3D Mesh';
-				showDataEntry = entry;
 				showDialogType = null;
-				dropFile = null;
-				showNotification('基盤地図DEMの3Dメッシュを生成しました', 'success');
+				transformOptionMode = 'georef';
+				showNotification('基盤地図DEMの位置合わせを設定してください', 'info');
 				return;
 			}
 
 			const id = `geotiff_${crypto.randomUUID()}`;
-
-			const bands: RasterBands = [data];
-			const ranges: BandDataRange[] = [getMinMax(data, nodata)];
 
 			await encodeAllBandsToTerrarium(id, bands, width, height, nodata, ranges);
 
