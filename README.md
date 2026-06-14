@@ -64,11 +64,14 @@ graph LR
     C --> D[Parser or metadata reader]
     D --> E{CRS resolved?}
     E -- yes --> F[Entry creation]
-    E -- no --> G[ZoneForm or GeoRefForm]
+    E -- no --> G[CRS selection or manual georeferencing]
     G --> F
-    F --> H[Style and source generation]
-    H --> I[MapLibre GL JS]
-    F --> J[deck.gl or three.js]
+    F --> H[MapLibre style and source generation]
+    F --> I[deck.gl layer generation]
+    F --> J[three.js object generation]
+    H --> K[MapLibre GL JS]
+    I --> L[deck.gl]
+    J --> M[three.js]
 ```
 
 The important architectural point is that style changes are driven declaratively. `Map.svelte` regenerates sources and layers, then hands the result to `mapStore.setStyle()` instead of mutating map layers ad hoc.
