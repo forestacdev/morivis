@@ -65,12 +65,18 @@
 <div class="bg-sub flex w-full justify-between rounded-full p-1">
 	<button class="flex aspect-square w-[19%] flex-col items-center gap-1" onclick={hideLayer}>
 		<div
-			class="hover:bg-accent grid aspect-square w-full cursor-pointer place-items-center rounded-full object-cover text-left {!layerEntry
+			class="hover:bg-accent grid relative aspect-square w-full cursor-pointer place-items-center rounded-full object-cover text-left {!layerEntry
 				.style.visible
 				? 'bg-accent'
 				: 'bg-main'}"
 		>
-			<Icon icon={getVisibilityIconName(false)} class="h-7 w-7 text-base/90" />
+			<Icon icon={getVisibilityIconName(false)} class="h-7 w-7 -translate-y-2 text-base/90" />
+			<div class="absolute pointer-events-none grid justify-center items-end h-full w-full text-xs">
+				<span
+					class="text-base -translate-y-2.5"
+					style="text-shadow: 0 0 3px #000, 0 0 3px #000, 0 0 3px #000;">非表示</span
+				>
+			</div>
 		</div>
 	</button>
 
@@ -100,9 +106,12 @@
 						style="opacity: {item.value};"
 					/>
 				{/if}
-				<div class="absolute pointer-events-none grid place-items-center h-full w-full text-xs">
-					<span class="text-base" style="text-shadow: 0 0 3px #000, 0 0 3px #000, 0 0 3px #000;"
-						>{item.label}</span
+				<div
+					class="absolute pointer-events-none grid justify-center items-end h-full w-full text-xs"
+				>
+					<span
+						class="text-base -translate-y-2"
+						style="text-shadow: 0 0 3px #000, 0 0 3px #000, 0 0 3px #000;">{item.label}</span
 					>
 				</div>
 			</div>
