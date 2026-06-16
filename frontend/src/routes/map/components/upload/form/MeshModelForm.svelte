@@ -4,15 +4,16 @@
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { createGlbEntry } from '$routes/map/data/entries/model';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 	}
 
 	let {
@@ -37,27 +38,22 @@
 	const getModelPlacement = (file: File): ModelPlacement | undefined => {
 		return (file as File & { morivisModelPlacement?: ModelPlacement }).morivisModelPlacement;
 	};
+	const inputFiles = $derived.by(() => toUploadFiles(dropFile));
 
 	const glbFile = $derived.by(() => {
-		if (!dropFile) return null;
-		if (dropFile instanceof FileList) {
-			return (
-				Array.from(dropFile).find((f) =>
-					/\.(glb|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc)$/i.test(getPathLikeName(f))
-				) ?? null
-			);
-		}
-		return dropFile;
+		return (
+			inputFiles.find((f) =>
+				/\.(glb|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc)$/i.test(getPathLikeName(f))
+			) ?? null
+		);
 	});
 
 	const mtlFile = $derived.by(() => {
-		if (!dropFile || !(dropFile instanceof FileList)) return null;
-		return Array.from(dropFile).find((f) => /\.mtl$/i.test(f.name)) ?? null;
+		return inputFiles.find((f) => /\.mtl$/i.test(f.name)) ?? null;
 	});
 
 	const textureFiles = $derived.by(() => {
-		if (!dropFile || !(dropFile instanceof FileList)) return [];
-		return Array.from(dropFile).filter((f) => /\.(png|jpe?g|bmp|tga|gif|webp)$/i.test(f.name));
+		return inputFiles.filter((f) => /\.(png|jpe?g|bmp|tga|gif|webp)$/i.test(f.name));
 	});
 
 	const getRelativePath = (file: File) => {

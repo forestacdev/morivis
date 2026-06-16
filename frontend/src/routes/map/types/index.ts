@@ -124,6 +124,9 @@ export interface SupportedFileGroup {
 	extensions: string[];
 }
 
+export type UploadFiles = File[] | null;
+export type UploadFilesInput = UploadFiles | File | FileList | null;
+
 /** ファイル拡張子のグループ分け（UI表示用） */
 export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{

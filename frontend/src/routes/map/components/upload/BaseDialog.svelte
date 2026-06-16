@@ -54,7 +54,7 @@
 	import WktForm from '$routes/map/components/upload/form/WktForm.svelte';
 	import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFiles } from '$routes/map/types';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -64,7 +64,7 @@
 		showDataEntry: MorivisLayerEntry | null;
 		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
-		dropFile: File | FileList | null;
+		dropFile: UploadFiles;
 		remoteGeoZarrUrl: string | null;
 		remotePmtilesUrl: string | null;
 		remoteRasterUrl: string | null;

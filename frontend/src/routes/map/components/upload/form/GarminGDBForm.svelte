@@ -4,7 +4,7 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import {
 		garminGdbFileToGeojson,
 		isGarminGdbFile,
@@ -12,13 +12,14 @@
 		type GarminGdbDataType,
 		type GarminGdbParseResult
 	} from '$routes/map/utils/formats/garmin-gdb';
+	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 	}
 
 	let {
@@ -35,7 +36,7 @@
 
 	const gdbFile = $derived.by(() => {
 		if (!dropFile) return null;
-		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+		return getFirstUploadFile(dropFile);
 	});
 
 	const setFile = async (file: File) => {

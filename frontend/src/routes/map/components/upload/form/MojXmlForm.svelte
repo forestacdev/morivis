@@ -15,12 +15,13 @@
 	} from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { parseMojXml } from '$routes/map/utils/formats/mojxml';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -28,7 +29,7 @@
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
@@ -51,8 +52,8 @@
 	let hasData = $state(false);
 
 	const mojFiles = $derived.by(() => {
-		if (!dropFile) return null;
-		return dropFile instanceof FileList ? Array.from(dropFile) : [dropFile];
+		const files = toUploadFiles(dropFile);
+		return files.length > 0 ? files : null;
 	});
 
 	const entryName = $derived(mojFiles?.[0]?.name.replace(/\.[^.]+$/, '') ?? '地図XML');

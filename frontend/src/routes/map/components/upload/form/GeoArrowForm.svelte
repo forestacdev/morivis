@@ -8,19 +8,20 @@
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import {
 		geoArrowFileToTable,
 		getGeoArrowBounds,
 		geoArrowTableToGeoJson
 	} from '$routes/map/utils/formats/geoarrow';
+	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: string;
 		focusBbox: [number, number, number, number] | null;
@@ -58,7 +59,7 @@
 
 	const geoArrowFile = $derived.by(() => {
 		if (!dropFile) return null;
-		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+		return getFirstUploadFile(dropFile);
 	});
 
 	const entryName = $derived(geoArrowFile?.name.replace(/\.[^.]+$/, '') ?? 'GeoArrowデータ');

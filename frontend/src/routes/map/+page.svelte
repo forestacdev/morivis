@@ -85,7 +85,8 @@
 		type DialogType,
 		type FeatureMenuData,
 		type FeaturePanelData,
-		type HighlightMarkerState
+		type HighlightMarkerState,
+		type UploadFiles
 	} from '$routes/map/types';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
@@ -166,7 +167,7 @@
 
 	let layerEntries = $state<MorivisLayerEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
-	let dropFile = $state<File | FileList | null>(null); // ドロップしたファイル
+	let dropFile = $state<UploadFiles>(null); // ドロップしたファイル
 	let remoteGeoZarrUrl = $state<string | null>(null);
 	let remotePmtilesUrl = $state<string | null>(null);
 	let remoteRasterUrl = $state<string | null>(null);

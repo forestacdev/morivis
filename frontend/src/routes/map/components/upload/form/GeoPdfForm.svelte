@@ -10,7 +10,7 @@
 	import { createGeoJsonEntry, getGeometryTypes } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
 		parseGeoPDFFromBuffer,
@@ -29,13 +29,14 @@
 	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
+	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		geoRefData: GeoRefData | null;
 	}
@@ -69,11 +70,7 @@
 	let analyzing = false;
 
 	const sourceFile = $derived.by(() => {
-		if (!dropFile) return null;
-		if (dropFile instanceof FileList) {
-			return dropFile[0] ?? null;
-		}
-		return dropFile;
+		return getFirstUploadFile(dropFile);
 	});
 
 	const isPdfFile = $derived.by(() => {

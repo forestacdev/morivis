@@ -10,7 +10,7 @@
 		type FieldDef,
 		type VectorTemporalItem
 	} from '$routes/map/data/types/vector/properties';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/map/utils/formats/gpx';
 	import { showNotification } from '$routes/stores/notification';
@@ -18,7 +18,7 @@
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 	}
 
 	let {

@@ -5,7 +5,7 @@
 		class?: string;
 		onDragover?: (e: DragEvent) => void;
 		onDragleave?: (e: DragEvent) => void;
-		onDropFile?: (files: FileList) => void;
+		onDropFile?: (files: File[]) => void;
 		onDropEntryId?: (entryId: string) => void;
 		isDragover?: boolean;
 		disabled?: boolean;
@@ -91,8 +91,8 @@
 		return files;
 	};
 
-	const mergeDroppedFiles = (primaryFiles: File[], fallbackFiles: FileList): FileList => {
-		const dt = new DataTransfer();
+	const mergeDroppedFiles = (primaryFiles: File[], fallbackFiles: FileList): File[] => {
+		const mergedFiles: File[] = [];
 		const seen = new Set<string>();
 
 		const pushFile = (file: File) => {
@@ -101,13 +101,13 @@
 			const key = `${relativePath}:${file.name}:${file.size}:${file.lastModified}`;
 			if (seen.has(key)) return;
 			seen.add(key);
-			dt.items.add(file);
+			mergedFiles.push(file);
 		};
 
 		primaryFiles.forEach(pushFile);
 		Array.from(fallbackFiles).forEach(pushFile);
 
-		return dt.files;
+		return mergedFiles;
 	};
 
 	// ドラッグ中のイベント
@@ -148,7 +148,7 @@
 		if (!hasDirectoryEntry) {
 			const files = dataTransfer.files;
 			if (!files || files.length === 0) return;
-			onDropFile?.(files);
+			onDropFile?.(Array.from(files));
 			return;
 		}
 
@@ -164,7 +164,7 @@
 		const files = dataTransfer.files;
 		if (!files || files.length === 0) return;
 
-		if (onDropFile) onDropFile(files);
+		if (onDropFile) onDropFile(Array.from(files));
 	};
 </script>
 

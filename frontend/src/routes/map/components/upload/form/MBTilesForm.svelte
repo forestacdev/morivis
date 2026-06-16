@@ -8,14 +8,15 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import { registerMBTiles, type MBTilesMetadata } from '$routes/map/protocol/mbtiles';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
+	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 	}
 
 	let {
@@ -49,11 +50,8 @@
 	});
 
 	const mbtilesFile = $derived.by(() => {
-		if (!dropFile) return null;
-		if (dropFile instanceof FileList) {
-			return Array.from(dropFile).find((f) => /\.mbtiles$/i.test(f.name)) ?? null;
-		}
-		return dropFile;
+		const file = getFirstUploadFile(dropFile);
+		return file && /\.mbtiles$/i.test(file.name) ? file : null;
 	});
 
 	$effect(() => {

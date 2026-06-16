@@ -4,16 +4,17 @@
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { parseGeoPhotos } from '$routes/map/utils/formats/exif';
+	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 	}
 
 	let {
@@ -28,7 +29,7 @@
 
 	const photoFiles = $derived.by(() => {
 		if (!dropFile) return [];
-		const files = dropFile instanceof FileList ? Array.from(dropFile) : [dropFile];
+		const files = toUploadFiles(dropFile);
 		return files.filter((f) => /\.(jpe?g|heic|heif)$/i.test(f.name));
 	});
 

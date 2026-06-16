@@ -15,19 +15,20 @@
 	} from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { mifFilesToGeoJson } from '$routes/map/utils/formats/mif';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
@@ -68,9 +69,9 @@
 		return mifFile.name.replace(/\.[^.]+$/, '') !== midFile.name.replace(/\.[^.]+$/, '');
 	});
 
-	const setFiles = (fileOrFiles: File | FileList | null, autoProcess = false) => {
-		if (!fileOrFiles) return;
-		const files = fileOrFiles instanceof FileList ? Array.from(fileOrFiles) : [fileOrFiles];
+	const setFiles = (fileOrFiles: UploadFilesInput, autoProcess = false) => {
+		const files = toUploadFiles(fileOrFiles);
+		if (files.length === 0) return;
 		let hasMifInBatch = false;
 		let hasMidInBatch = false;
 

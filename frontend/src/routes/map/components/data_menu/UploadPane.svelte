@@ -2,25 +2,23 @@
 	import { tick } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
+	import { getRemoteFileName, resolveUploadUrlInput, validateUploadUrlInput } from './upload-url';
+
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import {
 		SUPPORTED_FILE_ACCEPT,
-		SUPPORTED_FILE_EXTENSIONS,
 		SUPPORTED_FILE_GROUPS,
-		type DialogType
+		type DialogType,
+		type UploadFiles
 	} from '$routes/map/types';
-	import { parseOgcApiFeaturesService } from '$routes/map/utils/formats/ogc-api-features';
-	import { looksLikeWfsUrl, parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
-	import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
-	import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
-	import { fetchWithDevProxy, normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
+	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
-		dropFile: File | FileList | null;
+		dropFile: UploadFiles;
 		showDialogType: DialogType;
 		remoteGeoZarrUrl: string | null;
 		remotePmtilesUrl: string | null;
@@ -56,210 +54,31 @@
 	const trimmedInputUrl = $derived(inputUrl.trim());
 	const urlInputError = $derived.by(() => {
 		if (!hasTouchedUrlInput) return '';
-		if (!trimmedInputUrl) return 'URLを入力してください';
-		if (!normalizeHttpUrlInput(trimmedInputUrl))
-			return 'http(s) または s3:// で始まるURLを入力してください';
-		return '';
+		return validateUploadUrlInput(trimmedInputUrl);
 	});
 	const isUrlInputValid = $derived(trimmedInputUrl.length > 0 && !urlInputError);
 
-	const getFileNameFromContentDisposition = (headerValue: string | null): string | null => {
-		if (!headerValue) return null;
-
-		const utf8Match = headerValue.match(/filename\*=UTF-8''([^;]+)/i);
-		if (utf8Match?.[1]) {
-			try {
-				return decodeURIComponent(utf8Match[1]);
-			} catch {
-				return utf8Match[1];
-			}
-		}
-
-		const plainMatch = headerValue.match(/filename="?([^";]+)"?/i);
-		return plainMatch?.[1] ?? null;
-	};
-
-	const getMatchedExtension = (fileName: string): string | null => {
-		const lowerFileName = fileName.toLowerCase();
-		const sortedExtensions = [...SUPPORTED_FILE_EXTENSIONS].sort((a, b) => b.length - a.length);
-		return sortedExtensions.find((ext) => lowerFileName.endsWith(ext)) ?? null;
-	};
-
-	const getTileUrlExtension = (fileName: string): string | null => {
-		const lowerFileName = fileName.toLowerCase();
-		const tileExtensions = ['.geojson', '.pbf', '.mvt', '.png', '.jpg', '.jpeg', '.webp', '.avif'];
-		return tileExtensions.find((ext) => lowerFileName.endsWith(ext)) ?? null;
-	};
-
-	const getRemoteFileName = (urlValue: string, response: Response): string | null => {
-		const contentDispositionName = getFileNameFromContentDisposition(
-			response.headers.get('content-disposition')
-		);
-		if (contentDispositionName && getMatchedExtension(contentDispositionName)) {
-			return contentDispositionName;
-		}
-
-		try {
-			const pathname = new URL(urlValue).pathname;
-			const pathName = pathname.split('/').pop();
-			if (pathName) {
-				const decodedPathName = decodeURIComponent(pathName);
-				if (getMatchedExtension(decodedPathName)) {
-					return decodedPathName;
-				}
-			}
-		} catch {
-			return null;
-		}
-
-		return null;
-	};
-
-	const getRemoteFileNameFromUrl = (urlValue: string): string | null => {
-		try {
-			const pathname = new URL(urlValue).pathname;
-			const pathName = pathname.split('/').pop();
-			return pathName ? decodeURIComponent(pathName) : null;
-		} catch {
-			return null;
-		}
-	};
-
-	const isXyzTileUrl = (urlValue: string): boolean => {
-		const lowerUrl = urlValue.toLowerCase();
-		return (
-			lowerUrl.includes('{x}') &&
-			lowerUrl.includes('{z}') &&
-			(lowerUrl.includes('{y}') || lowerUrl.includes('{-y}'))
-		);
-	};
-
-	const isWmsRequestTemplateUrl = (urlValue: string): boolean => {
-		try {
-			const url = new URL(urlValue);
-			const getQueryParam = (name: string): string | null => {
-				for (const [key, value] of url.searchParams.entries()) {
-					if (key.toLowerCase() === name) return value;
-				}
-				return null;
-			};
-			const hasQueryParam = (name: string): boolean => {
-				return Array.from(url.searchParams.keys()).some((key) => key.toLowerCase() === name);
-			};
-			const service = getQueryParam('service')?.toLowerCase();
-			const request = getQueryParam('request')?.toLowerCase();
-			const lowerUrl = urlValue.toLowerCase();
-			const hasBboxTemplate =
-				lowerUrl.includes('{bbox-epsg-3857}') ||
-				lowerUrl.includes('{bbox-epsg-4326}') ||
-				lowerUrl.includes('{bbox}');
-			const hasSize = hasQueryParam('width') && hasQueryParam('height');
-
-			return service === 'wms' && request === 'getmap' && hasBboxTemplate && hasSize;
-		} catch {
-			return false;
-		}
-	};
-
-	const isTilesetJsonUrl = (urlValue: string): boolean => {
-		try {
-			return new URL(urlValue).pathname.toLowerCase().endsWith('/tileset.json');
-		} catch {
-			return false;
-		}
-	};
-
-	const isWmsOrWmtsUrl = async (urlValue: string): Promise<boolean> => {
-		let wmtsResult = await parseWmtsCapabilities(urlValue);
-
-		if ((!wmtsResult || wmtsResult.length === 0) && /epsg4326/i.test(urlValue)) {
-			const mercatorUrl = urlValue.replace(/epsg4326/gi, 'epsg3857');
-			wmtsResult = await parseWmtsCapabilities(mercatorUrl);
-		}
-
-		if (wmtsResult && wmtsResult.length > 0) {
-			return true;
-		}
-
-		const wmsResult = await parseWmsCapabilities(urlValue);
-		return !!(wmsResult && wmsResult.length > 0);
-	};
-
-	const isWfsUrl = async (urlValue: string): Promise<boolean> => {
-		const result = await parseWfsCapabilities(urlValue);
-		return !!(result && result.featureTypes.length > 0);
-	};
-
-	const isOgcApiFeaturesUrl = async (urlValue: string): Promise<boolean> => {
-		const result = await parseOgcApiFeaturesService(urlValue);
-		return !!(result && result.collections.length > 0);
-	};
-
-	const RASTER_TILE_EXTENSIONS = new Set([
-		'.png',
-		'.jpg',
-		'.jpeg',
-		'.webp',
-		'.avif',
-		'.tif',
-		'.tiff'
-	]);
-	const VECTOR_TILE_EXTENSIONS = new Set(['.pbf', '.mvt', '.geojson']);
-
 	const inputRemoteFile = async () => {
 		hasTouchedUrlInput = true;
-		const trimmedUrl = trimmedInputUrl;
-		if (!trimmedUrl) {
-			showNotification('URLを入力してください', 'error');
+
+		// URLの種別判定は upload-url.ts に集約し、ここでは結果に応じて state を更新する。
+		const resolved = await resolveUploadUrlInput(trimmedInputUrl);
+
+		if (resolved.type === 'error') {
+			showNotification(resolved.message, 'error');
 			return;
 		}
 
-		const normalizedInputUrl = normalizeHttpUrlInput(trimmedUrl);
-		if (!normalizedInputUrl) {
-			showNotification('http(s) または s3:// で始まるURLを入力してください', 'error');
-			return;
-		}
-		if (isTilesetJsonUrl(normalizedInputUrl)) {
-			remoteTiles3dUrl = normalizedInputUrl;
-			showDialogType = '3dtiles';
-			inputUrl = '';
-			hasTouchedUrlInput = false;
-			return;
-		}
-
-		if (isXyzTileUrl(normalizedInputUrl)) {
-			const remoteFileNameFromUrl = getRemoteFileNameFromUrl(normalizedInputUrl);
-			const matchedExtension = remoteFileNameFromUrl
-				? getTileUrlExtension(remoteFileNameFromUrl)
-				: null;
-
-			if (matchedExtension && RASTER_TILE_EXTENSIONS.has(matchedExtension)) {
-				remoteRasterUrl = normalizedInputUrl;
-				showDialogType = 'raster';
-			} else if (matchedExtension && VECTOR_TILE_EXTENSIONS.has(matchedExtension)) {
-				remoteVectorUrl = normalizedInputUrl;
-				showDialogType = 'vector';
-			} else {
-				pendingTileUrl = normalizedInputUrl;
-				showDialogType = 'tileurltype';
-			}
-			inputUrl = '';
-			hasTouchedUrlInput = false;
-			return;
-		}
-
-		if (isWmsRequestTemplateUrl(normalizedInputUrl)) {
-			remoteRasterUrl = normalizedInputUrl;
-			showDialogType = 'raster';
-			inputUrl = '';
-			hasTouchedUrlInput = false;
-			return;
-		}
-
-		const remoteFileNameFromUrl = getRemoteFileNameFromUrl(normalizedInputUrl);
-		if (remoteFileNameFromUrl && getMatchedExtension(remoteFileNameFromUrl) === '.pmtiles') {
-			remotePmtilesUrl = normalizedInputUrl;
-			showDialogType = 'pmtiles';
+		if (resolved.type === 'dialog') {
+			// 既知のURL種別に当たった場合は、対応フォームへ必要な値を渡して終了する。
+			showDialogType = resolved.dialogType;
+			if (resolved.target === 'remoteRasterUrl') remoteRasterUrl = resolved.value;
+			if (resolved.target === 'remoteVectorUrl') remoteVectorUrl = resolved.value;
+			if (resolved.target === 'pendingTileUrl') pendingTileUrl = resolved.value;
+			if (resolved.target === 'remoteTiles3dUrl') remoteTiles3dUrl = resolved.value;
+			if (resolved.target === 'remotePmtilesUrl') remotePmtilesUrl = resolved.value;
+			if (resolved.target === 'remoteWmtsUrl') remoteWmtsUrl = resolved.value;
+			if (resolved.target === 'remoteFeatureServiceUrl') remoteFeatureServiceUrl = resolved.value;
 			inputUrl = '';
 			hasTouchedUrlInput = false;
 			return;
@@ -267,53 +86,21 @@
 
 		isLoadingUrl = true;
 		isProcessing.set(true);
-
 		try {
-			if (await isWmsOrWmtsUrl(normalizedInputUrl)) {
-				remoteWmtsUrl = normalizedInputUrl;
-				showDialogType = 'wmts';
-				inputUrl = '';
-				hasTouchedUrlInput = false;
-				return;
-			}
-
-			if (looksLikeWfsUrl(normalizedInputUrl) && (await isWfsUrl(normalizedInputUrl))) {
-				remoteFeatureServiceUrl = normalizedInputUrl;
-				showDialogType = 'featureservice';
-				inputUrl = '';
-				hasTouchedUrlInput = false;
-				return;
-			}
-
-			if (await isOgcApiFeaturesUrl(normalizedInputUrl)) {
-				remoteFeatureServiceUrl = normalizedInputUrl;
-				showDialogType = 'featureservice';
-				inputUrl = '';
-				hasTouchedUrlInput = false;
-				return;
-			}
-
-			if (await isWfsUrl(normalizedInputUrl)) {
-				remoteFeatureServiceUrl = normalizedInputUrl;
-				showDialogType = 'featureservice';
-				inputUrl = '';
-				hasTouchedUrlInput = false;
-				return;
-			}
-
-			const response = await fetchWithDevProxy(normalizedInputUrl);
+			// upload-url.ts が remote-file を返した場合だけ、ここで実ファイルを取得する。
+			const response = await fetchWithDevProxy(resolved.requestUrl);
 			if (!response.ok) {
 				throw new Error(`HTTP ${response.status}`);
 			}
 
-			const remoteFileName = getRemoteFileName(normalizedInputUrl, response);
+			const remoteFileName = getRemoteFileName(resolved.requestUrl, response);
 			if (!remoteFileName) {
 				showNotification('URLから対応拡張子を判定できません', 'error');
 				return;
 			}
 
 			const blob = await response.blob();
-			dropFile = new File([blob], remoteFileName, { type: blob.type });
+			dropFile = [new File([blob], remoteFileName, { type: blob.type })];
 			inputUrl = '';
 			hasTouchedUrlInput = false;
 		} catch (error) {
@@ -332,10 +119,10 @@
 		const files = (e.target as HTMLInputElement).files;
 		if (!files || files.length === 0) return;
 
-		await handleDroppedFiles(files);
+		await handleDroppedFiles(Array.from(files));
 	};
 
-	const handleDroppedFiles = async (files: FileList) => {
+	const handleDroppedFiles = async (files: File[]) => {
 		if (!files || files.length === 0) return;
 
 		// 単一ZIPファイルの場合は展開
@@ -343,9 +130,7 @@
 			try {
 				const extracted = await extractZipFiles(files[0]);
 				if (extracted.length > 0) {
-					const dt = new DataTransfer();
-					extracted.forEach((f) => dt.items.add(f));
-					dropFile = dt.files;
+					dropFile = extracted;
 					return;
 				}
 			} catch {
@@ -353,11 +138,7 @@
 			}
 		}
 
-		if (files.length === 1) {
-			dropFile = files[0];
-		} else {
-			dropFile = files;
-		}
+		dropFile = files;
 	};
 
 	const showUploadDialog = (type: DialogType) => {

@@ -49,7 +49,8 @@
 		type FeatureMenuData,
 		type ClickedLayerFeaturesData,
 		type DialogType,
-		type HighlightMarkerState
+		type HighlightMarkerState,
+		type UploadFiles
 	} from '$routes/map/types';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
@@ -110,7 +111,7 @@
 		angleMarkerLngLat: LngLat;
 		cameraBearing: number; // カメラの向き
 		showDataEntry: MorivisLayerEntry | null;
-		dropFile: File | FileList | null;
+		dropFile: UploadFiles;
 		showDialogType: DialogType;
 		transformOptionMode: TransformOptionMode;
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
@@ -1020,14 +1021,12 @@
 	};
 
 	// ドロップ完了時にファイルを取得
-	const onDropFile: (files: FileList) => void = async (files) => {
+	const onDropFile: (files: File[]) => void = async (files) => {
 		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
 			try {
 				const extracted = await extractZipFiles(files[0]);
 				if (extracted.length > 0) {
-					const dt = new DataTransfer();
-					extracted.forEach((file) => dt.items.add(file));
-					dropFile = dt.files;
+					dropFile = extracted;
 					return;
 				}
 			} catch {
