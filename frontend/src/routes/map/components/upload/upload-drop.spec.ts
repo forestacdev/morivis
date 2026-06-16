@@ -69,7 +69,11 @@ describe('resolveDroppedFiles', () => {
 		vi.mocked(extractModelFromKmz).mockResolvedValue(null);
 		vi.mocked(isLocationHistoryFile).mockResolvedValue(false);
 		vi.mocked(isMfJsonFile).mockResolvedValue(false);
-		vi.mocked(inspectObjFile).mockResolvedValue({ isPointCloud: false });
+		vi.mocked(inspectObjFile).mockResolvedValue({
+			isPointCloud: false,
+			hasFaces: true,
+			vertexCount: 10
+		});
 		vi.mocked(findGeoReferencedImageFile).mockReturnValue(null);
 		vi.mocked(findRasterImageFile).mockReturnValue(null);
 		vi.mocked(isRasterImageMainFile).mockReturnValue(false);
@@ -116,7 +120,8 @@ describe('resolveDroppedFiles', () => {
 	it('KMZ からモデル群が抽出できると glb ダイアログへ進む', async () => {
 		const modelFiles = [createFile('building.glb', 'glb', 'model/gltf-binary')];
 		vi.mocked(extractModelFromKmz).mockResolvedValue({
-			modelFiles
+			modelFiles,
+			mainModelPath: 'building.glb'
 		});
 
 		const result = await resolveDroppedFiles(createFile('scene.kmz', 'kmz', 'application/zip'));
@@ -156,7 +161,11 @@ describe('resolveDroppedFiles', () => {
 	});
 
 	it('OBJ が点群なら pointcloud 判定になる', async () => {
-		vi.mocked(inspectObjFile).mockResolvedValue({ isPointCloud: true });
+		vi.mocked(inspectObjFile).mockResolvedValue({
+			isPointCloud: true,
+			hasFaces: false,
+			vertexCount: 100
+		});
 
 		const result = await resolveDroppedFiles(createFile('points.obj'));
 
@@ -250,7 +259,6 @@ describe('resolveDroppedFiles', () => {
 	it('複数 KML でローカルモデル群が解決できると glb 判定になる', async () => {
 		const modelFiles = [createFile('building.glb', 'glb', 'model/gltf-binary')];
 		vi.mocked(extractModelFromKml).mockResolvedValue({
-			modelUrl: null,
 			modelFiles
 		});
 

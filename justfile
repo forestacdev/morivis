@@ -8,6 +8,14 @@ dev:
     pnpm install
     pnpm dev
 
+# 開発サーバーを起動して Chrome のシークレットを開く
+dev-chrome:
+    @echo "Checking if port 5173 is in use..."
+    @lsof -ti:5173 && echo "Port 5173 is in use, killing process..." && npx kill-port 5173 || echo "Port 5173 is free"
+    pnpm install
+    @(sleep 5; open -na "Google Chrome" --args --incognito http://localhost:5173) &
+    pnpm dev
+
 # スマホのサーバーの起動
 mobile:
     @echo "Checking ports..."
