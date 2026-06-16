@@ -369,9 +369,9 @@ const createEarthquakePointEntry = (
 		location: '全国',
 		description: config.description,
 		downloadUrl: config.downloadUrl,
-		tags: config.tags ?? ['地震', '気象'],
+		tags: config.tags ?? ['地震'],
 		zoom: { min: 3, max: 24 },
-		xyzImageTile: 'zoom_7',
+		xyzImageTile: 'zoom_8',
 		mapImage: config.mapImage,
 		fields: [
 			{
