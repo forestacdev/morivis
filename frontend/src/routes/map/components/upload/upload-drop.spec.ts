@@ -101,6 +101,18 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('MF-JSON は mfjson 判定になる', async () => {
+		vi.mocked(isMfJsonFile).mockResolvedValue(true);
+
+		const result = await resolveDroppedFiles(createFile('track.geojson', '{}', 'application/json'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'mfjson',
+			dropFiles: undefined
+		});
+	});
+
 	it('KMZ からモデル群が抽出できると glb ダイアログへ進む', async () => {
 		const modelFiles = [createFile('building.glb', 'glb', 'model/gltf-binary')];
 		vi.mocked(extractModelFromKmz).mockResolvedValue({
@@ -116,6 +128,18 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('GTFS ZIP は展開せず gtfs 判定になる', async () => {
+		vi.mocked(isGtfsZip).mockResolvedValue(true);
+
+		const result = await resolveDroppedFiles(createFile('feed.zip', 'zip', 'application/zip'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'gtfs',
+			dropFiles: undefined
+		});
+	});
+
 	it('EXIF 付き写真一式は geophoto 判定になる', async () => {
 		vi.mocked(hasExifGps).mockResolvedValue(true);
 
@@ -128,6 +152,40 @@ describe('resolveDroppedFiles', () => {
 			type: 'dialog',
 			dialogType: 'geophoto',
 			dropFiles: undefined
+		});
+	});
+
+	it('OBJ が点群なら pointcloud 判定になる', async () => {
+		vi.mocked(inspectObjFile).mockResolvedValue({ isPointCloud: true });
+
+		const result = await resolveDroppedFiles(createFile('points.obj'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'pointcloud',
+			dropFiles: undefined
+		});
+	});
+
+	it('TXT が点群テキストなら pointcloud 判定になる', async () => {
+		vi.mocked(isPointCloudTextFile).mockResolvedValue(true);
+
+		const result = await resolveDroppedFiles(createFile('points.txt'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'pointcloud',
+			dropFiles: undefined
+		});
+	});
+
+	it('TXT が点群でなければエラー通知になる', async () => {
+		const result = await resolveDroppedFiles(createFile('memo.txt'));
+
+		expect(result).toEqual({
+			type: 'notification',
+			level: 'error',
+			message: '対応していないTXTファイルです'
 		});
 	});
 
@@ -159,6 +217,23 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('画像本体と sidecar の名前が一致しないと組み合わせ不一致エラーになる', async () => {
+		vi.mocked(isRasterImageSidecarFile).mockImplementation((file) => file.name.endsWith('.tfw'));
+		vi.mocked(isRasterImageMainFile).mockImplementation((file) => file.name.endsWith('.tif'));
+
+		const result = await resolveDroppedFiles([
+			createFile('ortho.tfw'),
+			createFile('other.tif', 'tif', 'image/tiff')
+		]);
+
+		expect(result).toEqual({
+			type: 'notification',
+			level: 'error',
+			message:
+				'画像ファイルと補助ファイルの組み合わせが一致しません。同じ名前の .tfw または .aux.xml を一緒にドロップしてください'
+		});
+	});
+
 	it('複数 XML は先頭内容から demxml 判定できる', async () => {
 		const result = await resolveDroppedFiles([
 			createFile('a.xml', '<Dataset><DEM></DEM></Dataset>', 'application/xml'),
@@ -169,6 +244,50 @@ describe('resolveDroppedFiles', () => {
 			type: 'dialog',
 			dialogType: 'demxml',
 			dropFiles: undefined
+		});
+	});
+
+	it('複数 KML でローカルモデル群が解決できると glb 判定になる', async () => {
+		const modelFiles = [createFile('building.glb', 'glb', 'model/gltf-binary')];
+		vi.mocked(extractModelFromKml).mockResolvedValue({
+			modelUrl: null,
+			modelFiles
+		});
+
+		const result = await resolveDroppedFiles([
+			createFile('scene.kml', '<kml></kml>', 'application/vnd.google-earth.kml+xml'),
+			createFile('building.glb', 'glb', 'model/gltf-binary')
+		]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'glb',
+			dropFiles: modelFiles
+		});
+	});
+
+	it('拡張子なし HRIT 単体ファイルは hrit 判定になる', async () => {
+		vi.mocked(isLikelyHritFile).mockResolvedValue(true);
+
+		const result = await resolveDroppedFiles(createFile('IMG_DK01'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'hrit',
+			dropFiles: undefined
+		});
+	});
+
+	it('複数ドロップで拡張子なし HRIT を含むと hrit 判定になり files を保持する', async () => {
+		vi.mocked(isLikelyHritFile).mockImplementation(async (file) => file.name === 'IMG_DK01');
+		const files = [createFile('IMG_DK01'), createFile('IMG_DK02')];
+
+		const result = await resolveDroppedFiles(files);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'hrit',
+			dropFiles: files
 		});
 	});
 
