@@ -13,6 +13,7 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { gpxFileToGeojson, checkGpxFile, type DataType } from '$routes/map/utils/formats/gpx';
+	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 
 	interface Props {
@@ -34,12 +35,20 @@
 			name: string;
 		}[]
 	>([]);
+	let dataTypeErrorMessage = $state('');
 
 	let setFileName = $state<string>('');
+
+	const gpxFile = $derived.by(() => {
+		if (!dropFile) return null;
+		return getFirstUploadFile(dropFile);
+	});
 
 	const setFile = async (file: File) => {
 		const fileName = file.name.toLowerCase();
 		setFileName = fileName;
+		dataTypeErrorMessage = '';
+		dataTypesOptions = [];
 
 		const isGpx = await checkGpxFile(file);
 
@@ -61,9 +70,17 @@
 			list.push({ key: 'routes', name: 'ルート' });
 		}
 
+		if (list.length === 0) {
+			dataTypeErrorMessage =
+				'この GPX ファイルから読み込めるウェイポイント・トラック・ルートが見つかりませんでした。';
+			showNotification(dataTypeErrorMessage, 'warning');
+			return;
+		}
+
 		if (list.length === 1) {
-			dataType = list[0].key;
-			registration();
+			const onlyDataType = list[0].key;
+			dataType = onlyDataType;
+			await registration(onlyDataType);
 			return;
 		}
 
@@ -71,15 +88,8 @@
 		dataType = list[0].key;
 	};
 	$effect(() => {
-		if (dropFile) {
-			if (dropFile instanceof FileList) {
-				const file = dropFile[0];
-				setFile(file);
-				return;
-			} else if (dropFile instanceof File) {
-				setFile(dropFile);
-				return;
-			}
+		if (gpxFile) {
+			setFile(gpxFile);
 		}
 	});
 
@@ -160,19 +170,17 @@
 		entry.properties.attributeView.timeKey = 'time';
 	};
 
-	const registration = async () => {
-		if (!dropFile) {
+	const registration = async (selectedDataType = dataType) => {
+		if (!gpxFile) {
+			showNotification('GPX ファイルが選択されていません', 'warning');
 			return;
 		}
-		let file;
-		if (dropFile instanceof FileList) {
-			file = dropFile[0];
-		} else if (dropFile instanceof File) {
-			file = dropFile;
-		}
 
-		if (!file) return;
-		const geojsonData = await gpxFileToGeojson(file, dataType);
+		if (dataTypesOptions.length === 0 && dataTypeErrorMessage) {
+			showNotification(dataTypeErrorMessage, 'warning');
+			return;
+		}
+		const geojsonData = await gpxFileToGeojson(gpxFile, selectedDataType);
 		const entryGeometryType = geometryTypeToEntryType(geojsonData);
 		if (!entryGeometryType) {
 			showNotification('対応していないジオメトリタイプです', 'error');
@@ -191,7 +199,7 @@
 		);
 		// const entry = createGeoJsonEntry(geojsonData, entryGeometryType, setFileName);
 		if (entry) {
-			applyGpxTemporalProperties(entry, dataType);
+			applyGpxTemporalProperties(entry, selectedDataType);
 			showDataEntry = entry;
 			showDialogType = null;
 		}
@@ -199,6 +207,8 @@
 
 	const cancel = () => {
 		dropFile = null;
+		dataTypesOptions = [];
+		dataTypeErrorMessage = '';
 		showDialogType = null;
 	};
 </script>
@@ -210,18 +220,27 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
-	<div class="w-full p-2">
-		<HorizontalSelectBox
-			label="データタイプを選択"
-			bind:group={dataType}
-			bind:options={dataTypesOptions}
-		/>
+	<div class="w-full space-y-4 p-2 text-sm">
+		{#if dataTypesOptions.length > 1}
+			<HorizontalSelectBox
+				label="データタイプを選択"
+				bind:group={dataType}
+				bind:options={dataTypesOptions}
+			/>
+		{:else if dataTypesOptions.length === 1}
+			<p>読み込みタイプ: {dataTypesOptions[0].name}</p>
+		{:else if dataTypeErrorMessage}
+			<p class="text-sm text-red-300">{dataTypeErrorMessage}</p>
+		{/if}
 	</div>
 </div>
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
-	<button onclick={registration} class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg">
+	<button
+		onclick={() => registration()}
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg"
+	>
 		決定
 	</button>
 </div>

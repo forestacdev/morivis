@@ -3,6 +3,7 @@
 	import turfDistance from '@turf/distance';
 	import { LngLat, type ExpressionSpecification, type FilterSpecification } from 'maplibre-gl';
 	import { onDestroy } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
@@ -17,6 +18,7 @@
 	import {
 		getVectorTemporalFilterBehavior,
 		getVectorTemporalItems,
+		type VectorTemporalCameraTrackingMode,
 		type VectorTemporalItem
 	} from '$routes/map/data/types/vector/properties';
 	import type { Feature } from '$routes/map/types/geojson';
@@ -43,6 +45,13 @@
 		cumulativeMeters: number[];
 	}
 
+	interface TemporalCameraTrackingState {
+		enabled: boolean;
+		autoBearing: boolean;
+	}
+
+	const defaultCameraTrackingDurationMs = 220;
+
 	// 時間フィルターの初期状態。
 	// 実際の選択範囲は、時間候補数が分かった後に補正する。
 	const createDefaultTemporalFilterState = (): VectorTemporalFilterState => ({
@@ -52,10 +61,19 @@
 		mode: 'range'
 	});
 
+	const createDefaultTemporalCameraTrackingState = (): TemporalCameraTrackingState => ({
+		enabled: false,
+		autoBearing: false
+	});
+
 	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
 
 	let temporalFilterState = $state<VectorTemporalFilterState>(createDefaultTemporalFilterState());
-	let cameraTracking = $state(false);
+	let cameraTrackingState = $state<TemporalCameraTrackingState>(
+		createDefaultTemporalCameraTrackingState()
+	);
+	let cameraTrackingModeOverride = $state<VectorTemporalCameraTrackingMode | null>(null);
+	let cameraTrackingDurationMs = $state(defaultCameraTrackingDurationMs);
 	let isPlaying = $state(false);
 	let loopPlayback = $state(false);
 	let playbackSpeed = $state(1201);
@@ -103,6 +121,15 @@
 	);
 
 	const canTrackCamera = $derived(layerEntry.format.type === 'geojson');
+	const defaultCameraTrackingMode = $derived<VectorTemporalCameraTrackingMode>(
+		layerEntry.properties.temporal?.cameraTrackingMode ?? 'feature'
+	);
+	const activeCameraTrackingMode = $derived<VectorTemporalCameraTrackingMode>(
+		cameraTrackingModeOverride ?? defaultCameraTrackingMode
+	);
+	const isRouteTrackingMode = $derived(
+		activeCameraTrackingMode === 'route'
+	);
 	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 	// 参考:
 	// Mapbox cinematic route animation
@@ -367,18 +394,6 @@
 		cachedTrackPointSet = { points: [], cumulativeMeters: [] };
 	};
 
-	const isTrackPointCacheValid = () => {
-		const geojson = GeojsonCache.get(layerEntry.id);
-		if (!geojson) return false;
-
-		return (
-			cachedTrackPointsLayerId === layerEntry.id &&
-			cachedTrackPointsGeojson === geojson &&
-			cachedTrackPointsItems === temporalItems &&
-			cachedTrackPointsKeySignature === temporalKeys.join('|')
-		);
-	};
-
 	const getTemporalTrackPointSet = () => {
 		if (!canTrackCamera || temporalItems.length === 0) {
 			return { points: [], cumulativeMeters: [] } as TemporalTrackPointSet;
@@ -450,6 +465,27 @@
 		return map?.getBearing() ?? 0;
 	};
 
+	const getFeatureTransitionDuration = () => cameraTrackingDurationMs;
+
+	const getRouteTransitionDuration = () => cameraTrackingDurationMs;
+
+	const moveCameraToPoint = (
+		point: { lng: number; lat: number },
+		bearing: number | null,
+		duration = getFeatureTransitionDuration()
+	) => {
+		const map = mapStore.getMap();
+		if (!map) return;
+
+		const options = {
+			center: new LngLat(point.lng, point.lat),
+			...(bearing != null ? { bearing } : {}),
+			duration
+		};
+
+		map.flyTo(options);
+	};
+
 	const updateCameraTracking = (
 		cameraPoint: { lng: number; lat: number },
 		lookAtPoint: { lng: number; lat: number },
@@ -465,15 +501,18 @@
 			lerp(center.lng, cameraPoint.lng, cameraCenterSmoothing),
 			lerp(center.lat, cameraPoint.lat, cameraCenterSmoothing)
 		);
-		if (getBearingDelta(bearing, targetBearing) >= cameraBearingUpdateThresholdDegrees) {
+		if (!cameraTrackingState.autoBearing) {
+			smoothedCameraBearing = bearing;
+		} else if (getBearingDelta(bearing, targetBearing) >= cameraBearingUpdateThresholdDegrees) {
 			smoothedCameraBearing = interpolateBearing(bearing, targetBearing, cameraBearingSmoothing);
 		} else {
 			smoothedCameraBearing = bearing;
 		}
 
-		map.jumpTo({
+		mapStore.easeTo({
 			center: smoothedCameraCenter,
-			bearing: smoothedCameraBearing
+			...(smoothedCameraBearing != null ? { bearing: smoothedCameraBearing } : {}),
+			duration: getRouteTransitionDuration()
 		});
 		syncTerrainCamera(new LngLat(lookAtPoint.lng, lookAtPoint.lat));
 	};
@@ -521,8 +560,11 @@
 		const computedBearing =
 			currentPoint.bearing ??
 			(targetPoint ? getBearingBetweenPoints(cameraPoint, targetPoint) : fallbackBearing);
+		const targetCameraBearing = cameraTrackingState.autoBearing
+			? (computedBearing ?? fallbackBearing)
+			: fallbackBearing;
 
-		updateCameraTracking(cameraPoint, targetPoint, computedBearing ?? fallbackBearing);
+		updateCameraTracking(cameraPoint, targetPoint, targetCameraBearing);
 		return true;
 	};
 
@@ -533,13 +575,16 @@
 		if (feature.geometry.type === 'Point') {
 			const coordinates = feature.geometry.coordinates;
 			const lngLat = new LngLat(coordinates[0], coordinates[1]);
-			const bearing = Number(
+			const rawBearing = Number(
 				(feature.properties as Record<string, unknown> | null | undefined)?.angle
 			);
-			mapStore.panTo(lngLat, {
-				duration: 500,
-				bearing: !Number.isNaN(bearing) ? bearing : getTrackingBearingBase()
-			});
+			const bearing =
+				cameraTrackingState.autoBearing && !Number.isNaN(rawBearing)
+					? rawBearing
+					: cameraTrackingState.autoBearing
+						? getTrackingBearingBase()
+						: null;
+			moveCameraToPoint({ lng: lngLat.lng, lat: lngLat.lat }, bearing);
 			syncTerrainCamera(lngLat);
 
 			return;
@@ -548,13 +593,16 @@
 		if (feature.geometry.type === 'MultiPoint' && feature.geometry.coordinates.length > 0) {
 			const [lng, lat] = feature.geometry.coordinates[0];
 			const lngLat = new LngLat(lng, lat);
-			const bearing = Number(
+			const rawBearing = Number(
 				(feature.properties as Record<string, unknown> | null | undefined)?.angle
 			);
-			mapStore.panTo(lngLat, {
-				duration: 500,
-				bearing: !Number.isNaN(bearing) ? bearing : getTrackingBearingBase()
-			});
+			const bearing =
+				cameraTrackingState.autoBearing && !Number.isNaN(rawBearing)
+					? rawBearing
+					: cameraTrackingState.autoBearing
+						? getTrackingBearingBase()
+						: null;
+			moveCameraToPoint({ lng: lngLat.lng, lat: lngLat.lat }, bearing);
 			syncTerrainCamera(lngLat);
 			return;
 		}
@@ -562,8 +610,8 @@
 		const bbox = turfBbox(feature) as [number, number, number, number];
 		mapStore.fitBounds(bbox, {
 			padding: 48,
-			duration: 800,
-			animate: true
+			duration: 0,
+			animate: false
 		});
 	};
 
@@ -615,6 +663,9 @@
 			};
 		}
 		singleStartFilterMode = temporalFilterState.mode === 'single_start';
+		cameraTrackingState = createDefaultTemporalCameraTrackingState();
+		cameraTrackingModeOverride = null;
+		cameraTrackingDurationMs = defaultCameraTrackingDurationMs;
 
 		restoredLayerId = layerEntry.id;
 	};
@@ -622,7 +673,9 @@
 	// UI と追跡状態を初期値へ戻す。
 	const resetTemporalFilter = () => {
 		stopPlayback();
-		cameraTracking = false;
+		cameraTrackingState = createDefaultTemporalCameraTrackingState();
+		cameraTrackingModeOverride = null;
+		cameraTrackingDurationMs = defaultCameraTrackingDurationMs;
 		lastTrackedTarget = null;
 		resetCameraTrackingState();
 		temporalFilterState = {
@@ -687,6 +740,7 @@
 				playbackLastTimestamp = timestamp;
 			}
 
+			let hasAdvancedFrame = false;
 			while (timestamp - playbackLastTimestamp >= playbackIntervalMs) {
 				playbackLastTimestamp += playbackIntervalMs;
 				if (temporalFilterState.endIndex >= temporalItems.length - 1) {
@@ -702,18 +756,23 @@
 					return;
 				}
 				temporalFilterState.endIndex += 1;
+				hasAdvancedFrame = true;
 				if (isSingleStartFilterMode) {
 					temporalFilterState.startIndex = temporalFilterState.endIndex;
 				}
 			}
 
-			if (cameraTracking) {
-				const segmentProgress = clamp(
-					(timestamp - playbackLastTimestamp) / Math.max(playbackIntervalMs, 1),
-					0,
-					1
-				);
-				trackCameraAlongRoute(temporalFilterState.endIndex, segmentProgress);
+			if (cameraTrackingState.enabled) {
+				if (isRouteTrackingMode) {
+					if (hasAdvancedFrame) {
+						trackCameraAlongRoute(temporalFilterState.endIndex, 0);
+					}
+				} else if (hasAdvancedFrame) {
+					const feature = getCurrentTemporalFeature();
+					if (feature) {
+						trackCameraToFeature(feature as Feature<AnyGeometry>);
+					}
+				}
 			}
 
 			if (temporalFilterState.endIndex >= temporalItems.length - 1) {
@@ -789,7 +848,7 @@
 	$effect(() => {
 		if (
 			!canTrackCamera ||
-			!cameraTracking ||
+			!cameraTrackingState.enabled ||
 			!temporalFilterState.enabled ||
 			temporalItems.length === 0
 		) {
@@ -805,7 +864,7 @@
 		if (lastTrackedTarget === nextTrackedTarget) return;
 		lastTrackedTarget = nextTrackedTarget;
 		if (isPlaying) return;
-		if (isTrackPointCacheValid() && trackCameraAlongRoute(activeTemporalIndex, 0)) {
+		if (isRouteTrackingMode && trackCameraAlongRoute(activeTemporalIndex, 0)) {
 			return;
 		}
 		const feature = getCurrentTemporalFeature();
@@ -835,102 +894,170 @@
 		bind:value={showDimensionOption}
 	>
 		{#if temporalItems.length > 0}
-			<div class="flex flex-col">
+			<div class="flex flex-col w-full">
 				<Switch label="時間フィルターを有効化" bind:value={temporalFilterState.enabled} />
 				{#if temporalFilterState.enabled}
-					{#if canTrackCamera}
-						<Switch label="カメラ追跡" bind:value={cameraTracking} />
-					{/if}
-					<Switch label="開始時刻のみで絞る" bind:value={singleStartFilterMode} />
-					{#if !isSingleStartFilterMode}
-						<RangeSliderDouble
-							label="時間範囲"
-							lowerLabel="開始"
-							upperLabel="終了"
-							lowerDisplayValue={temporalItems[temporalFilterState.startIndex]?.label}
-							upperDisplayValue={temporalItems[temporalFilterState.endIndex]?.label}
-							min={0}
-							max={Math.max(temporalItems.length - 1, 0)}
-							step={1}
-							bind:lowerValue={temporalFilterState.startIndex}
-							bind:upperValue={temporalFilterState.endIndex}
-							onChange={handleRangeInput}
-							disabled={!temporalFilterState.enabled}
-						/>
-					{:else}
-						<RangeSlider
-							label="開始"
-							min={0}
-							max={Math.max(temporalItems.length - 1, 0)}
-							step={1}
-							isInt={true}
-							showValue={false}
-							bind:value={temporalFilterState.startIndex}
-							onInput={handleStartInput}
-							disabled={!temporalFilterState.enabled}
-						/>
-						<div class="mt-[-8px] pb-4 text-right text-sm text-white">
-							{temporalItems[temporalFilterState.startIndex]?.label}
-						</div>
-					{/if}
-
-					<div class="mt-4 flex items-center justify-center gap-3">
-						<button
-							onclick={togglePlayback}
-							class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white select-none hover:bg-white/10"
-							aria-label={isPlaying ? '停止' : '再生'}
-							disabled={temporalItems.length === 0}
-						>
-							{#if isPlaying}
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-									<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-								</svg>
-								停止
-							{:else}
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-									<path fill="currentColor" d="M8 5v14l11-7z" />
-								</svg>
-								再生
+					<div transition:slide class="flex flex-col w-full">
+						{#if canTrackCamera}
+							<Switch label="カメラ追跡" bind:value={cameraTrackingState.enabled} />
+							{#if cameraTrackingState.enabled}
+								<div class="mt-2 rounded-lg bg-black/20 p-3">
+									<div class="mb-2 text-xs text-white/70">追跡方法</div>
+									<div class="flex gap-2">
+										<button
+											type="button"
+											class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${activeCameraTrackingMode ===
+											'feature'
+												? 'bg-main-accent text-white'
+												: 'bg-sub text-white hover:bg-white/10'}`}
+											aria-pressed={activeCameraTrackingMode === 'feature'}
+											onclick={() => {
+												cameraTrackingModeOverride = 'feature';
+												resetCameraTrackingState();
+												lastTrackedTarget = null;
+											}}
+										>
+											点ごと
+										</button>
+										<button
+											type="button"
+											class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${activeCameraTrackingMode ===
+											'route'
+												? 'bg-main-accent text-white'
+												: 'bg-sub text-white hover:bg-white/10'}`}
+											aria-pressed={activeCameraTrackingMode === 'route'}
+											onclick={() => {
+												cameraTrackingModeOverride = 'route';
+												resetCameraTrackingState();
+												lastTrackedTarget = null;
+											}}
+										>
+											ルート
+										</button>
+									</div>
+									<div class="mb-2 text-xs text-white/70">
+										{isRouteTrackingMode
+											? 'ルート追跡で移動します。'
+											: '各時点の地物へ移動します。'}
+									</div>
+									<RangeSlider
+										label="移動時間"
+										bind:value={cameraTrackingDurationMs}
+										min={80}
+										max={800}
+										step={10}
+										isInt={true}
+									/>
+									<div class="mt-[-8px] pb-2 text-right text-xs text-white/70">
+										短いほど速くなります
+									</div>
+									<div class="mt-3">
+										<Switch label="自動角度" bind:value={cameraTrackingState.autoBearing} />
+									</div>
+								</div>
 							{/if}
-						</button>
-						<button
-							type="button"
-							onclick={() => {
-								loopPlayback = !loopPlayback;
-							}}
-							class="flex shrink-0 cursor-pointer items-center justify-center gap-1 rounded-full px-4 py-1 text-sm text-white transition-colors duration-150 select-none {loopPlayback
-								? 'bg-main-accent'
-								: 'bg-sub hover:bg-white/10'}"
-							aria-pressed={loopPlayback}
-						>
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-								<path
-									fill="currentColor"
-									d="M17 17H7v-3l-4 4l4 4v-3h12a2 2 0 0 0 2-2v-4h-2zm0-10H5a2 2 0 0 0-2 2v4h2V9h10v3l4-4l-4-4z"
-								/>
-							</svg>
-							ループ
-						</button>
-					</div>
+						{/if}
+						<Switch label="開始時刻のみで絞る" bind:value={singleStartFilterMode} />
+						{#if !isSingleStartFilterMode}
+							<RangeSliderDouble
+								label="時間範囲"
+								lowerLabel="開始"
+								upperLabel="終了"
+								lowerDisplayValue={temporalItems[temporalFilterState.startIndex]?.label}
+								upperDisplayValue={temporalItems[temporalFilterState.endIndex]?.label}
+								min={0}
+								max={Math.max(temporalItems.length - 1, 0)}
+								step={1}
+								bind:lowerValue={temporalFilterState.startIndex}
+								bind:upperValue={temporalFilterState.endIndex}
+								onChange={handleRangeInput}
+								disabled={!temporalFilterState.enabled}
+							/>
+						{:else}
+							<RangeSlider
+								label="開始"
+								min={0}
+								max={Math.max(temporalItems.length - 1, 0)}
+								step={1}
+								isInt={true}
+								showValue={false}
+								bind:value={temporalFilterState.startIndex}
+								onInput={handleStartInput}
+								disabled={!temporalFilterState.enabled}
+							/>
+							<div class="mt-[-8px] pb-4 text-right text-sm text-white">
+								{temporalItems[temporalFilterState.startIndex]?.label}
+							</div>
+						{/if}
 
-					<div class="m-4">
-						<RangeSlider
-							label="再生速度"
-							min={1}
-							max={2000}
-							step={1}
-							isInt={true}
-							bind:value={playbackSpeed}
-						/>
-					</div>
+						<div class="mt-4 flex items-center justify-center gap-3">
+							<button
+								onclick={togglePlayback}
+								class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white select-none hover:bg-white/10"
+								aria-label={isPlaying ? '停止' : '再生'}
+								disabled={temporalItems.length === 0}
+							>
+								{#if isPlaying}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+									>
+										<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+									</svg>
+									停止
+								{:else}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+									>
+										<path fill="currentColor" d="M8 5v14l11-7z" />
+									</svg>
+									再生
+								{/if}
+							</button>
+							<button
+								type="button"
+								onclick={() => {
+									loopPlayback = !loopPlayback;
+								}}
+								class="flex shrink-0 cursor-pointer items-center justify-center gap-1 rounded-full px-4 py-1 text-sm text-white transition-colors duration-150 select-none {loopPlayback
+									? 'bg-main-accent'
+									: 'bg-sub hover:bg-white/10'}"
+								aria-pressed={loopPlayback}
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+									<path
+										fill="currentColor"
+										d="M17 17H7v-3l-4 4l4 4v-3h12a2 2 0 0 0 2-2v-4h-2zm0-10H5a2 2 0 0 0-2 2v4h2V9h10v3l4-4l-4-4z"
+									/>
+								</svg>
+								ループ
+							</button>
+						</div>
 
-					<div class="m-2 flex items-center justify-center">
-						<button
-							onclick={resetTemporalFilter}
-							class="c-btn-sub cursor-pointer p-3 text-sm select-none"
-						>
-							時間フィルターをリセット
-						</button>
+						<div class="m-4">
+							<RangeSlider
+								label="再生速度"
+								min={1}
+								max={2000}
+								step={1}
+								isInt={true}
+								bind:value={playbackSpeed}
+							/>
+						</div>
+
+						<div class="m-2 flex items-center justify-center">
+							<button
+								onclick={resetTemporalFilter}
+								class="c-btn-sub cursor-pointer p-3 text-sm select-none"
+							>
+								時間フィルターをリセット
+							</button>
+						</div>
 					</div>
 				{/if}
 			</div>

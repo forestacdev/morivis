@@ -467,7 +467,8 @@ const createEarthquakePointEntry = (
 				labels: temporalItems.map((item) => item.label)
 			},
 			behaviors: [{ type: 'filter', key: 'time' }],
-			items: temporalItems
+			items: temporalItems,
+			cameraTrackingMode: 'feature'
 		};
 		entry.properties.attributeView.timeKey = 'time';
 	}

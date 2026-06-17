@@ -110,10 +110,13 @@ export interface VectorTemporalItem {
 	label: string;
 }
 
+export type VectorTemporalCameraTrackingMode = 'feature' | 'route';
+
 export interface VectorTemporal {
 	dimension: SharedDiscreteDimension;
 	behaviors: TemporalBehavior[];
 	items?: VectorTemporalItem[];
+	cameraTrackingMode?: VectorTemporalCameraTrackingMode;
 }
 
 export const getVectorTemporalItems = (temporal?: VectorTemporal): VectorTemporalItem[] => {
