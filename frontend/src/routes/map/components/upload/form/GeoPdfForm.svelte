@@ -27,6 +27,7 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
+	import { rasterizeSvgFile } from '$routes/map/utils/formats/svg';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
@@ -78,6 +79,11 @@
 		return /\.pdf$/i.test(sourceFile.name);
 	});
 
+	const isSvgFile = $derived.by(() => {
+		if (!sourceFile) return false;
+		return /\.svg$/i.test(sourceFile.name);
+	});
+
 	// ファイルドロップ時: 解析
 	$effect(() => {
 		const file = sourceFile;
@@ -86,12 +92,48 @@
 				entryName = file.name.replace(/\.[^.]+$/, '');
 				if (isPdfFile) {
 					analyzePdf(file);
+				} else if (isSvgFile) {
+					redirectSvgToGeoRef(file);
 				} else {
 					redirectImageToGeoRef(file);
 				}
 			});
 		}
 	});
+
+	const redirectSvgToGeoRef = async (file: File) => {
+		if (analyzing) return;
+		analyzing = true;
+		isProcessing.set(true);
+
+		try {
+			const { width, height, bands, ranges, pngFile } = await rasterizeSvgFile(file);
+			const id = `geotiff_${crypto.randomUUID()}`;
+
+			GeoTiffCache.setSize(id, width, height);
+			GeoTiffCache.setNumBands(id, 3);
+
+			geoRefData = createRasterGeoRefData({
+				entryId: id,
+				entryName,
+				parsedBands: bands,
+				parsedNodata: null,
+				dataRanges: ranges,
+				imageWidth: width,
+				imageHeight: height,
+				imageFile: pngFile,
+				registrationMode: 'raster'
+			});
+			transformOptionMode = 'georef';
+			showDialogType = null;
+		} catch (e) {
+			showNotification(e instanceof Error ? e.message : 'SVGの解析に失敗しました', 'error');
+			console.error(e);
+		} finally {
+			isProcessing.set(false);
+			analyzing = false;
+		}
+	};
 
 	const redirectImageToGeoRef = async (file: File) => {
 		if (analyzing) return;

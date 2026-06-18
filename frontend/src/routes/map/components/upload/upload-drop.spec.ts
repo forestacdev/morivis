@@ -91,6 +91,16 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('単一の SVG は geopdf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('plan.svg', '<svg></svg>', 'image/svg+xml'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'geopdf',
+			dropFiles: undefined
+		});
+	});
+
 	it('Location History JSON は locationhistory 判定になる', async () => {
 		vi.mocked(isLocationHistoryFile).mockResolvedValue(true);
 
@@ -108,7 +118,9 @@ describe('resolveDroppedFiles', () => {
 	it('MF-JSON は mfjson 判定になる', async () => {
 		vi.mocked(isMfJsonFile).mockResolvedValue(true);
 
-		const result = await resolveDroppedFiles(createFile('track.geojson', '{}', 'application/json'));
+		const result = await resolveDroppedFiles(
+			createFile('track.geojson', '{}', 'application/json')
+		);
 
 		expect(result).toEqual({
 			type: 'dialog',
@@ -227,7 +239,9 @@ describe('resolveDroppedFiles', () => {
 	});
 
 	it('画像本体と sidecar の名前が一致しないと組み合わせ不一致エラーになる', async () => {
-		vi.mocked(isRasterImageSidecarFile).mockImplementation((file) => file.name.endsWith('.tfw'));
+		vi.mocked(isRasterImageSidecarFile).mockImplementation((file) =>
+			file.name.endsWith('.tfw')
+		);
 		vi.mocked(isRasterImageMainFile).mockImplementation((file) => file.name.endsWith('.tif'));
 
 		const result = await resolveDroppedFiles([

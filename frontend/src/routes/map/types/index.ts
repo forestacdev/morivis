@@ -313,6 +313,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.png', '.jpg', '.jpeg', '.webp']
 	},
 	{
+		label: 'SVG',
+		description:
+			'ベクター図形をXMLで記述した画像形式です。図面やイラストを画像としてジオリファレンスして重ねるときに使います。',
+		extensions: ['.svg']
+	},
+	{
 		label: 'GeoPDF',
 		description:
 			'位置情報を持つPDF地図です。紙地図由来のラスタやベクターを読み込むときに使います。',
