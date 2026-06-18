@@ -1,1 +1,0 @@
-import{h as o,d as l,e as v,E as y,g as T,i as f,j as p,B as g,k as i,H as m,l as A}from"./DWVVpTeX.js";function R(d,_,e){var s;o&&(s=A,l());var r=new g(d);v(()=>{var a=_()??null;if(o){var h=T(s),c=h===m,u=a!==null;if(c!==u){var t=f();p(t),r.anchor=t,i(!1),r.ensure(a,a&&(n=>e(n,a))),i(!0);return}}r.ensure(a,a&&(n=>e(n,a)))},y)}export{R as c};

@@ -1,0 +1,1 @@
+const f=(l,c,h)=>{const t=l.getCenter(),s=l.getBounds(),r=s.getEast()-s.getWest(),i=s.getNorth()-s.getSouth(),g=Math.max(Math.cos(t.lat*Math.PI/180),1e-6),a=c/h,o=Math.min(r,i)*.3;let e,n;return a>=1?(e=o/2/g,n=o/(2*a)):(e=o*a/2/g,n=o/2),[[t.lng-e,t.lat+n],[t.lng+e,t.lat+n],[t.lng+e,t.lat-n],[t.lng-e,t.lat-n]]};export{f as g};
