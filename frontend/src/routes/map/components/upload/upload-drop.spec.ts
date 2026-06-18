@@ -91,12 +91,12 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
-	it('単一の SVG は geopdf ダイアログ判定になる', async () => {
+	it('単一の SVG は svg ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(createFile('plan.svg', '<svg></svg>', 'image/svg+xml'));
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'geopdf',
+			dialogType: 'svg',
 			dropFiles: undefined
 		});
 	});

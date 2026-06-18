@@ -107,6 +107,7 @@ export type DialogType =
 	| 'topojson'
 	| 'landxml'
 	| 'stac'
+	| 'svg'
 	| 'geoparquet'
 	| 'geoarrow'
 	| 'mif'

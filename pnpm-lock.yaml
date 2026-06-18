@@ -333,6 +333,9 @@ importers:
       svelte-tiny-virtual-list:
         specifier: ^2.1.2
         version: 2.1.2
+      svg-pathdata:
+        specifier: ^9.0.0
+        version: 9.0.0
       terra-draw:
         specifier: ^1.0.0
         version: 1.20.0
@@ -6033,6 +6036,10 @@ packages:
   svg-pathdata@6.0.3:
     resolution: {integrity: sha512-qsjeeq5YjBZ5eMdFuUa4ZosMLxgr5RZ+F+Y1OrDhuOCEInRMA3x74XdBtggJcj9kOeInz0WE+LgCPDkZFlBYJw==}
     engines: {node: '>=12.0.0'}
+
+  svg-pathdata@9.0.0:
+    resolution: {integrity: sha512-h9FuqmNsgDKq2hQBqTMOWjZwqdZOnWijZmcg6FL4iSmH6VvRnobhHrBQSdOiP0W9nwgv0qiW5vQ3//Arrmp19g==}
+    engines: {node: '>=24.14.0'}
 
   sweepline-intersections@1.5.0:
     resolution: {integrity: sha512-AoVmx72QHpKtItPu72TzFL+kcYjd67BPLDoR0LarIk+xyaRg+pDTMFXndIEvZf9xEKnJv6JdhgRMnocoG0D3AQ==}
@@ -12755,6 +12762,8 @@ snapshots:
 
   svg-pathdata@6.0.3:
     optional: true
+
+  svg-pathdata@9.0.0: {}
 
   sweepline-intersections@1.5.0:
     dependencies:

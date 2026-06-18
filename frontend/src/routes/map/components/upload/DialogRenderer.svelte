@@ -84,6 +84,15 @@
 		bind:pendingZoneGeoRefData
 		{selectedEpsgCode}
 	/>
+{:else if profile === 'vector-georef'}
+	<FormComponent
+		bind:showDataEntry
+		bind:showDialogType
+		bind:dropFile
+		bind:transformOptionMode
+		bind:focusBbox
+		bind:geoRefData
+	/>
 {:else if profile === 'raster-georef'}
 	<FormComponent
 		bind:showDataEntry

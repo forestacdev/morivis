@@ -36,6 +36,7 @@ import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.sv
 import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 import StacForm from '$routes/map/components/upload/form/StacForm.svelte';
+import SvgForm from '$routes/map/components/upload/form/SvgForm.svelte';
 import TcxForm from '$routes/map/components/upload/form/TcxForm.svelte';
 import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 import TileUrlTypeForm from '$routes/map/components/upload/form/TileUrlTypeForm.svelte';
@@ -62,7 +63,8 @@ export type DialogProfile =
 	| 'remote-3dtiles'
 	| 'remote-pmtiles'
 	| 'wcs'
-	| 'tile-url-type';
+	| 'tile-url-type'
+	| 'vector-georef';
 
 export interface DialogDefinition {
 	component: Component<any>;
@@ -95,6 +97,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	geophoto: { component: GeoPhotoForm, profile: 'drop-file' },
 	geopdf: { component: GeoPdfForm, profile: 'raster-georef' },
 	geotiff: { component: GeoTiffForm, profile: 'pointcloud-georef' },
+	svg: { component: SvgForm, profile: 'vector-georef' },
 	vector: { component: VectorForm, profile: 'remote-vector' },
 	geojson: { component: GeoJsonForm, profile: 'vector-zone-georef' },
 	wkt: { component: WktForm, profile: 'vector-zone-georef' },

@@ -47,8 +47,9 @@
 
 	interface TemporalCameraTrackingState {
 		enabled: boolean;
-		autoBearing: boolean;
 	}
+
+	type TemporalCameraTrackingUiMode = 'feature' | 'route' | 'route_auto_bearing';
 
 	const defaultCameraTrackingDurationMs = 220;
 
@@ -62,8 +63,7 @@
 	});
 
 	const createDefaultTemporalCameraTrackingState = (): TemporalCameraTrackingState => ({
-		enabled: false,
-		autoBearing: false
+		enabled: false
 	});
 
 	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
@@ -72,7 +72,7 @@
 	let cameraTrackingState = $state<TemporalCameraTrackingState>(
 		createDefaultTemporalCameraTrackingState()
 	);
-	let cameraTrackingModeOverride = $state<VectorTemporalCameraTrackingMode | null>(null);
+	let cameraTrackingModeOverride = $state<TemporalCameraTrackingUiMode | null>(null);
 	let cameraTrackingDurationMs = $state(defaultCameraTrackingDurationMs);
 	let isPlaying = $state(false);
 	let loopPlayback = $state(false);
@@ -124,10 +124,19 @@
 	const defaultCameraTrackingMode = $derived<VectorTemporalCameraTrackingMode>(
 		layerEntry.properties.temporal?.cameraTrackingMode ?? 'feature'
 	);
-	const activeCameraTrackingMode = $derived<VectorTemporalCameraTrackingMode>(
-		cameraTrackingModeOverride ?? defaultCameraTrackingMode
+	const defaultCameraTrackingUiMode = $derived<TemporalCameraTrackingUiMode>(
+		defaultCameraTrackingMode === 'route' ? 'route' : 'feature'
 	);
-	const isRouteTrackingMode = $derived(activeCameraTrackingMode === 'route');
+	const activeCameraTrackingMode = $derived<TemporalCameraTrackingUiMode>(
+		cameraTrackingModeOverride ?? defaultCameraTrackingUiMode
+	);
+	const activeCameraTrackingBaseMode = $derived<VectorTemporalCameraTrackingMode>(
+		activeCameraTrackingMode === 'feature' ? 'feature' : 'route'
+	);
+	const shouldAutoBearing = $derived(activeCameraTrackingMode === 'route_auto_bearing');
+	const isRouteTrackingMode = $derived(
+		activeCameraTrackingBaseMode === 'route'
+	);
 	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 	// 参考:
 	// Mapbox cinematic route animation
@@ -499,7 +508,7 @@
 			lerp(center.lng, cameraPoint.lng, cameraCenterSmoothing),
 			lerp(center.lat, cameraPoint.lat, cameraCenterSmoothing)
 		);
-		if (!cameraTrackingState.autoBearing) {
+		if (!shouldAutoBearing) {
 			smoothedCameraBearing = bearing;
 		} else if (getBearingDelta(bearing, targetBearing) >= cameraBearingUpdateThresholdDegrees) {
 			smoothedCameraBearing = interpolateBearing(bearing, targetBearing, cameraBearingSmoothing);
@@ -558,7 +567,7 @@
 		const computedBearing =
 			currentPoint.bearing ??
 			(targetPoint ? getBearingBetweenPoints(cameraPoint, targetPoint) : fallbackBearing);
-		const targetCameraBearing = cameraTrackingState.autoBearing
+		const targetCameraBearing = shouldAutoBearing
 			? (computedBearing ?? fallbackBearing)
 			: fallbackBearing;
 
@@ -577,9 +586,9 @@
 				(feature.properties as Record<string, unknown> | null | undefined)?.angle
 			);
 			const bearing =
-				cameraTrackingState.autoBearing && !Number.isNaN(rawBearing)
+				shouldAutoBearing && !Number.isNaN(rawBearing)
 					? rawBearing
-					: cameraTrackingState.autoBearing
+					: shouldAutoBearing
 						? getTrackingBearingBase()
 						: null;
 			moveCameraToPoint({ lng: lngLat.lng, lat: lngLat.lat }, bearing);
@@ -595,9 +604,9 @@
 				(feature.properties as Record<string, unknown> | null | undefined)?.angle
 			);
 			const bearing =
-				cameraTrackingState.autoBearing && !Number.isNaN(rawBearing)
+				shouldAutoBearing && !Number.isNaN(rawBearing)
 					? rawBearing
-					: cameraTrackingState.autoBearing
+					: shouldAutoBearing
 						? getTrackingBearingBase()
 						: null;
 			moveCameraToPoint({ lng: lngLat.lng, lat: lngLat.lat }, bearing);
@@ -934,9 +943,27 @@
 										>
 											ルート
 										</button>
+										<button
+											type="button"
+											class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${
+												activeCameraTrackingMode === 'route_auto_bearing'
+													? 'bg-main-accent text-white'
+													: 'bg-sub text-white hover:bg-white/10'
+											}`}
+											aria-pressed={activeCameraTrackingMode === 'route_auto_bearing'}
+											onclick={() => {
+												cameraTrackingModeOverride = 'route_auto_bearing';
+												resetCameraTrackingState();
+												lastTrackedTarget = null;
+											}}
+										>
+											自動角度ルート
+										</button>
 									</div>
 									<div class="mb-2 text-xs text-white/70">
-										{isRouteTrackingMode
+										{activeCameraTrackingMode === 'route_auto_bearing'
+											? 'ルート追跡しながら進行方向へ自動で角度を合わせます。'
+											: isRouteTrackingMode
 											? 'ルート追跡で移動します。'
 											: '各時点の地物へ移動します。'}
 									</div>
@@ -950,9 +977,6 @@
 									/>
 									<div class="mt-[-8px] pb-2 text-right text-xs text-white/70">
 										短いほど速くなります
-									</div>
-									<div class="mt-3">
-										<Switch label="自動角度" bind:value={cameraTrackingState.autoBearing} />
 									</div>
 								</div>
 							{/if}
@@ -1050,14 +1074,14 @@
 							/>
 						</div>
 
-						<div class="m-2 flex items-center justify-center">
+						<!-- <div class="m-2 flex items-center justify-center">
 							<button
 								onclick={resetTemporalFilter}
 								class="c-btn-sub cursor-pointer p-3 text-sm select-none"
 							>
 								時間フィルターをリセット
 							</button>
-						</div>
+						</div> -->
 					</div>
 				{/if}
 			</div>

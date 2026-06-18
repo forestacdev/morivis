@@ -177,7 +177,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	h5: 'hdf5',
 	tiff: 'geotiff',
 	tif: 'geotiff',
-	svg: 'geopdf',
+	svg: 'svg',
 	png: 'geopdf',
 	webp: 'geopdf',
 	pdf: 'geopdf',
