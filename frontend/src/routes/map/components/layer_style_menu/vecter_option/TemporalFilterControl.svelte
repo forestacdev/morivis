@@ -134,9 +134,7 @@
 		activeCameraTrackingMode === 'feature' ? 'feature' : 'route'
 	);
 	const shouldAutoBearing = $derived(activeCameraTrackingMode === 'route_auto_bearing');
-	const isRouteTrackingMode = $derived(
-		activeCameraTrackingBaseMode === 'route'
-	);
+	const isRouteTrackingMode = $derived(activeCameraTrackingBaseMode === 'route');
 	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 	// 参考:
 	// Mapbox cinematic route animation
@@ -964,8 +962,8 @@
 										{activeCameraTrackingMode === 'route_auto_bearing'
 											? 'ルート追跡しながら進行方向へ自動で角度を合わせます。'
 											: isRouteTrackingMode
-											? 'ルート追跡で移動します。'
-											: '各時点の地物へ移動します。'}
+												? 'ルート追跡で移動します。'
+												: '各時点の地物へ移動します。'}
 									</div>
 									<RangeSlider
 										label="移動時間"

@@ -30,7 +30,7 @@ describe('parseSvgDimensions', () => {
 		);
 	});
 
-	it('line と rect を FeatureCollection に変換できる', async () => {
+	it('line と rect を LineString の FeatureCollection に変換できる', async () => {
 		const geojson = await svgTextToFeatureCollection(`
 			<svg viewBox="0 0 100 50">
 				<line x1="0" y1="0" x2="100" y2="50" stroke="#000" />
@@ -40,10 +40,10 @@ describe('parseSvgDimensions', () => {
 
 		expect(geojson.features).toHaveLength(2);
 		expect(geojson.features[0]?.geometry.type).toBe('LineString');
-		expect(geojson.features[1]?.geometry.type).toBe('Polygon');
+		expect(geojson.features[1]?.geometry.type).toBe('LineString');
 	});
 
-	it('閉じた path を Polygon に変換できる', async () => {
+	it('閉じた path を閉じた LineString に変換できる', async () => {
 		const geojson = await svgTextToFeatureCollection(`
 			<svg viewBox="0 0 100 100">
 				<path d="M 10 10 L 90 10 L 90 90 L 10 90 Z" />
@@ -51,7 +51,9 @@ describe('parseSvgDimensions', () => {
 		`);
 
 		expect(geojson.features).toHaveLength(1);
-		expect(geojson.features[0]?.geometry.type).toBe('Polygon');
+		expect(geojson.features[0]?.geometry.type).toBe('LineString');
+		const coordinates = geojson.features[0]?.geometry.coordinates as [number, number][];
+		expect(coordinates[0]).toEqual(coordinates[coordinates.length - 1]);
 	});
 
 	it('cubic curve を含む path を LineString に近似できる', async () => {
@@ -63,7 +65,8 @@ describe('parseSvgDimensions', () => {
 
 		expect(geojson.features).toHaveLength(1);
 		expect(geojson.features[0]?.geometry.type).toBe('LineString');
-		expect((geojson.features[0]?.geometry.coordinates as [number, number][]).length).toBeGreaterThan(2);
+		expect((geojson.features[0]?.geometry.coordinates as [number, number][]).length)
+			.toBeGreaterThan(2);
 	});
 
 	it('group transform を累積して反映できる', async () => {
@@ -75,9 +78,9 @@ describe('parseSvgDimensions', () => {
 			</svg>
 		`);
 
-		const polygon = geojson.features[0]?.geometry.coordinates as [number, number][][];
+		const line = geojson.features[0]?.geometry.coordinates as [number, number][];
 		expect(geojson.features).toHaveLength(1);
-		expect(polygon[0]?.[0]).toEqual([10, 80]);
+		expect(line[0]).toEqual([10, 80]);
 	});
 
 	it('transform は SVG の記述順どおりに適用する', async () => {
@@ -87,9 +90,9 @@ describe('parseSvgDimensions', () => {
 			</svg>
 		`);
 
-		const polygon = geojson.features[0]?.geometry.coordinates as [number, number][][];
+		const line = geojson.features[0]?.geometry.coordinates as [number, number][];
 		expect(geojson.features).toHaveLength(1);
-		expect(polygon[0]?.[0]).toEqual([22, 90]);
+		expect(line[0]).toEqual([22, 90]);
 	});
 
 	it('marker 内の図形は実レイヤーとして取り込まない', async () => {

@@ -1,7 +1,7 @@
-import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
-import { getMinMax, type RasterBands } from '$routes/map/utils/formats/geotiff';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry, GeometryType } from '$routes/map/types/geometry';
+import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
+import { getMinMax, type RasterBands } from '$routes/map/utils/formats/geotiff';
 import { SVGPathData, SVGPathDataTransformer } from 'svg-pathdata';
 
 const SVG_DIMENSION_PATTERN = /(?:^|\s)(width|height)\s*=\s*['"]([^'"]+)['"]/gi;
@@ -59,7 +59,7 @@ const NON_RENDERABLE_CONTAINER_TAGS = new Set([
 	'pattern'
 ]);
 
-export const parseSvgDimensions = (svgText: string): { width: number; height: number } => {
+export const parseSvgDimensions = (svgText: string): { width: number; height: number; } => {
 	const sizeMap: Partial<Record<'width' | 'height', number>> = {};
 
 	for (const match of svgText.matchAll(SVG_DIMENSION_PATTERN)) {
@@ -86,7 +86,10 @@ export const parseSvgDimensions = (svgText: string): { width: number; height: nu
 		const width = values[2];
 		const height = values[3];
 
-		if (values.length === 4 && Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+		if (
+			values.length === 4 && Number.isFinite(width) && Number.isFinite(height) && width > 0
+			&& height > 0
+		) {
 			return {
 				width: Math.round(width),
 				height: Math.round(height)
@@ -404,10 +407,7 @@ const parsePathElement = (
 		}
 
 		if (closed) {
-			const ring = ensureClosedRing(currentPath);
-			if (ring.length >= 4) {
-				pushFeature(featureCollection, 'Polygon', [ring], properties);
-			}
+			pushFeature(featureCollection, 'LineString', ensureClosedRing(currentPath), properties);
 		} else {
 			pushFeature(featureCollection, 'LineString', currentPath, properties);
 		}
@@ -430,13 +430,11 @@ const parsePathElement = (
 		for (let i = 1; i <= segments; i += 1) {
 			const t = i / segments;
 			const mt = 1 - t;
-			const x =
-				mt * mt * mt * x0
+			const x = mt * mt * mt * x0
 				+ 3 * mt * mt * t * x1
 				+ 3 * mt * t * t * x2
 				+ t * t * t * x3;
-			const y =
-				mt * mt * mt * y0
+			const y = mt * mt * mt * y0
 				+ 3 * mt * mt * t * y1
 				+ 3 * mt * t * t * y2
 				+ t * t * t * y3;
@@ -540,7 +538,7 @@ const parsePolygonElement = (
 	);
 	if (coordinates.length < 4) return;
 
-	pushFeature(featureCollection, 'Polygon', [coordinates], readStyleProperties(element));
+	pushFeature(featureCollection, 'LineString', coordinates, readStyleProperties(element));
 };
 
 const parseRectElement = (
@@ -562,7 +560,7 @@ const parseRectElement = (
 		toMapCoordinate(viewport, matrix, x, y + height)
 	]);
 
-	pushFeature(featureCollection, 'Polygon', [coordinates], readStyleProperties(element));
+	pushFeature(featureCollection, 'LineString', coordinates, readStyleProperties(element));
 };
 
 const parseCircleElement = (
@@ -578,8 +576,8 @@ const parseCircleElement = (
 
 	pushFeature(
 		featureCollection,
-		'Polygon',
-		[approximateEllipse(viewport, matrix, cx, cy, radius, radius)],
+		'LineString',
+		approximateEllipse(viewport, matrix, cx, cy, radius, radius),
 		readStyleProperties(element)
 	);
 };
@@ -598,8 +596,8 @@ const parseEllipseElement = (
 
 	pushFeature(
 		featureCollection,
-		'Polygon',
-		[approximateEllipse(viewport, matrix, cx, cy, rx, ry)],
+		'LineString',
+		approximateEllipse(viewport, matrix, cx, cy, rx, ry),
 		readStyleProperties(element)
 	);
 };
@@ -630,7 +628,10 @@ export const svgTextToFeatureCollection = async (svgText: string): Promise<Featu
 			return;
 		}
 
-		const localMatrix = multiplyMatrix(parentMatrix, parseTransformAttribute(element.getAttribute('transform')));
+		const localMatrix = multiplyMatrix(
+			parentMatrix,
+			parseTransformAttribute(element.getAttribute('transform'))
+		);
 		const parser = elementParsers[element.tagName];
 		if (parser) {
 			parser(element, viewport, featureCollection, localMatrix);
@@ -713,7 +714,9 @@ export const rasterizeSvgFile = async (
 		const bands: RasterBands = [rBand, gBand, bBand];
 		const ranges = bands.map((band) => getMinMax(band, null));
 		const pngBlob = await canvasToPngBlob(canvas);
-		const pngFile = new File([pngBlob], file.name.replace(/\.svg$/i, '.png'), { type: 'image/png' });
+		const pngFile = new File([pngBlob], file.name.replace(/\.svg$/i, '.png'), {
+			type: 'image/png'
+		});
 
 		return {
 			width,

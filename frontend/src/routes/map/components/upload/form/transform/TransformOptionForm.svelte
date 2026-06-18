@@ -46,6 +46,7 @@
 		getGeoRefAspectRatio,
 		type GeoRefCornerKey
 	} from '$routes/map/utils/transform/georef/aspect-locked';
+	import { getDefaultGeoRefCorners } from '$routes/map/utils/transform/georef/default-corners';
 	import { debugLog } from '$routes/stores/debug';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -168,34 +169,10 @@
 	const initializeGeoRefCorners = (data: GeoRefData) => {
 		if (data.initialCorners) {
 			setCornerCoordinates(data.initialCorners);
-			fitToCurrentCorners(0);
 			return;
 		}
 
-		const center = map.getCenter();
-		const bounds = map.getBounds();
-		const viewWidth = bounds.getEast() - bounds.getWest();
-		const viewHeight = bounds.getNorth() - bounds.getSouth();
-		const cosLat = Math.cos((center.lat * Math.PI) / 180);
-		const aspect = data.imageWidth / data.imageHeight;
-		const size = Math.min(viewWidth, viewHeight) * 0.3;
-
-		let halfW: number;
-		let halfH: number;
-		if (aspect >= 1) {
-			halfW = size / 2 / cosLat;
-			halfH = size / (2 * aspect);
-		} else {
-			halfW = (size * aspect) / 2 / cosLat;
-			halfH = size / 2;
-		}
-
-		setCornerCoordinates([
-			[center.lng - halfW, center.lat + halfH],
-			[center.lng + halfW, center.lat + halfH],
-			[center.lng + halfW, center.lat - halfH],
-			[center.lng - halfW, center.lat - halfH]
-		]);
+		setCornerCoordinates(getDefaultGeoRefCorners(map, data.imageWidth, data.imageHeight));
 	};
 
 	const resetZone = () => {

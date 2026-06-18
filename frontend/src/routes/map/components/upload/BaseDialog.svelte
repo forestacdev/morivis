@@ -69,7 +69,7 @@
 {#if activeDialogDefinition}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 {isTransformOptionVisible
+		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 backdrop-blur-[3px] {isTransformOptionVisible
 			? 'pointer-events-none opacity-0'
 			: ''}"
 	>

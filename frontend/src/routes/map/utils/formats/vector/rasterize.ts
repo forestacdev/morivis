@@ -213,7 +213,7 @@ export const featureCollectionToGeoRefData = async ({
 		imageFile,
 		previewImageUrl,
 		sourceFeatureCollectionId: entryId,
-		initialCorners: [
+		sourceCorners: [
 			[bbox[0], bbox[3]],
 			[bbox[2], bbox[3]],
 			[bbox[2], bbox[1]],

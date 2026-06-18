@@ -83,7 +83,7 @@
 	<!-- 背景のオーバーレイ -->
 	<div
 		transition:fade={{ duration: 300 }}
-		class="absolute top-0 left-0 z-30 h-full w-full bg-black/50 max-lg:hidden"
+		class="absolute top-0 left-0 z-30 h-full w-full bg-black/50 max-lg:hidden backdrop-blur-[3px]"
 		role="button"
 		tabindex="0"
 		onclick={() => showOtherMenu.set(false)}

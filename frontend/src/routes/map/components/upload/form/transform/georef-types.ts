@@ -46,6 +46,7 @@ export interface GeoRefData {
 	imageFile: File;
 	previewImageUrl?: string;
 	initialCorners?: GeoRefCorners;
+	sourceCorners?: GeoRefCorners;
 	sourceFeatureCollectionId?: string;
 	registrationMode: RasterRegistrationMode;
 	allowRegistrationModeChange?: boolean;

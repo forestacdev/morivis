@@ -92,7 +92,9 @@ describe('resolveDroppedFiles', () => {
 	});
 
 	it('単一の SVG は svg ダイアログ判定になる', async () => {
-		const result = await resolveDroppedFiles(createFile('plan.svg', '<svg></svg>', 'image/svg+xml'));
+		const result = await resolveDroppedFiles(
+			createFile('plan.svg', '<svg></svg>', 'image/svg+xml')
+		);
 
 		expect(result).toEqual({
 			type: 'dialog',

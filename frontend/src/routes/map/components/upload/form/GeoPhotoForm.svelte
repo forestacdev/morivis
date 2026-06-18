@@ -102,6 +102,8 @@
 					show: true
 				};
 
+				pointEntry.style.opacity = 1;
+
 				showDataEntry = entry;
 				showDialogType = null;
 				dropFile = null;

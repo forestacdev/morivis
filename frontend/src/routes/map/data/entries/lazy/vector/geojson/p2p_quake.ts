@@ -7,7 +7,7 @@ import {
 import type { MorivisLayerEntryCatalogItem } from '$routes/map/data/types';
 
 const config: QuakePointConfig = {
-	id: '!p2p_quake',
+	id: 'p2p_quake',
 	name: '地震情報 震源点',
 	description:
 		'地震情報 API の履歴から震源点を表したデータ。発生時刻や最大震度、マグニチュードを確認する際に利用できる。',

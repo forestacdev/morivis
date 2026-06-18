@@ -280,7 +280,7 @@
 				`+page finalizeGeoRefEntry開始: id=${data.entryId}, mode=${data.registrationMode}, size=${data.imageWidth}x${data.imageHeight}`
 			);
 
-			if (data.sourceType === 'vector' && data.sourceFeatureCollectionId && data.initialCorners) {
+			if (data.sourceType === 'vector' && data.sourceFeatureCollectionId && data.sourceCorners) {
 				const sourceFeatureCollection = GeoRefVectorSourceCache.get(data.sourceFeatureCollectionId);
 				if (!sourceFeatureCollection) {
 					throw new Error('GeoRefベクターの元データが見つかりません');
@@ -289,7 +289,7 @@
 				const plainCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
 				const warpedGeojson = await warpGeoJSONByCornersParallel(
 					sourceFeatureCollection,
-					data.initialCorners,
+					data.sourceCorners,
 					plainCorners
 				);
 				const warpedType = geometryTypeToEntryType(warpedGeojson as AppFeatureCollection);
