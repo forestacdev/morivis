@@ -127,9 +127,7 @@
 	const activeCameraTrackingMode = $derived<VectorTemporalCameraTrackingMode>(
 		cameraTrackingModeOverride ?? defaultCameraTrackingMode
 	);
-	const isRouteTrackingMode = $derived(
-		activeCameraTrackingMode === 'route'
-	);
+	const isRouteTrackingMode = $derived(activeCameraTrackingMode === 'route');
 	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 	// 参考:
 	// Mapbox cinematic route animation
@@ -906,10 +904,11 @@
 									<div class="flex gap-2">
 										<button
 											type="button"
-											class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${activeCameraTrackingMode ===
-											'feature'
-												? 'bg-main-accent text-white'
-												: 'bg-sub text-white hover:bg-white/10'}`}
+											class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${
+												activeCameraTrackingMode === 'feature'
+													? 'bg-main-accent text-white'
+													: 'bg-sub text-white hover:bg-white/10'
+											}`}
 											aria-pressed={activeCameraTrackingMode === 'feature'}
 											onclick={() => {
 												cameraTrackingModeOverride = 'feature';
@@ -921,10 +920,11 @@
 										</button>
 										<button
 											type="button"
-											class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${activeCameraTrackingMode ===
-											'route'
-												? 'bg-main-accent text-white'
-												: 'bg-sub text-white hover:bg-white/10'}`}
+											class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${
+												activeCameraTrackingMode === 'route'
+													? 'bg-main-accent text-white'
+													: 'bg-sub text-white hover:bg-white/10'
+											}`}
 											aria-pressed={activeCameraTrackingMode === 'route'}
 											onclick={() => {
 												cameraTrackingModeOverride = 'route';

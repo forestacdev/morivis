@@ -92,7 +92,7 @@ export const normalizeHttpUrlInput = (value: string): string | null => {
 export const resolveMapLibreRequest = (
 	url: string,
 	resourceType?: ResourceType
-): { url: string } => {
+): { url: string; } => {
 	void resourceType;
 	return { url: resolveRuntimeUrl(url) };
 };

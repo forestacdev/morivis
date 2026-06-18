@@ -196,9 +196,11 @@ const EMPTY_GEOJSON: FeatureCollection<PointGeometry, QuakeFeatureProperties> = 
 	features: []
 };
 
-const EMPTY_GEOJSON_DATA_URL = `data:application/json;charset=utf-8,${encodeURIComponent(
-	JSON.stringify(EMPTY_GEOJSON)
-)}`;
+const EMPTY_GEOJSON_DATA_URL = `data:application/json;charset=utf-8,${
+	encodeURIComponent(
+		JSON.stringify(EMPTY_GEOJSON)
+	)
+}`;
 
 const QUAKE_COLOR_EXPRESSIONS: ColorsExpression[] = [
 	{
@@ -264,10 +266,9 @@ const createGeoJsonBlobUrl = (geojson: FeatureCollection) =>
 
 const compactFeatureProperties = (
 	properties: Record<string, string | number | boolean | null | undefined>
-) =>
-	Object.fromEntries(
-		Object.entries(properties).filter(([, value]) => value !== null && value !== undefined)
-	) as QuakeFeatureProperties;
+) => Object.fromEntries(
+	Object.entries(properties).filter(([, value]) => value !== null && value !== undefined)
+) as QuakeFeatureProperties;
 
 const toTemporalItem = (time: string): VectorTemporalItem => ({
 	raw: time,
@@ -491,7 +492,11 @@ export const loadEarthquakePointEntry = async (
 			.map(toTemporalItem)
 			.filter((item) => !Number.isNaN(item.timestamp))
 			.sort((a, b) => a.timestamp - b.timestamp);
-		const entry = createEarthquakePointEntry(config, createGeoJsonBlobUrl(geojson), temporalItems);
+		const entry = createEarthquakePointEntry(
+			config,
+			createGeoJsonBlobUrl(geojson),
+			temporalItems
+		);
 		GeojsonCache.set(entry.id, geojson);
 		return entry;
 	} catch (error) {
