@@ -27,6 +27,8 @@
 	let bufferScene: THREE.Scene;
 
 	let postMesh: THREE.Mesh;
+	let meshFadeStartTime: number | null = null;
+	const meshFadeDuration = 1.6;
 
 	const goMap = () => {
 		// ローカルホストかどうか
@@ -165,14 +167,16 @@
 		// const axesHelper = new THREE.AxesHelper(100);
 		// scene.add(axesHelper);
 
+		const clock = new THREE.Clock();
+
 		const mesh = await createdDemMesh();
 		if (mesh) {
+			meshFadeStartTime = clock.getElapsedTime();
+			uniforms.fadeProgress.value = 0;
 			scene.add(mesh);
 		} else {
 			console.error('Failed to create DEM mesh');
 		}
-
-		const clock = new THREE.Clock();
 
 		// アニメーション
 		const animate = () => {
@@ -181,7 +185,18 @@
 			orbitControls.update();
 			zoomControls.update();
 
-			uniforms.time.value = clock.getElapsedTime();
+			const elapsedTime = clock.getElapsedTime();
+			uniforms.time.value = elapsedTime;
+
+			if (meshFadeStartTime === null) {
+				uniforms.fadeProgress.value = 0;
+			} else {
+				const fadeElapsed = elapsedTime - meshFadeStartTime;
+				uniforms.fadeProgress.value = Math.min(
+					Math.max(fadeElapsed / meshFadeDuration, 0),
+					1
+				);
+			}
 
 			// フレームバッファ;
 			renderer.setRenderTarget(renderTarget);
