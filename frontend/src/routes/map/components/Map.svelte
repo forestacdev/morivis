@@ -366,6 +366,19 @@
 			exaggeration: 1
 		};
 
+		const streetViewSources: Record<string, SourceSpecification> = $showStreetViewLayer
+			? {
+					street_view_node_sources: {
+						type: 'geojson',
+						data: streetViewPointData
+					},
+					street_view_link_sources: {
+						type: 'geojson',
+						data: streetViewLineData
+					}
+				}
+			: {};
+
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
@@ -382,14 +395,7 @@
 					encoding: 'terrarium',
 					attribution: '<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>'
 				},
-				street_view_node_sources: {
-					type: 'geojson',
-					data: streetViewPointData
-				},
-				street_view_link_sources: {
-					type: 'geojson',
-					data: streetViewLineData
-				},
+				...streetViewSources,
 				...xyzTileSources,
 				...sources,
 				draw_source: {
