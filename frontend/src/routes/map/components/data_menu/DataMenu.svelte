@@ -311,12 +311,10 @@
 				</div>
 			{/if}
 			{#if filterDataEntries.length === 0}
-				<div
-					class="flex h-full w-full justify-center max-lg:items-start max-lg:pt-4 lg:items-center"
-				>
+				<div class="flex h-full w-full justify-center items-center">
 					<div class="flex flex-col items-center gap-4">
-						<Icon icon="streamline:sad-face" class="h-16 w-16 text-gray-500 opacity-95" />
-						<span class="text-2xl text-gray-500">データが見つかりません</span>
+						<Icon icon="streamline:sad-face" class="h-16 w-16 text-base opacity-95" />
+						<span class="text-2xl text-base">データが見つかりません</span>
 					</div>
 				</div>
 			{/if}

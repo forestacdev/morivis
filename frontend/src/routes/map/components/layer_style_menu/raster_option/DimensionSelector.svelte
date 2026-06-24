@@ -37,6 +37,7 @@
 	} from '$routes/map/utils/vector/dimension-runtime';
 	import { mapStore } from '$routes/stores/map';
 	import { isMobile } from '$routes/stores/ui';
+	import { slide } from 'svelte/transition';
 
 	type DimensionEnabledRasterEntry = MorivisRasterEntry<
 		RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
@@ -232,6 +233,10 @@
 		await applyDimensionIndex(index);
 	};
 
+	const handleMobilePreview = async (index: number) => {
+		await applyDimensionIndex(index);
+	};
+
 	// const onSelect = () => {
 	// 	if (!emblaMainCarousel || !layerEntry.style.dimension) return;
 	// 	const currentIndex = emblaMainCarousel.selectedScrollSnap();
@@ -404,6 +409,7 @@
 				disabled={isUpdatingDimension}
 				showPlayback={dimension.type === 'time'}
 				bind:playbackSpeed
+				onPreview={handleMobilePreview}
 				onCommit={handleMobileCommit}
 			/>
 		{:else}
@@ -471,15 +477,17 @@
 						{/if}
 					</button>
 				</div>
-				<div class="pt-2">
-					<RangeSlider
-						label={`再生速度 (${Math.round((1000 / playbackIntervalMs) * 10) / 10} コマ/秒)`}
-						bind:value={playbackSpeed}
-						min={1}
-						max={2000}
-						step={1}
-					/>
-				</div>
+				{#if isPlaying}
+					<div transition:slide class="pt-2">
+						<RangeSlider
+							label={`再生速度 (${Math.round((1000 / playbackIntervalMs) * 10) / 10} コマ/秒)`}
+							bind:value={playbackSpeed}
+							min={1}
+							max={2000}
+							step={1}
+						/>
+					</div>
+				{/if}
 			{/if}
 		{/if}
 	</Accordion>

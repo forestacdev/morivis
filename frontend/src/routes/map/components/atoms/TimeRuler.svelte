@@ -3,6 +3,7 @@
 
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import type { SharedDiscreteDimension } from '$routes/map/data/types';
+	import { slide } from 'svelte/transition';
 
 	interface Props {
 		dimension: SharedDiscreteDimension;
@@ -10,6 +11,7 @@
 		disabled?: boolean;
 		showPlayback?: boolean;
 		playbackSpeed?: number;
+		onPreview?: (index: number) => void | Promise<void>;
 		onCommit?: (index: number) => void | Promise<void>;
 	}
 
@@ -19,6 +21,7 @@
 		disabled = false,
 		showPlayback = false,
 		playbackSpeed = $bindable(1200),
+		onPreview,
 		onCommit
 	}: Props = $props();
 
@@ -37,10 +40,13 @@
 	let activeTouchId: number | null = null;
 	let pointerStartX = 0;
 	let pointerStartOffsetPx = 0;
+	let dragBaseIndex: number | null = null;
+	let lastPreviewedIndex: number | null = null;
 
 	const playbackIntervalMs = $derived(2001 - playbackSpeed);
+	const referenceIndex = $derived(dragBaseIndex ?? currentIndex);
 	const previewIndex = $derived.by(() => {
-		const rawIndex = currentIndex - dragOffsetPx / tickSpacingPx;
+		const rawIndex = referenceIndex - dragOffsetPx / tickSpacingPx;
 		return clamp(Math.round(rawIndex), 0, Math.max(dimension.values.length - 1, 0));
 	});
 	const currentLabel = $derived(
@@ -90,7 +96,8 @@
 		return shortTickHeight;
 	};
 
-	const getTickX = (index: number) => centerX + (index - currentIndex) * tickSpacingPx + dragOffsetPx;
+	const getTickX = (index: number) =>
+		centerX + (index - referenceIndex) * tickSpacingPx + dragOffsetPx;
 
 	const formatTimeValue = (value: string): string => {
 		if (/^\d{4}$/.test(value)) return `${Number(value)}年`;
@@ -121,10 +128,14 @@
 	const commitIndex = async (index: number) => {
 		const clampedIndex = clamp(index, 0, Math.max(dimension.values.length - 1, 0));
 		dragOffsetPx = 0;
+		dragBaseIndex = null;
+		lastPreviewedIndex = null;
 		await onCommit?.(clampedIndex);
 	};
 
 	const beginDrag = (clientX: number) => {
+		dragBaseIndex = currentIndex;
+		lastPreviewedIndex = currentIndex;
 		pointerStartX = clientX;
 		pointerStartOffsetPx = dragOffsetPx;
 	};
@@ -165,16 +176,18 @@
 
 	const handleTouchMove = (event: TouchEvent) => {
 		if (activeTouchId == null) return;
-		const touch = Array.from(event.changedTouches).find((item) => item.identifier === activeTouchId)
-			?? Array.from(event.touches).find((item) => item.identifier === activeTouchId);
+		const touch =
+			Array.from(event.changedTouches).find((item) => item.identifier === activeTouchId) ??
+			Array.from(event.touches).find((item) => item.identifier === activeTouchId);
 		if (!touch) return;
-		event.preventDefault();
 		updateDrag(touch.clientX);
 	};
 
 	const handleTouchEnd = async (event: TouchEvent) => {
 		if (activeTouchId == null) return;
-		const touch = Array.from(event.changedTouches).find((item) => item.identifier === activeTouchId);
+		const touch = Array.from(event.changedTouches).find(
+			(item) => item.identifier === activeTouchId
+		);
 		if (!touch) return;
 		activeTouchId = null;
 		await commitIndex(previewIndex);
@@ -183,6 +196,19 @@
 	const stepIndex = async (delta: number) => {
 		if (disabled) return;
 		await commitIndex(currentIndex + delta);
+	};
+
+	const handleKeyDown = async (event: KeyboardEvent) => {
+		if (disabled) return;
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			await stepIndex(-1);
+			return;
+		}
+		if (event.key === 'ArrowRight') {
+			event.preventDefault();
+			await stepIndex(1);
+		}
 	};
 
 	const scheduleAutoplayTick = () => {
@@ -210,6 +236,13 @@
 	$effect(() => {
 		if (!showPlayback || !isPlaying) return;
 		scheduleAutoplayTick();
+	});
+
+	$effect(() => {
+		if (dragBaseIndex == null) return;
+		if (lastPreviewedIndex === previewIndex) return;
+		lastPreviewedIndex = previewIndex;
+		void onPreview?.(previewIndex);
 	});
 
 	$effect(() => {
@@ -262,9 +295,19 @@
 		</button>
 	</div>
 
+	<!-- 時間ルーラー -->
 	<div
 		bind:this={viewportElement}
-		class="time-ruler relative h-[84px] w-full overflow-hidden rounded-2xl bg-black/15"
+		class="time-ruler relative h-[84px] w-full overflow-hidden rounded-2xl bg-black"
+		role="slider"
+		tabindex={disabled ? undefined : 0}
+		aria-label={dimension.placeholder ?? '時間'}
+		aria-orientation="horizontal"
+		aria-valuemin={0}
+		aria-valuemax={Math.max(dimension.values.length - 1, 0)}
+		aria-valuenow={previewIndex}
+		aria-valuetext={currentLabel}
+		aria-disabled={disabled}
 		onpointerdown={handlePointerDown}
 		onpointermove={handlePointerMove}
 		onpointerup={handlePointerEnd}
@@ -273,27 +316,31 @@
 		ontouchmove={handleTouchMove}
 		ontouchend={handleTouchEnd}
 		ontouchcancel={handleTouchEnd}
+		onkeydown={handleKeyDown}
 	>
-		<div class="pointer-events-none absolute inset-y-3 left-1/2 z-20 w-[2px] -translate-x-1/2 rounded-full bg-main-accent"></div>
-		<div class="pointer-events-none absolute right-0 bottom-0 left-0 h-9 bg-gradient-to-t from-black/20 to-transparent"></div>
+		<div
+			class="pointer-events-none absolute inset-y-3 left-1/2 z-20 w-[2px] -translate-x-1/2 rounded-full bg-main-accent"
+		></div>
+		<div class="pointer-events-none absolute right-0 bottom-0 left-0 h-9 bg-black"></div>
 
 		{#each visibleIndices as index (index)}
 			<div
-				class="pointer-events-none absolute bottom-4 flex -translate-x-1/2 flex-col items-center"
+				class="pointer-events-none absolute bottom-8 -translate-x-1/2"
 				style:left={`${getTickX(index)}px`}
 			>
 				<div
 					class={`w-[2px] rounded-full ${index === previewIndex ? 'bg-main-accent' : 'bg-white/75'}`}
 					style:height={`${getTickHeight(index)}px`}
 				></div>
-				{#if isMajorTick(index)}
-					<div
-						class={`mt-1 max-w-[84px] truncate text-[10px] leading-none ${index === previewIndex ? 'text-white' : 'text-white/60'}`}
-					>
-						{getTickLabel(index)}
-					</div>
-				{/if}
 			</div>
+			{#if isMajorTick(index)}
+				<div
+					class={`pointer-events-none absolute bottom-3 max-w-[84px] -translate-x-1/2 truncate text-[10px] leading-none ${index === previewIndex ? 'text-white' : 'text-white/60'}`}
+					style:left={`${getTickX(index)}px`}
+				>
+					{getTickLabel(index)}
+				</div>
+			{/if}
 		{/each}
 	</div>
 
@@ -319,15 +366,17 @@
 				{/if}
 			</button>
 		</div>
-		<div class="pt-2">
-			<RangeSlider
-				label={`再生速度 (${Math.round((1000 / playbackIntervalMs) * 10) / 10} コマ/秒)`}
-				bind:value={playbackSpeed}
-				min={1}
-				max={2000}
-				step={1}
-			/>
-		</div>
+		{#if isPlaying}
+			<div transition:slide class="pt-2">
+				<RangeSlider
+					label={`再生速度 (${Math.round((1000 / playbackIntervalMs) * 10) / 10} コマ/秒)`}
+					bind:value={playbackSpeed}
+					min={1}
+					max={2000}
+					step={1}
+				/>
+			</div>
+		{/if}
 	{/if}
 </div>
 
