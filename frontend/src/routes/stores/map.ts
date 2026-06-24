@@ -1521,7 +1521,11 @@ const createMapStore = () => {
 		if (!map || !isMapValid(map)) return;
 		const source = map.getSource(sourceId) as RasterTileSource;
 		if (source) {
-			source.setTiles(tiles);
+			try {
+				source.setTiles(tiles);
+			} catch (error) {
+				console.error(`Error setting tiles for source ${sourceId}:`, error);
+			}
 		} else {
 			console.warn(`Source with ID ${sourceId} does not exist.`);
 		}

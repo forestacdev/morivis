@@ -6,6 +6,7 @@
 
 	import Accordion from '../../atoms/Accordion.svelte';
 	import RangeSlider from '../../atoms/RangeSlider.svelte';
+	import TimeRuler from '../../atoms/TimeRuler.svelte';
 
 	import { ICONS } from '$lib/icons';
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
@@ -35,6 +36,7 @@
 		getVectorDimensionRuntimeUpdates
 	} from '$routes/map/utils/vector/dimension-runtime';
 	import { mapStore } from '$routes/stores/map';
+	import { isMobile } from '$routes/stores/ui';
 
 	type DimensionEnabledRasterEntry = MorivisRasterEntry<
 		RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
@@ -104,9 +106,8 @@
 		};
 	});
 
-	const onSelect = async () => {
-		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
-		const currentIndex = emblaMainCarousel.selectedScrollSnap();
+	const applyDimensionIndex = async (currentIndex: number) => {
+		if (!dimension) return;
 		if (currentIndex === dimensionState?.currentIndex) return;
 		const requestId = ++imageUpdateRequestId;
 
@@ -220,6 +221,15 @@
 			url: imageSource.url,
 			coordinates: imageSource.coordinates
 		});
+	};
+
+	const onSelect = async () => {
+		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
+		await applyDimensionIndex(emblaMainCarousel.selectedScrollSnap());
+	};
+
+	const handleMobileCommit = async (index: number) => {
+		await applyDimensionIndex(index);
 	};
 
 	// const onSelect = () => {
@@ -387,79 +397,90 @@
 		icon={dimension.type === 'time' ? 'mdi:clock-outline' : 'carbon:category'}
 		bind:value={showDimensionOption}
 	>
-		<div class="relative flex flex-col gap-4">
-			<div class="flex items-center gap-1">
-				<div
-					use:emblaCarouselSvelte={{
-						plugins: [],
-						options: emblaMainCarouselOptions
-					}}
-					bind:this={carouselElement}
-					class="min-w-0 flex-1 overflow-hidden"
-					onemblaInit={onInitEmblaMainCarousel}
-				>
-					<div class="flex gap-2 px-2">
-						{#each dimension.values as timeValue, i (timeValue)}
-							<div
-								class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
-							>
-								{getTimeLabel(timeValue, i)}
-							</div>
-						{/each}
+		{#if $isMobile}
+			<TimeRuler
+				{dimension}
+				currentIndex={dimensionState?.currentIndex ?? 0}
+				disabled={isUpdatingDimension}
+				showPlayback={dimension.type === 'time'}
+				bind:playbackSpeed
+				onCommit={handleMobileCommit}
+			/>
+		{:else}
+			<div class="relative flex flex-col gap-4">
+				<div class="flex items-center gap-1">
+					<div
+						use:emblaCarouselSvelte={{
+							plugins: [],
+							options: emblaMainCarouselOptions
+						}}
+						bind:this={carouselElement}
+						class="min-w-0 flex-1 overflow-hidden"
+						onemblaInit={onInitEmblaMainCarousel}
+					>
+						<div class="flex gap-2 px-2">
+							{#each dimension.values as timeValue, i (timeValue)}
+								<div
+									class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
+								>
+									{getTimeLabel(timeValue, i)}
+								</div>
+							{/each}
+						</div>
 					</div>
 				</div>
-			</div>
-			<div
-				class="group pointer-events-none absolute flex h-full w-full items-center justify-between px-1"
-			>
-				<button
-					onclick={onClickPrev}
-					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-					aria-label="前へ"
-					disabled={isUpdatingDimension}
+				<div
+					class="group pointer-events-none absolute flex h-full w-full items-center justify-between px-1"
 				>
-					<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
-				</button>
+					<button
+						onclick={onClickPrev}
+						class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+						aria-label="前へ"
+						disabled={isUpdatingDimension}
+					>
+						<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
+					</button>
 
-				<button
-					onclick={onClickNext}
-					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-					aria-label="次へ"
-					disabled={isUpdatingDimension}
-				>
-					<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
-				</button>
+					<button
+						onclick={onClickNext}
+						class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+						aria-label="次へ"
+						disabled={isUpdatingDimension}
+					>
+						<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
+					</button>
+				</div>
 			</div>
-		</div>
-		{#if dimension.type === 'time'}
-			<div class="flex items-center justify-center gap-2 pt-3">
-				<button
-					onclick={toggleAutoplay}
-					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white select-none hover:bg-white/10"
-					aria-label={isPlaying ? '停止' : '再生'}
-				>
-					{#if isPlaying}
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-							<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-						</svg>
-						停止
-					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-							<path fill="currentColor" d="M8 5v14l11-7z" />
-						</svg>
-						再生
-					{/if}
-				</button>
-			</div>
-			<div class="pt-2">
-				<RangeSlider
-					label={`再生速度 (${Math.round((1000 / playbackIntervalMs) * 10) / 10} コマ/秒)`}
-					bind:value={playbackSpeed}
-					min={1}
-					max={2000}
-					step={1}
-				/>
-			</div>
+			{#if dimension.type === 'time'}
+				<div class="flex items-center justify-center gap-2 pt-3">
+					<button
+						onclick={toggleAutoplay}
+						class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white select-none hover:bg-white/10"
+						aria-label={isPlaying ? '停止' : '再生'}
+					>
+						{#if isPlaying}
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+								<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+							</svg>
+							停止
+						{:else}
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+								<path fill="currentColor" d="M8 5v14l11-7z" />
+							</svg>
+							再生
+						{/if}
+					</button>
+				</div>
+				<div class="pt-2">
+					<RangeSlider
+						label={`再生速度 (${Math.round((1000 / playbackIntervalMs) * 10) / 10} コマ/秒)`}
+						bind:value={playbackSpeed}
+						min={1}
+						max={2000}
+						step={1}
+					/>
+				</div>
+			{/if}
 		{/if}
 	</Accordion>
 {/if}
