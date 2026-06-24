@@ -31,6 +31,7 @@
 	const longTickHeight = 34;
 	const dragThresholdPx = 4;
 
+	// ルーラーの描画状態と、ドラッグ中にだけ使う基準値。
 	let viewportElement: HTMLDivElement | undefined = $state();
 	let viewportWidth = $state(0);
 	let dragOffsetPx = $state(0);
@@ -43,6 +44,8 @@
 	let dragBaseIndex: number | null = null;
 	let lastPreviewedIndex: number | null = null;
 
+	// currentIndex をそのまま追うと、preview 更新中に基準がずれる。
+	// ドラッグ開始時の index を固定して、そこから相対移動で previewIndex を求める。
 	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 	const referenceIndex = $derived(dragBaseIndex ?? currentIndex);
 	const previewIndex = $derived.by(() => {
@@ -53,6 +56,7 @@
 		dimension.labels?.[previewIndex] ?? formatTimeValue(dimension.values[previewIndex] ?? '')
 	);
 	const centerX = $derived(viewportWidth / 2);
+	// 全目盛りは描かず、現在位置の前後だけを描画して DOM 数を抑える。
 	const visibleRadius = $derived(Math.max(Math.ceil(viewportWidth / tickSpacingPx / 2) + 6, 12));
 	const visibleIndices = $derived.by(() => {
 		const start = Math.max(previewIndex - visibleRadius, 0);
@@ -125,6 +129,7 @@
 	const getTickLabel = (index: number) =>
 		dimension.labels?.[index] ?? formatTimeValue(dimension.values[index] ?? '');
 
+	// commit は「確定値」。ドラッグ用の一時状態を戻してから親へ通知する。
 	const commitIndex = async (index: number) => {
 		const clampedIndex = clamp(index, 0, Math.max(dimension.values.length - 1, 0));
 		dragOffsetPx = 0;
@@ -133,6 +138,7 @@
 		await onCommit?.(clampedIndex);
 	};
 
+	// ドラッグ開始時点の index と座標を保持する。
 	const beginDrag = (clientX: number) => {
 		dragBaseIndex = currentIndex;
 		lastPreviewedIndex = currentIndex;
@@ -140,12 +146,28 @@
 		pointerStartOffsetPx = dragOffsetPx;
 	};
 
+	// 入力座標から dragOffset を更新し、previewIndex が変わった瞬間だけ親へ知らせる。
 	const updateDrag = (clientX: number) => {
 		const deltaX = clientX - pointerStartX;
 		if (Math.abs(deltaX) < dragThresholdPx) return;
-		dragOffsetPx = pointerStartOffsetPx + deltaX;
+		const nextOffsetPx = pointerStartOffsetPx + deltaX;
+		dragOffsetPx = nextOffsetPx;
+
+		if (dragBaseIndex == null) return;
+
+		const nextIndex = clamp(
+			Math.round(dragBaseIndex - nextOffsetPx / tickSpacingPx),
+			0,
+			Math.max(dimension.values.length - 1, 0)
+		);
+
+		// move ごとに発火せず、中央カーソルが次の目盛りへ跨いだ瞬間だけ preview を流す。
+		if (lastPreviewedIndex === nextIndex) return;
+		lastPreviewedIndex = nextIndex;
+		void onPreview?.(nextIndex);
 	};
 
+	// Pointer と Touch の両方を受ける。中では同じ drag 更新関数に寄せる。
 	const handlePointerDown = (event: PointerEvent) => {
 		if (disabled) return;
 		activePointerId = event.pointerId;
@@ -198,6 +220,7 @@
 		await commitIndex(currentIndex + delta);
 	};
 
+	// キーボードでは 1 ステップずつ移動する。
 	const handleKeyDown = async (event: KeyboardEvent) => {
 		if (disabled) return;
 		if (event.key === 'ArrowLeft') {
@@ -211,6 +234,7 @@
 		}
 	};
 
+	// 自動再生は現在 index を 1 コマずつ進めるだけにして、実反映は commit に統一する。
 	const scheduleAutoplayTick = () => {
 		clearAutoplayTimer();
 		if (!isPlaying || disabled) return;
@@ -233,18 +257,13 @@
 		scheduleAutoplayTick();
 	};
 
+	// 再生速度の変更中も、再生中なら次 tick の待ち時間を張り直す。
 	$effect(() => {
 		if (!showPlayback || !isPlaying) return;
 		scheduleAutoplayTick();
 	});
 
-	$effect(() => {
-		if (dragBaseIndex == null) return;
-		if (lastPreviewedIndex === previewIndex) return;
-		lastPreviewedIndex = previewIndex;
-		void onPreview?.(previewIndex);
-	});
-
+	// 外から disabled になったら、自動再生は止める。
 	$effect(() => {
 		if (disabled && isPlaying) {
 			stopPlayback();
@@ -254,6 +273,7 @@
 	onMount(() => {
 		if (!viewportElement) return;
 
+		// 画面幅に応じて可視範囲の目盛り数を計算し直す。
 		const resizeObserver = new ResizeObserver((entries) => {
 			const entry = entries[0];
 			if (!entry) return;

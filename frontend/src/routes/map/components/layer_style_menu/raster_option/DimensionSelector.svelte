@@ -99,6 +99,7 @@
 	$effect(() => {
 		if (!dimension || dimensionState) return;
 
+		// 時間軸を持つレイヤーは、開いた時点で最初のコマを選択状態にしておく。
 		layerEntry.state = {
 			...layerEntry.state,
 			dimension: {
@@ -107,11 +108,14 @@
 		};
 	});
 
+	// 実際の時刻切り替え本体。
+	// UI から渡された index を entry.state に反映し、必要な runtime 更新だけ流す。
 	const applyDimensionIndex = async (currentIndex: number) => {
 		if (!dimension) return;
 		if (currentIndex === dimensionState?.currentIndex) return;
 		const requestId = ++imageUpdateRequestId;
 
+		// mesh は MapLibre ではなく model runtime 側の時刻更新を使う。
 		if (isTemporalMeshEntry(layerEntry)) {
 			isUpdatingDimension = true;
 			try {
@@ -122,12 +126,15 @@
 			return;
 		}
 
+		// vector / raster は共通で currentIndex を保存してから種別ごとの更新へ進む。
 		layerEntry.state = {
 			...layerEntry.state,
 			dimension: {
 				currentIndex
 			}
 		};
+
+		// source temporal vector は source data の差し替えだけで済む。
 		if (isSourceTemporalVectorEntry(layerEntry)) {
 			const runtimeUpdates = await getVectorDimensionRuntimeUpdates(layerEntry);
 			runtimeUpdates.forEach((update) => {
@@ -138,6 +145,7 @@
 
 		if (!isRasterEntry(layerEntry)) return;
 
+		// TIFF 系は time step に応じて色レンジも持ち直す必要がある。
 		if (
 			layerEntry.style.type === 'tiff' &&
 			layerEntry.format.type === 'image' &&
@@ -207,6 +215,7 @@
 
 		if (layerEntry.style.type !== 'tiff' || layerEntry.format.type !== 'image') return;
 
+		// image source を使う TIFF だけは、最終的に画像自体の差し替えまで行う。
 		const imageSource = await getRasterTiffImageSource(
 			layerEntry as RasterImageEntry<RasterTiffStyle>
 		);
@@ -224,11 +233,13 @@
 		});
 	};
 
+	// PC の Embla 選択変更は、そのまま applyDimensionIndex に流す。
 	const onSelect = async () => {
 		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
 		await applyDimensionIndex(emblaMainCarousel.selectedScrollSnap());
 	};
 
+	// モバイルの TimeRuler は preview / commit の両方から同じ更新関数を使う。
 	const handleMobileCommit = async (index: number) => {
 		await applyDimensionIndex(index);
 	};
