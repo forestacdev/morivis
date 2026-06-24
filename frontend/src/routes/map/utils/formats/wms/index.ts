@@ -147,7 +147,7 @@ const flattenLayers = (layers: any[], result: WmsLayerInfo[] = []): WmsLayerInfo
 						(d: any) => d.name?.toLowerCase() === 'time'
 					);
 				if (timeDim?.values) {
-					const values = parseTimeValues(timeDim.values).reverse();
+					const values = parseTimeValues(timeDim.values);
 					if (values.length > 0) {
 						timeDimension = {
 							values

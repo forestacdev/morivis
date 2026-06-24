@@ -74,7 +74,7 @@ export const getHimawariSatimgTimes = async (): Promise<HimawariTargetTime[]> =>
 };
 
 const normalizeHimawariBasetimes = (data: HimawariTargetTime[]): string[] => {
-	return [...new Set(data.map((item) => item.basetime))].sort((a, b) => Number(b) - Number(a));
+	return [...new Set(data.map((item) => item.basetime))].sort((a, b) => Number(a) - Number(b));
 };
 
 const formatHimawariTimeLabel = (basetime: string) => {
