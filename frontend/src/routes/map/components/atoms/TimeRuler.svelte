@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import PlaybackControl from '$routes/map/components/atoms/PlaybackControl.svelte';
 	import type { SharedDiscreteDimension } from '$routes/map/data/types';
-	import { slide } from 'svelte/transition';
 
 	interface Props {
 		dimension: SharedDiscreteDimension;
@@ -30,13 +29,33 @@
 	const mediumTickHeight = 22;
 	const longTickHeight = 34;
 	const dragThresholdPx = 4;
+	const formatTimeValue = (value: string): string => {
+		if (/^\d{4}$/.test(value)) return `${Number(value)}年`;
+		const ym = value.match(/^(\d{4})-(\d{2})$/);
+		if (ym) return `${Number(ym[1])}年${Number(ym[2])}月`;
+		const ymd = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+		if (ymd) return `${Number(ymd[1])}年${Number(ymd[2])}月${Number(ymd[3])}日`;
+
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) return value;
+
+		const y = date.getUTCFullYear();
+		const m = date.getUTCMonth() + 1;
+		const d = date.getUTCDate();
+		const h = date.getUTCHours();
+		const min = date.getUTCMinutes();
+
+		if (h === 0 && min === 0) {
+			return d === 1 ? `${y}年${m}月` : `${y}年${m}月${d}日`;
+		}
+
+		return `${y}/${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+	};
 
 	// ルーラーの描画状態と、ドラッグ中にだけ使う基準値。
 	let viewportElement: HTMLDivElement | undefined = $state();
 	let viewportWidth = $state(0);
 	let dragOffsetPx = $state(0);
-	let isPlaying = $state(false);
-	let autoplayTimeout: ReturnType<typeof setTimeout> | null = null;
 	let activePointerId: number | null = null;
 	let activeTouchId: number | null = null;
 	let pointerStartX = 0;
@@ -46,7 +65,6 @@
 
 	// currentIndex をそのまま追うと、preview 更新中に基準がずれる。
 	// ドラッグ開始時の index を固定して、そこから相対移動で previewIndex を求める。
-	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 	const referenceIndex = $derived(dragBaseIndex ?? currentIndex);
 	const previewIndex = $derived.by(() => {
 		const rawIndex = referenceIndex - dragOffsetPx / tickSpacingPx;
@@ -65,18 +83,6 @@
 	});
 
 	const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
-
-	const clearAutoplayTimer = () => {
-		if (autoplayTimeout) {
-			clearTimeout(autoplayTimeout);
-			autoplayTimeout = null;
-		}
-	};
-
-	const stopPlayback = () => {
-		clearAutoplayTimer();
-		isPlaying = false;
-	};
 
 	const isMajorTick = (index: number) => {
 		if (dimension.type !== 'time') return index % 5 === 0;
@@ -102,29 +108,6 @@
 
 	const getTickX = (index: number) =>
 		centerX + (index - referenceIndex) * tickSpacingPx + dragOffsetPx;
-
-	const formatTimeValue = (value: string): string => {
-		if (/^\d{4}$/.test(value)) return `${Number(value)}年`;
-		const ym = value.match(/^(\d{4})-(\d{2})$/);
-		if (ym) return `${Number(ym[1])}年${Number(ym[2])}月`;
-		const ymd = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-		if (ymd) return `${Number(ymd[1])}年${Number(ymd[2])}月${Number(ymd[3])}日`;
-
-		const date = new Date(value);
-		if (Number.isNaN(date.getTime())) return value;
-
-		const y = date.getUTCFullYear();
-		const m = date.getUTCMonth() + 1;
-		const d = date.getUTCDate();
-		const h = date.getUTCHours();
-		const min = date.getUTCMinutes();
-
-		if (h === 0 && min === 0) {
-			return d === 1 ? `${y}年${m}月` : `${y}年${m}月${d}日`;
-		}
-
-		return `${y}/${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-	};
 
 	const getTickLabel = (index: number) =>
 		dimension.labels?.[index] ?? formatTimeValue(dimension.values[index] ?? '');
@@ -234,41 +217,10 @@
 		}
 	};
 
-	// 自動再生は現在 index を 1 コマずつ進めるだけにして、実反映は commit に統一する。
-	const scheduleAutoplayTick = () => {
-		clearAutoplayTimer();
-		if (!isPlaying || disabled) return;
-
-		autoplayTimeout = setTimeout(async () => {
-			if (!isPlaying || disabled) return;
-			const nextIndex = currentIndex >= dimension.values.length - 1 ? 0 : currentIndex + 1;
-			await commitIndex(nextIndex);
-			scheduleAutoplayTick();
-		}, playbackIntervalMs);
+	const handlePlaybackTick = async () => {
+		const nextIndex = currentIndex >= dimension.values.length - 1 ? 0 : currentIndex + 1;
+		await commitIndex(nextIndex);
 	};
-
-	const togglePlayback = () => {
-		if (disabled) return;
-		if (isPlaying) {
-			stopPlayback();
-			return;
-		}
-		isPlaying = true;
-		scheduleAutoplayTick();
-	};
-
-	// 再生速度の変更中も、再生中なら次 tick の待ち時間を張り直す。
-	$effect(() => {
-		if (!showPlayback || !isPlaying) return;
-		scheduleAutoplayTick();
-	});
-
-	// 外から disabled になったら、自動再生は止める。
-	$effect(() => {
-		if (disabled && isPlaying) {
-			stopPlayback();
-		}
-	});
 
 	onMount(() => {
 		if (!viewportElement) return;
@@ -284,7 +236,6 @@
 
 		return () => {
 			resizeObserver.disconnect();
-			clearAutoplayTimer();
 		};
 	});
 </script>
@@ -365,38 +316,7 @@
 	</div>
 
 	{#if showPlayback}
-		<div class="flex items-center justify-center gap-2">
-			<button
-				type="button"
-				class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white select-none hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-				aria-label={isPlaying ? '停止' : '再生'}
-				{disabled}
-				onclick={togglePlayback}
-			>
-				{#if isPlaying}
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-					</svg>
-					停止
-				{:else}
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-						<path fill="currentColor" d="M8 5v14l11-7z" />
-					</svg>
-					再生
-				{/if}
-			</button>
-		</div>
-		{#if isPlaying}
-			<div transition:slide class="pt-2">
-				<RangeSlider
-					label={`再生速度 (${Math.round((1000 / playbackIntervalMs) * 10) / 10} コマ/秒)`}
-					bind:value={playbackSpeed}
-					min={1}
-					max={2000}
-					step={1}
-				/>
-			</div>
-		{/if}
+		<PlaybackControl {disabled} bind:playbackSpeed onTick={handlePlaybackTick} />
 	{/if}
 </div>
 

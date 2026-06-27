@@ -77,6 +77,10 @@ const normalizeHimawariBasetimes = (data: HimawariTargetTime[]): string[] => {
 	return [...new Set(data.map((item) => item.basetime))].sort((a, b) => Number(a) - Number(b));
 };
 
+const getHimawariInitialIndex = (basetimes: string[]) => {
+	return Math.floor(basetimes.length / 2);
+};
+
 const formatHimawariTimeLabel = (basetime: string) => {
 	const year = basetime.slice(0, 4);
 	const month = basetime.slice(4, 6);
@@ -117,6 +121,10 @@ export const createHimawariRasterEntry = async (
 			}
 		}
 	);
+
+	if (entry.state?.dimension) {
+		entry.state.dimension.currentIndex = getHimawariInitialIndex(basetimes);
+	}
 
 	entry.id = config.id;
 	entry.metaData.name = config.name;

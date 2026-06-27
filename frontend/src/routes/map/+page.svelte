@@ -897,11 +897,16 @@
 			return resolvedEntry;
 		}
 
+		const currentState = 'state' in currentEntry ? currentEntry.state : undefined;
+		const resolvedState = 'state' in resolvedEntry ? resolvedEntry.state : undefined;
+		const mergedState =
+			currentEntry.metaData.needsLazyHydration === true ? resolvedState : currentState;
+
 		return {
 			...resolvedEntry,
 			style: currentEntry.style,
 			interaction: currentEntry.interaction,
-			...('state' in currentEntry ? { state: currentEntry.state } : {})
+			...(mergedState ? { state: mergedState } : {})
 		} as MorivisLayerEntry;
 	};
 

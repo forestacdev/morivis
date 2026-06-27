@@ -6,6 +6,10 @@
         {
             "path": "frontend",
         },
+        {
+            "name": "Entries",
+            "path": "frontend/src/routes/map/data/entries"
+        },
     ],
     "settings": {},
 }
