@@ -1,16 +1,26 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 
+	import { ICONS } from '$lib/icons';
 	import RangeSlider from './RangeSlider.svelte';
 
 	interface Props {
 		disabled?: boolean;
 		playbackSpeed?: number;
 		onTick?: () => void | Promise<void>;
+		onPrevious?: () => void | Promise<void>;
+		onNext?: () => void | Promise<void>;
 	}
 
-	let { disabled = false, playbackSpeed = $bindable(1200), onTick }: Props = $props();
+	let {
+		disabled = false,
+		playbackSpeed = $bindable(1200),
+		onTick,
+		onPrevious,
+		onNext
+	}: Props = $props();
 
 	let isPlaying = $state(false);
 	let autoplayTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -66,6 +76,17 @@
 </script>
 
 <div class="flex items-center justify-center gap-2">
+	{#if onPrevious}
+		<button
+			type="button"
+			class="bg-main/70 grid h-8 w-8 cursor-pointer place-items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+			aria-label="前へ"
+			{disabled}
+			onclick={onPrevious}
+		>
+			<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
+		</button>
+	{/if}
 	<button
 		type="button"
 		class="bg-sub flex w-[30px] aspect-square cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white select-none hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
@@ -85,6 +106,17 @@
 			
 		{/if}
 	</button>
+	{#if onNext}
+		<button
+			type="button"
+			class="bg-main/70 grid h-8 w-8 cursor-pointer place-items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+			aria-label="次へ"
+			{disabled}
+			onclick={onNext}
+		>
+			<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
+		</button>
+	{/if}
 </div>
 
 {#if isPlaying}

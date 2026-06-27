@@ -241,29 +241,9 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<div class="flex items-center justify-between">
-		<button
-			type="button"
-			class="bg-main/70 grid h-9 w-9 shrink-0 place-items-center rounded-full text-white shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-			aria-label="前へ"
-			{disabled}
-			onclick={() => stepIndex(-1)}
-		>
-			‹
-		</button>
-		<div class="min-w-0 px-3 text-center">
-			<div class="text-xs text-white/60">{dimension.placeholder ?? '時間'}</div>
-			<div class="truncate text-sm text-white">{currentLabel}</div>
-		</div>
-		<button
-			type="button"
-			class="bg-main/70 grid h-9 w-9 shrink-0 place-items-center rounded-full text-white shadow-md disabled:cursor-not-allowed disabled:opacity-50"
-			aria-label="次へ"
-			{disabled}
-			onclick={() => stepIndex(1)}
-		>
-			›
-		</button>
+	<div class="min-w-0 px-3 text-center">
+		<div class="text-xs text-white/60">{dimension.placeholder ?? '時間'}</div>
+		<div class="truncate text-sm text-white">{currentLabel}</div>
 	</div>
 
 	<!-- 時間ルーラー -->
@@ -316,7 +296,13 @@
 	</div>
 
 	{#if showPlayback}
-		<PlaybackControl {disabled} bind:playbackSpeed onTick={handlePlaybackTick} />
+		<PlaybackControl
+			{disabled}
+			bind:playbackSpeed
+			onPrevious={() => stepIndex(-1)}
+			onNext={() => stepIndex(1)}
+			onTick={handlePlaybackTick}
+		/>
 	{/if}
 </div>
 

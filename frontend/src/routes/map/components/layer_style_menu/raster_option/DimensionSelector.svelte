@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import type { EmblaCarouselType, EmblaOptionsType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { onDestroy } from 'svelte';
@@ -8,7 +7,6 @@
 	import PlaybackControl from '../../atoms/PlaybackControl.svelte';
 	import TimeRuler from '../../atoms/TimeRuler.svelte';
 
-	import { ICONS } from '$lib/icons';
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
 		MorivisRasterEntry,
@@ -383,7 +381,7 @@
 				onCommit={handleMobileCommit}
 			/>
 		{:else}
-			<div class="relative flex flex-col gap-4">
+			<div class="flex flex-col gap-4">
 				<div class="flex items-center gap-1">
 					<div
 						use:emblaCarouselSvelte={{
@@ -405,33 +403,14 @@
 						</div>
 					</div>
 				</div>
-				<div
-					class="group pointer-events-none absolute flex h-full w-full items-center justify-between px-1"
-				>
-					<button
-						onclick={onClickPrev}
-						class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-						aria-label="前へ"
-						disabled={isUpdatingDimension}
-					>
-						<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
-					</button>
-
-					<button
-						onclick={onClickNext}
-						class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-						aria-label="次へ"
-						disabled={isUpdatingDimension}
-					>
-						<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
-					</button>
-				</div>
 			</div>
 			{#if dimension.type === 'time'}
 				<div class="pt-3">
 					<PlaybackControl
 						disabled={isUpdatingDimension}
 						bind:playbackSpeed
+						onPrevious={onClickPrev}
+						onNext={onClickNext}
 						onTick={handlePlaybackTick}
 					/>
 				</div>
