@@ -1,9 +1,5 @@
 packages:
   - frontend
-  - data
-  - api
-  - aws
-  - data/scripts/node
 
 minimumReleaseAge: 10080
 strictDepBuilds: true
@@ -24,5 +20,10 @@ overrides:
 
 ignoredBuiltDependencies:
   - better-sqlite3
-  - core-js
-  - esbuild
+
+allowBuilds:
+  core-js: false
+  dprint: true
+  esbuild: true
+  msw: false
+  sharp: true

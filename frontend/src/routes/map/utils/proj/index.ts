@@ -1,6 +1,15 @@
 import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import proj4 from 'proj4';
 
+import { normalizePrjContent } from './crs-detect';
+
+export {
+	isWebMercatorPrj,
+	isWgs84Crs,
+	isWgs84Prj,
+	normalizePrjContent
+} from './crs-detect';
+
 const readPrjFileBrowser = async (file: File) => {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
@@ -25,67 +34,8 @@ export const readPrjFileContent = async (prjFile: File) => {
 		throw new Error('Invalid PRJ file content');
 	}
 
-	return prjContent;
+	return normalizePrjContent(prjContent);
 };
-
-export const isWgs84Prj = (prjContent: string): boolean => {
-	if (!prjContent) {
-		return false;
-	}
-
-	const prjContentUpper = prjContent.toUpperCase();
-
-	// WKT 形式の可能性をチェック
-	if (
-		prjContentUpper.includes('GCS_WGS_1984')
-		&& prjContentUpper.includes('D_WGS_1984')
-		&& prjContentUpper.includes('WGS_1984')
-		&& prjContentUpper.includes('PRIMEM["GREENWICH"')
-		&& prjContentUpper.includes('UNIT["DEGREE"')
-	) {
-		return true;
-	}
-
-	// PROJ.4 形式の可能性をチェック
-	if (prjContentUpper.includes('+PROJ=LONGLAT') && prjContentUpper.includes('+DATUM=WGS84')) {
-		return true;
-	}
-
-	return false;
-};
-
-// TODO
-export const isWgs84Crs = (crs: any): boolean => {
-	if (!crs) {
-		return false; // CRS 情報がない場合
-	}
-
-	if (crs.type === 'name' && crs.properties && crs.properties.name) {
-		const name = crs.properties.name;
-		// よく使われる CRS 名を proj4 の定義に変換
-		if (name === 'urn:ogc:def:crs:EPSG::4326' || name === 'EPSG:4326') {
-			return true; // WGS84
-		}
-		// 他の CRS 名に対応する場合はここに追加
-		// 例: if (name === 'urn:ogc:def:crs:OGC:1.3:CRS84') { ... }
-	} else if (crs.type === 'proj4') {
-		// PROJ.4 形式の場合
-		const proj4Definition = crs.proj4;
-		if (proj4Definition.includes('+proj=longlat') && proj4Definition.includes('+datum=WGS84')) {
-			return true; // WGS84
-		}
-	} else if (crs.type === 'wkt') {
-		// WKT 形式の場合
-		const wktDefinition = crs.wkt;
-		if (wktDefinition.includes('GCS_WGS_1984') && wktDefinition.includes('D_WGS_1984')) {
-			return true; // WGS84
-		}
-	}
-	// 他の CRS タイプに対応する場合はここに追加
-
-	return false; // WGS84 ではない
-};
-
 const NUM_WORKERS = 4;
 
 export const transformGeoJSONParallel = (
