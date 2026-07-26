@@ -3,8 +3,9 @@
 	import { onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 
-	import { ICONS } from '$lib/icons';
 	import RangeSlider from './RangeSlider.svelte';
+
+	import { ICONS } from '$lib/icons';
 
 	interface Props {
 		disabled?: boolean;

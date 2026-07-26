@@ -192,10 +192,7 @@
 				uniforms.fadeProgress.value = 0;
 			} else {
 				const fadeElapsed = elapsedTime - meshFadeStartTime;
-				uniforms.fadeProgress.value = Math.min(
-					Math.max(fadeElapsed / meshFadeDuration, 0),
-					1
-				);
+				uniforms.fadeProgress.value = Math.min(Math.max(fadeElapsed / meshFadeDuration, 0), 1);
 			}
 
 			// フレームバッファ;
