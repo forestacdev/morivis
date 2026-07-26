@@ -5,7 +5,6 @@
 
 	import Accordion from '../../atoms/Accordion.svelte';
 	import PlaybackControl from '../../atoms/PlaybackControl.svelte';
-	import TimeRuler from '../../atoms/TimeRuler.svelte';
 
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
@@ -34,7 +33,6 @@
 		getVectorDimensionRuntimeUpdates
 	} from '$routes/map/utils/vector/dimension-runtime';
 	import { mapStore } from '$routes/stores/map';
-	import { isMobile } from '$routes/stores/ui';
 
 	type DimensionEnabledRasterEntry = MorivisRasterEntry<
 		RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
@@ -235,15 +233,6 @@
 		await applyDimensionIndex(emblaMainCarousel.selectedScrollSnap());
 	};
 
-	// モバイルの TimeRuler は preview / commit の両方から同じ更新関数を使う。
-	const handleMobileCommit = async (index: number) => {
-		await applyDimensionIndex(index);
-	};
-
-	const handleMobilePreview = async (index: number) => {
-		await applyDimensionIndex(index);
-	};
-
 	// const onSelect = () => {
 	// 	if (!emblaMainCarousel || !layerEntry.style.dimension) return;
 	// 	const currentIndex = emblaMainCarousel.selectedScrollSnap();
@@ -370,51 +359,43 @@
 		icon={dimension.type === 'time' ? 'mdi:clock-outline' : 'carbon:category'}
 		bind:value={showDimensionOption}
 	>
-		{#if $isMobile}
-			<TimeRuler
-				{dimension}
-				currentIndex={dimensionState?.currentIndex ?? 0}
-				disabled={isUpdatingDimension}
-				showPlayback={dimension.type === 'time'}
-				bind:playbackSpeed
-				onPreview={handleMobilePreview}
-				onCommit={handleMobileCommit}
-			/>
-		{:else}
-			<div class="flex flex-col gap-4">
-				<div class="flex items-center gap-1">
-					<div
-						use:emblaCarouselSvelte={{
-							plugins: [],
-							options: emblaMainCarouselOptions
-						}}
-						bind:this={carouselElement}
-						class="min-w-0 flex-1 overflow-hidden"
-						onemblaInit={onInitEmblaMainCarousel}
-					>
-						<div class="flex gap-2 px-2">
-							{#each dimension.values as timeValue, i (timeValue)}
-								<div
-									class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
-								>
-									{getTimeLabel(timeValue, i)}
-								</div>
-							{/each}
-						</div>
+		<!--
+			TimeRuler は不具合切り分けのため一時停止中。
+			復帰時はモバイル分岐ごと戻す。
+		-->
+		<div class="flex flex-col gap-4">
+			<div class="flex items-center gap-1">
+				<div
+					use:emblaCarouselSvelte={{
+						plugins: [],
+						options: emblaMainCarouselOptions
+					}}
+					bind:this={carouselElement}
+					class="min-w-0 flex-1 overflow-hidden"
+					onemblaInit={onInitEmblaMainCarousel}
+				>
+					<div class="flex gap-2 px-2">
+						{#each dimension.values as timeValue, i (timeValue)}
+							<div
+								class="bg-main-accent flex h-full flex-[0_0_70%] cursor-grab items-center justify-center rounded p-3 text-white select-none"
+							>
+								{getTimeLabel(timeValue, i)}
+							</div>
+						{/each}
 					</div>
 				</div>
 			</div>
-			{#if dimension.type === 'time'}
-				<div class="pt-3">
-					<PlaybackControl
-						disabled={isUpdatingDimension}
-						bind:playbackSpeed
-						onPrevious={onClickPrev}
-						onNext={onClickNext}
-						onTick={handlePlaybackTick}
-					/>
-				</div>
-			{/if}
+		</div>
+		{#if dimension.type === 'time'}
+			<div class="pt-3">
+				<PlaybackControl
+					disabled={isUpdatingDimension}
+					bind:playbackSpeed
+					onPrevious={onClickPrev}
+					onNext={onClickNext}
+					onTick={handlePlaybackTick}
+				/>
+			</div>
 		{/if}
 	</Accordion>
 {/if}

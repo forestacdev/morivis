@@ -7,7 +7,8 @@ import {
 	PUBLIC_DISASTER_LORE_ALL_PATH,
 	PUBLIC_ENTRY_PATH,
 	PUBLIC_PANORAMA_PATH,
-	PUBLIC_TIMBER_SPECIES_PATH
+	PUBLIC_TIMBER_SPECIES_PATH,
+	PUBLIC_INT_ADD_LAYER_IDS
 } from '$env/static/public';
 
 export const BASE_PATH = PUBLIC_BASE_PATH;
@@ -76,7 +77,7 @@ export const DEFAULT_SYMBOL_TEXT_FONT: DataDrivenPropertyValueSpecification<stri
 ];
 
 /** アイコン用画像タイルのXYZ */
-export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ; } = {
+export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
 	zoom_0: {
 		x: 0,
 		y: 0,
@@ -122,6 +123,18 @@ export const MAPLIBRE_POPUP_OPTIONS: PopupOptions = {
 /** クリックさせないlayerのid */
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
 
+const DEFAULT_INT_ADD_LAYER_IDS = ['fac_poi_search', 'ensyurin_syouhan', 'national_forest_stand'];
+const parseLayerIds = (value: string) => {
+	return value
+		.split(',')
+		.map((id) => id.trim())
+		.filter(Boolean);
+};
+const envIntAddLayerIds = PUBLIC_INT_ADD_LAYER_IDS ?? '';
+
+const parsedIntAddLayerIds = parseLayerIds(envIntAddLayerIds);
+
 /** 初期表示のレイヤーid */
-// export const INT_ADD_LAYER_IDS = ['fac_poi_search', 'ensyurin_syouhan', 'national_forest_stand'];
-export const INT_ADD_LAYER_IDS = ['himawari_rep', 'gsi_nishinoshima_funka'];
+export const INT_ADD_LAYER_IDS = parsedIntAddLayerIds.length
+	? parsedIntAddLayerIds
+	: DEFAULT_INT_ADD_LAYER_IDS;
