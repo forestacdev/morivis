@@ -8,7 +8,7 @@
 
 	import bufferFragment from './shaders/fragmentBuffer.glsl?raw';
 	import bufferVertex from './shaders/vertexBuffer.glsl?raw';
-	import { showTermsDialog, showInfoDialog } from './stores/ui';
+	import { showInfoDialog, showTermsDialog } from './stores/ui';
 	import { buffarUniforms, createdDemMesh, uniforms } from './utils';
 
 	import { goto } from '$app/navigation';
