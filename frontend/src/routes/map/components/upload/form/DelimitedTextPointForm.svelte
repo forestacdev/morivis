@@ -8,7 +8,7 @@
 	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import {
 		readDelimitedTextAsUtf8,
@@ -19,13 +19,14 @@
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
@@ -61,7 +62,7 @@
 
 	const sourceFile = $derived.by(() => {
 		if (!dropFile) return null;
-		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+		return getFirstUploadFile(dropFile);
 	});
 
 	const entryName = $derived(sourceFile?.name.replace(/\.[^.]+$/, '') ?? `${formatName}データ`);

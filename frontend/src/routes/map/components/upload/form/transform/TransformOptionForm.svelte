@@ -30,7 +30,7 @@
 		WEB_MERCATOR_MIN_LNG,
 		WEB_MERCATOR_MAX_LNG
 	} from '$routes/map/data/entries/_meta_data/_bounds';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PointGeometry, PolygonGeometry } from '$routes/map/types/geometry';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
@@ -46,6 +46,7 @@
 		getGeoRefAspectRatio,
 		type GeoRefCornerKey
 	} from '$routes/map/utils/transform/georef/aspect-locked';
+	import { getDefaultGeoRefCorners } from '$routes/map/utils/transform/georef/default-corners';
 	import { debugLog } from '$routes/stores/debug';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -65,7 +66,7 @@
 		geoRefPreviewData: GeoRefPreviewData | null;
 		previewOpacity: number;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		onZoneConfirm: (epsgCode: EpsgCode) => void;
 		onZoneGeoRef: (epsgCode: EpsgCode) => void;
@@ -168,34 +169,10 @@
 	const initializeGeoRefCorners = (data: GeoRefData) => {
 		if (data.initialCorners) {
 			setCornerCoordinates(data.initialCorners);
-			fitToCurrentCorners(0);
 			return;
 		}
 
-		const center = map.getCenter();
-		const bounds = map.getBounds();
-		const viewWidth = bounds.getEast() - bounds.getWest();
-		const viewHeight = bounds.getNorth() - bounds.getSouth();
-		const cosLat = Math.cos((center.lat * Math.PI) / 180);
-		const aspect = data.imageWidth / data.imageHeight;
-		const size = Math.min(viewWidth, viewHeight) * 0.3;
-
-		let halfW: number;
-		let halfH: number;
-		if (aspect >= 1) {
-			halfW = size / 2 / cosLat;
-			halfH = size / (2 * aspect);
-		} else {
-			halfW = (size * aspect) / 2 / cosLat;
-			halfH = size / 2;
-		}
-
-		setCornerCoordinates([
-			[center.lng - halfW, center.lat + halfH],
-			[center.lng + halfW, center.lat + halfH],
-			[center.lng + halfW, center.lat - halfH],
-			[center.lng - halfW, center.lat - halfH]
-		]);
+		setCornerCoordinates(getDefaultGeoRefCorners(map, data.imageWidth, data.imageHeight));
 	};
 
 	const resetZone = () => {

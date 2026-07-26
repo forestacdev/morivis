@@ -9,16 +9,17 @@
 		type FieldDef,
 		type VectorTemporalItem
 	} from '$routes/map/data/types/vector/properties';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { checkTcxFile, tcxFileToGeojson, type TcxDataType } from '$routes/map/utils/formats/tcx';
+	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 	}
 
 	let {
@@ -33,7 +34,7 @@
 
 	const tcxFile = $derived.by(() => {
 		if (!dropFile) return null;
-		return dropFile instanceof FileList ? dropFile[0] : dropFile;
+		return getFirstUploadFile(dropFile);
 	});
 
 	const getUpdatedTimeField = (field: FieldDef): FieldDef => ({

@@ -14,19 +14,20 @@
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { shpFileToGeojson, readCpgEncoding } from '$routes/map/utils/formats/shp';
 	import { isBboxValid, isBbox2D } from '$routes/map/utils/map/bbox';
 	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode; // 選択されたEPSGコード
 		focusBbox: [number, number, number, number] | null; // フォーカスするバウンディングボックス
@@ -130,18 +131,9 @@
 		cpgName = '';
 	};
 
-	const toFiles = (value: File | FileList | null): File[] => {
-		if (!value) return [];
-		if (value instanceof File) return [value];
-		if (typeof value === 'object' && 'length' in value) {
-			return Array.from(value as ArrayLike<File>).filter(
-				(file): file is File => file instanceof File
-			);
-		}
-		return [];
-	};
+	const toFiles = (value: UploadFilesInput): File[] => toUploadFiles(value);
 
-	const setFiles = (dropFile: File | FileList | null) => {
+	const setFiles = (dropFile: UploadFilesInput) => {
 		toFiles(dropFile).forEach((file) => setFile(file));
 	};
 
@@ -169,7 +161,7 @@
 		}
 	};
 
-	const isShapeFileRelated = (file: File | FileList): boolean => {
+	const isShapeFileRelated = (file: UploadFilesInput): boolean => {
 		return toFiles(file).some((targetFile) => /\.(shp|dbf|prj|shx|cpg)$/i.test(targetFile.name));
 	};
 

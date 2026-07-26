@@ -4,7 +4,7 @@
     "description": "",
     "private": true,
     "scripts": {
-        "dev": "pnpm -F morivis-frontend dev & pnpm -F morivis-data dev",
+        "dev": "pnpm -F morivis-frontend dev",
         "mobile": "pnpm -F morivis-frontend mobile",
         "build": "pnpm -F morivis-frontend build",
         "preview": "pnpm -F morivis-frontend build && pnpm -F morivis-frontend preview",
@@ -14,20 +14,11 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "packageManager": "pnpm@10.30.1+sha512.3590e550d5384caa39bd5c7c739f72270234b2f6059e13018f975c313b1eb9fefcc09714048765d4d9efe961382c312e624572c0420762bdc5d5940cdf9be73a",
+    "packageManager": "pnpm@11.4.0",
     "devDependencies": {
         "gh-pages": "^6.3.0",
         "prettier": "3.4.2",
         "prettier-plugin-svelte": "3.3.2",
         "prettier-plugin-tailwindcss": "0.6.14"
-    },
-    "pnpm": {
-        "overrides": {
-            "sharp": "0.34.5",
-            "@sveltejs/enhanced-img>sharp": "0.34.5",
-            "@xmldom/xmldom": "0.8.13",
-            "thrift": "0.23.0",
-            "tmp": "0.2.6"
-        }
     }
 }

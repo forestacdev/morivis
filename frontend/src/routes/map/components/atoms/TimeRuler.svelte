@@ -1,0 +1,313 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+
+	import PlaybackControl from '$routes/map/components/atoms/PlaybackControl.svelte';
+	import type { SharedDiscreteDimension } from '$routes/map/data/types';
+
+	interface Props {
+		dimension: SharedDiscreteDimension;
+		currentIndex: number;
+		disabled?: boolean;
+		showPlayback?: boolean;
+		playbackSpeed?: number;
+		onPreview?: (index: number) => void | Promise<void>;
+		onCommit?: (index: number) => void | Promise<void>;
+	}
+
+	let {
+		dimension,
+		currentIndex,
+		disabled = false,
+		showPlayback = false,
+		playbackSpeed = $bindable(1200),
+		onPreview,
+		onCommit
+	}: Props = $props();
+
+	const tickSpacingPx = 18;
+	const shortTickHeight = 14;
+	const mediumTickHeight = 22;
+	const longTickHeight = 34;
+	const dragThresholdPx = 4;
+	const formatTimeValue = (value: string): string => {
+		if (/^\d{4}$/.test(value)) return `${Number(value)}年`;
+		const ym = value.match(/^(\d{4})-(\d{2})$/);
+		if (ym) return `${Number(ym[1])}年${Number(ym[2])}月`;
+		const ymd = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+		if (ymd) return `${Number(ymd[1])}年${Number(ymd[2])}月${Number(ymd[3])}日`;
+
+		const date = new Date(value);
+		if (Number.isNaN(date.getTime())) return value;
+
+		const y = date.getUTCFullYear();
+		const m = date.getUTCMonth() + 1;
+		const d = date.getUTCDate();
+		const h = date.getUTCHours();
+		const min = date.getUTCMinutes();
+
+		if (h === 0 && min === 0) {
+			return d === 1 ? `${y}年${m}月` : `${y}年${m}月${d}日`;
+		}
+
+		return `${y}/${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+	};
+
+	// ルーラーの描画状態と、ドラッグ中にだけ使う基準値。
+	let viewportElement: HTMLDivElement | undefined = $state();
+	let viewportWidth = $state(0);
+	let dragOffsetPx = $state(0);
+	let activePointerId: number | null = null;
+	let activeTouchId: number | null = null;
+	let pointerStartX = 0;
+	let pointerStartOffsetPx = 0;
+	let dragBaseIndex: number | null = null;
+	let lastPreviewedIndex: number | null = null;
+
+	// currentIndex をそのまま追うと、preview 更新中に基準がずれる。
+	// ドラッグ開始時の index を固定して、そこから相対移動で previewIndex を求める。
+	const referenceIndex = $derived(dragBaseIndex ?? currentIndex);
+	const previewIndex = $derived.by(() => {
+		const rawIndex = referenceIndex - dragOffsetPx / tickSpacingPx;
+		return clamp(Math.round(rawIndex), 0, Math.max(dimension.values.length - 1, 0));
+	});
+	const currentLabel = $derived(
+		dimension.labels?.[previewIndex] ?? formatTimeValue(dimension.values[previewIndex] ?? '')
+	);
+	const centerX = $derived(viewportWidth / 2);
+	// 全目盛りは描かず、現在位置の前後だけを描画して DOM 数を抑える。
+	const visibleRadius = $derived(Math.max(Math.ceil(viewportWidth / tickSpacingPx / 2) + 6, 12));
+	const visibleIndices = $derived.by(() => {
+		const start = Math.max(previewIndex - visibleRadius, 0);
+		const end = Math.min(previewIndex + visibleRadius, Math.max(dimension.values.length - 1, 0));
+		return Array.from({ length: end - start + 1 }, (_, offset) => start + offset);
+	});
+
+	const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+	const isMajorTick = (index: number) => {
+		if (dimension.type !== 'time') return index % 5 === 0;
+		if (dimension.values.length > 720) return index % 60 === 0;
+		if (dimension.values.length > 240) return index % 30 === 0;
+		if (dimension.values.length > 120) return index % 10 === 0;
+		if (dimension.values.length > 48) return index % 5 === 0;
+		return index % 2 === 0;
+	};
+
+	const isMediumTick = (index: number) => {
+		if (isMajorTick(index)) return false;
+		if (dimension.values.length > 240) return index % 10 === 0;
+		if (dimension.values.length > 120) return index % 5 === 0;
+		return index % 1 === 0;
+	};
+
+	const getTickHeight = (index: number) => {
+		if (isMajorTick(index)) return longTickHeight;
+		if (isMediumTick(index)) return mediumTickHeight;
+		return shortTickHeight;
+	};
+
+	const getTickX = (index: number) =>
+		centerX + (index - referenceIndex) * tickSpacingPx + dragOffsetPx;
+
+	const getTickLabel = (index: number) =>
+		dimension.labels?.[index] ?? formatTimeValue(dimension.values[index] ?? '');
+
+	// commit は「確定値」。ドラッグ用の一時状態を戻してから親へ通知する。
+	const commitIndex = async (index: number) => {
+		const clampedIndex = clamp(index, 0, Math.max(dimension.values.length - 1, 0));
+		dragOffsetPx = 0;
+		dragBaseIndex = null;
+		lastPreviewedIndex = null;
+		await onCommit?.(clampedIndex);
+	};
+
+	// ドラッグ開始時点の index と座標を保持する。
+	const beginDrag = (clientX: number) => {
+		dragBaseIndex = currentIndex;
+		lastPreviewedIndex = currentIndex;
+		pointerStartX = clientX;
+		pointerStartOffsetPx = dragOffsetPx;
+	};
+
+	// 入力座標から dragOffset を更新し、previewIndex が変わった瞬間だけ親へ知らせる。
+	const updateDrag = (clientX: number) => {
+		const deltaX = clientX - pointerStartX;
+		if (Math.abs(deltaX) < dragThresholdPx) return;
+		const nextOffsetPx = pointerStartOffsetPx + deltaX;
+		dragOffsetPx = nextOffsetPx;
+
+		if (dragBaseIndex == null) return;
+
+		const nextIndex = clamp(
+			Math.round(dragBaseIndex - nextOffsetPx / tickSpacingPx),
+			0,
+			Math.max(dimension.values.length - 1, 0)
+		);
+
+		// move ごとに発火せず、中央カーソルが次の目盛りへ跨いだ瞬間だけ preview を流す。
+		if (lastPreviewedIndex === nextIndex) return;
+		lastPreviewedIndex = nextIndex;
+		void onPreview?.(nextIndex);
+	};
+
+	// Pointer と Touch の両方を受ける。中では同じ drag 更新関数に寄せる。
+	const handlePointerDown = (event: PointerEvent) => {
+		if (disabled) return;
+		activePointerId = event.pointerId;
+		beginDrag(event.clientX);
+		viewportElement?.setPointerCapture(event.pointerId);
+	};
+
+	const handlePointerMove = (event: PointerEvent) => {
+		if (activePointerId !== event.pointerId) return;
+		updateDrag(event.clientX);
+	};
+
+	const handlePointerEnd = async (event: PointerEvent) => {
+		if (activePointerId !== event.pointerId) return;
+		const nextIndex = previewIndex;
+		activePointerId = null;
+		viewportElement?.releasePointerCapture(event.pointerId);
+		await commitIndex(nextIndex);
+	};
+
+	const handleTouchStart = (event: TouchEvent) => {
+		if (disabled) return;
+		const touch = event.changedTouches[0];
+		if (!touch) return;
+		activeTouchId = touch.identifier;
+		beginDrag(touch.clientX);
+	};
+
+	const handleTouchMove = (event: TouchEvent) => {
+		if (activeTouchId == null) return;
+		const touch =
+			Array.from(event.changedTouches).find((item) => item.identifier === activeTouchId) ??
+			Array.from(event.touches).find((item) => item.identifier === activeTouchId);
+		if (!touch) return;
+		updateDrag(touch.clientX);
+	};
+
+	const handleTouchEnd = async (event: TouchEvent) => {
+		if (activeTouchId == null) return;
+		const touch = Array.from(event.changedTouches).find(
+			(item) => item.identifier === activeTouchId
+		);
+		if (!touch) return;
+		activeTouchId = null;
+		await commitIndex(previewIndex);
+	};
+
+	const stepIndex = async (delta: number) => {
+		if (disabled) return;
+		await commitIndex(currentIndex + delta);
+	};
+
+	// キーボードでは 1 ステップずつ移動する。
+	const handleKeyDown = async (event: KeyboardEvent) => {
+		if (disabled) return;
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			await stepIndex(-1);
+			return;
+		}
+		if (event.key === 'ArrowRight') {
+			event.preventDefault();
+			await stepIndex(1);
+		}
+	};
+
+	const handlePlaybackTick = async () => {
+		const nextIndex = currentIndex >= dimension.values.length - 1 ? 0 : currentIndex + 1;
+		await commitIndex(nextIndex);
+	};
+
+	onMount(() => {
+		if (!viewportElement) return;
+
+		// 画面幅に応じて可視範囲の目盛り数を計算し直す。
+		const resizeObserver = new ResizeObserver((entries) => {
+			const entry = entries[0];
+			if (!entry) return;
+			viewportWidth = entry.contentRect.width;
+		});
+
+		resizeObserver.observe(viewportElement);
+
+		return () => {
+			resizeObserver.disconnect();
+		};
+	});
+</script>
+
+<div class="flex flex-col gap-4">
+	<div class="min-w-0 px-3 text-center">
+		<div class="text-xs text-white/60">{dimension.placeholder ?? '時間'}</div>
+		<div class="truncate text-sm text-white">{currentLabel}</div>
+	</div>
+
+	<!-- 時間ルーラー -->
+	<div
+		bind:this={viewportElement}
+		class="time-ruler relative h-[84px] w-full overflow-hidden rounded-2xl bg-black"
+		role="slider"
+		tabindex={disabled ? undefined : 0}
+		aria-label={dimension.placeholder ?? '時間'}
+		aria-orientation="horizontal"
+		aria-valuemin={0}
+		aria-valuemax={Math.max(dimension.values.length - 1, 0)}
+		aria-valuenow={previewIndex}
+		aria-valuetext={currentLabel}
+		aria-disabled={disabled}
+		onpointerdown={handlePointerDown}
+		onpointermove={handlePointerMove}
+		onpointerup={handlePointerEnd}
+		onpointercancel={handlePointerEnd}
+		ontouchstart={handleTouchStart}
+		ontouchmove={handleTouchMove}
+		ontouchend={handleTouchEnd}
+		ontouchcancel={handleTouchEnd}
+		onkeydown={handleKeyDown}
+	>
+		<div
+			class="pointer-events-none absolute inset-y-3 left-1/2 z-20 w-[2px] -translate-x-1/2 rounded-full bg-main-accent"
+		></div>
+		<div class="pointer-events-none absolute right-0 bottom-0 left-0 h-9 bg-black"></div>
+
+		{#each visibleIndices as index (index)}
+			<div
+				class="pointer-events-none absolute bottom-8 -translate-x-1/2"
+				style:left={`${getTickX(index)}px`}
+			>
+				<div
+					class={`w-[2px] rounded-full ${index === previewIndex ? 'bg-main-accent' : 'bg-white/75'}`}
+					style:height={`${getTickHeight(index)}px`}
+				></div>
+			</div>
+			{#if isMajorTick(index)}
+				<div
+					class={`pointer-events-none absolute bottom-3 max-w-[84px] -translate-x-1/2 truncate text-[10px] leading-none ${index === previewIndex ? 'text-white' : 'text-white/60'}`}
+					style:left={`${getTickX(index)}px`}
+				>
+					{getTickLabel(index)}
+				</div>
+			{/if}
+		{/each}
+	</div>
+
+	{#if showPlayback}
+		<PlaybackControl
+			{disabled}
+			bind:playbackSpeed
+			onPrevious={() => stepIndex(-1)}
+			onNext={() => stepIndex(1)}
+			onTick={handlePlaybackTick}
+		/>
+	{/if}
+</div>
+
+<style>
+	.time-ruler {
+		touch-action: none;
+	}
+</style>

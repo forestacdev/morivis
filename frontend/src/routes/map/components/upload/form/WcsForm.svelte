@@ -14,7 +14,7 @@
 	import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterBaseMapStyle, RasterWcsEntry } from '$routes/map/data/types/raster';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import {
 		describeWcsCoverage,
 		estimateWcsCoverageRange,
@@ -33,7 +33,7 @@
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 	}
 
 	let {

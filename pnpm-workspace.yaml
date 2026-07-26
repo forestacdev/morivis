@@ -1,11 +1,29 @@
 packages:
   - frontend
-  - data
-  - api
-  - aws
-  - data/scripts/node
+
+minimumReleaseAge: 10080
+strictDepBuilds: true
+trustPolicy: no-downgrade
+trustPolicyExclude:
+  - chokidar@4.0.3
+  - eslint-config-prettier@9.1.2
+  - rollup@2.80.0
+  - semver@6.3.1
+  - vite@5.4.21
+
+overrides:
+  sharp: 0.34.5
+  '@sveltejs/enhanced-img>sharp': 0.34.5
+  '@xmldom/xmldom': 0.8.13
+  thrift: 0.23.0
+  tmp: 0.2.6
 
 ignoredBuiltDependencies:
   - better-sqlite3
-  - core-js
-  - esbuild
+
+allowBuilds:
+  core-js: false
+  dprint: true
+  esbuild: true
+  msw: false
+  sharp: true

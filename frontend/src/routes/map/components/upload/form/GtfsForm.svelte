@@ -6,10 +6,11 @@
 	import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FieldDef, VectorTemporalItem } from '$routes/map/data/types/vector/properties';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { loadGTFSFromFiles, loadGTFSFromZip } from '$routes/map/utils/formats/gtfs';
 	import { readRoutes, readStops, readTimedStops } from '$routes/map/utils/formats/gtfs/parse';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -18,7 +19,7 @@
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 	}
 
 	let {
@@ -37,8 +38,8 @@
 
 	let gtfsData = $state<Awaited<ReturnType<typeof loadGTFSFromZip>> | null>(null);
 
-	const setFile = async (input: File | FileList) => {
-		const files = input instanceof FileList ? Array.from(input) : [input];
+	const setFile = async (input: UploadFilesInput) => {
+		const files = toUploadFiles(input);
 		const primaryFile = files[0];
 		if (!primaryFile) return;
 
@@ -47,9 +48,9 @@
 
 		try {
 			const gtfs =
-				input instanceof FileList
-					? await loadGTFSFromFiles(files)
-					: await loadGTFSFromZip(await primaryFile.arrayBuffer());
+				files.length === 1 && /\.zip$/i.test(primaryFile.name)
+					? await loadGTFSFromZip(await primaryFile.arrayBuffer())
+					: await loadGTFSFromFiles(files);
 			gtfsData = gtfs;
 
 			agencyName = gtfs.agency[0]?.agency_name ?? '';

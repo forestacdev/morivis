@@ -20,12 +20,15 @@ export interface ThumbnailOptions {
 const DEG2RAD = Math.PI / 180;
 const latToMercY = (lat: number) => Math.log(Math.tan(lat * DEG2RAD * 0.5 + Math.PI / 4));
 const clampLat = (lat: number) => Math.max(-85, Math.min(85, lat));
+const isByteLikeBand = (band: ArrayLike<number>) =>
+	band instanceof Uint8Array || band instanceof Uint8ClampedArray;
 
 export const generateThumbnail = (opts: ThumbnailOptions): string => {
 	const { bands, width, height, bbox, nodata = null, ranges, thumbSize = 512 } = opts;
 
 	const numBands = bands.length;
 	const isRgb = numBands >= 3;
+	const preserveRgbValues = isRgb && bands.slice(0, 3).every((band) => isByteLikeBand(band));
 
 	// サムネイルサイズを計算
 	let thumbW: number;
@@ -116,6 +119,11 @@ export const generateThumbnail = (opts: ThumbnailOptions): string => {
 			} else if (isRgb) {
 				for (let b = 0; b < 3; b++) {
 					const v = bands[b][srcIdx];
+					if (preserveRgbValues) {
+						pixels[dstIdx + b] = Math.max(0, Math.min(255, Math.round(v)));
+						continue;
+					}
+
 					const r = effectiveRanges[b];
 					const norm = r.max !== r.min ? (v - r.min) / (r.max - r.min) : 0;
 					pixels[dstIdx + b] = Math.max(0, Math.min(255, Math.round(norm * 255)));

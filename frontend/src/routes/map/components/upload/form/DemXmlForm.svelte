@@ -19,7 +19,7 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { parseDemXml, type DemXmlResult } from '$routes/map/utils/formats/dem-xml';
 	import {
@@ -30,13 +30,14 @@
 	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
+	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		geoRefData: GeoRefData | null;
 	}
@@ -64,7 +65,7 @@
 	// dropFileが変わるたびに蓄積に追加
 	$effect(() => {
 		if (!dropFile) return;
-		const files = dropFile instanceof FileList ? Array.from(dropFile) : [dropFile];
+		const files = toUploadFiles(dropFile);
 		const xmlFiles = files.filter((f) => /\.xml$/i.test(f.name));
 		const zipFile = files.find((f) => /\.zip$/i.test(f.name));
 
@@ -101,7 +102,7 @@
 	});
 
 	// 追加ドロップ時のハンドラ
-	const onDropFiles = (files: FileList) => {
+	const onDropFiles = (files: File[]) => {
 		dropFile = files;
 		analyzed = false;
 		demResult = null;

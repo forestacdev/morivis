@@ -18,7 +18,7 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
 		getMinMax,
@@ -42,13 +42,14 @@
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { transformBboxInWorker } from '$routes/map/utils/proj/transform-bbox';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
@@ -92,17 +93,15 @@
 	let parsedBands = $state<RasterBands | null>(null);
 	let parsedNodata = $state<number | null>(null);
 	let dataRanges = $state<BandDataRange[]>([]);
+	const inputFiles = $derived.by(() => toUploadFiles(dropFile));
 
 	const imageFile = $derived.by(() => {
-		if (!dropFile) return null;
-		if (dropFile instanceof FileList) {
-			return (
-				findGeoReferencedImageFile(dropFile) ??
-				Array.from(dropFile).find((f) => /\.(tiff?|tif|png|jpe?g|webp)$/i.test(f.name)) ??
-				null
-			);
-		}
-		return dropFile;
+		if (inputFiles.length === 0) return null;
+		return (
+			findGeoReferencedImageFile(inputFiles) ??
+			inputFiles.find((f) => /\.(tiff?|tif|png|jpe?g|webp)$/i.test(f.name)) ??
+			null
+		);
 	});
 
 	const isPlainImage = $derived(imageFile ? /\.(png|jpe?g|webp)$/i.test(imageFile.name) : false);
@@ -312,21 +311,17 @@
 			// aux.xmlからGeoTransform/EPSGコードを取得
 			let auxEpsg: EpsgCode | null = null;
 			let auxContent: string | null = null;
-			if (dropFile instanceof FileList) {
-				const auxFile = findMatchingAuxXmlFile(dropFile, file);
-				if (auxFile) {
-					auxContent = await auxFile.text();
-					auxEpsg = parseEpsgFromAuxXml(auxContent);
-				}
+			const auxFile = findMatchingAuxXmlFile(inputFiles, file);
+			if (auxFile) {
+				auxContent = await auxFile.text();
+				auxEpsg = parseEpsgFromAuxXml(auxContent);
 			}
 
 			// ワールドファイルから位置情報を取得
-			if (dropFile instanceof FileList) {
-				const wf = findMatchingWorldFile(dropFile, file);
-				if (wf) {
-					rawBbox = await parseTfw(wf, width, height);
-					hasTfw = true;
-				}
+			const wf = findMatchingWorldFile(inputFiles, file);
+			if (wf) {
+				rawBbox = await parseTfw(wf, width, height);
+				hasTfw = true;
 			}
 
 			// ワールドファイルがなければaux.xmlのGeoTransformからbboxを取得
@@ -370,8 +365,8 @@
 			rawBbox = result.rawBbox;
 
 			// GeoTIFFにbboxがなければワールドファイル(.tfw)を探す
-			if (!rawBbox && dropFile instanceof FileList) {
-				const tfwFile = findMatchingWorldFile(dropFile, file);
+			if (!rawBbox) {
+				const tfwFile = findMatchingWorldFile(inputFiles, file);
 				if (tfwFile) {
 					rawBbox = await parseTfw(tfwFile, result.width, result.height);
 					hasTfw = true;
@@ -406,12 +401,10 @@
 			// aux.xmlからGeoTransform/EPSGコードを取得
 			let auxEpsg: EpsgCode | null = null;
 			let auxContent: string | null = null;
-			if (dropFile instanceof FileList) {
-				const auxFile = findMatchingAuxXmlFile(dropFile, file);
-				if (auxFile) {
-					auxContent = await auxFile.text();
-					auxEpsg = parseEpsgFromAuxXml(auxContent);
-				}
+			const auxFile = findMatchingAuxXmlFile(inputFiles, file);
+			if (auxFile) {
+				auxContent = await auxFile.text();
+				auxEpsg = parseEpsgFromAuxXml(auxContent);
 			}
 
 			// ワールドファイル・GeoTIFF内蔵bboxがなければaux.xmlのGeoTransformからbboxを取得

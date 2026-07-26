@@ -107,6 +107,7 @@ export type DialogType =
 	| 'topojson'
 	| 'landxml'
 	| 'stac'
+	| 'svg'
 	| 'geoparquet'
 	| 'geoarrow'
 	| 'mif'
@@ -123,6 +124,9 @@ export interface SupportedFileGroup {
 	description: string;
 	extensions: string[];
 }
+
+export type UploadFiles = File[] | null;
+export type UploadFilesInput = UploadFiles | File | FileList | null;
 
 /** ファイル拡張子のグループ分け（UI表示用） */
 export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
@@ -308,6 +312,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'撮影位置をEXIFに持つ写真画像です。位置付き写真を地点として地図に載せるときに使います。',
 		extensions: ['.png', '.jpg', '.jpeg', '.webp']
+	},
+	{
+		label: 'SVG',
+		description:
+			'ベクター図形をXMLで記述した画像形式です。図面やイラストを画像としてジオリファレンスして重ねるときに使います。',
+		extensions: ['.svg']
 	},
 	{
 		label: 'GeoPDF',

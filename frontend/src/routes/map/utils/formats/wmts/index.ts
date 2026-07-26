@@ -129,8 +129,7 @@ export const parseWmtsCapabilities = async (
 								const rawValues: string[] = Array.isArray(dim.Value)
 									? dim.Value
 									: [dim.Value];
-								const values = rawValues.flatMap((v: string) => parseTimeValues(v))
-									.reverse();
+								const values = rawValues.flatMap((v: string) => parseTimeValues(v));
 								if (values.length > 0) {
 									timeDimension = {
 										values

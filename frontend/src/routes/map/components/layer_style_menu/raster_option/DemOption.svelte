@@ -94,23 +94,25 @@
 						<ColorScaleDem isColorMap={_isColorMap} />
 					{/snippet}
 				</ColorMapSelect>
-				<RangeSliderDouble
-					label="標高数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.range!.value[0]}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.relief.range!.value[1]}
-					max={layerEntry.style.visualization.uniformsData.relief.range!.domain[1]}
-					min={layerEntry.style.visualization.uniformsData.relief.range!.domain[0]}
-					step={0.01}
-					primaryColor={colorMapManager.createDemCSSGradient(
-						layerEntry.style.visualization.uniformsData.relief
-					)}
-					minRangeColor={colorMapManager.getDemMinColor(
-						layerEntry.style.visualization.uniformsData.relief
-					)}
-					maxRangeColor={colorMapManager.getDemMaxColor(
-						layerEntry.style.visualization.uniformsData.relief
-					)}
-				/>
+				{#if layerEntry.style.visualization.uniformsData.relief.range}
+					<RangeSliderDouble
+						label="標高数値範囲"
+						bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.range.value[0]}
+						bind:upperValue={layerEntry.style.visualization.uniformsData.relief.range.value[1]}
+						max={layerEntry.style.visualization.uniformsData.relief.range.domain[1]}
+						min={layerEntry.style.visualization.uniformsData.relief.range.domain[0]}
+						step={0.01}
+						primaryColor={colorMapManager.createDemCSSGradient(
+							layerEntry.style.visualization.uniformsData.relief
+						)}
+						minRangeColor={colorMapManager.getDemMinColor(
+							layerEntry.style.visualization.uniformsData.relief
+						)}
+						maxRangeColor={colorMapManager.getDemMaxColor(
+							layerEntry.style.visualization.uniformsData.relief
+						)}
+					/>
+				{/if}
 				<RangeSlider
 					label="分類数"
 					bind:value={layerEntry.style.visualization.uniformsData.relief.divisions}
@@ -130,23 +132,25 @@
 						<ColorScaleDem isColorMap={_isColorMap} />
 					{/snippet}
 				</ColorMapSelect>
-				<RangeSliderDouble
-					label="標高数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.range!.value[0]}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.relief.range!.value[1]}
-					max={layerEntry.style.visualization.uniformsData.relief.range!.domain[1]}
-					min={layerEntry.style.visualization.uniformsData.relief.range!.domain[0]}
-					step={0.01}
-					primaryColor={colorMapManager.createDemCSSGradient(
-						layerEntry.style.visualization.uniformsData.relief
-					)}
-					minRangeColor={colorMapManager.getDemMinColor(
-						layerEntry.style.visualization.uniformsData.relief
-					)}
-					maxRangeColor={colorMapManager.getDemMaxColor(
-						layerEntry.style.visualization.uniformsData.relief
-					)}
-				/>
+				{#if layerEntry.style.visualization.uniformsData.relief.range}
+					<RangeSliderDouble
+						label="標高数値範囲"
+						bind:lowerValue={layerEntry.style.visualization.uniformsData.relief.range.value[0]}
+						bind:upperValue={layerEntry.style.visualization.uniformsData.relief.range.value[1]}
+						max={layerEntry.style.visualization.uniformsData.relief.range.domain[1]}
+						min={layerEntry.style.visualization.uniformsData.relief.range.domain[0]}
+						step={0.01}
+						primaryColor={colorMapManager.createDemCSSGradient(
+							layerEntry.style.visualization.uniformsData.relief
+						)}
+						minRangeColor={colorMapManager.getDemMinColor(
+							layerEntry.style.visualization.uniformsData.relief
+						)}
+						maxRangeColor={colorMapManager.getDemMaxColor(
+							layerEntry.style.visualization.uniformsData.relief
+						)}
+					/>
+				{/if}
 			{/if}
 		{/if}
 
@@ -179,23 +183,25 @@
 					{/snippet}
 				</ColorMapSelect>
 
-				<RangeSliderDouble
-					label="傾斜量数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.range!.value[0]}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.range!.value[1]}
-					max={layerEntry.style.visualization.uniformsData.slope.range!.domain[1]}
-					min={layerEntry.style.visualization.uniformsData.slope.range!.domain[0]}
-					step={0.01}
-					primaryColor={colorMapManager.createDemCSSGradient(
-						layerEntry.style.visualization.uniformsData.slope
-					)}
-					minRangeColor={colorMapManager.getDemMinColor(
-						layerEntry.style.visualization.uniformsData.slope
-					)}
-					maxRangeColor={colorMapManager.getDemMaxColor(
-						layerEntry.style.visualization.uniformsData.slope
-					)}
-				/>
+				{#if layerEntry.style.visualization.uniformsData.slope.range}
+					<RangeSliderDouble
+						label="傾斜量数値範囲"
+						bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.range.value[0]}
+						bind:upperValue={layerEntry.style.visualization.uniformsData.slope.range.value[1]}
+						max={layerEntry.style.visualization.uniformsData.slope.range.domain[1]}
+						min={layerEntry.style.visualization.uniformsData.slope.range.domain[0]}
+						step={0.01}
+						primaryColor={colorMapManager.createDemCSSGradient(
+							layerEntry.style.visualization.uniformsData.slope
+						)}
+						minRangeColor={colorMapManager.getDemMinColor(
+							layerEntry.style.visualization.uniformsData.slope
+						)}
+						maxRangeColor={colorMapManager.getDemMaxColor(
+							layerEntry.style.visualization.uniformsData.slope
+						)}
+					/>
+				{/if}
 				<div class="my-3">
 					<RangeSlider
 						label="分類数"
@@ -218,23 +224,25 @@
 					{/snippet}
 				</ColorMapSelect>
 
-				<RangeSliderDouble
-					label="傾斜量数値範囲"
-					bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.range!.value[0]}
-					bind:upperValue={layerEntry.style.visualization.uniformsData.slope.range!.value[1]}
-					max={layerEntry.style.visualization.uniformsData.slope.range!.domain[1]}
-					min={layerEntry.style.visualization.uniformsData.slope.range!.domain[0]}
-					step={0.01}
-					primaryColor={colorMapManager.createDemCSSGradient(
-						layerEntry.style.visualization.uniformsData.slope
-					)}
-					minRangeColor={colorMapManager.getDemMinColor(
-						layerEntry.style.visualization.uniformsData.slope
-					)}
-					maxRangeColor={colorMapManager.getDemMaxColor(
-						layerEntry.style.visualization.uniformsData.slope
-					)}
-				/>
+				{#if layerEntry.style.visualization.uniformsData.slope.range}
+					<RangeSliderDouble
+						label="傾斜量数値範囲"
+						bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.range.value[0]}
+						bind:upperValue={layerEntry.style.visualization.uniformsData.slope.range.value[1]}
+						max={layerEntry.style.visualization.uniformsData.slope.range.domain[1]}
+						min={layerEntry.style.visualization.uniformsData.slope.range.domain[0]}
+						step={0.01}
+						primaryColor={colorMapManager.createDemCSSGradient(
+							layerEntry.style.visualization.uniformsData.slope
+						)}
+						minRangeColor={colorMapManager.getDemMinColor(
+							layerEntry.style.visualization.uniformsData.slope
+						)}
+						maxRangeColor={colorMapManager.getDemMaxColor(
+							layerEntry.style.visualization.uniformsData.slope
+						)}
+					/>
+				{/if}
 			{/if}
 		{/if}
 

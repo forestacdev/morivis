@@ -12,6 +12,7 @@ Thumbs.db
 .vscode
 node_modules/
 **/node_modules/
+.pnpm-store
 .mcp.json
 .serena
 CLAUDE.md

@@ -71,6 +71,7 @@ export const generateTexture = (
 
 export const uniforms = {
 	time: { value: 0 },
+	fadeProgress: { value: 0 },
 	uColor: { value: new THREE.Color('rgb(252, 252, 252)') },
 	uColor2: { value: new THREE.Color('rgb(0, 194, 36)') },
 

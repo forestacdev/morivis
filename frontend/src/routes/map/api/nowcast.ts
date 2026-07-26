@@ -111,7 +111,6 @@ export async function getJmaTileUrls(maxAge: number = 300000): Promise<TileInfo[
 					})
 					.filter((basetime): basetime is string => basetime !== null)
 					.sort()
-					.reverse()
 					.map((basetime: string) => {
 						const date = parseBasetime(basetime);
 						if (!date) return null;
@@ -148,7 +147,7 @@ export async function getJmaTileUrls(maxAge: number = 300000): Promise<TileInfo[
 export async function getLatestJmaTileUrl(): Promise<TileInfo | null> {
 	try {
 		const tileInfos = await getJmaTileUrls();
-		return tileInfos.length > 0 ? tileInfos[0] : null;
+		return tileInfos.length > 0 ? tileInfos[tileInfos.length - 1] ?? null : null;
 	} catch (error) {
 		console.error('Failed to get latest JMA tile URL:', error);
 		return null;

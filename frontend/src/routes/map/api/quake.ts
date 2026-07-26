@@ -370,9 +370,9 @@ const createEarthquakePointEntry = (
 		location: '全国',
 		description: config.description,
 		downloadUrl: config.downloadUrl,
-		tags: config.tags ?? ['地震', '気象'],
+		tags: config.tags ?? ['地震'],
 		zoom: { min: 3, max: 24 },
-		xyzImageTile: 'zoom_7',
+		xyzImageTile: 'zoom_8',
 		mapImage: config.mapImage,
 		fields: [
 			{
@@ -413,6 +413,8 @@ const createEarthquakePointEntry = (
 		color: '#e31a1c',
 		radius: 6
 	});
+
+	entry.style.colors.key = 'magnitude';
 
 	entry.style.labels = {
 		...entry.style.labels,
@@ -466,7 +468,8 @@ const createEarthquakePointEntry = (
 				labels: temporalItems.map((item) => item.label)
 			},
 			behaviors: [{ type: 'filter', key: 'time' }],
-			items: temporalItems
+			items: temporalItems,
+			cameraTrackingMode: 'feature'
 		};
 		entry.properties.attributeView.timeKey = 'time';
 	}

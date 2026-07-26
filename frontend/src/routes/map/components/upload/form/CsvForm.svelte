@@ -5,13 +5,13 @@
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;

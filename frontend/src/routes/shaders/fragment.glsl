@@ -13,6 +13,7 @@ varying mat4 vModelMatrix;
 uniform vec3 uColor;
 uniform vec3 uColor2;
 uniform float time;
+uniform float fadeProgress;
 varying mat4 v_modelMatrix;
 varying float v_fogDistance;
 
@@ -72,6 +73,10 @@ void main(){
     vec3 slopeColor = mix(color2, vec3(0.0, 1.0, 0.898), pow(slope, .5)); // 傾斜が急なほどオレンジに近づく
 
     // fog + glow + contour + 傾斜
-    gl_FragColor = vec4(slopeColor, fog_alpha) * intensity;
+    float reveal = smoothstep(0.0, 1.0, fadeProgress);
+    float finalAlpha = fog_alpha * reveal;
+    vec3 finalColor = slopeColor * mix(0.7, 1.0, reveal);
+
+    gl_FragColor = vec4(finalColor, finalAlpha) * intensity;
 
 }

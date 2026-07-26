@@ -6,6 +6,7 @@ import {
 	PUBLIC_BASE_PATH,
 	PUBLIC_DISASTER_LORE_ALL_PATH,
 	PUBLIC_ENTRY_PATH,
+	PUBLIC_INT_ADD_LAYER_IDS,
 	PUBLIC_PANORAMA_PATH,
 	PUBLIC_TIMBER_SPECIES_PATH
 } from '$env/static/public';
@@ -122,5 +123,18 @@ export const MAPLIBRE_POPUP_OPTIONS: PopupOptions = {
 /** クリックさせないlayerのid */
 export const EXCLUDE_IDS_CLICK_LAYER = ['HighlightFeatureId', 'HighlightFeatureId_line'];
 
+const DEFAULT_INT_ADD_LAYER_IDS = ['fac_poi_search', 'ensyurin_syouhan', 'national_forest_stand'];
+const parseLayerIds = (value: string) => {
+	return value
+		.split(',')
+		.map((id) => id.trim())
+		.filter(Boolean);
+};
+const envIntAddLayerIds = PUBLIC_INT_ADD_LAYER_IDS ?? '';
+
+const parsedIntAddLayerIds = parseLayerIds(envIntAddLayerIds);
+
 /** 初期表示のレイヤーid */
-export const INT_ADD_LAYER_IDS = ['fac_poi_search', 'ensyurin_syouhan', 'national_forest_stand'];
+export const INT_ADD_LAYER_IDS = parsedIntAddLayerIds.length
+	? parsedIntAddLayerIds
+	: DEFAULT_INT_ADD_LAYER_IDS;

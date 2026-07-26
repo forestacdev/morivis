@@ -16,6 +16,7 @@ import type {
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { findCenterTile } from '$routes/map/utils/map/tile';
+import { createClientId } from '$routes/utils/id';
 
 export const createRasterEntry = (
 	name: string,
@@ -37,7 +38,7 @@ export const createRasterEntry = (
 		: undefined;
 
 	const entry: MorivisRasterEntry<RasterBaseMapStyle> = {
-		id: 'raster_' + crypto.randomUUID(),
+		id: 'raster_' + createClientId(),
 		type: 'raster',
 		format: {
 			type: 'image',
@@ -88,7 +89,7 @@ export const createDemRasterEntry = (
 		demType?: DemDataTypeKey;
 	}
 ): MorivisRasterEntry<RasterDemStyle> => ({
-	id: 'dem_' + crypto.randomUUID(),
+	id: 'dem_' + createClientId(),
 	type: 'raster',
 	format: {
 		type: 'image',
@@ -119,7 +120,7 @@ export const createPmtilesRasterEntry = (
 	url: string,
 	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number; }
 ): RasterPMTilesEntry<RasterBaseMapStyle> => ({
-	id: 'pmtiles_' + crypto.randomUUID(),
+	id: 'pmtiles_' + createClientId(),
 	type: 'raster',
 	format: {
 		type: 'pmtiles',

@@ -85,7 +85,8 @@
 		type DialogType,
 		type FeatureMenuData,
 		type FeaturePanelData,
-		type HighlightMarkerState
+		type HighlightMarkerState,
+		type UploadFiles
 	} from '$routes/map/types';
 	import type { DrawGeojsonData } from '$routes/map/types/draw';
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
@@ -166,7 +167,7 @@
 
 	let layerEntries = $state<MorivisLayerEntry[]>([]); // アクティブなレイヤーデータ
 	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
-	let dropFile = $state<File | FileList | null>(null); // ドロップしたファイル
+	let dropFile = $state<UploadFiles>(null); // ドロップしたファイル
 	let remoteGeoZarrUrl = $state<string | null>(null);
 	let remotePmtilesUrl = $state<string | null>(null);
 	let remoteRasterUrl = $state<string | null>(null);
@@ -279,7 +280,7 @@
 				`+page finalizeGeoRefEntry開始: id=${data.entryId}, mode=${data.registrationMode}, size=${data.imageWidth}x${data.imageHeight}`
 			);
 
-			if (data.sourceType === 'vector' && data.sourceFeatureCollectionId && data.initialCorners) {
+			if (data.sourceType === 'vector' && data.sourceFeatureCollectionId && data.sourceCorners) {
 				const sourceFeatureCollection = GeoRefVectorSourceCache.get(data.sourceFeatureCollectionId);
 				if (!sourceFeatureCollection) {
 					throw new Error('GeoRefベクターの元データが見つかりません');
@@ -288,7 +289,7 @@
 				const plainCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
 				const warpedGeojson = await warpGeoJSONByCornersParallel(
 					sourceFeatureCollection,
-					data.initialCorners,
+					data.sourceCorners,
 					plainCorners
 				);
 				const warpedType = geometryTypeToEntryType(warpedGeojson as AppFeatureCollection);
@@ -896,11 +897,16 @@
 			return resolvedEntry;
 		}
 
+		const currentState = 'state' in currentEntry ? currentEntry.state : undefined;
+		const resolvedState = 'state' in resolvedEntry ? resolvedEntry.state : undefined;
+		const mergedState =
+			currentEntry.metaData.needsLazyHydration === true ? resolvedState : currentState;
+
 		return {
 			...resolvedEntry,
 			style: currentEntry.style,
 			interaction: currentEntry.interaction,
-			...('state' in currentEntry ? { state: currentEntry.state } : {})
+			...(mergedState ? { state: mergedState } : {})
 		} as MorivisLayerEntry;
 	};
 

@@ -74,7 +74,11 @@ export const getHimawariSatimgTimes = async (): Promise<HimawariTargetTime[]> =>
 };
 
 const normalizeHimawariBasetimes = (data: HimawariTargetTime[]): string[] => {
-	return [...new Set(data.map((item) => item.basetime))].sort((a, b) => Number(b) - Number(a));
+	return [...new Set(data.map((item) => item.basetime))].sort((a, b) => Number(a) - Number(b));
+};
+
+const getHimawariInitialIndex = (basetimes: string[]) => {
+	return Math.floor(basetimes.length / 2);
 };
 
 const formatHimawariTimeLabel = (basetime: string) => {
@@ -83,7 +87,7 @@ const formatHimawariTimeLabel = (basetime: string) => {
 	const day = basetime.slice(6, 8);
 	const hour = basetime.slice(8, 10);
 	const minute = basetime.slice(10, 12);
-	return `${year}/${month}/${day} ${hour}:${minute} JST`;
+	return `${year}年${Number(month)}月${Number(day)}日 ${hour}:${minute}`;
 };
 
 export const getHimawariImageUrl = (basetime: string | number, band = 'B13', prod = 'TBB') => {
@@ -117,6 +121,10 @@ export const createHimawariRasterEntry = async (
 			}
 		}
 	);
+
+	if (entry.state?.dimension) {
+		entry.state.dimension.currentIndex = getHimawariInitialIndex(basetimes);
+	}
 
 	entry.id = config.id;
 	entry.metaData.name = config.name;

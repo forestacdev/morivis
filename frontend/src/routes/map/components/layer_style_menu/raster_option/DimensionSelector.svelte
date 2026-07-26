@@ -1,13 +1,11 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import type { EmblaCarouselType, EmblaOptionsType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { onDestroy } from 'svelte';
 
 	import Accordion from '../../atoms/Accordion.svelte';
-	import RangeSlider from '../../atoms/RangeSlider.svelte';
+	import PlaybackControl from '../../atoms/PlaybackControl.svelte';
 
-	import { ICONS } from '$lib/icons';
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
 		MorivisRasterEntry,
@@ -91,11 +89,11 @@
 	let imageUpdateRequestId = 0;
 	let isUpdatingDimension = $state(false);
 	let playbackSpeed = $state(1200);
-	const playbackIntervalMs = $derived(2001 - playbackSpeed);
 
 	$effect(() => {
 		if (!dimension || dimensionState) return;
 
+		// 時間軸を持つレイヤーは、開いた時点で最初のコマを選択状態にしておく。
 		layerEntry.state = {
 			...layerEntry.state,
 			dimension: {
@@ -104,12 +102,14 @@
 		};
 	});
 
-	const onSelect = async () => {
-		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
-		const currentIndex = emblaMainCarousel.selectedScrollSnap();
+	// 実際の時刻切り替え本体。
+	// UI から渡された index を entry.state に反映し、必要な runtime 更新だけ流す。
+	const applyDimensionIndex = async (currentIndex: number) => {
+		if (!dimension) return;
 		if (currentIndex === dimensionState?.currentIndex) return;
 		const requestId = ++imageUpdateRequestId;
 
+		// mesh は MapLibre ではなく model runtime 側の時刻更新を使う。
 		if (isTemporalMeshEntry(layerEntry)) {
 			isUpdatingDimension = true;
 			try {
@@ -120,12 +120,15 @@
 			return;
 		}
 
+		// vector / raster は共通で currentIndex を保存してから種別ごとの更新へ進む。
 		layerEntry.state = {
 			...layerEntry.state,
 			dimension: {
 				currentIndex
 			}
 		};
+
+		// source temporal vector は source data の差し替えだけで済む。
 		if (isSourceTemporalVectorEntry(layerEntry)) {
 			const runtimeUpdates = await getVectorDimensionRuntimeUpdates(layerEntry);
 			runtimeUpdates.forEach((update) => {
@@ -136,6 +139,7 @@
 
 		if (!isRasterEntry(layerEntry)) return;
 
+		// TIFF 系は time step に応じて色レンジも持ち直す必要がある。
 		if (
 			layerEntry.style.type === 'tiff' &&
 			layerEntry.format.type === 'image' &&
@@ -205,6 +209,7 @@
 
 		if (layerEntry.style.type !== 'tiff' || layerEntry.format.type !== 'image') return;
 
+		// image source を使う TIFF だけは、最終的に画像自体の差し替えまで行う。
 		const imageSource = await getRasterTiffImageSource(
 			layerEntry as RasterImageEntry<RasterTiffStyle>
 		);
@@ -220,6 +225,12 @@
 			url: imageSource.url,
 			coordinates: imageSource.coordinates
 		});
+	};
+
+	// PC の Embla 選択変更は、そのまま applyDimensionIndex に流す。
+	const onSelect = async () => {
+		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
+		await applyDimensionIndex(emblaMainCarousel.selectedScrollSnap());
 	};
 
 	// const onSelect = () => {
@@ -261,48 +272,10 @@
 		emblaMainCarousel.scrollPrev();
 	};
 
-	let isPlaying = $state(false);
-
-	let autoplayTimeout: ReturnType<typeof setTimeout> | null = null;
-
-	const clearAutoplayTimer = () => {
-		if (autoplayTimeout) {
-			clearTimeout(autoplayTimeout);
-			autoplayTimeout = null;
-		}
+	const handlePlaybackTick = async () => {
+		if (!emblaMainCarousel || isUpdatingDimension) return;
+		emblaMainCarousel.scrollNext();
 	};
-
-	const scheduleAutoplayTick = () => {
-		clearAutoplayTimer();
-		if (!isPlaying || !emblaMainCarousel) return;
-
-		autoplayTimeout = setTimeout(() => {
-			if (!isPlaying || !emblaMainCarousel) return;
-			if (!isUpdatingDimension) {
-				emblaMainCarousel.scrollNext();
-			}
-			scheduleAutoplayTick();
-		}, playbackIntervalMs);
-	};
-
-	const toggleAutoplay = () => {
-		if (!emblaMainCarousel) return;
-
-		if (isPlaying) {
-			clearAutoplayTimer();
-			isPlaying = false;
-		} else {
-			isPlaying = true;
-			scheduleAutoplayTick();
-		}
-	};
-
-	$effect(() => {
-		const autoplayIntervalMs = playbackIntervalMs;
-		if (!autoplayIntervalMs) return;
-		if (!isPlaying) return;
-		scheduleAutoplayTick();
-	});
 
 	// ホイールイベント用の変数
 	let carouselElement: HTMLElement | undefined = $state();
@@ -340,7 +313,6 @@
 	};
 
 	onDestroy(() => {
-		clearAutoplayTimer();
 		if (carouselElement) {
 			carouselElement.removeEventListener('wheel', handleWheel);
 		}
@@ -387,7 +359,11 @@
 		icon={dimension.type === 'time' ? 'mdi:clock-outline' : 'carbon:category'}
 		bind:value={showDimensionOption}
 	>
-		<div class="relative flex flex-col gap-4">
+		<!--
+			TimeRuler は不具合切り分けのため一時停止中。
+			復帰時はモバイル分岐ごと戻す。
+		-->
+		<div class="flex flex-col gap-4">
 			<div class="flex items-center gap-1">
 				<div
 					use:emblaCarouselSvelte={{
@@ -409,55 +385,15 @@
 					</div>
 				</div>
 			</div>
-			<div
-				class="group pointer-events-none absolute flex h-full w-full items-center justify-between px-1"
-			>
-				<button
-					onclick={onClickPrev}
-					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-					aria-label="前へ"
-					disabled={isUpdatingDimension}
-				>
-					<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
-				</button>
-
-				<button
-					onclick={onClickNext}
-					class="bg-main/70 pointer-events-auto z-10 grid h-8 w-8 cursor-pointer place-items-center items-center rounded-full text-white shadow-md transition-opacity duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-					aria-label="次へ"
-					disabled={isUpdatingDimension}
-				>
-					<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
-				</button>
-			</div>
 		</div>
 		{#if dimension.type === 'time'}
-			<div class="flex items-center justify-center gap-2 pt-3">
-				<button
-					onclick={toggleAutoplay}
-					class="bg-sub flex w-[200px] cursor-pointer items-center justify-center gap-1 rounded-full p-1 text-sm text-white select-none hover:bg-white/10"
-					aria-label={isPlaying ? '停止' : '再生'}
-				>
-					{#if isPlaying}
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-							<path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-						</svg>
-						停止
-					{:else}
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-							<path fill="currentColor" d="M8 5v14l11-7z" />
-						</svg>
-						再生
-					{/if}
-				</button>
-			</div>
-			<div class="pt-2">
-				<RangeSlider
-					label={`再生速度 (${Math.round((1000 / playbackIntervalMs) * 10) / 10} コマ/秒)`}
-					bind:value={playbackSpeed}
-					min={1}
-					max={2000}
-					step={1}
+			<div class="pt-3">
+				<PlaybackControl
+					disabled={isUpdatingDimension}
+					bind:playbackSpeed
+					onPrevious={onClickPrev}
+					onNext={onClickNext}
+					onTick={handlePlaybackTick}
 				/>
 			</div>
 		{/if}

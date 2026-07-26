@@ -15,7 +15,7 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createAdjustableRange, type MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
 		encodeAllBandsToTerrarium,
@@ -31,13 +31,14 @@
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { transformPointCloudParallel } from '$routes/map/utils/proj/pointcloud_transformer';
+	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
-		dropFile: File | FileList | null;
+		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
@@ -75,13 +76,8 @@
 	];
 
 	const pointCloudFile = $derived.by(() => {
-		if (!dropFile) return null;
-		if (dropFile instanceof FileList) {
-			return (
-				Array.from(dropFile).find((f) => /\.(las|laz|ply|pcd|xyz|txt|obj)$/i.test(f.name)) ?? null
-			);
-		}
-		return dropFile;
+		const file = getFirstUploadFile(dropFile);
+		return file && /\.(las|laz|ply|pcd|xyz|txt|obj)$/i.test(file.name) ? file : null;
 	});
 
 	/** 拡張子に応じたLoaderを返す */
