@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { getProjContext } from './dict';
 import { isWebMercatorPrj, isWgs84Prj, normalizePrjContent } from './crs-detect';
+import { getProjContext } from './dict';
 
 describe('proj crs detect', () => {
 	it('WGS84 の WKT を判定できる', () => {
