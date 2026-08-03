@@ -369,14 +369,24 @@
 	</label>
 	{#snippet colorButton(color: string)}
 		<button
-			class="relative grid h-[30px] w-[30px] cursor-pointer place-items-center overflow-hidden rounded-full"
-			style="background-color: {color}"
+			class="relative cursor-pointer place-items-center h-[40px] w-[40px] overflow-hidden grid group"
 			onclick={() => {
 				value = color;
 				showColorPallet = false;
 			}}
 			aria-label="Select color {color}"
-		></button>
+		>
+			<div
+				class="absolute h-[30px] w-[30px] rounded-full lg:group-hover:scale-110 transition-transform"
+				style="background-color: {color}"
+			></div>
+			{#if value === color}
+				<div
+					class="absolute rounded-full border-2 h-[38px] w-[38px]"
+					style="border-color: {color}"
+				></div>
+			{/if}
+		</button>
 	{/snippet}
 
 	<!-- ポリゴンパターン選択UI -->
