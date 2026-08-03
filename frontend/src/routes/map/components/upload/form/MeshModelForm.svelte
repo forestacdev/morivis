@@ -13,6 +13,7 @@
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
+	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
@@ -115,6 +116,13 @@
 		});
 		return resourceUrls;
 	};
+	const isSameBbox = (
+		a: [number, number, number, number] | null,
+		b: [number, number, number, number] | null
+	) => {
+		if (!a || !b) return a === b;
+		return a.every((value, index) => value === b[index]);
+	};
 
 	let droppedForms = $state({
 		name: ''
@@ -124,6 +132,7 @@
 	let analyzedDropFileKey = $state<string | null>(null);
 	let fbxSourceBbox = $state<[number, number, number, number] | null>(null);
 	let isPreparingZoneSelection = $state(false);
+	let autoOpenedZoneFileKey = $state<string | null>(null);
 
 	$effect(() => {
 		if (!glbFile || !requiresManualRegistration) {
@@ -146,6 +155,7 @@
 			analyzedDropFileKey = null;
 			fbxSourceBbox = null;
 			isPreparingZoneSelection = false;
+			autoOpenedZoneFileKey = null;
 			return;
 		}
 
@@ -174,6 +184,7 @@
 			);
 
 			try {
+				isProcessing.set(true);
 				const uploadedModelMeta = await computeUploadedModelMetaInWorker({
 					file: glbFile,
 					format: 'fbx',
@@ -192,10 +203,23 @@
 				showNotification('FBXの範囲解析に失敗しました', 'error');
 			} finally {
 				isPreparingZoneSelection = false;
+				isProcessing.set(false);
 			}
 		};
 
 		analyzeSourceBbox();
+	});
+
+	$effect(() => {
+		if (!glbFile || !requiresManualRegistration || activeFormat !== 'fbx') return;
+
+		const fileKey = getPathLikeName(glbFile);
+		if (autoOpenedZoneFileKey === fileKey) return;
+
+		autoOpenedZoneFileKey = fileKey;
+		focusBbox = null;
+		transformOptionMode = 'zone';
+		showNotification('FBXは座標系不明として扱います。ZoneMenuで座標系を選択してください', 'info');
 	});
 
 	const isDroppedRegistrationDisabled = $derived.by(() => {
@@ -256,6 +280,7 @@
 		}
 
 		try {
+			isProcessing.set(true);
 			const uploadedModelMeta = await computeUploadedModelMetaInWorker({
 				file: glbFile,
 				format: activeFormat,
@@ -310,6 +335,8 @@
 			entry.metaData.xyzImageTile = uploadedModelMeta.xyzImageTile;
 		} catch (error) {
 			console.warn('3Dモデルの範囲を取得できませんでした', error);
+		} finally {
+			isProcessing.set(false);
 		}
 
 		return entry;
@@ -356,6 +383,13 @@
 		focusBbox = fbxSourceBbox;
 		transformOptionMode = 'zone';
 	};
+
+	$effect(() => {
+		if (!glbFile || !requiresManualRegistration || !fbxSourceBbox) return;
+		if (isSameBbox(focusBbox, fbxSourceBbox)) return;
+
+		focusBbox = fbxSourceBbox;
+	});
 
 	$effect(() => {
 		if (!zoneConfirmedEpsg || showDialogType !== 'glb' || !requiresManualRegistration) return;
@@ -439,7 +473,7 @@
 		<div class="w-full rounded-md bg-black/15 p-3 text-sm text-gray-200">
 			<p>{glbFile.name}</p>
 			<p class="mt-2">
-				既存の投影変換と同じ ZoneMenu で座標系を選びます。選択後、FBX 内の絶対座標を地理参照して配置します。
+				FBX は標準では座標系を持たない前提で扱います。既存の投影変換と同じ ZoneMenu を自動表示します。
 			</p>
 			<p class="mt-2">現在の選択: EPSG:{selectedEpsgCode}</p>
 			{#if isPreparingZoneSelection}

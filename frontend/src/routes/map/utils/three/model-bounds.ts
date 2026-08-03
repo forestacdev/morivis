@@ -119,25 +119,26 @@ const loadAmfLoaderModule = async () => {
 };
 
 const ensureFbxLoaderWindowShim = () => {
-	const globalScope = globalThis as typeof globalThis & {
-		window?: {
+	type FbxLoaderWindowShim = Window &
+		typeof globalThis & {
 			innerWidth?: number;
 			innerHeight?: number;
 		};
+	const globalScope = globalThis as typeof globalThis & {
+		window?: FbxLoaderWindowShim;
 	};
+	const windowShim = globalScope.window ?? (globalScope as unknown as FbxLoaderWindowShim);
 
 	if (
-		typeof globalScope.window?.innerWidth === 'number'
-		&& typeof globalScope.window?.innerHeight === 'number'
+		typeof windowShim.innerWidth === 'number'
+		&& typeof windowShim.innerHeight === 'number'
 	) {
 		return;
 	}
 
-	globalScope.window = {
-		...globalScope.window,
-		innerWidth: globalScope.window?.innerWidth ?? 1,
-		innerHeight: globalScope.window?.innerHeight ?? 1
-	};
+	windowShim.innerWidth = windowShim.innerWidth ?? 1;
+	windowShim.innerHeight = windowShim.innerHeight ?? 1;
+	globalScope.window = windowShim;
 };
 
 interface UploadedModelObject {
