@@ -3,10 +3,16 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
-import type { MeshStyle } from '$routes/map/data/types/model';
+import type { MeshStyle, ProjectedModelGeoreference } from '$routes/map/data/types/model';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import {
+	georeferenceCornerToLocal,
+	getModelUnitScaleMeters,
+	resolveProjectedModelPlacementFromBox,
+	type ResolvedProjectedModelPlacement
+} from '$routes/map/utils/three/model-georeference';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 
 export interface ComputeUploadedModelMetaParams {
@@ -15,16 +21,20 @@ export interface ComputeUploadedModelMetaParams {
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 	normalizeToLocalOrigin?: boolean;
+	georeference?: ProjectedModelGeoreference;
+	projectedModelEpsg?: string;
 	terrainEnabled?: boolean;
 }
 
 export interface UploadedModelMeta {
 	bounds: [number, number, number, number];
+	sourceBbox?: [number, number, number, number];
 	xyzImageTile: TileXYZ;
 	scaleMultiplier: number;
 	localMaxDimension: number;
 	hasSkinnedMesh: boolean;
 	animationNames: string[];
+	resolvedPlacement?: ResolvedProjectedModelPlacement;
 }
 
 const gltfLoader = new GLTFLoader();
@@ -106,6 +116,28 @@ const loadAmfLoaderModule = async () => {
 		amfLoaderModulePromise = import('three/addons/loaders/AMFLoader.js');
 	}
 	return amfLoaderModulePromise;
+};
+
+const ensureFbxLoaderWindowShim = () => {
+	const globalScope = globalThis as typeof globalThis & {
+		window?: {
+			innerWidth?: number;
+			innerHeight?: number;
+		};
+	};
+
+	if (
+		typeof globalScope.window?.innerWidth === 'number'
+		&& typeof globalScope.window?.innerHeight === 'number'
+	) {
+		return;
+	}
+
+	globalScope.window = {
+		...globalScope.window,
+		innerWidth: globalScope.window?.innerWidth ?? 1,
+		innerHeight: globalScope.window?.innerHeight ?? 1
+	};
 };
 
 interface UploadedModelObject {
@@ -246,6 +278,7 @@ const parseFbxObject = async (
 	resourceUrls?: Record<string, string>,
 	normalizeToLocalOrigin = false
 ): Promise<UploadedModelObject> => {
+	ensureFbxLoaderWindowShim();
 	const { FBXLoader } = await loadFbxLoaderModule();
 	const manager = new THREE.LoadingManager();
 	if (resourceUrls) {
@@ -475,6 +508,8 @@ export const computeUploadedModelMeta = async ({
 	style,
 	resourceUrls,
 	normalizeToLocalOrigin,
+	georeference,
+	projectedModelEpsg,
 	terrainEnabled = false
 }: ComputeUploadedModelMetaParams): Promise<UploadedModelMeta> => {
 	const { object, animationNames } = await getUploadedModelObject(
@@ -489,6 +524,26 @@ export const computeUploadedModelMeta = async ({
 	if (box.isEmpty()) {
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}
+
+	const formatUnitScaleMeters =
+		format === 'fbx'
+			? getModelUnitScaleMeters(
+				Number(
+					(object.userData as {
+						unitScaleFactor?: number;
+					}).unitScaleFactor
+				)
+			)
+			: 1;
+	const resolvedPlacement = projectedModelEpsg
+		? resolveProjectedModelPlacementFromBox(
+			box,
+			projectedModelEpsg,
+			formatUnitScaleMeters
+		)
+		: undefined;
+	const resolvedGeoreference = georeference ?? resolvedPlacement?.georeference;
+
 	let hasSkinnedMesh = false;
 	object.traverse((child) => {
 		if ((child as THREE.SkinnedMesh).isSkinnedMesh === true) {
@@ -496,7 +551,8 @@ export const computeUploadedModelMeta = async ({
 		}
 	});
 	const size = box.getSize(new THREE.Vector3());
-	const localMaxDimension = Math.max(size.x, size.y, size.z);
+	const unitScaleMeters = resolvedGeoreference?.unitScaleMeters ?? 1;
+	const localMaxDimension = Math.max(size.x, size.y, size.z) * unitScaleMeters;
 	const scaleMultiplier =
 		localMaxDimension > 1e-6 && localMaxDimension < MIN_MODEL_MAX_DIMENSION_METERS
 			? TARGET_MODEL_MAX_DIMENSION_METERS / localMaxDimension
@@ -506,6 +562,11 @@ export const computeUploadedModelMeta = async ({
 		{
 			transform: {
 				...style.transform,
+				...(resolvedPlacement && {
+					lng: resolvedPlacement.lng,
+					lat: resolvedPlacement.lat,
+					altitude: resolvedPlacement.altitude
+				}),
 				baseScale: (style.transform.baseScale ?? 1) * scaleMultiplier
 			}
 		},
@@ -528,7 +589,10 @@ export const computeUploadedModelMeta = async ({
 	let north = Number.NEGATIVE_INFINITY;
 
 	corners.forEach((corner) => {
-		const world = corner.clone().applyMatrix4(modelMatrix);
+		const localCorner = resolvedGeoreference
+			? georeferenceCornerToLocal(corner, resolvedGeoreference)
+			: corner;
+		const world = localCorner.applyMatrix4(modelMatrix);
 		const lng = mercatorXToLng(world.x);
 		const lat = mercatorYToLat(world.y);
 		west = Math.min(west, lng);
@@ -538,12 +602,20 @@ export const computeUploadedModelMeta = async ({
 	});
 
 	const bounds: [number, number, number, number] = [west, south, east, north];
+	const sourceBbox: [number, number, number, number] = [
+		box.min.x * formatUnitScaleMeters,
+		box.min.y * formatUnitScaleMeters,
+		box.max.x * formatUnitScaleMeters,
+		box.max.y * formatUnitScaleMeters
+	];
 	return {
 		bounds,
+		...(format === 'fbx' && { sourceBbox }),
 		xyzImageTile: findCenterTile(bounds),
 		scaleMultiplier,
 		localMaxDimension,
 		hasSkinnedMesh,
-		animationNames
+		animationNames,
+		...(resolvedPlacement && { resolvedPlacement })
 	};
 };

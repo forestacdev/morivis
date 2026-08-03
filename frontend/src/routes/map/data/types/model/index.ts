@@ -79,6 +79,13 @@ export interface MeshTransformOptionStyle {
 	heightOffset?: boolean;
 }
 
+export interface ProjectedModelGeoreference {
+	type: 'projected';
+	epsg: string;
+	projectedOrigin: [number, number, number];
+	unitScaleMeters?: number;
+}
+
 export interface MeshShadingOptionStyle {
 	enabled?: boolean;
 }
@@ -148,6 +155,7 @@ export interface MeshEntry<T> extends BaseModelEntry {
 		mtlUrl?: string;
 		resourceUrls?: Record<string, string>;
 		normalizeToLocalOrigin?: boolean;
+		georeference?: ProjectedModelGeoreference;
 	};
 	style: T;
 }

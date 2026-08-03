@@ -11,6 +11,7 @@ import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import { applyProjectedModelGeoreference } from '$routes/map/utils/three/model-georeference';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
@@ -593,6 +594,17 @@ export class ThreeJsLayerManager {
 				resolve();
 			};
 
+			const finalizeLoadedModel = (object: THREE.Object3D) => {
+				if (entry.format.georeference) {
+					applyProjectedModelGeoreference(object, entry.format.georeference);
+					return;
+				}
+
+				if (entry.format.normalizeToLocalOrigin) {
+					normalizeObjectToLocalOrigin(object);
+				}
+			};
+
 			if (entry.format.type === 'obj') {
 				const manager = new THREE.LoadingManager();
 				const resourceUrls = entry.format.resourceUrls;
@@ -754,9 +766,7 @@ export class ThreeJsLayerManager {
 						fbxLoader.load(
 							entry.format.url,
 							(object) => {
-								if (entry.format.normalizeToLocalOrigin) {
-									normalizeObjectToLocalOrigin(object);
-								}
+								finalizeLoadedModel(object);
 								onModelLoaded(
 									object,
 									(object as THREE.Group & {
@@ -824,9 +834,7 @@ export class ThreeJsLayerManager {
 										normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
 										transform: entry.style.transform
 									});
-									if (entry.format.normalizeToLocalOrigin) {
-										normalizeObjectToLocalOrigin(object);
-									}
+									finalizeLoadedModel(object);
 									console.log('[IFC] layer load after normalization', {
 										entryId: entry.id,
 										name: entry.metaData.name,

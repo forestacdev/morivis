@@ -51,6 +51,7 @@ import type { DialogType } from '$routes/map/types';
 export type DialogProfile =
 	| 'simple'
 	| 'drop-file'
+	| 'model-georef'
 	| 'vector-zone'
 	| 'vector-zone-georef'
 	| 'raster-georef'
@@ -93,7 +94,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	hrit: { component: HritForm, profile: 'drop-file' },
 	demxml: { component: DemXmlForm, profile: 'raster-georef' },
 	pmtiles: { component: PmtilesForm, profile: 'remote-pmtiles' },
-	glb: { component: MeshModelForm, profile: 'drop-file' },
+	glb: { component: MeshModelForm, profile: 'model-georef' },
 	geophoto: { component: GeoPhotoForm, profile: 'drop-file' },
 	geopdf: { component: GeoPdfForm, profile: 'raster-georef' },
 	geotiff: { component: GeoTiffForm, profile: 'pointcloud-georef' },

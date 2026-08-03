@@ -63,6 +63,16 @@
 	<FormComponent bind:showDataEntry bind:showDialogType />
 {:else if profile === 'drop-file'}
 	<FormComponent bind:showDataEntry bind:showDialogType bind:dropFile />
+{:else if profile === 'model-georef'}
+	<FormComponent
+		bind:showDataEntry
+		bind:showDialogType
+		bind:dropFile
+		bind:transformOptionMode
+		bind:focusBbox
+		bind:zoneConfirmedEpsg
+		{selectedEpsgCode}
+	/>
 {:else if profile === 'vector-zone'}
 	<FormComponent
 		bind:showDataEntry
