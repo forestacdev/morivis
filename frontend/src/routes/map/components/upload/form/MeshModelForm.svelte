@@ -66,7 +66,13 @@
 	};
 
 	const supportsResourceUrls = (format: MeshFormatType) => {
-		return format === 'obj' || format === '3ds' || format === 'dae' || format === '3dm' || format === 'fbx';
+		return (
+			format === 'obj' ||
+			format === '3ds' ||
+			format === 'dae' ||
+			format === '3dm' ||
+			format === 'fbx'
+		);
 	};
 
 	const inputFiles = $derived.by(() => toUploadFiles(dropFile));
@@ -219,7 +225,7 @@
 		autoOpenedZoneFileKey = fileKey;
 		focusBbox = null;
 		transformOptionMode = 'zone';
-		showNotification('FBXは座標系不明として扱います。ZoneMenuで座標系を選択してください', 'info');
+		showNotification('FBXは座標系不明として扱います。座標系を選択してください', 'info');
 	});
 
 	const isDroppedRegistrationDisabled = $derived.by(() => {
@@ -236,16 +242,11 @@
 		return Object.keys(nextErrors).length === 0;
 	};
 
-	const buildDroppedEntry = async (options?: {
-		name?: string;
-		projectedModelEpsg?: EpsgCode;
-	}) => {
+	const buildDroppedEntry = async (options?: { name?: string; projectedModelEpsg?: EpsgCode }) => {
 		if (!glbFile || !activeFormat) return null;
 
 		const name =
-			options?.name?.trim()
-			|| modelPlacement?.name?.trim()
-			|| glbFile.name.replace(/\.[^.]+$/, '');
+			options?.name?.trim() || modelPlacement?.name?.trim() || glbFile.name.replace(/\.[^.]+$/, '');
 		const blobUrl = URL.createObjectURL(glbFile);
 		const center = mapStore.getCenter();
 		let resolvedMtlUrl: string | undefined;
@@ -473,14 +474,17 @@
 		<div class="w-full rounded-md bg-black/15 p-3 text-sm text-gray-200">
 			<p>{glbFile.name}</p>
 			<p class="mt-2">
-				FBX は標準では座標系を持たない前提で扱います。既存の投影変換と同じ ZoneMenu を自動表示します。
+				FBX は標準では座標系を持たない前提で扱います。既存の投影変換と同じ ZoneMenu
+				を自動表示します。
 			</p>
 			<p class="mt-2">現在の選択: EPSG:{selectedEpsgCode}</p>
 			{#if isPreparingZoneSelection}
 				<p class="mt-2">FBXの範囲を解析しています。</p>
 			{:else if fbxSourceBbox}
 				<p class="mt-2">
-					範囲: X {fbxSourceBbox[0].toFixed(3)} - {fbxSourceBbox[2].toFixed(3)}, Y {fbxSourceBbox[1].toFixed(3)} - {fbxSourceBbox[3].toFixed(3)}
+					範囲: X {fbxSourceBbox[0].toFixed(3)} - {fbxSourceBbox[2].toFixed(3)}, Y {fbxSourceBbox[1].toFixed(
+						3
+					)} - {fbxSourceBbox[3].toFixed(3)}
 				</p>
 			{/if}
 		</div>

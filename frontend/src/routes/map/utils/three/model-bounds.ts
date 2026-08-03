@@ -119,25 +119,91 @@ const loadAmfLoaderModule = async () => {
 };
 
 const ensureFbxLoaderWindowShim = () => {
+	type ShimEventListener = (event?: Event) => void;
+	type ShimImageElement = {
+		addEventListener: (type: string, listener: ShimEventListener) => void;
+		removeEventListener: (type: string, listener: ShimEventListener) => void;
+		crossOrigin?: string;
+		src: string;
+	};
+	type FbxLoaderDocumentShim = {
+		createElementNS: (namespace: string, name: string) => unknown;
+		createElement: (name: string) => unknown;
+	};
 	type FbxLoaderWindowShim = Window &
 		typeof globalThis & {
 			innerWidth?: number;
 			innerHeight?: number;
+			document?: FbxLoaderDocumentShim;
 		};
 	const globalScope = globalThis as typeof globalThis & {
 		window?: FbxLoaderWindowShim;
+		document?: FbxLoaderDocumentShim;
 	};
 	const windowShim = globalScope.window ?? (globalScope as unknown as FbxLoaderWindowShim);
 
-	if (
-		typeof windowShim.innerWidth === 'number'
-		&& typeof windowShim.innerHeight === 'number'
-	) {
-		return;
-	}
-
 	windowShim.innerWidth = windowShim.innerWidth ?? 1;
 	windowShim.innerHeight = windowShim.innerHeight ?? 1;
+
+	const createShimImageElement = (): ShimImageElement => {
+		const listeners = new Map<string, Set<ShimEventListener>>();
+		let currentSrc = '';
+		const dispatch = (type: string) => {
+			const handlers = listeners.get(type);
+			if (!handlers) return;
+			handlers.forEach((listener) => {
+				listener.call(imageElement);
+			});
+		};
+		const imageElement = {
+			addEventListener: (type: string, listener: ShimEventListener) => {
+				if (!listeners.has(type)) {
+					listeners.set(type, new Set());
+				}
+				listeners.get(type)?.add(listener);
+			},
+			removeEventListener: (type: string, listener: ShimEventListener) => {
+				listeners.get(type)?.delete(listener);
+			},
+			get src() {
+				return currentSrc;
+			},
+			set src(value: string) {
+				currentSrc = value;
+				queueMicrotask(() => {
+					dispatch('load');
+				});
+			}
+		} satisfies ShimImageElement;
+		return imageElement;
+	};
+
+	const documentShim =
+		globalScope.document
+		?? windowShim.document
+		?? {
+			createElementNS: (_namespace: string, name: string) => {
+				if (name === 'img') {
+					return createShimImageElement();
+				}
+				if (name === 'canvas') {
+					return new OffscreenCanvas(1, 1);
+				}
+				return {};
+			},
+			createElement: (name: string) => {
+				if (name === 'img') {
+					return createShimImageElement();
+				}
+				if (name === 'canvas') {
+					return new OffscreenCanvas(1, 1);
+				}
+				return {};
+			}
+		};
+
+	globalScope.document = documentShim;
+	windowShim.document = documentShim;
 	globalScope.window = windowShim;
 };
 
@@ -297,28 +363,17 @@ const parseFbxObject = async (
 	}
 
 	const loader = new FBXLoader(manager);
-	const url = URL.createObjectURL(file);
-	if (!resourceUrls) {
-		try {
-			loader.setResourcePath(new URL('./', url).href);
-		} catch {
-			// blob URL などは基底パスを組めないので、そのまま読む。
-		}
+	const buffer = await file.arrayBuffer();
+	const object = loader.parse(buffer, '');
+	if (normalizeToLocalOrigin) {
+		normalizeObjectToLocalOrigin(object);
 	}
-	try {
-		const object = await loader.loadAsync(url);
-		if (normalizeToLocalOrigin) {
-			normalizeObjectToLocalOrigin(object);
-		}
-		const animations =
-			(object as THREE.Group & { animations?: THREE.AnimationClip[]; }).animations ?? [];
-		return {
-			object,
-			animationNames: animations.map((clip, index) => clip.name || `Animation ${index + 1}`)
-		};
-	} finally {
-		URL.revokeObjectURL(url);
-	}
+	const animations =
+		(object as THREE.Group & { animations?: THREE.AnimationClip[]; }).animations ?? [];
+	return {
+		object,
+		animationNames: animations.map((clip, index) => clip.name || `Animation ${index + 1}`)
+	};
 };
 
 const parseDrcObject = async (file: File): Promise<UploadedModelObject> => {
