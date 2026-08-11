@@ -439,6 +439,7 @@
 	const registrationFromUrl = () => {
 		const center = mapStore.getCenter();
 		const format = getMeshFormat(forms.url.trim().toLowerCase());
+		const normalizeToLocalOrigin = format === 'ifc' || format === 'fbx';
 		const entry = createGlbEntry(
 			forms.name,
 			forms.url.trim(),
@@ -447,7 +448,10 @@
 				lat: center?.lat ?? 0,
 				altitude: 0
 			},
-			format
+			format,
+			undefined,
+			undefined,
+			normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : undefined
 		);
 		if (entry) {
 			showDataEntry = entry;

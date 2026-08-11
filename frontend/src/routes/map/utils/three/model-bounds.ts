@@ -607,12 +607,13 @@ export const computeUploadedModelMeta = async ({
 		}
 	});
 	const size = box.getSize(new THREE.Vector3());
-	const unitScaleMeters = resolvedGeoreference?.unitScaleMeters ?? 1;
+	const unitScaleMeters = resolvedGeoreference?.unitScaleMeters ?? formatUnitScaleMeters;
 	const localMaxDimension = Math.max(size.x, size.y, size.z) * unitScaleMeters;
 	const scaleMultiplier =
 		localMaxDimension > 1e-6 && localMaxDimension < MIN_MODEL_MAX_DIMENSION_METERS
 			? TARGET_MODEL_MAX_DIMENSION_METERS / localMaxDimension
 			: 1;
+	const localRenderUnitScale = resolvedGeoreference ? 1 : formatUnitScaleMeters;
 
 	const modelMatrix = createUploadedModelMercatorMatrix(
 		{
@@ -623,7 +624,7 @@ export const computeUploadedModelMeta = async ({
 					lat: resolvedPlacement.lat,
 					altitude: resolvedPlacement.altitude
 				}),
-				baseScale: (style.transform.baseScale ?? 1) * scaleMultiplier
+				baseScale: (style.transform.baseScale ?? 1) * scaleMultiplier * localRenderUnitScale
 			}
 		},
 		terrainEnabled
