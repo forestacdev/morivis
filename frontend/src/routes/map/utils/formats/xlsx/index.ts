@@ -23,10 +23,8 @@ export const xlsxRowsToPreview = (
 export const xlsxRowsToGeojson = (
 	rows: XlsxSheetRows,
 	latColumn: string,
-	lonColumn: string,
-	headerRowNumber = 1
-): FeatureCollection =>
-	tabularMatrixToGeojson(rows, latColumn, lonColumn, 'Excel', headerRowNumber);
+	lonColumn: string
+): FeatureCollection => tabularMatrixToGeojson(rows, latColumn, lonColumn, 'Excel');
 
 export const getXlsxPreview = async (
 	file: File,
@@ -53,9 +51,8 @@ export const xlsxFileToGeojson = async (
 	file: File,
 	latColumn: string,
 	lonColumn: string,
-	sheet?: string,
-	headerRowNumber = 1
+	sheet?: string
 ): Promise<FeatureCollection> => {
 	const rows = sheet ? await readSheet(file, sheet) : await readSheet(file);
-	return xlsxRowsToGeojson(rows, latColumn, lonColumn, headerRowNumber);
+	return xlsxRowsToGeojson(rows, latColumn, lonColumn);
 };

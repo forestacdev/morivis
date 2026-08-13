@@ -1,6 +1,6 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
-	import { untrack } from 'svelte';
+	import { flushSync, untrack } from 'svelte';
 
 	import type {
 		PendingZoneGeoRefData,
@@ -56,12 +56,12 @@
 
 	let headers = $state<string[]>([]);
 	let previewRows = $state<TabularRow[]>([]);
-	let headerRowValue = $state<number | undefined>(1);
 	let loadedFileName = $state('');
 	let latColumn = $state<string>('');
 	let lonColumn = $state<string>('');
 	let fileText = $state<string>('');
 	let rawGeojson: FeatureCollection | null = null;
+	let previewTableContainer = $state<HTMLDivElement | null>(null);
 
 	const sourceFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -69,13 +69,6 @@
 	});
 
 	const entryName = $derived(sourceFile?.name.replace(/\.[^.]+$/, '') ?? `${formatName}データ`);
-	const headerRowNumber = $derived.by(() => {
-		if (typeof headerRowValue !== 'number' || !Number.isFinite(headerRowValue)) {
-			return 1;
-		}
-
-		return Math.max(1, Math.floor(headerRowValue));
-	});
 
 	const LAT_PATTERNS = ['lat', 'latitude', '緯度', 'y'];
 	const LON_PATTERNS = ['lon', 'lng', 'longitude', '経度', 'x'];
@@ -92,11 +85,37 @@
 		return '';
 	};
 
+	const snapPreviewToAutoSelectedColumn = async (
+		headerNames: string[],
+		selectedColumnNames: string[]
+	) => {
+		const selectedColumns = selectedColumnNames.filter(
+			(columnName): columnName is string => columnName.length > 0
+		);
+		if (selectedColumns.length === 0) return;
+
+		const targetColumnIndex = headerNames.findIndex((header) => selectedColumns.includes(header));
+		if (targetColumnIndex < 0) return;
+
+		flushSync();
+		const container = previewTableContainer;
+		if (!container) return;
+
+		const targetHeader = container.querySelector<HTMLElement>(
+			`[data-preview-column-index="${targetColumnIndex}"]`
+		);
+
+		targetHeader?.scrollIntoView({
+			block: 'nearest',
+			inline: 'center',
+			behavior: 'smooth'
+		});
+	};
+
 	$effect(() => {
 		const currentFileName = sourceFile?.name ?? '';
 		if (currentFileName && currentFileName !== loadedFileName) {
 			loadedFileName = currentFileName;
-			headerRowValue = 1;
 			headers = [];
 			previewRows = [];
 			latColumn = '';
@@ -129,14 +148,20 @@
 		isProcessing.set(true);
 		getDelimitedTextPreview(fileText, 5, {
 			delimiter,
-			sourceName: formatName,
-			headerRowNumber
+			sourceName: formatName
 		})
 			.then((preview: CSVPreview) => {
+				const guessedLatColumn = guessColumn(preview.headers, LAT_PATTERNS);
+				const guessedLonColumn = guessColumn(preview.headers, LON_PATTERNS);
+
 				headers = preview.headers;
 				previewRows = preview.rows;
-				latColumn = guessColumn(preview.headers, LAT_PATTERNS);
-				lonColumn = guessColumn(preview.headers, LON_PATTERNS);
+				latColumn = guessedLatColumn;
+				lonColumn = guessedLonColumn;
+				void snapPreviewToAutoSelectedColumn(preview.headers, [
+					guessedLatColumn,
+					guessedLonColumn
+				]);
 			})
 			.catch((error) => {
 				showNotification(`${formatName}ファイルの読み込みに失敗しました`, 'error');
@@ -153,8 +178,7 @@
 
 		delimitedTextToGeojson(fileText, latColumn, lonColumn, {
 			delimiter,
-			sourceName: formatName,
-			headerRowNumber
+			sourceName: formatName
 		})
 			.then(async (geojson) => {
 				rawGeojson = geojson;
@@ -262,28 +286,19 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
-	{#if sourceFile}
-		<div class="flex w-full flex-col gap-1 p-2">
-			<label for="header-row" class="text-sm text-gray-300">ヘッダー行</label>
-			<input
-				id="header-row"
-				type="number"
-				min="1"
-				bind:value={headerRowValue}
-				class="bg-sub rounded border border-gray-600 p-2 text-white"
-			/>
-		</div>
-	{/if}
-
 	{#if headers.length > 0}
 		<div class="flex w-full flex-col gap-4 p-2">
 			{#if previewRows.length > 0}
-				<div class="w-full overflow-x-auto rounded border border-gray-700">
+				<div
+					bind:this={previewTableContainer}
+					class="w-full overflow-x-auto rounded border border-gray-700"
+				>
 					<table class="w-full text-left text-xs">
 						<thead class="bg-sub text-gray-300">
 							<tr>
-								{#each headers as header (header)}
+								{#each headers as header, headerIndex (header)}
 									<th
+										data-preview-column-index={headerIndex}
 										class="px-3 py-1.5 font-medium whitespace-nowrap {header === latColumn ||
 										header === lonColumn
 											? 'bg-blue-900/40 text-blue-300'

@@ -21,7 +21,6 @@ import type { ParseResult } from 'papaparse';
 export interface DelimitedTextOptions {
 	delimiter?: string;
 	sourceName?: string;
-	headerRowNumber?: number;
 }
 
 /**
@@ -85,11 +84,10 @@ export const getDelimitedTextPreview = (
 	options: DelimitedTextOptions = {}
 ): Promise<CSVPreview> => {
 	const delimiter = options.delimiter ?? ',';
-	const headerRowNumber = options.headerRowNumber ?? 1;
 	return new Promise((resolve, reject) => {
 		Papa.parse(text, {
 			header: false,
-			preview: headerRowNumber + previewRows - 1,
+			preview: previewRows + 1,
 			dynamicTyping: true,
 			skipEmptyLines: true,
 			delimiter,
@@ -101,7 +99,6 @@ export const getDelimitedTextPreview = (
 
 				resolve(
 					tabularMatrixToPreview(results.data, {
-						headerRowNumber,
 						previewRowCount: previewRows
 					})
 				);
@@ -136,7 +133,6 @@ export const delimitedTextToGeojson = (
 ): Promise<FeatureCollection> => {
 	const delimiter = options.delimiter ?? ',';
 	const sourceName = options.sourceName ?? 'CSV';
-	const headerRowNumber = options.headerRowNumber ?? 1;
 	return new Promise((resolve, reject) => {
 		Papa.parse(text, {
 			header: false,
@@ -146,13 +142,7 @@ export const delimitedTextToGeojson = (
 			complete: (results: ParseResult<TabularRowArray>) => {
 				try {
 					resolve(
-						tabularMatrixToGeojson(
-							results.data,
-							latColumn,
-							lonColumn,
-							sourceName,
-							headerRowNumber
-						)
+						tabularMatrixToGeojson(results.data, latColumn, lonColumn, sourceName)
 					);
 				} catch (error) {
 					reject(error);

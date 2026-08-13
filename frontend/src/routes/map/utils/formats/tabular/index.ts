@@ -21,9 +21,14 @@ export interface TabularPreview {
 }
 
 export interface TabularPreviewOptions {
-	headerRowNumber?: number;
 	previewRowCount?: number;
 }
+
+const isBlankCell = (value: TabularCellValue | null): boolean => {
+	if (value == null) return true;
+	if (typeof value === 'string') return value.trim() === '';
+	return false;
+};
 
 const parseCoordinate = (value: TabularCellValue): number => {
 	if (typeof value === 'number') return value;
@@ -86,17 +91,58 @@ const stringifyHeaderCell = (value: TabularCellValue): string => {
 	return String(value).trim();
 };
 
-const normalizeHeaderRowNumber = (headerRowNumber = 1): number =>
-	Number.isFinite(headerRowNumber) && headerRowNumber > 0 ? Math.floor(headerRowNumber) : 1;
+const getHeaderRowIndex = (rows: (TabularCellValue | null)[][]): number =>
+	rows.findIndex((row) => row.some((value) => !isBlankCell(value)));
+
+const getColumnIndexesToKeep = (rows: (TabularCellValue | null)[][]): number[] => {
+	const headerRow = rows[0];
+	if (!headerRow) return [];
+
+	const dataRows = rows.slice(1);
+
+	return headerRow.flatMap((value, index) => {
+		const header = stringifyHeaderCell(value);
+		const hasData = dataRows.some((row) => !isBlankCell(row[index]));
+		return header !== '' || hasData ? [index] : [];
+	});
+};
+
+const selectColumnsFromMatrix = (
+	rows: (TabularCellValue | null)[][],
+	columnIndexes: number[]
+): (TabularCellValue | null)[][] => rows.map((row) => columnIndexes.map((index) => row[index]));
+
+const normalizeTabularMatrix = (
+	rows: (TabularCellValue | null)[][]
+): (TabularCellValue | null)[][] => {
+	const headerRowIndex = getHeaderRowIndex(rows);
+	if (headerRowIndex < 0) return [];
+
+	const rowsFromHeader = rows.slice(headerRowIndex);
+	return selectColumnsFromMatrix(rowsFromHeader, getColumnIndexesToKeep(rowsFromHeader));
+};
+
+const matrixRowsToTabularRows = (
+	rows: (TabularCellValue | null)[][],
+	headers: string[]
+): TabularRow[] =>
+	rows.map((row) => {
+		const record: TabularRow = {};
+
+		headers.forEach((header, index) => {
+			record[header] = row[index];
+		});
+
+		return record;
+	});
 
 export const tabularMatrixToPreview = (
 	rows: (TabularCellValue | null)[][],
 	options: TabularPreviewOptions = {}
 ): TabularPreview => {
-	const headerRowNumber = normalizeHeaderRowNumber(options.headerRowNumber);
 	const previewRowCount = options.previewRowCount ?? 5;
-	const headerIndex = headerRowNumber - 1;
-	const headerRow = rows[headerIndex];
+	const normalizedRows = normalizeTabularMatrix(rows);
+	const headerRow = normalizedRows[0];
 
 	if (!headerRow) {
 		return {
@@ -106,17 +152,13 @@ export const tabularMatrixToPreview = (
 	}
 
 	const headers = dedupeHeaders(headerRow.map((value) => stringifyHeaderCell(value)));
-	const previewRows = rows
-		.slice(headerIndex + 1, headerIndex + 1 + previewRowCount)
-		.map((row) => {
-			const record: TabularRow = {};
-
-			headers.forEach((header, index) => {
-				record[header] = row[index];
-			});
-
-			return record;
-		});
+	const previewRows = matrixRowsToTabularRows(
+		normalizedRows
+			.slice(1)
+			.filter((row) => row.some((value) => !isBlankCell(value)))
+			.slice(0, previewRowCount),
+		headers
+	);
 
 	return {
 		headers,
@@ -200,14 +242,14 @@ export const tabularMatrixToGeojson = (
 	rows: (TabularCellValue | null)[][],
 	latColumn: string,
 	lonColumn: string,
-	sourceName: string,
-	headerRowNumber = 1
+	sourceName: string
 ): FeatureCollection => {
-	const headerIndex = normalizeHeaderRowNumber(headerRowNumber) - 1;
-	const preview = tabularMatrixToPreview(rows, {
-		headerRowNumber,
-		previewRowCount: Math.max(rows.length - headerIndex - 1, 0)
-	});
+	const normalizedRows = normalizeTabularMatrix(rows);
+	const headerRow = normalizedRows[0];
+	const headers = headerRow
+		? dedupeHeaders(headerRow.map((value) => stringifyHeaderCell(value)))
+		: [];
+	const dataRows = matrixRowsToTabularRows(normalizedRows.slice(1), headers);
 
-	return tabularRowsToGeojson(preview.headers, preview.rows, latColumn, lonColumn, sourceName);
+	return tabularRowsToGeojson(headers, dataRows, latColumn, lonColumn, sourceName);
 };

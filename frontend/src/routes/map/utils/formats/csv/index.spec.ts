@@ -57,22 +57,32 @@ describe('csv parser', () => {
 		expect(geojson.features[1]?.properties?.name).toBe('beta');
 	});
 
-	it('ヘッダー行番号を指定してプレビューと Point に変換できる', async () => {
-		const text = `title row\nname,lat,lon\nalpha,35.0,139.0\nbeta,36.0,140.0`;
+	it('先頭の空白行は飛ばして最初の非空行をヘッダーとして使う', async () => {
+		const preview = await getDelimitedTextPreview(
+			`,,,\nNO,会社名2,店所コード,標識NO\n1,北海道電力NW,211,\n2,北海道電力NW,215,`,
+			5,
+			{ delimiter: ',' }
+		);
 
-		const preview = await getDelimitedTextPreview(text, 5, {
-			delimiter: ',',
-			headerRowNumber: 2
+		expect(preview.headers).toEqual(['NO', '会社名2', '店所コード', '標識NO']);
+		expect(preview.rows).toHaveLength(2);
+		expect(preview.rows[0]).toMatchObject({
+			NO: 1,
+			会社名2: '北海道電力NW',
+			店所コード: 211
 		});
+	});
+
+	it('プレビューでは全セル空白の行を飛ばす', async () => {
+		const preview = await getDelimitedTextPreview(
+			`,name,lat,lon\n,,,\n \t,\t,\t \t\n,alpha,35.0,139.0\n,beta,36.0,140.0`,
+			5,
+			{ delimiter: ',' }
+		);
+
 		expect(preview.headers).toEqual(['name', 'lat', 'lon']);
 		expect(preview.rows).toHaveLength(2);
 		expect(preview.rows[0]).toMatchObject({ name: 'alpha', lat: 35, lon: 139 });
-
-		const geojson = await delimitedTextToGeojson(text, 'lat', 'lon', {
-			delimiter: ',',
-			headerRowNumber: 2
-		});
-		expect(geojson.features).toHaveLength(2);
-		expect(geojson.features[0]?.geometry.coordinates).toEqual([139, 35]);
+		expect(preview.rows[1]).toMatchObject({ name: 'beta', lat: 36, lon: 140 });
 	});
 });
