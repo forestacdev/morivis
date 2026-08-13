@@ -9,13 +9,19 @@ import Encoding from 'encoding-japanese';
 import Papa from 'papaparse';
 
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
-import { type TabularPreview, tabularRowsToGeojson } from '$routes/map/utils/formats/tabular';
+import {
+	tabularMatrixToGeojson,
+	tabularMatrixToPreview,
+	type TabularPreview,
+	type TabularRowArray
+} from '$routes/map/utils/formats/tabular';
 import { showNotification } from '$routes/stores/notification';
 import type { ParseResult } from 'papaparse';
 
 export interface DelimitedTextOptions {
 	delimiter?: string;
 	sourceName?: string;
+	headerRowNumber?: number;
 }
 
 /**
@@ -79,25 +85,26 @@ export const getDelimitedTextPreview = (
 	options: DelimitedTextOptions = {}
 ): Promise<CSVPreview> => {
 	const delimiter = options.delimiter ?? ',';
+	const headerRowNumber = options.headerRowNumber ?? 1;
 	return new Promise((resolve, reject) => {
 		Papa.parse(text, {
-			header: true,
-			preview: previewRows,
+			header: false,
+			preview: headerRowNumber + previewRows - 1,
 			dynamicTyping: true,
 			skipEmptyLines: true,
 			delimiter,
-			complete: (results: ParseResult<Record<string, string | number>>) => {
-				if (
-					results.errors.length > 0
-					&& (!results.meta.fields || results.meta.fields.length === 0)
-				) {
+			complete: (results: ParseResult<TabularRowArray>) => {
+				if (results.errors.length > 0 && results.data.length === 0) {
 					reject(new Error(`CSV parsing error: ${results.errors[0].message}`));
 					return;
 				}
-				resolve({
-					headers: results.meta.fields || [],
-					rows: results.data
-				});
+
+				resolve(
+					tabularMatrixToPreview(results.data, {
+						headerRowNumber,
+						previewRowCount: previewRows
+					})
+				);
 			},
 			error: (error: Error) => {
 				reject(new Error(`Failed to read CSV file: ${error.message}`));
@@ -129,27 +136,28 @@ export const delimitedTextToGeojson = (
 ): Promise<FeatureCollection> => {
 	const delimiter = options.delimiter ?? ',';
 	const sourceName = options.sourceName ?? 'CSV';
+	const headerRowNumber = options.headerRowNumber ?? 1;
 	return new Promise((resolve, reject) => {
 		Papa.parse(text, {
+			header: false,
 			delimiter,
-			complete: (results: ParseResult<Record<string, string | number>>) => {
+			dynamicTyping: true,
+			skipEmptyLines: true,
+			complete: (results: ParseResult<TabularRowArray>) => {
 				try {
 					resolve(
-						tabularRowsToGeojson(
-							results.meta.fields || [],
+						tabularMatrixToGeojson(
 							results.data,
 							latColumn,
 							lonColumn,
-							sourceName
+							sourceName,
+							headerRowNumber
 						)
 					);
 				} catch (error) {
 					reject(error);
 				}
-			},
-			header: true,
-			dynamicTyping: true,
-			skipEmptyLines: true
+			}
 		});
 	});
 };
@@ -168,24 +176,16 @@ export const csvFileToGeojson = (
 ): Promise<FeatureCollection> => {
 	return new Promise((resolve, reject) => {
 		Papa.parse(csv, {
-			complete: (results: ParseResult<Record<string, string | number>>) => {
+			header: false,
+			dynamicTyping: true,
+			skipEmptyLines: true,
+			complete: (results: ParseResult<TabularRowArray>) => {
 				try {
-					resolve(
-						tabularRowsToGeojson(
-							results.meta.fields || [],
-							results.data,
-							latColumn,
-							lonColumn,
-							'CSV'
-						)
-					);
+					resolve(tabularMatrixToGeojson(results.data, latColumn, lonColumn, 'CSV'));
 				} catch (error) {
 					reject(error);
 				}
-			},
-			header: true, // CSV の最初の行をフィールド名として使用
-			dynamicTyping: true, // 数値を自動的に数値型に変換
-			skipEmptyLines: true // 空行をスキップ
+			}
 		});
 	});
 };

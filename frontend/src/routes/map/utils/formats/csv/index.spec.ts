@@ -56,4 +56,23 @@ describe('csv parser', () => {
 		expect(geojson.features[1]?.geometry.type).toBe('Point');
 		expect(geojson.features[1]?.properties?.name).toBe('beta');
 	});
+
+	it('ヘッダー行番号を指定してプレビューと Point に変換できる', async () => {
+		const text = `title row\nname,lat,lon\nalpha,35.0,139.0\nbeta,36.0,140.0`;
+
+		const preview = await getDelimitedTextPreview(text, 5, {
+			delimiter: ',',
+			headerRowNumber: 2
+		});
+		expect(preview.headers).toEqual(['name', 'lat', 'lon']);
+		expect(preview.rows).toHaveLength(2);
+		expect(preview.rows[0]).toMatchObject({ name: 'alpha', lat: 35, lon: 139 });
+
+		const geojson = await delimitedTextToGeojson(text, 'lat', 'lon', {
+			delimiter: ',',
+			headerRowNumber: 2
+		});
+		expect(geojson.features).toHaveLength(2);
+		expect(geojson.features[0]?.geometry.coordinates).toEqual([139, 35]);
+	});
 });

@@ -13,10 +13,16 @@ export type TabularCellValue =
 	| undefined;
 
 export type TabularRow = Record<string, TabularCellValue>;
+export type TabularRowArray = TabularCellValue[];
 
 export interface TabularPreview {
 	headers: string[];
 	rows: TabularRow[];
+}
+
+export interface TabularPreviewOptions {
+	headerRowNumber?: number;
+	previewRowCount?: number;
 }
 
 const parseCoordinate = (value: TabularCellValue): number => {
@@ -60,6 +66,62 @@ const toFeatureProperties = (row: TabularRow): FeatureProp => {
 	});
 
 	return properties;
+};
+
+const dedupeHeaders = (headers: string[]): string[] => {
+	const seen = new Map<string, number>();
+
+	return headers.map((header, index) => {
+		const baseHeader = header || `column_${index + 1}`;
+		const count = seen.get(baseHeader) ?? 0;
+		seen.set(baseHeader, count + 1);
+		return count === 0 ? baseHeader : `${baseHeader}_${count + 1}`;
+	});
+};
+
+const stringifyHeaderCell = (value: TabularCellValue): string => {
+	if (value instanceof Date) return value.toISOString();
+	if (value === Date) return 'Date';
+	if (value == null) return '';
+	return String(value).trim();
+};
+
+const normalizeHeaderRowNumber = (headerRowNumber = 1): number =>
+	Number.isFinite(headerRowNumber) && headerRowNumber > 0 ? Math.floor(headerRowNumber) : 1;
+
+export const tabularMatrixToPreview = (
+	rows: (TabularCellValue | null)[][],
+	options: TabularPreviewOptions = {}
+): TabularPreview => {
+	const headerRowNumber = normalizeHeaderRowNumber(options.headerRowNumber);
+	const previewRowCount = options.previewRowCount ?? 5;
+	const headerIndex = headerRowNumber - 1;
+	const headerRow = rows[headerIndex];
+
+	if (!headerRow) {
+		return {
+			headers: [],
+			rows: []
+		};
+	}
+
+	const headers = dedupeHeaders(headerRow.map((value) => stringifyHeaderCell(value)));
+	const previewRows = rows
+		.slice(headerIndex + 1, headerIndex + 1 + previewRowCount)
+		.map((row) => {
+			const record: TabularRow = {};
+
+			headers.forEach((header, index) => {
+				record[header] = row[index];
+			});
+
+			return record;
+		});
+
+	return {
+		headers,
+		rows: previewRows
+	};
 };
 
 export const tabularRowsToGeojson = (
@@ -132,4 +194,20 @@ export const tabularRowsToGeojson = (
 		type: 'FeatureCollection',
 		features
 	};
+};
+
+export const tabularMatrixToGeojson = (
+	rows: (TabularCellValue | null)[][],
+	latColumn: string,
+	lonColumn: string,
+	sourceName: string,
+	headerRowNumber = 1
+): FeatureCollection => {
+	const headerIndex = normalizeHeaderRowNumber(headerRowNumber) - 1;
+	const preview = tabularMatrixToPreview(rows, {
+		headerRowNumber,
+		previewRowCount: Math.max(rows.length - headerIndex - 1, 0)
+	});
+
+	return tabularRowsToGeojson(preview.headers, preview.rows, latColumn, lonColumn, sourceName);
 };

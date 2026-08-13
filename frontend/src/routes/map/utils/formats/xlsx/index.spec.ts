@@ -47,4 +47,26 @@ describe('xlsx parser', () => {
 		expect(geojson.features[0]?.geometry.coordinates).toEqual([139.6917, 35.6895]);
 		expect(geojson.features[1]?.geometry.type).toBe('Point');
 	});
+
+	it('ヘッダー行番号を指定してプレビューと Point GeoJSON に変換する', () => {
+		const rows = [
+			['title row'],
+			['name', 'lat', 'lon'],
+			['alpha', 35.6895, 139.6917],
+			['beta', 36.2048, 138.2529]
+		];
+
+		const preview = xlsxRowsToPreview(rows, { headerRowNumber: 2, previewRowCount: 5 });
+		expect(preview.headers).toEqual(['name', 'lat', 'lon']);
+		expect(preview.rows).toHaveLength(2);
+		expect(preview.rows[0]).toMatchObject({
+			name: 'alpha',
+			lat: 35.6895,
+			lon: 139.6917
+		});
+
+		const geojson = xlsxRowsToGeojson(rows, 'lat', 'lon', 2);
+		expect(geojson.features).toHaveLength(2);
+		expect(geojson.features[1]?.geometry.coordinates).toEqual([138.2529, 36.2048]);
+	});
 });

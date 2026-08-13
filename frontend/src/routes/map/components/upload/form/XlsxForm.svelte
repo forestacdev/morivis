@@ -45,6 +45,7 @@
 	let previewRows = $state<TabularRow[]>([]);
 	let sheetNames = $state<string[]>([]);
 	let selectedSheet = $state<string>('');
+	let headerRowValue = $state<number | undefined>(1);
 	let loadedFileName = $state<string>('');
 	let latColumn = $state<string>('');
 	let lonColumn = $state<string>('');
@@ -56,6 +57,13 @@
 	});
 
 	const entryName = $derived(sourceFile?.name.replace(/\.[^.]+$/, '') ?? 'Excelデータ');
+	const headerRowNumber = $derived.by(() => {
+		if (typeof headerRowValue !== 'number' || !Number.isFinite(headerRowValue)) {
+			return 1;
+		}
+
+		return Math.max(1, Math.floor(headerRowValue));
+	});
 
 	const LAT_PATTERNS = ['lat', 'latitude', '緯度', 'y'];
 	const LON_PATTERNS = ['lon', 'lng', 'longitude', '経度', 'x'];
@@ -78,6 +86,12 @@
 			loadedFileName = currentFileName;
 			selectedSheet = '';
 			sheetNames = [];
+			headerRowValue = 1;
+			headers = [];
+			previewRows = [];
+			latColumn = '';
+			lonColumn = '';
+			rawGeojson = null;
 		}
 	});
 
@@ -85,7 +99,7 @@
 		if (!sourceFile) return;
 
 		isProcessing.set(true);
-		getXlsxPreview(sourceFile, selectedSheet || undefined)
+		getXlsxPreview(sourceFile, selectedSheet || undefined, { headerRowNumber })
 			.then((preview) => {
 				headers = preview.headers;
 				previewRows = preview.rows;
@@ -110,7 +124,7 @@
 		if (!sourceFile || !latColumn || !lonColumn) return;
 
 		isProcessing.set(true);
-		xlsxFileToGeojson(sourceFile, latColumn, lonColumn, selectedSheet || undefined)
+		xlsxFileToGeojson(sourceFile, latColumn, lonColumn, selectedSheet || undefined, headerRowNumber)
 			.then(async (geojson) => {
 				rawGeojson = geojson;
 				const bbox = turfBbox(geojson);
@@ -230,6 +244,19 @@
 					<option value={sheetName}>{sheetName}</option>
 				{/each}
 			</select>
+		</div>
+	{/if}
+
+	{#if sourceFile}
+		<div class="flex w-full flex-col gap-1 p-2">
+			<label for="header-row" class="text-sm text-gray-300">ヘッダー行</label>
+			<input
+				id="header-row"
+				type="number"
+				min="1"
+				bind:value={headerRowValue}
+				class="bg-sub rounded border border-gray-600 p-2 text-white"
+			/>
 		</div>
 	{/if}
 
