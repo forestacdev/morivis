@@ -137,6 +137,7 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	csv: 'csv',
 	tsv: 'tsv',
+	xlsx: 'xlsx',
 	wkt: 'wkt',
 	ewkt: 'wkt',
 	topojson: 'topojson',

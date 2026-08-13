@@ -11,12 +11,7 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import type { TabularRow } from '$routes/map/utils/formats/tabular';
-	import {
-		readDelimitedTextAsUtf8,
-		getDelimitedTextPreview,
-		delimitedTextToGeojson,
-		type CSVPreview
-	} from '$routes/map/utils/formats/csv';
+	import { getXlsxPreview, xlsxFileToGeojson } from '$routes/map/utils/formats/xlsx';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -33,10 +28,6 @@
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
 		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
-		formatName: string;
-		dialogTypeValue: Exclude<DialogType, null>;
-		delimiter: string;
-		attribution: string;
 	}
 
 	let {
@@ -47,18 +38,16 @@
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
-		pendingZoneGeoRefData = $bindable(),
-		formatName,
-		dialogTypeValue,
-		delimiter,
-		attribution
+		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
 	let headers = $state<string[]>([]);
 	let previewRows = $state<TabularRow[]>([]);
+	let sheetNames = $state<string[]>([]);
+	let selectedSheet = $state<string>('');
+	let loadedFileName = $state<string>('');
 	let latColumn = $state<string>('');
 	let lonColumn = $state<string>('');
-	let fileText = $state<string>('');
 	let rawGeojson: FeatureCollection | null = null;
 
 	const sourceFile = $derived.by(() => {
@@ -66,55 +55,62 @@
 		return getFirstUploadFile(dropFile);
 	});
 
-	const entryName = $derived(sourceFile?.name.replace(/\.[^.]+$/, '') ?? `${formatName}データ`);
+	const entryName = $derived(sourceFile?.name.replace(/\.[^.]+$/, '') ?? 'Excelデータ');
 
 	const LAT_PATTERNS = ['lat', 'latitude', '緯度', 'y'];
 	const LON_PATTERNS = ['lon', 'lng', 'longitude', '経度', 'x'];
 
-	const guessColumn = (headers: string[], patterns: string[]): string => {
+	const guessColumn = (names: string[], patterns: string[]): string => {
 		for (const pattern of patterns) {
-			const found = headers.find((h) => h.toLowerCase() === pattern);
+			const found = names.find((name) => name.toLowerCase() === pattern);
 			if (found) return found;
 		}
 		for (const pattern of patterns) {
-			const found = headers.find((h) => h.toLowerCase().includes(pattern));
+			const found = names.find((name) => name.toLowerCase().includes(pattern));
 			if (found) return found;
 		}
 		return '';
 	};
 
 	$effect(() => {
-		if (sourceFile) {
-			isProcessing.set(true);
-			readDelimitedTextAsUtf8(sourceFile)
-				.then((text) => {
-					fileText = text;
-					return getDelimitedTextPreview(text, 5, { delimiter, sourceName: formatName });
-				})
-				.then((preview: CSVPreview) => {
-					headers = preview.headers;
-					previewRows = preview.rows;
-					latColumn = guessColumn(preview.headers, LAT_PATTERNS);
-					lonColumn = guessColumn(preview.headers, LON_PATTERNS);
-				})
-				.catch((error) => {
-					showNotification(`${formatName}ファイルの読み込みに失敗しました`, 'error');
-					console.error(error);
-				})
-				.finally(() => {
-					isProcessing.set(false);
-				});
+		const currentFileName = sourceFile?.name ?? '';
+		if (currentFileName && currentFileName !== loadedFileName) {
+			loadedFileName = currentFileName;
+			selectedSheet = '';
+			sheetNames = [];
 		}
 	});
 
-	const processFile = () => {
-		if (!fileText || !latColumn || !lonColumn) return;
-		isProcessing.set(true);
+	$effect(() => {
+		if (!sourceFile) return;
 
-		delimitedTextToGeojson(fileText, latColumn, lonColumn, {
-			delimiter,
-			sourceName: formatName
-		})
+		isProcessing.set(true);
+		getXlsxPreview(sourceFile, selectedSheet || undefined)
+			.then((preview) => {
+				headers = preview.headers;
+				previewRows = preview.rows;
+				sheetNames = preview.sheetNames;
+				latColumn = guessColumn(preview.headers, LAT_PATTERNS);
+				lonColumn = guessColumn(preview.headers, LON_PATTERNS);
+
+				if (selectedSheet !== preview.activeSheet) {
+					selectedSheet = preview.activeSheet;
+				}
+			})
+			.catch((error) => {
+				showNotification('Excelファイルの読み込みに失敗しました', 'error');
+				console.error(error);
+			})
+			.finally(() => {
+				isProcessing.set(false);
+			});
+	});
+
+	const processFile = () => {
+		if (!sourceFile || !latColumn || !lonColumn) return;
+
+		isProcessing.set(true);
+		xlsxFileToGeojson(sourceFile, latColumn, lonColumn, selectedSheet || undefined)
 			.then(async (geojson) => {
 				rawGeojson = geojson;
 				const bbox = turfBbox(geojson);
@@ -135,7 +131,7 @@
 					entryName,
 					bbox as [number, number, number, number],
 					undefined,
-					{ attribution }
+					{ attribution: 'Excel' }
 				);
 
 				if (entry) {
@@ -156,6 +152,7 @@
 
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
 		if (!rawGeojson) return;
+
 		isProcessing.set(true);
 
 		try {
@@ -166,7 +163,7 @@
 			)) as FeatureCollection;
 
 			if (!transformedGeojson || transformedGeojson.features.length === 0) {
-				showNotification(`${formatName}ファイルの変換に失敗しました`, 'error');
+				showNotification('Excelファイルの変換に失敗しました', 'error');
 				return;
 			}
 
@@ -182,7 +179,7 @@
 				entryName,
 				bbox as [number, number, number, number],
 				undefined,
-				{ attribution }
+				{ attribution: 'Excel' }
 			);
 
 			if (entry) {
@@ -191,7 +188,7 @@
 				showNotification('ファイルを読み込みました', 'success');
 			}
 		} catch (error) {
-			showNotification(`${formatName}ファイルの変換中にエラーが発生しました`, 'error');
+			showNotification('Excelファイルの変換中にエラーが発生しました', 'error');
 			console.error(error);
 		} finally {
 			isProcessing.set(false);
@@ -204,7 +201,7 @@
 	};
 
 	$effect(() => {
-		if (zoneConfirmedEpsg && showDialogType === dialogTypeValue) {
+		if (zoneConfirmedEpsg && showDialogType === 'xlsx') {
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
@@ -215,12 +212,27 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">{formatName}ファイルの登録</span>
+	<span class="text-2xl font-bold">Excelファイルの登録</span>
 </div>
 
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 >
+	{#if sheetNames.length > 1}
+		<div class="flex w-full flex-col gap-1 p-2">
+			<label for="sheet-select" class="text-sm text-gray-300">シート</label>
+			<select
+				id="sheet-select"
+				bind:value={selectedSheet}
+				class="bg-sub rounded border border-gray-600 p-2 text-white"
+			>
+				{#each sheetNames as sheetName (sheetName)}
+					<option value={sheetName}>{sheetName}</option>
+				{/each}
+			</select>
+		</div>
+	{/if}
+
 	{#if headers.length > 0}
 		<div class="flex w-full flex-col gap-4 p-2">
 			{#if previewRows.length > 0}

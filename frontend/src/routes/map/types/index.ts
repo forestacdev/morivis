@@ -90,6 +90,7 @@ export type DialogType =
 	| 'hdf5'
 	| 'csv'
 	| 'tsv'
+	| 'xlsx'
 	| 'gpkg'
 	| 'gdb'
 	| 'mfjson'
@@ -230,6 +231,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'タブ区切りの表形式データです。座標列を指定して地点データとして読み込むときに使います。',
 		extensions: ['.tsv']
+	},
+	{
+		label: 'Excel',
+		description:
+			'Excelの表形式データです。シートと座標列を指定して地点データとして読み込むときに使います。',
+		extensions: ['.xlsx']
 	},
 	{
 		label: 'GeoTIFF',
