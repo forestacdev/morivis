@@ -5,6 +5,10 @@ import {
 	GeoArrowPolygonLayer,
 	GeoArrowScatterplotLayer
 } from '@geoarrow/deck.gl-layers';
+import {
+	sanitizeScenegraphGltfForDeck,
+	type ScenegraphGltfLike
+} from '$routes/map/utils/tiles3d/sanitize-scenegraph-gltf';
 
 import type {
 	AnyTiles3DEntry,
@@ -16,11 +20,16 @@ import type {
 
 interface TileContent {
 	cartographicOrigin?: number[];
+	gltf?: ScenegraphGltfLike;
 }
 
 interface Tile3D {
 	content?: TileContent;
 }
+
+type Tile3DLayerPatchedMethods = {
+	_getSubLayer?: (tile: Tile3D, oldLayer?: unknown) => unknown;
+};
 
 type PointCloudDatum = {
 	position: [number, number, number];
@@ -53,7 +62,7 @@ const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
 export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 	const altitudeOffset = dataEntry.metaData.altitude ?? 0;
 
-	return new Tile3DLayer({
+	const layer = new Tile3DLayer({
 		id: `3d-tiles-layer-${dataEntry.id}`,
 		data: dataEntry.format.url,
 		pickable: dataEntry.interaction.clickable,
@@ -68,11 +77,29 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 			'3d-tiles': { decodeQuantizedPositions: true }
 		},
 		onTileLoad: (tile: Tile3D) => {
+			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
+
 			if (tile.content?.cartographicOrigin && altitudeOffset !== 0) {
 				// 高さオフセットは既存動作に合わせて未適用のままにしている。
 			}
 		}
 	});
+
+	const patchedLayer = layer as unknown as Tile3DLayerPatchedMethods;
+	const originalGetSubLayer = patchedLayer._getSubLayer?.bind(patchedLayer);
+
+	if (originalGetSubLayer) {
+		// FME 製 b3dm 向けの一時回避。
+		// onTileLoad だけだと ScenegraphLayer 初期化タイミングに間に合わない場合があるため、
+		// deck.gl の内部サブレイヤー生成直前にも同じ補正を入れている。
+		// vis.gl 側の更新で不要になったら削除候補。
+		patchedLayer._getSubLayer = (tile: Tile3D, oldLayer?: unknown) => {
+			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
+			return originalGetSubLayer(tile, oldLayer);
+		};
+	}
+
+	return layer;
 };
 
 const getPointCloudData = (dataEntry: PointCloudEntry) => {
