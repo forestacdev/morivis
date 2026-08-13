@@ -6,6 +6,7 @@ import type {
 	GeoJson3DEntry,
 	MeshEntry,
 	MeshFormatType,
+	ProjectedModelGeoreference,
 	MeshStyle,
 	PointCloudEntry,
 	PointCloudStyle,
@@ -157,10 +158,13 @@ export const createGlbEntry = (
 	resourceUrls?: Record<string, string>,
 	options?: {
 		normalizeToLocalOrigin?: boolean;
+		georeference?: ProjectedModelGeoreference;
 	}
 ): MeshEntry<MeshStyle> => {
-	// 3MF は Z-up 前提のモデルが多く、そのままだと map 上で横倒しになるため基準回転を分ける。
-	const baseRotationX = formatType === '3mf' ? 90 : -180;
+	// 形式ごとにローカルの up 軸が違うため、読み込み基準回転を分ける。
+	// FBX は今回の変換元では Z-up で出てくるが、描画時に Y/Z を反転しているため
+	// 基準回転は +90 度側に寄せないと上下が逆転する。
+	const baseRotationX = formatType === '3mf' ? 90 : formatType === 'fbx' ? 90 : -180;
 
 	return {
 		id: 'glb_' + crypto.randomUUID(),
@@ -172,6 +176,9 @@ export const createGlbEntry = (
 			...(resourceUrls && { resourceUrls }),
 			...(options?.normalizeToLocalOrigin != null && {
 				normalizeToLocalOrigin: options.normalizeToLocalOrigin
+			}),
+			...(options?.georeference && {
+				georeference: options.georeference
 			})
 		},
 		metaData: {

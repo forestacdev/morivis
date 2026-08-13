@@ -8,6 +8,7 @@
 
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
+import { getJapanPlaneRectangularEpsg } from '../../proj/japan-plane-rectangular';
 import { reprojectGeoJson, toGlbAndContours } from 'landxml';
 import proj4 from 'proj4';
 import * as THREE from 'three';
@@ -57,14 +58,6 @@ const detectJprZone = (text: string): number | null => {
 	if (matchJp) return parseInt(matchJp[1], 10);
 
 	return null;
-};
-
-/**
- * 平面直角座標系の系番号からEPSGコードを取得 (JGD2011: EPSG:6669-6687)
- */
-const jprZoneToEpsg = (zone: number): string | null => {
-	if (zone < 1 || zone > 19) return null;
-	return String(6668 + zone); // zone 1 → 6669, zone 9 → 6677
 };
 
 const exportMeshToGlb = async (mesh: THREE.Mesh): Promise<Uint8Array> => {
@@ -242,7 +235,10 @@ export const parseLandXml = async (
 			if (results[0].wktString) {
 				projString = results[0].wktString;
 			} else if (detectedZone) {
-				const epsg = jprZoneToEpsg(detectedZone);
+				const epsg = getJapanPlaneRectangularEpsg(detectedZone, 'jgd2011')?.replace(
+					/^EPSG:/i,
+					''
+				);
 				if (epsg && isValidEpsg(epsg)) {
 					projString = getProjContext(epsg);
 				}
@@ -476,7 +472,10 @@ export const landXmlFileToDem = async (
 
 	let projString: string | undefined = overrideProjString;
 	if (!projString && detectedZone) {
-		const epsg = jprZoneToEpsg(detectedZone);
+		const epsg = getJapanPlaneRectangularEpsg(detectedZone, 'jgd2011')?.replace(
+			/^EPSG:/i,
+			''
+		);
 		if (epsg && isValidEpsg(epsg)) {
 			projString = getProjContext(epsg);
 		}

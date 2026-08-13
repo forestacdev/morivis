@@ -11,6 +11,10 @@ import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import {
+	applyProjectedModelGeoreference,
+	getModelUnitScaleMeters
+} from '$routes/map/utils/three/model-georeference';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
@@ -99,6 +103,28 @@ interface LoadedModel {
 	actions?: THREE.AnimationAction[];
 	lastClipIndex?: number;
 }
+
+const TEXTURE_SLOT_KEYS = [
+	'map',
+	'alphaMap',
+	'aoMap',
+	'bumpMap',
+	'displacementMap',
+	'emissiveMap',
+	'envMap',
+	'lightMap',
+	'metalnessMap',
+	'normalMap',
+	'roughnessMap',
+	'specularMap'
+] as const;
+
+const materialHasTextureSlots = (material: THREE.Material) => {
+	return TEXTURE_SLOT_KEYS.some((key) => {
+		const candidate = (material as THREE.Material & Record<string, unknown>)[key];
+		return candidate instanceof THREE.Texture;
+	});
+};
 
 /**
  * Three.js レイヤーマネージャー
@@ -339,9 +365,13 @@ export class ThreeJsLayerManager {
 		const useShaderMaterial = Boolean(style.shading?.enabled)
 			|| Boolean(style.heightColorRamp?.enabled);
 		const isSkinnedMesh = (mesh as THREE.SkinnedMesh).isSkinnedMesh === true;
+		const hasTexturedMaterial = originalMaterials.some(materialHasTextureSlots);
 
 		const nextMaterials = originalMaterials.map((sourceMaterial) =>
-			isSkinnedMesh
+			// FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
+			hasTexturedMaterial
+				? this.createStyledSourceMaterial(sourceMaterial, style)
+				: isSkinnedMesh
 				? this.createStyledSourceMaterial(sourceMaterial, style)
 				: useShaderMaterial
 				? this.createShaderMaterial(sourceMaterial, style)
@@ -593,6 +623,31 @@ export class ThreeJsLayerManager {
 				resolve();
 			};
 
+				const finalizeLoadedModel = (object: THREE.Object3D) => {
+					if (entry.format.georeference) {
+						applyProjectedModelGeoreference(object, entry.format.georeference);
+						return;
+					}
+
+					if (entry.format.type === 'fbx') {
+						const unitScaleMeters = getModelUnitScaleMeters(
+							Number(
+								(object.userData as {
+									unitScaleFactor?: number;
+								}).unitScaleFactor
+							)
+						);
+						if (unitScaleMeters !== 1) {
+							object.scale.multiplyScalar(unitScaleMeters);
+							object.updateMatrixWorld(true);
+						}
+					}
+
+					if (entry.format.normalizeToLocalOrigin) {
+						normalizeObjectToLocalOrigin(object);
+					}
+				};
+
 			if (entry.format.type === 'obj') {
 				const manager = new THREE.LoadingManager();
 				const resourceUrls = entry.format.resourceUrls;
@@ -754,9 +809,7 @@ export class ThreeJsLayerManager {
 						fbxLoader.load(
 							entry.format.url,
 							(object) => {
-								if (entry.format.normalizeToLocalOrigin) {
-									normalizeObjectToLocalOrigin(object);
-								}
+								finalizeLoadedModel(object);
 								onModelLoaded(
 									object,
 									(object as THREE.Group & {
@@ -824,9 +877,7 @@ export class ThreeJsLayerManager {
 										normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
 										transform: entry.style.transform
 									});
-									if (entry.format.normalizeToLocalOrigin) {
-										normalizeObjectToLocalOrigin(object);
-									}
+									finalizeLoadedModel(object);
 									console.log('[IFC] layer load after normalization', {
 										entryId: entry.id,
 										name: entry.metaData.name,

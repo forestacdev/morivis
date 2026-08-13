@@ -7,6 +7,11 @@
  * - https://front.geospatial.jp/moj-chizu-xml-readme/
  */
 
+import {
+	getJapanPlaneRectangularEpsg,
+	getJapanPlaneRectangularProj4ByEpsg
+} from '../../proj/japan-plane-rectangular';
+
 // ---- Types ----
 
 type Point = [number, number];
@@ -37,70 +42,13 @@ interface ParseOptions {
 const NS_TIZUXML = 'http://www.moj.go.jp/MINJI/tizuxml';
 const NS_TIZUZUMEN = 'http://www.moj.go.jp/MINJI/tizuzumen';
 
-const CRS_MAP: Record<string, string | null> = {
-	任意座標系: null,
-	公共座標1系: 'epsg:2443',
-	公共座標2系: 'epsg:2444',
-	公共座標3系: 'epsg:2445',
-	公共座標4系: 'epsg:2446',
-	公共座標5系: 'epsg:2447',
-	公共座標6系: 'epsg:2448',
-	公共座標7系: 'epsg:2449',
-	公共座標8系: 'epsg:2450',
-	公共座標9系: 'epsg:2451',
-	公共座標10系: 'epsg:2452',
-	公共座標11系: 'epsg:2453',
-	公共座標12系: 'epsg:2454',
-	公共座標13系: 'epsg:2455',
-	公共座標14系: 'epsg:2456',
-	公共座標15系: 'epsg:2457',
-	公共座標16系: 'epsg:2458',
-	公共座標17系: 'epsg:2459',
-	公共座標18系: 'epsg:2460',
-	公共座標19系: 'epsg:2461'
-};
+const getSourceCrs = (crsText: string): string | null => {
+	if (crsText === '任意座標系') return null;
 
-// 日本の平面直角座標系 (JGD2000) の proj4 定義
-// ブラウザで proj4js を使って座標変換するための定義
-const PROJ4_DEFS: Record<string, string> = {
-	'epsg:2443':
-		'+proj=tmerc +lat_0=33 +lon_0=129.5 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2444':
-		'+proj=tmerc +lat_0=33 +lon_0=131 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2445':
-		'+proj=tmerc +lat_0=36 +lon_0=132.1666666666667 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2446':
-		'+proj=tmerc +lat_0=33 +lon_0=133.5 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2447':
-		'+proj=tmerc +lat_0=36 +lon_0=134.3333333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2448':
-		'+proj=tmerc +lat_0=36 +lon_0=136 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2449':
-		'+proj=tmerc +lat_0=36 +lon_0=137.1666666666667 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2450':
-		'+proj=tmerc +lat_0=36 +lon_0=138.5 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2451':
-		'+proj=tmerc +lat_0=36 +lon_0=139.8333333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2452':
-		'+proj=tmerc +lat_0=40 +lon_0=140.8333333333333 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2453':
-		'+proj=tmerc +lat_0=44 +lon_0=140.25 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2454':
-		'+proj=tmerc +lat_0=44 +lon_0=142.25 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2455':
-		'+proj=tmerc +lat_0=44 +lon_0=144.25 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2456':
-		'+proj=tmerc +lat_0=26 +lon_0=142 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2457':
-		'+proj=tmerc +lat_0=26 +lon_0=127.5 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2458':
-		'+proj=tmerc +lat_0=26 +lon_0=124 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2459':
-		'+proj=tmerc +lat_0=26 +lon_0=131 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2460':
-		'+proj=tmerc +lat_0=20 +lon_0=136 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs',
-	'epsg:2461':
-		'+proj=tmerc +lat_0=26 +lon_0=154 +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs'
+	const match = crsText.match(/^公共座標(\d{1,2})系$/);
+	if (!match) return null;
+
+	return getJapanPlaneRectangularEpsg(Number(match[1]), 'jgd2000');
 };
 
 // ---- XML Helper ----
@@ -378,7 +326,7 @@ const createTransformer = (
 	sourceCrs: string
 ): Proj4Forward | null => {
 	if (!proj4) return null;
-	const def = PROJ4_DEFS[sourceCrs];
+	const def = getJapanPlaneRectangularProj4ByEpsg(sourceCrs, 'jgd2000');
 	if (!def) return null;
 	return proj4(def, '+proj=longlat +datum=WGS84 +no_defs').forward;
 };
@@ -415,7 +363,7 @@ export const parseMojXml = async (
 	// 座標参照系を取得
 	const crsElem = findElement(doc, '座標系', NS_TIZUXML);
 	const crsText = crsElem?.textContent ?? '';
-	const sourceCrs = CRS_MAP[crsText] ?? null;
+	const sourceCrs = getSourceCrs(crsText);
 
 	if (!includeArbitraryCrs && sourceCrs === null) {
 		return { type: 'FeatureCollection', features: [] };

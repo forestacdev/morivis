@@ -186,6 +186,7 @@
 		"pdfjs-dist": "^5.5.207",
 		"pmtiles": "^4.1.0",
 		"proj4": "^2.15.0",
+		"read-excel-file": "^9.3.5",
 		"rhino3dm": "^8.17.0",
 		"shapefile": "^0.6.6",
 		"sql.js": "^1.14.1",

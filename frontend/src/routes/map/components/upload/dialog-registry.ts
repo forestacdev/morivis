@@ -46,11 +46,13 @@ import VectorForm from '$routes/map/components/upload/form/VectorForm.svelte';
 import WcsForm from '$routes/map/components/upload/form/WcsForm.svelte';
 import WktForm from '$routes/map/components/upload/form/WktForm.svelte';
 import WmtsForm from '$routes/map/components/upload/form/WmtsForm.svelte';
+import XlsxForm from '$routes/map/components/upload/form/XlsxForm.svelte';
 import type { DialogType } from '$routes/map/types';
 
 export type DialogProfile =
 	| 'simple'
 	| 'drop-file'
+	| 'model-georef'
 	| 'vector-zone'
 	| 'vector-zone-georef'
 	| 'raster-georef'
@@ -83,6 +85,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	arcgis: { component: ArcGisForm, profile: 'simple' },
 	csv: { component: CsvForm, profile: 'vector-zone-georef' },
 	tsv: { component: TsvForm, profile: 'vector-zone-georef' },
+	xlsx: { component: XlsxForm, profile: 'vector-zone-georef' },
 	raster: { component: RasterForm, profile: 'remote-raster' },
 	tileurltype: { component: TileUrlTypeForm, profile: 'tile-url-type' },
 	'3dtiles': { component: Tiles3DForm, profile: 'remote-3dtiles' },
@@ -93,7 +96,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	hrit: { component: HritForm, profile: 'drop-file' },
 	demxml: { component: DemXmlForm, profile: 'raster-georef' },
 	pmtiles: { component: PmtilesForm, profile: 'remote-pmtiles' },
-	glb: { component: MeshModelForm, profile: 'drop-file' },
+	glb: { component: MeshModelForm, profile: 'model-georef' },
 	geophoto: { component: GeoPhotoForm, profile: 'drop-file' },
 	geopdf: { component: GeoPdfForm, profile: 'raster-georef' },
 	geotiff: { component: GeoTiffForm, profile: 'pointcloud-georef' },

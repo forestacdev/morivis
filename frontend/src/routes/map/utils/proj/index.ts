@@ -4,6 +4,7 @@ import proj4 from 'proj4';
 import { normalizePrjContent } from './crs-detect';
 
 export { isWebMercatorPrj, isWgs84Crs, isWgs84Prj, normalizePrjContent } from './crs-detect';
+export * from './japan-plane-rectangular';
 
 const readPrjFileBrowser = async (file: File) => {
 	return new Promise((resolve, reject) => {

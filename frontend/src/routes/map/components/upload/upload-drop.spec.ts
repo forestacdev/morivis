@@ -91,6 +91,22 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('単一の XLSX は xlsx ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(
+			createFile(
+				'sample.xlsx',
+				'xlsx',
+				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+			)
+		);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'xlsx',
+			dropFiles: undefined
+		});
+	});
+
 	it('単一の SVG は svg ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(
 			createFile('plan.svg', '<svg></svg>', 'image/svg+xml')
