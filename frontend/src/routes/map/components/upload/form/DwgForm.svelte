@@ -8,8 +8,8 @@
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
+	import { createAutoGeoJsonEntry } from '$routes/map/components/upload/form/geojson-entry';
 	import {
-		createGeoJsonEntry,
 		getGeometryTypes,
 		filterByGeometryType,
 		filterByProperty,
@@ -85,6 +85,9 @@
 	const extractLayer = (props: Record<string, unknown>) =>
 		props?.layer != null ? String(props.layer) : undefined;
 
+	const getErrorMessage = (error: unknown, fallback: string) =>
+		error instanceof Error && error.message ? error.message : fallback;
+
 	$effect(() => {
 		if (dwgFile) {
 			isProcessing.set(true);
@@ -128,7 +131,10 @@
 					);
 				})
 				.catch((error) => {
-					showNotification('DWGファイルの読み込みに失敗しました', 'error');
+					showNotification(
+						getErrorMessage(error, 'DWGファイルの読み込みに失敗しました'),
+						'error'
+					);
 					console.error(error);
 				})
 				.finally(() => {
@@ -197,14 +203,14 @@
 			const entryName = dwgFile.name.replace(/\.[^.]+$/, '');
 			const propKeys = Object.keys(geojsonData.features[0]?.properties ?? {});
 			const style = buildDxfStyle(geojsonData, selectedGeometryType, propKeys);
-			const entry = await createGeoJsonEntry(
-				geojsonData,
-				selectedGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
+			const entry = await createAutoGeoJsonEntry({
+				geojson: geojsonData,
+				geometryType: selectedGeometryType,
+				name: entryName,
+				bbox: bbox as [number, number, number, number],
 				style,
-				{ attribution: 'DWG' }
-			);
+				attribution: 'DWG'
+			});
 
 			if (entry) {
 				showDataEntry = entry;
@@ -212,7 +218,10 @@
 				showNotification('ファイルを読み込みました', 'success');
 			}
 		} catch (error) {
-			showNotification('DWGファイルの変換中にエラーが発生しました', 'error');
+			showNotification(
+				getErrorMessage(error, 'DWGファイルの変換中にエラーが発生しました'),
+				'error'
+			);
 			console.error(error);
 		} finally {
 			isProcessing.set(false);

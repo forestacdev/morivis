@@ -3,6 +3,8 @@ import type { AnyGeometry } from '$routes/map/types/geometry';
 import DxfParser from 'dxf-parser';
 
 type DxfHeader = Record<string, unknown>;
+type DxfPointLike = { x?: unknown; y?: unknown; z?: unknown };
+type DxfPoint = { x: number; y: number; z?: number };
 
 const DXF_INSUNITS_TO_METERS: Record<number, number> = {
 	0: 1,
@@ -75,116 +77,150 @@ const entityToFeature = (entity: any, unitScaleFactor: number): Feature | null =
 
 	switch (entity.type) {
 		case 'POINT':
-			geometry = {
-				type: 'Point',
-				coordinates: [entity.position.x, entity.position.y]
-			};
+			if (isDxfPointLike(entity.position)) {
+				geometry = createPointGeometry(toCoordinate(entity.position));
+			}
 			break;
 
-		case 'LINE':
-			geometry = {
-				type: 'LineString',
-				coordinates: [
-					[entity.vertices[0].x, entity.vertices[0].y],
-					[entity.vertices[1].x, entity.vertices[1].y]
-				]
-			};
+		case 'LINE': {
+			const vertices: DxfPoint[] = Array.isArray(entity.vertices)
+				? entity.vertices.filter(isDxfPointLike)
+				: [];
+			const force3d = vertices.some(hasExplicitZ);
+			geometry = createLineStringGeometry(
+				vertices.map((vertex) => toCoordinate(vertex, { force3d }))
+			);
 			break;
+		}
 
 		case 'LWPOLYLINE':
 		case 'POLYLINE': {
-			const coordinates = entity.vertices.map((v: any) => [v.x, v.y]);
+			const vertices: DxfPoint[] = Array.isArray(entity.vertices)
+				? entity.vertices.filter(isDxfPointLike)
+				: [];
+			const force3d = vertices.some(hasExplicitZ)
+				|| (isFiniteCoordinate(entity.elevation) && entity.elevation !== 0);
+			const fallbackZ = isFiniteCoordinate(entity.elevation) ? entity.elevation : 0;
+			const coordinates = vertices.map((vertex) =>
+				toCoordinate(vertex, { force3d, fallbackZ })
+			);
 
 			// 閉じたポリライン → Polygon
 			if (entity.shape && coordinates.length >= 3) {
-				coordinates.push(coordinates[0]); // 最初の点を追加して閉じる
-				geometry = {
-					type: 'Polygon',
-					coordinates: [coordinates]
-				};
+				geometry = createPolygonGeometry([closeRing(coordinates)]);
 			} else {
 				// 開いたポリライン → LineString
-				geometry = {
-					type: 'LineString',
-					coordinates
-				};
+				geometry = createLineStringGeometry(coordinates);
 			}
 			break;
 		}
 		case 'CIRCLE': {
 			// 円を多角形として近似（36点）
-			const circleCoords = approximateCircle(
-				entity.center.x,
-				entity.center.y,
-				entity.radius,
-				36
-			);
-			geometry = {
-				type: 'Polygon',
-				coordinates: [circleCoords]
-			};
-			properties.radius = entity.radius;
+			if (isDxfPointLike(entity.center) && isFiniteCoordinate(entity.radius)) {
+				const circleCoords = approximateCircle(
+					entity.center.x,
+					entity.center.y,
+					entity.radius,
+					36,
+					hasExplicitZ(entity.center) ? entity.center.z : undefined
+				);
+				geometry = createPolygonGeometry([circleCoords]);
+				properties.radius = entity.radius;
+			}
 			break;
 		}
 		case 'ARC': {
 			// 円弧をLineStringとして近似
-			const arcCoords = approximateArc(
-				entity.center.x,
-				entity.center.y,
-				entity.radius,
-				entity.startAngle,
-				entity.endAngle,
-				36
-			);
-			geometry = {
-				type: 'LineString',
-				coordinates: arcCoords
-			};
-			properties.radius = entity.radius;
-			properties.startAngle = entity.startAngle;
-			properties.endAngle = entity.endAngle;
+			if (
+				isDxfPointLike(entity.center)
+				&& isFiniteCoordinate(entity.radius)
+				&& isFiniteCoordinate(entity.startAngle)
+				&& isFiniteCoordinate(entity.endAngle)
+			) {
+				const arcCoords = approximateArc(
+					entity.center.x,
+					entity.center.y,
+					entity.radius,
+					entity.startAngle,
+					entity.endAngle,
+					36,
+					hasExplicitZ(entity.center) ? entity.center.z : undefined
+				);
+				geometry = createLineStringGeometry(arcCoords);
+				properties.radius = entity.radius;
+				properties.startAngle = entity.startAngle;
+				properties.endAngle = entity.endAngle;
+			}
 			break;
 		}
 		case 'ELLIPSE': {
 			// 楕円を多角形として近似
-			const ellipseCoords = approximateEllipse(
-				entity.center.x,
-				entity.center.y,
-				entity.majorAxisEndPoint,
-				entity.axisRatio,
-				entity.startAngle || 0,
-				entity.endAngle || Math.PI * 2,
-				36
-			);
-			geometry = {
-				type: 'Polygon',
-				coordinates: [ellipseCoords]
-			};
+			if (
+				isDxfPointLike(entity.center)
+				&& isDxfPointLike(entity.majorAxisEndPoint)
+				&& isFiniteCoordinate(entity.axisRatio)
+			) {
+				const ellipseCoords = approximateEllipse(
+					entity.center.x,
+					entity.center.y,
+					entity.majorAxisEndPoint,
+					entity.axisRatio,
+					isFiniteCoordinate(entity.startAngle) ? entity.startAngle : 0,
+					isFiniteCoordinate(entity.endAngle) ? entity.endAngle : Math.PI * 2,
+					36,
+					hasExplicitZ(entity.center) ? entity.center.z : undefined
+				);
+				geometry = createPolygonGeometry([ellipseCoords]);
+			}
 			break;
 		}
 		case 'SPLINE':
 			// スプライン曲線をLineStringとして近似
 			if (entity.controlPoints && entity.controlPoints.length > 0) {
-				const splineCoords = entity.controlPoints.map((p: any) => [p.x, p.y]);
-				geometry = {
-					type: 'LineString',
-					coordinates: splineCoords
-				};
+				const controlPoints: DxfPoint[] = entity.controlPoints.filter(isDxfPointLike);
+				const force3d = controlPoints.some(hasExplicitZ);
+				const splineCoords = controlPoints.map((point) => toCoordinate(point, { force3d }));
+				geometry = createLineStringGeometry(splineCoords);
 			}
 			break;
+
+		case '3DFACE': {
+			const faceVertices: DxfPoint[] = Array.isArray(entity.vertices)
+				? entity.vertices.filter(isDxfPointLike)
+				: [];
+			const force3d = faceVertices.some(hasExplicitZ);
+			const ring = closeRing(
+				removeDuplicateAdjacentCoordinates(
+					faceVertices.map((vertex) => toCoordinate(vertex, { force3d }))
+				)
+			);
+			geometry = createPolygonGeometry([ring]);
+			break;
+		}
+
+		case 'SOLID': {
+			const solidPoints: DxfPoint[] = Array.isArray(entity.points)
+				? entity.points.filter(isDxfPointLike)
+				: [];
+			const force3d = solidPoints.some(hasExplicitZ);
+			const ring = closeRing(
+				removeDuplicateAdjacentCoordinates(
+					solidPoints.map((point) => toCoordinate(point, { force3d }))
+				)
+			);
+			geometry = createPolygonGeometry([ring]);
+			break;
+		}
 
 		case 'TEXT':
 		case 'MTEXT':
 			// テキストは位置情報として保存
-			geometry = {
-				type: 'Point',
-				coordinates: [
-					entity.position?.x || entity.startPoint?.x || 0,
-					entity.position?.y || entity.startPoint?.y || 0
-				]
-			};
-			properties.text = entity.text;
-			properties.height = entity.height;
+			if (isDxfPointLike(entity.position) || isDxfPointLike(entity.startPoint)) {
+				const point = isDxfPointLike(entity.position) ? entity.position : entity.startPoint;
+				geometry = createPointGeometry(toCoordinate(point));
+				properties.text = entity.text;
+				properties.height = entity.height;
+			}
 			break;
 
 		default:
@@ -225,6 +261,71 @@ const getDxfUnitScaleFactor = (header?: DxfHeader): number => {
 
 const isFiniteCoordinate = (value: unknown): value is number =>
 	typeof value === 'number' && Number.isFinite(value);
+
+const isDxfPointLike = (value: unknown): value is DxfPoint =>
+	typeof value === 'object'
+	&& value !== null
+	&& isFiniteCoordinate((value as DxfPointLike).x)
+	&& isFiniteCoordinate((value as DxfPointLike).y);
+
+const hasExplicitZ = (
+	point: DxfPointLike | null | undefined
+): point is DxfPoint & { z: number } =>
+	point != null && isFiniteCoordinate(point.z);
+
+const toCoordinate = (
+	point: DxfPoint,
+	options?: { force3d?: boolean; fallbackZ?: number }
+): number[] => {
+	const z = hasExplicitZ(point) ? point.z : options?.fallbackZ;
+
+	if (options?.force3d || isFiniteCoordinate(z)) {
+		return [point.x, point.y, z ?? 0];
+	}
+
+	return [point.x, point.y];
+};
+
+const createPointGeometry = (coordinates: number[]): AnyGeometry =>
+	({
+		type: 'Point',
+		coordinates
+	}) as unknown as AnyGeometry;
+
+const createLineStringGeometry = (coordinates: number[][]): AnyGeometry =>
+	({
+		type: 'LineString',
+		coordinates
+	}) as unknown as AnyGeometry;
+
+const createPolygonGeometry = (coordinates: number[][][]): AnyGeometry =>
+	({
+		type: 'Polygon',
+		coordinates
+	}) as unknown as AnyGeometry;
+
+const createPlanarCoordinate = (x: number, y: number, z?: number): number[] =>
+	isFiniteCoordinate(z) ? [x, y, z] : [x, y];
+
+const coordinatesEqual = (a: number[], b: number[]): boolean =>
+	a.length === b.length && a.every((value, index) => value === b[index]);
+
+const removeDuplicateAdjacentCoordinates = (coordinates: number[][]): number[][] =>
+	coordinates.filter((coordinate, index) =>
+		index === 0 || !coordinatesEqual(coordinate, coordinates[index - 1])
+	);
+
+const closeRing = (coordinates: number[][]): number[][] => {
+	if (coordinates.length === 0) {
+		return coordinates;
+	}
+
+	if (coordinatesEqual(coordinates[0], coordinates[coordinates.length - 1])) {
+		return coordinates;
+	}
+
+	return [...coordinates, [...coordinates[0]]];
+};
 
 const scaleCoordinates = (coordinates: unknown, factor: number): unknown => {
 	if (!Array.isArray(coordinates)) {
@@ -302,15 +403,16 @@ const approximateCircle = (
 	cx: number,
 	cy: number,
 	radius: number,
-	segments: number = 36
-): [number, number][] => {
-	const coords: [number, number][] = [];
+	segments: number = 36,
+	z?: number
+): number[][] => {
+	const coords: number[][] = [];
 
 	for (let i = 0; i <= segments; i++) {
 		const angle = (i / segments) * Math.PI * 2;
 		const x = cx + radius * Math.cos(angle);
 		const y = cy + radius * Math.sin(angle);
-		coords.push([x, y]);
+		coords.push(createPlanarCoordinate(x, y, z));
 	}
 
 	return coords;
@@ -325,9 +427,10 @@ const approximateArc = (
 	radius: number,
 	startAngle: number,
 	endAngle: number,
-	segments: number = 36
-): [number, number][] => {
-	const coords: [number, number][] = [];
+	segments: number = 36,
+	z?: number
+): number[][] => {
+	const coords: number[][] = [];
 
 	// 角度を正規化（DXFはラジアン）
 	const angle1 = startAngle;
@@ -344,7 +447,7 @@ const approximateArc = (
 		const angle = angle1 + (i / numPoints) * angleRange;
 		const x = cx + radius * Math.cos(angle);
 		const y = cy + radius * Math.sin(angle);
-		coords.push([x, y]);
+		coords.push(createPlanarCoordinate(x, y, z));
 	}
 
 	return coords;
@@ -356,13 +459,14 @@ const approximateArc = (
 const approximateEllipse = (
 	cx: number,
 	cy: number,
-	majorAxisEndPoint: any,
+	majorAxisEndPoint: { x: number; y: number },
 	axisRatio: number,
 	startAngle: number,
 	endAngle: number,
-	segments: number = 36
-): [number, number][] => {
-	const coords: [number, number][] = [];
+	segments: number = 36,
+	z?: number
+): number[][] => {
+	const coords: number[][] = [];
 
 	const majorRadius = Math.sqrt(majorAxisEndPoint.x ** 2 + majorAxisEndPoint.y ** 2);
 	const minorRadius = majorRadius * axisRatio;
@@ -389,7 +493,7 @@ const approximateEllipse = (
 		const x = cx + ex * Math.cos(rotation) - ey * Math.sin(rotation);
 		const y = cy + ex * Math.sin(rotation) + ey * Math.cos(rotation);
 
-		coords.push([x, y]);
+		coords.push(createPlanarCoordinate(x, y, z));
 	}
 
 	return coords;
