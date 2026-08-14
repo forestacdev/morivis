@@ -107,6 +107,16 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('単一の DWG は dwg ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('plan.dwg', 'dwg'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'dwg',
+			dropFiles: undefined
+		});
+	});
+
 	it('単一の SVG は svg ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(
 			createFile('plan.svg', '<svg></svg>', 'image/svg+xml')

@@ -156,6 +156,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	lrit: 'hrit',
 	hrit: 'hrit',
 	dm: 'dm',
+	dwg: 'dwg',
 	dxf: 'dxf',
 	sim: 'sima',
 	shp: 'shp',

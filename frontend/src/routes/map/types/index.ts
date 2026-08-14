@@ -85,6 +85,7 @@ export type DialogType =
 	| 'wfs'
 	| 'ogcapifeatures'
 	| 'dm'
+	| 'dwg'
 	| 'dxf'
 	| 'sima'
 	| 'hdf5'
@@ -287,9 +288,10 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.bz2', '.lrit', '.hrit']
 	},
 	{
-		label: 'DXF',
-		description: 'CAD図面の交換形式です。図面上の線や注記を地図上で確認するときに使います。',
-		extensions: ['.dxf']
+		label: 'DXF / DWG',
+		description:
+			'CAD図面の交換形式とネイティブ形式です。図面上の線や注記を地図上で確認するときに使います。',
+		extensions: ['.dxf', '.dwg']
 	},
 	{
 		label: 'SIMA',
