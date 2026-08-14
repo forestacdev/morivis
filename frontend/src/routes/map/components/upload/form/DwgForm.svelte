@@ -242,10 +242,6 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-4 overflow-x-hidden overflow-y-auto"
 >
-	<div class="w-full rounded-md border border-white/10 bg-white/5 p-3 text-sm text-gray-300">
-		DWG は内部で DXF に変換してから解析します。
-	</div>
-
 	{#if geometryTypeOptions.length > 1}
 		<div class="w-full p-2">
 			<HorizontalSelectBox

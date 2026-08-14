@@ -2,6 +2,36 @@ import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
 import DxfParser from 'dxf-parser';
 
+type DxfHeader = Record<string, unknown>;
+
+const DXF_INSUNITS_TO_METERS: Record<number, number> = {
+	0: 1,
+	1: 0.0254,
+	2: 0.3048,
+	3: 1609.344,
+	4: 0.001,
+	5: 0.01,
+	6: 1,
+	7: 1000,
+	8: 2.54e-8,
+	9: 2.54e-5,
+	10: 0.9144,
+	11: 1e-10,
+	12: 1e-9,
+	13: 1e-6,
+	14: 0.1,
+	15: 10,
+	16: 100,
+	17: 1e9,
+	18: 149597870700,
+	19: 9.4607304725808e15,
+	20: 3.085677581491367e16,
+	21: 1200 / 3937,
+	22: 100 / 3937,
+	23: 3600 / 3937,
+	24: 6336000 / 3937
+};
+
 /**
  * DXFファイルの内容をGeoJSONに変換
  */
@@ -13,10 +43,11 @@ export const dxfToGeoJson = (dxfText: string): FeatureCollection => {
 		throw new Error('DXFの解析に失敗しました');
 	}
 
+	const unitScaleFactor = getDxfUnitScaleFactor((dxf as { header?: DxfHeader; }).header);
 	const features: Feature[] = [];
 
 	dxf.entities.forEach((entity: any) => {
-		const feature = entityToFeature(entity);
+		const feature = entityToFeature(entity, unitScaleFactor);
 		if (feature) {
 			features.push(feature);
 		}
@@ -31,7 +62,7 @@ export const dxfToGeoJson = (dxfText: string): FeatureCollection => {
 /**
  * DXFエンティティをGeoJSON Featureに変換
  */
-const entityToFeature = (entity: any): Feature | null => {
+const entityToFeature = (entity: any, unitScaleFactor: number): Feature | null => {
 	let geometry: AnyGeometry | null = null;
 	const colorHex = entity.color != null
 		? `#${(entity.color as number).toString(16).padStart(6, '0')}`
@@ -162,12 +193,106 @@ const entityToFeature = (entity: any): Feature | null => {
 	}
 
 	if (!geometry) return null;
+	if (!isGeometryValid(geometry)) {
+		// CAD 変換結果には頂点ゼロのポリラインが混ざることがあるため、再投影前に落とす。
+		console.warn('Skipping invalid DXF entity geometry', {
+			type: entity.type,
+			layer: entity.layer
+		});
+		return null;
+	}
+	if (unitScaleFactor !== 1) {
+		geometry = scaleGeometry(geometry, unitScaleFactor);
+		scaleLengthProperties(properties, unitScaleFactor);
+	}
 
 	return {
 		type: 'Feature',
 		geometry,
 		properties
 	};
+};
+
+const getDxfUnitScaleFactor = (header?: DxfHeader): number => {
+	const insunits = header?.['$INSUNITS'];
+
+	if (typeof insunits !== 'number' || !Number.isFinite(insunits)) {
+		return 1;
+	}
+
+	return DXF_INSUNITS_TO_METERS[insunits] ?? 1;
+};
+
+const isFiniteCoordinate = (value: unknown): value is number =>
+	typeof value === 'number' && Number.isFinite(value);
+
+const scaleCoordinates = (coordinates: unknown, factor: number): unknown => {
+	if (!Array.isArray(coordinates)) {
+		return coordinates;
+	}
+
+	if (coordinates.length > 0 && typeof coordinates[0] === 'number') {
+		return coordinates.map((value) => (typeof value === 'number' ? value * factor : value));
+	}
+
+	return coordinates.map((value) => scaleCoordinates(value, factor));
+};
+
+const scaleGeometry = <T extends AnyGeometry>(geometry: T, factor: number): T => ({
+	...geometry,
+	coordinates: scaleCoordinates(geometry.coordinates, factor) as T['coordinates']
+});
+
+const scaleLengthProperties = (properties: Record<string, any>, factor: number): void => {
+	for (const key of ['radius', 'height']) {
+		if (typeof properties[key] === 'number' && Number.isFinite(properties[key])) {
+			properties[key] *= factor;
+		}
+	}
+};
+
+const isCoordinatePair = (coord: unknown): coord is [number, number] =>
+	Array.isArray(coord) &&
+	coord.length >= 2 &&
+	isFiniteCoordinate(coord[0]) &&
+	isFiniteCoordinate(coord[1]);
+
+const isValidLineStringCoordinates = (coordinates: unknown): coordinates is [number, number][] =>
+	Array.isArray(coordinates) &&
+	coordinates.length >= 2 &&
+	coordinates.every(isCoordinatePair);
+
+const isValidPolygonCoordinates = (
+	coordinates: unknown
+): coordinates is [number, number][][] =>
+	Array.isArray(coordinates) &&
+	coordinates.length > 0 &&
+	coordinates.every(
+		(ring) => Array.isArray(ring) && ring.length >= 4 && ring.every(isCoordinatePair)
+	);
+
+const isGeometryValid = (geometry: AnyGeometry): boolean => {
+	switch (geometry.type) {
+		case 'Point':
+			return isCoordinatePair(geometry.coordinates);
+		case 'LineString':
+			return isValidLineStringCoordinates(geometry.coordinates);
+		case 'Polygon':
+			return isValidPolygonCoordinates(geometry.coordinates);
+		case 'MultiPoint':
+			return Array.isArray(geometry.coordinates) && geometry.coordinates.length > 0 &&
+				geometry.coordinates.every(isCoordinatePair);
+		case 'MultiLineString':
+			return Array.isArray(geometry.coordinates) &&
+				geometry.coordinates.length > 0 &&
+				geometry.coordinates.every(isValidLineStringCoordinates);
+		case 'MultiPolygon':
+			return Array.isArray(geometry.coordinates) &&
+				geometry.coordinates.length > 0 &&
+				geometry.coordinates.every(isValidPolygonCoordinates);
+		default:
+			return false;
+	}
 };
 
 /**
