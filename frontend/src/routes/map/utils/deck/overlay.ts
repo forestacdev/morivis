@@ -15,7 +15,8 @@ import type {
 	DeckVectorEntry,
 	GeoArrowEntry,
 	GeoJson3DEntry,
-	PointCloudEntry
+	PointCloudEntry,
+	Tiles3DMeshStyle
 } from '$routes/map/data/types/model';
 
 interface TileContent {
@@ -29,6 +30,14 @@ interface Tile3D {
 
 type Tile3DLayerPatchedMethods = {
 	_getSubLayer?: (tile: Tile3D, oldLayer?: unknown) => unknown;
+};
+
+type CloneableDeckLayer = {
+	id?: string;
+	constructor?: {
+		layerName?: string;
+	};
+	clone: (props: Record<string, unknown>) => unknown;
 };
 
 type PointCloudDatum = {
@@ -58,6 +67,27 @@ const hexToRgba = (color: string, alpha = 255): [number, number, number, number]
 };
 
 const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
+
+const isCloneableDeckLayer = (layer: unknown): layer is CloneableDeckLayer =>
+	typeof layer === 'object' &&
+	layer !== null &&
+	'clone' in layer &&
+	typeof (layer as { clone?: unknown; }).clone === 'function';
+
+const getTiles3DMeshSubLayerProps = (style: Tiles3DMeshStyle) => ({
+	getColor: hexToRgba(style.color),
+	sizeScale: style.transform.scale,
+	getOrientation: [
+		style.transform.rotationX,
+		style.transform.rotationY,
+		style.transform.rotationZ
+	] as [number, number, number],
+	getTranslation: [
+		style.transform.translationX,
+		style.transform.translationY,
+		style.transform.translationZ
+	] as [number, number, number]
+});
 
 export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 	const altitudeOffset = dataEntry.metaData.altitude ?? 0;
@@ -95,7 +125,32 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 		// vis.gl 側の更新で不要になったら削除候補。
 		patchedLayer._getSubLayer = (tile: Tile3D, oldLayer?: unknown) => {
 			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
-			return originalGetSubLayer(tile, oldLayer);
+			const subLayer = originalGetSubLayer(tile, oldLayer);
+
+			if (dataEntry.style.type !== '3d-tiles-mesh' || !isCloneableDeckLayer(subLayer)) {
+				return subLayer;
+			}
+
+			const subLayerName = [
+				subLayer.constructor?.layerName ?? '',
+				subLayer.id ?? ''
+			]
+				.join(' ')
+				.toLowerCase();
+			const sharedProps = getTiles3DMeshSubLayerProps(dataEntry.style);
+
+			if (subLayerName.includes('scenegraph')) {
+				return subLayer.clone({
+					...sharedProps,
+					_lighting: dataEntry.style.lighting
+				});
+			}
+
+			if (subLayerName.includes('mesh')) {
+				return subLayer.clone(sharedProps);
+			}
+
+			return subLayer;
 		};
 	}
 

@@ -11,6 +11,7 @@ import type {
 	MeshStyle,
 	PointCloudEntry,
 	PointCloudStyle,
+	Tiles3DMeshStyle,
 	Tiles3DEntry
 } from '$routes/map/data/types/model';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
@@ -19,13 +20,13 @@ import type { Table } from 'apache-arrow';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 
-type Tiles3DStyleType = MeshStyle['type'] | PointCloudStyle['type'];
+type Tiles3DRegistrationStyleType = 'mesh' | PointCloudStyle['type'];
 
 export const createTiles3DEntry = (
 	name: string,
 	url: string,
 	bounds?: [number, number, number, number],
-	styleType: Tiles3DStyleType = 'mesh'
+	styleType: Tiles3DRegistrationStyleType = 'mesh'
 ): AnyTiles3DEntry => {
 	const baseEntry = {
 		id: '3dtiles_' + crypto.randomUUID(),
@@ -59,36 +60,21 @@ export const createTiles3DEntry = (
 		...baseEntry,
 		style: {
 			visible: true,
-			type: 'mesh',
+			type: '3d-tiles-mesh',
 			opacity: 0.7,
-			wireframe: false,
 			color: '#ffffff',
-			shading: {
-				...DEFAULT_MESH_SHADING,
-				enabled: false
-			},
-			shadingOptions: {
-				enabled: false
-			},
-			transformOptions: {
-				scale: false,
-				rotation: false,
-				heightScale: false,
-				heightOffset: false
-			},
+			lighting: 'pbr',
 			transform: {
-				lng: 0,
-				lat: 0,
-				altitude: 0,
-				heightOffset: 0,
-				heightScale: 1,
 				scale: 1,
 				rotationX: 0,
 				rotationY: 0,
-				rotationZ: 0
+				rotationZ: 0,
+				translationX: 0,
+				translationY: 0,
+				translationZ: 0
 			}
 		}
-	} satisfies Tiles3DEntry<MeshStyle>;
+	} satisfies Tiles3DEntry<Tiles3DMeshStyle>;
 };
 
 /**

@@ -121,6 +121,26 @@ export interface MeshStyle {
 	};
 }
 
+export interface Tiles3DMeshTransformStyle {
+	scale: number;
+	rotationX: number;
+	rotationY: number;
+	rotationZ: number;
+	translationX: number;
+	translationY: number;
+	translationZ: number;
+}
+
+export interface Tiles3DMeshStyle {
+	type: '3d-tiles-mesh';
+	opacity: Opacity;
+	visible?: boolean;
+	color: string;
+	/** ScenegraphLayer では pbr / flat を切り替える。SimpleMeshLayer では無視される。 */
+	lighting: 'pbr' | 'flat';
+	transform: Tiles3DMeshTransformStyle;
+}
+
 export interface PointCloudStyle {
 	type: 'point-cloud';
 	opacity: Opacity;
@@ -204,17 +224,15 @@ export interface GeoJson3DEntry extends BaseModelEntry {
 /** deck.gl 側で扱うベクター系 3D entry。 */
 export type DeckVectorEntry = GeoArrowEntry | GeoJson3DEntry;
 
-export type AnyMeshEntry = MeshEntry<MeshStyle> | MeshEntry<PointCloudStyle>;
+export type AnyMeshEntry = MeshEntry<MeshStyle>;
 
 export type AnyTiles3DEntry =
-	| Tiles3DEntry<MeshStyle>
+	| Tiles3DEntry<Tiles3DMeshStyle>
 	| Tiles3DEntry<PointCloudStyle>;
 
-export type MeshStyleEntry = MeshEntry<MeshStyle> | Tiles3DEntry<MeshStyle>;
-export type PointCloudStyleEntry =
-	| MeshEntry<PointCloudStyle>
-	| Tiles3DEntry<PointCloudStyle>
-	| PointCloudEntry;
+export type MeshStyleEntry = MeshEntry<MeshStyle>;
+export type Tiles3DMeshStyleEntry = Tiles3DEntry<Tiles3DMeshStyle>;
+export type PointCloudStyleEntry = Tiles3DEntry<PointCloudStyle> | PointCloudEntry;
 
 /**
  * morivis の model 系内部モデル。

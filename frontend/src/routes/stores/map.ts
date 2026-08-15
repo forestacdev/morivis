@@ -54,7 +54,8 @@ import {
 	type DeckVectorEntry,
 	type MeshEntry,
 	type MeshStyle,
-	type PointCloudEntry
+	type PointCloudEntry,
+	type Tiles3DMeshStyleEntry
 } from '$routes/map/data/types/model';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import {
@@ -1005,6 +1006,11 @@ const createMapStore = () => {
 		await refreshCurrentDeckOverlay();
 	};
 
+	const setDeckTiles3DMeshStyle = async (entry: Tiles3DMeshStyleEntry) => {
+		currentDeckTiles3dEntries.set(entry.id, entry);
+		await refreshCurrentDeckOverlay();
+	};
+
 	const setDeckVectorColor = async (entryId: string, color: string) => {
 		const deckVectorEntry = currentDeckVectorEntries.get(entryId);
 		if (!deckVectorEntry) return;
@@ -1596,6 +1602,7 @@ const createMapStore = () => {
 		setDeckModelVisibility,
 		setDeckModelOpacity,
 		setDeckPointCloudPointSize,
+		setDeckTiles3DMeshStyle,
 		setDeckVectorColor,
 		setModelAnimationState,
 		setHighlightLayers,
