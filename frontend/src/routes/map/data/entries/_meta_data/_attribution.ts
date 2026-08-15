@@ -106,6 +106,14 @@ const baseAttributions = {
 		name: '三重県',
 		url: 'https://www.pref.mie.lg.jp/'
 	},
+	山形県: {
+		name: '山形県',
+		url: 'https://www.pref.yamagata.jp/'
+	},
+	長野県: {
+		name: '長野県',
+		url: 'https://www.pref.nagano.lg.jp/'
+	},
 	大阪府: {
 		name: '大阪府',
 		url: 'https://www.pref.osaka.lg.jp/'
@@ -185,6 +193,16 @@ const attributionData = {
 		name: '三重県（林野庁加工）',
 		url: 'https://www.geospatial.jp/ckan/organization/rinya',
 		sources: [baseAttributions.三重県, baseAttributions.林野庁]
+	},
+	山形県_林野庁加工: {
+		name: '山形県（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya',
+		sources: [baseAttributions.山形県, baseAttributions.林野庁]
+	},
+	長野県_林野庁加工: {
+		name: '長野県（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya',
+		sources: [baseAttributions.長野県, baseAttributions.林野庁]
 	},
 	森林総研・森林土壌デジタルマップ: {
 		name: '森林総研・森林土壌デジタルマップ',

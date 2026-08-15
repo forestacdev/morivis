@@ -1,28 +1,28 @@
-import { MIE_KITAISE_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
+import { NAGANO_INATANI_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterDemStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
-	id: 'dem_mie_kitaise',
+	id: 'dem_nagano_inatani',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://rinya-tiles.geospatial.jp/dem_081_2025/{z}/{x}/{y}.png'
+		url: 'https://rinya-tiles.geospatial.jp/dem_067_2025/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '北伊勢森林計画区 数値標高データ',
-		sourceDataName: 'DEMラスタタイル-PNG標高タイル',
+		name: '伊那谷森林計画区 数値標高データ',
+		sourceDataName: 'DEMラスタタイル-PNG標高タイルXYZ',
 		description:
-			'北伊勢森林計画区の標高値をPNG標高タイルで配信したデータ。標高値の参照や地形表現の基盤として利用できる。',
-		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/kitaise_081',
-		attribution: '三重県_林野庁加工',
-		location: '三重県',
+			'伊那谷森林計画区の標高値をPNG標高タイルで配信したデータ。標高値の参照や地形表現の基盤として利用できる。',
+		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/inatani_067',
+		attribution: '長野県_林野庁加工',
+		location: '長野県',
 		tags: ['DEM', '地形'],
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		bounds: MIE_KITAISE_BBOX,
-		xyzImageTile: { x: 28801, y: 12987, z: 15 }
+		bounds: NAGANO_INATANI_BBOX,
+		xyzImageTile: { x: 28938, y: 12892, z: 15 }
 	},
 	interaction: {
 		clickable: true

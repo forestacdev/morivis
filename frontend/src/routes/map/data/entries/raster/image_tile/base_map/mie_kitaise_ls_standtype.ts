@@ -1,4 +1,4 @@
-import { MIE_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
+import { MIE_KITAISE_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterBaseMapStyle, RasterImageEntry } from '$routes/map/data/types/raster';
@@ -21,7 +21,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		bounds: MIE_BBOX,
+		bounds: MIE_KITAISE_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/kitaise_081',
 		xyzImageTile: { x: 28801, y: 12987, z: 15 }
 	},
