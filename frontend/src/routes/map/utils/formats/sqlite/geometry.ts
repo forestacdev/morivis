@@ -213,6 +213,182 @@ const parseWkbGeometryAt = (buf: Uint8Array, startOffset: number): ParsedGeometr
 
 const parseWkb = (buf: Uint8Array): Geometry | null => parseWkbGeometryAt(buf, 0)?.geometry ?? null;
 
+const parseEwkbGeometryAt = (buf: Uint8Array, startOffset: number): ParsedGeometryResult | null => {
+	if (startOffset + 5 > buf.length) return null;
+
+	const endianMarker = buf[startOffset];
+	if (endianMarker !== 0 && endianMarker !== 1) return null;
+
+	const littleEndian = endianMarker === 1;
+	const rawTypeCode = readUint32(buf, startOffset + 1, littleEndian);
+	const hasZ = (rawTypeCode & 0x80000000) !== 0;
+	const hasM = (rawTypeCode & 0x40000000) !== 0;
+	const hasSrid = (rawTypeCode & 0x20000000) !== 0;
+	const baseType = rawTypeCode & 0x000000ff;
+	if (
+		!hasZ
+		&& !hasM
+		&& !hasSrid
+		&& rawTypeCode < 1000
+	) {
+		return null;
+	}
+
+	const dimensionInfo = {
+		baseType,
+		coordinateValueCount: 2 + (hasZ ? 1 : 0) + (hasM ? 1 : 0)
+	};
+	let offset = startOffset + 5 + (hasSrid ? 4 : 0);
+
+	const readLineStringCoordinates = (): [number, number][] | null => {
+		if (offset + 4 > buf.length) return null;
+		const pointCount = readUint32(buf, offset, littleEndian);
+		offset += 4;
+
+		const coordinates: [number, number][] = [];
+		for (let index = 0; index < pointCount; index += 1) {
+			const result = readCoordinate(
+				buf,
+				offset,
+				littleEndian,
+				dimensionInfo.coordinateValueCount
+			);
+			if (!result) return null;
+			coordinates.push(result.coordinate);
+			offset += result.bytesRead;
+		}
+
+		return coordinates;
+	};
+
+	const readPolygonCoordinates = (): [number, number][][] | null => {
+		if (offset + 4 > buf.length) return null;
+		const ringCount = readUint32(buf, offset, littleEndian);
+		offset += 4;
+
+		const rings: [number, number][][] = [];
+		for (let index = 0; index < ringCount; index += 1) {
+			const ring = readLineStringCoordinates();
+			if (!ring) return null;
+			rings.push(ring);
+		}
+
+		return rings;
+	};
+
+	switch (dimensionInfo.baseType) {
+		case 1: {
+			const result = readCoordinate(
+				buf,
+				offset,
+				littleEndian,
+				dimensionInfo.coordinateValueCount
+			);
+			if (!result) return null;
+			offset += result.bytesRead;
+
+			return {
+				geometry: { type: 'Point', coordinates: result.coordinate },
+				bytesRead: offset - startOffset
+			};
+		}
+		case 2: {
+			const coordinates = readLineStringCoordinates();
+			if (!coordinates) return null;
+
+			return {
+				geometry: { type: 'LineString', coordinates },
+				bytesRead: offset - startOffset
+			};
+		}
+		case 3: {
+			const coordinates = readPolygonCoordinates();
+			if (!coordinates) return null;
+
+			return {
+				geometry: { type: 'Polygon', coordinates },
+				bytesRead: offset - startOffset
+			};
+		}
+		case 4: {
+			if (offset + 4 > buf.length) return null;
+			const pointCount = readUint32(buf, offset, littleEndian);
+			offset += 4;
+
+			const coordinates: [number, number][] = [];
+			for (let index = 0; index < pointCount; index += 1) {
+				const child = parseEwkbGeometryAt(buf, offset);
+				if (!child || child.geometry.type !== 'Point') return null;
+				coordinates.push(child.geometry.coordinates);
+				offset += child.bytesRead;
+			}
+
+			return {
+				geometry: { type: 'MultiPoint', coordinates },
+				bytesRead: offset - startOffset
+			};
+		}
+		case 5: {
+			if (offset + 4 > buf.length) return null;
+			const lineCount = readUint32(buf, offset, littleEndian);
+			offset += 4;
+
+			const coordinates: [number, number][][] = [];
+			for (let index = 0; index < lineCount; index += 1) {
+				const child = parseEwkbGeometryAt(buf, offset);
+				if (!child || child.geometry.type !== 'LineString') return null;
+				coordinates.push(child.geometry.coordinates);
+				offset += child.bytesRead;
+			}
+
+			return {
+				geometry: { type: 'MultiLineString', coordinates },
+				bytesRead: offset - startOffset
+			};
+		}
+		case 6: {
+			if (offset + 4 > buf.length) return null;
+			const polygonCount = readUint32(buf, offset, littleEndian);
+			offset += 4;
+
+			const coordinates: [number, number][][][] = [];
+			for (let index = 0; index < polygonCount; index += 1) {
+				const child = parseEwkbGeometryAt(buf, offset);
+				if (!child || child.geometry.type !== 'Polygon') return null;
+				coordinates.push(child.geometry.coordinates);
+				offset += child.bytesRead;
+			}
+
+			return {
+				geometry: { type: 'MultiPolygon', coordinates },
+				bytesRead: offset - startOffset
+			};
+		}
+		case 7: {
+			if (offset + 4 > buf.length) return null;
+			const geometryCount = readUint32(buf, offset, littleEndian);
+			offset += 4;
+
+			const geometries: Geometry[] = [];
+			for (let index = 0; index < geometryCount; index += 1) {
+				const child = parseEwkbGeometryAt(buf, offset);
+				if (!child) return null;
+				geometries.push(child.geometry);
+				offset += child.bytesRead;
+			}
+
+			return {
+				geometry: { type: 'GeometryCollection', geometries } as Geometry,
+				bytesRead: offset - startOffset
+			};
+		}
+		default:
+			return null;
+	}
+};
+
+const parseEwkb = (buf: Uint8Array): Geometry | null => parseEwkbGeometryAt(buf, 0)?.geometry ?? null;
+
 const parseGpkgBinary = (buf: Uint8Array): Geometry | null => {
 	if (buf.length < 8) return null;
 	if (buf[0] !== 0x47 || buf[1] !== 0x50) return null;
@@ -457,5 +633,5 @@ const parseSpatiaLiteBinary = (buf: Uint8Array): Geometry | null => {
 
 export const parseGeometryBlob = (value: TabularCellValue): Geometry | null => {
 	if (!(value instanceof Uint8Array)) return null;
-	return parseGpkgBinary(value) ?? parseSpatiaLiteBinary(value) ?? parseWkb(value);
+	return parseGpkgBinary(value) ?? parseSpatiaLiteBinary(value) ?? parseEwkb(value) ?? parseWkb(value);
 };

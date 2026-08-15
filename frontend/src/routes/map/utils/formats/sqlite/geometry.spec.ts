@@ -112,6 +112,17 @@ describe('parseGeometryBlob', () => {
 		});
 	});
 
+	it('PostGIS EWKB を読める', () => {
+		const geometry = parseGeometryBlob(
+			hexToBytes('0101000020E6100000617DB1E4173B5DC0E0E589FA37F24040')
+		);
+
+		expect(geometry).toEqual({
+			type: 'Point',
+			coordinates: [-116.92333333333, 33.892333333333]
+		});
+	});
+
 	it('SpatiaLite multi geometry を読める', () => {
 		const points: [number, number][] = [
 			[139.6917, 35.6895],

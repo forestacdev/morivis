@@ -182,10 +182,10 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.gpkg']
 	},
 	{
-		label: 'SQLite',
+		label: 'SQLite / SQL dump',
 		description:
-			'SQLiteデータベースです。座標列を持つテーブルを地点データとして読み込むときに使います。',
-		extensions: ['.sqlite', '.sqlite3', '.db', '.db3']
+			'SQLiteデータベースや SQL ダンプです。空間カラムや座標列を持つテーブルを読み込むときに使います。',
+		extensions: ['.sqlite', '.sqlite3', '.db', '.db3', '.sql']
 	},
 	{
 		label: 'Shapefile',

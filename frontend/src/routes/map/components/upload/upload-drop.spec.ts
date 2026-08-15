@@ -117,6 +117,16 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('単一の SQL dump は sqlite ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('sample.sql'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sqlite',
+			dropFiles: undefined
+		});
+	});
+
 	it('単一の DWG は dwg ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(createFile('plan.dwg', 'dwg'));
 

@@ -174,6 +174,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	sqlite3: 'sqlite',
 	db: 'sqlite',
 	db3: 'sqlite',
+	sql: 'sqlite',
 	gdb: 'gdb',
 	pmtiles: 'pmtiles',
 	glb: 'glb',

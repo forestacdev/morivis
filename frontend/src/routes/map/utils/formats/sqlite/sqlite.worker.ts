@@ -8,6 +8,7 @@ import type {
 	TabularRow
 } from '$routes/map/utils/formats/tabular';
 import { parseGeometryBlob } from './geometry';
+import { createDatabaseFromBytes, isSupportedSqliteInput } from './sql-dump';
 import {
 	getGeometryColumnsForTable,
 	isExcludedSqliteTableName,
@@ -291,7 +292,10 @@ self.addEventListener('message', (event: MessageEvent<WorkerRequest>) => {
 			if (message.type === 'open') {
 				const SQL = await getSql(message.wasmUrl);
 				closeDb();
-				db = new SQL.Database(message.data);
+				if (!isSupportedSqliteInput(message.data)) {
+					throw new Error('対応していない SQLite / SQL ダンプ形式です');
+				}
+				db = createDatabaseFromBytes(SQL, message.data);
 				self.postMessage({ id: message.id, result: true });
 				return;
 			}
