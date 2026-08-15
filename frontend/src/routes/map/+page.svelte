@@ -565,7 +565,6 @@
 				`GeoRef画像生成完了: id=${geoRefData.entryId}, width=${geoRefData.imageWidth}, height=${geoRefData.imageHeight}`
 			);
 			transformOptionMode = 'georef';
-			showDialogType = null;
 		} catch (error) {
 			debugLog.error(`GeoRef準備失敗: ${error instanceof Error ? error.message : String(error)}`);
 			showNotification('GeoJSON画像の作成中にエラーが発生しました', 'error');

@@ -63,13 +63,13 @@
 		showDialogType && showDialogType !== 'shp' ? dialogRegistry[showDialogType] : null
 	);
 	let isFixedHeight = $derived(!!activeDialogDefinition?.fixedHeight);
-	const isTransformOptionVisible = $derived(transformOptionMode === 'zone');
+	const isTransformOverlayActive = $derived(transformOptionMode !== null);
 </script>
 
 {#if activeDialogDefinition}
 	<div
 		transition:fade={{ duration: 200 }}
-		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 backdrop-blur-[3px] {isTransformOptionVisible
+		class="absolute bottom-0 z-30 flex h-full w-full items-center justify-center bg-black/50 backdrop-blur-[3px] {isTransformOverlayActive
 			? 'pointer-events-none opacity-0'
 			: ''}"
 	>
