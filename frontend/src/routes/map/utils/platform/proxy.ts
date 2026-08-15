@@ -65,6 +65,12 @@ const STATIC_PROXY_RULES: ProxyRule[] = [
 		excludeExt: ['.pbf']
 	},
 	{
+		match: 'rinya-tottori.geospatial.jp',
+		target: 'https://rinya-tottori.geospatial.jp',
+		proxyPath: '/api/rinya-tottori',
+		excludeExt: ['.pbf']
+	},
+	{
 		match: 'rinya-tiles.geospatial.jp',
 		target: 'https://rinya-tiles.geospatial.jp',
 		proxyPath: '/api/rinya-tiles'

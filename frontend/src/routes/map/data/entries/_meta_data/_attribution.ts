@@ -67,8 +67,7 @@ const baseAttributions = {
 		url: 'https://www.usgs.gov/'
 	},
 	Esri: {
-		name:
-			'© Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
+		name: '© Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
 		url: ''
 	},
 	株式会社アドイン研究所: {
@@ -138,6 +137,10 @@ const baseAttributions = {
 	PLATEAU: {
 		name: '国土交通省 Project PLATEAU',
 		url: 'https://www.mlit.go.jp/plateau/'
+	},
+	'e-Stat': {
+		name: 'e-Stat（政府統計の総合窓口）',
+		url: 'https://www.e-stat.go.jp/'
 	},
 	DoboX: {
 		name: 'DoboX',
