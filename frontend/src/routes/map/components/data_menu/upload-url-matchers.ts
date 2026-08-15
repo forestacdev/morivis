@@ -122,4 +122,9 @@ export const isWmsTemplate: UploadUrlMatcher = (_context, features) => features.
 export const isPmtilesExtension: UploadUrlMatcher = (_context, features) =>
 	features.matchedExtension === '.pmtiles';
 
+export const isGeoRssExtension: UploadUrlMatcher = (_context, features) =>
+	features.matchedExtension === '.rss'
+	|| features.matchedExtension === '.atom'
+	|| features.matchedExtension === '.georss';
+
 export const looksLikeWfsService: UploadUrlMatcher = (_context, features) => features.looksLikeWfs;

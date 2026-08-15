@@ -74,19 +74,16 @@ const isCloneableDeckLayer = (layer: unknown): layer is CloneableDeckLayer =>
 	'clone' in layer &&
 	typeof (layer as { clone?: unknown; }).clone === 'function';
 
+const getTiles3DMeshStyleSignature = (style: Tiles3DMeshStyle) =>
+	[
+		style.color,
+		style.lighting,
+		style.opacity,
+		style.visible ?? true
+	].join(':');
+
 const getTiles3DMeshSubLayerProps = (style: Tiles3DMeshStyle) => ({
-	getColor: hexToRgba(style.color),
-	sizeScale: style.transform.scale,
-	getOrientation: [
-		style.transform.rotationX,
-		style.transform.rotationY,
-		style.transform.rotationZ
-	] as [number, number, number],
-	getTranslation: [
-		style.transform.translationX,
-		style.transform.translationY,
-		style.transform.translationZ
-	] as [number, number, number]
+	getColor: hexToRgba(style.color)
 });
 
 export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
@@ -98,6 +95,9 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 		pickable: dataEntry.interaction.clickable,
 		opacity: dataEntry.style.opacity,
 		visible: dataEntry.style.visible ?? true,
+		morivisStyleSignature: dataEntry.style.type === '3d-tiles-mesh'
+			? getTiles3DMeshStyleSignature(dataEntry.style)
+			: undefined,
 		pointSize: dataEntry.style.type === 'point-cloud'
 			? (dataEntry.style.pointSize ?? 1)
 			: undefined,
@@ -142,6 +142,7 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 			if (subLayerName.includes('scenegraph')) {
 				return subLayer.clone({
 					...sharedProps,
+					getTransformMatrix: [],
 					_lighting: dataEntry.style.lighting
 				});
 			}

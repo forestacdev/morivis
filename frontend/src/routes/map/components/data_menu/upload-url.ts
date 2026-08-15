@@ -1,4 +1,5 @@
 import { type DialogType } from '$routes/map/types';
+import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import { parseOgcApiFeaturesService } from '$routes/map/utils/formats/ogc-api-features';
 import { parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
 import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
@@ -14,6 +15,7 @@ import {
 	isPmtilesExtension,
 	isRasterTileExtension,
 	isTilesetJson,
+	isGeoRssExtension,
 	isVectorTileExtension,
 	isWmsTemplate,
 	isXyzTemplate,
@@ -37,6 +39,47 @@ const getFileNameFromContentDisposition = (headerValue: string | null): string |
 
 	const plainMatch = headerValue.match(/filename="?([^";]+)"?/i);
 	return plainMatch?.[1] ?? null;
+};
+
+const getFallbackRemoteBaseName = (urlValue: string) => {
+	try {
+		const pathname = new URL(urlValue).pathname;
+		const lastSegment = pathname
+			.split('/')
+			.map((segment) => decodeURIComponent(segment))
+			.filter(Boolean)
+			.pop();
+
+		if (!lastSegment) return 'remote-file';
+
+		const withoutExtension = lastSegment.replace(/\.[^.]+$/, '').trim();
+		return withoutExtension || 'remote-file';
+	} catch {
+		return 'remote-file';
+	}
+};
+
+const getRemoteFileNameFromContentType = (
+	urlValue: string,
+	response: Response,
+	previewText?: string | null
+) => {
+	const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
+	const baseName = getFallbackRemoteBaseName(urlValue);
+
+	if (contentType.includes('application/rss+xml')) {
+		return `${baseName}.rss`;
+	}
+
+	if (contentType.includes('application/atom+xml')) {
+		return `${baseName}.atom`;
+	}
+
+	if (previewText && hasGeoRssMarker(previewText)) {
+		return `${baseName}.rss`;
+	}
+
+	return null;
 };
 
 const isWmsOrWmtsUrl = async (urlValue: string): Promise<boolean> => {
@@ -65,7 +108,11 @@ const isOgcApiFeaturesUrl = async (urlValue: string): Promise<boolean> => {
 	return !!(result && result.collections.length > 0);
 };
 
-export const getRemoteFileName = (urlValue: string, response: Response): string | null => {
+export const getRemoteFileName = async (
+	urlValue: string,
+	response: Response,
+	blob?: Blob
+): Promise<string | null> => {
 	const contentDispositionName = getFileNameFromContentDisposition(
 		response.headers.get('content-disposition')
 	);
@@ -83,10 +130,18 @@ export const getRemoteFileName = (urlValue: string, response: Response): string 
 			}
 		}
 	} catch {
-		return null;
+		return getRemoteFileNameFromContentType(urlValue, response);
 	}
 
-	return null;
+	const previewText = blob
+		? await blob
+				.slice(0, 2000)
+				.text()
+				.then((text) => text)
+				.catch(() => null)
+		: null;
+
+	return getRemoteFileNameFromContentType(urlValue, response, previewText);
 };
 
 export const validateUploadUrlInput = (value: string): string | null => {
@@ -204,6 +259,14 @@ const extensionRules: UploadUrlRule[] = [
 		matchAll: [isPmtilesExtension],
 		resolve: (context) =>
 			createDialogDecision('pmtiles', 'remotePmtilesUrl', context.templateUrl)
+	},
+	{
+		id: 'georss-file',
+		matchAll: [isGeoRssExtension],
+		resolve: (context) => ({
+			type: 'remote-file',
+			requestUrl: context.requestUrl
+		})
 	}
 ];
 

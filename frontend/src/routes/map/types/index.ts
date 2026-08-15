@@ -75,6 +75,7 @@ export type DialogType =
 	| 'gpx'
 	| 'tcx'
 	| 'osm'
+	| 'georss'
 	| 'geojson'
 	| 'wkt'
 	| 'geotiff'
@@ -208,6 +209,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'OpenStreetMapのXML形式データです。OSMのノードやウェイ、リレーションを読み込むときに使います。',
 		extensions: ['.osm']
+	},
+	{
+		label: 'GeoRSS',
+		description:
+			'位置情報付きのRSS / Atomフィードです。配信フィードの点・線・面を地図に載せるときに使います。',
+		extensions: ['.georss', '.rss', '.atom']
 	},
 	{
 		label: 'GML',

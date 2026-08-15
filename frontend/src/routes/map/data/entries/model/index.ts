@@ -63,16 +63,7 @@ export const createTiles3DEntry = (
 			type: '3d-tiles-mesh',
 			opacity: 0.7,
 			color: '#ffffff',
-			lighting: 'pbr',
-			transform: {
-				scale: 1,
-				rotationX: 0,
-				rotationY: 0,
-				rotationZ: 0,
-				translationX: 0,
-				translationY: 0,
-				translationZ: 0
-			}
+			lighting: 'pbr'
 		}
 	} satisfies Tiles3DEntry<Tiles3DMeshStyle>;
 };

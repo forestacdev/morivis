@@ -121,16 +121,6 @@ export interface MeshStyle {
 	};
 }
 
-export interface Tiles3DMeshTransformStyle {
-	scale: number;
-	rotationX: number;
-	rotationY: number;
-	rotationZ: number;
-	translationX: number;
-	translationY: number;
-	translationZ: number;
-}
-
 export interface Tiles3DMeshStyle {
 	type: '3d-tiles-mesh';
 	opacity: Opacity;
@@ -138,7 +128,6 @@ export interface Tiles3DMeshStyle {
 	color: string;
 	/** ScenegraphLayer では pbr / flat を切り替える。SimpleMeshLayer では無視される。 */
 	lighting: 'pbr' | 'flat';
-	transform: Tiles3DMeshTransformStyle;
 }
 
 export interface PointCloudStyle {

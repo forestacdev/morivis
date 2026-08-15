@@ -42,6 +42,7 @@ const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPo
 	gml: createPolicy('zone-or-georef', 'none', 'zone'),
 	kml: createPolicy('zone-or-georef', 'none', 'zone'),
 	osm: createPolicy('zone-or-georef', 'none', 'zone'),
+	georss: createPolicy('zone-only', 'none', 'zone'),
 	featureservice: createPolicy('zone-or-georef', 'none', 'zone'),
 	wfs: createPolicy('zone-or-georef', 'none', 'zone'),
 	ogcapifeatures: createPolicy('zone-or-georef', 'none', 'zone'),
