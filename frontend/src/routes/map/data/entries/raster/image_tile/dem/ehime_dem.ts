@@ -1,25 +1,25 @@
+import { EHIME_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterDemStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
-	id: 'dem_kochi',
+	id: 'ehime_dem',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://tiles.gsj.jp/tiles/elev/kochi/{z}/{y}/{x}.png'
+		url: 'https://forestgeo.info/opendata/38_ehime/dem_2019/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '高知県 数値標高データ',
-		sourceDataName: '高知県「数値標高モデル(DEM)0.5m」',
-		downloadUrl: 'https://tiles.gsj.jp/tiles/elev/tiles.html#kochi',
-		attribution: '産総研シームレス標高タイル',
+		name: '愛媛県 数値標高データ',
+		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-ehime-maptiles',
+		attribution: '愛媛県林業政策課_林野庁加工',
 		tags: ['DEM', '地形', '0.5m解像度'],
-		location: '高知県',
-		minZoom: 2,
+		location: '愛媛県',
+		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		bounds: [132.4748986, 32.6983375, 134.3183756, 33.8859144],
-		xyzImageTile: { x: 3565, y: 1639, z: 12 }
+		bounds: EHIME_BBOX,
+		xyzImageTile: { x: 7130, y: 3275, z: 13 }
 	},
 	interaction: {
 		clickable: true
