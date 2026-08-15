@@ -6,6 +6,7 @@
  * URL形式: mbtiles://{entryId}/{z}/{x}/{y}
  */
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import type { VectorTileMetadataLayer } from '$routes/map/utils/vector/tile-metadata';
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 
 const PROTOCOL_NAME = 'mbtiles';
@@ -45,13 +46,7 @@ const getSql = (): Promise<SqlJsStatic> => {
  * MBTilesファイルを登録する
  * @returns メタデータ（name, format, bounds等）
  */
-export interface MBTilesVectorLayer {
-	id: string;
-	fields: Record<string, string>;
-	geometryType?: string;
-	minZoom?: number;
-	maxZoom?: number;
-}
+export type MBTilesVectorLayer = VectorTileMetadataLayer;
 
 export interface MBTilesMetadata {
 	name: string;
