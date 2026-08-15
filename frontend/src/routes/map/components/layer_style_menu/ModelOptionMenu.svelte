@@ -24,10 +24,14 @@
 		showDimensionOption = $bindable()
 	}: Props = $props();
 
+	const isThreeMeshEntry = (entry: MorivisModelEntry): entry is MeshEntry<MeshStyle> => {
+		return entry.style.type === 'mesh' && entry.format.type !== '3d-tiles';
+	};
+
 	$effect(() => {
-		if (layerEntry.type !== 'model' || layerEntry.style.type !== 'mesh') return;
+		if (!isThreeMeshEntry(layerEntry)) return;
 		$state.snapshot(layerEntry.style);
-		mapStore.setModelStyle(layerEntry as MeshEntry<MeshStyle>);
+		mapStore.setModelStyle(layerEntry);
 	});
 </script>
 
@@ -41,13 +45,9 @@
 		<GeoArrowOption bind:layerEntry={layerEntry as DeckVectorEntry} bind:showColorOption />
 	{/if}
 
-	{#if layerEntry.style.type === 'mesh'}
+	{#if isThreeMeshEntry(layerEntry)}
 		<!-- Model options go here -->
-		<MeshOption
-			bind:layerEntry={layerEntry as MeshEntry<MeshStyle>}
-			bind:showColorOption
-			bind:showDimensionOption
-		/>
+		<MeshOption bind:layerEntry={layerEntry} bind:showColorOption bind:showDimensionOption />
 	{/if}
 {/if}
 

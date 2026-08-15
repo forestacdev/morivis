@@ -91,6 +91,10 @@
 		);
 	});
 
+	const isThreeMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
+		return entry.type === 'model' && entry.style.type === 'mesh' && entry.format.type !== '3d-tiles';
+	};
+
 	const toggleLayerVisibility = () => {
 		const visible = !layerEntry.style.visible;
 		layerEntry.style.visible = visible;
@@ -98,8 +102,8 @@
 		if (layerEntry.type !== 'model') return;
 
 		// モデルは setStyle 再生成の対象外なので、表示切替を描画系へ直接同期する。
-		if (layerEntry.style.type === 'mesh') {
-			mapStore.setModelStyle(layerEntry as MeshEntry<MeshStyle>);
+		if (isThreeMeshEntry(layerEntry)) {
+			mapStore.setModelStyle(layerEntry);
 			return;
 		}
 

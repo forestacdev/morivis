@@ -2,6 +2,7 @@ import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
+	AnyTiles3DEntry,
 	GeoArrowEntry,
 	GeoJson3DEntry,
 	MeshEntry,
@@ -18,31 +19,77 @@ import type { Table } from 'apache-arrow';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 
+type Tiles3DStyleType = MeshStyle['type'] | PointCloudStyle['type'];
+
 export const createTiles3DEntry = (
 	name: string,
 	url: string,
-	bounds?: [number, number, number, number]
-): Tiles3DEntry<PointCloudStyle> => ({
-	id: '3dtiles_' + crypto.randomUUID(),
-	type: 'model',
-	format: {
-		type: '3d-tiles',
-		url
-	},
-	metaData: {
-		...DEFAULT_CUSTOM_META_DATA,
-		attribution: '3D Tiles',
-		name,
-		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
-	},
-	interaction: { clickable: false },
-	style: {
-		visible: true,
-		type: 'point-cloud',
-		opacity: 0.7,
-		pointSize: 1
+	bounds?: [number, number, number, number],
+	styleType: Tiles3DStyleType = 'mesh'
+): AnyTiles3DEntry => {
+	const baseEntry = {
+		id: '3dtiles_' + crypto.randomUUID(),
+		type: 'model' as const,
+		format: {
+			type: '3d-tiles' as const,
+			url
+		},
+		metaData: {
+			...DEFAULT_CUSTOM_META_DATA,
+			attribution: '3D Tiles',
+			name,
+			bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
+		},
+		interaction: { clickable: false }
+	};
+
+	if (styleType === 'point-cloud') {
+		return {
+			...baseEntry,
+			style: {
+				visible: true,
+				type: 'point-cloud',
+				opacity: 0.7,
+				pointSize: 1
+			}
+		} satisfies Tiles3DEntry<PointCloudStyle>;
 	}
-});
+
+	return {
+		...baseEntry,
+		style: {
+			visible: true,
+			type: 'mesh',
+			opacity: 0.7,
+			wireframe: false,
+			color: '#ffffff',
+			shading: {
+				...DEFAULT_MESH_SHADING,
+				enabled: false
+			},
+			shadingOptions: {
+				enabled: false
+			},
+			transformOptions: {
+				scale: false,
+				rotation: false,
+				heightScale: false,
+				heightOffset: false
+			},
+			transform: {
+				lng: 0,
+				lat: 0,
+				altitude: 0,
+				heightOffset: 0,
+				heightScale: 1,
+				scale: 1,
+				rotationX: 0,
+				rotationY: 0,
+				rotationZ: 0
+			}
+		}
+	} satisfies Tiles3DEntry<MeshStyle>;
+};
 
 /**
  * 中心座標から小さなbboxを生成する
