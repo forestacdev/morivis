@@ -7,6 +7,13 @@ import type {
 	TabularPreview,
 	TabularRow
 } from '$routes/map/utils/formats/tabular';
+import { parseGeometryBlob } from './geometry';
+import {
+	getGeometryColumnsForTable,
+	isExcludedSqliteTableName,
+	parseGeometryColumnsRows,
+	resolveSqliteColumnName
+} from './schema';
 
 import type {
 	SqliteGeoJsonResult,
@@ -72,145 +79,6 @@ const getDb = (): Database => {
 };
 
 const quoteIdentifier = (value: string): string => `"${value.replace(/"/g, '""')}"`;
-const EXCLUDED_TABLE_NAMES = new Set(['geometry_columns', 'spatial_ref_sys']);
-
-const parseGpkgBinary = (buf: Uint8Array): any | null => {
-	if (buf.length < 8) return null;
-	if (buf[0] !== 0x47 || buf[1] !== 0x50) return null;
-
-	const flags = buf[3];
-	const envelopeType = (flags >> 1) & 0x07;
-	const envelopeSizes = [0, 32, 48, 48, 64];
-	const envelopeSize = envelopeSizes[envelopeType] ?? 0;
-
-	const wkbOffset = 8 + envelopeSize;
-	if (wkbOffset >= buf.length) return null;
-
-	return parseWkb(buf.subarray(wkbOffset));
-};
-
-const parseWkb = (buf: Uint8Array): any | null => {
-	if (buf.length < 5) return null;
-
-	const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-	const le = buf[0] === 1;
-	const wkbType = le ? dv.getUint32(1, true) : dv.getUint32(1, false);
-	const baseType = wkbType % 1000;
-	let offset = 5;
-
-	const readDouble = (): number => {
-		const value = le ? dv.getFloat64(offset, true) : dv.getFloat64(offset, false);
-		offset += 8;
-		return value;
-	};
-
-	const readUint32 = (): number => {
-		const value = le ? dv.getUint32(offset, true) : dv.getUint32(offset, false);
-		offset += 4;
-		return value;
-	};
-
-	const hasZ = (wkbType >= 1000 && wkbType < 2000) || wkbType >= 3000;
-	const hasM = (wkbType >= 2000 && wkbType < 3000) || wkbType >= 3000;
-	const coordSize = 2 + (hasZ ? 1 : 0) + (hasM ? 1 : 0);
-
-	const readCoord = (): [number, number] => {
-		const x = readDouble();
-		const y = readDouble();
-		for (let index = 2; index < coordSize; index += 1) readDouble();
-		return [x, y];
-	};
-
-	const readLinearRing = (): [number, number][] => {
-		const count = readUint32();
-		const coords: [number, number][] = [];
-		for (let index = 0; index < count; index += 1) coords.push(readCoord());
-		return coords;
-	};
-
-	switch (baseType) {
-		case 1:
-			return { type: 'Point', coordinates: readCoord() };
-		case 2: {
-			const count = readUint32();
-			const coords: [number, number][] = [];
-			for (let index = 0; index < count; index += 1) coords.push(readCoord());
-			return { type: 'LineString', coordinates: coords };
-		}
-		case 3: {
-			const count = readUint32();
-			const rings: [number, number][][] = [];
-			for (let index = 0; index < count; index += 1) rings.push(readLinearRing());
-			return { type: 'Polygon', coordinates: rings };
-		}
-		case 4: {
-			const count = readUint32();
-			const points: [number, number][] = [];
-			for (let index = 0; index < count; index += 1) {
-				const child = parseWkb(buf.subarray(offset));
-				if (child) points.push(child.coordinates);
-				offset += 5 + coordSize * 8;
-			}
-			return { type: 'MultiPoint', coordinates: points };
-		}
-		case 5: {
-			const count = readUint32();
-			const lines: [number, number][][] = [];
-			for (let index = 0; index < count; index += 1) {
-				const child = parseWkb(buf.subarray(offset));
-				if (child) lines.push(child.coordinates);
-				const childBuffer = buf.subarray(offset);
-				const childView = new DataView(
-					childBuffer.buffer,
-					childBuffer.byteOffset,
-					childBuffer.byteLength
-				);
-				const childLe = childBuffer[0] === 1;
-				const pointCount = childLe
-					? childView.getUint32(5, true)
-					: childView.getUint32(5, false);
-				offset += 5 + 4 + pointCount * coordSize * 8;
-			}
-			return { type: 'MultiLineString', coordinates: lines };
-		}
-		case 6: {
-			const count = readUint32();
-			const polygons: [number, number][][][] = [];
-			for (let index = 0; index < count; index += 1) {
-				const start = offset;
-				const child = parseWkb(buf.subarray(offset));
-				if (child) polygons.push(child.coordinates);
-				const childBuffer = buf.subarray(start);
-				const childView = new DataView(
-					childBuffer.buffer,
-					childBuffer.byteOffset,
-					childBuffer.byteLength
-				);
-				const childLe = childBuffer[0] === 1;
-				let childOffset = 5;
-				const ringCount = childLe
-					? childView.getUint32(childOffset, true)
-					: childView.getUint32(childOffset, false);
-				childOffset += 4;
-				for (let ringIndex = 0; ringIndex < ringCount; ringIndex += 1) {
-					const pointCount = childLe
-						? childView.getUint32(childOffset, true)
-						: childView.getUint32(childOffset, false);
-					childOffset += 4 + pointCount * coordSize * 8;
-				}
-				offset = start + childOffset;
-			}
-			return { type: 'MultiPolygon', coordinates: polygons };
-		}
-		default:
-			return null;
-	}
-};
-
-const parseGeometryBlob = (value: TabularCellValue): any | null => {
-	if (!(value instanceof Uint8Array)) return null;
-	return parseGpkgBinary(value) ?? parseWkb(value);
-};
 
 const normalizePreviewValue = (value: TabularCellValue): TabularCellValue => {
 	if (value instanceof Uint8Array) {
@@ -277,27 +145,9 @@ const getGeometryColumnsMap = (
 	if (!hasTable(database, 'geometry_columns')) return geometryColumnsMap;
 
 	try {
-		const result = database.exec(
-			'SELECT f_table_name, f_geometry_column, geometry_type, srid, geometry_format FROM geometry_columns'
-		);
-		const values = result[0]?.values ?? [];
-
-		for (const row of values) {
-			const tableName = row[0];
-			const columnName = row[1];
-			if (typeof tableName !== 'string' || typeof columnName !== 'string') continue;
-
-			const info: SqliteGeometryColumnInfo = {
-				columnName,
-				geometryType: typeof row[2] === 'number' ? row[2] : Number(row[2] ?? NaN) || null,
-				srid: typeof row[3] === 'number' ? row[3] : Number(row[3] ?? NaN) || null,
-				geometryFormat: typeof row[4] === 'string' ? row[4] : null
-			};
-
-			const current = geometryColumnsMap.get(tableName) ?? [];
-			current.push(info);
-			geometryColumnsMap.set(tableName, current);
-		}
+		const columnNames = getTableColumns(database, 'geometry_columns');
+		const result = database.exec(`SELECT * FROM ${quoteIdentifier('geometry_columns')}`);
+		return parseGeometryColumnsRows(columnNames, result[0]?.values ?? []);
 	} catch {
 		return geometryColumnsMap;
 	}
@@ -332,13 +182,20 @@ const getTables = (database: Database): SqliteTableInfo[] => {
 	return values
 		.map((row) => row[0])
 		.filter((value): value is string => typeof value === 'string')
-		.filter((name) => !EXCLUDED_TABLE_NAMES.has(name))
-		.map((name) => ({
-			name,
-			columns: getTableColumns(database, name),
-			rowCount: getTableRowCount(database, name),
-			geometryColumns: geometryColumnsMap.get(name) ?? []
-		}));
+		.filter((name) => !isExcludedSqliteTableName(name))
+		.map((name) => {
+			const columns = getTableColumns(database, name);
+
+			return {
+				name,
+				columns,
+				rowCount: getTableRowCount(database, name),
+				geometryColumns: getGeometryColumnsForTable(geometryColumnsMap, name).map((column) => ({
+					...column,
+					columnName: resolveSqliteColumnName(columns, column.columnName) ?? column.columnName
+				}))
+			};
+		});
 };
 
 const queryTableRows = (database: Database, tableName: string, limit?: number): SqliteTableRows => {
@@ -385,19 +242,22 @@ const toGeoJson = (
 	geometryColumn: string
 ): SqliteGeoJsonResult => {
 	const result = queryTableRows(database, tableName);
-	if (!result.headers.includes(geometryColumn)) {
+	const resolvedGeometryColumn =
+		resolveSqliteColumnName(result.headers, geometryColumn) ?? geometryColumn;
+
+	if (!result.headers.includes(resolvedGeometryColumn)) {
 		throw new Error(`Geometry column '${geometryColumn}' not found`);
 	}
 
-	const features: Feature[] = [];
+	const features: Feature<any>[] = [];
 
 	for (const row of result.rows) {
-		const geometry = parseGeometryBlob(row[geometryColumn]);
+		const geometry = parseGeometryBlob(row[resolvedGeometryColumn]);
 		if (!geometry) continue;
 
 		const properties: FeatureProp = {};
 		for (const [key, value] of Object.entries(row)) {
-			if (key === geometryColumn) continue;
+			if (key === resolvedGeometryColumn) continue;
 			const normalizedValue = toFeaturePropertyValue(value);
 			if (normalizedValue !== undefined) {
 				properties[key] = normalizedValue;
@@ -415,7 +275,7 @@ const toGeoJson = (
 		throw new Error('Geometry を読み取れるフィーチャーが見つかりませんでした');
 	}
 
-	const geojson: FeatureCollection = {
+	const geojson: FeatureCollection<any> = {
 		type: 'FeatureCollection',
 		features
 	};
