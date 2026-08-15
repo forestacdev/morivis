@@ -50,6 +50,7 @@ const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPo
 	dwg: createPolicy('zone-or-georef', 'none', 'zone'),
 	dxf: createPolicy('zone-or-georef', 'none', 'zone'),
 	gpkg: createPolicy('zone-or-georef', 'none', 'zone'),
+	sqlite: createPolicy('zone-or-georef', 'none', 'zone'),
 	mojxml: createPolicy('zone-or-georef', 'none', 'zone'),
 	sima: createPolicy('zone-or-georef', 'none', 'zone'),
 	geoarrow: createPolicy('zone-only', 'none', 'zone'),

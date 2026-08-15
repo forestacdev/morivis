@@ -104,6 +104,16 @@ describe('resolveDroppedFiles', () => {
 			type: 'dialog',
 			dialogType: 'xlsx',
 			dropFiles: undefined
+			});
+	});
+
+	it('単一の SQLite は sqlite ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('sample.sqlite'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sqlite',
+			dropFiles: undefined
 		});
 	});
 

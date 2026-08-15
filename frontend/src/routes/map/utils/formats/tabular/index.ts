@@ -9,6 +9,7 @@ export type TabularCellValue =
 	| boolean
 	| Date
 	| typeof Date
+	| Uint8Array
 	| null
 	| undefined;
 

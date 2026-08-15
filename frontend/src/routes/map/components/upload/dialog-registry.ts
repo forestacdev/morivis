@@ -37,6 +37,7 @@ import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.svelte';
 import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
+import SQLiteForm from '$routes/map/components/upload/form/SQLiteForm.svelte';
 import StacForm from '$routes/map/components/upload/form/StacForm.svelte';
 import SvgForm from '$routes/map/components/upload/form/SvgForm.svelte';
 import TcxForm from '$routes/map/components/upload/form/TcxForm.svelte';
@@ -125,6 +126,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	dwg: { component: DwgForm, profile: 'vector-zone-georef', fixedHeight: true },
 	dxf: { component: DxfForm, profile: 'vector-zone-georef', fixedHeight: true },
 	gpkg: { component: GpkgForm, profile: 'vector-zone-georef' },
+	sqlite: { component: SQLiteForm, profile: 'vector-zone-georef' },
 	hdf5: { component: Hdf5Form, profile: 'drop-file' },
 	mojxml: { component: MojXmlForm, profile: 'vector-zone-georef' },
 	sima: { component: SimaForm, profile: 'vector-zone-georef' }

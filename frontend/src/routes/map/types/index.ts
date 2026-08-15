@@ -94,6 +94,7 @@ export type DialogType =
 	| 'tsv'
 	| 'xlsx'
 	| 'gpkg'
+	| 'sqlite'
 	| 'gdb'
 	| 'mfjson'
 	| '3dtiles'
@@ -179,6 +180,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'SQLiteベースの地理空間データです。複数レイヤーをまとめて持つファイルを読み込むときに使います。',
 		extensions: ['.gpkg']
+	},
+	{
+		label: 'SQLite',
+		description:
+			'SQLiteデータベースです。座標列を持つテーブルを地点データとして読み込むときに使います。',
+		extensions: ['.sqlite', '.sqlite3', '.db', '.db3']
 	},
 	{
 		label: 'Shapefile',
