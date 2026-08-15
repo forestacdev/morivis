@@ -3,6 +3,7 @@ import type {
 	GeoRefMeshConfig,
 	RasterRegistrationMode
 } from '$routes/map/components/upload/form/transform/georef-types';
+import type { ActiveTransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import type { RasterBands } from '$routes/map/utils/formats/geotiff';
 
@@ -18,6 +19,7 @@ interface CreateRasterGeoRefDataParams {
 	imageHeight: number;
 	imageFile: File;
 	registrationMode: RasterRegistrationMode;
+	allowedTransformModes?: ActiveTransformOptionMode[];
 	allowRegistrationModeChange?: boolean;
 	meshConfig?: GeoRefMeshConfig;
 }
@@ -32,6 +34,7 @@ export const createRasterGeoRefData = ({
 	imageHeight,
 	imageFile,
 	registrationMode,
+	allowedTransformModes,
 	allowRegistrationModeChange,
 	meshConfig
 }: CreateRasterGeoRefDataParams): GeoRefData => {
@@ -64,6 +67,7 @@ export const createRasterGeoRefData = ({
 			ranges: dataRanges
 		}),
 		registrationMode,
+		allowedTransformModes,
 		allowRegistrationModeChange,
 		meshConfig
 	};

@@ -68,6 +68,7 @@
 		showDialogType: DialogType;
 		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
+		allowedTransformModes: ActiveTransformOptionMode[];
 		onZoneConfirm: (epsgCode: EpsgCode) => void;
 		onZoneGeoRef: (epsgCode: EpsgCode) => void;
 		onGeoRefConfirm: (payload: GeoRefConfirmPayload) => Promise<void>;
@@ -84,10 +85,13 @@
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
 		transformOptionMode = $bindable(),
+		allowedTransformModes,
 		onZoneConfirm,
 		onZoneGeoRef,
 		onGeoRefConfirm
 	}: Props = $props();
+
+	const fallbackTransformModes: ActiveTransformOptionMode[] = ['zone', 'georef'];
 
 	const PREVIEW_SOURCE_ID = 'georef_image_preview';
 	const registrationModeOptions: { key: RasterRegistrationMode; name: string }[] = [
@@ -479,10 +483,25 @@
 		return [(bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2] as [number, number];
 	});
 
-	const transModeOptions = [
-		{ key: 'zone', name: '投影法選択' },
-		{ key: 'georef', name: '位置合わせ' }
-	] as { key: ActiveTransformOptionMode; name: string }[];
+	const normalizedAllowedTransformModes = $derived.by(() => {
+		const uniqueModes = [...new Set(allowedTransformModes)];
+		return uniqueModes.length > 0 ? uniqueModes : fallbackTransformModes;
+	});
+
+	const transModeOptions = $derived.by(() =>
+		normalizedAllowedTransformModes.map((mode) => ({
+			key: mode,
+			name: mode === 'zone' ? '投影法選択' : '位置合わせ'
+		}))
+	);
+
+	const isTransformModeSwitchVisible = $derived(transModeOptions.length > 1);
+
+	$effect(() => {
+		if (!transformOptionMode) return;
+		if (normalizedAllowedTransformModes.includes(transformOptionMode)) return;
+		transformOptionMode = normalizedAllowedTransformModes[0] ?? null;
+	});
 </script>
 
 {#if transformOptionMode}
@@ -490,9 +509,11 @@
 		transition:fly={{ duration: 300, x: -100, opacity: 0 }}
 		class="w-side-menu bg-main absolute top-0 left-0 z-30 flex h-full flex-col items-center justify-between p-4 text-base"
 	>
-		<div class="w-full mb-4">
-			<HorizontalSelectBox bind:group={transformOptionMode} options={transModeOptions} />
-		</div>
+		{#if isTransformModeSwitchVisible}
+			<div class="w-full mb-4">
+				<HorizontalSelectBox bind:group={transformOptionMode} options={transModeOptions} />
+			</div>
+		{/if}
 		{#if transformOptionMode === 'zone'}
 			<ZoneMenu bind:selectedEpsgCode {poiData} />
 		{:else if transformOptionMode === 'georef' && geoRefData}

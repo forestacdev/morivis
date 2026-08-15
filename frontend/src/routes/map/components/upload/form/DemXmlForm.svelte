@@ -4,6 +4,7 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefData,
@@ -100,6 +101,8 @@
 			registrationMode = 'raster';
 		}
 	});
+	const getPlacementAllowedTransformModes = () =>
+		getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 
 	// 追加ドロップ時のハンドラ
 	const onDropFiles = (files: File[]) => {
@@ -176,6 +179,7 @@
 					imageHeight: height,
 					imageFile: inputFiles[0],
 					registrationMode,
+					allowedTransformModes: getPlacementAllowedTransformModes(),
 					meshConfig: {
 						attribution: '基盤地図DEM 3D Mesh'
 					}

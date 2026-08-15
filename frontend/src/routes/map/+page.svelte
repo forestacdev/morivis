@@ -53,6 +53,7 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefConfirmPayload,
@@ -255,6 +256,17 @@
 	let geoRefData = $state.raw<GeoRefData | null>(null);
 	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
 	let geoRefPreviewOpacity = $state(0.6);
+	let allowedTransformModes = $derived.by(() => {
+		if (geoRefData?.allowedTransformModes?.length) {
+			return geoRefData.allowedTransformModes;
+		}
+
+		if (showDialogType && (transformOptionMode === 'zone' || pendingZoneGeoRefData)) {
+			return getAllowedTransformModesForIssue(showDialogType, 'crs-missing');
+		}
+
+		return [];
+	});
 
 	const closeGeoRefUi = () => {
 		if (geoRefData?.sourceFeatureCollectionId) {
@@ -521,6 +533,8 @@
 	const openPendingZoneGeoRef = async (pendingData: PendingZoneGeoRefData, epsgCode: EpsgCode) => {
 		isProcessing.set(true);
 		isPreparingGeoRefData = true;
+		const nextAllowedTransformModes =
+			getAllowedTransformModesForIssue(showDialogType, 'crs-missing') ?? [];
 		debugLog.info(
 			`GeoRef準備開始: entryName=${pendingData.entryName}, epsg=${epsgCode}, featureCount=${pendingData.featureCollection.features.length}`
 		);
@@ -539,10 +553,14 @@
 				return;
 			}
 
-			geoRefData = await featureCollectionToGeoRefData({
+			const nextGeoRefData = await featureCollectionToGeoRefData({
 				featureCollection: transformedGeojson as AppFeatureCollection,
 				entryName: pendingData.entryName
 			});
+			geoRefData = {
+				...nextGeoRefData,
+				allowedTransformModes: nextAllowedTransformModes
+			};
 			debugLog.info(
 				`GeoRef画像生成完了: id=${geoRefData.entryId}, width=${geoRefData.imageWidth}, height=${geoRefData.imageHeight}`
 			);
@@ -1345,6 +1363,7 @@
 {#if map && transformOptionMode && TransformOptionForm}
 	<TransformOptionForm
 		{map}
+		{allowedTransformModes}
 		bind:selectedEpsgCode
 		bind:focusBbox
 		bind:zoneBboxGeojsonData

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
@@ -41,6 +42,8 @@
 	});
 
 	const entryName = $derived(svgFile?.name.replace(/\.[^.]+$/, '') ?? 'SVGデータ');
+	const getPlacementAllowedTransformModes = () =>
+		getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 
 	const openGeoRef = async (geojson: FeatureCollection) => {
 		isProcessing.set(true);
@@ -54,6 +57,7 @@
 
 			geoRefData = {
 				...nextGeoRefData,
+				allowedTransformModes: getPlacementAllowedTransformModes(),
 				initialCorners: map
 					? getDefaultGeoRefCorners(map, nextGeoRefData.imageWidth, nextGeoRefData.imageHeight)
 					: nextGeoRefData.initialCorners
