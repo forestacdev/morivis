@@ -102,6 +102,10 @@ const baseAttributions = {
 		name: '兵庫県',
 		url: 'https://www.geospatial.jp/ckan/organization/hyogopref-rinmu-chisan'
 	},
+	三重県: {
+		name: '三重県',
+		url: 'https://www.pref.mie.lg.jp/'
+	},
 	大阪府: {
 		name: '大阪府',
 		url: 'https://www.pref.osaka.lg.jp/'
@@ -176,6 +180,11 @@ const attributionData = {
 		name: '愛媛県林業政策課（林野庁加工）',
 		url: 'https://www.geospatial.jp/ckan/organization/rinya',
 		sources: [baseAttributions.愛媛県森林資源データ, baseAttributions.林野庁]
+	},
+	三重県_林野庁加工: {
+		name: '三重県（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya',
+		sources: [baseAttributions.三重県, baseAttributions.林野庁]
 	},
 	森林総研・森林土壌デジタルマップ: {
 		name: '森林総研・森林土壌デジタルマップ',
