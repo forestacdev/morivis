@@ -192,6 +192,11 @@
 				? [nextSelectedGeometryColumn]
 				: [guessedLatColumn, guessedLonColumn]
 		);
+
+		return {
+			tableInfo: nextTableInfo,
+			selectedGeometryColumn: nextSelectedGeometryColumn
+		};
 	};
 
 	const initializeSourceFile = async (file: File) => {
@@ -201,10 +206,24 @@
 			closeSqlite();
 			const buffer = new Uint8Array(await file.arrayBuffer());
 			await openSqlite(buffer);
-			await applyPreview();
+			const previewState = await applyPreview();
 
 			if (tables.length === 0) {
 				showNotification('読み込み可能なテーブルが見つかりませんでした', 'error');
+				return;
+			}
+
+			if (
+				previewState.tableInfo?.geometryColumns.length
+				&& previewState.selectedGeometryColumn
+			) {
+				await processGeometryTable(
+					previewState.tableInfo.name,
+					previewState.selectedGeometryColumn,
+					previewState.tableInfo.geometryColumns.find(
+						(column) => column.columnName === previewState.selectedGeometryColumn
+					)?.srid ?? null
+				);
 			}
 		} catch (error) {
 			showNotification('SQLiteファイルの読み込みに失敗しました', 'error');
@@ -219,7 +238,19 @@
 		isProcessing.set(true);
 
 		try {
-			await applyPreview(tableName);
+			const previewState = await applyPreview(tableName);
+			if (
+				previewState.tableInfo?.geometryColumns.length
+				&& previewState.selectedGeometryColumn
+			) {
+				await processGeometryTable(
+					previewState.tableInfo.name,
+					previewState.selectedGeometryColumn,
+					previewState.tableInfo.geometryColumns.find(
+						(column) => column.columnName === previewState.selectedGeometryColumn
+					)?.srid ?? null
+				);
+			}
 		} catch (error) {
 			showNotification('テーブルの読み込みに失敗しました', 'error');
 			console.error(error);
@@ -281,6 +312,44 @@
 		return { entry, bbox };
 	};
 
+	const processGeometryTable = async (
+		tableName: string,
+		geometryColumn: string,
+		srid: number | null
+	) => {
+		const result = await getSqliteTableGeoJson(tableName, geometryColumn);
+		const selected = resolveGeometrySelection(result.geojson);
+		rawGeojson = selected.geojson;
+
+		let workingGeojson = selected.geojson;
+		if (srid && srid !== 4326) {
+			try {
+				const prjContent = getProjContext(String(srid) as EpsgCode);
+				workingGeojson = (await transformGeoJSONParallel(
+					workingGeojson,
+					prjContent
+				)) as FeatureCollection;
+			} catch {
+				workingGeojson = selected.geojson;
+			}
+		}
+
+		const { entry, bbox } = await createEntryFromGeojson(workingGeojson, selected.geometryType);
+		if (!entry) {
+			pendingZoneGeoRefData = {
+				featureCollection: selected.geojson,
+				entryName
+			};
+			transformOptionMode = 'zone';
+			focusBbox = bbox as [number, number, number, number];
+			return;
+		}
+
+		showDataEntry = entry;
+		showDialogType = null;
+		showNotification('ファイルを読み込みました', 'success');
+	};
+
 	$effect(() => {
 		const nextFile = sourceFile;
 		const currentFileKey = sourceFile
@@ -302,44 +371,13 @@
 
 		try {
 			if (isGeometryTable) {
-				const geometryInfo =
+				await processGeometryTable(
+					selectedTable,
+					selectedGeometryColumn,
 					selectedTableInfo?.geometryColumns.find(
 						(column) => column.columnName === selectedGeometryColumn
-					) ?? null;
-				const result = await getSqliteTableGeoJson(selectedTable, selectedGeometryColumn);
-				const selected = resolveGeometrySelection(result.geojson);
-				rawGeojson = selected.geojson;
-
-				let workingGeojson = selected.geojson;
-				if (geometryInfo?.srid && geometryInfo.srid !== 4326) {
-					try {
-						const prjContent = getProjContext(String(geometryInfo.srid) as EpsgCode);
-						workingGeojson = (await transformGeoJSONParallel(
-							workingGeojson,
-							prjContent
-						)) as FeatureCollection;
-					} catch {
-						workingGeojson = selected.geojson;
-					}
-				}
-
-				const { entry, bbox } = await createEntryFromGeojson(
-					workingGeojson,
-					selected.geometryType
+					)?.srid ?? null
 				);
-				if (!entry) {
-					pendingZoneGeoRefData = {
-						featureCollection: selected.geojson,
-						entryName
-					};
-					transformOptionMode = 'zone';
-					focusBbox = bbox as [number, number, number, number];
-					return;
-				}
-
-				showDataEntry = entry;
-				showDialogType = null;
-				showNotification('ファイルを読み込みました', 'success');
 				return;
 			}
 
