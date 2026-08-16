@@ -8,11 +8,11 @@
 
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
-import { getJapanPlaneRectangularEpsg } from '../../proj/japan-plane-rectangular';
 import { reprojectGeoJson, toGlbAndContours } from 'landxml';
 import proj4 from 'proj4';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { getJapanPlaneRectangularEpsg } from '../../proj/japan-plane-rectangular';
 import RasterizeWorker from './rasterize.worker?worker';
 
 export interface LandXmlSurface {

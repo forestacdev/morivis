@@ -1,4 +1,4 @@
-import type { Map as MapLibreMap } from 'maplibre-gl';
+import type { Map as MapLibreMap } from '$routes/map/utils/maplibre';
 
 // 縮尺を計算する関数 MaplibreのScaleControlを参考
 // https://github.com/maplibre/maplibre-gl-js/blob/53cb7999de2c3608f3e35cf3d6d35de5f106dcdf/src/ui/control/scale_control.ts

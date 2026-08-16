@@ -6,7 +6,7 @@
 
 # Interface: ImageResult
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:119](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/utils/image/index.ts#L119)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:119](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/utils/image/index.ts#L119)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:119](https://github.co
 
 > `optional` **cleanup**: () => `void`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:121](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/utils/image/index.ts#L121)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:121](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/utils/image/index.ts#L121)
 
 #### Returns
 
@@ -26,4 +26,4 @@ Defined in: [frontend/src/routes/map/utils/image/index.ts:121](https://github.co
 
 > **url**: `string`
 
-Defined in: [frontend/src/routes/map/utils/image/index.ts:120](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/utils/image/index.ts#L120)
+Defined in: [frontend/src/routes/map/utils/image/index.ts:120](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/utils/image/index.ts#L120)

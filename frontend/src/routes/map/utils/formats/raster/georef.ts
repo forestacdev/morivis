@@ -1,9 +1,9 @@
+import type { ActiveTransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 import type {
 	GeoRefData,
 	GeoRefMeshConfig,
 	RasterRegistrationMode
 } from '$routes/map/components/upload/form/transform/georef-types';
-import type { ActiveTransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import type { RasterBands } from '$routes/map/utils/formats/geotiff';
 

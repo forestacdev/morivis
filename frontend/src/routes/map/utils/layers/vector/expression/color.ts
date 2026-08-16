@@ -2,7 +2,7 @@ import type {
 	ColorSpecification,
 	DataDrivenPropertyValueSpecification,
 	ResolvedImageSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 
 import type {
 	ColorMatchExpression,

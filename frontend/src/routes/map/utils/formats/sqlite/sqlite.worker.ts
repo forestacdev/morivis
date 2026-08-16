@@ -8,13 +8,13 @@ import type {
 	TabularRow
 } from '$routes/map/utils/formats/tabular';
 import { parseGeometryBlob } from './geometry';
-import { createDatabaseFromBytes, isSupportedSqliteInput } from './sql-dump';
 import {
 	getGeometryColumnsForTable,
 	isExcludedSqliteTableName,
 	parseGeometryColumnsRows,
 	resolveSqliteColumnName
 } from './schema';
+import { createDatabaseFromBytes, isSupportedSqliteInput } from './sql-dump';
 
 import type {
 	SqliteGeoJsonResult,
@@ -25,32 +25,32 @@ import type {
 
 type WorkerRequest =
 	| {
-			id: number;
-			type: 'open';
-			data: Uint8Array;
-			wasmUrl: string;
-	  }
+		id: number;
+		type: 'open';
+		data: Uint8Array;
+		wasmUrl: string;
+	}
 	| {
-			id: number;
-			type: 'getTables';
-	  }
+		id: number;
+		type: 'getTables';
+	}
 	| {
-			id: number;
-			type: 'getPreview';
-			tableName: string;
-			previewRowCount?: number;
-	  }
+		id: number;
+		type: 'getPreview';
+		tableName: string;
+		previewRowCount?: number;
+	}
 	| {
-			id: number;
-			type: 'getRows';
-			tableName: string;
-	  }
+		id: number;
+		type: 'getRows';
+		tableName: string;
+	}
 	| {
-			id: number;
-			type: 'toGeoJson';
-			tableName: string;
-			geometryColumn: string;
-	  };
+		id: number;
+		type: 'toGeoJson';
+		tableName: string;
+		geometryColumn: string;
+	};
 
 let sqlPromise: Promise<SqlJsStatic> | null = null;
 let db: Database | null = null;
@@ -134,7 +134,9 @@ const getTableColumns = (database: Database, tableName: string): string[] => {
 
 const hasTable = (database: Database, tableName: string): boolean => {
 	const result = database.exec(
-		`SELECT name FROM sqlite_master WHERE type = 'table' AND name = '${tableName.replace(/'/g, "''")}'`
+		`SELECT name FROM sqlite_master WHERE type = 'table' AND name = '${
+			tableName.replace(/'/g, "''")
+		}'`
 	);
 	return (result[0]?.values.length ?? 0) > 0;
 };
@@ -191,9 +193,12 @@ const getTables = (database: Database): SqliteTableInfo[] => {
 				name,
 				columns,
 				rowCount: getTableRowCount(database, name),
-				geometryColumns: getGeometryColumnsForTable(geometryColumnsMap, name).map((column) => ({
+				geometryColumns: getGeometryColumnsForTable(geometryColumnsMap, name).map((
+					column
+				) => ({
 					...column,
-					columnName: resolveSqliteColumnName(columns, column.columnName) ?? column.columnName
+					columnName: resolveSqliteColumnName(columns, column.columnName)
+						?? column.columnName
 				}))
 			};
 		});
@@ -220,7 +225,11 @@ const queryTableRows = (database: Database, tableName: string, limit?: number): 
 	};
 };
 
-const getPreview = (database: Database, tableName: string, previewRowCount?: number): TabularPreview => {
+const getPreview = (
+	database: Database,
+	tableName: string,
+	previewRowCount?: number
+): TabularPreview => {
 	const result = queryTableRows(database, tableName, previewRowCount);
 
 	return {
@@ -243,8 +252,8 @@ const toGeoJson = (
 	geometryColumn: string
 ): SqliteGeoJsonResult => {
 	const result = queryTableRows(database, tableName);
-	const resolvedGeometryColumn =
-		resolveSqliteColumnName(result.headers, geometryColumn) ?? geometryColumn;
+	const resolvedGeometryColumn = resolveSqliteColumnName(result.headers, geometryColumn)
+		?? geometryColumn;
 
 	if (!result.headers.includes(resolvedGeometryColumn)) {
 		throw new Error(`Geometry column '${geometryColumn}' not found`);

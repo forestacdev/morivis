@@ -3,8 +3,6 @@
 	import turfBearing from '@turf/bearing';
 	import { delay } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
-	import maplibregl from 'maplibre-gl';
-	import type { LngLat } from 'maplibre-gl';
 	import { onMount, onDestroy, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { slide } from 'svelte/transition';
@@ -53,13 +51,13 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
-	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefConfirmPayload,
 		GeoRefData,
 		GeoRefPreviewData
 	} from '$routes/map/components/upload/form/transform/georef-types';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import {
 		findCatalogEntry,
 		geoDataEntries,
@@ -107,6 +105,8 @@
 	} from '$routes/map/utils/icon';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
+	import type { LngLat } from '$routes/map/utils/maplibre';
+	import maplibregl from '$routes/map/utils/maplibre';
 	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
 	import {
 		get3dParams,

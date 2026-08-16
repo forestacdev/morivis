@@ -12,10 +12,10 @@ import { getMatchedExtension } from '$routes/map/utils/upload-matchers-common';
 import {
 	extractUploadUrlFeatures,
 	hasTileExtension,
+	isGeoRssExtension,
 	isPmtilesExtension,
 	isRasterTileExtension,
 	isTilesetJson,
-	isGeoRssExtension,
 	isVectorTileExtension,
 	isWmsTemplate,
 	isXyzTemplate,
@@ -135,10 +135,10 @@ export const getRemoteFileName = async (
 
 	const previewText = blob
 		? await blob
-				.slice(0, 2000)
-				.text()
-				.then((text) => text)
-				.catch(() => null)
+			.slice(0, 2000)
+			.text()
+			.then((text) => text)
+			.catch(() => null)
 		: null;
 
 	return getRemoteFileNameFromContentType(urlValue, response, previewText);

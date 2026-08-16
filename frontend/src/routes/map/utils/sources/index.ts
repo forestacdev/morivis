@@ -5,7 +5,7 @@ import {
 	type RasterSourceSpecification,
 	type SourceSpecification,
 	type VectorSourceSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 
 import type {
 	DemRangeColorStyle,

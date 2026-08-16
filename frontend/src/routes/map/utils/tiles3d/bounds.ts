@@ -1,5 +1,5 @@
+import type { LngLatBoundsLike } from '$routes/map/utils/maplibre';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
-import type { LngLatBoundsLike } from 'maplibre-gl';
 
 type Tiles3DBoundingVolume = { box?: number[]; region?: number[]; sphere?: number[]; };
 type Tiles3DContent = { uri?: string; url?: string; };

@@ -52,12 +52,12 @@
 	{/if}
 
 	{#if isTiles3DMeshEntry(layerEntry)}
-		<Tiles3DMeshOption bind:layerEntry={layerEntry} bind:showColorOption />
+		<Tiles3DMeshOption bind:layerEntry bind:showColorOption />
 	{/if}
 
 	{#if isThreeMeshEntry(layerEntry)}
 		<!-- Model options go here -->
-		<MeshOption bind:layerEntry={layerEntry} bind:showColorOption bind:showDimensionOption />
+		<MeshOption bind:layerEntry bind:showColorOption bind:showDimensionOption />
 	{/if}
 {/if}
 

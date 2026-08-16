@@ -1,5 +1,5 @@
-import type { TabularCellValue } from '$routes/map/utils/formats/tabular';
 import type { Geometry } from '$routes/map/types/geometry';
+import type { TabularCellValue } from '$routes/map/utils/formats/tabular';
 
 type ParsedGeometryResult = {
 	geometry: Geometry;
@@ -387,7 +387,8 @@ const parseEwkbGeometryAt = (buf: Uint8Array, startOffset: number): ParsedGeomet
 	}
 };
 
-const parseEwkb = (buf: Uint8Array): Geometry | null => parseEwkbGeometryAt(buf, 0)?.geometry ?? null;
+const parseEwkb = (buf: Uint8Array): Geometry | null =>
+	parseEwkbGeometryAt(buf, 0)?.geometry ?? null;
 
 const parseGpkgBinary = (buf: Uint8Array): Geometry | null => {
 	if (buf.length < 8) return null;
@@ -592,12 +593,12 @@ const parseSpatiaLiteTinyPointBinary = (buf: Uint8Array): Geometry | null => {
 	const typeCode = tinyPointType === 1
 		? 1
 		: tinyPointType === 2
-			? 1001
-			: tinyPointType === 3
-				? 2001
-				: tinyPointType === 4
-					? 3001
-					: null;
+		? 1001
+		: tinyPointType === 3
+		? 2001
+		: tinyPointType === 4
+		? 3001
+		: null;
 	if (!typeCode) return null;
 
 	const result = parseSpatiaLiteGeometryPayload(
@@ -633,5 +634,6 @@ const parseSpatiaLiteBinary = (buf: Uint8Array): Geometry | null => {
 
 export const parseGeometryBlob = (value: TabularCellValue): Geometry | null => {
 	if (!(value instanceof Uint8Array)) return null;
-	return parseGpkgBinary(value) ?? parseSpatiaLiteBinary(value) ?? parseEwkb(value) ?? parseWkb(value);
+	return parseGpkgBinary(value) ?? parseSpatiaLiteBinary(value) ?? parseEwkb(value)
+		?? parseWkb(value);
 };

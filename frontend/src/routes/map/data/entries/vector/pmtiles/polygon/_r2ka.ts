@@ -1,6 +1,6 @@
+import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_VECTOR_POLYGON_STYLE } from '$routes/map/data/entries/vector/_style';
-import { ENTRY_PMTILES_VECTOR_PATH } from '$routes/constants';
 
 import type { PolygonEntry, TileMetaData } from '$routes/map/data/types/vector/index';
 

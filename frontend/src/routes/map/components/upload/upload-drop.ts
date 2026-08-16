@@ -2,13 +2,13 @@ import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
+import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
 import { isLikelyHritFile } from '$routes/map/utils/formats/hrit';
 import { extractModelFromKml, extractModelFromKmz } from '$routes/map/utils/formats/kml';
 import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
 import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
 import { inspectObjFile } from '$routes/map/utils/formats/obj';
-import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import {
 	findGeoReferencedImageFile,
 	findRasterImageFile,

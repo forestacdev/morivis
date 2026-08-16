@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { GeoRssParseError, geoRssFileToGeoJson, hasGeoRssMarker } from './index';
+import { geoRssFileToGeoJson, GeoRssParseError, hasGeoRssMarker } from './index';
 
-const createFile = (name: string, content: string) => new File([content], name, { type: 'application/xml' });
+const createFile = (name: string, content: string) =>
+	new File([content], name, { type: 'application/xml' });
 
 describe('geoRssFileToGeoJson', () => {
 	it('GeoRSS Simple の point を Point として読める', async () => {

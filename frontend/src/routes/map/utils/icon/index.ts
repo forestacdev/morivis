@@ -8,15 +8,14 @@ import type {
 	ImageSource,
 	VectorProperties
 } from '$routes/map/data/types/vector/properties';
-import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import type {
 	DataDrivenPropertyValueSpecification,
 	ExpressionSpecification,
 	Map as MapLibreMapType,
 	MapGeoJSONFeature,
-	MapStyleImageMissingEvent,
 	ResolvedImageSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
+import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 import type { PointImageIcon } from '$routes/map/data/types/vector/style';
 
@@ -508,13 +507,9 @@ const addDummyPhotoIcon = async (id: string) => {
 	addImageToMap(id, image);
 };
 
-export const handleStyleImageMissing = async (
-	e: MapStyleImageMissingEvent,
-	map: MapLibreMapType | null
-) => {
+export const resolveMissingStyleImage = async (id: string, map: MapLibreMapType | null) => {
 	if (!map) return;
 	mapLibreMap = map;
-	const id = e.id;
 
 	const parsed = parseGeneratedPoiIconId(id);
 	if (!parsed) return;

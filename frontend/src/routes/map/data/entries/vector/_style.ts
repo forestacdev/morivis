@@ -30,7 +30,7 @@ import type {
 	HeatmapLayerSpecification,
 	LineLayerSpecification,
 	SymbolLayerSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 
 /** カテゴリ配列から辞書優先、未定義はランダム色のマッピングを作成する */
 export const createMatchColorMapping = (

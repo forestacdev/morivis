@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 
-	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';

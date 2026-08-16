@@ -1,5 +1,5 @@
+import type { MapMouseEvent } from '$routes/map/utils/maplibre';
 import { mapStore } from '$routes/stores/map';
-import type { MapMouseEvent } from 'maplibre-gl';
 
 const DEBUG_HIT_TOLERANCE = 6;
 

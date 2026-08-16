@@ -1,16 +1,6 @@
 <script lang="ts">
 	import { debounce } from 'es-toolkit';
 	import type { FeatureCollection } from 'geojson';
-	import {
-		type StyleSpecification,
-		type SourceSpecification,
-		type BackgroundLayerSpecification,
-		type LayerSpecification,
-		type MapGeoJSONFeature,
-		type MapMouseEvent,
-		type LngLat
-	} from 'maplibre-gl';
-	import maplibregl from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { Unsubscriber } from 'svelte/store';
@@ -70,8 +60,19 @@
 		WcsViewportTooBroadError
 	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
+	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
+	import maplibregl from '$routes/map/utils/maplibre';
+	import type {
+		BackgroundLayerSpecification,
+		LayerSpecification,
+		LngLat,
+		MapGeoJSONFeature,
+		MapMouseEvent,
+		SourceSpecification,
+		StyleSpecification
+	} from '$routes/map/utils/maplibre';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { getLayerWatchStyleTarget } from '$routes/map/utils/raster/dimension-runtime';
 	import { createSourcesItems } from '$routes/map/utils/sources';
@@ -289,8 +290,8 @@
 						source: 'zone_bbox',
 						filter: ['all', ['==', '$type', 'Polygon'], ['==', 'code', selectedEpsgCode]],
 						paint: {
-							'fill-color': 'red',
-							'fill-opacity': 0.5
+							'fill-pattern': ZONE_BBOX_FILL_PATTERN_ID,
+							'fill-opacity': 1
 						}
 					},
 					{
@@ -884,6 +885,7 @@
 	const syncHighlightLayers = () => {
 		if (showDataEntry || isZoneRegistrationActive) {
 			mapStore.clearHighlightLayers();
+			mapStore.syncPatternAnimation();
 			return;
 		}
 

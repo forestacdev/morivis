@@ -1,6 +1,6 @@
 import type { TileXYZ } from '$routes/map/data/types/raster';
-import type { LngLatBoundsLike, PopupOptions } from 'maplibre-gl';
-import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
+import type { LngLatBoundsLike, PopupOptions } from '$routes/map/utils/maplibre';
+import type { DataDrivenPropertyValueSpecification } from '$routes/map/utils/maplibre';
 
 import {
 	PUBLIC_BASE_PATH,

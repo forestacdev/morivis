@@ -47,7 +47,8 @@ const createProjContext = (
 	originLongitude: number,
 	includeTypeCrs: boolean = false
 ): string => {
-	const base = `+proj=tmerc +lat_0=${originLatitude} +lon_0=${originLongitude} +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs`;
+	const base =
+		`+proj=tmerc +lat_0=${originLatitude} +lon_0=${originLongitude} +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs`;
 	return includeTypeCrs ? `${base} +type=crs` : base;
 };
 
@@ -262,7 +263,8 @@ export const JAPAN_PLANE_RECTANGULAR_SYSTEMS: Record<
 		originLatitude: toDecimalDegrees(26),
 		originLongitudeDms: '142度0分0秒0000',
 		originLatitudeDms: '26度0分0秒0000',
-		areaOfUse: '東京都のうち北緯28度から南であり、かつ東経140度30分から東であり東経143度から西である区域',
+		areaOfUse:
+			'東京都のうち北緯28度から南であり、かつ東経140度30分から東であり東経143度から西である区域',
 		epsg: {
 			jgd2000: 'EPSG:2456',
 			jgd2011: 'EPSG:6682'

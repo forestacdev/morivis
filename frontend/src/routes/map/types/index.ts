@@ -4,8 +4,8 @@ import type {
 	ResultCoordinateData,
 	ResultPoiData
 } from '$routes/map/utils/data/search-result';
+import type { MapGeoJSONFeature } from '$routes/map/utils/maplibre';
 import { geojson } from 'flatgeobuf';
-import type { MapGeoJSONFeature } from 'maplibre-gl';
 export type {
 	FeatureMenuData,
 	FeaturePanelAudioMedia,

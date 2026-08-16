@@ -5,7 +5,7 @@ import {
 	PUBLIC_PANORAMA_PATH,
 	PUBLIC_TIMBER_SPECIES_PATH
 } from '$env/static/public';
-import type { ResourceType } from 'maplibre-gl';
+import type { ResourceType } from '$routes/map/utils/maplibre';
 import { devProxyTransform } from './proxy';
 
 const runtimePublicEnvValues = {

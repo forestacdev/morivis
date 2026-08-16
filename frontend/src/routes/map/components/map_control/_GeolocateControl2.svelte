@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { Marker, type LngLatLike, type Map as MapLibreMap } from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
+	import { Marker, type LngLatLike, type Map as MapLibreMap } from '$routes/map/utils/maplibre';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 

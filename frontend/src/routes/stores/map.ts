@@ -1,6 +1,7 @@
 import type { CSSCursor } from '$routes/map/types';
-import maplibregl from 'maplibre-gl';
+import maplibregl from '$routes/map/utils/maplibre';
 import type {
+	AllLayoutProperties,
 	AnimationOptions,
 	Coordinates,
 	EaseToOptions,
@@ -19,14 +20,14 @@ import type {
 	RasterTileSource,
 	StyleSetterOptions,
 	StyleSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 import { Protocol } from 'pmtiles';
 import { type Writable, writable } from 'svelte/store';
 
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { Opacity } from '$routes/map/data/types';
 import { getMapParams, set3dParams, setMapParams } from '$routes/map/utils/platform/url-params';
-import { isDebugMode } from '$routes/stores';
+import { isDebugMode, selectedHighlightData } from '$routes/stores';
 import turfBbox from '@turf/bbox';
 import { debounce } from 'es-toolkit';
 import { get } from 'svelte/store';
@@ -38,7 +39,12 @@ import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protoco
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
 import poiTopIcon from '$lib/icons/poi_top.png';
-import { isHighlightLayerId } from '$routes/map/utils/layers/highlight';
+import {
+	ensureHighlightAnimationImages,
+	HighlightLayerRegistry,
+	isHighlightLayerId,
+	scheduleHighlightAnimationWarmup
+} from '$routes/map/utils/layers/highlight';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 import { resolveMapLibreRequest, resolveRequestUrl } from '$routes/map/utils/platform/request';
 
@@ -72,17 +78,17 @@ import {
 	wfsFeatureProtocol
 } from '$routes/map/protocol/vector/wfs-feature';
 import { clearPointCloudDataCache, createDeckOverlay } from '$routes/map/utils/deck/overlay';
-import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
-import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
-import {
-	handleStyleImageMissing,
-	isGeneratedPoiIconId,
-	warmupGeneratedPoiIconWorker
-} from '$routes/map/utils/icon';
 import {
 	buildGlbExportFilename,
 	downloadArrayBufferAsGlb
 } from '$routes/map/utils/formats/export/model';
+import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
+import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
+import {
+	isGeneratedPoiIconId,
+	resolveMissingStyleImage,
+	warmupGeneratedPoiIconWorker
+} from '$routes/map/utils/icon';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
@@ -366,6 +372,7 @@ const createMapStore = () => {
 	const init = async (mapContainer: HTMLElement) => {
 		const mapPosition = getMapParams();
 
+		scheduleHighlightAnimationWarmup();
 		await warmupGeneratedPoiIconWorker();
 		deckOverlay = null;
 		isDeckOverlayAdded = false;
@@ -419,35 +426,35 @@ const createMapStore = () => {
 
 		if (!map) return;
 
-		map.on('styleimagemissing', (e) => {
+		map.setMissingStyleImageResolver(async (id) => {
 			if (!map) return;
 
-			const id = e.id;
 			if (id === 'poi_top') {
 				if (map.hasImage('poi_top')) return;
-				// 検索用のマーカーアイコンを追加
-				fetchWithDevProxy(poiTopIcon).then(async (response) => {
-					if (!response.ok) {
-						throw new Error(`Failed to fetch image: ${response.statusText}`);
-					}
-					const image = await createImageBitmap(await response.blob());
-					if (!map || map.hasImage('poi_top')) return;
-					map.addImage('poi_top', image);
-				});
-			} else if (id === 'marker_png') {
+				const response = await fetchWithDevProxy(poiTopIcon);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch image: ${response.statusText}`);
+				}
+				const image = await createImageBitmap(await response.blob());
+				if (!map || map.hasImage('poi_top')) return;
+				map.addImage('poi_top', image);
+				return;
+			}
+
+			if (id === 'marker_png') {
 				if (map.hasImage('marker_png')) return;
-				// 検索用のマーカーアイコンを追加
-				fetchWithDevProxy(markerPngIcon).then(async (response) => {
-					if (!response.ok) {
-						throw new Error(`Failed to fetch image: ${response.statusText}`);
-					}
-					const image = await createImageBitmap(await response.blob());
-					if (!map || map.hasImage('marker_png')) return;
-					map.addImage('marker_png', image);
-				});
-			} else if (isGeneratedPoiIconId(id)) {
-				// 接頭辞付きの生成アイコンだけを styleimagemissing 側で処理する
-				handleStyleImageMissing(e, map);
+				const response = await fetchWithDevProxy(markerPngIcon);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch image: ${response.statusText}`);
+				}
+				const image = await createImageBitmap(await response.blob());
+				if (!map || map.hasImage('marker_png')) return;
+				map.addImage('marker_png', image);
+				return;
+			}
+
+			if (isGeneratedPoiIconId(id)) {
+				await resolveMissingStyleImage(id, map);
 			}
 
 			// NOTE: ハイライトパターン作成は停止
@@ -465,6 +472,7 @@ const createMapStore = () => {
 		map.on('style.load', () => {
 			if (!map) return;
 
+			ensureHighlightAnimationImages(map);
 			isStyleLoadEvent.set(map);
 		});
 
@@ -538,7 +546,9 @@ const createMapStore = () => {
 			if (import.meta.env.PROD) return;
 			console.error('Map error details:', e);
 			console.error('Error source:', e.error);
-			console.error('Error stack:', e.error?.stack);
+			if ('stack' in e.error) {
+				console.error('Error stack:', e.error.stack);
+			}
 		});
 
 		map.on('click', (e: MapMouseEvent) => {
@@ -579,6 +589,7 @@ const createMapStore = () => {
 		});
 
 		map.on('resize', (e) => {
+			syncDeckOverlaySize();
 			resizeEvent.set(e);
 		});
 		map.on('data', () => {
@@ -684,7 +695,7 @@ const createMapStore = () => {
 		});
 		map.on('moveend', debounceMapMoveEnd);
 
-		map.on('zoom', (e: MouseEvent) => {
+		map.on('zoom', () => {
 			if (!map) return;
 			const zoom = map.getZoom();
 			zoomEvent.set(zoom);
@@ -702,6 +713,29 @@ const createMapStore = () => {
 			&& typeof _map.setLayoutProperty === 'function'
 			&& !_map._removed
 		); // マップが削除されていないかチェック
+	};
+
+	const syncDeckOverlaySize = () => {
+		if (!map || !deckOverlay) return;
+
+		const canvas = map.getCanvas();
+		const container = map.getContainer();
+		const width = Math.max(1, canvas.clientWidth || container.clientWidth || canvas.width || 1);
+		const height = Math.max(
+			1,
+			canvas.clientHeight || container.clientHeight || canvas.height || 1
+		);
+
+		const deck = (deckOverlay as unknown as {
+			_deck?: {
+				setProps: (props: { width: number; height: number; }) => void;
+				redraw?: () => void;
+			};
+		})._deck;
+		if (!deck) return;
+
+		deck.setProps({ width, height });
+		deck.redraw?.();
 	};
 
 	// Method for setting map style
@@ -750,11 +784,13 @@ const createMapStore = () => {
 		if (!isDeckOverlayAdded) {
 			map.addControl(deckOverlay as maplibregl.IControl);
 			isDeckOverlayAdded = true;
+			syncDeckOverlaySize();
 		}
 
 		deckOverlay.setProps({
 			layers: layers
 		});
+		syncDeckOverlaySize();
 	};
 
 	// Three.js レイヤーを必要時に追加
@@ -1055,8 +1091,10 @@ const createMapStore = () => {
 	const setHighlightLayers = (layers: StyleSpecification['layers']) => {
 		if (!map || !isMapValid(map)) return;
 		const currentMap = map;
+		const currentSelection = get(selectedHighlightData);
 
 		clearHighlightLayers();
+		ensureHighlightAnimationImages(currentMap);
 		layers.forEach((layer) => {
 			if (currentMap.getLayer(layer.id)) return;
 			if (
@@ -1071,6 +1109,17 @@ const createMapStore = () => {
 			}
 			currentMap.addLayer(layer);
 		});
+
+		HighlightLayerRegistry.getFilterUpdates(currentSelection).forEach(({ layerId, filter }) => {
+			if (!currentMap.getLayer(layerId)) return;
+			currentMap.setFilter(layerId, filter);
+		});
+		HighlightLayerRegistry.syncPatternAnimation(currentMap, currentSelection);
+	};
+
+	const syncPatternAnimation = () => {
+		if (!map || !isMapValid(map)) return;
+		HighlightLayerRegistry.syncPatternAnimation(map, get(selectedHighlightData));
 	};
 
 	// クリックマーカーを追加するメソッド
@@ -1514,10 +1563,10 @@ const createMapStore = () => {
 		lockOnMarker = null;
 	};
 
-	const setLayoutProperty = (
+	const setLayoutProperty = <K extends keyof AllLayoutProperties>(
 		layerId: string,
-		name: string,
-		value: any,
+		name: K,
+		value: AllLayoutProperties[K],
 		options?: StyleSetterOptions
 	) => {
 		if (!map || !isMapValid(map)) return;
@@ -1575,8 +1624,6 @@ const createMapStore = () => {
 
 		map.setCenterClampedToGround(false);
 		map.setCenterElevation(elevation ? elevation : (altitude ?? 0));
-
-		map._elevationStart = map._elevationTarget;
 	};
 
 	const resetCamera = () => {
@@ -1584,7 +1631,6 @@ const createMapStore = () => {
 
 		map.setCenterClampedToGround(true); // 地形に中心点を吸着させる
 		map.setCenterElevation(0);
-		map._elevationStart = map._elevationTarget;
 	};
 
 	return {
@@ -1616,6 +1662,7 @@ const createMapStore = () => {
 		setDeckVectorColor,
 		setModelAnimationState,
 		setHighlightLayers,
+		syncPatternAnimation,
 		clearHighlightLayers,
 		setFilter,
 		setLayoutProperty,

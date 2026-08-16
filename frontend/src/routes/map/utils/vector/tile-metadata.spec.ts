@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildVectorTileColorExpressions } from './tile-style';
 import {
 	buildVectorTileFields,
 	buildVectorTileTitles,
 	mergeVectorTileMetadataLayers
 } from './tile-metadata';
+import { buildVectorTileColorExpressions } from './tile-style';
 
 describe('mergeVectorTileMetadataLayers', () => {
 	it('vector_layers と tilestats を同じレイヤー定義へ統合する', () => {

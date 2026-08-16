@@ -8,4 +8,4 @@
 
 > **Region** = `Hokkaido` \| `Tohoku` \| `Kanto` \| `Chubu` \| `Kinki` \| `Chugoku` \| `Shikoku` \| `Kyushu` \| `Okinawa` \| `"全国"` \| `"世界"` \| `"不明"` \| `LocationOther`
 
-Defined in: [frontend/src/routes/map/data/types/location.ts:31](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/location.ts#L31)
+Defined in: [frontend/src/routes/map/data/types/location.ts:31](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/location.ts#L31)

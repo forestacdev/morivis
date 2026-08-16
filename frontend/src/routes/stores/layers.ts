@@ -60,7 +60,10 @@ const createLayerStore = () => {
 		add: (id: string) =>
 			update((layers) => {
 				if (hasMissingRequiredUrl(id)) {
-					showNotification('PMTiles URL が未設定のため、このレイヤーはまだ追加できません。', 'info');
+					showNotification(
+						'PMTiles URL が未設定のため、このレイヤーはまだ追加できません。',
+						'info'
+					);
 					return layers;
 				}
 

@@ -1,4 +1,4 @@
-import type { LayerSpecification, SourceSpecification } from 'maplibre-gl';
+import type { LayerSpecification, SourceSpecification } from '$routes/map/utils/maplibre';
 
 import type { BaseMetaData } from '$routes/map/data/types';
 

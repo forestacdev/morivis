@@ -40,7 +40,9 @@
 	];
 
 	const isThreeMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
-		return entry.type === 'model' && entry.style.type === 'mesh' && entry.format.type !== '3d-tiles';
+		return (
+			entry.type === 'model' && entry.style.type === 'mesh' && entry.format.type !== '3d-tiles'
+		);
 	};
 
 	const hideLayer = () => {

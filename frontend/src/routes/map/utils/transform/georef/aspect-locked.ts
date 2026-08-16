@@ -1,4 +1,4 @@
-import { MercatorCoordinate } from 'maplibre-gl';
+import { MercatorCoordinate } from '$routes/map/utils/maplibre';
 
 import type { GeoRefCorners } from './homography';
 

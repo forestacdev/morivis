@@ -4,6 +4,11 @@
 	import { fade, slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
+	import {
+		createEmptyShapeFileFormState,
+		type ShpFormSchema,
+		mergeShapeRelatedFiles
+	} from './shape-file-form-state';
 	import ShapeFileFormInput from './ShapeFileFormInput.svelte';
 
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
@@ -93,72 +98,32 @@
 		shxName: yup.string().required('ファイル名が検出できません'),
 		prjName: yup.string().optional()
 	});
-	type ShpFormSchema = {
-		shpFile: File | null;
-		dbfFile: File | null;
-		shxFile: File | null;
-		prjFile: File | null;
-		shpName: string;
-		dbfName: string;
-		shxName: string;
-		prjName: string;
-	};
-
 	let cpgFile = $state<File | null>(null);
 	let cpgName = $state<string>('');
 
-	let forms = $state<ShpFormSchema>({
-		shpFile: null,
-		dbfFile: null,
-		shxFile: null,
-		prjFile: null,
-		shpName: '',
-		dbfName: '',
-		shxName: '',
-		prjName: ''
-	});
+	let forms = $state<ShpFormSchema>(createEmptyShapeFileFormState().forms);
 
 	const resetForms = () => {
-		forms.shpFile = null;
-		forms.dbfFile = null;
-		forms.shxFile = null;
-		forms.prjFile = null;
-		forms.shpName = '';
-		forms.dbfName = '';
-		forms.shxName = '';
-		forms.prjName = '';
-		cpgFile = null;
-		cpgName = '';
+		const nextState = createEmptyShapeFileFormState();
+		forms = nextState.forms;
+		cpgFile = nextState.cpgFile;
+		cpgName = nextState.cpgName;
 	};
 
 	const toFiles = (value: UploadFilesInput): File[] => toUploadFiles(value);
 
 	const setFiles = (dropFile: UploadFilesInput) => {
-		toFiles(dropFile).forEach((file) => setFile(file));
-	};
-
-	const setFile = (file: File) => {
-		const fileName = file.name;
-		const lowerFileName = fileName.toLowerCase();
-
-		if (lowerFileName.endsWith('.shp')) {
-			forms.shpFile = file;
-			forms.shpName = fileName;
-		} else if (lowerFileName.endsWith('.dbf')) {
-			forms.dbfFile = file;
-			forms.dbfName = fileName;
-		} else if (lowerFileName.endsWith('.prj')) {
-			forms.prjFile = file;
-			forms.prjName = fileName;
-		} else if (lowerFileName.endsWith('.shx')) {
-			forms.shxFile = file;
-			forms.shxName = fileName;
-		} else if (lowerFileName.endsWith('.cpg')) {
-			cpgFile = file;
-			cpgName = fileName;
-		} else {
-			showNotification('対応していないファイル形式です', 'error');
-		}
+		const nextState = mergeShapeRelatedFiles(
+			{
+				forms,
+				cpgFile,
+				cpgName
+			},
+			toFiles(dropFile)
+		);
+		forms = nextState.forms;
+		cpgFile = nextState.cpgFile;
+		cpgName = nextState.cpgName;
 	};
 
 	const isShapeFileRelated = (file: UploadFilesInput): boolean => {
@@ -168,7 +133,6 @@
 	$effect(() => {
 		if (showDialogType !== 'shp' || !dropFile || !isShapeFileRelated(dropFile)) return;
 
-		resetForms();
 		setFiles(dropFile);
 		dropFile = null; // ドロップ後はnullにリセット
 	});

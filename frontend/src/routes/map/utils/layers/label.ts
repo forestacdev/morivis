@@ -1,5 +1,8 @@
 import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
-import type { SymbolLayerSpecification, VectorSourceSpecification } from 'maplibre-gl';
+import type {
+	SymbolLayerSpecification,
+	VectorSourceSpecification
+} from '$routes/map/utils/maplibre';
 
 export const labelSources: Record<string, VectorSourceSpecification> = {
 	openmaptiles: {

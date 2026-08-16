@@ -1,6 +1,5 @@
 <script lang="ts">
 	import JSZip from 'jszip';
-	import maplibregl from 'maplibre-gl';
 
 	import { resolveDroppedFiles } from './upload-drop';
 	import { getPathLikeName } from './upload-drop-matchers';
@@ -9,6 +8,7 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { MeshFormatType } from '$routes/map/data/types/model';
 	import type { DialogType, UploadFiles } from '$routes/map/types';
+	import maplibregl from '$routes/map/utils/maplibre';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { showNotification } from '$routes/stores/notification';
 

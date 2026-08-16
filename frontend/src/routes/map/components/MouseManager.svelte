@@ -1,7 +1,4 @@
 <script lang="ts">
-	import maplibregl from 'maplibre-gl';
-	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from 'maplibre-gl';
-
 	import { clickDebug } from './map-debug';
 
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
@@ -24,6 +21,8 @@
 	} from '$routes/map/utils/layers/highlight';
 	import { getMorivisLayerRole } from '$routes/map/utils/layers/id';
 	import { isPointInBbox } from '$routes/map/utils/map/bbox';
+	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from '$routes/map/utils/maplibre';
+	import maplibregl from '$routes/map/utils/maplibre';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster/tile-query';
@@ -486,6 +485,14 @@
 		featureMenuData = null;
 		clearSearchHighlight();
 		clickedLayerIds = [logicalLayerId];
+
+		// circleまたはsymbolの補助レイヤーは、その座標値
+		if (feature.layer.type === 'circle' || feature.layer.type === 'symbol') {
+			lngLat = new maplibregl.LngLat(
+				(feature.geometry as any).coordinates[0],
+				(feature.geometry as any).coordinates[1]
+			);
+		}
 
 		if (currentZoom === undefined || currentZoom < targetZoom) {
 			mapStore.flyTo(lngLat, { zoom: targetZoom, duration: 1000 });

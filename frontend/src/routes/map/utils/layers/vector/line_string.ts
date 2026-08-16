@@ -1,4 +1,4 @@
-import type { LineLayerSpecification } from 'maplibre-gl';
+import type { LineLayerSpecification } from '$routes/map/utils/maplibre';
 
 import type { LineStringStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';

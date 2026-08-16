@@ -3,8 +3,8 @@ import type { AnyGeometry } from '$routes/map/types/geometry';
 import DxfParser from 'dxf-parser';
 
 type DxfHeader = Record<string, unknown>;
-type DxfPointLike = { x?: unknown; y?: unknown; z?: unknown };
-type DxfPoint = { x: number; y: number; z?: number };
+type DxfPointLike = { x?: unknown; y?: unknown; z?: unknown; };
+type DxfPoint = { x: number; y: number; z?: number; };
 
 const DXF_INSUNITS_TO_METERS: Record<number, number> = {
 	0: 1,
@@ -270,12 +270,11 @@ const isDxfPointLike = (value: unknown): value is DxfPoint =>
 
 const hasExplicitZ = (
 	point: DxfPointLike | null | undefined
-): point is DxfPoint & { z: number } =>
-	point != null && isFiniteCoordinate(point.z);
+): point is DxfPoint & { z: number; } => point != null && isFiniteCoordinate(point.z);
 
 const toCoordinate = (
 	point: DxfPoint,
-	options?: { force3d?: boolean; fallbackZ?: number }
+	options?: { force3d?: boolean; fallbackZ?: number; }
 ): number[] => {
 	const z = hasExplicitZ(point) ? point.z : options?.fallbackZ;
 
@@ -353,22 +352,22 @@ const scaleLengthProperties = (properties: Record<string, any>, factor: number):
 };
 
 const isCoordinatePair = (coord: unknown): coord is [number, number] =>
-	Array.isArray(coord) &&
-	coord.length >= 2 &&
-	isFiniteCoordinate(coord[0]) &&
-	isFiniteCoordinate(coord[1]);
+	Array.isArray(coord)
+	&& coord.length >= 2
+	&& isFiniteCoordinate(coord[0])
+	&& isFiniteCoordinate(coord[1]);
 
 const isValidLineStringCoordinates = (coordinates: unknown): coordinates is [number, number][] =>
-	Array.isArray(coordinates) &&
-	coordinates.length >= 2 &&
-	coordinates.every(isCoordinatePair);
+	Array.isArray(coordinates)
+	&& coordinates.length >= 2
+	&& coordinates.every(isCoordinatePair);
 
 const isValidPolygonCoordinates = (
 	coordinates: unknown
 ): coordinates is [number, number][][] =>
-	Array.isArray(coordinates) &&
-	coordinates.length > 0 &&
-	coordinates.every(
+	Array.isArray(coordinates)
+	&& coordinates.length > 0
+	&& coordinates.every(
 		(ring) => Array.isArray(ring) && ring.length >= 4 && ring.every(isCoordinatePair)
 	);
 
@@ -381,16 +380,16 @@ const isGeometryValid = (geometry: AnyGeometry): boolean => {
 		case 'Polygon':
 			return isValidPolygonCoordinates(geometry.coordinates);
 		case 'MultiPoint':
-			return Array.isArray(geometry.coordinates) && geometry.coordinates.length > 0 &&
-				geometry.coordinates.every(isCoordinatePair);
+			return Array.isArray(geometry.coordinates) && geometry.coordinates.length > 0
+				&& geometry.coordinates.every(isCoordinatePair);
 		case 'MultiLineString':
-			return Array.isArray(geometry.coordinates) &&
-				geometry.coordinates.length > 0 &&
-				geometry.coordinates.every(isValidLineStringCoordinates);
+			return Array.isArray(geometry.coordinates)
+				&& geometry.coordinates.length > 0
+				&& geometry.coordinates.every(isValidLineStringCoordinates);
 		case 'MultiPolygon':
-			return Array.isArray(geometry.coordinates) &&
-				geometry.coordinates.length > 0 &&
-				geometry.coordinates.every(isValidPolygonCoordinates);
+			return Array.isArray(geometry.coordinates)
+				&& geometry.coordinates.length > 0
+				&& geometry.coordinates.every(isValidPolygonCoordinates);
 		default:
 			return false;
 	}
@@ -459,7 +458,7 @@ const approximateArc = (
 const approximateEllipse = (
 	cx: number,
 	cy: number,
-	majorAxisEndPoint: { x: number; y: number },
+	majorAxisEndPoint: { x: number; y: number; },
 	axisRatio: number,
 	startAngle: number,
 	endAngle: number,

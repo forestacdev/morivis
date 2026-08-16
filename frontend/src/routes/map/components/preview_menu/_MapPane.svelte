@@ -1,12 +1,12 @@
 <script lang="ts">
 	import turfBboxPlygon from '@turf/bbox-polygon';
-	import { Map } from 'maplibre-gl';
-	import type { StyleSpecification } from 'maplibre-gl';
 	import { onMount, onDestroy } from 'svelte';
 
 	import { MAP_FONT_DATA_PATH } from '$routes/constants';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { isBBoxInside } from '$routes/map/utils/map/bbox';
+	import type { StyleSpecification } from '$routes/map/utils/maplibre';
+	import { Map } from '$routes/map/utils/maplibre';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {

@@ -10,13 +10,13 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import type { TabularRow } from '$routes/map/utils/formats/tabular';
 	import {
 		readDelimitedTextAsUtf8,
 		getDelimitedTextPreview,
 		delimitedTextToGeojson,
 		type CSVPreview
 	} from '$routes/map/utils/formats/csv';
+	import type { TabularRow } from '$routes/map/utils/formats/tabular';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -158,10 +158,7 @@
 				previewRows = preview.rows;
 				latColumn = guessedLatColumn;
 				lonColumn = guessedLonColumn;
-				void snapPreviewToAutoSelectedColumn(preview.headers, [
-					guessedLatColumn,
-					guessedLonColumn
-				]);
+				void snapPreviewToAutoSelectedColumn(preview.headers, [guessedLatColumn, guessedLonColumn]);
 			})
 			.catch((error) => {
 				showNotification(`${formatName}ファイルの読み込みに失敗しました`, 'error');

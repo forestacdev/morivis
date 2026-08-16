@@ -6,7 +6,7 @@
 
 # Interface: MeshEntry\<T\>
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:144](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/model/index.ts#L144)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:160](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/model/index.ts#L160)
 
 ## Extends
 
@@ -24,7 +24,11 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:144](https://gith
 
 > **format**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:145](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/model/index.ts#L145)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:161](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/model/index.ts#L161)
+
+#### georeference?
+
+> `optional` **georeference**: [`ProjectedModelGeoreference`](ProjectedModelGeoreference.md)
 
 #### mtlUrl?
 
@@ -52,7 +56,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:145](https://gith
 
 > **id**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:30](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/model/index.ts#L30)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:30](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/model/index.ts#L30)
 
 #### Inherited from
 
@@ -64,7 +68,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:30](https://githu
 
 > **interaction**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:39](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/model/index.ts#L39)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:39](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/model/index.ts#L39)
 
 #### clickable
 
@@ -80,7 +84,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:39](https://githu
 
 > **metaData**: `ModelMetaData`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:32](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/model/index.ts#L32)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:32](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/model/index.ts#L32)
 
 #### Inherited from
 
@@ -92,7 +96,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:32](https://githu
 
 > `optional` **properties**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:33](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/model/index.ts#L33)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:33](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/model/index.ts#L33)
 
 #### animation?
 
@@ -116,7 +120,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:33](https://githu
 
 > `optional` **state**: `object`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:42](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/model/index.ts#L42)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:42](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/model/index.ts#L42)
 
 #### animation?
 
@@ -136,7 +140,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:42](https://githu
 
 > **style**: `T`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:152](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/model/index.ts#L152)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:169](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/model/index.ts#L169)
 
 ***
 
@@ -144,7 +148,7 @@ Defined in: [frontend/src/routes/map/data/types/model/index.ts:152](https://gith
 
 > **type**: `"model"`
 
-Defined in: [frontend/src/routes/map/data/types/model/index.ts:31](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/model/index.ts#L31)
+Defined in: [frontend/src/routes/map/data/types/model/index.ts:31](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/model/index.ts#L31)
 
 #### Inherited from
 

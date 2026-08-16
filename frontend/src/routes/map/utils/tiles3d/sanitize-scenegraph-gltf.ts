@@ -81,7 +81,8 @@ const normalizePrimitiveIndices = (primitive: GltfPrimitiveLike): boolean => {
 
 	if (
 		normalizedIndices === indices.value
-		&& (indices.componentType === GLTF_UNSIGNED_SHORT || indices.componentType === GLTF_UNSIGNED_INT)
+		&& (indices.componentType === GLTF_UNSIGNED_SHORT
+			|| indices.componentType === GLTF_UNSIGNED_INT)
 	) {
 		return false;
 	}

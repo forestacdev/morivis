@@ -1,7 +1,6 @@
 <script lang="ts">
 	import turfBbox from '@turf/bbox';
 	import turfDistance from '@turf/distance';
-	import { LngLat, type ExpressionSpecification, type FilterSpecification } from 'maplibre-gl';
 	import { onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 
@@ -26,6 +25,11 @@
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { HighlightLayerRegistry } from '$routes/map/utils/layers/highlight';
 	import { createSublayerId } from '$routes/map/utils/layers/id';
+	import {
+		LngLat,
+		type ExpressionSpecification,
+		type FilterSpecification
+	} from '$routes/map/utils/maplibre';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {

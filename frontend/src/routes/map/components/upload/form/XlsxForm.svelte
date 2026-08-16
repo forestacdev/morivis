@@ -128,10 +128,7 @@
 				sheetNames = preview.sheetNames;
 				latColumn = guessedLatColumn;
 				lonColumn = guessedLonColumn;
-				void snapPreviewToAutoSelectedColumn(preview.headers, [
-					guessedLatColumn,
-					guessedLonColumn
-				]);
+				void snapPreviewToAutoSelectedColumn(preview.headers, [guessedLatColumn, guessedLonColumn]);
 
 				if (selectedSheet !== preview.activeSheet) {
 					selectedSheet = preview.activeSheet;

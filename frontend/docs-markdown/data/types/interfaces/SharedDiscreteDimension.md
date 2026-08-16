@@ -6,7 +6,7 @@
 
 # Interface: SharedDiscreteDimension
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:31](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L31)
+Defined in: [frontend/src/routes/map/data/types/index.ts:31](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L31)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:31](https://github.com/
 
 > `optional` **labels**: `string`[]
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:34](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L34)
+Defined in: [frontend/src/routes/map/data/types/index.ts:34](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L34)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:34](https://github.com/
 
 > `optional` **placeholder**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:35](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L35)
+Defined in: [frontend/src/routes/map/data/types/index.ts:35](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L35)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:35](https://github.com/
 
 > **type**: `"time"` \| `"variant"`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:32](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L32)
+Defined in: [frontend/src/routes/map/data/types/index.ts:32](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L32)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:32](https://github.com/
 
 > **values**: `string`[]
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:33](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L33)
+Defined in: [frontend/src/routes/map/data/types/index.ts:33](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L33)

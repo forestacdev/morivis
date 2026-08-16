@@ -3,7 +3,7 @@ import type {
 	LineLayerSpecification,
 	SymbolLayerSpecification,
 	VectorSourceSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 
 import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 

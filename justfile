@@ -36,6 +36,9 @@ preview:
 
 # テスト
 test:
+    cd frontend && pnpm run test:unit -- --run
+
+test-watch:
     cd frontend && pnpm run test:unit
 
 # フォーマット

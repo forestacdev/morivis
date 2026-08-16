@@ -10,29 +10,43 @@ morivis では、ファイルや URL から受け取ったデータを解析し�
 ```mermaid
 flowchart LR
 	A["File / URL"] --> B["FileManager.svelte"]
-	B --> C["BaseDialog.svelte"]
-	C --> D["各 Form"]
-	D --> E{"座標系 / 空間参照は確定しているか"}
-	E -- yes --> F["preview または final entry 作成"]
-	E -- no --> G["TransformOptionForm"]
-	G --> H["Zone で EPSG 確定"]
-	G --> I["GeoRef で四隅確定"]
-	H --> F
-	I --> F
-	F --> J["showDataEntry"]
-	J --> K["layerEntries へ追加"]
-	K --> L["MapLibre / deck.gl / three.js"]
+	B --> C["resolveDroppedFiles()"]
+	C --> D["BaseDialog.svelte / DialogRenderer.svelte"]
+	D --> E["各 Form"]
+	E --> F{"座標系 / 空間参照は確定しているか"}
+	F -- yes --> G["preview または final entry 作成"]
+	F -- no --> H["TransformOptionForm"]
+	H --> I["Zone で EPSG 確定"]
+	H --> J["GeoRef で四隅確定"]
+	I --> G
+	J --> G
+	G --> K["showDataEntry"]
+	K --> L["layerEntries へ追加"]
+	L --> M["MapLibre / deck.gl / three.js"]
 ```
 
 ## 入口
 
-アップロード系の入口は次の 3 層で分かれる。
+アップロード系の入口は次の 4 層で分かれる。
 
 | 層 | 主な責務 |
 | --- | --- |
-| `FileManager.svelte` | 入力ファイル群の種別判定。単体ファイルか複数ファイルか、sidecar の組み合わせが正しいかを判断する。 |
-| `BaseDialog.svelte` | `showDialogType` に応じて各 Form を切り替える。共通状態を bind で各 Form に渡す。 |
+| `FileManager.svelte` | 入力ファイル群や URL を受け取り、`resolveDroppedFiles()` に渡す。大容量ファイル確認や remote KML model の即時登録もここで扱う。 |
+| `upload-drop.ts` / `upload-drop-matchers.ts` | 拡張子、複数ファイル組み合わせ、ZIP 展開後の中身、XML 先頭内容を見て `DialogType` を決める。 |
+| `BaseDialog.svelte` / `DialogRenderer.svelte` | `showDialogType` と `dialog-registry.ts` をもとに対象 Form を選び、profile に応じて必要な bind 状態を渡す。 |
 | `components/upload/form/*.svelte` | 形式ごとの解析、座標系判定、preview 準備、最終 entry 作成を担当する。 |
+
+## 定義元
+
+対応形式が増えたので、どこを真実の定義として見るかを明示しておく。
+
+| ファイル | 役割 |
+| --- | --- |
+| `types/index.ts` | `DialogType` と `SUPPORTED_FILE_GROUPS`。UI に見せる対応拡張子の定義元。 |
+| `upload-drop.ts` | ファイルや URL をどの `DialogType` に振り分けるかの定義元。 |
+| `dialog-registry.ts` | `DialogType -> Form / profile` の対応表。 |
+| `transform-policy.ts` | 形式ごとの `zone` / `georef` 許可方針。 |
+| `components/upload/form/*.svelte` | 各形式の preview / final entry 作成の実装本体。 |
 
 ## 中間状態
 
@@ -66,17 +80,38 @@ flowchart LR
 
 ## 形式別フロー
 
-代表的な形式の流れを表にまとめる。
+現在の `DialogType` に近い粒度で、主要な流れをまとめる。
 
-| 形式 | 解析 | bbox の由来 | 座標系確定 | preview 作成 | final entry 作成 | worker |
+| 系統 | 主な形式 | 解析 | 座標系 / 配置の確定 | preview | final entry | worker / 補助実装 |
 | --- | --- | --- | --- | --- | --- | --- |
-| GeoJSON / TopoJSON / WKT / GML / MIF / OSM / CSV / TSV | 各 `Form` で `FeatureCollection` 化 | `turfBbox` 等 | bbox が不正なら Zone | GeoRef 用は `featureCollectionToGeoRefData()` | 各 Form または `+page finalizeGeoRefEntry()` | 座標変換、GeoRef ベクター変形 |
-| Shapefile / GeoPackage / GeoParquet | パーサーで `FeatureCollection` 化 | 解析結果 | `.prj` 等で自動、足りなければ Zone | 必要なら vector→GeoRef 用ラスター化 | 各 Form または `+page finalizeGeoRefEntry()` | 解析、座標変換 |
-| DXF / DM / SIMA / MojXML | 独自パーサーで `FeatureCollection` 化 | 解析結果 | 多くは Zone 必須 | 必要なら vector→GeoRef 用ラスター化 | 各 Form または `+page finalizeGeoRefEntry()` | 解析、座標変換 |
-| GeoTIFF / 画像 + `tfw` / 画像 + `aux.xml` | `GeoTiffForm.svelte` | 埋め込み bbox、`tfw`、`aux.xml` | bbox がそのまま有効なら直行。`aux.xml` の EPSG があれば自動変換。足りなければ Zone。bbox 自体が無ければ GeoRef。 | `createRasterGeoRefData()` | `GeoTiffForm.svelte` または `+page finalizeGeoRefEntry()` | GeoTIFF 解析、bbox 変換、3Dメッシュ化 |
-| DEM XML / NetCDF / GRIB2 / GeoPDF / LandXML | 形式ごとの解析でバンド配列化 | 解析結果や補助メタデータ | 形式ごとに自動または Zone | `createRasterGeoRefData()` | 各 Form または `+page finalizeGeoRefEntry()` | 解析、Terrarium、3Dメッシュ化 |
-| 点群 LAS / LAZ / PLY / PCD / XYZ / OBJ 点群 | `PointCloudForm.svelte` | 点群 positions の bbox | bbox が不正なら Zone。登録方法により raster / pointcloud へ分岐。 | 点群のまま GeoRef する場合は point cloud 用 `geoRefData`。DEM 化する場合は raster 用 `geoRefData`。 | `PointCloudForm.svelte` または `+page finalizeGeoRefEntry()` | 解析、座標変換、DEM ラスタライズ、GeoRef 点群変形 |
-| GLB / IFC / DAE / 3DS / FBX / 3DM / 3MF / AMF | `glb` 系 Form と three.js 補助 | モデル bounds 計算 | モデル種別ごとの実装に依存 | なし | モデル entry を直接作る | bounds 計算 |
+| ベクター JSON / XML / テキスト | GeoJSON, TopoJSON, WKT, GML, KML, GeoRSS, OSM, MIF/MID, MF-JSON | 各 Form で `FeatureCollection` 化 | bbox が不正なら Zone。必要なら GeoRef へ進む | GeoRef 用は `featureCollectionToGeoRefData()` | 各 Form または `+page.svelte finalizeGeoRefEntry()` | 座標変換、GeoRef ベクター変形 |
+| 表形式ベクター | CSV, TSV, XLSX, Garmin GDB, Location History, GTFS | テーブルやログを `FeatureCollection` 化 | bbox が不正なら Zone。形式によってはそのまま登録 | 必要なら vector→GeoRef 用ラスター化 | 各 Form または `+page.svelte finalizeGeoRefEntry()` | 座標変換、GeoRef ベクター変形 |
+| 複合ベクターファイル | Shapefile, GeoPackage, SQLite / SQL dump, GeoParquet, GeoArrow | パーサーで `FeatureCollection` または Arrow Table 化 | `.prj` や埋め込み定義で自動、足りなければ Zone。GeoArrow は現状 Zone のみ | 必要なら vector→GeoRef 用ラスター化 | 各 Form または `+page.svelte finalizeGeoRefEntry()` | GPKG / SQLite / GeoParquet / GML などは worker 解析あり |
+| CAD / 測量 / 地籍ベクター | DXF, DWG, DM, SIMA, MojXML | 独自パーサーで `FeatureCollection` 化 | 多くは Zone 起点。必要なら GeoRef へ流せる | 必要なら vector→GeoRef 用ラスター化 | 各 Form または `+page.svelte finalizeGeoRefEntry()` | DXF / DWG / DM 解析 worker、座標変換 |
+| 画像ラスタ / 画像由来 | GeoTIFF, GeoPDF, SVG, GeoPhoto, 画像 + `tfw`, 画像 + `aux.xml` | 埋め込み情報、sidecar、EXIF、PDF / SVG の内容から解析 | bbox と CRS が揃えば直行。無ければ Zone または GeoRef | `createRasterGeoRefData()`、GeoPhoto は地物 entry | 各 Form または `+page.svelte finalizeGeoRefEntry()` | GeoTIFF / GeoPDF 解析、bbox 変換、必要ならメッシュ化 |
+| 科学技術・衛星ラスタ | DEM XML, NetCDF, GRIB2, HDF5, HRIT/LRIT | バンド配列や観測画像へ展開 | 形式ごとに自動、または GeoRef / Zone | `createRasterGeoRefData()` | 各 Form または `+page.svelte finalizeGeoRefEntry()` | 解析 worker、Terrarium 変換、3Dメッシュ化 |
+| 点群 | LAS, LAZ, COPC, PLY, PCD, XYZ, OBJ 点群 | positions / colors / pointCount を生成 | bbox が不正なら Zone。登録方法で raster / pointcloud に分岐 | 点群 GeoRef は pointcloud 用 `geoRefData`。DEM 化は raster 用 `geoRefData` | `PointCloudForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | 点群解析、DEM ラスタライズ、GeoRef 点群変形 |
+| TIN / サーフェス | LandXML | TIN, breakline, point 群を解析。必要に応じて DEM 化 | Zone または GeoRef | ラスター preview または mesh 準備 | `LandXmlForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | rasterize worker、3Dメッシュ化 |
+| 3D モデル | GLB, OBJ, 3DS, DAE, 3DM, FBX, DRC, 3MF, AMF, IFC | three.js 系が扱える URL / Blob に正規化 | 主に Zone または手動配置 | なし | モデル entry を直接作る | bounds 計算、形式別 loader |
+| 3D Tiles / タイルデータ | 3D Tiles, PMTiles, MBTiles | URL / ファイルから source metadata を構築 | 通常は CRS 解決不要。PMTiles / MBTiles は source 種別の分岐あり | なし | source / model entry を直接作る | PMTiles protocol, MBTiles reader |
+| リモート配信 / カタログ | WMTS, WCS, GeoZarr, FeatureService, WFS, OGC API Features, STAC, ArcGIS WebMap / service, Raster URL, Vector URL | メタデータ問い合わせや capabilities 解析 | 形式ごとのポリシーに従う | WCS / STAC / vector は必要に応じて preview | 各 Form または `+page.svelte finalizeGeoRefEntry()` | capabilities fetch、STAC / WCS / ArcGIS 解析 |
+
+## dialog profile
+
+`dialog-registry.ts` は各 `DialogType` を、Form の性質ごとに profile へ寄せている。  
+形式が増えた今は、この profile を見ると責務のまとまりが追いやすい。
+
+| profile | 典型的な形式 | 役割 |
+| --- | --- | --- |
+| `simple` | STAC, ArcGIS | `dropFile` を持たず、URL や内部状態だけで完結する。 |
+| `drop-file` | GPX, TCX, GDB, GTFS, HRIT, HDF5, MF-JSON, LocationHistory | 受け取ったファイルをそのまま解析して entry を作る。 |
+| `vector-zone` | GeoArrow | Zone は使うが GeoRef には流さない。 |
+| `vector-zone-georef` | GeoJSON, Shapefile, GeoParquet, DXF, GML, MojXML など | Zone と GeoRef の両方を取りうる。 |
+| `vector-georef` | SVG | GeoRef のみを持つ。 |
+| `raster-georef` | DEM XML, NetCDF, GeoPDF | 主に GeoRef で配置を確定する。 |
+| `pointcloud-georef` | GeoTIFF, PointCloud, LandXML | Zone と GeoRef の両方を持ち、場合によって raster / mesh / pointcloud に分岐する。 |
+| `model-georef` | GLB 系 | モデル配置や Zone を扱う。 |
+| `remote-*` / `feature-service` / `wcs` | WMTS, GeoZarr, Raster URL, FeatureService など | URL や remote metadata を起点に source / entry を作る。 |
 
 ## TransformOptionForm の責務
 
@@ -251,10 +286,12 @@ morivis では preview と final entry を分けて考える必要がある。
 フローを追うときは、次の順で見ると混乱しにくい。
 
 1. `FileManager.svelte`
-2. `BaseDialog.svelte`
-3. 対象 `Form`
-4. `TransformOptionForm.svelte`
-5. `+page.svelte` の `finalizeGeoRefEntry()` と `openPendingZoneGeoRef()`
+2. `upload-drop.ts` と `upload-drop-matchers.ts`
+3. `BaseDialog.svelte` と `DialogRenderer.svelte`
+4. `dialog-registry.ts` と `transform-policy.ts`
+5. 対象 `Form`
+6. `TransformOptionForm.svelte`
+7. `+page.svelte` の `finalizeGeoRefEntry()` と `openPendingZoneGeoRef()`
 
 ## 関連
 

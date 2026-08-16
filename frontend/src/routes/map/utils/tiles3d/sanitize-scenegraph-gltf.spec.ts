@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	sanitizeScenegraphGltfForDeck,
 	sanitizeScenegraphGltfAttributes,
+	sanitizeScenegraphGltfForDeck,
 	type ScenegraphGltfLike
 } from './sanitize-scenegraph-gltf';
 

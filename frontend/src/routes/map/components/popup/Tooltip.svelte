@@ -1,11 +1,11 @@
 <script lang="ts">
 	import gsap from 'gsap';
-	import type { LngLat, MapGeoJSONFeature } from 'maplibre-gl';
-	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
 	import type { Title } from '$routes/map/data/types/vector/properties';
 	import { generatePopupTitle } from '$routes/map/utils/data/properties';
+	import maplibregl from '$routes/map/utils/maplibre';
+	import type { LngLat, MapGeoJSONFeature } from '$routes/map/utils/maplibre';
 
 	interface Props {
 		map: maplibregl.Map;

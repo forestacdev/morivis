@@ -1,7 +1,5 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import maplibregl from 'maplibre-gl';
-	import type { ImageSource } from 'maplibre-gl';
 	import { untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
@@ -17,6 +15,8 @@
 	import { createRasterMeshEntry } from '$routes/map/utils/formats/geotiff/mesh';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
+	import type { ImageSource } from '$routes/map/utils/maplibre';
+	import maplibregl from '$routes/map/utils/maplibre';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing, showDataMenu } from '$routes/stores/ui';
 

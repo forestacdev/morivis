@@ -1,10 +1,15 @@
 <script lang="ts">
 	import { mat4 } from 'gl-matrix';
-	import type { CanvasSourceSpecification, CanvasSource, Map as MapLibreMap } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import fragmentShaderSource from './shaders/fragment.glsl?raw';
 	import vertexShaderSource from './shaders/vertex.glsl?raw';
+
+	import type {
+		CanvasSourceSpecification,
+		CanvasSource,
+		Map as MapLibreMap
+	} from '$routes/map/utils/maplibre';
 
 	interface Props {
 		map: MapLibreMap | null;

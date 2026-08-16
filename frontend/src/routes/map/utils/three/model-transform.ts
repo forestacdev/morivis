@@ -1,7 +1,7 @@
 import type { MeshStyle } from '$routes/map/data/types/model';
+import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import { mapStore } from '$routes/stores/map';
 import * as THREE from 'three';
-import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 
 export interface ModelTransform {
 	matrix: THREE.Matrix4;

@@ -1,4 +1,4 @@
-import type { LineLayerSpecification, SymbolLayerSpecification } from 'maplibre-gl';
+import type { LineLayerSpecification, SymbolLayerSpecification } from '$routes/map/utils/maplibre';
 
 export const boundarySources = {
 	openmaptiles: {

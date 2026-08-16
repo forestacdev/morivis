@@ -404,8 +404,7 @@ const parseAddGeometryColumn = (
 		columnName,
 		srid: typeof args[3] === 'number' ? args[3] : Number(args[3] ?? NaN) || null,
 		geometryType: typeof args[4] === 'string' ? args[4] : null,
-		coordDimension:
-			typeof args[5] === 'number' || typeof args[5] === 'string' ? args[5] : null
+		coordDimension: typeof args[5] === 'number' || typeof args[5] === 'string' ? args[5] : null
 	});
 	return true;
 };
@@ -524,7 +523,9 @@ const parseInsertIntoStatement = (
 		const row: Record<string, SqlValue> = {};
 
 		columnNames.forEach((columnName, index) => {
-			const geometryColumn = table.geometryColumns.find((column) => column.columnName === columnName);
+			const geometryColumn = table.geometryColumns.find((column) =>
+				column.columnName === columnName
+			);
 			const rawValue = values[index] ?? null;
 			if (
 				geometryColumn
@@ -628,7 +629,11 @@ export const parseSqlDump = (text: string): SqlDumpTable[] => {
 			: null;
 
 		if (qualifiedNameParts?.length) {
-			const table = getOrCreateTable(tablesByQualifiedName, resolveTableName, qualifiedNameParts);
+			const table = getOrCreateTable(
+				tablesByQualifiedName,
+				resolveTableName,
+				qualifiedNameParts
+			);
 
 			if (parseAlterTableAddColumn(table, statement)) continue;
 			if (parseInsertIntoStatement(table, statement)) continue;
@@ -680,8 +685,7 @@ export const populateDatabaseFromSqlDump = (
 
 		if (table.rows.length > 0) {
 			const insertColumns = table.columns.map((column) => column.name);
-			const insertSql =
-				`INSERT INTO ${quoteIdentifier(table.name)} `
+			const insertSql = `INSERT INTO ${quoteIdentifier(table.name)} `
 				+ `(${insertColumns.map(quoteIdentifier).join(', ')}) VALUES `
 				+ `(${insertColumns.map(() => '?').join(', ')})`;
 

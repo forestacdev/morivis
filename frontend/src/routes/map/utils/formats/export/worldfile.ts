@@ -1,4 +1,4 @@
-import type { Map } from 'maplibre-gl';
+import type { Map } from '$routes/map/utils/maplibre';
 
 /**
  * 経緯度をWeb メルカトル座標(メートル)に変換

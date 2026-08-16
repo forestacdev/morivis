@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { GeolocateControl, LngLat, type EaseToOptions } from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 
+	import { GeolocateControl, LngLat, type EaseToOptions } from '$routes/map/utils/maplibre';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 

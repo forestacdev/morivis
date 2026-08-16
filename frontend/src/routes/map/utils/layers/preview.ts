@@ -1,4 +1,4 @@
-import type { ExpressionSpecification, LayerSpecification } from 'maplibre-gl';
+import type { ExpressionSpecification, LayerSpecification } from '$routes/map/utils/maplibre';
 
 import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 

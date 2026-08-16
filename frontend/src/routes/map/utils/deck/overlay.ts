@@ -1,3 +1,7 @@
+import {
+	sanitizeScenegraphGltfForDeck,
+	type ScenegraphGltfLike
+} from '$routes/map/utils/tiles3d/sanitize-scenegraph-gltf';
 import { Tile3DLayer } from '@deck.gl/geo-layers';
 import { GeoJsonLayer, PointCloudLayer } from '@deck.gl/layers';
 import {
@@ -5,10 +9,6 @@ import {
 	GeoArrowPolygonLayer,
 	GeoArrowScatterplotLayer
 } from '@geoarrow/deck.gl-layers';
-import {
-	sanitizeScenegraphGltfForDeck,
-	type ScenegraphGltfLike
-} from '$routes/map/utils/tiles3d/sanitize-scenegraph-gltf';
 
 import type {
 	AnyTiles3DEntry,
@@ -69,10 +69,10 @@ const hexToRgba = (color: string, alpha = 255): [number, number, number, number]
 const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
 
 const isCloneableDeckLayer = (layer: unknown): layer is CloneableDeckLayer =>
-	typeof layer === 'object' &&
-	layer !== null &&
-	'clone' in layer &&
-	typeof (layer as { clone?: unknown; }).clone === 'function';
+	typeof layer === 'object'
+	&& layer !== null
+	&& 'clone' in layer
+	&& typeof (layer as { clone?: unknown; }).clone === 'function';
 
 const getTiles3DMeshStyleSignature = (style: Tiles3DMeshStyle) =>
 	[

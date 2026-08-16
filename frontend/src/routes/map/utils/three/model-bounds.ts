@@ -7,13 +7,13 @@ import type { MeshStyle, ProjectedModelGeoreference } from '$routes/map/data/typ
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import {
 	georeferenceCornerToLocal,
+	type ResolvedProjectedModelPlacement,
 	resolveFbxUnitScaleMeters,
-	resolveProjectedModelPlacementFromBox,
-	type ResolvedProjectedModelPlacement
+	resolveProjectedModelPlacementFromBox
 } from '$routes/map/utils/three/model-georeference';
-import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 
 export interface ComputeUploadedModelMetaParams {
@@ -130,8 +130,10 @@ const ensureFbxLoaderWindowShim = () => {
 		createElementNS: (namespace: string, name: string) => unknown;
 		createElement: (name: string) => unknown;
 	};
-	type FbxLoaderWindowShim = Window &
-		typeof globalThis & {
+	type FbxLoaderWindowShim =
+		& Window
+		& typeof globalThis
+		& {
 			innerWidth?: number;
 			innerHeight?: number;
 			document?: FbxLoaderDocumentShim;
@@ -177,8 +179,7 @@ const ensureFbxLoaderWindowShim = () => {
 
 	const existingWindow = globalScope.window;
 	const existingDocument = globalScope.document ?? existingWindow?.document;
-	const documentShim =
-		existingDocument
+	const documentShim = existingDocument
 		?? {
 			createElementNS: (_namespace: string, name: string) => {
 				if (name === 'img') {
@@ -200,8 +201,7 @@ const ensureFbxLoaderWindowShim = () => {
 			}
 		};
 
-	const windowShim =
-		existingWindow
+	const windowShim = existingWindow
 		?? ({
 			innerWidth: 1,
 			innerHeight: 1,
@@ -415,8 +415,8 @@ const parseFbxObject = async (
 	if (normalizeToLocalOrigin) {
 		normalizeObjectToLocalOrigin(object);
 	}
-	const animations =
-		(object as THREE.Group & { animations?: THREE.AnimationClip[]; }).animations ?? [];
+	const animations = (object as THREE.Group & { animations?: THREE.AnimationClip[]; }).animations
+		?? [];
 	return {
 		object,
 		animationNames: animations.map((clip, index) => clip.name || `Animation ${index + 1}`)
@@ -566,17 +566,16 @@ export const computeUploadedModelMeta = async ({
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}
 
-	const formatUnitScaleMeters =
-		format === 'fbx'
-			? resolveFbxUnitScaleMeters(
-				box,
-				Number(
-					(object.userData as {
-						unitScaleFactor?: number;
-					}).unitScaleFactor
-				)
+	const formatUnitScaleMeters = format === 'fbx'
+		? resolveFbxUnitScaleMeters(
+			box,
+			Number(
+				(object.userData as {
+					unitScaleFactor?: number;
+				}).unitScaleFactor
 			)
-			: 1;
+		)
+		: 1;
 	const resolvedPlacement = projectedModelEpsg
 		? resolveProjectedModelPlacementFromBox(
 			box,

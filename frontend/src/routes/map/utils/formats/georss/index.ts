@@ -1,5 +1,10 @@
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
-import type { AnyGeometry, LineStringGeometry, PointGeometry, PolygonGeometry } from '$routes/map/types/geometry';
+import type {
+	AnyGeometry,
+	LineStringGeometry,
+	PointGeometry,
+	PolygonGeometry
+} from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 import { parseXmlDocument } from '$routes/map/utils/formats/kml/xml';
 
@@ -257,8 +262,8 @@ const parseGeoRssSimpleGeometry = (element: Element): ParsedGeometryResult | nul
 const getGeometrySrsName = (geometryElement: Element) => {
 	return (
 		geometryElement.getAttribute('srsName')
-		?? geometryElement.getAttributeNS(null, 'srsName')
-		?? null
+			?? geometryElement.getAttributeNS(null, 'srsName')
+			?? null
 	);
 };
 
@@ -300,8 +305,7 @@ const parseGmlCoordinateSeries = (element: Element, order: CoordinateOrder) => {
 };
 
 const parseGmlPoint = (element: Element, order: CoordinateOrder): PointGeometry => {
-	const position =
-		getDirectChildTextByName(element, 'pos', GML_NAMESPACE)
+	const position = getDirectChildTextByName(element, 'pos', GML_NAMESPACE)
 		?? getDirectChildTextByName(element, 'coordinates', GML_NAMESPACE);
 
 	if (!position) {
@@ -358,7 +362,9 @@ const parseGmlPolygon = (element: Element, order: CoordinateOrder): PolygonGeome
 		coordinates: [
 			parseGmlLinearRing(outerRingElement, order),
 			...innerBoundaries
-				.map((boundary) => getDirectChildElementByName(boundary, 'LinearRing', GML_NAMESPACE))
+				.map((boundary) =>
+					getDirectChildElementByName(boundary, 'LinearRing', GML_NAMESPACE)
+				)
 				.filter((ring): ring is Element => ring !== undefined)
 				.map((ring) => parseGmlLinearRing(ring, order))
 		]
@@ -430,8 +436,7 @@ const parseGeoRssGmlGeometry = (element: Element): ParsedGeometryResult | null =
 
 const parseW3cGeoGeometry = (element: Element): ParsedGeometryResult | null => {
 	const latText = getDirectChildTextByName(element, 'lat', W3C_GEO_NAMESPACE);
-	const longText =
-		getDirectChildTextByName(element, 'long', W3C_GEO_NAMESPACE)
+	const longText = getDirectChildTextByName(element, 'long', W3C_GEO_NAMESPACE)
 		?? getDirectChildTextByName(element, 'lon', W3C_GEO_NAMESPACE);
 
 	if (latText && longText) {
@@ -449,8 +454,7 @@ const parseW3cGeoGeometry = (element: Element): ParsedGeometryResult | null => {
 	if (!geoPoint) return null;
 
 	const pointLat = getDirectChildTextByName(geoPoint, 'lat', W3C_GEO_NAMESPACE);
-	const pointLong =
-		getDirectChildTextByName(geoPoint, 'long', W3C_GEO_NAMESPACE)
+	const pointLong = getDirectChildTextByName(geoPoint, 'long', W3C_GEO_NAMESPACE)
 		?? getDirectChildTextByName(geoPoint, 'lon', W3C_GEO_NAMESPACE);
 
 	if (!pointLat || !pointLong) {
@@ -482,7 +486,9 @@ const extractLink = (element: Element) => {
 
 const extractCategories = (element: Element) => {
 	const categories = getDirectChildElementsByName(element, 'category')
-		.map((category) => category.getAttribute('term')?.trim() ?? category.textContent?.trim() ?? '')
+		.map((category) =>
+			category.getAttribute('term')?.trim() ?? category.textContent?.trim() ?? ''
+		)
 		.filter(Boolean);
 
 	return categories.length > 0 ? categories.join(', ') : undefined;
@@ -497,14 +503,13 @@ const parseOptionalNumber = (text: string | undefined) => {
 const extractProperties = (element: Element): FeatureProp => {
 	const properties: FeatureProp = {};
 	const title = getDirectChildTextByName(element, 'title');
-	const description =
-		getDirectChildTextByName(element, 'description')
+	const description = getDirectChildTextByName(element, 'description')
 		?? getDirectChildTextByName(element, 'summary')
 		?? getDirectChildTextByName(element, 'content');
 	const link = extractLink(element);
-	const guid = getDirectChildTextByName(element, 'guid') ?? getDirectChildTextByName(element, 'id');
-	const published =
-		getDirectChildTextByName(element, 'pubDate')
+	const guid = getDirectChildTextByName(element, 'guid')
+		?? getDirectChildTextByName(element, 'id');
+	const published = getDirectChildTextByName(element, 'pubDate')
 		?? getDirectChildTextByName(element, 'published')
 		?? getDirectChildTextByName(element, 'updated');
 	const category = extractCategories(element);
@@ -513,7 +518,9 @@ const extractProperties = (element: Element): FeatureProp => {
 	const featureName = getDirectChildTextByName(element, 'featurename', GEORSS_NAMESPACE);
 	const elev = parseOptionalNumber(getDirectChildTextByName(element, 'elev', GEORSS_NAMESPACE));
 	const floor = parseOptionalNumber(getDirectChildTextByName(element, 'floor', GEORSS_NAMESPACE));
-	const radius = parseOptionalNumber(getDirectChildTextByName(element, 'radius', GEORSS_NAMESPACE));
+	const radius = parseOptionalNumber(
+		getDirectChildTextByName(element, 'radius', GEORSS_NAMESPACE)
+	);
 
 	if (title) properties.title = title;
 	if (description) properties.description = description;
@@ -552,21 +559,24 @@ const collectFeatureHosts = (doc: Document) => {
 		return itemElements;
 	}
 
-	const hosts = [doc.documentElement, ...getElementsByLocalName(doc, doc.documentElement.localName ?? '')]
+	const hosts = [
+		doc.documentElement,
+		...getElementsByLocalName(doc, doc.documentElement.localName ?? '')
+	]
 		.filter((element) => !!element && hasDirectSpatialChild(element));
 
 	return Array.from(new Set(hosts));
 };
 
 const parseFeatureFromElement = (element: Element): ParsedFeatureResult | null => {
-	const parsedGeometry =
-		parseGeoRssSimpleGeometry(element)
+	const parsedGeometry = parseGeoRssSimpleGeometry(element)
 		?? parseGeoRssGmlGeometry(element)
 		?? parseW3cGeoGeometry(element);
 
 	if (!parsedGeometry) return null;
 
-	const featureId = getDirectChildTextByName(element, 'guid') ?? getDirectChildTextByName(element, 'id');
+	const featureId = getDirectChildTextByName(element, 'guid')
+		?? getDirectChildTextByName(element, 'id');
 
 	return {
 		feature: {
@@ -612,12 +622,14 @@ export const geoRssFileToGeoJson = async (file: File): Promise<GeoRssParseResult
 
 			features.push(parsedFeature.feature);
 			sourceCrsName ??= parsedFeature.sourceCrsName;
-			requiresManualCrsSelection =
-				requiresManualCrsSelection || parsedFeature.requiresManualCrsSelection;
+			requiresManualCrsSelection = requiresManualCrsSelection
+				|| parsedFeature.requiresManualCrsSelection;
 		}
 
 		if (features.length === 0) {
-			throw new GeoRssParseError('GeoRSSファイルに描画可能なフィーチャが見つかりませんでした');
+			throw new GeoRssParseError(
+				'GeoRSSファイルに描画可能なフィーチャが見つかりませんでした'
+			);
 		}
 
 		return {

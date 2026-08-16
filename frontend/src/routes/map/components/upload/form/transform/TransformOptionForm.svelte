@@ -2,8 +2,6 @@
 	import turfBbox from '@turf/bbox';
 	import turfCenter from '@turf/center';
 	import turfNearestPoint from '@turf/nearest-point';
-	import maplibregl from 'maplibre-gl';
-	import type { ImageSource } from 'maplibre-gl';
 	import { untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
@@ -35,6 +33,8 @@
 	import type { PointGeometry, PolygonGeometry } from '$routes/map/types/geometry';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid, isFiniteBbox } from '$routes/map/utils/map/bbox';
+	import type { ImageSource } from '$routes/map/utils/maplibre';
+	import maplibregl from '$routes/map/utils/maplibre';
 	import { transformBbox } from '$routes/map/utils/proj';
 	import {
 		getEpsgInfoArray,
