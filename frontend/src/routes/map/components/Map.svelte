@@ -60,6 +60,7 @@
 		WcsViewportTooBroadError
 	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
+	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 	import maplibregl from '$routes/map/utils/maplibre';
@@ -289,8 +290,8 @@
 						source: 'zone_bbox',
 						filter: ['all', ['==', '$type', 'Polygon'], ['==', 'code', selectedEpsgCode]],
 						paint: {
-							'fill-color': 'red',
-							'fill-opacity': 0.5
+							'fill-pattern': ZONE_BBOX_FILL_PATTERN_ID,
+							'fill-opacity': 1
 						}
 					},
 					{
@@ -884,6 +885,7 @@
 	const syncHighlightLayers = () => {
 		if (showDataEntry || isZoneRegistrationActive) {
 			mapStore.clearHighlightLayers();
+			mapStore.syncPatternAnimation();
 			return;
 		}
 

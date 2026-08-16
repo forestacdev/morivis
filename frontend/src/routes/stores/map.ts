@@ -470,6 +470,7 @@ const createMapStore = () => {
 		map.on('style.load', () => {
 			if (!map) return;
 
+			ensureHighlightAnimationImages(map);
 			isStyleLoadEvent.set(map);
 		});
 
@@ -1088,6 +1089,11 @@ const createMapStore = () => {
 		HighlightLayerRegistry.syncPatternAnimation(currentMap, currentSelection);
 	};
 
+	const syncPatternAnimation = () => {
+		if (!map || !isMapValid(map)) return;
+		HighlightLayerRegistry.syncPatternAnimation(map, get(selectedHighlightData));
+	};
+
 	// クリックマーカーを追加するメソッド
 	const addLockonMarker = (element: HTMLElement, lngLat: LngLat) => {
 		if (!map || !isMapValid(map)) return;
@@ -1628,6 +1634,7 @@ const createMapStore = () => {
 		setDeckVectorColor,
 		setModelAnimationState,
 		setHighlightLayers,
+		syncPatternAnimation,
 		clearHighlightLayers,
 		setFilter,
 		setLayoutProperty,

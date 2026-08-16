@@ -13,8 +13,12 @@ import type { SelectedHighlightData } from '$routes/stores';
 export const HIGHLIGHT_LAYER_PREFIX = '@highlight_';
 const HIGHLIGHT_FILL_PATTERN_ID_PREFIX = 'morivis-highlight-fill-pattern';
 const HIGHLIGHT_LINE_PATTERN_ID_PREFIX = 'morivis-highlight-line-pattern';
+const ZONE_BBOX_FILL_PATTERN_ID_PREFIX = 'morivis-zone-bbox-fill-pattern';
 export const HIGHLIGHT_FILL_PATTERN_ID = `${HIGHLIGHT_FILL_PATTERN_ID_PREFIX}-0`;
 export const HIGHLIGHT_LINE_PATTERN_ID = `${HIGHLIGHT_LINE_PATTERN_ID_PREFIX}-0`;
+export const ZONE_BBOX_FILL_PATTERN_ID = `${ZONE_BBOX_FILL_PATTERN_ID_PREFIX}-0`;
+const ZONE_BBOX_LAYER_ID = '@zone_bbox_select';
+const ZONE_BBOX_PATTERN_COLOR = '#ff0000';
 
 const HIGHLIGHT_FILL_PATTERN_SIZE = 64;
 const HIGHLIGHT_FILL_PATTERN_SPACING = 16;
@@ -178,10 +182,15 @@ const createPatternCanvas = (width: number, height: number) => {
 	return null;
 };
 
-const createPatternFrameId = (patternKind: HighlightAnimatedPatternKind, frameIndex: number) => {
-	const prefix =
-		patternKind === 'fill' ? HIGHLIGHT_FILL_PATTERN_ID_PREFIX : HIGHLIGHT_LINE_PATTERN_ID_PREFIX;
-	return `${prefix}-${frameIndex}`;
+const createPatternFrameId = (patternIdPrefix: string, frameIndex: number) => {
+	return `${patternIdPrefix}-${frameIndex}`;
+};
+
+const getHighlightPatternFrameId = (patternKind: HighlightAnimatedPatternKind, frameIndex: number) => {
+	return createPatternFrameId(
+		patternKind === 'fill' ? HIGHLIGHT_FILL_PATTERN_ID_PREFIX : HIGHLIGHT_LINE_PATTERN_ID_PREFIX,
+		frameIndex
+	);
 };
 
 const getPatternFrameCount = (patternKind: HighlightAnimatedPatternKind) => {
@@ -199,15 +208,17 @@ const getPatternCycleDuration = (patternKind: HighlightAnimatedPatternKind) => {
 const createEmptyPatternFrames = ({
 	width,
 	height,
-	patternKind
+	patternKind,
+	patternIdPrefix
 }: {
 	width: number;
 	height: number;
 	patternKind: HighlightAnimatedPatternKind;
+	patternIdPrefix: string;
 }) => {
 	const frameCount = getPatternFrameCount(patternKind);
 	return Array.from({ length: frameCount }, (_, frameIndex) => ({
-		id: createPatternFrameId(patternKind, frameIndex),
+		id: createPatternFrameId(patternIdPrefix, frameIndex),
 		image: {
 			width,
 			height,
@@ -221,15 +232,19 @@ const createPatternFrames = ({
 	height,
 	fragmentSource,
 	frameCount,
-	patternKind
+	patternKind,
+	patternIdPrefix,
+	colorHex
 }: {
 	width: number;
 	height: number;
 	fragmentSource: string;
 	frameCount: number;
 	patternKind: HighlightAnimatedPatternKind;
+	patternIdPrefix: string;
+	colorHex: string;
 }) => {
-	const color = hexToRgb(HIGHLIGHT_LAYER_COLOR);
+	const color = hexToRgb(colorHex);
 	const colorUnit = {
 		r: color.r / 255,
 		g: color.g / 255,
@@ -238,7 +253,7 @@ const createPatternFrames = ({
 	const canvas = createPatternCanvas(width, height);
 	if (!canvas) {
 		console.error('Failed to create pattern canvas.');
-		return createEmptyPatternFrames({ width, height, patternKind });
+		return createEmptyPatternFrames({ width, height, patternKind, patternIdPrefix });
 	}
 
 	const gl = canvas.getContext('webgl2', {
@@ -248,7 +263,7 @@ const createPatternFrames = ({
 	});
 	if (!gl) {
 		console.error('WebGL2 is not available for animated highlight patterns.');
-		return createEmptyPatternFrames({ width, height, patternKind });
+		return createEmptyPatternFrames({ width, height, patternKind, patternIdPrefix });
 	}
 
 	let program: WebGLProgram | null = null;
@@ -286,7 +301,7 @@ const createPatternFrames = ({
 			gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
 			frames.push({
-				id: createPatternFrameId(patternKind, frameIndex),
+				id: createPatternFrameId(patternIdPrefix, frameIndex),
 				image: {
 					width,
 					height,
@@ -298,7 +313,7 @@ const createPatternFrames = ({
 		return frames;
 	} catch (error) {
 		console.error('Failed to initialize animated highlight pattern shader.', error);
-		return createEmptyPatternFrames({ width, height, patternKind });
+		return createEmptyPatternFrames({ width, height, patternKind, patternIdPrefix });
 	} finally {
 		if (program) {
 			gl.deleteProgram(program);
@@ -312,7 +327,9 @@ const createFillPatternFrames = () => {
 		height: HIGHLIGHT_FILL_PATTERN_SIZE,
 		fragmentSource: HIGHLIGHT_FILL_PATTERN_FRAGMENT_SOURCE,
 		frameCount: HIGHLIGHT_FILL_PATTERN_FRAME_COUNT,
-		patternKind: 'fill'
+		patternKind: 'fill',
+		patternIdPrefix: HIGHLIGHT_FILL_PATTERN_ID_PREFIX,
+		colorHex: HIGHLIGHT_LAYER_COLOR
 	});
 };
 
@@ -322,7 +339,21 @@ const createLinePatternFrames = () => {
 		height: HIGHLIGHT_LINE_PATTERN_HEIGHT,
 		fragmentSource: HIGHLIGHT_LINE_PATTERN_FRAGMENT_SOURCE,
 		frameCount: HIGHLIGHT_LINE_PATTERN_FRAME_COUNT,
-		patternKind: 'line'
+		patternKind: 'line',
+		patternIdPrefix: HIGHLIGHT_LINE_PATTERN_ID_PREFIX,
+		colorHex: HIGHLIGHT_LAYER_COLOR
+	});
+};
+
+const createZoneBboxFillPatternFrames = () => {
+	return createPatternFrames({
+		width: HIGHLIGHT_FILL_PATTERN_SIZE,
+		height: HIGHLIGHT_FILL_PATTERN_SIZE,
+		fragmentSource: HIGHLIGHT_FILL_PATTERN_FRAGMENT_SOURCE,
+		frameCount: HIGHLIGHT_FILL_PATTERN_FRAME_COUNT,
+		patternKind: 'fill',
+		patternIdPrefix: ZONE_BBOX_FILL_PATTERN_ID_PREFIX,
+		colorHex: ZONE_BBOX_PATTERN_COLOR
 	});
 };
 
@@ -377,6 +408,12 @@ export const ensureHighlightAnimationImages = (map: MapLibreMap) => {
 
 	if (!map.hasImage(HIGHLIGHT_LINE_PATTERN_ID)) {
 		createLinePatternFrames().forEach((frame) => {
+			map.addImage(frame.id, frame.image);
+		});
+	}
+
+	if (!map.hasImage(ZONE_BBOX_FILL_PATTERN_ID)) {
+		createZoneBboxFillPatternFrames().forEach((frame) => {
 			map.addImage(frame.id, frame.image);
 		});
 	}
@@ -539,8 +576,12 @@ class HighlightLayerRegistry {
 	private static resetPatternAnimation = (map: MapLibreMap) => {
 		this.getPatternItems().forEach((item) => {
 			if (!item.patternKind || item.patternKind === 'point') return;
-			this.setPatternFrame(map, item, createPatternFrameId(item.patternKind, 0));
+			this.setPatternFrame(map, item, getHighlightPatternFrameId(item.patternKind, 0));
 		});
+
+		if (map.getLayer(ZONE_BBOX_LAYER_ID)) {
+			setPaintProperty(map, ZONE_BBOX_LAYER_ID, 'fill-pattern', ZONE_BBOX_FILL_PATTERN_ID);
+		}
 	};
 
 	private static cancelPointAnimation = (map: MapLibreMap) => {
@@ -632,13 +673,14 @@ class HighlightLayerRegistry {
 		pointAnimationFrameIds.set(map, animationFrameId);
 	};
 
-	private static startPatternAnimation = (map: MapLibreMap, logicalLayerId: string) => {
+	private static startPatternAnimation = (map: MapLibreMap, logicalLayerId: string | null) => {
 		if (typeof requestAnimationFrame !== 'function') return;
 
-		const patternItems = this.getPatternItems(logicalLayerId);
+		const patternItems = logicalLayerId ? this.getPatternItems(logicalLayerId) : [];
 		const fillItems = patternItems.filter((item) => item.patternKind === 'fill');
 		const lineItems = patternItems.filter((item) => item.patternKind === 'line');
-		if (fillItems.length === 0 && lineItems.length === 0) return;
+		const hasZoneLayer = Boolean(map.getLayer(ZONE_BBOX_LAYER_ID));
+		if (fillItems.length === 0 && lineItems.length === 0 && !hasZoneLayer) return;
 
 		let lastFillFrame = -1;
 		let lastLineFrame = -1;
@@ -646,15 +688,23 @@ class HighlightLayerRegistry {
 		const animate = () => {
 			const now = getAnimationNow();
 
-			if (fillItems.length > 0) {
+			if (fillItems.length > 0 || hasZoneLayer) {
 				const fillFrame = Math.floor(
 					((now % HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION) / HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION) *
 						HIGHLIGHT_FILL_PATTERN_FRAME_COUNT
 				);
 				if (fillFrame !== lastFillFrame) {
 					fillItems.forEach((item) => {
-						this.setPatternFrame(map, item, createPatternFrameId('fill', fillFrame));
+						this.setPatternFrame(map, item, getHighlightPatternFrameId('fill', fillFrame));
 					});
+					if (hasZoneLayer) {
+						setPaintProperty(
+							map,
+							ZONE_BBOX_LAYER_ID,
+							'fill-pattern',
+							createPatternFrameId(ZONE_BBOX_FILL_PATTERN_ID_PREFIX, fillFrame)
+						);
+					}
 					lastFillFrame = fillFrame;
 				}
 			}
@@ -666,7 +716,7 @@ class HighlightLayerRegistry {
 				);
 				if (lineFrame !== lastLineFrame) {
 					lineItems.forEach((item) => {
-						this.setPatternFrame(map, item, createPatternFrameId('line', lineFrame));
+						this.setPatternFrame(map, item, getHighlightPatternFrameId('line', lineFrame));
 					});
 					lastLineFrame = lineFrame;
 				}
@@ -709,10 +759,12 @@ class HighlightLayerRegistry {
 		this.resetPatternAnimation(map);
 		this.resetPointAnimation(map);
 
-		if (!selected) return;
+		if (!selected && !map.getLayer(ZONE_BBOX_LAYER_ID)) return;
 
-		this.startPatternAnimation(map, selected.layerId);
-		this.startPointAnimation(map, selected.layerId);
+		this.startPatternAnimation(map, selected?.layerId ?? null);
+		if (selected) {
+			this.startPointAnimation(map, selected.layerId);
+		}
 	};
 
 	static getFilterUpdates = (selected: SelectedHighlightData | null) => {
