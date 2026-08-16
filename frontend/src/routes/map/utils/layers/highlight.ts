@@ -90,7 +90,8 @@ void main() {
 	float wrappedDistance = min(distanceToBand, u_resolution.x - distanceToBand);
 	float band = 1.0 - smoothstep(${(HIGHLIGHT_LINE_PATTERN_BAND_WIDTH - 6).toFixed(1)}, ${HIGHLIGHT_LINE_PATTERN_BAND_WIDTH.toFixed(1)}, wrappedDistance);
 	float alpha = mix(0.28, 1.0, band);
-	fragColor = vec4(u_color * alpha, alpha);
+	vec3 brightColor = mix(u_color, vec3(1.0), 0.22);
+	fragColor = vec4(brightColor * alpha, alpha);
 }`;
 
 const pointAnimationFrameIds = new WeakMap<MapLibreMap, number>();
@@ -264,8 +265,7 @@ const createPatternFrames = ({
 
 		for (let frameIndex = 0; frameIndex < frameCount; frameIndex += 1) {
 			const data = new Uint8Array(width * height * 4);
-			const time =
-				(frameIndex / frameCount) * (getPatternCycleDuration(patternKind) / 1000);
+			const time = (frameIndex / frameCount) * (getPatternCycleDuration(patternKind) / 1000);
 
 			gl.clearColor(0, 0, 0, 0);
 			gl.clear(gl.COLOR_BUFFER_BIT);
@@ -465,8 +465,8 @@ class HighlightLayerRegistry {
 
 	private static getPatternItems = (logicalLayerId?: string) => {
 		return this.items.filter((item) => {
-			const isAnimatedPattern = item.role === 'highlight'
-				&& (item.patternKind === 'fill' || item.patternKind === 'line');
+			const isAnimatedPattern =
+				item.role === 'highlight' && (item.patternKind === 'fill' || item.patternKind === 'line');
 			if (!isAnimatedPattern) return false;
 			return logicalLayerId ? item.logicalLayerId === logicalLayerId : true;
 		});
@@ -648,8 +648,8 @@ class HighlightLayerRegistry {
 
 			if (fillItems.length > 0) {
 				const fillFrame = Math.floor(
-					((now % HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION) / HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION)
-						* HIGHLIGHT_FILL_PATTERN_FRAME_COUNT
+					((now % HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION) / HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION) *
+						HIGHLIGHT_FILL_PATTERN_FRAME_COUNT
 				);
 				if (fillFrame !== lastFillFrame) {
 					fillItems.forEach((item) => {
@@ -661,8 +661,8 @@ class HighlightLayerRegistry {
 
 			if (lineItems.length > 0) {
 				const lineFrame = Math.floor(
-					((now % HIGHLIGHT_LINE_PATTERN_CYCLE_DURATION) / HIGHLIGHT_LINE_PATTERN_CYCLE_DURATION)
-						* HIGHLIGHT_LINE_PATTERN_FRAME_COUNT
+					((now % HIGHLIGHT_LINE_PATTERN_CYCLE_DURATION) / HIGHLIGHT_LINE_PATTERN_CYCLE_DURATION) *
+						HIGHLIGHT_LINE_PATTERN_FRAME_COUNT
 				);
 				if (lineFrame !== lastLineFrame) {
 					lineItems.forEach((item) => {
