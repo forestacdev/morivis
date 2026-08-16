@@ -1,50 +1,160 @@
+import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
+import { getMorivisLogicalLayerId, getSublayerBaseId } from '$routes/map/utils/layers/id';
 import type {
+	AllLayoutProperties,
+	AllPaintProperties,
 	ExpressionSpecification,
 	FilterSpecification,
-	Map as MapLibreMap
+	Map as MapLibreMap,
+	StyleImageInterface
 } from '$routes/map/utils/maplibre';
-
-import { getMorivisLogicalLayerId, getSublayerBaseId } from '$routes/map/utils/layers/id';
 import type { SelectedHighlightData } from '$routes/stores';
-// import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 
 export const HIGHLIGHT_LAYER_PREFIX = '@highlight_';
-// NOTE: ハイライトを単純な塗りつぶしに戻したため、テクスチャ生成一式は退避中。
-// const HIGHLIGHT_FILL_PATTERN_PREFIX = 'highlight-fill-pattern-';
-// const HIGHLIGHT_LINE_PATTERN_PREFIX = 'highlight-line-pattern-';
-// const HIGHLIGHT_FILL_PATTERN_FRAME_COUNT = 16;
-// const HIGHLIGHT_FILL_PATTERN_SIZE = 32;
-// const HIGHLIGHT_FILL_PATTERN_SPACING = 8;
-// const HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH = 2;
-// const HIGHLIGHT_LINE_PATTERN_WIDTH = 32;
-// const HIGHLIGHT_LINE_PATTERN_HEIGHT = 32;
-// const HIGHLIGHT_LINE_PATTERN_BAND_WIDTH = 12;
-// const highlightFillPatternImageCache = new Map<
-// 	string,
-// 	{ width: number; height: number; data: Uint8Array }
-// >();
-//
-// export const HIGHLIGHT_FILL_PATTERN_IDS = Array.from(
-// 	{ length: HIGHLIGHT_FILL_PATTERN_FRAME_COUNT },
-// 	(_, index) => `${HIGHLIGHT_FILL_PATTERN_PREFIX}${index}`
-// );
-// export const HIGHLIGHT_LINE_PATTERN_IDS = Array.from(
-// 	{ length: HIGHLIGHT_FILL_PATTERN_FRAME_COUNT },
-// 	(_, index) => `${HIGHLIGHT_LINE_PATTERN_PREFIX}${index}`
-// );
-// export const HIGHLIGHT_FILL_PATTERN_ID = HIGHLIGHT_FILL_PATTERN_IDS[0];
-// export const HIGHLIGHT_LINE_PATTERN_ID = HIGHLIGHT_LINE_PATTERN_IDS[0];
-//
-// const hexToRgb = (hex: string) => {
-// 	const normalized = hex.replace('#', '');
-// 	const value = Number.parseInt(normalized, 16);
-//
-// 	return {
-// 		r: (value >> 16) & 255,
-// 		g: (value >> 8) & 255,
-// 		b: value & 255
-// 	};
-// };
+export const HIGHLIGHT_FILL_PATTERN_ID = 'morivis-highlight-fill-pattern';
+export const HIGHLIGHT_LINE_PATTERN_ID = 'morivis-highlight-line-pattern';
+
+const HIGHLIGHT_FILL_PATTERN_SIZE = 64;
+const HIGHLIGHT_FILL_PATTERN_SPACING = 16;
+const HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH = 4;
+const HIGHLIGHT_LINE_PATTERN_WIDTH = 64;
+const HIGHLIGHT_LINE_PATTERN_HEIGHT = 16;
+const HIGHLIGHT_LINE_PATTERN_BAND_WIDTH = 18;
+const HIGHLIGHT_POINT_PULSE_DURATION = 1200;
+const HIGHLIGHT_POINT_PULSE_SCALE = 0.18;
+const HIGHLIGHT_POINT_PULSE_OPACITY_DELTA = 0.18;
+
+const pointAnimationFrameIds = new WeakMap<MapLibreMap, number>();
+const pointAnimationCleanupRegistered = new WeakSet<MapLibreMap>();
+
+const hexToRgb = (hex: string) => {
+	const normalized = hex.replace('#', '');
+	const value = Number.parseInt(normalized, 16);
+
+	return {
+		r: (value >> 16) & 255,
+		g: (value >> 8) & 255,
+		b: value & 255
+	};
+};
+
+const getAnimationNow = () => {
+	if (typeof performance !== 'undefined') {
+		return performance.now();
+	}
+
+	return Date.now();
+};
+
+const setPixel = (
+	data: Uint8Array | Uint8ClampedArray,
+	index: number,
+	color: { r: number; g: number; b: number; },
+	alpha: number
+) => {
+	data[index] = color.r;
+	data[index + 1] = color.g;
+	data[index + 2] = color.b;
+	data[index + 3] = alpha;
+};
+
+const createAnimatedPatternImage = ({
+	width,
+	height,
+	renderFrame
+}: {
+	width: number;
+	height: number;
+	renderFrame: (data: Uint8Array, now: number) => void;
+}): StyleImageInterface => {
+	let mapRef: MapLibreMap | null = null;
+	const data = new Uint8Array(width * height * 4);
+
+	return {
+		width,
+		height,
+		data,
+		onAdd: (map) => {
+			mapRef = map;
+		},
+		render: () => {
+			renderFrame(data, getAnimationNow());
+			mapRef?.triggerRepaint();
+			return true;
+		},
+		onRemove: () => {
+			mapRef = null;
+		}
+	};
+};
+
+const createAnimatedFillPatternImage = (): StyleImageInterface => {
+	const color = hexToRgb(HIGHLIGHT_LAYER_COLOR);
+
+	return createAnimatedPatternImage({
+		width: HIGHLIGHT_FILL_PATTERN_SIZE,
+		height: HIGHLIGHT_FILL_PATTERN_SIZE,
+		renderFrame: (data, now) => {
+			const phaseOffset = Math.floor(now * 0.02);
+
+			for (let y = 0; y < HIGHLIGHT_FILL_PATTERN_SIZE; y += 1) {
+				for (let x = 0; x < HIGHLIGHT_FILL_PATTERN_SIZE; x += 1) {
+					const targetIndex = (y * HIGHLIGHT_FILL_PATTERN_SIZE + x) * 4;
+					const diagonal = mod(x + y + phaseOffset, HIGHLIGHT_FILL_PATTERN_SPACING);
+					const distanceToStripe = Math.min(
+						diagonal,
+						HIGHLIGHT_FILL_PATTERN_SPACING - diagonal
+					);
+					const alpha = distanceToStripe <= HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH ? 196 : 88;
+					setPixel(data, targetIndex, color, alpha);
+				}
+			}
+		}
+	});
+};
+
+const createAnimatedLinePatternImage = (): StyleImageInterface => {
+	const color = hexToRgb(HIGHLIGHT_LAYER_COLOR);
+
+	return createAnimatedPatternImage({
+		width: HIGHLIGHT_LINE_PATTERN_WIDTH,
+		height: HIGHLIGHT_LINE_PATTERN_HEIGHT,
+		renderFrame: (data, now) => {
+			const bandCenter = Math.floor((now * 0.045) % HIGHLIGHT_LINE_PATTERN_WIDTH);
+
+			for (let y = 0; y < HIGHLIGHT_LINE_PATTERN_HEIGHT; y += 1) {
+				for (let x = 0; x < HIGHLIGHT_LINE_PATTERN_WIDTH; x += 1) {
+					const targetIndex = (y * HIGHLIGHT_LINE_PATTERN_WIDTH + x) * 4;
+					const distance = Math.abs(x - bandCenter);
+					const wrappedDistance = Math.min(
+						distance,
+						HIGHLIGHT_LINE_PATTERN_WIDTH - distance
+					);
+					const alpha = wrappedDistance <= HIGHLIGHT_LINE_PATTERN_BAND_WIDTH
+						? Math.max(144, 255 - wrappedDistance * 8)
+						: 84;
+					setPixel(data, targetIndex, color, alpha);
+				}
+			}
+		}
+	});
+};
+
+const ensurePointAnimationCleanup = (map: MapLibreMap) => {
+	if (pointAnimationCleanupRegistered.has(map)) return;
+
+	pointAnimationCleanupRegistered.add(map);
+	map.on('remove', () => {
+		const animationFrameId = pointAnimationFrameIds.get(map);
+		if (
+			animationFrameId !== undefined
+			&& typeof cancelAnimationFrame === 'function'
+		) {
+			cancelAnimationFrame(animationFrameId);
+		}
+		pointAnimationFrameIds.delete(map);
+	});
+};
 
 export const getHighlightLayerId = (layerId: string) => {
 	return `${HIGHLIGHT_LAYER_PREFIX}${layerId}`;
@@ -65,107 +175,17 @@ export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unkno
 	return getMorivisLogicalLayerId(layer.metadata) ?? getBaseLayerId(layer.id);
 };
 
-// export const isHighlightFillPatternId = (id: string) => {
-// 	return id.startsWith(HIGHLIGHT_FILL_PATTERN_PREFIX);
-// };
-//
-// export const isHighlightLinePatternId = (id: string) => {
-// 	return id.startsWith(HIGHLIGHT_LINE_PATTERN_PREFIX);
-// };
-//
-// const getHighlightFillPatternFrame = (id: string) => {
-// 	if (!isHighlightFillPatternId(id)) return 0;
-// 	const frame = Number.parseInt(id.slice(HIGHLIGHT_FILL_PATTERN_PREFIX.length), 10);
-// 	return Number.isNaN(frame) ? 0 : frame;
-// };
-//
-// const getHighlightLinePatternFrame = (id: string) => {
-// 	if (!isHighlightLinePatternId(id)) return 0;
-// 	const frame = Number.parseInt(id.slice(HIGHLIGHT_LINE_PATTERN_PREFIX.length), 10);
-// 	return Number.isNaN(frame) ? 0 : frame;
-// };
-//
-// export const createHighlightFillPatternImage = (id: string, frame = 0) => {
-// 	const resolvedFrame = isHighlightFillPatternId(id)
-// 		? getHighlightFillPatternFrame(id)
-// 		: isHighlightLinePatternId(id)
-// 			? getHighlightLinePatternFrame(id)
-// 			: frame;
-// 	const cacheKey = isHighlightLinePatternId(id)
-// 		? `${HIGHLIGHT_LINE_PATTERN_PREFIX}${resolvedFrame}`
-// 		: `${HIGHLIGHT_FILL_PATTERN_PREFIX}${resolvedFrame}`;
-// 	const cachedImage = highlightFillPatternImageCache.get(cacheKey);
-// 	if (cachedImage) return cachedImage;
-//
-// 	if (!isHighlightFillPatternId(id) && !isHighlightLinePatternId(id)) return null;
-//
-// 	const { r, g, b } = hexToRgb(HIGHLIGHT_LAYER_COLOR);
-// 	const frameOffset =
-// 		((resolvedFrame % HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) +
-// 			HIGHLIGHT_FILL_PATTERN_FRAME_COUNT) %
-// 		HIGHLIGHT_FILL_PATTERN_FRAME_COUNT;
-//
-// 	if (isHighlightLinePatternId(id)) {
-// 		const width = HIGHLIGHT_LINE_PATTERN_WIDTH;
-// 		const height = HIGHLIGHT_LINE_PATTERN_HEIGHT;
-// 		const bytesPerPixel = 4;
-// 		const data = new Uint8Array(width * height * bytesPerPixel);
-// 		const bandOffset = Math.floor((frameOffset * width) / HIGHLIGHT_FILL_PATTERN_FRAME_COUNT);
-//
-// 		for (let y = 0; y < height; y += 1) {
-// 			for (let x = 0; x < width; x += 1) {
-// 				const targetIndex = (y * width + x) * bytesPerPixel;
-// 				const distance = Math.abs(x - bandOffset);
-// 				const distanceToBand = Math.min(distance, width - distance);
-// 				const alpha = distanceToBand <= HIGHLIGHT_LINE_PATTERN_BAND_WIDTH ? 255 : 0;
-//
-// 				data[targetIndex] = r;
-// 				data[targetIndex + 1] = g;
-// 				data[targetIndex + 2] = b;
-// 				data[targetIndex + 3] = alpha;
-// 			}
-// 		}
-//
-// 		const image = { width, height, data };
-// 		highlightFillPatternImageCache.set(cacheKey, image);
-//
-// 		return image;
-// 	}
-//
-// 	const size = HIGHLIGHT_FILL_PATTERN_SIZE;
-// 	const bytesPerPixel = 4;
-// 	const spacing = HIGHLIGHT_FILL_PATTERN_SPACING;
-// 	const data = new Uint8Array(size * size * bytesPerPixel);
-// 	const phaseOffset = Math.floor(frameOffset / 2);
-//
-// 	for (let y = 0; y < size; y += 1) {
-// 		for (let x = 0; x < size; x += 1) {
-// 			const targetIndex = (y * size + x) * bytesPerPixel;
-// 			const diagonal = (((x + y + phaseOffset) % spacing) + spacing) % spacing;
-// 			const distanceToStripe = Math.min(diagonal, spacing - diagonal);
-// 			const alpha = distanceToStripe <= HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH ? 255 : 0;
-//
-// 			data[targetIndex] = r;
-// 			data[targetIndex + 1] = g;
-// 			data[targetIndex + 2] = b;
-// 			data[targetIndex + 3] = alpha;
-// 		}
-// 	}
-//
-// 	const image = { width: size, height: size, data };
-// 	highlightFillPatternImageCache.set(cacheKey, image);
-//
-// 	return image;
-// };
+export const ensureHighlightAnimationImages = (map: MapLibreMap) => {
+	ensurePointAnimationCleanup(map);
 
-// export const registerHighlightFillPatternImages = (map: MapLibreMap) => {
-// 	[...HIGHLIGHT_FILL_PATTERN_IDS, ...HIGHLIGHT_LINE_PATTERN_IDS].forEach((patternId) => {
-// 		if (map.hasImage(patternId)) return;
-// 		const image = createHighlightFillPatternImage(patternId);
-// 		if (!image) return;
-// 		map.addImage(patternId, image);
-// 	});
-// };
+	if (!map.hasImage(HIGHLIGHT_FILL_PATTERN_ID)) {
+		map.addImage(HIGHLIGHT_FILL_PATTERN_ID, createAnimatedFillPatternImage());
+	}
+
+	if (!map.hasImage(HIGHLIGHT_LINE_PATTERN_ID)) {
+		map.addImage(HIGHLIGHT_LINE_PATTERN_ID, createAnimatedLinePatternImage());
+	}
+};
 
 export type HighlightLayerRole = 'base' | 'highlight';
 export type HighlightPatternKind = 'fill' | 'line' | 'point';
@@ -180,6 +200,10 @@ interface HighlightLayerRegistryItem {
 	patternKind?: HighlightPatternKind;
 	baseCircleRadius?: number;
 	baseCircleStrokeWidth?: number;
+	baseCircleOpacity?: number;
+	baseCircleStrokeOpacity?: number;
+	baseIconSize?: number;
+	baseIconOpacity?: number;
 }
 
 const HIDDEN_FILTER: FilterSpecification = ['==', ['literal', 1], 0];
@@ -216,8 +240,178 @@ const createSelectedExcludeFilter = (
 	return ['all', ['!=', ['id'], featureId], ['!=', ['get', selectionKey], featureId]];
 };
 
+const setPaintProperty = <K extends keyof AllPaintProperties>(
+	map: MapLibreMap,
+	layerId: string,
+	name: K,
+	value: AllPaintProperties[K]
+) => {
+	if (!map.getLayer(layerId)) return;
+	map.setPaintProperty(layerId, name, value);
+};
+
+const setLayoutProperty = <K extends keyof AllLayoutProperties>(
+	map: MapLibreMap,
+	layerId: string,
+	name: K,
+	value: AllLayoutProperties[K]
+) => {
+	if (!map.getLayer(layerId)) return;
+	map.setLayoutProperty(layerId, name, value);
+};
+
+const clampOpacity = (value: number) => {
+	return Math.max(0, Math.min(1, value));
+};
+
+const mod = (value: number, divisor: number) => {
+	return ((value % divisor) + divisor) % divisor;
+};
+
 class HighlightLayerRegistry {
 	private static items: HighlightLayerRegistryItem[] = [];
+
+	private static getPointItems = (logicalLayerId?: string) => {
+		return this.items.filter((item) => {
+			if (item.role !== 'highlight' || item.patternKind !== 'point') return false;
+			return logicalLayerId ? item.logicalLayerId === logicalLayerId : true;
+		});
+	};
+
+	private static resetPointLayer = (map: MapLibreMap, item: HighlightLayerRegistryItem) => {
+		if (item.baseCircleRadius !== undefined) {
+			setPaintProperty(map, item.actualLayerId, 'circle-radius', item.baseCircleRadius);
+		}
+
+		if (item.baseCircleStrokeWidth !== undefined) {
+			setPaintProperty(
+				map,
+				item.actualLayerId,
+				'circle-stroke-width',
+				item.baseCircleStrokeWidth
+			);
+		}
+
+		if (item.baseCircleOpacity !== undefined) {
+			setPaintProperty(map, item.actualLayerId, 'circle-opacity', item.baseCircleOpacity);
+		}
+
+		if (item.baseCircleStrokeOpacity !== undefined) {
+			setPaintProperty(
+				map,
+				item.actualLayerId,
+				'circle-stroke-opacity',
+				item.baseCircleStrokeOpacity
+			);
+		}
+
+		if (item.baseIconSize !== undefined) {
+			setLayoutProperty(map, item.actualLayerId, 'icon-size', item.baseIconSize);
+		}
+
+		if (item.baseIconOpacity !== undefined) {
+			setPaintProperty(map, item.actualLayerId, 'icon-opacity', item.baseIconOpacity);
+		}
+	};
+
+	private static resetPointAnimation = (map: MapLibreMap) => {
+		this.getPointItems().forEach((item) => {
+			this.resetPointLayer(map, item);
+		});
+	};
+
+	private static cancelPointAnimation = (map: MapLibreMap) => {
+		const animationFrameId = pointAnimationFrameIds.get(map);
+		if (
+			animationFrameId !== undefined
+			&& typeof cancelAnimationFrame === 'function'
+		) {
+			cancelAnimationFrame(animationFrameId);
+		}
+		pointAnimationFrameIds.delete(map);
+	};
+
+	private static startPointAnimation = (
+		map: MapLibreMap,
+		logicalLayerId: string
+	) => {
+		const pointItems = this.getPointItems(logicalLayerId);
+		if (pointItems.length === 0 || typeof requestAnimationFrame !== 'function') return;
+
+		const animate = () => {
+			const progress =
+				(getAnimationNow() % HIGHLIGHT_POINT_PULSE_DURATION) /
+				HIGHLIGHT_POINT_PULSE_DURATION;
+			const pulse = 0.5 - Math.cos(progress * Math.PI * 2) / 2;
+
+			pointItems.forEach((item) => {
+				if (item.baseCircleRadius !== undefined) {
+					setPaintProperty(
+						map,
+						item.actualLayerId,
+						'circle-radius',
+						item.baseCircleRadius * (1 + pulse * HIGHLIGHT_POINT_PULSE_SCALE)
+					);
+				}
+
+				if (item.baseCircleStrokeWidth !== undefined) {
+					setPaintProperty(
+						map,
+						item.actualLayerId,
+						'circle-stroke-width',
+						item.baseCircleStrokeWidth * (1 + pulse * 0.8)
+					);
+				}
+
+				if (item.baseCircleOpacity !== undefined) {
+					setPaintProperty(
+						map,
+						item.actualLayerId,
+						'circle-opacity',
+						clampOpacity(
+							item.baseCircleOpacity +
+								pulse * HIGHLIGHT_POINT_PULSE_OPACITY_DELTA
+						)
+					);
+				}
+
+				if (item.baseCircleStrokeOpacity !== undefined) {
+					setPaintProperty(
+						map,
+						item.actualLayerId,
+						'circle-stroke-opacity',
+						clampOpacity(
+							item.baseCircleStrokeOpacity - 0.2 + pulse * 0.2
+						)
+					);
+				}
+
+				if (item.baseIconSize !== undefined) {
+					setLayoutProperty(
+						map,
+						item.actualLayerId,
+						'icon-size',
+						item.baseIconSize * (1 + pulse * HIGHLIGHT_POINT_PULSE_SCALE)
+					);
+				}
+
+				if (item.baseIconOpacity !== undefined) {
+					setPaintProperty(
+						map,
+						item.actualLayerId,
+						'icon-opacity',
+						clampOpacity(item.baseIconOpacity - 0.1 + pulse * 0.1)
+					);
+				}
+			});
+
+			const animationFrameId = requestAnimationFrame(animate);
+			pointAnimationFrameIds.set(map, animationFrameId);
+		};
+
+		const animationFrameId = requestAnimationFrame(animate);
+		pointAnimationFrameIds.set(map, animationFrameId);
+	};
 
 	static clear = () => {
 		this.items = [];
@@ -241,8 +435,14 @@ class HighlightLayerRegistry {
 		map: MapLibreMap | null,
 		selected: SelectedHighlightData | null
 	) => {
-		void map;
-		void selected;
+		if (!map) return;
+
+		this.cancelPointAnimation(map);
+		this.resetPointAnimation(map);
+
+		if (!selected) return;
+
+		this.startPointAnimation(map, selected.layerId);
 	};
 
 	static getFilterUpdates = (selected: SelectedHighlightData | null) => {

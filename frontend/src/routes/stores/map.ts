@@ -27,7 +27,7 @@ import { type Writable, writable } from 'svelte/store';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { Opacity } from '$routes/map/data/types';
 import { getMapParams, set3dParams, setMapParams } from '$routes/map/utils/platform/url-params';
-import { isDebugMode } from '$routes/stores';
+import { isDebugMode, selectedHighlightData } from '$routes/stores';
 import turfBbox from '@turf/bbox';
 import { debounce } from 'es-toolkit';
 import { get } from 'svelte/store';
@@ -39,7 +39,11 @@ import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protoco
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
 import poiTopIcon from '$lib/icons/poi_top.png';
-import { isHighlightLayerId } from '$routes/map/utils/layers/highlight';
+import {
+	ensureHighlightAnimationImages,
+	HighlightLayerRegistry,
+	isHighlightLayerId
+} from '$routes/map/utils/layers/highlight';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 import { resolveMapLibreRequest, resolveRequestUrl } from '$routes/map/utils/platform/request';
 
@@ -1056,8 +1060,10 @@ const createMapStore = () => {
 	const setHighlightLayers = (layers: StyleSpecification['layers']) => {
 		if (!map || !isMapValid(map)) return;
 		const currentMap = map;
+		const currentSelection = get(selectedHighlightData);
 
 		clearHighlightLayers();
+		ensureHighlightAnimationImages(currentMap);
 		layers.forEach((layer) => {
 			if (currentMap.getLayer(layer.id)) return;
 			if (
@@ -1072,6 +1078,12 @@ const createMapStore = () => {
 			}
 			currentMap.addLayer(layer);
 		});
+
+		HighlightLayerRegistry.getFilterUpdates(currentSelection).forEach(({ layerId, filter }) => {
+			if (!currentMap.getLayer(layerId)) return;
+			currentMap.setFilter(layerId, filter);
+		});
+		HighlightLayerRegistry.syncPatternAnimation(currentMap, currentSelection);
 	};
 
 	// クリックマーカーを追加するメソッド

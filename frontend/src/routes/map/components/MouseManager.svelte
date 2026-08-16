@@ -486,6 +486,14 @@
 		clearSearchHighlight();
 		clickedLayerIds = [logicalLayerId];
 
+		// circleまたはsymbolの補助レイヤーは、その座標値
+		if (feature.layer.type === 'circle' || feature.layer.type === 'symbol') {
+			lngLat = new maplibregl.LngLat(
+				(feature.geometry as any).coordinates[0],
+				(feature.geometry as any).coordinates[1]
+			);
+		}
+
 		if (currentZoom === undefined || currentZoom < targetZoom) {
 			mapStore.flyTo(lngLat, { zoom: targetZoom, duration: 1000 });
 		}
