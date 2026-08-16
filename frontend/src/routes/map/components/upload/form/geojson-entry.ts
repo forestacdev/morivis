@@ -62,7 +62,9 @@ export const stripGeojsonZ = (geojson: FeatureCollection): FeatureCollection =>
 		...geojson,
 		features: geojson.features.map((feature) => ({
 			...feature,
-			geometry: stripGeometryZ(feature.geometry as unknown as AnyGeometry | GeometryCollection)
+			geometry: stripGeometryZ(
+				feature.geometry as unknown as AnyGeometry | GeometryCollection
+			)
 		}))
 	}) as unknown as FeatureCollection;
 

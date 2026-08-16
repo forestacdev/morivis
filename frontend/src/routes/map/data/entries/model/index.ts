@@ -7,12 +7,12 @@ import type {
 	GeoJson3DEntry,
 	MeshEntry,
 	MeshFormatType,
-	ProjectedModelGeoreference,
 	MeshStyle,
 	PointCloudEntry,
 	PointCloudStyle,
-	Tiles3DMeshStyle,
-	Tiles3DEntry
+	ProjectedModelGeoreference,
+	Tiles3DEntry,
+	Tiles3DMeshStyle
 } from '$routes/map/data/types/model';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';

@@ -36,7 +36,8 @@ const EXCLUDED_TABLE_NAMES = new Set([
 
 const EXCLUDED_TABLE_PREFIXES = ['idx_', 'sqlite_'];
 
-const normalizeGeometryTypeName = (value: string): string => value.toUpperCase().replace(/\s+/g, '');
+const normalizeGeometryTypeName = (value: string): string =>
+	value.toUpperCase().replace(/\s+/g, '');
 
 const BASE_GEOMETRY_TYPE_CODE_BY_NAME: Record<string, number> = {
 	POINT: 1,
@@ -143,10 +144,9 @@ export const parseGeometryColumnsRows = (
 				coordDimensionValue: coordDimensionIndex == null ? null : row[coordDimensionIndex]
 			}),
 			srid: sridIndex == null ? null : toFiniteNumber(row[sridIndex]),
-			geometryFormat:
-				geometryFormatIndex == null
-					? 'SpatiaLite'
-					: (typeof row[geometryFormatIndex] === 'string' ? row[geometryFormatIndex] : null)
+			geometryFormat: geometryFormatIndex == null
+				? 'SpatiaLite'
+				: (typeof row[geometryFormatIndex] === 'string' ? row[geometryFormatIndex] : null)
 		};
 
 		pushGeometryColumnInfo(geometryColumnsMap, tableName, info);
@@ -164,8 +164,8 @@ export const getGeometryColumnsForTable = (
 	tableName: string
 ): SqliteGeometryColumnInfo[] =>
 	geometryColumnsMap.get(tableName)
-	?? geometryColumnsMap.get(tableName.toLowerCase())
-	?? [];
+		?? geometryColumnsMap.get(tableName.toLowerCase())
+		?? [];
 
 export const resolveSqliteColumnName = (
 	columnNames: string[],

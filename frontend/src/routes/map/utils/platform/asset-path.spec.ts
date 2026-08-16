@@ -22,7 +22,10 @@ describe('resolveStaticAssetBasePath', () => {
 
 	it('build chunk でない場合は configured base を使う', () => {
 		expect(
-			resolveStaticAssetBasePath('http://localhost:5173/src/routes/map/utils/platform/asset-path.ts', '')
+			resolveStaticAssetBasePath(
+				'http://localhost:5173/src/routes/map/utils/platform/asset-path.ts',
+				''
+			)
 		).toBe('');
 
 		expect(

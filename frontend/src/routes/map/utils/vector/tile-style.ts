@@ -103,8 +103,12 @@ export const buildVectorTileColorExpressions = (
 
 		const min = toFiniteNumber(attribute.min);
 		const max = toFiniteNumber(attribute.max);
-		const isNumericOnly = categories.length > 0 && categories.every((value) => typeof value === 'number');
-		if ((isNumericAttributeType(attribute.type) || isNumericOnly) && min != null && max != null && min < max) {
+		const isNumericOnly = categories.length > 0
+			&& categories.every((value) => typeof value === 'number');
+		if (
+			(isNumericAttributeType(attribute.type) || isNumericOnly) && min != null && max != null
+			&& min < max
+		) {
 			expressions.push({
 				type: 'step',
 				key,

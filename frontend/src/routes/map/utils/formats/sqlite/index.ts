@@ -1,10 +1,10 @@
-import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type {
 	TabularPreview,
 	TabularPreviewOptions,
 	TabularRow
 } from '$routes/map/utils/formats/tabular';
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 
 export interface SqliteGeometryColumnInfo {
 	columnName: string;
@@ -49,7 +49,9 @@ const getWorker = (): Worker => {
 			type: 'module'
 		});
 
-		worker.onmessage = (event: MessageEvent<{ id: number; result?: unknown; error?: string }>) => {
+		worker.onmessage = (
+			event: MessageEvent<{ id: number; result?: unknown; error?: string; }>
+		) => {
 			const { id, result, error } = event.data;
 			const pending = pendingRequests.get(id);
 			if (!pending) return;

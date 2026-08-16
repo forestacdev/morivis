@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 
-import { describe, expect, it } from 'vitest';
 import initSqlJs from 'sql.js';
+import { describe, expect, it } from 'vitest';
 
 import { parseGeometryBlob } from './geometry';
 import { createDatabaseFromBytes, parseSqlDump } from './sql-dump';

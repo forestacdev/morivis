@@ -104,7 +104,7 @@ describe('resolveDroppedFiles', () => {
 			type: 'dialog',
 			dialogType: 'xlsx',
 			dropFiles: undefined
-			});
+		});
 	});
 
 	it('単一の SQLite は sqlite ダイアログ判定になる', async () => {

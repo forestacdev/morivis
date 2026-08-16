@@ -1,5 +1,5 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import initSqlJs, { type Database } from 'sql.js';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const wasmPath = new URL('../../../../../../static/sql-wasm.wasm', import.meta.url).pathname;
 
@@ -54,7 +54,12 @@ class MockSqliteWorker {
 		if (!this.db) throw new Error('DB not open');
 		const map = new Map<
 			string,
-			{ columnName: string; geometryType: number | null; srid: number | null; geometryFormat: string | null; }[]
+			{
+				columnName: string;
+				geometryType: number | null;
+				srid: number | null;
+				geometryFormat: string | null;
+			}[]
 		>();
 		const result = this.db.exec(
 			'SELECT f_table_name, f_geometry_column, geometry_type, srid, geometry_format FROM geometry_columns'
@@ -87,7 +92,8 @@ class MockSqliteWorker {
 			.filter((name) => !['geometry_columns', 'spatial_ref_sys'].includes(name))
 			.map((tableName) => {
 				const columns = this.db?.exec(`PRAGMA table_info("${tableName}")`)[0]?.values ?? [];
-				const count = this.db?.exec(`SELECT COUNT(*) FROM "${tableName}"`)[0]?.values[0]?.[0] ?? null;
+				const count =
+					this.db?.exec(`SELECT COUNT(*) FROM "${tableName}"`)[0]?.values[0]?.[0] ?? null;
 
 				return {
 					name: tableName,
@@ -130,7 +136,9 @@ class MockSqliteWorker {
 								const value = values[index];
 								return [
 									column,
-									value instanceof Uint8Array ? `[BLOB ${value.byteLength} bytes]` : (value ?? null)
+									value instanceof Uint8Array
+										? `[BLOB ${value.byteLength} bytes]`
+										: (value ?? null)
 								];
 							})
 						)
@@ -151,7 +159,9 @@ class MockSqliteWorker {
 					const result = this.db.exec(`SELECT * FROM "${tableName}"`);
 					const columns = result[0]?.columns ?? [];
 					const rows = (result[0]?.values ?? []).map((values) =>
-						Object.fromEntries(columns.map((column, index) => [column, values[index] ?? null]))
+						Object.fromEntries(
+							columns.map((column, index) => [column, values[index] ?? null])
+						)
 					);
 
 					this.emit({
@@ -346,7 +356,11 @@ describe('sqlite parser', () => {
 			type: 'Point',
 			coordinates: [-116.92333333333, 33.892333333333]
 		});
-		expect(result.geojson.features[0]?.properties?.title).toBe('M 0.2 - 6 km SW of Banning, CA');
-		expect(result.geojson.features[0]?.properties?.id).toBe('urn:earthquake-usgs-gov:ci:40673106');
+		expect(result.geojson.features[0]?.properties?.title).toBe(
+			'M 0.2 - 6 km SW of Banning, CA'
+		);
+		expect(result.geojson.features[0]?.properties?.id).toBe(
+			'urn:earthquake-usgs-gov:ci:40673106'
+		);
 	});
 });
