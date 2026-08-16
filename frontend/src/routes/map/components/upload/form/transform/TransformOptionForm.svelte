@@ -405,6 +405,10 @@
 		if (!feature) return;
 
 		const bbox = turfBbox(feature as Feature<PolygonGeometry, PoiData['properties']>);
+		console.info('[zone-select] selected bbox', {
+			epsg: selectedEpsgCode,
+			bbox
+		});
 		mapStore.fitBounds(bbox as [number, number, number, number], {
 			padding: 100,
 			duration: MAP_ANIMATION_DURATION,

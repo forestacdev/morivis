@@ -13,7 +13,7 @@ import {
 } from '$routes/map/utils/three/model-transform';
 import {
 	applyProjectedModelGeoreference,
-	getModelUnitScaleMeters
+	resolveFbxUnitScaleMeters
 } from '$routes/map/utils/three/model-georeference';
 import {
 	centerObjectToLocalOrigin,
@@ -565,38 +565,7 @@ export class ThreeJsLayerManager {
 				});
 
 				this.loadedModels.forEach((loaded) => {
-					const { transform } = loaded;
-
-					const anchoredModelMatrix = new THREE.Matrix4().fromArray(
-						this.map!.transform.getMatrixForModel(
-							transform.modelOrigin,
-							transform.modelAltitude
-						)
-					);
-					const rotationX = new THREE.Matrix4().makeRotationAxis(
-						new THREE.Vector3(1, 0, 0),
-						transform.rotateX
-					);
-					const rotationY = new THREE.Matrix4().makeRotationAxis(
-						new THREE.Vector3(0, 1, 0),
-						transform.rotateY
-					);
-					const rotationZ = new THREE.Matrix4().makeRotationAxis(
-						new THREE.Vector3(0, 0, 1),
-						transform.rotateZ
-					);
-					const scaleMatrix = new THREE.Matrix4().makeScale(
-						transform.scaleX,
-						-transform.scaleY,
-						-transform.scaleZ
-					);
-
-					const modelMatrix = anchoredModelMatrix
-						.multiply(rotationX)
-						.multiply(rotationY)
-						.multiply(rotationZ)
-						.multiply(scaleMatrix);
-
+					const modelMatrix = loaded.transform.matrix.clone();
 					const projectionMatrix = new THREE.Matrix4().fromArray(
 						args.defaultProjectionData.mainMatrix
 					);
@@ -688,7 +657,8 @@ export class ThreeJsLayerManager {
 					}
 
 					if (entry.format.type === 'fbx') {
-						const unitScaleMeters = getModelUnitScaleMeters(
+						const unitScaleMeters = resolveFbxUnitScaleMeters(
+							new THREE.Box3().setFromObject(object),
 							Number(
 								(object.userData as {
 									unitScaleFactor?: number;

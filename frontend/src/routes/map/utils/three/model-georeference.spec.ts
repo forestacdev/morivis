@@ -2,6 +2,7 @@ import type { ProjectedModelGeoreference } from '$routes/map/data/types/model';
 import {
 	applyProjectedModelGeoreference,
 	getModelUnitScaleMeters,
+	resolveFbxUnitScaleMeters,
 	resolveProjectedModelPlacementFromBox
 } from '$routes/map/utils/three/model-georeference';
 import * as THREE from 'three';
@@ -12,11 +13,30 @@ const meterBox = new THREE.Box3(
 	new THREE.Vector3(-20524.57421875, -54894.38671875, 15.200652122497559)
 );
 
+const misleadingMeterBox = new THREE.Box3(
+	new THREE.Vector3(-72288.453125, -103312.71875, 13.753643035888672),
+	new THREE.Vector3(-71244.703125, -102845.96875, 92.70465850830078)
+);
+
 describe('model-georeference', () => {
 	it('FBX unitScaleFactor から meter scale を解決する', () => {
 		expect(getModelUnitScaleMeters(100)).toBeCloseTo(1);
 		expect(getModelUnitScaleMeters(1)).toBeCloseTo(0.01);
 		expect(getModelUnitScaleMeters(undefined)).toBe(1);
+	});
+
+	it('world座標を持つFBXは unitScaleFactor=1 でも meter 扱いに補正する', () => {
+		expect(resolveFbxUnitScaleMeters(misleadingMeterBox, 1)).toBe(1);
+		expect(resolveFbxUnitScaleMeters(meterBox, 100)).toBe(1);
+		expect(
+			resolveFbxUnitScaleMeters(
+				new THREE.Box3(
+					new THREE.Vector3(-5000, -5000, 0),
+					new THREE.Vector3(5000, 5000, 1000)
+				),
+				1
+			)
+		).toBeCloseTo(0.01);
 	});
 
 	it('meter FBX の bbox から地理配置を解決する', () => {
