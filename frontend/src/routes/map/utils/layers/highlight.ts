@@ -104,6 +104,18 @@ const animationCleanupRegistered = new WeakSet<MapLibreMap>();
 
 type HighlightAnimatedPatternKind = 'fill' | 'line';
 type HighlightPatternProperty = 'fill-pattern' | 'fill-extrusion-pattern' | 'line-pattern';
+type HighlightAnimationFrame = {
+	id: string;
+	image: StyleImageInterface;
+};
+type HighlightAnimationImageCache = {
+	fillFrames: HighlightAnimationFrame[];
+	lineFrames: HighlightAnimationFrame[];
+	zoneFillFrames: HighlightAnimationFrame[];
+};
+
+let highlightAnimationImageCache: HighlightAnimationImageCache | null = null;
+let highlightAnimationWarmupScheduled = false;
 
 const hexToRgb = (hex: string) => {
 	const normalized = hex.replace('#', '');
@@ -215,7 +227,7 @@ const createEmptyPatternFrames = ({
 	height: number;
 	patternKind: HighlightAnimatedPatternKind;
 	patternIdPrefix: string;
-}) => {
+}): HighlightAnimationFrame[] => {
 	const frameCount = getPatternFrameCount(patternKind);
 	return Array.from({ length: frameCount }, (_, frameIndex) => ({
 		id: createPatternFrameId(patternIdPrefix, frameIndex),
@@ -243,7 +255,7 @@ const createPatternFrames = ({
 	patternKind: HighlightAnimatedPatternKind;
 	patternIdPrefix: string;
 	colorHex: string;
-}) => {
+}): HighlightAnimationFrame[] => {
 	const color = hexToRgb(colorHex);
 	const colorUnit = {
 		r: color.r / 255,
@@ -357,6 +369,50 @@ const createZoneBboxFillPatternFrames = () => {
 	});
 };
 
+const getHighlightAnimationImageCache = (): HighlightAnimationImageCache => {
+	if (highlightAnimationImageCache) {
+		return highlightAnimationImageCache;
+	}
+
+	highlightAnimationImageCache = {
+		fillFrames: createFillPatternFrames(),
+		lineFrames: createLinePatternFrames(),
+		zoneFillFrames: createZoneBboxFillPatternFrames()
+	};
+
+	return highlightAnimationImageCache;
+};
+
+export const warmupHighlightAnimationImages = () => {
+	getHighlightAnimationImageCache();
+};
+
+export const scheduleHighlightAnimationWarmup = () => {
+	if (highlightAnimationWarmupScheduled) return;
+
+	highlightAnimationWarmupScheduled = true;
+
+	const runWarmup = () => {
+		warmupHighlightAnimationImages();
+	};
+
+	if (typeof requestIdleCallback === 'function') {
+		requestIdleCallback(() => {
+			runWarmup();
+		});
+		return;
+	}
+
+	if (typeof setTimeout === 'function') {
+		setTimeout(() => {
+			runWarmup();
+		}, 0);
+		return;
+	}
+
+	runWarmup();
+};
+
 const ensureAnimationCleanup = (map: MapLibreMap) => {
 	if (animationCleanupRegistered.has(map)) return;
 
@@ -399,21 +455,22 @@ export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unkno
 
 export const ensureHighlightAnimationImages = (map: MapLibreMap) => {
 	ensureAnimationCleanup(map);
+	const cache = getHighlightAnimationImageCache();
 
 	if (!map.hasImage(HIGHLIGHT_FILL_PATTERN_ID)) {
-		createFillPatternFrames().forEach((frame) => {
+		cache.fillFrames.forEach((frame) => {
 			map.addImage(frame.id, frame.image);
 		});
 	}
 
 	if (!map.hasImage(HIGHLIGHT_LINE_PATTERN_ID)) {
-		createLinePatternFrames().forEach((frame) => {
+		cache.lineFrames.forEach((frame) => {
 			map.addImage(frame.id, frame.image);
 		});
 	}
 
 	if (!map.hasImage(ZONE_BBOX_FILL_PATTERN_ID)) {
-		createZoneBboxFillPatternFrames().forEach((frame) => {
+		cache.zoneFillFrames.forEach((frame) => {
 			map.addImage(frame.id, frame.image);
 		});
 	}

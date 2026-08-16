@@ -42,7 +42,8 @@ import poiTopIcon from '$lib/icons/poi_top.png';
 import {
 	ensureHighlightAnimationImages,
 	HighlightLayerRegistry,
-	isHighlightLayerId
+	isHighlightLayerId,
+	scheduleHighlightAnimationWarmup
 } from '$routes/map/utils/layers/highlight';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 import { resolveMapLibreRequest, resolveRequestUrl } from '$routes/map/utils/platform/request';
@@ -371,6 +372,7 @@ const createMapStore = () => {
 	const init = async (mapContainer: HTMLElement) => {
 		const mapPosition = getMapParams();
 
+		scheduleHighlightAnimationWarmup();
 		await warmupGeneratedPoiIconWorker();
 		deckOverlay = null;
 		isDeckOverlayAdded = false;
