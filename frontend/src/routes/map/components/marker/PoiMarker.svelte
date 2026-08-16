@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { LngLat } from 'maplibre-gl';
-	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
 	import { ICON_NO_IMAGE_PATH } from '$routes/constants';
+	import maplibregl from '$routes/map/utils/maplibre';
+	import type { LngLat } from '$routes/map/utils/maplibre';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {

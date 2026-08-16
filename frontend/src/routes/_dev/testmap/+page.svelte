@@ -1,7 +1,8 @@
 <script lang="ts">
-	import maplibregl from 'maplibre-gl';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import { onMount } from 'svelte';
+
+	import maplibregl from '$routes/map/utils/maplibre';
 
 	onMount(() => {
 		// テスト用スタイル設定

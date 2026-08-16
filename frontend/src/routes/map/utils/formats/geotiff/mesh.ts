@@ -1,4 +1,4 @@
-import maplibregl from 'maplibre-gl';
+import maplibregl from '$routes/map/utils/maplibre';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 

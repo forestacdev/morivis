@@ -1,4 +1,4 @@
-import type { SourceSpecification } from 'maplibre-gl';
+import type { SourceSpecification } from '$routes/map/utils/maplibre';
 
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 import {

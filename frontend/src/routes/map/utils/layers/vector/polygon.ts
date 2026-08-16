@@ -2,7 +2,7 @@ import type {
 	FillExtrusionLayerSpecification,
 	FillLayerSpecification,
 	LineLayerSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 
 import type { PolygonStyle } from '$routes/map/data/types/vector/style';
 import type { LayerItem } from '$routes/map/utils/layers';

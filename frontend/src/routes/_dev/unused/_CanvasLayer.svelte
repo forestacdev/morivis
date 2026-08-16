@@ -2,7 +2,6 @@
 	import turfBbox from '@turf/bbox';
 	import turfDissolve from '@turf/dissolve';
 	import earcut from 'earcut'; // earcutをインポート
-	import type { CanvasSourceSpecification, CanvasSource } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import fragmentShaderSource from '$routes/CanvasLayer/shader/fragment.glsl?raw';
@@ -10,6 +9,7 @@
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry } from '$routes/map/types/geometry';
 	import { convertMapGeoJSONFeaturesToGeoJSON } from '$routes/map/utils/formats/geojson';
+	import type { CanvasSourceSpecification, CanvasSource } from '$routes/map/utils/maplibre';
 	import { selectedHighlightData, type SelectedHighlightData } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 

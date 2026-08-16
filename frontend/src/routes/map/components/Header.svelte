@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
-	import { type LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import { getResetLayerEntries } from './layer_menu/context';
@@ -19,6 +18,7 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { ResultData, ResultAddressData } from '$routes/map/utils/data/search-result';
+	import { type LngLat } from '$routes/map/utils/maplibre';
 	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
 	import { mapMode } from '$routes/stores';
 	import { resetLayersConfirm } from '$routes/stores/confirmation';

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { LngLatBoundsLike } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import { isBBoxInside } from '$routes/map/utils/map/bbox';
+	import type { LngLatBoundsLike } from '$routes/map/utils/maplibre';
 	import { showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 

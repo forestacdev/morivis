@@ -117,7 +117,7 @@ export default defineConfig(({ mode }) => {
 			}
 		},
 		ssr: {
-			noExternal: ['svelte-hero-icons']
+			noExternal: ['svelte-hero-icons', 'maplibre-gl']
 		},
 		server: {
 			allowedHosts: true,

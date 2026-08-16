@@ -15,8 +15,6 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import type { TabularRow } from '$routes/map/utils/formats/tabular';
-	import { tabularRowsToGeojson } from '$routes/map/utils/formats/tabular';
 	import {
 		closeSqlite,
 		getSqlitePreview,
@@ -25,6 +23,8 @@
 		openSqlite,
 		type SqliteTableInfo
 	} from '$routes/map/utils/formats/sqlite';
+	import type { TabularRow } from '$routes/map/utils/formats/tabular';
+	import { tabularRowsToGeojson } from '$routes/map/utils/formats/tabular';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -90,9 +90,9 @@
 		(selectedGeometryType || 'Point') as VectorEntryGeometryType
 	);
 	const confirmDisabled = $derived(
-		$isProcessing
-			|| !selectedTable
-			|| (isGeometryTable ? !selectedGeometryColumn : !latColumn || !lonColumn)
+		$isProcessing ||
+			!selectedTable ||
+			(isGeometryTable ? !selectedGeometryColumn : !latColumn || !lonColumn)
 	);
 
 	const guessColumn = (names: string[], patterns: string[]): string => {
@@ -213,10 +213,7 @@
 				return;
 			}
 
-			if (
-				previewState.tableInfo?.geometryColumns.length
-				&& previewState.selectedGeometryColumn
-			) {
+			if (previewState.tableInfo?.geometryColumns.length && previewState.selectedGeometryColumn) {
 				await processGeometryTable(
 					previewState.tableInfo.name,
 					previewState.selectedGeometryColumn,
@@ -239,10 +236,7 @@
 
 		try {
 			const previewState = await applyPreview(tableName);
-			if (
-				previewState.tableInfo?.geometryColumns.length
-				&& previewState.selectedGeometryColumn
-			) {
+			if (previewState.tableInfo?.geometryColumns.length && previewState.selectedGeometryColumn) {
 				await processGeometryTable(
 					previewState.tableInfo.name,
 					previewState.selectedGeometryColumn,
@@ -261,7 +255,7 @@
 
 	const resolveGeometrySelection = (
 		geojson: FeatureCollection
-	): { geojson: FeatureCollection; geometryType: VectorEntryGeometryType; } => {
+	): { geojson: FeatureCollection; geometryType: VectorEntryGeometryType } => {
 		const types = getGeometryTypes(geojson);
 		if (types.length === 0) {
 			throw new Error('ジオメトリが見つかりませんでした');
@@ -555,9 +549,7 @@
 
 			{#if isGeometryTable}
 				<div class="flex flex-col gap-1">
-					<label for="geometry-column-select" class="text-sm text-gray-300"
-						>ジオメトリカラム</label
-					>
+					<label for="geometry-column-select" class="text-sm text-gray-300">ジオメトリカラム</label>
 					<select
 						id="geometry-column-select"
 						bind:value={selectedGeometryColumn}
@@ -587,9 +579,7 @@
 
 				{#if geometryTypeOptions.length > 1}
 					<div class="flex flex-col gap-1">
-						<label for="geometry-type-select" class="text-sm text-gray-300"
-							>ジオメトリタイプ</label
-						>
+						<label for="geometry-type-select" class="text-sm text-gray-300">ジオメトリタイプ</label>
 						<select
 							id="geometry-type-select"
 							bind:value={selectedGeometryType}

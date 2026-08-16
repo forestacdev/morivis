@@ -5,9 +5,9 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
-	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import { createMeshModelEntry } from '$routes/map/data/entries/_factories';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import {

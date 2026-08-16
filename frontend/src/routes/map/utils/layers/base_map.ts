@@ -7,7 +7,7 @@ import type {
 	FillLayerSpecification,
 	RasterLayerSpecification,
 	RasterSourceSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 
 const basemapXYZ = { x: 28846, y: 12917, z: 15 };
 export const baseMapList: {

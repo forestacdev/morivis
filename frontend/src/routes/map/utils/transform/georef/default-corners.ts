@@ -1,4 +1,4 @@
-import type maplibregl from 'maplibre-gl';
+import type maplibregl from '$routes/map/utils/maplibre';
 
 export const getDefaultGeoRefCorners = (
 	map: maplibregl.Map,

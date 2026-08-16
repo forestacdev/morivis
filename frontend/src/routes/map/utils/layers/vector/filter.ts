@@ -3,7 +3,7 @@ import {
 	getVectorTemporalFilterBehavior,
 	getVectorTemporalItems
 } from '$routes/map/data/types/vector/properties';
-import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
+import type { ExpressionSpecification, FilterSpecification } from '$routes/map/utils/maplibre';
 
 export const combineFilters = (
 	...filters: Array<FilterSpecification | undefined>

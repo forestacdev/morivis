@@ -1,5 +1,8 @@
 import { ENTRY_PMTILES_RASTER_PATH } from '$routes/constants';
-import type { RasterLayerSpecification, RasterSourceSpecification } from 'maplibre-gl';
+import type {
+	RasterLayerSpecification,
+	RasterSourceSpecification
+} from '$routes/map/utils/maplibre';
 
 export const cloudSources: Record<string, RasterSourceSpecification> = {
 	cloud: {

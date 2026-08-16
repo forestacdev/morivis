@@ -1,4 +1,4 @@
-import type { LngLat } from 'maplibre-gl';
+import type { LngLat } from '$routes/map/utils/maplibre';
 
 export type BasemapImageTile = {
 	Z: number;

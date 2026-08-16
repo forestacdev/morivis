@@ -1,4 +1,4 @@
-import type { RasterLayerSpecification } from 'maplibre-gl';
+import type { RasterLayerSpecification } from '$routes/map/utils/maplibre';
 
 /**
  * RGB → HSL変換

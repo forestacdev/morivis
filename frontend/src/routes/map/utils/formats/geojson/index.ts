@@ -12,8 +12,8 @@ import { geojson as fgb } from 'flatgeobuf';
 
 import type { FeatureMenuData } from '$routes/map/types';
 import type { DrawGeojsonData } from '$routes/map/types/draw';
+import type { MapGeoJSONFeature } from '$routes/map/utils/maplibre';
 import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
-import type { MapGeoJSONFeature } from 'maplibre-gl';
 
 export class GeoJsonParseError extends Error {
 	constructor(message: string) {

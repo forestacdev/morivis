@@ -1,4 +1,8 @@
-import type { ExpressionSpecification, FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
+import type {
+	ExpressionSpecification,
+	FilterSpecification,
+	Map as MapLibreMap
+} from '$routes/map/utils/maplibre';
 
 import { getMorivisLogicalLayerId, getSublayerBaseId } from '$routes/map/utils/layers/id';
 import type { SelectedHighlightData } from '$routes/stores';

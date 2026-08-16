@@ -8,9 +8,9 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
-	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';

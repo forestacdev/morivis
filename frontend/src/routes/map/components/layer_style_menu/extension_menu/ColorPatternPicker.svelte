@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import chroma from 'chroma-js';
-	import type { StyleImage } from 'maplibre-gl';
 	import { fly } from 'svelte/transition';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
 	import type { VectorLayerType } from '$routes/map/data/types/vector/style';
+	import type { StyleImage } from '$routes/map/utils/maplibre';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {

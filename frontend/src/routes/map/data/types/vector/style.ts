@@ -15,7 +15,7 @@ import type {
 	LineLayerSpecification,
 	ResolvedImageSpecification,
 	SymbolLayerSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 import type { SpritePatternId } from './pattern';
 
 interface fillLayerStyle {

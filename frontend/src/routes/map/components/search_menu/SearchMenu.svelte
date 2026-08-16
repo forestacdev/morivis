@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import turfBbox from '@turf/bbox';
-	import type { LngLat } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
@@ -15,6 +14,7 @@
 		ResultAddressData,
 		SearchGeojsonData
 	} from '$routes/map/utils/data/search-result';
+	import type { LngLat } from '$routes/map/utils/maplibre';
 	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
 	import { isStyleEdit } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';

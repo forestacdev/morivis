@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import type { LngLat } from 'maplibre-gl';
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 
@@ -8,6 +7,7 @@
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { type FeatureMenuData, type ClickedLayerFeaturesData } from '$routes/map/types';
+	import type { LngLat } from '$routes/map/utils/maplibre';
 
 	interface Props {
 		clickedLayerIds: string[];

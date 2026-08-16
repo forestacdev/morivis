@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { LngLat } from 'maplibre-gl';
-	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
+	import type { LngLat } from '$routes/map/utils/maplibre';
+	import maplibregl from '$routes/map/utils/maplibre';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 

@@ -1,6 +1,7 @@
 import type { CSSCursor } from '$routes/map/types';
-import maplibregl from 'maplibre-gl';
+import maplibregl from '$routes/map/utils/maplibre';
 import type {
+	AllLayoutProperties,
 	AnimationOptions,
 	Coordinates,
 	EaseToOptions,
@@ -19,7 +20,7 @@ import type {
 	RasterTileSource,
 	StyleSetterOptions,
 	StyleSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 import { Protocol } from 'pmtiles';
 import { type Writable, writable } from 'svelte/store';
 
@@ -72,17 +73,17 @@ import {
 	wfsFeatureProtocol
 } from '$routes/map/protocol/vector/wfs-feature';
 import { clearPointCloudDataCache, createDeckOverlay } from '$routes/map/utils/deck/overlay';
-import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
-import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
-import {
-	handleStyleImageMissing,
-	isGeneratedPoiIconId,
-	warmupGeneratedPoiIconWorker
-} from '$routes/map/utils/icon';
 import {
 	buildGlbExportFilename,
 	downloadArrayBufferAsGlb
 } from '$routes/map/utils/formats/export/model';
+import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
+import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
+import {
+	isGeneratedPoiIconId,
+	resolveMissingStyleImage,
+	warmupGeneratedPoiIconWorker
+} from '$routes/map/utils/icon';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
@@ -419,35 +420,35 @@ const createMapStore = () => {
 
 		if (!map) return;
 
-		map.on('styleimagemissing', (e) => {
+		map.setMissingStyleImageResolver(async (id) => {
 			if (!map) return;
 
-			const id = e.id;
 			if (id === 'poi_top') {
 				if (map.hasImage('poi_top')) return;
-				// 検索用のマーカーアイコンを追加
-				fetchWithDevProxy(poiTopIcon).then(async (response) => {
-					if (!response.ok) {
-						throw new Error(`Failed to fetch image: ${response.statusText}`);
-					}
-					const image = await createImageBitmap(await response.blob());
-					if (!map || map.hasImage('poi_top')) return;
-					map.addImage('poi_top', image);
-				});
-			} else if (id === 'marker_png') {
+				const response = await fetchWithDevProxy(poiTopIcon);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch image: ${response.statusText}`);
+				}
+				const image = await createImageBitmap(await response.blob());
+				if (!map || map.hasImage('poi_top')) return;
+				map.addImage('poi_top', image);
+				return;
+			}
+
+			if (id === 'marker_png') {
 				if (map.hasImage('marker_png')) return;
-				// 検索用のマーカーアイコンを追加
-				fetchWithDevProxy(markerPngIcon).then(async (response) => {
-					if (!response.ok) {
-						throw new Error(`Failed to fetch image: ${response.statusText}`);
-					}
-					const image = await createImageBitmap(await response.blob());
-					if (!map || map.hasImage('marker_png')) return;
-					map.addImage('marker_png', image);
-				});
-			} else if (isGeneratedPoiIconId(id)) {
-				// 接頭辞付きの生成アイコンだけを styleimagemissing 側で処理する
-				handleStyleImageMissing(e, map);
+				const response = await fetchWithDevProxy(markerPngIcon);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch image: ${response.statusText}`);
+				}
+				const image = await createImageBitmap(await response.blob());
+				if (!map || map.hasImage('marker_png')) return;
+				map.addImage('marker_png', image);
+				return;
+			}
+
+			if (isGeneratedPoiIconId(id)) {
+				await resolveMissingStyleImage(id, map);
 			}
 
 			// NOTE: ハイライトパターン作成は停止
@@ -1514,10 +1515,10 @@ const createMapStore = () => {
 		lockOnMarker = null;
 	};
 
-	const setLayoutProperty = (
+	const setLayoutProperty = <K extends keyof AllLayoutProperties>(
 		layerId: string,
-		name: string,
-		value: any,
+		name: K,
+		value: AllLayoutProperties[K],
 		options?: StyleSetterOptions
 	) => {
 		if (!map || !isMapValid(map)) return;
@@ -1575,8 +1576,6 @@ const createMapStore = () => {
 
 		map.setCenterClampedToGround(false);
 		map.setCenterElevation(elevation ? elevation : (altitude ?? 0));
-
-		map._elevationStart = map._elevationTarget;
 	};
 
 	const resetCamera = () => {
@@ -1584,7 +1583,6 @@ const createMapStore = () => {
 
 		map.setCenterClampedToGround(true); // 地形に中心点を吸着させる
 		map.setCenterElevation(0);
-		map._elevationStart = map._elevationTarget;
 	};
 
 	return {

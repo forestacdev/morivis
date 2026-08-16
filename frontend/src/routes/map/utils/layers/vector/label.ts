@@ -4,7 +4,7 @@ import type {
 	DataDrivenPropertyValueSpecification,
 	FormattedSpecification,
 	SymbolLayerSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 
 import type { Labels, VectorStyle } from '$routes/map/data/types/vector/style';
 

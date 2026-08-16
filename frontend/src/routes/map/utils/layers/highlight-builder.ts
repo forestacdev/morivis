@@ -12,7 +12,6 @@ import {
 	createFillExtrusionPatternLayer,
 	createOutLineLayer
 } from '$routes/map/utils/layers/vector/polygon';
-import { clickableVectorIds } from '$routes/stores';
 import type {
 	CircleLayerSpecification,
 	FillExtrusionLayerSpecification,
@@ -21,7 +20,8 @@ import type {
 	LayerSpecification,
 	LineLayerSpecification,
 	SymbolLayerSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
+import { clickableVectorIds } from '$routes/stores';
 
 import { createVectorLayer, type LayerItem } from '$routes/map/utils/layers';
 

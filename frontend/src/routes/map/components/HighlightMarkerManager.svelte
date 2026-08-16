@@ -1,9 +1,8 @@
 <script lang="ts">
-	import maplibregl from 'maplibre-gl';
-
 	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import type { HighlightMarkerState } from '$routes/map/types';
+	import maplibregl from '$routes/map/utils/maplibre';
 
 	interface Props {
 		map: maplibregl.Map;

@@ -1,7 +1,6 @@
 <script lang="ts">
-	import type { StyleImage } from 'maplibre-gl';
-
 	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
+	import type { StyleImage } from '$routes/map/utils/maplibre';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {

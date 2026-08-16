@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { type Map as MapLibreMap } from 'maplibre-gl';
 	import { onMount } from 'svelte';
 
 	import { getMapScale } from '$routes/map/utils/map/scale';
+	import { type Map as MapLibreMap } from '$routes/map/utils/maplibre';
 	import { checkMobileWidth } from '$routes/map/utils/platform/viewport';
 	import { mapStore } from '$routes/stores/map';
 	import { isMobile, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';

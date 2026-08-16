@@ -4,10 +4,10 @@ import type {
 	TileSize,
 	ZoomLevel
 } from '$routes/map/data/types/raster';
+import type { LngLat } from '$routes/map/utils/maplibre';
 import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import * as tilebelt from '@mapbox/tilebelt';
 import chroma from 'chroma-js';
-import type { LngLat } from 'maplibre-gl';
 import { PMTiles } from 'pmtiles';
 
 /** PMTiles から画像を取得する */

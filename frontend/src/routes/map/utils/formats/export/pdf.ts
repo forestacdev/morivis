@@ -1,6 +1,6 @@
+import type { Map as MapLibreMap } from '$routes/map/utils/maplibre';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import type { Map as MapLibreMap } from 'maplibre-gl';
 
 export const exportPDF = async (map: MapLibreMap): Promise<void> => {
 	return new Promise((resolve, reject) => {

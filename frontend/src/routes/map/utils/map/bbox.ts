@@ -1,5 +1,5 @@
+import type { Coordinates, LngLat } from '$routes/map/utils/maplibre';
 import type { BBox as GeoJsonBBox } from 'geojson';
-import type { Coordinates, LngLat } from 'maplibre-gl';
 
 import {
 	WEB_MERCATOR_MAX_LAT,

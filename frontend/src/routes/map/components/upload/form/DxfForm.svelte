@@ -4,11 +4,11 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
+	import { createAutoGeoJsonEntry } from '$routes/map/components/upload/form/geojson-entry';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
-	import { createAutoGeoJsonEntry } from '$routes/map/components/upload/form/geojson-entry';
 	import {
 		getGeometryTypes,
 		filterByGeometryType,

@@ -15,7 +15,7 @@ import type {
 	LayerSpecification,
 	LineLayerSpecification,
 	SymbolLayerSpecification
-} from 'maplibre-gl';
+} from '$routes/map/utils/maplibre';
 
 import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/layers/street_view';
 import { clickableRasterIds, clickableVectorIds } from '$routes/stores';

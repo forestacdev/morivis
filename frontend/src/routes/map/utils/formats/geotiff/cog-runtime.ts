@@ -1,5 +1,5 @@
-import type maplibregl from 'maplibre-gl';
-import type { Coordinates } from 'maplibre-gl';
+import type maplibregl from '$routes/map/utils/maplibre';
+import type { Coordinates } from '$routes/map/utils/maplibre';
 
 import { getAdjustableRangeValue } from '$routes/map/data/types';
 import type { RasterCogEntry, RasterTiffStyle } from '$routes/map/data/types/raster';

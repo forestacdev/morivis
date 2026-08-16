@@ -1,5 +1,5 @@
 import { getAdjustableRangeValue } from '$routes/map/data/types';
-import type { DataDrivenPropertyValueSpecification } from 'maplibre-gl';
+import type { DataDrivenPropertyValueSpecification } from '$routes/map/utils/maplibre';
 
 import type {
 	NumberLinearExpression,

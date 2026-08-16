@@ -1,5 +1,4 @@
 <script lang="ts">
-	import maplibregl from 'maplibre-gl';
 	import { onDestroy, onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
@@ -8,6 +7,7 @@
 		ResultCoordinateData,
 		ResultPoiData
 	} from '$routes/map/utils/data/search-result';
+	import maplibregl from '$routes/map/utils/maplibre';
 
 	interface Props {
 		map: maplibregl.Map;

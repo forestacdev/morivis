@@ -1,4 +1,4 @@
-import type { ExpressionSpecification, LineLayerSpecification } from 'maplibre-gl';
+import type { ExpressionSpecification, LineLayerSpecification } from '$routes/map/utils/maplibre';
 
 /** vt_rtcode に基づく線幅の共通式 */
 const railWidthByRtcode: ExpressionSpecification = [

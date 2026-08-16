@@ -1,4 +1,4 @@
-import type { HillshadeLayerSpecification } from 'maplibre-gl';
+import type { HillshadeLayerSpecification } from '$routes/map/utils/maplibre';
 
 export const hillshadeLayers: HillshadeLayerSpecification[] = [
 	{

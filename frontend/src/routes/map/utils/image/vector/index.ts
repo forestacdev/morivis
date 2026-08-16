@@ -7,10 +7,10 @@ import { geojsonProtocol } from '$routes/map/protocol/vector/geojson';
 import { ogcFeatureProtocol } from '$routes/map/protocol/vector/ogc-feature';
 import { wfsFeatureProtocol } from '$routes/map/protocol/vector/wfs-feature';
 import { createLayersItems } from '$routes/map/utils/layers';
+import maplibregl from '$routes/map/utils/maplibre';
 import { resolveAbsoluteRequestUrl, resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { createSourcesItems } from '$routes/map/utils/sources';
 import * as tilebelt from '@mapbox/tilebelt';
-import maplibregl from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { CoverImageManager } from '../index';
 

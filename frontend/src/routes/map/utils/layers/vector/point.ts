@@ -1,4 +1,7 @@
-import type { CircleLayerSpecification, SymbolLayerSpecification } from 'maplibre-gl';
+import type {
+	CircleLayerSpecification,
+	SymbolLayerSpecification
+} from '$routes/map/utils/maplibre';
 
 import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 import type { FieldDef } from '$routes/map/data/types/vector/properties';

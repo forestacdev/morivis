@@ -5,21 +5,21 @@ import {
 	type MeshShadingStyle,
 	type MeshStyle
 } from '$routes/map/data/types/model';
+import type { CustomLayerInterface, Map as MapLibreMap } from '$routes/map/utils/maplibre';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
-import {
-	calculateModelTransform,
-	type ModelTransform
-} from '$routes/map/utils/three/model-transform';
 import {
 	applyProjectedModelGeoreference,
 	resolveFbxUnitScaleMeters
 } from '$routes/map/utils/three/model-georeference';
 import {
+	calculateModelTransform,
+	type ModelTransform
+} from '$routes/map/utils/three/model-transform';
+import {
 	centerObjectToLocalOrigin,
 	normalizeObjectToLocalOrigin
 } from '$routes/map/utils/three/object-normalization';
-import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -359,8 +359,7 @@ export class ThreeJsLayerManager {
 			color: new THREE.Color(style.color),
 			map,
 			alphaMap,
-			transparent:
-				style.opacity < 1
+			transparent: style.opacity < 1
 				|| alphaMap != null
 				|| ('transparent' in sourceMaterial && sourceMaterial.transparent === true),
 			opacity: style.opacity,
@@ -722,30 +721,30 @@ export class ThreeJsLayerManager {
 			};
 
 			const finalizeLoadedModel = (object: THREE.Object3D) => {
-					if (entry.format.georeference) {
-						applyProjectedModelGeoreference(object, entry.format.georeference);
-						return;
-					}
+				if (entry.format.georeference) {
+					applyProjectedModelGeoreference(object, entry.format.georeference);
+					return;
+				}
 
-					if (entry.format.type === 'fbx') {
-						const unitScaleMeters = resolveFbxUnitScaleMeters(
-							new THREE.Box3().setFromObject(object),
-							Number(
-								(object.userData as {
-									unitScaleFactor?: number;
-								}).unitScaleFactor
-							)
-						);
-						if (unitScaleMeters !== 1) {
-							object.scale.multiplyScalar(unitScaleMeters);
-							object.updateMatrixWorld(true);
-						}
+				if (entry.format.type === 'fbx') {
+					const unitScaleMeters = resolveFbxUnitScaleMeters(
+						new THREE.Box3().setFromObject(object),
+						Number(
+							(object.userData as {
+								unitScaleFactor?: number;
+							}).unitScaleFactor
+						)
+					);
+					if (unitScaleMeters !== 1) {
+						object.scale.multiplyScalar(unitScaleMeters);
+						object.updateMatrixWorld(true);
 					}
+				}
 
-					if (entry.format.normalizeToLocalOrigin) {
-						normalizeObjectToLocalOrigin(object);
-					}
-				};
+				if (entry.format.normalizeToLocalOrigin) {
+					normalizeObjectToLocalOrigin(object);
+				}
+			};
 
 			const createManagedLoaderContext = () => {
 				const manager = new THREE.LoadingManager();
@@ -917,7 +916,9 @@ export class ThreeJsLayerManager {
 
 						const response = await fetch(entry.format.url);
 						if (!response.ok) {
-							throw new Error(`Failed to fetch FBX: ${response.status} ${response.statusText}`);
+							throw new Error(
+								`Failed to fetch FBX: ${response.status} ${response.statusText}`
+							);
 						}
 
 						const buffer = await response.arrayBuffer();

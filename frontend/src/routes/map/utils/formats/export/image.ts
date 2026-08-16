@@ -1,4 +1,4 @@
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { Map as MapLibreMap } from '$routes/map/utils/maplibre';
 import { downloadWorldFile, generateWorldFile } from './worldfile';
 
 import JSZip from 'jszip';
