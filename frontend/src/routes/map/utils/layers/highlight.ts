@@ -6,9 +6,7 @@ import type {
 	ExpressionSpecification,
 	FilterSpecification,
 	Map as MapLibreMap,
-	StyleImageInterface,
-	StyleImageWebGLData,
-	StyleImageWebGLTarget
+	StyleImageInterface
 } from '$routes/map/utils/maplibre';
 import type { SelectedHighlightData } from '$routes/stores';
 
@@ -56,7 +54,8 @@ in vec2 v_uv;
 out vec4 fragColor;
 
 void main() {
-	vec2 pixel = v_uv * u_resolution;
+	vec2 repeatSize = u_resolution - vec2(1.0);
+	vec2 pixel = mod(floor(v_uv * u_resolution), repeatSize);
 	float diagonal = mod(pixel.x + pixel.y + u_time * 24.0, ${HIGHLIGHT_FILL_PATTERN_SPACING.toFixed(1)});
 	float distanceToStripe = min(diagonal, ${HIGHLIGHT_FILL_PATTERN_SPACING.toFixed(1)} - diagonal);
 	float stripe = 1.0 - smoothstep(${(HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH - 1).toFixed(1)}, ${(HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH + 0.5).toFixed(1)}, distanceToStripe);
@@ -76,10 +75,11 @@ in vec2 v_uv;
 out vec4 fragColor;
 
 void main() {
-	vec2 pixel = v_uv * u_resolution;
-	float bandCenter = mod(u_time * 42.0, u_resolution.x);
+	float repeatWidth = u_resolution.x - 1.0;
+	vec2 pixel = vec2(mod(floor(v_uv.x * u_resolution.x), repeatWidth), floor(v_uv.y * u_resolution.y));
+	float bandCenter = mod(u_time * 42.0, repeatWidth);
 	float distanceToBand = abs(pixel.x - bandCenter);
-	float wrappedDistance = min(distanceToBand, u_resolution.x - distanceToBand);
+	float wrappedDistance = min(distanceToBand, repeatWidth - distanceToBand);
 	float band = 1.0 - smoothstep(${(HIGHLIGHT_LINE_PATTERN_BAND_WIDTH - 6).toFixed(1)}, ${HIGHLIGHT_LINE_PATTERN_BAND_WIDTH.toFixed(1)}, wrappedDistance);
 	float alpha = mix(0.28, 1.0, band);
 	fragColor = vec4(u_color * alpha, alpha);
@@ -107,11 +107,7 @@ const getAnimationNow = () => {
 	return Date.now();
 };
 
-const createShader = (
-	gl: WebGL2RenderingContext,
-	type: number,
-	source: string
-) => {
+const createShader = (gl: WebGL2RenderingContext, type: number, source: string) => {
 	const shader = gl.createShader(type);
 	if (!shader) {
 		throw new Error('Failed to create WebGL shader.');
@@ -129,10 +125,7 @@ const createShader = (
 	return shader;
 };
 
-const createProgram = (
-	gl: WebGL2RenderingContext,
-	fragmentSource: string
-) => {
+const createProgram = (gl: WebGL2RenderingContext, fragmentSource: string) => {
 	const vertexShader = createShader(gl, gl.VERTEX_SHADER, HIGHLIGHT_PATTERN_VERTEX_SOURCE);
 	const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
 	const program = gl.createProgram();
@@ -157,6 +150,46 @@ const createProgram = (
 	return program;
 };
 
+const createPatternCanvas = (width: number, height: number) => {
+	if (typeof OffscreenCanvas !== 'undefined') {
+		return new OffscreenCanvas(width, height);
+	}
+
+	if (typeof document !== 'undefined') {
+		const canvas = document.createElement('canvas');
+		canvas.width = width;
+		canvas.height = height;
+		return canvas;
+	}
+
+	return null;
+};
+
+const sealPatternEdges = (pixels: Uint8Array, width: number, height: number) => {
+	const stride = width * 4;
+	const lastColumnOffset = (width - 1) * 4;
+	const lastRowOffset = (height - 1) * stride;
+
+	for (let y = 0; y < height; y += 1) {
+		const rowOffset = y * stride;
+		const sourceOffset = rowOffset;
+		const targetOffset = rowOffset + lastColumnOffset;
+		pixels[targetOffset] = pixels[sourceOffset];
+		pixels[targetOffset + 1] = pixels[sourceOffset + 1];
+		pixels[targetOffset + 2] = pixels[sourceOffset + 2];
+		pixels[targetOffset + 3] = pixels[sourceOffset + 3];
+	}
+
+	for (let x = 0; x < width; x += 1) {
+		const sourceOffset = x * 4;
+		const targetOffset = lastRowOffset + sourceOffset;
+		pixels[targetOffset] = pixels[sourceOffset];
+		pixels[targetOffset + 1] = pixels[sourceOffset + 1];
+		pixels[targetOffset + 2] = pixels[sourceOffset + 2];
+		pixels[targetOffset + 3] = pixels[sourceOffset + 3];
+	}
+};
+
 const createAnimatedWebGLPatternImage = ({
 	width,
 	height,
@@ -169,10 +202,10 @@ const createAnimatedWebGLPatternImage = ({
 	let mapRef: MapLibreMap | null = null;
 	let glRef: WebGL2RenderingContext | null = null;
 	let program: WebGLProgram | null = null;
-	let framebuffer: WebGLFramebuffer | null = null;
 	let timeUniform: WebGLUniformLocation | null = null;
 	let resolutionUniform: WebGLUniformLocation | null = null;
 	let colorUniform: WebGLUniformLocation | null = null;
+	let hasInitFailed = false;
 
 	const color = hexToRgb(HIGHLIGHT_LAYER_COLOR);
 	const colorUnit = {
@@ -180,72 +213,55 @@ const createAnimatedWebGLPatternImage = ({
 		g: color.g / 255,
 		b: color.b / 255
 	};
+	const data = new Uint8Array(width * height * 4);
 
 	const teardown = () => {
 		if (program && glRef) {
 			glRef.deleteProgram(program);
 		}
 
-		if (framebuffer && glRef) {
-			glRef.deleteFramebuffer(framebuffer);
-		}
-
 		program = null;
-		framebuffer = null;
 		timeUniform = null;
 		resolutionUniform = null;
 		colorUniform = null;
 		glRef = null;
+		hasInitFailed = false;
 	};
 
-	const setup = (gl: WebGL2RenderingContext) => {
-		if (program && framebuffer && glRef === gl) return;
-		if (glRef && glRef !== gl) {
-			teardown();
+	const setup = () => {
+		if (program && glRef) return true;
+		if (hasInitFailed) return false;
+
+		const canvas = createPatternCanvas(width, height);
+		if (!canvas) {
+			hasInitFailed = true;
+			console.error('Failed to create pattern canvas.');
+			return false;
 		}
 
-		program = createProgram(gl, fragmentSource);
-		framebuffer = gl.createFramebuffer();
-		if (!framebuffer || !program) {
-			teardown();
-			throw new Error('Failed to create WebGL framebuffer.');
+		const gl = canvas.getContext('webgl2', {
+			alpha: true,
+			antialias: false,
+			premultipliedAlpha: true
+		});
+		if (!gl) {
+			hasInitFailed = true;
+			console.error('WebGL2 is not available for animated highlight patterns.');
+			return false;
 		}
 
-		timeUniform = gl.getUniformLocation(program, 'u_time');
-		resolutionUniform = gl.getUniformLocation(program, 'u_resolution');
-		colorUniform = gl.getUniformLocation(program, 'u_color');
-		glRef = gl;
-	};
-
-	const data: StyleImageWebGLData = {
-		renderWithWebGL: ({ gl, texture, x, y, width: targetWidth, height: targetHeight }: StyleImageWebGLTarget) => {
-			setup(gl);
-			if (!program || !framebuffer) return;
-
-			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-			gl.framebufferTexture2D(
-				gl.FRAMEBUFFER,
-				gl.COLOR_ATTACHMENT0,
-				gl.TEXTURE_2D,
-				texture,
-				0
-			);
-			gl.viewport(x, y, targetWidth, targetHeight);
-			gl.useProgram(program);
-
-			if (timeUniform) {
-				gl.uniform1f(timeUniform, getAnimationNow() / 1000);
-			}
-
-			if (resolutionUniform) {
-				gl.uniform2f(resolutionUniform, targetWidth, targetHeight);
-			}
-
-			if (colorUniform) {
-				gl.uniform3f(colorUniform, colorUnit.r, colorUnit.g, colorUnit.b);
-			}
-
-			gl.drawArrays(gl.TRIANGLES, 0, 6);
+		try {
+			program = createProgram(gl, fragmentSource);
+			timeUniform = gl.getUniformLocation(program, 'u_time');
+			resolutionUniform = gl.getUniformLocation(program, 'u_resolution');
+			colorUniform = gl.getUniformLocation(program, 'u_color');
+			glRef = gl;
+			return true;
+		} catch (error) {
+			hasInitFailed = true;
+			console.error('Failed to initialize animated highlight pattern shader.', error);
+			teardown();
+			return false;
 		}
 	};
 
@@ -257,6 +273,31 @@ const createAnimatedWebGLPatternImage = ({
 			mapRef = map;
 		},
 		render: () => {
+			if (!setup() || !glRef || !program) {
+				return false;
+			}
+
+			glRef.bindFramebuffer(glRef.FRAMEBUFFER, null);
+			glRef.viewport(0, 0, width, height);
+			glRef.useProgram(program);
+			glRef.clearColor(0, 0, 0, 0);
+			glRef.clear(glRef.COLOR_BUFFER_BIT);
+
+			if (timeUniform) {
+				glRef.uniform1f(timeUniform, getAnimationNow() / 1000);
+			}
+
+			if (resolutionUniform) {
+				glRef.uniform2f(resolutionUniform, width, height);
+			}
+
+			if (colorUniform) {
+				glRef.uniform3f(colorUniform, colorUnit.r, colorUnit.g, colorUnit.b);
+			}
+
+			glRef.drawArrays(glRef.TRIANGLES, 0, 6);
+			glRef.readPixels(0, 0, width, height, glRef.RGBA, glRef.UNSIGNED_BYTE, data);
+			sealPatternEdges(data, width, height);
 			mapRef?.triggerRepaint();
 			return true;
 		},
@@ -288,10 +329,7 @@ const ensurePointAnimationCleanup = (map: MapLibreMap) => {
 	pointAnimationCleanupRegistered.add(map);
 	map.on('remove', () => {
 		const animationFrameId = pointAnimationFrameIds.get(map);
-		if (
-			animationFrameId !== undefined
-			&& typeof cancelAnimationFrame === 'function'
-		) {
+		if (animationFrameId !== undefined && typeof cancelAnimationFrame === 'function') {
 			cancelAnimationFrame(animationFrameId);
 		}
 		pointAnimationFrameIds.delete(map);
@@ -313,7 +351,7 @@ export const getBaseLayerId = (layerId: string) => {
 	return getSublayerBaseId(resolvedLayerId);
 };
 
-export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unknown; }) => {
+export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unknown }) => {
 	return getMorivisLogicalLayerId(layer.metadata) ?? getBaseLayerId(layer.id);
 };
 
@@ -422,12 +460,7 @@ class HighlightLayerRegistry {
 		}
 
 		if (item.baseCircleStrokeWidth !== undefined) {
-			setPaintProperty(
-				map,
-				item.actualLayerId,
-				'circle-stroke-width',
-				item.baseCircleStrokeWidth
-			);
+			setPaintProperty(map, item.actualLayerId, 'circle-stroke-width', item.baseCircleStrokeWidth);
 		}
 
 		if (item.baseCircleOpacity !== undefined) {
@@ -460,26 +493,19 @@ class HighlightLayerRegistry {
 
 	private static cancelPointAnimation = (map: MapLibreMap) => {
 		const animationFrameId = pointAnimationFrameIds.get(map);
-		if (
-			animationFrameId !== undefined
-			&& typeof cancelAnimationFrame === 'function'
-		) {
+		if (animationFrameId !== undefined && typeof cancelAnimationFrame === 'function') {
 			cancelAnimationFrame(animationFrameId);
 		}
 		pointAnimationFrameIds.delete(map);
 	};
 
-	private static startPointAnimation = (
-		map: MapLibreMap,
-		logicalLayerId: string
-	) => {
+	private static startPointAnimation = (map: MapLibreMap, logicalLayerId: string) => {
 		const pointItems = this.getPointItems(logicalLayerId);
 		if (pointItems.length === 0 || typeof requestAnimationFrame !== 'function') return;
 
 		const animate = () => {
 			const progress =
-				(getAnimationNow() % HIGHLIGHT_POINT_PULSE_DURATION) /
-				HIGHLIGHT_POINT_PULSE_DURATION;
+				(getAnimationNow() % HIGHLIGHT_POINT_PULSE_DURATION) / HIGHLIGHT_POINT_PULSE_DURATION;
 			const pulse = 0.5 - Math.cos(progress * Math.PI * 2) / 2;
 
 			pointItems.forEach((item) => {
@@ -506,10 +532,7 @@ class HighlightLayerRegistry {
 						map,
 						item.actualLayerId,
 						'circle-opacity',
-						clampOpacity(
-							item.baseCircleOpacity +
-								pulse * HIGHLIGHT_POINT_PULSE_OPACITY_DELTA
-						)
+						clampOpacity(item.baseCircleOpacity + pulse * HIGHLIGHT_POINT_PULSE_OPACITY_DELTA)
 					);
 				}
 
@@ -518,9 +541,7 @@ class HighlightLayerRegistry {
 						map,
 						item.actualLayerId,
 						'circle-stroke-opacity',
-						clampOpacity(
-							item.baseCircleStrokeOpacity - 0.2 + pulse * 0.2
-						)
+						clampOpacity(item.baseCircleStrokeOpacity - 0.2 + pulse * 0.2)
 					);
 				}
 
@@ -587,19 +608,20 @@ class HighlightLayerRegistry {
 		return this.items.map((item) => {
 			const baseFilter = mergeFilter(item.defaultFilter, item.runtimeFilter);
 			const isSelectedLayer = selected?.layerId === item.logicalLayerId;
-			const filter = item.role === 'highlight'
-				? mergeFilter(
-					baseFilter ?? undefined,
-					isSelectedLayer
-						? createSelectedOnlyFilter(selected.featureId, item.selectionKey)
-						: HIDDEN_FILTER
-				)
-				: mergeFilter(
-					baseFilter ?? undefined,
-					isSelectedLayer
-						? createSelectedExcludeFilter(selected.featureId, item.selectionKey)
-						: undefined
-				);
+			const filter =
+				item.role === 'highlight'
+					? mergeFilter(
+							baseFilter ?? undefined,
+							isSelectedLayer
+								? createSelectedOnlyFilter(selected.featureId, item.selectionKey)
+								: HIDDEN_FILTER
+						)
+					: mergeFilter(
+							baseFilter ?? undefined,
+							isSelectedLayer
+								? createSelectedExcludeFilter(selected.featureId, item.selectionKey)
+								: undefined
+						);
 
 			return {
 				layerId: item.actualLayerId,
