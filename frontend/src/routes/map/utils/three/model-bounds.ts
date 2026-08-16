@@ -140,10 +140,6 @@ const ensureFbxLoaderWindowShim = () => {
 		window?: FbxLoaderWindowShim;
 		document?: FbxLoaderDocumentShim;
 	};
-	const windowShim = globalScope.window ?? (globalScope as unknown as FbxLoaderWindowShim);
-
-	windowShim.innerWidth = windowShim.innerWidth ?? 1;
-	windowShim.innerHeight = windowShim.innerHeight ?? 1;
 
 	const createShimImageElement = (): ShimImageElement => {
 		const listeners = new Map<string, Set<ShimEventListener>>();
@@ -178,9 +174,10 @@ const ensureFbxLoaderWindowShim = () => {
 		return imageElement;
 	};
 
+	const existingWindow = globalScope.window;
+	const existingDocument = globalScope.document ?? existingWindow?.document;
 	const documentShim =
-		globalScope.document
-		?? windowShim.document
+		existingDocument
 		?? {
 			createElementNS: (_namespace: string, name: string) => {
 				if (name === 'img') {
@@ -202,12 +199,54 @@ const ensureFbxLoaderWindowShim = () => {
 			}
 		};
 
-	globalScope.document = documentShim;
-	windowShim.document = documentShim;
-	globalScope.window = windowShim;
+	const windowShim =
+		existingWindow
+		?? ({
+			innerWidth: 1,
+			innerHeight: 1,
+			document: documentShim
+		} as FbxLoaderWindowShim);
+
+	if (windowShim.innerWidth == null) {
+		try {
+			windowShim.innerWidth = 1;
+		} catch {
+			// ブラウザ実体の readonly window には触れない。
+		}
+	}
+	if (windowShim.innerHeight == null) {
+		try {
+			windowShim.innerHeight = 1;
+		} catch {
+			// ブラウザ実体の readonly window には触れない。
+		}
+	}
+	if (!windowShim.document) {
+		try {
+			windowShim.document = documentShim;
+		} catch {
+			// getter-only な document を持つ実体 window では代入しない。
+		}
+	}
+
+	if (!existingDocument) {
+		Object.defineProperty(globalScope, 'document', {
+			value: documentShim,
+			configurable: true,
+			writable: true
+		});
+	}
+
+	if (!existingWindow) {
+		Object.defineProperty(globalScope, 'window', {
+			value: windowShim,
+			configurable: true,
+			writable: true
+		});
+	}
 };
 
-interface UploadedModelObject {
+export interface UploadedModelObject {
 	object: THREE.Object3D;
 	animationNames: string[];
 }
@@ -444,7 +483,7 @@ const parseIfcObject = async (
 	}
 };
 
-const getUploadedModelObject = async (
+export const getUploadedModelObject = async (
 	file: File,
 	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc',
 	resourceUrls?: Record<string, string>,
