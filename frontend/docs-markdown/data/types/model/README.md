@@ -22,7 +22,9 @@
 - [ModelAnimationState](interfaces/ModelAnimationState.md)
 - [PointCloudEntry](interfaces/PointCloudEntry.md)
 - [PointCloudStyle](interfaces/PointCloudStyle.md)
+- [ProjectedModelGeoreference](interfaces/ProjectedModelGeoreference.md)
 - [Tiles3DEntry](interfaces/Tiles3DEntry.md)
+- [Tiles3DMeshStyle](interfaces/Tiles3DMeshStyle.md)
 
 ## Type Aliases
 
@@ -33,6 +35,7 @@
 - [MeshStyleEntry](type-aliases/MeshStyleEntry.md)
 - [MorivisModelEntry](type-aliases/MorivisModelEntry.md)
 - [PointCloudStyleEntry](type-aliases/PointCloudStyleEntry.md)
+- [Tiles3DMeshStyleEntry](type-aliases/Tiles3DMeshStyleEntry.md)
 
 ## Variables
 

@@ -6,7 +6,7 @@
 
 # Interface: FilterTemporalBehavior
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:46](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L46)
+Defined in: [frontend/src/routes/map/data/types/index.ts:46](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L46)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:46](https://github.com/
 
 > `optional` **alternateKeys**: `string`[]
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:49](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L49)
+Defined in: [frontend/src/routes/map/data/types/index.ts:49](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L49)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:49](https://github.com/
 
 > `optional` **endKey**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:51](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L51)
+Defined in: [frontend/src/routes/map/data/types/index.ts:51](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L51)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:51](https://github.com/
 
 > `optional` **key**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:48](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L48)
+Defined in: [frontend/src/routes/map/data/types/index.ts:48](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L48)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:48](https://github.com/
 
 > `optional` **startKey**: `string`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:50](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L50)
+Defined in: [frontend/src/routes/map/data/types/index.ts:50](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L50)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [frontend/src/routes/map/data/types/index.ts:50](https://github.com/
 
 > **type**: `"filter"`
 
-Defined in: [frontend/src/routes/map/data/types/index.ts:47](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/index.ts#L47)
+Defined in: [frontend/src/routes/map/data/types/index.ts:47](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/index.ts#L47)

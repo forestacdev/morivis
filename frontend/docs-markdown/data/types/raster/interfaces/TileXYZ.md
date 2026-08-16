@@ -6,7 +6,7 @@
 
 # Interface: TileXYZ
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:74](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/raster/index.ts#L74)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:74](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/raster/index.ts#L74)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:74](https://gith
 
 > **x**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:75](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/raster/index.ts#L75)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:75](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/raster/index.ts#L75)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:75](https://gith
 
 > **y**: `number`
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:76](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/raster/index.ts#L76)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:76](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/raster/index.ts#L76)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:76](https://gith
 
 > **z**: [`ZoomLevel`](../type-aliases/ZoomLevel.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:77](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/raster/index.ts#L77)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:77](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/raster/index.ts#L77)

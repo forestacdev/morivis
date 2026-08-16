@@ -6,7 +6,7 @@
 
 # Interface: StyleJsonStyle
 
-Defined in: [frontend/src/routes/map/data/types/stylejson.ts:5](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/stylejson.ts#L5)
+Defined in: [frontend/src/routes/map/data/types/stylejson.ts:5](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/stylejson.ts#L5)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/stylejson.ts:5](https://github.c
 
 > **opacity**: `0.3` \| `0.5` \| `0.7` \| `1`
 
-Defined in: [frontend/src/routes/map/data/types/stylejson.ts:7](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/stylejson.ts#L7)
+Defined in: [frontend/src/routes/map/data/types/stylejson.ts:7](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/stylejson.ts#L7)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/stylejson.ts:7](https://github.c
 
 > **type**: `"stylejson"`
 
-Defined in: [frontend/src/routes/map/data/types/stylejson.ts:6](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/stylejson.ts#L6)
+Defined in: [frontend/src/routes/map/data/types/stylejson.ts:6](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/stylejson.ts#L6)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [frontend/src/routes/map/data/types/stylejson.ts:6](https://github.c
 
 > `optional` **visible**: `boolean`
 
-Defined in: [frontend/src/routes/map/data/types/stylejson.ts:8](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/stylejson.ts#L8)
+Defined in: [frontend/src/routes/map/data/types/stylejson.ts:8](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/stylejson.ts#L8)

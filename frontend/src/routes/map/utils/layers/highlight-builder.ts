@@ -103,8 +103,9 @@ export const createBaseLayerItem = (entry: MorivisLayerEntry): LayerItem => {
 		id: `${entry.id}`,
 		source: `${entry.id}_source`,
 		maxzoom: 'maxZoom' in style ? (style.maxZoom ?? 24) : 24,
-		minzoom:
-			'minZoom' in style ? (style.minZoom ?? metaData.minZoom ?? 1) : (metaData.minZoom ?? 1),
+		minzoom: 'minZoom' in style
+			? (style.minZoom ?? metaData.minZoom ?? 1)
+			: (metaData.minZoom ?? 1),
 		metadata: createMorivisLayerMetadata(entry.id, 'base')
 	};
 };
@@ -239,8 +240,8 @@ export const registerHighlightLayers = ({
 	});
 	if (!baseHighlightLayer) return undefined;
 
-	const isAnimatedPointSymbolLayer =
-		baseHighlightLayer.type === 'symbol' && baseHighlightLayer.layout?.['icon-image'] !== undefined;
+	const isAnimatedPointSymbolLayer = baseHighlightLayer.type === 'symbol'
+		&& baseHighlightLayer.layout?.['icon-image'] !== undefined;
 
 	const highlightLayer = applySelectionFilter(baseHighlightLayer, createHiddenFilter());
 	registerLayerFilterState({
@@ -248,50 +249,44 @@ export const registerHighlightLayers = ({
 		layer: baseHighlightLayer,
 		role: 'highlight',
 		selectionKey,
-		patternKind:
-			baseLayer.type === 'fill' || baseLayer.type === 'fill-extrusion'
-				? 'fill'
-				: baseLayer.type === 'line' && useLinePattern
-					? 'line'
-					: baseHighlightLayer.type === 'circle' || isAnimatedPointSymbolLayer
-						? 'point'
-						: undefined,
-		patternProperty:
-			baseHighlightLayer.type === 'fill'
-				? 'fill-pattern'
-				: baseHighlightLayer.type === 'fill-extrusion'
-					? 'fill-extrusion-pattern'
-					: baseHighlightLayer.type === 'line' && useLinePattern
-						? 'line-pattern'
-						: undefined,
-		baseCircleRadius:
-			baseHighlightLayer.type === 'circle' &&
-			typeof baseHighlightLayer.paint?.['circle-radius'] === 'number'
-				? baseHighlightLayer.paint['circle-radius']
-				: undefined,
-		baseCircleStrokeWidth:
-			baseHighlightLayer.type === 'circle' &&
-			typeof baseHighlightLayer.paint?.['circle-stroke-width'] === 'number'
-				? baseHighlightLayer.paint['circle-stroke-width']
-				: undefined,
-		baseCircleOpacity:
-			baseHighlightLayer.type === 'circle' &&
-			typeof baseHighlightLayer.paint?.['circle-opacity'] === 'number'
-				? baseHighlightLayer.paint['circle-opacity']
-				: undefined,
-		baseCircleStrokeOpacity:
-			baseHighlightLayer.type === 'circle' &&
-			typeof baseHighlightLayer.paint?.['circle-stroke-opacity'] === 'number'
-				? baseHighlightLayer.paint['circle-stroke-opacity']
-				: undefined,
-		baseIconSize:
-			isAnimatedPointSymbolLayer && typeof baseHighlightLayer.layout?.['icon-size'] === 'number'
-				? baseHighlightLayer.layout['icon-size']
-				: undefined,
-		baseIconOpacity:
-			isAnimatedPointSymbolLayer && typeof baseHighlightLayer.paint?.['icon-opacity'] === 'number'
-				? baseHighlightLayer.paint['icon-opacity']
-				: undefined
+		patternKind: baseLayer.type === 'fill' || baseLayer.type === 'fill-extrusion'
+			? 'fill'
+			: baseLayer.type === 'line' && useLinePattern
+			? 'line'
+			: baseHighlightLayer.type === 'circle' || isAnimatedPointSymbolLayer
+			? 'point'
+			: undefined,
+		patternProperty: baseHighlightLayer.type === 'fill'
+			? 'fill-pattern'
+			: baseHighlightLayer.type === 'fill-extrusion'
+			? 'fill-extrusion-pattern'
+			: baseHighlightLayer.type === 'line' && useLinePattern
+			? 'line-pattern'
+			: undefined,
+		baseCircleRadius: baseHighlightLayer.type === 'circle'
+				&& typeof baseHighlightLayer.paint?.['circle-radius'] === 'number'
+			? baseHighlightLayer.paint['circle-radius']
+			: undefined,
+		baseCircleStrokeWidth: baseHighlightLayer.type === 'circle'
+				&& typeof baseHighlightLayer.paint?.['circle-stroke-width'] === 'number'
+			? baseHighlightLayer.paint['circle-stroke-width']
+			: undefined,
+		baseCircleOpacity: baseHighlightLayer.type === 'circle'
+				&& typeof baseHighlightLayer.paint?.['circle-opacity'] === 'number'
+			? baseHighlightLayer.paint['circle-opacity']
+			: undefined,
+		baseCircleStrokeOpacity: baseHighlightLayer.type === 'circle'
+				&& typeof baseHighlightLayer.paint?.['circle-stroke-opacity'] === 'number'
+			? baseHighlightLayer.paint['circle-stroke-opacity']
+			: undefined,
+		baseIconSize: isAnimatedPointSymbolLayer
+				&& typeof baseHighlightLayer.layout?.['icon-size'] === 'number'
+			? baseHighlightLayer.layout['icon-size']
+			: undefined,
+		baseIconOpacity: isAnimatedPointSymbolLayer
+				&& typeof baseHighlightLayer.paint?.['icon-opacity'] === 'number'
+			? baseHighlightLayer.paint['icon-opacity']
+			: undefined
 	});
 
 	return highlightLayer;
@@ -310,7 +305,7 @@ export const createHighlightLayerItems = (_dataEntries: MorivisLayerEntry[]) => 
 
 			const vectorEntry = entry as MorivisLayerEntry & {
 				style: VectorStyle;
-				properties: VectorProperties & { fields: FieldDef[] };
+				properties: VectorProperties & { fields: FieldDef[]; };
 			};
 			const temporalFilter = getTemporalFilter(vectorEntry);
 			const layer: LayerItem = {
@@ -324,8 +319,9 @@ export const createHighlightLayerItems = (_dataEntries: MorivisLayerEntry[]) => 
 
 			const { style } = vectorEntry;
 			const layerId = `${vectorEntry.id}`;
-			const selectionKey =
-				'sourceLayer' in vectorEntry.metaData ? vectorEntry.metaData.promoteId : undefined;
+			const selectionKey = 'sourceLayer' in vectorEntry.metaData
+				? vectorEntry.metaData.promoteId
+				: undefined;
 			const vectorLayer = createVectorLayer(
 				layer,
 				style,

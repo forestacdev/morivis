@@ -8,4 +8,4 @@
 
 > **DemRangeColorStyle** = [`DemLinearColorStyle`](../interfaces/DemLinearColorStyle.md) \| [`DemStepColorStyle`](../interfaces/DemStepColorStyle.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:154](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/raster/index.ts#L154)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:154](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/raster/index.ts#L154)

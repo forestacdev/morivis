@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	createEmptyShapeFileFormState,
-	mergeShapeRelatedFiles
-} from './shape-file-form-state';
+import { createEmptyShapeFileFormState, mergeShapeRelatedFiles } from './shape-file-form-state';
 
 const createFile = (name: string) => new File(['test'], name, { type: 'application/octet-stream' });
 

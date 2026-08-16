@@ -69,9 +69,13 @@ out vec4 fragColor;
 
 void main() {
 	vec2 pixel = floor(v_uv * u_resolution);
-	float diagonal = mod(pixel.x + pixel.y + u_time * ${HIGHLIGHT_FILL_PATTERN_SPEED.toFixed(1)}, ${HIGHLIGHT_FILL_PATTERN_SPACING.toFixed(1)});
+	float diagonal = mod(pixel.x + pixel.y + u_time * ${HIGHLIGHT_FILL_PATTERN_SPEED.toFixed(1)}, ${
+	HIGHLIGHT_FILL_PATTERN_SPACING.toFixed(1)
+});
 	float distanceToStripe = min(diagonal, ${HIGHLIGHT_FILL_PATTERN_SPACING.toFixed(1)} - diagonal);
-	float stripe = 1.0 - smoothstep(${(HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH - 1).toFixed(1)}, ${(HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH + 0.5).toFixed(1)}, distanceToStripe);
+	float stripe = 1.0 - smoothstep(${(HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH - 1).toFixed(1)}, ${
+	(HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH + 0.5).toFixed(1)
+}, distanceToStripe);
 	float alpha = mix(0.34, 0.78, stripe);
 	fragColor = vec4(u_color * alpha, alpha);
 }`;
@@ -92,7 +96,9 @@ void main() {
 	float bandCenter = mod(u_time * ${HIGHLIGHT_LINE_PATTERN_SPEED.toFixed(1)}, u_resolution.x);
 	float distanceToBand = abs(pixel.x - bandCenter);
 	float wrappedDistance = min(distanceToBand, u_resolution.x - distanceToBand);
-	float band = 1.0 - smoothstep(${(HIGHLIGHT_LINE_PATTERN_BAND_WIDTH - 6).toFixed(1)}, ${HIGHLIGHT_LINE_PATTERN_BAND_WIDTH.toFixed(1)}, wrappedDistance);
+	float band = 1.0 - smoothstep(${(HIGHLIGHT_LINE_PATTERN_BAND_WIDTH - 6).toFixed(1)}, ${
+	HIGHLIGHT_LINE_PATTERN_BAND_WIDTH.toFixed(1)
+}, wrappedDistance);
 	float alpha = mix(0.28, 1.0, band);
 	vec3 brightColor = mix(u_color, vec3(1.0), 0.22);
 	fragColor = vec4(brightColor * alpha, alpha);
@@ -198,9 +204,14 @@ const createPatternFrameId = (patternIdPrefix: string, frameIndex: number) => {
 	return `${patternIdPrefix}-${frameIndex}`;
 };
 
-const getHighlightPatternFrameId = (patternKind: HighlightAnimatedPatternKind, frameIndex: number) => {
+const getHighlightPatternFrameId = (
+	patternKind: HighlightAnimatedPatternKind,
+	frameIndex: number
+) => {
 	return createPatternFrameId(
-		patternKind === 'fill' ? HIGHLIGHT_FILL_PATTERN_ID_PREFIX : HIGHLIGHT_LINE_PATTERN_ID_PREFIX,
+		patternKind === 'fill'
+			? HIGHLIGHT_FILL_PATTERN_ID_PREFIX
+			: HIGHLIGHT_LINE_PATTERN_ID_PREFIX,
 		frameIndex
 	);
 };
@@ -449,7 +460,7 @@ export const getBaseLayerId = (layerId: string) => {
 	return getSublayerBaseId(resolvedLayerId);
 };
 
-export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unknown }) => {
+export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unknown; }) => {
 	return getMorivisLogicalLayerId(layer.metadata) ?? getBaseLayerId(layer.id);
 };
 
@@ -559,8 +570,8 @@ class HighlightLayerRegistry {
 
 	private static getPatternItems = (logicalLayerId?: string) => {
 		return this.items.filter((item) => {
-			const isAnimatedPattern =
-				item.role === 'highlight' && (item.patternKind === 'fill' || item.patternKind === 'line');
+			const isAnimatedPattern = item.role === 'highlight'
+				&& (item.patternKind === 'fill' || item.patternKind === 'line');
 			if (!isAnimatedPattern) return false;
 			return logicalLayerId ? item.logicalLayerId === logicalLayerId : true;
 		});
@@ -599,7 +610,12 @@ class HighlightLayerRegistry {
 		}
 
 		if (item.baseCircleStrokeWidth !== undefined) {
-			setPaintProperty(map, item.actualLayerId, 'circle-stroke-width', item.baseCircleStrokeWidth);
+			setPaintProperty(
+				map,
+				item.actualLayerId,
+				'circle-stroke-width',
+				item.baseCircleStrokeWidth
+			);
 		}
 
 		if (item.baseCircleOpacity !== undefined) {
@@ -662,8 +678,8 @@ class HighlightLayerRegistry {
 		if (pointItems.length === 0 || typeof requestAnimationFrame !== 'function') return;
 
 		const animate = () => {
-			const progress =
-				(getAnimationNow() % HIGHLIGHT_POINT_PULSE_DURATION) / HIGHLIGHT_POINT_PULSE_DURATION;
+			const progress = (getAnimationNow() % HIGHLIGHT_POINT_PULSE_DURATION)
+				/ HIGHLIGHT_POINT_PULSE_DURATION;
 			const pulse = 0.5 - Math.cos(progress * Math.PI * 2) / 2;
 
 			pointItems.forEach((item) => {
@@ -690,7 +706,9 @@ class HighlightLayerRegistry {
 						map,
 						item.actualLayerId,
 						'circle-opacity',
-						clampOpacity(item.baseCircleOpacity + pulse * HIGHLIGHT_POINT_PULSE_OPACITY_DELTA)
+						clampOpacity(
+							item.baseCircleOpacity + pulse * HIGHLIGHT_POINT_PULSE_OPACITY_DELTA
+						)
 					);
 				}
 
@@ -747,12 +765,17 @@ class HighlightLayerRegistry {
 
 			if (fillItems.length > 0 || hasZoneLayer) {
 				const fillFrame = Math.floor(
-					((now % HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION) / HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION) *
-						HIGHLIGHT_FILL_PATTERN_FRAME_COUNT
+					((now % HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION)
+						/ HIGHLIGHT_FILL_PATTERN_CYCLE_DURATION)
+						* HIGHLIGHT_FILL_PATTERN_FRAME_COUNT
 				);
 				if (fillFrame !== lastFillFrame) {
 					fillItems.forEach((item) => {
-						this.setPatternFrame(map, item, getHighlightPatternFrameId('fill', fillFrame));
+						this.setPatternFrame(
+							map,
+							item,
+							getHighlightPatternFrameId('fill', fillFrame)
+						);
 					});
 					if (hasZoneLayer) {
 						setPaintProperty(
@@ -768,12 +791,17 @@ class HighlightLayerRegistry {
 
 			if (lineItems.length > 0) {
 				const lineFrame = Math.floor(
-					((now % HIGHLIGHT_LINE_PATTERN_CYCLE_DURATION) / HIGHLIGHT_LINE_PATTERN_CYCLE_DURATION) *
-						HIGHLIGHT_LINE_PATTERN_FRAME_COUNT
+					((now % HIGHLIGHT_LINE_PATTERN_CYCLE_DURATION)
+						/ HIGHLIGHT_LINE_PATTERN_CYCLE_DURATION)
+						* HIGHLIGHT_LINE_PATTERN_FRAME_COUNT
 				);
 				if (lineFrame !== lastLineFrame) {
 					lineItems.forEach((item) => {
-						this.setPatternFrame(map, item, getHighlightPatternFrameId('line', lineFrame));
+						this.setPatternFrame(
+							map,
+							item,
+							getHighlightPatternFrameId('line', lineFrame)
+						);
 					});
 					lastLineFrame = lineFrame;
 				}
@@ -828,20 +856,19 @@ class HighlightLayerRegistry {
 		return this.items.map((item) => {
 			const baseFilter = mergeFilter(item.defaultFilter, item.runtimeFilter);
 			const isSelectedLayer = selected?.layerId === item.logicalLayerId;
-			const filter =
-				item.role === 'highlight'
-					? mergeFilter(
-							baseFilter ?? undefined,
-							isSelectedLayer
-								? createSelectedOnlyFilter(selected.featureId, item.selectionKey)
-								: HIDDEN_FILTER
-						)
-					: mergeFilter(
-							baseFilter ?? undefined,
-							isSelectedLayer
-								? createSelectedExcludeFilter(selected.featureId, item.selectionKey)
-								: undefined
-						);
+			const filter = item.role === 'highlight'
+				? mergeFilter(
+					baseFilter ?? undefined,
+					isSelectedLayer
+						? createSelectedOnlyFilter(selected.featureId, item.selectionKey)
+						: HIDDEN_FILTER
+				)
+				: mergeFilter(
+					baseFilter ?? undefined,
+					isSelectedLayer
+						? createSelectedExcludeFilter(selected.featureId, item.selectionKey)
+						: undefined
+				);
 
 			return {
 				layerId: item.actualLayerId,

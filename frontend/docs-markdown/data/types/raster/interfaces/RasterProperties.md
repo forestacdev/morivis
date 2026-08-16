@@ -6,7 +6,7 @@
 
 # Interface: RasterProperties
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:248](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/raster/index.ts#L248)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:248](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/raster/index.ts#L248)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:248](https://git
 
 > `optional` **bands**: [`RasterBandProperties`](RasterBandProperties.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:250](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/raster/index.ts#L250)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:250](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/raster/index.ts#L250)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:250](https://git
 
 > `optional` **categories**: [`RasterCategoryProperties`](RasterCategoryProperties.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:251](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/raster/index.ts#L251)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:251](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/raster/index.ts#L251)
 
 ***
 
@@ -30,4 +30,4 @@ Defined in: [frontend/src/routes/map/data/types/raster/index.ts:251](https://git
 
 > `optional` **temporal**: [`RasterTemporalProperties`](RasterTemporalProperties.md)
 
-Defined in: [frontend/src/routes/map/data/types/raster/index.ts:249](https://github.com/forestacdev/morivis/blob/90db8bbb848a88e5405ca553ae387d04a40ba959/frontend/src/routes/map/data/types/raster/index.ts#L249)
+Defined in: [frontend/src/routes/map/data/types/raster/index.ts:249](https://github.com/forestacdev/morivis/blob/9a83d67a3be4fb6e2d73e4487a806d84bdbaeb96/frontend/src/routes/map/data/types/raster/index.ts#L249)
