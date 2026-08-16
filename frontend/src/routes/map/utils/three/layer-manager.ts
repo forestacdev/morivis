@@ -131,6 +131,11 @@ const materialHasTextureSlots = (material: THREE.Material) => {
 	});
 };
 
+const getTextureSlot = (material: THREE.Material, key: string) => {
+	const candidate = (material as THREE.Material & Record<string, unknown>)[key];
+	return candidate instanceof THREE.Texture ? candidate : null;
+};
+
 /**
  * Three.js レイヤーマネージャー
  * scene/camera/renderer は一度だけ初期化し、モデルの追加/削除のみを行う
@@ -148,6 +153,7 @@ export class ThreeJsLayerManager {
 	private isInitialized = false;
 	private colorMapManager = new ColorMapManager();
 	private lastRenderTimeMs: number | null = null;
+	private repaintBurstHandle: number | null = null;
 
 	constructor() {
 		this.dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
@@ -341,6 +347,34 @@ export class ThreeJsLayerManager {
 		return material;
 	};
 
+	private createFbxTexturedMaterial = (
+		sourceMaterial: THREE.Material,
+		style: MeshStyle
+	): THREE.Material => {
+		const map = getTextureSlot(sourceMaterial, 'map')
+			?? getTextureSlot(sourceMaterial, 'emissiveMap');
+		const alphaMap = getTextureSlot(sourceMaterial, 'alphaMap');
+
+		const material = new THREE.MeshBasicMaterial({
+			color: new THREE.Color(style.color),
+			map,
+			alphaMap,
+			transparent:
+				style.opacity < 1
+				|| alphaMap != null
+				|| ('transparent' in sourceMaterial && sourceMaterial.transparent === true),
+			opacity: style.opacity,
+			wireframe: style.wireframe,
+			side: THREE.DoubleSide
+		});
+
+		if ('alphaTest' in sourceMaterial && typeof sourceMaterial.alphaTest === 'number') {
+			material.alphaTest = sourceMaterial.alphaTest;
+		}
+
+		return material;
+	};
+
 	private createStyledSourceMaterial = (
 		sourceMaterial: THREE.Material,
 		style: MeshStyle
@@ -358,7 +392,11 @@ export class ThreeJsLayerManager {
 		return material;
 	};
 
-	private applyStyleToMesh = (mesh: THREE.Mesh, style: MeshStyle) => {
+	private applyStyleToMesh = (
+		mesh: THREE.Mesh,
+		style: MeshStyle,
+		formatType?: MeshEntry<MeshStyle>['format']['type']
+	) => {
 		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 		const originalMaterials = (mesh.userData.originalMaterials as THREE.Material[] | undefined)
 			?? currentMaterials.map((material) => material.clone());
@@ -374,7 +412,9 @@ export class ThreeJsLayerManager {
 
 		const nextMaterials = originalMaterials.map((sourceMaterial) =>
 			// FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
-			hasTexturedMaterial
+			hasTexturedMaterial && formatType === 'fbx'
+				? this.createFbxTexturedMaterial(sourceMaterial, style)
+				: hasTexturedMaterial
 				? this.createStyledSourceMaterial(sourceMaterial, style)
 				: isSkinnedMesh
 				? this.createStyledSourceMaterial(sourceMaterial, style)
@@ -393,12 +433,42 @@ export class ThreeJsLayerManager {
 		});
 	};
 
-	private applyStyleToObject = (object: THREE.Object3D, style: MeshStyle) => {
+	private applyStyleToObject = (
+		object: THREE.Object3D,
+		style: MeshStyle,
+		formatType?: MeshEntry<MeshStyle>['format']['type']
+	) => {
 		object.traverse((child) => {
 			if ((child as THREE.Mesh).isMesh) {
-				this.applyStyleToMesh(child as THREE.Mesh, style);
+				this.applyStyleToMesh(child as THREE.Mesh, style, formatType);
 			}
 		});
+		this.map?.triggerRepaint();
+	};
+
+	private requestRepaintBurst = (frameCount = 90) => {
+		if (typeof window === 'undefined') {
+			this.map?.triggerRepaint();
+			return;
+		}
+
+		if (this.repaintBurstHandle != null) {
+			window.cancelAnimationFrame(this.repaintBurstHandle);
+			this.repaintBurstHandle = null;
+		}
+
+		let remaining = frameCount;
+		const tick = () => {
+			this.map?.triggerRepaint();
+			remaining -= 1;
+			if (remaining > 0) {
+				this.repaintBurstHandle = window.requestAnimationFrame(tick);
+				return;
+			}
+			this.repaintBurstHandle = null;
+		};
+
+		tick();
 	};
 
 	private syncAnimationState = (loaded: LoadedModel) => {
@@ -627,7 +697,7 @@ export class ThreeJsLayerManager {
 				model: THREE.Group | THREE.Object3D,
 				animations: THREE.AnimationClip[] = []
 			) => {
-				this.applyStyleToObject(model, entry.style);
+				this.applyStyleToObject(model, entry.style, entry.format.type);
 
 				model.visible = entry.style.visible ?? true;
 				model.userData.entryId = entry.id;
@@ -647,10 +717,11 @@ export class ThreeJsLayerManager {
 				} else {
 					this.modelGroup!.add(model);
 				}
+				this.requestRepaintBurst(entry.format.type === 'fbx' ? 180 : 30);
 				resolve();
 			};
 
-				const finalizeLoadedModel = (object: THREE.Object3D) => {
+			const finalizeLoadedModel = (object: THREE.Object3D) => {
 					if (entry.format.georeference) {
 						applyProjectedModelGeoreference(object, entry.format.georeference);
 						return;
@@ -676,8 +747,16 @@ export class ThreeJsLayerManager {
 					}
 				};
 
-			if (entry.format.type === 'obj') {
+			const createManagedLoaderContext = () => {
 				const manager = new THREE.LoadingManager();
+				manager.onLoad = () => {
+					this.requestRepaintBurst(180);
+				};
+				return manager;
+			};
+
+			if (entry.format.type === 'obj') {
+				const manager = createManagedLoaderContext();
 				const resourceUrls = entry.format.resourceUrls;
 				if (resourceUrls) {
 					manager.setURLModifier((url) => {
@@ -720,7 +799,7 @@ export class ThreeJsLayerManager {
 					loadObj();
 				}
 			} else if (entry.format.type === '3ds') {
-				const manager = new THREE.LoadingManager();
+				const manager = createManagedLoaderContext();
 				const resourceUrls = entry.format.resourceUrls;
 				if (resourceUrls) {
 					manager.setURLModifier((url) => {
@@ -754,7 +833,7 @@ export class ThreeJsLayerManager {
 					})
 					.catch((error) => reject(error));
 			} else if (entry.format.type === 'dae') {
-				const manager = new THREE.LoadingManager();
+				const manager = createManagedLoaderContext();
 				const resourceUrls = entry.format.resourceUrls;
 				if (resourceUrls) {
 					manager.setURLModifier((url) => {
@@ -781,7 +860,7 @@ export class ThreeJsLayerManager {
 					})
 					.catch((error) => reject(error));
 			} else if (entry.format.type === '3dm') {
-				const manager = new THREE.LoadingManager();
+				const manager = createManagedLoaderContext();
 				const resourceUrls = entry.format.resourceUrls;
 				if (resourceUrls) {
 					manager.setURLModifier((url) => {
@@ -809,7 +888,7 @@ export class ThreeJsLayerManager {
 					})
 					.catch((error) => reject(error));
 			} else if (entry.format.type === 'fbx') {
-				const manager = new THREE.LoadingManager();
+				const manager = createManagedLoaderContext();
 				const resourceUrls = entry.format.resourceUrls;
 				if (resourceUrls) {
 					manager.setURLModifier((url) => {
@@ -825,28 +904,30 @@ export class ThreeJsLayerManager {
 					});
 				}
 				loadFbxLoaderModule()
-					.then(({ FBXLoader }) => {
+					.then(async ({ FBXLoader }) => {
 						const fbxLoader = new FBXLoader(manager);
+						let resourcePath = '';
 						if (!resourceUrls) {
 							try {
-								fbxLoader.setResourcePath(new URL('./', entry.format.url).href);
+								resourcePath = new URL('./', entry.format.url).href;
 							} catch {
-								// blob URL などは URL 基底を組めないので、そのままロードする。
+								// blob URL などは URL 基底を組めないので、そのまま解析する。
 							}
 						}
-						fbxLoader.load(
-							entry.format.url,
-							(object) => {
-								finalizeLoadedModel(object);
-								onModelLoaded(
-									object,
-									(object as THREE.Group & {
-										animations?: THREE.AnimationClip[];
-									}).animations ?? []
-								);
-							},
-							undefined,
-							(error) => reject(error)
+
+						const response = await fetch(entry.format.url);
+						if (!response.ok) {
+							throw new Error(`Failed to fetch FBX: ${response.status} ${response.statusText}`);
+						}
+
+						const buffer = await response.arrayBuffer();
+						const object = fbxLoader.parse(buffer, resourcePath);
+						finalizeLoadedModel(object);
+						onModelLoaded(
+							object,
+							(object as THREE.Group & {
+								animations?: THREE.AnimationClip[];
+							}).animations ?? []
 						);
 					})
 					.catch((error) => reject(error));
@@ -1001,7 +1082,7 @@ export class ThreeJsLayerManager {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
 		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, opacity } };
-		this.applyStyleToObject(loaded.object, loaded.entry.style);
+		this.applyStyleToObject(loaded.object, loaded.entry.style, loaded.entry.format.type);
 		this.syncAnimationState(loaded);
 	}
 
@@ -1009,7 +1090,7 @@ export class ThreeJsLayerManager {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
 		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, wireframe } };
-		this.applyStyleToObject(loaded.object, loaded.entry.style);
+		this.applyStyleToObject(loaded.object, loaded.entry.style, loaded.entry.format.type);
 		this.syncAnimationState(loaded);
 	}
 
@@ -1017,7 +1098,7 @@ export class ThreeJsLayerManager {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
 		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, color } };
-		this.applyStyleToObject(loaded.object, loaded.entry.style);
+		this.applyStyleToObject(loaded.object, loaded.entry.style, loaded.entry.format.type);
 		this.syncAnimationState(loaded);
 	}
 
