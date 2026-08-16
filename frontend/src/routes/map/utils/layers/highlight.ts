@@ -6,7 +6,9 @@ import type {
 	ExpressionSpecification,
 	FilterSpecification,
 	Map as MapLibreMap,
-	StyleImageInterface
+	StyleImageInterface,
+	StyleImageWebGLData,
+	StyleImageWebGLTarget
 } from '$routes/map/utils/maplibre';
 import type { SelectedHighlightData } from '$routes/stores';
 
@@ -23,6 +25,65 @@ const HIGHLIGHT_LINE_PATTERN_BAND_WIDTH = 18;
 const HIGHLIGHT_POINT_PULSE_DURATION = 1200;
 const HIGHLIGHT_POINT_PULSE_SCALE = 0.18;
 const HIGHLIGHT_POINT_PULSE_OPACITY_DELTA = 0.18;
+
+const HIGHLIGHT_PATTERN_VERTEX_SOURCE = `#version 300 es
+const vec2 positions[6] = vec2[6](
+	vec2(-1.0, -1.0),
+	vec2(1.0, -1.0),
+	vec2(-1.0, 1.0),
+	vec2(-1.0, 1.0),
+	vec2(1.0, -1.0),
+	vec2(1.0, 1.0)
+);
+
+out vec2 v_uv;
+
+void main() {
+	vec2 position = positions[gl_VertexID];
+	v_uv = position * 0.5 + 0.5;
+	gl_Position = vec4(position.x, -position.y, 0.0, 1.0);
+}`;
+
+const HIGHLIGHT_FILL_PATTERN_FRAGMENT_SOURCE = `#version 300 es
+precision highp float;
+
+uniform float u_time;
+uniform vec2 u_resolution;
+uniform vec3 u_color;
+
+in vec2 v_uv;
+
+out vec4 fragColor;
+
+void main() {
+	vec2 pixel = v_uv * u_resolution;
+	float diagonal = mod(pixel.x + pixel.y + u_time * 24.0, ${HIGHLIGHT_FILL_PATTERN_SPACING.toFixed(1)});
+	float distanceToStripe = min(diagonal, ${HIGHLIGHT_FILL_PATTERN_SPACING.toFixed(1)} - diagonal);
+	float stripe = 1.0 - smoothstep(${(HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH - 1).toFixed(1)}, ${(HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH + 0.5).toFixed(1)}, distanceToStripe);
+	float alpha = mix(0.34, 0.78, stripe);
+	fragColor = vec4(u_color * alpha, alpha);
+}`;
+
+const HIGHLIGHT_LINE_PATTERN_FRAGMENT_SOURCE = `#version 300 es
+precision highp float;
+
+uniform float u_time;
+uniform vec2 u_resolution;
+uniform vec3 u_color;
+
+in vec2 v_uv;
+
+out vec4 fragColor;
+
+void main() {
+	vec2 pixel = v_uv * u_resolution;
+	float bandCenter = mod(u_time * 42.0, u_resolution.x);
+	float distanceToBand = abs(pixel.x - bandCenter);
+	float wrappedDistance = min(distanceToBand, u_resolution.x - distanceToBand);
+	float band = 1.0 - smoothstep(${(HIGHLIGHT_LINE_PATTERN_BAND_WIDTH - 6).toFixed(1)}, ${HIGHLIGHT_LINE_PATTERN_BAND_WIDTH.toFixed(1)}, wrappedDistance);
+	float alpha = mix(0.28, 1.0, band);
+	fragColor = vec4(u_color * alpha, alpha);
+}`;
 
 const pointAnimationFrameIds = new WeakMap<MapLibreMap, number>();
 const pointAnimationCleanupRegistered = new WeakSet<MapLibreMap>();
@@ -46,29 +107,147 @@ const getAnimationNow = () => {
 	return Date.now();
 };
 
-const setPixel = (
-	data: Uint8Array | Uint8ClampedArray,
-	index: number,
-	color: { r: number; g: number; b: number; },
-	alpha: number
+const createShader = (
+	gl: WebGL2RenderingContext,
+	type: number,
+	source: string
 ) => {
-	data[index] = color.r;
-	data[index + 1] = color.g;
-	data[index + 2] = color.b;
-	data[index + 3] = alpha;
+	const shader = gl.createShader(type);
+	if (!shader) {
+		throw new Error('Failed to create WebGL shader.');
+	}
+
+	gl.shaderSource(shader, source);
+	gl.compileShader(shader);
+
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		const message = gl.getShaderInfoLog(shader) ?? 'Unknown shader compile error.';
+		gl.deleteShader(shader);
+		throw new Error(message);
+	}
+
+	return shader;
 };
 
-const createAnimatedPatternImage = ({
+const createProgram = (
+	gl: WebGL2RenderingContext,
+	fragmentSource: string
+) => {
+	const vertexShader = createShader(gl, gl.VERTEX_SHADER, HIGHLIGHT_PATTERN_VERTEX_SOURCE);
+	const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
+	const program = gl.createProgram();
+	if (!program) {
+		gl.deleteShader(vertexShader);
+		gl.deleteShader(fragmentShader);
+		throw new Error('Failed to create WebGL program.');
+	}
+
+	gl.attachShader(program, vertexShader);
+	gl.attachShader(program, fragmentShader);
+	gl.linkProgram(program);
+	gl.deleteShader(vertexShader);
+	gl.deleteShader(fragmentShader);
+
+	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+		const message = gl.getProgramInfoLog(program) ?? 'Unknown program link error.';
+		gl.deleteProgram(program);
+		throw new Error(message);
+	}
+
+	return program;
+};
+
+const createAnimatedWebGLPatternImage = ({
 	width,
 	height,
-	renderFrame
+	fragmentSource
 }: {
 	width: number;
 	height: number;
-	renderFrame: (data: Uint8Array, now: number) => void;
+	fragmentSource: string;
 }): StyleImageInterface => {
 	let mapRef: MapLibreMap | null = null;
-	const data = new Uint8Array(width * height * 4);
+	let glRef: WebGL2RenderingContext | null = null;
+	let program: WebGLProgram | null = null;
+	let framebuffer: WebGLFramebuffer | null = null;
+	let timeUniform: WebGLUniformLocation | null = null;
+	let resolutionUniform: WebGLUniformLocation | null = null;
+	let colorUniform: WebGLUniformLocation | null = null;
+
+	const color = hexToRgb(HIGHLIGHT_LAYER_COLOR);
+	const colorUnit = {
+		r: color.r / 255,
+		g: color.g / 255,
+		b: color.b / 255
+	};
+
+	const teardown = () => {
+		if (program && glRef) {
+			glRef.deleteProgram(program);
+		}
+
+		if (framebuffer && glRef) {
+			glRef.deleteFramebuffer(framebuffer);
+		}
+
+		program = null;
+		framebuffer = null;
+		timeUniform = null;
+		resolutionUniform = null;
+		colorUniform = null;
+		glRef = null;
+	};
+
+	const setup = (gl: WebGL2RenderingContext) => {
+		if (program && framebuffer && glRef === gl) return;
+		if (glRef && glRef !== gl) {
+			teardown();
+		}
+
+		program = createProgram(gl, fragmentSource);
+		framebuffer = gl.createFramebuffer();
+		if (!framebuffer || !program) {
+			teardown();
+			throw new Error('Failed to create WebGL framebuffer.');
+		}
+
+		timeUniform = gl.getUniformLocation(program, 'u_time');
+		resolutionUniform = gl.getUniformLocation(program, 'u_resolution');
+		colorUniform = gl.getUniformLocation(program, 'u_color');
+		glRef = gl;
+	};
+
+	const data: StyleImageWebGLData = {
+		renderWithWebGL: ({ gl, texture, x, y, width: targetWidth, height: targetHeight }: StyleImageWebGLTarget) => {
+			setup(gl);
+			if (!program || !framebuffer) return;
+
+			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+			gl.framebufferTexture2D(
+				gl.FRAMEBUFFER,
+				gl.COLOR_ATTACHMENT0,
+				gl.TEXTURE_2D,
+				texture,
+				0
+			);
+			gl.viewport(x, y, targetWidth, targetHeight);
+			gl.useProgram(program);
+
+			if (timeUniform) {
+				gl.uniform1f(timeUniform, getAnimationNow() / 1000);
+			}
+
+			if (resolutionUniform) {
+				gl.uniform2f(resolutionUniform, targetWidth, targetHeight);
+			}
+
+			if (colorUniform) {
+				gl.uniform3f(colorUniform, colorUnit.r, colorUnit.g, colorUnit.b);
+			}
+
+			gl.drawArrays(gl.TRIANGLES, 0, 6);
+		}
+	};
 
 	return {
 		width,
@@ -78,65 +257,28 @@ const createAnimatedPatternImage = ({
 			mapRef = map;
 		},
 		render: () => {
-			renderFrame(data, getAnimationNow());
 			mapRef?.triggerRepaint();
 			return true;
 		},
 		onRemove: () => {
-			mapRef = null;
+			teardown();
 		}
 	};
 };
 
 const createAnimatedFillPatternImage = (): StyleImageInterface => {
-	const color = hexToRgb(HIGHLIGHT_LAYER_COLOR);
-
-	return createAnimatedPatternImage({
+	return createAnimatedWebGLPatternImage({
 		width: HIGHLIGHT_FILL_PATTERN_SIZE,
 		height: HIGHLIGHT_FILL_PATTERN_SIZE,
-		renderFrame: (data, now) => {
-			const phaseOffset = Math.floor(now * 0.02);
-
-			for (let y = 0; y < HIGHLIGHT_FILL_PATTERN_SIZE; y += 1) {
-				for (let x = 0; x < HIGHLIGHT_FILL_PATTERN_SIZE; x += 1) {
-					const targetIndex = (y * HIGHLIGHT_FILL_PATTERN_SIZE + x) * 4;
-					const diagonal = mod(x + y + phaseOffset, HIGHLIGHT_FILL_PATTERN_SPACING);
-					const distanceToStripe = Math.min(
-						diagonal,
-						HIGHLIGHT_FILL_PATTERN_SPACING - diagonal
-					);
-					const alpha = distanceToStripe <= HIGHLIGHT_FILL_PATTERN_STRIPE_WIDTH ? 196 : 88;
-					setPixel(data, targetIndex, color, alpha);
-				}
-			}
-		}
+		fragmentSource: HIGHLIGHT_FILL_PATTERN_FRAGMENT_SOURCE
 	});
 };
 
 const createAnimatedLinePatternImage = (): StyleImageInterface => {
-	const color = hexToRgb(HIGHLIGHT_LAYER_COLOR);
-
-	return createAnimatedPatternImage({
+	return createAnimatedWebGLPatternImage({
 		width: HIGHLIGHT_LINE_PATTERN_WIDTH,
 		height: HIGHLIGHT_LINE_PATTERN_HEIGHT,
-		renderFrame: (data, now) => {
-			const bandCenter = Math.floor((now * 0.045) % HIGHLIGHT_LINE_PATTERN_WIDTH);
-
-			for (let y = 0; y < HIGHLIGHT_LINE_PATTERN_HEIGHT; y += 1) {
-				for (let x = 0; x < HIGHLIGHT_LINE_PATTERN_WIDTH; x += 1) {
-					const targetIndex = (y * HIGHLIGHT_LINE_PATTERN_WIDTH + x) * 4;
-					const distance = Math.abs(x - bandCenter);
-					const wrappedDistance = Math.min(
-						distance,
-						HIGHLIGHT_LINE_PATTERN_WIDTH - distance
-					);
-					const alpha = wrappedDistance <= HIGHLIGHT_LINE_PATTERN_BAND_WIDTH
-						? Math.max(144, 255 - wrappedDistance * 8)
-						: 84;
-					setPixel(data, targetIndex, color, alpha);
-				}
-			}
-		}
+		fragmentSource: HIGHLIGHT_LINE_PATTERN_FRAGMENT_SOURCE
 	});
 };
 
@@ -262,10 +404,6 @@ const setLayoutProperty = <K extends keyof AllLayoutProperties>(
 
 const clampOpacity = (value: number) => {
 	return Math.max(0, Math.min(1, value));
-};
-
-const mod = (value: number, divisor: number) => {
-	return ((value % divisor) + divisor) % divisor;
 };
 
 class HighlightLayerRegistry {

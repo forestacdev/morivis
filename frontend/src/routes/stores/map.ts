@@ -539,12 +539,14 @@ const createMapStore = () => {
 		}
 
 		// より詳細なエラー情報を取得
-		map.on('error', (e) => {
-			if (import.meta.env.PROD) return;
-			console.error('Map error details:', e);
-			console.error('Error source:', e.error);
-			console.error('Error stack:', e.error?.stack);
-		});
+			map.on('error', (e) => {
+				if (import.meta.env.PROD) return;
+				console.error('Map error details:', e);
+				console.error('Error source:', e.error);
+				if ('stack' in e.error) {
+					console.error('Error stack:', e.error.stack);
+				}
+			});
 
 		map.on('click', (e: MapMouseEvent) => {
 			if (e.originalEvent.shiftKey || e.originalEvent.ctrlKey) {
@@ -689,11 +691,11 @@ const createMapStore = () => {
 		});
 		map.on('moveend', debounceMapMoveEnd);
 
-		map.on('zoom', (e: MouseEvent) => {
-			if (!map) return;
-			const zoom = map.getZoom();
-			zoomEvent.set(zoom);
-		});
+			map.on('zoom', () => {
+				if (!map) return;
+				const zoom = map.getZoom();
+				zoomEvent.set(zoom);
+			});
 
 		initEvent.set(map);
 	};

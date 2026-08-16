@@ -2,6 +2,19 @@ packages:
   - frontend
 
 minimumReleaseAge: 10080
+# Temporary exceptions for the maplibre-gl 6.4.0 upgrade.
+# Remove each entry after it ages past minimumReleaseAge:
+# - update-browserslist-db@1.3.1 after 2026-08-17 22:40:52 JST
+# - terser@5.50.0 after 2026-08-19 03:32:26 JST
+# - baseline-browser-mapping@2.11.14 after 2026-08-21 00:04:50 JST
+# - electron-to-chromium@1.5.407 after 2026-08-22 19:02:43 JST
+# - maplibre-gl@6.4.0 after 2026-08-23 17:45:36 JST
+minimumReleaseAgeExclude:
+  - baseline-browser-mapping@2.11.14
+  - electron-to-chromium@1.5.407
+  - maplibre-gl@6.4.0
+  - terser@5.50.0
+  - update-browserslist-db@1.3.1
 strictDepBuilds: true
 trustPolicy: no-downgrade
 trustPolicyExclude:
