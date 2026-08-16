@@ -10,7 +10,17 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
-	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
+	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
+	import {
+		buildVectorTileFields,
+		buildVectorTilePopupKeys,
+		buildVectorTileTitles,
+		mergeVectorTileMetadataLayers,
+		type RawVectorTileLayerMetadata,
+		type RawVectorTileStatsLayerMetadata,
+		type VectorTileMetadataLayer
+	} from '$routes/map/utils/vector/tile-metadata';
+	import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -51,9 +61,7 @@
 	// PMTiles解析結果
 	let tileTypeLabel = $state<string>('');
 	let isVector = $state<boolean>(false);
-	let vectorLayers = $state<
-		{ id: string; fields: Record<string, string>; geometryType?: string }[]
-	>([]);
+	let vectorLayers = $state<VectorTileMetadataLayer[]>([]);
 	let selectedLayerId = $state<string>('');
 	let analyzed = $state<boolean>(false);
 	let pmtilesBbox = $state<[number, number, number, number] | null>(null);
@@ -171,43 +179,11 @@
 
 			if (isVector) {
 				const metadata = (await pm.getMetadata()) as Record<string, unknown>;
-				const vlayers = metadata?.vector_layers as
-					| {
-							id: string;
-							fields: Record<string, string>;
-							geometry_type?: string;
-							minzoom?: number;
-							maxzoom?: number;
-					  }[]
-					| undefined;
+				const vlayers = metadata?.vector_layers as RawVectorTileLayerMetadata[] | undefined;
 				const tilestats = metadata?.tilestats as
-					| { layers: { layer: string; geometry: string }[] }
+					| { layers?: RawVectorTileStatsLayerMetadata[] }
 					| undefined;
-
-				if (vlayers && Array.isArray(vlayers)) {
-					vectorLayers = vlayers.map((l) => ({
-						id: l.id,
-						fields: l.fields ?? {},
-						geometryType: l.geometry_type ?? undefined
-					}));
-				}
-
-				// tilestatsからジオメトリタイプを補完
-				if (tilestats?.layers && Array.isArray(tilestats.layers)) {
-					for (const stat of tilestats.layers) {
-						const layer = vectorLayers.find((l) => l.id === stat.layer);
-						if (layer && !layer.geometryType && stat.geometry) {
-							layer.geometryType = stat.geometry;
-						}
-						if (!layer) {
-							vectorLayers.push({
-								id: stat.layer,
-								fields: {},
-								geometryType: stat.geometry ?? undefined
-							});
-						}
-					}
-				}
+				vectorLayers = mergeVectorTileMetadataLayers(vlayers, tilestats?.layers ?? []);
 
 				if (vectorLayers.length === 1) {
 					const layer = vectorLayers[0];
@@ -251,13 +227,23 @@
 
 		if (isVector) {
 			if (!selectedLayerId) return;
+			const selectedLayer = vectorLayers.find((layer) => layer.id === selectedLayerId);
+			if (!selectedLayer) return;
+
+			const fields = buildVectorTileFields(selectedLayer.fields);
 			const entry = createVectorPmtilesEntry(
 				forms.name,
 				forms.url.trim(),
 				selectedLayerId,
 				geometryType,
 				undefined,
-				opts
+				{
+					...opts,
+					fields,
+					popupKeys: buildVectorTilePopupKeys(fields),
+					titles: buildVectorTileTitles(fields, forms.name || selectedLayerId),
+					colorExpressions: buildVectorTileColorExpressions(selectedLayer)
+				}
 			);
 			if (entry) {
 				showDataEntry = entry;

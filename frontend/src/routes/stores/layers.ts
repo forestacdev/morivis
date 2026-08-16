@@ -1,11 +1,16 @@
 import { INT_ADD_LAYER_IDS } from '$routes/constants';
-import { EntryIdToTypeMap, unregisterInitialEntryStyle } from '$routes/map/data/entries';
+import {
+	EntryIdToTypeMap,
+	findCatalogEntry,
+	unregisterInitialEntryStyle
+} from '$routes/map/data/entries';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 import { JoinDataCache } from '$routes/map/utils/cache/join-data-cache';
 import { rotationalVibration } from '$routes/map/utils/camera/effects/shake';
 import { type LayerType } from '$routes/map/utils/entries';
 import { triggerMapPaneScale } from '$routes/stores/effect';
+import { showNotification } from '$routes/stores/notification';
 import { get, writable } from 'svelte/store';
 import { layerAttributions } from './attributions';
 
@@ -34,6 +39,13 @@ const createLayerStore = () => {
 	const store = writable<string[]>([...INT_ADD_LAYER_IDS]);
 	const { subscribe, update, set } = store;
 
+	const hasMissingRequiredUrl = (id: string) => {
+		const entry = findCatalogEntry(id);
+		if (!entry || entry.type !== 'vector') return false;
+		if (entry.format.type !== 'pmtiles') return false;
+		return entry.format.url.trim().length === 0;
+	};
+
 	return {
 		subscribe,
 
@@ -47,6 +59,11 @@ const createLayerStore = () => {
 		// 追加
 		add: (id: string) =>
 			update((layers) => {
+				if (hasMissingRequiredUrl(id)) {
+					showNotification('PMTiles URL が未設定のため、このレイヤーはまだ追加できません。', 'info');
+					return layers;
+				}
+
 				if (!layers.includes(id)) {
 					layers = [id, ...layers];
 				}

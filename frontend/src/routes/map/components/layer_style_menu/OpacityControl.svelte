@@ -39,11 +39,15 @@
 		}
 	];
 
+	const isThreeMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
+		return entry.type === 'model' && entry.style.type === 'mesh' && entry.format.type !== '3d-tiles';
+	};
+
 	const hideLayer = () => {
 		layerEntry.style.visible = false;
 		if (layerEntry.type !== 'model') return;
-		if (layerEntry.style.type === 'mesh') {
-			mapStore.setModelStyle(layerEntry as MeshEntry<MeshStyle>);
+		if (isThreeMeshEntry(layerEntry)) {
+			mapStore.setModelStyle(layerEntry);
 			return;
 		}
 		mapStore.setDeckModelVisibility(layerEntry.id, false);
@@ -53,8 +57,8 @@
 		layerEntry.style.visible = true;
 		layerEntry.style.opacity = opacity;
 		if (layerEntry.type !== 'model') return;
-		if (layerEntry.style.type === 'mesh') {
-			mapStore.setModelStyle(layerEntry as MeshEntry<MeshStyle>);
+		if (isThreeMeshEntry(layerEntry)) {
+			mapStore.setModelStyle(layerEntry);
 			return;
 		}
 		mapStore.setDeckModelOpacity(layerEntry.id, opacity);

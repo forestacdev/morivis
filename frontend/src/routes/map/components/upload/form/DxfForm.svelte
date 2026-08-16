@@ -8,8 +8,8 @@
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
+	import { createAutoGeoJsonEntry } from '$routes/map/components/upload/form/geojson-entry';
 	import {
-		createGeoJsonEntry,
 		getGeometryTypes,
 		filterByGeometryType,
 		filterByProperty,
@@ -211,14 +211,14 @@
 			const entryName = dxfFile.name.replace(/\.[^.]+$/, '');
 			const propKeys = Object.keys(geojsonData.features[0]?.properties ?? {});
 			const style = buildDxfStyle(geojsonData, selectedGeometryType, propKeys);
-			const entry = await createGeoJsonEntry(
-				geojsonData,
-				selectedGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
+			const entry = await createAutoGeoJsonEntry({
+				geojson: geojsonData,
+				geometryType: selectedGeometryType,
+				name: entryName,
+				bbox: bbox as [number, number, number, number],
 				style,
-				{ attribution: 'DXF' }
-			);
+				attribution: 'DXF'
+			});
 
 			if (entry) {
 				showDataEntry = entry;

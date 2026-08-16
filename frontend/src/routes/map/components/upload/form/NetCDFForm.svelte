@@ -4,6 +4,7 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
@@ -83,6 +84,8 @@
 		const file = getFirstUploadFile(dropFile);
 		return file && /\.(nc4?|netcdf)$/i.test(file.name) ? file : null;
 	});
+	const getPlacementAllowedTransformModes = () =>
+		getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 
 	$effect(() => {
 		if (ncFile) {
@@ -265,6 +268,7 @@
 					imageHeight: height,
 					imageFile: ncFile,
 					registrationMode,
+					allowedTransformModes: getPlacementAllowedTransformModes(),
 					meshConfig: {
 						baseValue: meshHeightSampling.effectiveBaseValue,
 						heightScale: meshHeightSampling.effectiveHeightScale,

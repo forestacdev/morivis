@@ -2,6 +2,7 @@ import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
+	AnyTiles3DEntry,
 	GeoArrowEntry,
 	GeoJson3DEntry,
 	MeshEntry,
@@ -10,6 +11,7 @@ import type {
 	MeshStyle,
 	PointCloudEntry,
 	PointCloudStyle,
+	Tiles3DMeshStyle,
 	Tiles3DEntry
 } from '$routes/map/data/types/model';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
@@ -18,31 +20,53 @@ import type { Table } from 'apache-arrow';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
 
+type Tiles3DRegistrationStyleType = 'mesh' | PointCloudStyle['type'];
+
 export const createTiles3DEntry = (
 	name: string,
 	url: string,
-	bounds?: [number, number, number, number]
-): Tiles3DEntry<PointCloudStyle> => ({
-	id: '3dtiles_' + crypto.randomUUID(),
-	type: 'model',
-	format: {
-		type: '3d-tiles',
-		url
-	},
-	metaData: {
-		...DEFAULT_CUSTOM_META_DATA,
-		attribution: '3D Tiles',
-		name,
-		bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
-	},
-	interaction: { clickable: false },
-	style: {
-		visible: true,
-		type: 'point-cloud',
-		opacity: 0.7,
-		pointSize: 1
+	bounds?: [number, number, number, number],
+	styleType: Tiles3DRegistrationStyleType = 'mesh'
+): AnyTiles3DEntry => {
+	const baseEntry = {
+		id: '3dtiles_' + crypto.randomUUID(),
+		type: 'model' as const,
+		format: {
+			type: '3d-tiles' as const,
+			url
+		},
+		metaData: {
+			...DEFAULT_CUSTOM_META_DATA,
+			attribution: '3D Tiles',
+			name,
+			bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
+		},
+		interaction: { clickable: false }
+	};
+
+	if (styleType === 'point-cloud') {
+		return {
+			...baseEntry,
+			style: {
+				visible: true,
+				type: 'point-cloud',
+				opacity: 0.7,
+				pointSize: 1
+			}
+		} satisfies Tiles3DEntry<PointCloudStyle>;
 	}
-});
+
+	return {
+		...baseEntry,
+		style: {
+			visible: true,
+			type: '3d-tiles-mesh',
+			opacity: 0.7,
+			color: '#ffffff',
+			lighting: 'pbr'
+		}
+	} satisfies Tiles3DEntry<Tiles3DMeshStyle>;
+};
 
 /**
  * 中心座標から小さなbboxを生成する

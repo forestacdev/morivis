@@ -9,10 +9,11 @@ import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import {
 	georeferenceCornerToLocal,
-	getModelUnitScaleMeters,
+	resolveFbxUnitScaleMeters,
 	resolveProjectedModelPlacementFromBox,
 	type ResolvedProjectedModelPlacement
 } from '$routes/map/utils/three/model-georeference';
+import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 
 export interface ComputeUploadedModelMetaParams {
@@ -41,7 +42,6 @@ const gltfLoader = new GLTFLoader();
 const objLoader = new OBJLoader();
 const MIN_MODEL_MAX_DIMENSION_METERS = 1;
 const TARGET_MODEL_MAX_DIMENSION_METERS = 5;
-const EARTH_CIRCUMFERENCE = 40075016.68557849;
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
 const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
@@ -135,15 +135,12 @@ const ensureFbxLoaderWindowShim = () => {
 			innerWidth?: number;
 			innerHeight?: number;
 			document?: FbxLoaderDocumentShim;
+			URL?: typeof URL;
 		};
 	const globalScope = globalThis as typeof globalThis & {
 		window?: FbxLoaderWindowShim;
 		document?: FbxLoaderDocumentShim;
 	};
-	const windowShim = globalScope.window ?? (globalScope as unknown as FbxLoaderWindowShim);
-
-	windowShim.innerWidth = windowShim.innerWidth ?? 1;
-	windowShim.innerHeight = windowShim.innerHeight ?? 1;
 
 	const createShimImageElement = (): ShimImageElement => {
 		const listeners = new Map<string, Set<ShimEventListener>>();
@@ -178,9 +175,10 @@ const ensureFbxLoaderWindowShim = () => {
 		return imageElement;
 	};
 
+	const existingWindow = globalScope.window;
+	const existingDocument = globalScope.document ?? existingWindow?.document;
 	const documentShim =
-		globalScope.document
-		?? windowShim.document
+		existingDocument
 		?? {
 			createElementNS: (_namespace: string, name: string) => {
 				if (name === 'img') {
@@ -202,12 +200,61 @@ const ensureFbxLoaderWindowShim = () => {
 			}
 		};
 
-	globalScope.document = documentShim;
-	windowShim.document = documentShim;
-	globalScope.window = windowShim;
+	const windowShim =
+		existingWindow
+		?? ({
+			innerWidth: 1,
+			innerHeight: 1,
+			document: documentShim
+		} as FbxLoaderWindowShim);
+
+	if (windowShim.innerWidth == null) {
+		try {
+			windowShim.innerWidth = 1;
+		} catch {
+			// ブラウザ実体の readonly window には触れない。
+		}
+	}
+	if (windowShim.innerHeight == null) {
+		try {
+			windowShim.innerHeight = 1;
+		} catch {
+			// ブラウザ実体の readonly window には触れない。
+		}
+	}
+	if (!windowShim.document) {
+		try {
+			windowShim.document = documentShim;
+		} catch {
+			// getter-only な document を持つ実体 window では代入しない。
+		}
+	}
+	if (!windowShim.URL && typeof URL !== 'undefined') {
+		try {
+			windowShim.URL = URL;
+		} catch {
+			// getter-only な window には代入しない。
+		}
+	}
+
+	if (!existingDocument) {
+		Object.defineProperty(globalScope, 'document', {
+			value: documentShim,
+			configurable: true,
+			writable: true
+		});
+	}
+
+	if (!existingWindow) {
+		Object.defineProperty(globalScope, 'window', {
+			value: windowShim,
+			configurable: true,
+			writable: true
+		});
+	}
 };
 
-interface UploadedModelObject {
+export interface UploadedModelObject {
 	object: THREE.Object3D;
 	animationNames: string[];
 }
@@ -444,7 +491,7 @@ const parseIfcObject = async (
 	}
 };
 
-const getUploadedModelObject = async (
+export const getUploadedModelObject = async (
 	file: File,
 	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc',
 	resourceUrls?: Record<string, string>,
@@ -496,68 +543,6 @@ const mercatorYToLat = (y: number) => {
 	return THREE.MathUtils.radToDeg(Math.atan(Math.sinh(n)));
 };
 
-const lngToMercatorX = (lng: number) => (lng + 180) / 360;
-
-const latToMercatorY = (lat: number) =>
-	(180
-		- (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + THREE.MathUtils.degToRad(lat) / 2)))
-	/ 360;
-
-const meterInMercatorCoordinateUnits = (lat: number) =>
-	1 / (EARTH_CIRCUMFERENCE * Math.cos(THREE.MathUtils.degToRad(lat)));
-
-const createUploadedModelMercatorMatrix = (
-	style: Pick<MeshStyle, 'transform'>,
-	terrainEnabled = false
-): THREE.Matrix4 => {
-	const {
-		lng,
-		lat,
-		altitude,
-		heightOffset,
-		heightScale,
-		baseScale,
-		baseRotationX,
-		baseRotationY,
-		baseRotationZ,
-		scale,
-		rotationX,
-		rotationY,
-		rotationZ
-	} = style.transform;
-
-	const effectiveAltitude = (terrainEnabled ? altitude : 0) + (heightOffset ?? 0);
-	const mercatorScale = meterInMercatorCoordinateUnits(lat);
-	const mercatorX = lngToMercatorX(lng);
-	const mercatorY = latToMercatorY(lat);
-	const mercatorZ = effectiveAltitude * mercatorScale;
-
-	const rotationXMatrix = new THREE.Matrix4().makeRotationAxis(
-		new THREE.Vector3(1, 0, 0),
-		((baseRotationX ?? 0) + rotationX) * (Math.PI / 180)
-	);
-	const rotationYMatrix = new THREE.Matrix4().makeRotationAxis(
-		new THREE.Vector3(0, 1, 0),
-		((baseRotationY ?? 0) + rotationY) * (Math.PI / 180)
-	);
-	const rotationZMatrix = new THREE.Matrix4().makeRotationAxis(
-		new THREE.Vector3(0, 0, 1),
-		((baseRotationZ ?? 0) + rotationZ) * (Math.PI / 180)
-	);
-	const scaleMatrix = new THREE.Matrix4().makeScale(
-		mercatorScale * (baseScale ?? 1) * scale,
-		-mercatorScale * (baseScale ?? 1) * scale * (heightScale ?? 1),
-		-mercatorScale * (baseScale ?? 1) * scale
-	);
-
-	return new THREE.Matrix4()
-		.makeTranslation(mercatorX, mercatorY, mercatorZ)
-		.multiply(rotationXMatrix)
-		.multiply(rotationYMatrix)
-		.multiply(rotationZMatrix)
-		.multiply(scaleMatrix);
-};
-
 export const computeUploadedModelMeta = async ({
 	file,
 	format,
@@ -583,7 +568,8 @@ export const computeUploadedModelMeta = async ({
 
 	const formatUnitScaleMeters =
 		format === 'fbx'
-			? getModelUnitScaleMeters(
+			? resolveFbxUnitScaleMeters(
+				box,
 				Number(
 					(object.userData as {
 						unitScaleFactor?: number;
@@ -615,17 +601,15 @@ export const computeUploadedModelMeta = async ({
 			: 1;
 	const localRenderUnitScale = resolvedGeoreference ? 1 : formatUnitScaleMeters;
 
-	const modelMatrix = createUploadedModelMercatorMatrix(
+	const modelMatrix = buildMercatorModelMatrix(
 		{
-			transform: {
-				...style.transform,
-				...(resolvedPlacement && {
-					lng: resolvedPlacement.lng,
-					lat: resolvedPlacement.lat,
-					altitude: resolvedPlacement.altitude
-				}),
-				baseScale: (style.transform.baseScale ?? 1) * scaleMultiplier * localRenderUnitScale
-			}
+			...style.transform,
+			...(resolvedPlacement && {
+				lng: resolvedPlacement.lng,
+				lat: resolvedPlacement.lat,
+				altitude: resolvedPlacement.altitude
+			}),
+			baseScale: (style.transform.baseScale ?? 1) * scaleMultiplier * localRenderUnitScale
 		},
 		terrainEnabled
 	);

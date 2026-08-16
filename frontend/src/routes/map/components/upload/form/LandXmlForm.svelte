@@ -5,6 +5,7 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import { createMeshModelEntry } from '$routes/map/data/entries/_factories';
@@ -78,6 +79,8 @@
 		if (!dropFile) return null;
 		return getFirstUploadFile(dropFile);
 	});
+	const getPlacementAllowedTransformModes = () =>
+		getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 
 	const entryName = $derived(xmlFile?.name.replace(/\.[^.]+$/, '') ?? 'LandXMLデータ');
 	const selectedSurface = $derived.by(() => surfaces[Number(selectedSurfaceIndex)] ?? null);
@@ -238,6 +241,7 @@
 				imageHeight: height,
 				imageFile: xmlFile,
 				registrationMode: 'mesh',
+				allowedTransformModes: getPlacementAllowedTransformModes(),
 				meshConfig: {
 					baseValue: meshHeightSampling.effectiveBaseValue,
 					heightScale: meshHeightSampling.effectiveHeightScale,
@@ -257,7 +261,8 @@
 				imageWidth: width,
 				imageHeight: height,
 				imageFile: xmlFile,
-				registrationMode: 'raster'
+				registrationMode: 'raster',
+				allowedTransformModes: getPlacementAllowedTransformModes()
 			});
 		}
 

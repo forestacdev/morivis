@@ -844,7 +844,10 @@
 					) as MeshEntry<MeshStyle>[]);
 
 		const previewMeshEntry =
-			showDataEntry && showDataEntry.type === 'model' && showDataEntry.style.type === 'mesh'
+			showDataEntry &&
+			showDataEntry.type === 'model' &&
+			showDataEntry.style.type === 'mesh' &&
+			showDataEntry.format.type !== '3d-tiles'
 				? (showDataEntry as MeshEntry<MeshStyle>)
 				: null;
 

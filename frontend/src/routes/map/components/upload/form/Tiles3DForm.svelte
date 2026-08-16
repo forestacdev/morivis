@@ -92,7 +92,7 @@
 		isProcessing.set(true);
 
 		try {
-			const { bbox, error } = await fetchTileset3DBbox(url);
+			const { bbox, styleType, error } = await fetchTileset3DBbox(url);
 			if (!bbox) {
 				showNotification(
 					error ?? 'tileset.json を取得できなかったため、3D Tiles を登録しませんでした',
@@ -101,7 +101,7 @@
 				return;
 			}
 
-			const entry = createTiles3DEntry(forms.name, url, bbox);
+			const entry = createTiles3DEntry(forms.name, url, bbox, styleType);
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;

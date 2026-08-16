@@ -93,13 +93,13 @@
 				throw new Error(`HTTP ${response.status}`);
 			}
 
-			const remoteFileName = getRemoteFileName(resolved.requestUrl, response);
+			const blob = await response.blob();
+			const remoteFileName = await getRemoteFileName(resolved.requestUrl, response, blob);
 			if (!remoteFileName) {
 				showNotification('URLから対応拡張子を判定できません', 'error');
 				return;
 			}
 
-			const blob = await response.blob();
 			dropFile = [new File([blob], remoteFileName, { type: blob.type })];
 			inputUrl = '';
 			hasTouchedUrlInput = false;

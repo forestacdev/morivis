@@ -7,6 +7,7 @@ import type {
 	TileMetaData,
 	VectorEntryGeometryType
 } from '$routes/map/data/types/vector';
+import type { FieldDef, Title } from '$routes/map/data/types/vector/properties';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
@@ -269,7 +270,7 @@ export const groupPropertyByGeometryType = (
 // --- デフォルト単色colorsConfig ---
 
 const createDefaultColorsConfig = (
-	entryGeometryType: VectorEntryGeometryType,
+	_entryGeometryType: VectorEntryGeometryType,
 	color: string = getRandomColor()
 ): ColorsStyle => ({
 	key: '単色',
@@ -283,6 +284,38 @@ const createDefaultColorsConfig = (
 		}
 	]
 });
+
+const createTileColorsConfig = (
+	entryGeometryType: VectorEntryGeometryType,
+	color: string,
+	extraExpressions: (ColorMatchExpression | ColorStepExpression)[] = []
+): ColorsStyle => {
+	const defaultColors = createDefaultColorsConfig(entryGeometryType, color);
+	if (extraExpressions.length === 0) return defaultColors;
+
+	return {
+		key: extraExpressions[0]?.key ?? defaultColors.key,
+		show: defaultColors.show,
+		expressions: [...extraExpressions, ...defaultColors.expressions]
+	};
+};
+
+const createTileLabelsConfig = (fields: FieldDef[]) =>
+	createLabelsExpressions(
+		fields
+			.filter(
+				(field) =>
+					field.type == null
+					|| field.type === 'string'
+					|| field.type === 'date'
+					|| field.type === 'datetime'
+			)
+			.map((field) => field.key)
+			.slice(0, 10)
+	);
+
+const createTileTitles = (name: string, titles?: Title[]): Title[] =>
+	titles && titles.length > 0 ? titles : [{ conditions: [], template: name }];
 
 // --- デフォルトスタイル取得 ---
 
@@ -437,7 +470,7 @@ const parseNumericPropertyValue = (value: unknown): number | null => {
 
 const buildAutoColorExpressions = (
 	data: FeatureCollection,
-	entryGeometryType: VectorEntryGeometryType
+	_entryGeometryType: VectorEntryGeometryType
 ): (ColorMatchExpression | ColorStepExpression)[] => {
 	const expressions: (ColorMatchExpression | ColorStepExpression)[] = [];
 	if (data.features.length === 0) return expressions;
@@ -658,6 +691,10 @@ export const createVectorTileEntry = (
 		bounds?: [number, number, number, number];
 		minZoom?: number;
 		maxZoom?: number;
+		fields?: FieldDef[];
+		popupKeys?: string[];
+		titles?: Title[];
+		colorExpressions?: (ColorMatchExpression | ColorStepExpression)[];
 	}
 ): MorivisVectorEntry<TileMetaData> | undefined => {
 	const bounds = options?.bounds ?? DEFAULT_CUSTOM_META_DATA.bounds;
@@ -671,8 +708,13 @@ export const createVectorTileEntry = (
 		xyzImageTile: findCenterTile(bounds)
 	};
 
-	const colorsConfig = createDefaultColorsConfig(entryGeometryType, color);
-	const labelsConfig = createLabelsExpressions([]);
+	const fields = options?.fields ?? [];
+	const colorsConfig = createTileColorsConfig(
+		entryGeometryType,
+		color,
+		options?.colorExpressions ?? []
+	);
+	const labelsConfig = createTileLabelsConfig(fields);
 	const style = getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig);
 
 	const id = 'vector_tile_' + crypto.randomUUID();
@@ -683,10 +725,10 @@ export const createVectorTileEntry = (
 		metaData,
 		interaction: { clickable: true as const },
 		properties: {
-			fields: [],
+			fields,
 			attributeView: {
-				popupKeys: [],
-				titles: [{ conditions: [], template: name }]
+				popupKeys: options?.popupKeys ?? fields.map((field) => field.key),
+				titles: createTileTitles(name, options?.titles)
 			}
 		}
 	};
@@ -805,9 +847,17 @@ export const createVectorPmtilesEntry = (
 	sourceLayer: string,
 	entryGeometryType: VectorEntryGeometryType,
 	color: string = getRandomColor(),
-	options?: { bounds?: [number, number, number, number]; minZoom?: number; maxZoom?: number; }
+	options?: {
+		bounds?: [number, number, number, number];
+		minZoom?: number;
+		maxZoom?: number;
+		fields?: FieldDef[];
+		popupKeys?: string[];
+		titles?: Title[];
+		colorExpressions?: (ColorMatchExpression | ColorStepExpression)[];
+	}
 ): MorivisVectorEntry<TileMetaData> | undefined => {
-	const entry = createVectorTileEntry(name, url, sourceLayer, entryGeometryType, color);
+	const entry = createVectorTileEntry(name, url, sourceLayer, entryGeometryType, color, options);
 	if (!entry) return undefined;
 
 	return {

@@ -4,6 +4,7 @@ import ArcGisForm from '$routes/map/components/upload/form/ArcGisForm.svelte';
 import CsvForm from '$routes/map/components/upload/form/CsvForm.svelte';
 import DemXmlForm from '$routes/map/components/upload/form/DemXmlForm.svelte';
 import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
+import DwgForm from '$routes/map/components/upload/form/DwgForm.svelte';
 import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 import FeatureServiceForm from '$routes/map/components/upload/form/FeatureServiceForm.svelte';
 import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
@@ -12,6 +13,7 @@ import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
 import GeoParquetForm from '$routes/map/components/upload/form/GeoParquetForm.svelte';
 import GeoPdfForm from '$routes/map/components/upload/form/GeoPdfForm.svelte';
 import GeoPhotoForm from '$routes/map/components/upload/form/GeoPhotoForm.svelte';
+import GeoRssForm from '$routes/map/components/upload/form/GeoRssForm.svelte';
 import GeoTiffForm from '$routes/map/components/upload/form/GeoTiffForm.svelte';
 import GeoZarrForm from '$routes/map/components/upload/form/GeoZarrForm.svelte';
 import GmlForm from '$routes/map/components/upload/form/GmlForm.svelte';
@@ -35,6 +37,7 @@ import PmtilesForm from '$routes/map/components/upload/form/PmtilesForm.svelte';
 import PointCloudForm from '$routes/map/components/upload/form/PointCloudForm.svelte';
 import RasterForm from '$routes/map/components/upload/form/RasterForm.svelte';
 import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
+import SQLiteForm from '$routes/map/components/upload/form/SQLiteForm.svelte';
 import StacForm from '$routes/map/components/upload/form/StacForm.svelte';
 import SvgForm from '$routes/map/components/upload/form/SvgForm.svelte';
 import TcxForm from '$routes/map/components/upload/form/TcxForm.svelte';
@@ -117,10 +120,13 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	tcx: { component: TcxForm, profile: 'drop-file' },
 	gdb: { component: GarminGDBForm, profile: 'drop-file' },
 	osm: { component: OsmForm, profile: 'vector-zone-georef' },
+	georss: { component: GeoRssForm, profile: 'vector-zone-georef' },
 	gtfs: { component: GtfsForm, profile: 'drop-file' },
 	dm: { component: DmForm, profile: 'vector-zone-georef', fixedHeight: true },
+	dwg: { component: DwgForm, profile: 'vector-zone-georef', fixedHeight: true },
 	dxf: { component: DxfForm, profile: 'vector-zone-georef', fixedHeight: true },
 	gpkg: { component: GpkgForm, profile: 'vector-zone-georef' },
+	sqlite: { component: SQLiteForm, profile: 'vector-zone-georef' },
 	hdf5: { component: Hdf5Form, profile: 'drop-file' },
 	mojxml: { component: MojXmlForm, profile: 'vector-zone-georef' },
 	sima: { component: SimaForm, profile: 'vector-zone-georef' }

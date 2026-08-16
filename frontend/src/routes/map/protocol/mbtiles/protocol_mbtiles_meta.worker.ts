@@ -1,4 +1,9 @@
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import {
+	mergeVectorTileMetadataLayers,
+	type RawVectorTileLayerMetadata,
+	type RawVectorTileStatsLayerMetadata
+} from '$routes/map/utils/vector/tile-metadata';
 import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
 import type { MBTilesMetadata, MBTilesVectorLayer } from './index';
 
@@ -56,7 +61,7 @@ const calculateBoundsFromTiles = (db: Database): [number, number, number, number
 		);
 		if (!stmt.step()) return undefined;
 
-		const [minZoom, maxZoom, minColumn, maxColumn, minRow, maxRow] = stmt.get() as Array<
+		const [_minZoom, maxZoom, minColumn, maxColumn, minRow, maxRow] = stmt.get() as Array<
 			number | null
 		>;
 		if (
@@ -95,38 +100,32 @@ const parseVectorLayers = (jsonText?: string): MBTilesVectorLayer[] => {
 
 	try {
 		const jsonMeta = JSON.parse(jsonText);
-		const vectorLayers: MBTilesVectorLayer[] = [];
+		const vectorLayers: RawVectorTileLayerMetadata[] = [];
+		const tileStatsLayers: RawVectorTileStatsLayerMetadata[] = [];
 
 		if (jsonMeta.vector_layers && Array.isArray(jsonMeta.vector_layers)) {
 			for (const layer of jsonMeta.vector_layers) {
 				vectorLayers.push({
 					id: layer.id,
 					fields: layer.fields ?? {},
-					geometryType: layer.geometry_type ?? undefined,
-					minZoom: layer.minzoom ?? undefined,
-					maxZoom: layer.maxzoom ?? undefined
+					geometry_type: layer.geometry_type ?? undefined,
+					minzoom: layer.minzoom ?? undefined,
+					maxzoom: layer.maxzoom ?? undefined
 				});
 			}
 		}
 
 		if (jsonMeta.tilestats?.layers && Array.isArray(jsonMeta.tilestats.layers)) {
 			for (const stat of jsonMeta.tilestats.layers) {
-				const existing = vectorLayers.find((layer) => layer.id === stat.layer);
-				if (existing) {
-					if (!existing.geometryType && stat.geometry) {
-						existing.geometryType = stat.geometry;
-					}
-					continue;
-				}
-				vectorLayers.push({
-					id: stat.layer,
-					fields: {},
-					geometryType: stat.geometry ?? undefined
+				tileStatsLayers.push({
+					layer: stat.layer,
+					geometry: stat.geometry ?? undefined,
+					attributes: Array.isArray(stat.attributes) ? stat.attributes : undefined
 				});
 			}
 		}
 
-		return vectorLayers;
+		return mergeVectorTileMetadataLayers(vectorLayers, tileStatsLayers);
 	} catch {
 		return [];
 	}

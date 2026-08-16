@@ -8,6 +8,7 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
@@ -79,6 +80,8 @@
 		const file = getFirstUploadFile(dropFile);
 		return file && /\.(las|laz|ply|pcd|xyz|txt|obj)$/i.test(file.name) ? file : null;
 	});
+	const getPlacementAllowedTransformModes = () =>
+		getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 
 	/** 拡張子に応じたLoaderを返す */
 	const getLoader = (fileName: string) => {
@@ -306,6 +309,7 @@
 			imageHeight: height,
 			imageFile: pointCloudFile,
 			registrationMode: 'raster',
+			allowedTransformModes: getPlacementAllowedTransformModes(),
 			allowRegistrationModeChange: false
 		});
 		showDialogType = null;
@@ -335,6 +339,7 @@
 				imageHeight: height,
 				imageFile: pointCloudFile,
 				registrationMode: 'raster',
+				allowedTransformModes: getPlacementAllowedTransformModes(),
 				allowRegistrationModeChange: false
 			}),
 			sourceType: 'pointcloud',

@@ -213,6 +213,9 @@ importers:
       dompurify:
         specifier: ^3.2.5
         version: 3.3.0
+      dwgdxf:
+        specifier: ^2.0.1
+        version: 2.0.1
       dxf-parser:
         specifier: ^1.1.2
         version: 1.1.2
@@ -3711,6 +3714,11 @@ packages:
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
+
+  dwgdxf@2.0.1:
+    resolution: {integrity: sha512-AWZsyK0W3yuMRd1ebX/Ew254IM510NkAGZ1SsRao9LIjeblVNVBhAtxAGsfu24dycao8cnpmnLhIt7k+/K/Vkw==}
+    engines: {bun: '>=1.1.0'}
+    hasBin: true
 
   dxf-parser@1.1.2:
     resolution: {integrity: sha512-GPTumUvRkounlIazLIyJMmTWt+nlg+ksS0Hdm8jWvejmZKBTz6gvHTam76wRm4PQMma5sgKLThblQyeIJcH79Q==}
@@ -10184,6 +10192,8 @@ snapshots:
       call-bind-apply-helpers: 1.0.2
       es-errors: 1.3.0
       gopd: 1.2.0
+
+  dwgdxf@2.0.1: {}
 
   dxf-parser@1.1.2:
     dependencies:

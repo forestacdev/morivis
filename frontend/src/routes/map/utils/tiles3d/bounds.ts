@@ -2,11 +2,19 @@ import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 import type { LngLatBoundsLike } from 'maplibre-gl';
 
 type Tiles3DBoundingVolume = { box?: number[]; region?: number[]; sphere?: number[]; };
+type Tiles3DContent = { uri?: string; url?: string; };
+type Tiles3DNode = {
+	content?: Tiles3DContent;
+	contents?: Tiles3DContent[];
+	children?: Tiles3DNode[];
+};
 
-interface Tiles3DRoot {
+interface Tiles3DRoot extends Tiles3DNode {
 	boundingVolume: Tiles3DBoundingVolume;
 	transform?: number[];
 }
+
+type Tiles3DStyleType = 'mesh' | 'point-cloud';
 
 // ECEF座標を緯度経度に変換
 const ecefToLngLat = (x: number, y: number, z: number): [number, number, number] => {
@@ -110,8 +118,46 @@ const rootToBbox = (root: Tiles3DRoot): [number, number, number, number] | null 
 
 export interface FetchTileset3DBboxResult {
 	bbox: [number, number, number, number] | null;
+	styleType: Tiles3DStyleType;
 	error: string | null;
 }
+
+const detectTiles3DStyleTypeFromUri = (uri: string): Tiles3DStyleType => {
+	const normalizedUri = uri.toLowerCase().split('?')[0];
+
+	if (normalizedUri.endsWith('.pnts')) return 'point-cloud';
+
+	return 'mesh';
+};
+
+const detectTilesetStyleType = (root: Tiles3DNode | undefined): Tiles3DStyleType => {
+	if (!root) return 'mesh';
+
+	const queue: Tiles3DNode[] = [root];
+
+	while (queue.length > 0) {
+		const tile = queue.shift();
+		if (!tile) continue;
+
+		const contents = [
+			...(tile.content ? [tile.content] : []),
+			...(tile.contents ?? [])
+		];
+
+		for (const content of contents) {
+			const uri = content.uri ?? content.url;
+			if (!uri) continue;
+
+			return detectTiles3DStyleTypeFromUri(uri);
+		}
+
+		if (tile.children?.length) {
+			queue.push(...tile.children);
+		}
+	}
+
+	return 'mesh';
+};
 
 const toFetchTileset3DErrorMessage = (error: unknown): string => {
 	if (error instanceof Error) {
@@ -143,23 +189,27 @@ export const fetchTileset3DBbox = async (
 		if (!tileset.root?.boundingVolume) {
 			return {
 				bbox: null,
+				styleType: 'mesh',
 				error: 'tileset.json に root.boundingVolume がありません'
 			};
 		}
 
 		const bbox = rootToBbox(tileset.root);
+		const styleType = detectTilesetStyleType(tileset.root);
 		if (!bbox) {
 			return {
 				bbox: null,
+				styleType,
 				error: 'tileset.json の boundingVolume から bbox を計算できませんでした'
 			};
 		}
 
-		return { bbox, error: null };
+		return { bbox, styleType, error: null };
 	} catch (e) {
 		console.error('tileset.json の読み込みに失敗しました:', e);
 		return {
 			bbox: null,
+			styleType: 'mesh',
 			error: toFetchTileset3DErrorMessage(e)
 		};
 	}

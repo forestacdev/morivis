@@ -10,6 +10,12 @@
 	import { registerMBTiles, type MBTilesMetadata } from '$routes/map/protocol/mbtiles';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
+	import {
+		buildVectorTileFields,
+		buildVectorTilePopupKeys,
+		buildVectorTileTitles
+	} from '$routes/map/utils/vector/tile-metadata';
+	import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -118,6 +124,10 @@
 
 		if (metadata.isVector) {
 			if (!selectedLayerId) return;
+			const selectedLayer = metadata.vectorLayers.find((layer) => layer.id === selectedLayerId);
+			if (!selectedLayer) return;
+
+			const fields = buildVectorTileFields(selectedLayer.fields);
 			const entry = createVectorTileEntry(
 				entryName || 'MBTiles',
 				tileUrl,
@@ -127,7 +137,11 @@
 				{
 					bounds: opts.bounds,
 					minZoom: opts.minZoom,
-					maxZoom: opts.maxZoom
+					maxZoom: opts.maxZoom,
+					fields,
+					popupKeys: buildVectorTilePopupKeys(fields),
+					titles: buildVectorTileTitles(fields, entryName || selectedLayerId),
+					colorExpressions: buildVectorTileColorExpressions(selectedLayer)
 				}
 			);
 			if (entry) {

@@ -54,7 +54,8 @@ import {
 	type DeckVectorEntry,
 	type MeshEntry,
 	type MeshStyle,
-	type PointCloudEntry
+	type PointCloudEntry,
+	type Tiles3DMeshStyleEntry
 } from '$routes/map/data/types/model';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import {
@@ -78,6 +79,10 @@ import {
 	isGeneratedPoiIconId,
 	warmupGeneratedPoiIconWorker
 } from '$routes/map/utils/icon';
+import {
+	buildGlbExportFilename,
+	downloadArrayBufferAsGlb
+} from '$routes/map/utils/formats/export/model';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
@@ -941,6 +946,11 @@ const createMapStore = () => {
 		}
 	};
 
+	const exportModelAsGlb = async (entry: MeshEntry<MeshStyle>) => {
+		const glb = await threeJsManager.exportModelAsGlb(entry.id);
+		downloadArrayBufferAsGlb(glb, buildGlbExportFilename(entry.metaData.name));
+	};
+
 	const setDeckModelStyleEntries = async (
 		tiles3dEntries: AnyTiles3DEntry[],
 		pointCloudEntries: PointCloudEntry[] = [],
@@ -1002,6 +1012,11 @@ const createMapStore = () => {
 		const pointCloudEntry = currentDeckPointCloudEntries.get(entryId);
 		if (!pointCloudEntry) return;
 		pointCloudEntry.style.pointSize = pointSize;
+		await refreshCurrentDeckOverlay();
+	};
+
+	const setDeckTiles3DMeshStyle = async (entry: Tiles3DMeshStyleEntry) => {
+		currentDeckTiles3dEntries.set(entry.id, entry);
 		await refreshCurrentDeckOverlay();
 	};
 
@@ -1592,10 +1607,12 @@ const createMapStore = () => {
 		setThreeLayer,
 		setTemporalModelTimeStep,
 		setModelStyle,
+		exportModelAsGlb,
 		setDeckModelStyleEntries,
 		setDeckModelVisibility,
 		setDeckModelOpacity,
 		setDeckPointCloudPointSize,
+		setDeckTiles3DMeshStyle,
 		setDeckVectorColor,
 		setModelAnimationState,
 		setHighlightLayers,

@@ -104,6 +104,36 @@ describe('resolveDroppedFiles', () => {
 			type: 'dialog',
 			dialogType: 'xlsx',
 			dropFiles: undefined
+			});
+	});
+
+	it('単一の SQLite は sqlite ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('sample.sqlite'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sqlite',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の SQL dump は sqlite ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('sample.sql'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sqlite',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の DWG は dwg ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('plan.dwg', 'dwg'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'dwg',
+			dropFiles: undefined
 		});
 	});
 
@@ -116,6 +146,74 @@ describe('resolveDroppedFiles', () => {
 			type: 'dialog',
 			dialogType: 'svg',
 			dropFiles: undefined
+		});
+	});
+
+	it('GeoRSS の XML は georss ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(
+			createFile(
+				'feed.xml',
+				`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:georss="http://www.georss.org/georss" xmlns:gml="http://www.opengis.net/gml">
+	<channel>
+		<item>
+			<title>place</title>
+			<georss:where>
+				<gml:Point><gml:pos>35.0 139.0</gml:pos></gml:Point>
+			</georss:where>
+		</item>
+	</channel>
+</rss>`
+			)
+		);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'georss',
+			dropFiles: undefined
+		});
+	});
+
+	it('GeoRSS の RSS は georss ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(
+			createFile(
+				'feed.rss',
+				`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:georss="http://www.georss.org/georss">
+	<channel>
+		<item>
+			<title>place</title>
+			<georss:point>35.0 139.0</georss:point>
+		</item>
+	</channel>
+</rss>`
+			)
+		);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'georss',
+			dropFiles: undefined
+		});
+	});
+
+	it('GeoRSS でない RSS は未対応通知になる', async () => {
+		const result = await resolveDroppedFiles(
+			createFile(
+				'plain.rss',
+				`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+	<channel>
+		<item><title>plain</title></item>
+	</channel>
+</rss>`
+			)
+		);
+
+		expect(result).toEqual({
+			type: 'notification',
+			level: 'error',
+			message: '対応していないXMLファイルです'
 		});
 	});
 

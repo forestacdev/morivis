@@ -8,6 +8,7 @@ import { extractModelFromKml, extractModelFromKmz } from '$routes/map/utils/form
 import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
 import { isMfJsonFile } from '$routes/map/utils/formats/mf-json';
 import { inspectObjFile } from '$routes/map/utils/formats/obj';
+import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import {
 	findGeoReferencedImageFile,
 	findRasterImageFile,
@@ -106,6 +107,10 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 	try {
 		const header = await targetFile.slice(0, 2000).text();
 
+		if (hasGeoRssMarker(header)) {
+			return createDialogDecision('georss');
+		}
+
 		if (header.includes('<DEM') || header.includes('dataset:DEM')) {
 			const hasDataset = header.includes('<Dataset') || header.includes('dataset:Dataset');
 			if (hasDataset) return createDialogDecision('demxml');
@@ -156,6 +161,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	lrit: 'hrit',
 	hrit: 'hrit',
 	dm: 'dm',
+	dwg: 'dwg',
 	dxf: 'dxf',
 	sim: 'sima',
 	shp: 'shp',
@@ -164,6 +170,11 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	prj: 'shp',
 	cpg: 'shp',
 	gpkg: 'gpkg',
+	sqlite: 'sqlite',
+	sqlite3: 'sqlite',
+	db: 'sqlite',
+	db3: 'sqlite',
+	sql: 'sqlite',
 	gdb: 'gdb',
 	pmtiles: 'pmtiles',
 	glb: 'glb',
@@ -384,6 +395,10 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 				'画像ファイル(.tif/.png/.jpg)と一緒にドロップしてください'
 			);
 		}
+		return await resolveXmlFiles([file]);
+	}
+
+	if (ext === 'rss' || ext === 'atom' || ext === 'georss') {
 		return await resolveXmlFiles([file]);
 	}
 

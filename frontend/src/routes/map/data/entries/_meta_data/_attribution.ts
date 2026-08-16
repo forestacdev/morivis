@@ -67,8 +67,7 @@ const baseAttributions = {
 		url: 'https://www.usgs.gov/'
 	},
 	Esri: {
-		name:
-			'© Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
+		name: '© Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, © OpenStreetMap contributors, and the GIS User Community',
 		url: ''
 	},
 	株式会社アドイン研究所: {
@@ -102,6 +101,18 @@ const baseAttributions = {
 	兵庫県: {
 		name: '兵庫県',
 		url: 'https://www.geospatial.jp/ckan/organization/hyogopref-rinmu-chisan'
+	},
+	三重県: {
+		name: '三重県',
+		url: 'https://www.pref.mie.lg.jp/'
+	},
+	山形県: {
+		name: '山形県',
+		url: 'https://www.pref.yamagata.jp/'
+	},
+	長野県: {
+		name: '長野県',
+		url: 'https://www.pref.nagano.lg.jp/'
 	},
 	大阪府: {
 		name: '大阪府',
@@ -139,6 +150,10 @@ const baseAttributions = {
 		name: '国土交通省 Project PLATEAU',
 		url: 'https://www.mlit.go.jp/plateau/'
 	},
+	'e-Stat': {
+		name: 'e-Stat（政府統計の総合窓口）',
+		url: 'https://www.e-stat.go.jp/'
+	},
 	DoboX: {
 		name: 'DoboX',
 		url: 'https://hiroshima-dobox.jp/index2'
@@ -173,6 +188,21 @@ const attributionData = {
 		name: '愛媛県林業政策課（林野庁加工）',
 		url: 'https://www.geospatial.jp/ckan/organization/rinya',
 		sources: [baseAttributions.愛媛県森林資源データ, baseAttributions.林野庁]
+	},
+	三重県_林野庁加工: {
+		name: '三重県（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya',
+		sources: [baseAttributions.三重県, baseAttributions.林野庁]
+	},
+	山形県_林野庁加工: {
+		name: '山形県（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya',
+		sources: [baseAttributions.山形県, baseAttributions.林野庁]
+	},
+	長野県_林野庁加工: {
+		name: '長野県（林野庁加工）',
+		url: 'https://www.geospatial.jp/ckan/organization/rinya',
+		sources: [baseAttributions.長野県, baseAttributions.林野庁]
 	},
 	森林総研・森林土壌デジタルマップ: {
 		name: '森林総研・森林土壌デジタルマップ',

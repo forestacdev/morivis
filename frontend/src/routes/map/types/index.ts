@@ -75,6 +75,7 @@ export type DialogType =
 	| 'gpx'
 	| 'tcx'
 	| 'osm'
+	| 'georss'
 	| 'geojson'
 	| 'wkt'
 	| 'geotiff'
@@ -85,6 +86,7 @@ export type DialogType =
 	| 'wfs'
 	| 'ogcapifeatures'
 	| 'dm'
+	| 'dwg'
 	| 'dxf'
 	| 'sima'
 	| 'hdf5'
@@ -92,6 +94,7 @@ export type DialogType =
 	| 'tsv'
 	| 'xlsx'
 	| 'gpkg'
+	| 'sqlite'
 	| 'gdb'
 	| 'mfjson'
 	| '3dtiles'
@@ -179,6 +182,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.gpkg']
 	},
 	{
+		label: 'SQLite / SQL dump',
+		description:
+			'SQLiteデータベースや SQL ダンプです。空間カラムや座標列を持つテーブルを読み込むときに使います。',
+		extensions: ['.sqlite', '.sqlite3', '.db', '.db3', '.sql']
+	},
+	{
 		label: 'Shapefile',
 		description:
 			'ESRIが策定した複数ファイル構成のベクターデータです。`.shp` を中心に図形と属性をまとめて読み込むときに使います。',
@@ -207,6 +216,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'OpenStreetMapのXML形式データです。OSMのノードやウェイ、リレーションを読み込むときに使います。',
 		extensions: ['.osm']
+	},
+	{
+		label: 'GeoRSS',
+		description:
+			'位置情報付きのRSS / Atomフィードです。配信フィードの点・線・面を地図に載せるときに使います。',
+		extensions: ['.georss', '.rss', '.atom']
 	},
 	{
 		label: 'GML',
@@ -287,9 +302,10 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.bz2', '.lrit', '.hrit']
 	},
 	{
-		label: 'DXF',
-		description: 'CAD図面の交換形式です。図面上の線や注記を地図上で確認するときに使います。',
-		extensions: ['.dxf']
+		label: 'DXF / DWG',
+		description:
+			'CAD図面の交換形式とネイティブ形式です。図面上の線や注記を地図上で確認するときに使います。',
+		extensions: ['.dxf', '.dwg']
 	},
 	{
 		label: 'SIMA',

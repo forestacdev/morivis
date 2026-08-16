@@ -3,6 +3,7 @@
 	import { untrack } from 'svelte';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
@@ -77,6 +78,8 @@
 		if (!sourceFile) return false;
 		return /\.pdf$/i.test(sourceFile.name);
 	});
+	const getPlacementAllowedTransformModes = () =>
+		getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 
 	// ファイルドロップ時: 解析
 	$effect(() => {
@@ -147,7 +150,8 @@
 				imageWidth: width,
 				imageHeight: height,
 				imageFile: file,
-				registrationMode: 'raster'
+				registrationMode: 'raster',
+				allowedTransformModes: getPlacementAllowedTransformModes()
 			});
 			transformOptionMode = 'georef';
 			showDialogType = null;
@@ -294,7 +298,8 @@
 			imageWidth: width,
 			imageHeight: height,
 			imageFile: pngFile,
-			registrationMode: 'raster'
+			registrationMode: 'raster',
+			allowedTransformModes: getPlacementAllowedTransformModes()
 		});
 		transformOptionMode = 'georef';
 		showDialogType = null;

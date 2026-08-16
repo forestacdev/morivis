@@ -13,15 +13,20 @@ import {
 } from '$routes/map/utils/three/model-transform';
 import {
 	applyProjectedModelGeoreference,
-	getModelUnitScaleMeters
+	resolveFbxUnitScaleMeters
 } from '$routes/map/utils/three/model-georeference';
-import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
+import {
+	centerObjectToLocalOrigin,
+	normalizeObjectToLocalOrigin
+} from '$routes/map/utils/three/object-normalization';
 import type { CustomLayerInterface, Map as MapLibreMap } from 'maplibre-gl';
 import * as THREE from 'three';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { clone as cloneSkinnedObject } from 'three/addons/utils/SkeletonUtils.js';
 
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
 const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
@@ -430,6 +435,59 @@ export class ThreeJsLayerManager {
 		}
 	};
 
+	private createGlbExportMaterial = (
+		material: THREE.Material,
+		style: MeshStyle
+	): THREE.Material => {
+		if (material instanceof THREE.ShaderMaterial) {
+			const baseColor = material.uniforms.uBaseColor?.value instanceof THREE.Color
+				? material.uniforms.uBaseColor.value.clone()
+				: new THREE.Color(style.color);
+			const map = material.uniforms.uMap?.value instanceof THREE.Texture
+				? material.uniforms.uMap.value
+				: null;
+			const opacity = typeof material.uniforms.uOpacity?.value === 'number'
+				? material.uniforms.uOpacity.value
+				: style.opacity;
+
+			return new THREE.MeshStandardMaterial({
+				color: baseColor,
+				map,
+				transparent: opacity < 1,
+				opacity,
+				side: THREE.DoubleSide
+			});
+		}
+
+		const clonedMaterial = material.clone();
+		clonedMaterial.side = THREE.DoubleSide;
+		clonedMaterial.transparent = clonedMaterial.transparent || clonedMaterial.opacity < 1;
+		if ('wireframe' in clonedMaterial) {
+			clonedMaterial.wireframe = false;
+		}
+		return clonedMaterial;
+	};
+
+	private createGlbExportObject = (loaded: LoadedModel): THREE.Object3D => {
+		const exportObject = cloneSkinnedObject(loaded.object);
+
+		exportObject.visible = true;
+		exportObject.traverse((child) => {
+			if (!(child as THREE.Mesh).isMesh) return;
+
+			const mesh = child as THREE.Mesh;
+			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+			const exportMaterials = materials.map((material) =>
+				this.createGlbExportMaterial(material, loaded.entry.style)
+			);
+			mesh.material = Array.isArray(mesh.material) ? exportMaterials : exportMaterials[0];
+		});
+		centerObjectToLocalOrigin(exportObject);
+		exportObject.updateMatrixWorld(true);
+
+		return exportObject;
+	};
+
 	private setOnlyEntryVisible = (entryId: string, visible: boolean) => {
 		const applyVisibility = (group: THREE.Group | null) => {
 			if (!group) return;
@@ -507,38 +565,7 @@ export class ThreeJsLayerManager {
 				});
 
 				this.loadedModels.forEach((loaded) => {
-					const { transform } = loaded;
-
-					const anchoredModelMatrix = new THREE.Matrix4().fromArray(
-						this.map!.transform.getMatrixForModel(
-							transform.modelOrigin,
-							transform.modelAltitude
-						)
-					);
-					const rotationX = new THREE.Matrix4().makeRotationAxis(
-						new THREE.Vector3(1, 0, 0),
-						transform.rotateX
-					);
-					const rotationY = new THREE.Matrix4().makeRotationAxis(
-						new THREE.Vector3(0, 1, 0),
-						transform.rotateY
-					);
-					const rotationZ = new THREE.Matrix4().makeRotationAxis(
-						new THREE.Vector3(0, 0, 1),
-						transform.rotateZ
-					);
-					const scaleMatrix = new THREE.Matrix4().makeScale(
-						transform.scaleX,
-						-transform.scaleY,
-						-transform.scaleZ
-					);
-
-					const modelMatrix = anchoredModelMatrix
-						.multiply(rotationX)
-						.multiply(rotationY)
-						.multiply(rotationZ)
-						.multiply(scaleMatrix);
-
+					const modelMatrix = loaded.transform.matrix.clone();
 					const projectionMatrix = new THREE.Matrix4().fromArray(
 						args.defaultProjectionData.mainMatrix
 					);
@@ -630,7 +657,8 @@ export class ThreeJsLayerManager {
 					}
 
 					if (entry.format.type === 'fbx') {
-						const unitScaleMeters = getModelUnitScaleMeters(
+						const unitScaleMeters = resolveFbxUnitScaleMeters(
+							new THREE.Box3().setFromObject(object),
 							Number(
 								(object.userData as {
 									unitScaleFactor?: number;
@@ -1061,6 +1089,38 @@ export class ThreeJsLayerManager {
 	setGroupVisibility(visible: boolean): void {
 		if (!this.modelGroup) return;
 		this.modelGroup.visible = visible;
+	}
+
+	async exportModelAsGlb(entryId: string): Promise<ArrayBuffer> {
+		const loaded = this.loadedModels.get(entryId);
+		if (!loaded) {
+			throw new Error('モデルがまだ読み込まれていません');
+		}
+
+		const exporter = new GLTFExporter();
+		const exportObject = this.createGlbExportObject(loaded);
+		const animations = loaded.actions?.map((action) => action.getClip()) ?? [];
+
+		return new Promise<ArrayBuffer>((resolve, reject) => {
+			exporter.parse(
+				exportObject,
+				(result) => {
+					if (result instanceof ArrayBuffer) {
+						resolve(result);
+						return;
+					}
+
+					reject(new Error('GLB の書き出し結果が binary ではありませんでした'));
+				},
+				(error) => {
+					reject(error instanceof Error ? error : new Error(String(error)));
+				},
+				{
+					binary: true,
+					animations
+				}
+			);
+		});
 	}
 
 	/** プレビューモデルをメイングループに移動（再読み込み不要） */

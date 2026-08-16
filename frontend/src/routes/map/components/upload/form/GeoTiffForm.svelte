@@ -3,6 +3,7 @@
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefData,
@@ -114,6 +115,8 @@
 				]
 			: [{ key: 'raster', name: 'ラスター' }]
 	);
+	const getPlacementAllowedTransformModes = () =>
+		getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 
 	const getRasterResolutionMeters = (
 		bbox: [number, number, number, number],
@@ -181,7 +184,8 @@
 			imageWidth,
 			imageHeight,
 			imageFile: file,
-			registrationMode
+			registrationMode,
+			allowedTransformModes: getPlacementAllowedTransformModes()
 		});
 		transformOptionMode = 'georef';
 		showDialogType = null;

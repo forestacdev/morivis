@@ -5,22 +5,40 @@ import {
 	GeoArrowPolygonLayer,
 	GeoArrowScatterplotLayer
 } from '@geoarrow/deck.gl-layers';
+import {
+	sanitizeScenegraphGltfForDeck,
+	type ScenegraphGltfLike
+} from '$routes/map/utils/tiles3d/sanitize-scenegraph-gltf';
 
 import type {
 	AnyTiles3DEntry,
 	DeckVectorEntry,
 	GeoArrowEntry,
 	GeoJson3DEntry,
-	PointCloudEntry
+	PointCloudEntry,
+	Tiles3DMeshStyle
 } from '$routes/map/data/types/model';
 
 interface TileContent {
 	cartographicOrigin?: number[];
+	gltf?: ScenegraphGltfLike;
 }
 
 interface Tile3D {
 	content?: TileContent;
 }
+
+type Tile3DLayerPatchedMethods = {
+	_getSubLayer?: (tile: Tile3D, oldLayer?: unknown) => unknown;
+};
+
+type CloneableDeckLayer = {
+	id?: string;
+	constructor?: {
+		layerName?: string;
+	};
+	clone: (props: Record<string, unknown>) => unknown;
+};
 
 type PointCloudDatum = {
 	position: [number, number, number];
@@ -50,15 +68,36 @@ const hexToRgba = (color: string, alpha = 255): [number, number, number, number]
 
 const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
 
+const isCloneableDeckLayer = (layer: unknown): layer is CloneableDeckLayer =>
+	typeof layer === 'object' &&
+	layer !== null &&
+	'clone' in layer &&
+	typeof (layer as { clone?: unknown; }).clone === 'function';
+
+const getTiles3DMeshStyleSignature = (style: Tiles3DMeshStyle) =>
+	[
+		style.color,
+		style.lighting,
+		style.opacity,
+		style.visible ?? true
+	].join(':');
+
+const getTiles3DMeshSubLayerProps = (style: Tiles3DMeshStyle) => ({
+	getColor: hexToRgba(style.color)
+});
+
 export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 	const altitudeOffset = dataEntry.metaData.altitude ?? 0;
 
-	return new Tile3DLayer({
+	const layer = new Tile3DLayer({
 		id: `3d-tiles-layer-${dataEntry.id}`,
 		data: dataEntry.format.url,
 		pickable: dataEntry.interaction.clickable,
 		opacity: dataEntry.style.opacity,
 		visible: dataEntry.style.visible ?? true,
+		morivisStyleSignature: dataEntry.style.type === '3d-tiles-mesh'
+			? getTiles3DMeshStyleSignature(dataEntry.style)
+			: undefined,
 		pointSize: dataEntry.style.type === 'point-cloud'
 			? (dataEntry.style.pointSize ?? 1)
 			: undefined,
@@ -68,11 +107,55 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 			'3d-tiles': { decodeQuantizedPositions: true }
 		},
 		onTileLoad: (tile: Tile3D) => {
+			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
+
 			if (tile.content?.cartographicOrigin && altitudeOffset !== 0) {
 				// 高さオフセットは既存動作に合わせて未適用のままにしている。
 			}
 		}
 	});
+
+	const patchedLayer = layer as unknown as Tile3DLayerPatchedMethods;
+	const originalGetSubLayer = patchedLayer._getSubLayer?.bind(patchedLayer);
+
+	if (originalGetSubLayer) {
+		// FME 製 b3dm 向けの一時回避。
+		// onTileLoad だけだと ScenegraphLayer 初期化タイミングに間に合わない場合があるため、
+		// deck.gl の内部サブレイヤー生成直前にも同じ補正を入れている。
+		// vis.gl 側の更新で不要になったら削除候補。
+		patchedLayer._getSubLayer = (tile: Tile3D, oldLayer?: unknown) => {
+			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
+			const subLayer = originalGetSubLayer(tile, oldLayer);
+
+			if (dataEntry.style.type !== '3d-tiles-mesh' || !isCloneableDeckLayer(subLayer)) {
+				return subLayer;
+			}
+
+			const subLayerName = [
+				subLayer.constructor?.layerName ?? '',
+				subLayer.id ?? ''
+			]
+				.join(' ')
+				.toLowerCase();
+			const sharedProps = getTiles3DMeshSubLayerProps(dataEntry.style);
+
+			if (subLayerName.includes('scenegraph')) {
+				return subLayer.clone({
+					...sharedProps,
+					getTransformMatrix: [],
+					_lighting: dataEntry.style.lighting
+				});
+			}
+
+			if (subLayerName.includes('mesh')) {
+				return subLayer.clone(sharedProps);
+			}
+
+			return subLayer;
+		};
+	}
+
+	return layer;
 };
 
 const getPointCloudData = (dataEntry: PointCloudEntry) => {
