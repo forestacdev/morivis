@@ -587,6 +587,7 @@ const createMapStore = () => {
 		});
 
 		map.on('resize', (e) => {
+			syncDeckOverlaySize();
 			resizeEvent.set(e);
 		});
 		map.on('data', () => {
@@ -712,6 +713,29 @@ const createMapStore = () => {
 		); // マップが削除されていないかチェック
 	};
 
+	const syncDeckOverlaySize = () => {
+		if (!map || !deckOverlay) return;
+
+		const canvas = map.getCanvas();
+		const container = map.getContainer();
+		const width = Math.max(1, canvas.clientWidth || container.clientWidth || canvas.width || 1);
+		const height = Math.max(
+			1,
+			canvas.clientHeight || container.clientHeight || canvas.height || 1
+		);
+
+		const deck = (deckOverlay as unknown as {
+			_deck?: {
+				setProps: (props: { width: number; height: number; }) => void;
+				redraw?: () => void;
+			};
+		})._deck;
+		if (!deck) return;
+
+		deck.setProps({ width, height });
+		deck.redraw?.();
+	};
+
 	// Method for setting map style
 	const setStyle = (style: StyleSpecification) => {
 		if (!map || !isMapValid(map)) return;
@@ -758,11 +782,13 @@ const createMapStore = () => {
 		if (!isDeckOverlayAdded) {
 			map.addControl(deckOverlay as maplibregl.IControl);
 			isDeckOverlayAdded = true;
+			syncDeckOverlaySize();
 		}
 
 		deckOverlay.setProps({
 			layers: layers
 		});
+		syncDeckOverlaySize();
 	};
 
 	// Three.js レイヤーを必要時に追加

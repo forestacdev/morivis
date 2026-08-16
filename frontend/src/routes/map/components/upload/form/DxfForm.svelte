@@ -217,7 +217,8 @@
 				name: entryName,
 				bbox: bbox as [number, number, number, number],
 				style,
-				attribution: 'DXF'
+				attribution: 'DXF',
+				allow3d: false
 			});
 
 			if (entry) {

@@ -74,7 +74,8 @@ export const createAutoGeoJsonEntry = async ({
 	name,
 	bbox,
 	style,
-	attribution
+	attribution,
+	allow3d = true
 }: {
 	geojson: FeatureCollection;
 	geometryType: VectorEntryGeometryType;
@@ -82,8 +83,13 @@ export const createAutoGeoJsonEntry = async ({
 	bbox: [number, number, number, number];
 	style?: VectorStyle;
 	attribution: string;
+	allow3d?: boolean;
 }): Promise<MorivisLayerEntry | undefined> => {
-	if (canRender3dGeoJsonWithDeck(geometryType) && has3dGeometryForType(geojson, geometryType)) {
+	if (
+		allow3d
+		&& canRender3dGeoJsonWithDeck(geometryType)
+		&& has3dGeometryForType(geojson, geometryType)
+	) {
 		const entry = createGeoJson3DEntry(name, geojson, geometryType, bbox);
 
 		return {

@@ -2,21 +2,23 @@ import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry, GeometryCollection } from '$routes/map/types/geometry';
 
+const Z_EPSILON = 1e-9;
+
 const isCoordinateTuple = (value: unknown): value is number[] =>
 	Array.isArray(value)
 	&& value.length >= 2
 	&& value.every((item) => typeof item === 'number' && Number.isFinite(item));
 
-const coordinatesContainZ = (coordinates: unknown): boolean => {
+const coordinatesContainMeaningfulZ = (coordinates: unknown): boolean => {
 	if (isCoordinateTuple(coordinates)) {
-		return coordinates.length >= 3;
+		return coordinates.length >= 3 && Math.abs(coordinates[2] ?? 0) > Z_EPSILON;
 	}
 
 	if (!Array.isArray(coordinates)) {
 		return false;
 	}
 
-	return coordinates.some((coordinate) => coordinatesContainZ(coordinate));
+	return coordinates.some((coordinate) => coordinatesContainMeaningfulZ(coordinate));
 };
 
 const geometryMatchesType = (
@@ -51,7 +53,7 @@ const geometryHasZForType = (
 		return false;
 	}
 
-	return coordinatesContainZ(geometry.coordinates);
+	return coordinatesContainMeaningfulZ(geometry.coordinates);
 };
 
 export const has3dGeometryForType = (
