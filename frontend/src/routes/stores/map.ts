@@ -79,6 +79,10 @@ import {
 	isGeneratedPoiIconId,
 	warmupGeneratedPoiIconWorker
 } from '$routes/map/utils/icon';
+import {
+	buildGlbExportFilename,
+	downloadArrayBufferAsGlb
+} from '$routes/map/utils/formats/export/model';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
@@ -942,6 +946,11 @@ const createMapStore = () => {
 		}
 	};
 
+	const exportModelAsGlb = async (entry: MeshEntry<MeshStyle>) => {
+		const glb = await threeJsManager.exportModelAsGlb(entry.id);
+		downloadArrayBufferAsGlb(glb, buildGlbExportFilename(entry.metaData.name));
+	};
+
 	const setDeckModelStyleEntries = async (
 		tiles3dEntries: AnyTiles3DEntry[],
 		pointCloudEntries: PointCloudEntry[] = [],
@@ -1598,6 +1607,7 @@ const createMapStore = () => {
 		setThreeLayer,
 		setTemporalModelTimeStep,
 		setModelStyle,
+		exportModelAsGlb,
 		setDeckModelStyleEntries,
 		setDeckModelVisibility,
 		setDeckModelOpacity,

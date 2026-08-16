@@ -24,6 +24,7 @@
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
+	import { showNotification } from '$routes/stores/notification';
 	import { isActiveMobileMenu, showDataMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -156,13 +157,29 @@
 		activeLayerIdsStore.add(uuid);
 	};
 
-	const downloadLayer = () => {
+	const downloadLayer = async () => {
 		if (!layerEntry) return;
 
 		if (isGeojsonCustomLayer) {
 			GeojsonCache.export(layerEntry.id, layerEntry.metaData.name);
-		} else if (isTiffCustomLayer) {
+			return;
+		}
+
+		if (isTiffCustomLayer) {
 			GeoTiffCache.exportRenderedPng(layerEntry.id);
+			return;
+		}
+
+		if (isThreeMeshEntry(layerEntry)) {
+			try {
+				await mapStore.exportModelAsGlb(layerEntry);
+			} catch (error) {
+				console.error('GLB export failed:', error);
+				showNotification(
+					error instanceof Error ? error.message : 'GLB のダウンロードに失敗しました',
+					'error'
+				);
+			}
 		}
 	};
 
@@ -642,7 +659,7 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						{#if isGeojsonCustomLayer || isTiffCustomLayer}
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || isThreeMeshEntry(layerEntry)}
 							<button onclick={downloadLayer} class="cursor-pointer">
 								<Icon icon={ICONS.download} class="h-8 w-8" />
 							</button>
@@ -675,6 +692,12 @@
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
 								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
+							</button>
+						{/if}
+
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || isThreeMeshEntry(layerEntry)}
+							<button onclick={downloadLayer} class="cursor-pointer">
+								<Icon icon={ICONS.download} class="h-8 w-8" />
 							</button>
 						{/if}
 
