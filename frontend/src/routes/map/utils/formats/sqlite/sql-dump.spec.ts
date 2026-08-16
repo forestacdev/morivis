@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-
 import initSqlJs from 'sql.js';
 import { describe, expect, it } from 'vitest';
 
@@ -7,12 +5,22 @@ import { parseGeometryBlob } from './geometry';
 import { createDatabaseFromBytes, parseSqlDump } from './sql-dump';
 
 const wasmPath = new URL('../../../../../../static/sql-wasm.wasm', import.meta.url).pathname;
-const samplePath = new URL('../../../../../../../sample/sql/ああああ.sql', import.meta.url);
+const sampleSqlDump = String.raw`
+SET standard_conforming_strings = ON;
+DROP TABLE IF EXISTS "public"."ああああ" CASCADE;
+BEGIN;
+CREATE TABLE "public"."ああああ"();
+ALTER TABLE "public"."ああああ" ADD COLUMN "ogc_fid" SERIAL CONSTRAINT "ああああ_pk" PRIMARY KEY;
+SELECT AddGeometryColumn('public','ああああ','wkb_geometry',4326,'POINT',2);
+ALTER TABLE "public"."ああああ" ADD COLUMN "id" VARCHAR;
+ALTER TABLE "public"."ああああ" ADD COLUMN "title" VARCHAR;
+INSERT INTO "public"."ああああ" ("ogc_fid", "wkb_geometry", "id", "title") VALUES (1, '0101000020E6100000617DB1E4173B5DC0E0E589FA37F24040', 'urn:earthquake-usgs-gov:ci:40673106', 'M 0.2 - 6 km SW of Banning, CA');
+COMMIT;
+`;
 
 describe('sql dump parser', () => {
 	it('PostGIS SQL dump をテーブル定義として読める', () => {
-		const sql = readFileSync(samplePath, 'utf-8');
-		const tables = parseSqlDump(sql);
+		const tables = parseSqlDump(sampleSqlDump);
 
 		expect(tables).toHaveLength(1);
 		expect(tables[0]?.name).toBe('ああああ');
@@ -31,8 +39,8 @@ describe('sql dump parser', () => {
 		const SQL = await initSqlJs({
 			locateFile: () => wasmPath
 		});
-		const bytes = readFileSync(samplePath);
-		const db = createDatabaseFromBytes(SQL, new Uint8Array(bytes));
+		const bytes = new TextEncoder().encode(sampleSqlDump);
+		const db = createDatabaseFromBytes(SQL, bytes);
 
 		const tables = db.exec(
 			"SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"
