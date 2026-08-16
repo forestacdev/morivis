@@ -54,6 +54,7 @@ export const registerLayerFilterState = ({
 	role,
 	selectionKey,
 	patternKind,
+	patternProperty,
 	baseCircleRadius,
 	baseCircleStrokeWidth,
 	baseCircleOpacity,
@@ -66,6 +67,7 @@ export const registerLayerFilterState = ({
 	role: 'base' | 'highlight';
 	selectionKey?: string;
 	patternKind?: 'fill' | 'line' | 'point';
+	patternProperty?: 'fill-pattern' | 'fill-extrusion-pattern' | 'line-pattern';
 	baseCircleRadius?: number;
 	baseCircleStrokeWidth?: number;
 	baseCircleOpacity?: number;
@@ -79,6 +81,7 @@ export const registerLayerFilterState = ({
 		role,
 		selectionKey,
 		patternKind,
+		patternProperty,
 		baseCircleRadius,
 		baseCircleStrokeWidth,
 		baseCircleOpacity,
@@ -253,6 +256,13 @@ export const registerHighlightLayers = ({
 			? 'line'
 			: baseHighlightLayer.type === 'circle' || isAnimatedPointSymbolLayer
 			? 'point'
+			: undefined,
+		patternProperty: baseHighlightLayer.type === 'fill'
+			? 'fill-pattern'
+			: baseHighlightLayer.type === 'fill-extrusion'
+			? 'fill-extrusion-pattern'
+			: baseHighlightLayer.type === 'line' && useLinePattern
+			? 'line-pattern'
 			: undefined,
 		baseCircleRadius: baseHighlightLayer.type === 'circle'
 			&& typeof baseHighlightLayer.paint?.['circle-radius'] === 'number'
