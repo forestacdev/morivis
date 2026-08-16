@@ -135,6 +135,7 @@ const ensureFbxLoaderWindowShim = () => {
 			innerWidth?: number;
 			innerHeight?: number;
 			document?: FbxLoaderDocumentShim;
+			URL?: typeof URL;
 		};
 	const globalScope = globalThis as typeof globalThis & {
 		window?: FbxLoaderWindowShim;
@@ -226,6 +227,13 @@ const ensureFbxLoaderWindowShim = () => {
 			windowShim.document = documentShim;
 		} catch {
 			// getter-only な document を持つ実体 window では代入しない。
+		}
+	}
+	if (!windowShim.URL && typeof URL !== 'undefined') {
+		try {
+			windowShim.URL = URL;
+		} catch {
+			// getter-only な window には代入しない。
 		}
 	}
 
