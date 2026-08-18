@@ -369,6 +369,27 @@ const createMapStore = () => {
 	const onLoadEvent = writable<MapLibreEvent | null>(null);
 	const onTerrainEvent = writable<MapLibreEvent | null>(null);
 
+	const ensureDeckMapCompatibility = (_map: maplibregl.Map) => {
+		const deckCompatibleMap = _map as maplibregl.Map & {
+			transform?: unknown;
+			painter?: {
+				transform?: unknown;
+			};
+		};
+
+		if (deckCompatibleMap.transform || !deckCompatibleMap.painter?.transform) return;
+
+		try {
+			Object.defineProperty(deckCompatibleMap, 'transform', {
+				configurable: true,
+				enumerable: false,
+				get: () => deckCompatibleMap.painter?.transform
+			});
+		} catch {
+			deckCompatibleMap.transform = deckCompatibleMap.painter.transform;
+		}
+	};
+
 	const init = async (mapContainer: HTMLElement) => {
 		const mapPosition = getMapParams();
 
@@ -425,6 +446,7 @@ const createMapStore = () => {
 		}
 
 		if (!map) return;
+		ensureDeckMapCompatibility(map);
 
 		map.setMissingStyleImageResolver(async (id) => {
 			if (!map) return;
@@ -715,27 +737,39 @@ const createMapStore = () => {
 		); // マップが削除されていないかチェック
 	};
 
-	const syncDeckOverlaySize = () => {
-		if (!map || !deckOverlay) return;
-
+	const getDeckOverlaySize = () => {
+		if (!map) {
+			return {
+				width: 1,
+				height: 1
+			};
+		}
 		const canvas = map.getCanvas();
 		const container = map.getContainer();
-		const width = Math.max(1, canvas.clientWidth || container.clientWidth || canvas.width || 1);
-		const height = Math.max(
-			1,
-			canvas.clientHeight || container.clientHeight || canvas.height || 1
-		);
+		return {
+			width: Math.max(1, canvas.clientWidth || container.clientWidth || canvas.width || 1),
+			height: Math.max(1, canvas.clientHeight || container.clientHeight || canvas.height || 1)
+		};
+	};
 
-		const deck = (deckOverlay as unknown as {
-			_deck?: {
-				setProps: (props: { width: number; height: number; }) => void;
-				redraw?: () => void;
-			};
-		})._deck;
-		if (!deck) return;
+	const setDeckOverlaySizedProps = (
+		overlay: MapboxOverlay,
+		props: {
+			width: number;
+			height: number;
+			layers?: LayersList;
+		}
+	) => {
+		(
+			overlay as unknown as {
+				setProps: (props: { width: number; height: number; layers?: LayersList; }) => void;
+			}
+		).setProps(props);
+	};
 
-		deck.setProps({ width, height });
-		deck.redraw?.();
+	const syncDeckOverlaySize = () => {
+		if (!deckOverlay) return;
+		setDeckOverlaySizedProps(deckOverlay, getDeckOverlaySize());
 	};
 
 	// Method for setting map style
@@ -774,11 +808,16 @@ const createMapStore = () => {
 		}
 
 		if (!deckOverlay) {
-			deckOverlay = new MapboxOverlay({
-				id: 'deckgl-overlay',
-				interleaved: true,
-				layers: []
-			});
+			const { width, height } = getDeckOverlaySize();
+			deckOverlay = new MapboxOverlay(
+				{
+					id: 'deckgl-overlay',
+					interleaved: true,
+					layers: [],
+					width,
+					height
+				} as unknown as ConstructorParameters<typeof MapboxOverlay>[0]
+			);
 		}
 
 		if (!isDeckOverlayAdded) {
@@ -787,10 +826,12 @@ const createMapStore = () => {
 			syncDeckOverlaySize();
 		}
 
-		deckOverlay.setProps({
-			layers: layers
+		const { width, height } = getDeckOverlaySize();
+		setDeckOverlaySizedProps(deckOverlay, {
+			layers,
+			width,
+			height
 		});
-		syncDeckOverlaySize();
 	};
 
 	// Three.js レイヤーを必要時に追加
