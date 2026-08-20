@@ -43,7 +43,7 @@ flowchart LR
 | ファイル | 役割 |
 | --- | --- |
 | `types/index.ts` | `DialogType` と `SUPPORTED_FILE_GROUPS`。UI に見せる対応拡張子の定義元。 |
-| `upload-drop.ts` | ファイルや URL をどの `DialogType` に振り分けるかの定義元。 |
+| `upload-drop.ts` | ファイルや URL をどの `DialogType` に振り分けるかの定義元。OBJ の軽量事前検査結果のような形式別メタデータもここで `File` に一時付与する。 |
 | `dialog-registry.ts` | `DialogType -> Form / profile` の対応表。 |
 | `transform-policy.ts` | 形式ごとの `zone` / `georef` 許可方針。 |
 | `components/upload/form/*.svelte` | 各形式の preview / final entry 作成の実装本体。 |
@@ -67,6 +67,9 @@ flowchart LR
 | `rawBbox` | 各 Form | 元データが持っていた bbox。まだ WGS84 に確定していない場合がある。 |
 | `resolvedBbox` | 各 Form | そのまま entry に使える bbox。 |
 
+一部の形式では、dialog を開く前の軽量な判定結果を `File` 自体に一時保持する。  
+OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で付与し、`MeshModelForm.svelte` がそのまま引き継ぐ。
+
 ## 分岐
 
 アップロード後の分岐は、大きく 4 つある。
@@ -88,11 +91,12 @@ flowchart LR
 | 表形式ベクター | CSV, TSV, XLSX, Garmin GDB, Location History, GTFS | テーブルやログを `FeatureCollection` 化 | bbox が不正なら Zone。形式によってはそのまま登録 | 必要なら vector→GeoRef 用ラスター化 | 各 Form または `+page.svelte finalizeGeoRefEntry()` | 座標変換、GeoRef ベクター変形 |
 | 複合ベクターファイル | Shapefile, GeoPackage, SQLite / SQL dump, GeoParquet, GeoArrow | パーサーで `FeatureCollection` または Arrow Table 化 | `.prj` や埋め込み定義で自動、足りなければ Zone。GeoArrow は現状 Zone のみ | 必要なら vector→GeoRef 用ラスター化 | 各 Form または `+page.svelte finalizeGeoRefEntry()` | GPKG / SQLite / GeoParquet / GML などは worker 解析あり |
 | CAD / 測量 / 地籍ベクター | DXF, DWG, DM, SIMA, MojXML | 独自パーサーで `FeatureCollection` 化 | 多くは Zone 起点。必要なら GeoRef へ流せる | 必要なら vector→GeoRef 用ラスター化 | 各 Form または `+page.svelte finalizeGeoRefEntry()` | DXF / DWG / DM 解析 worker、座標変換 |
+| DRM 道路ネットワーク | DRM `.mt` | EBCDIC の固定長レコードを GeoJSON 化。複数ファイルやフォルダ入力はまとめて処理し、まずリンク `22/32`、無ければノード `21/31` を使う | ファイル名ヒントから旧日本測地系/JGD2000 を判定し、WGS84 へ直接変換する。混在時はエラーにして止める。Zone / GeoRef は使わない | なし | `DrmForm.svelte` が `LineString` または `Point` の vector entry を自動作成する | `formats/drm/worker.ts`、EBCDIC decode、補助レコード結合、複数 `.mt` マージ |
 | 画像ラスタ / 画像由来 | GeoTIFF, GeoPDF, SVG, GeoPhoto, 画像 + `tfw`, 画像 + `aux.xml` | 埋め込み情報、sidecar、EXIF、PDF / SVG の内容から解析 | bbox と CRS が揃えば直行。無ければ Zone または GeoRef | `createRasterGeoRefData()`、GeoPhoto は地物 entry | 各 Form または `+page.svelte finalizeGeoRefEntry()` | GeoTIFF / GeoPDF 解析、bbox 変換、必要ならメッシュ化 |
 | 科学技術・衛星ラスタ | DEM XML, NetCDF, GRIB2, HDF5, HRIT/LRIT | バンド配列や観測画像へ展開 | 形式ごとに自動、または GeoRef / Zone | `createRasterGeoRefData()` | 各 Form または `+page.svelte finalizeGeoRefEntry()` | 解析 worker、Terrarium 変換、3Dメッシュ化 |
 | 点群 | LAS, LAZ, COPC, PLY, PCD, XYZ, OBJ 点群 | positions / colors / pointCount を生成 | bbox が不正なら Zone。登録方法で raster / pointcloud に分岐 | 点群 GeoRef は pointcloud 用 `geoRefData`。DEM 化は raster 用 `geoRefData` | `PointCloudForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | 点群解析、DEM ラスタライズ、GeoRef 点群変形 |
 | TIN / サーフェス | LandXML | TIN, breakline, point 群を解析。必要に応じて DEM 化 | Zone または GeoRef | ラスター preview または mesh 準備 | `LandXmlForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | rasterize worker、3Dメッシュ化 |
-| 3D モデル | GLB, OBJ, 3DS, DAE, 3DM, FBX, DRC, 3MF, AMF, IFC | three.js 系が扱える URL / Blob に正規化 | 主に Zone または手動配置 | なし | モデル entry を直接作る | bounds 計算、形式別 loader |
+| 3D モデル | GLB, OBJ, 3DS, DAE, 3DM, FBX, DRC, 3MF, AMF, IFC | three.js 系が扱える URL / Blob に正規化。OBJ は `# COORDINATE_SYSTEM` コメントから投影 EPSG を先読みできる | 埋め込み配置が解ければ自動。無ければ Zone または手動配置 | なし | 各 3D Form がモデル entry を直接作る | `model-bounds-parallel` 系で bounds / resolvedPlacement を算出し、runtime では `three/layer-manager.ts` が georeference と正規化を適用 |
 | 3D Tiles / タイルデータ | 3D Tiles, PMTiles, MBTiles | URL / ファイルから source metadata を構築 | 通常は CRS 解決不要。PMTiles / MBTiles は source 種別の分岐あり | なし | source / model entry を直接作る | PMTiles protocol, MBTiles reader |
 | リモート配信 / カタログ | WMTS, WCS, GeoZarr, FeatureService, WFS, OGC API Features, STAC, ArcGIS WebMap / service, Raster URL, Vector URL | メタデータ問い合わせや capabilities 解析 | 形式ごとのポリシーに従う | WCS / STAC / vector は必要に応じて preview | 各 Form または `+page.svelte finalizeGeoRefEntry()` | capabilities fetch、STAC / WCS / ArcGIS 解析 |
 
@@ -104,7 +108,7 @@ flowchart LR
 | profile | 典型的な形式 | 役割 |
 | --- | --- | --- |
 | `simple` | STAC, ArcGIS | `dropFile` を持たず、URL や内部状態だけで完結する。 |
-| `drop-file` | GPX, TCX, GDB, GTFS, HRIT, HDF5, MF-JSON, LocationHistory | 受け取ったファイルをそのまま解析して entry を作る。 |
+| `drop-file` | GPX, TCX, GDB, GTFS, HRIT, HDF5, MF-JSON, LocationHistory, DRM | 受け取ったファイルをそのまま解析して entry を作る。 |
 | `vector-zone` | GeoArrow | Zone は使うが GeoRef には流さない。 |
 | `vector-zone-georef` | GeoJSON, Shapefile, GeoParquet, DXF, GML, MojXML など | Zone と GeoRef の両方を取りうる。 |
 | `vector-georef` | SVG | GeoRef のみを持つ。 |
@@ -177,6 +181,31 @@ flowchart LR
 	E --> F["sourceType ごとに final entry 作成"]
 ```
 
+## DRM (.mt) フロー
+
+DRM は、他の測量系ベクターのように Zone や GeoRef に流さず、そのまま自動で entry を作る導線に寄せている。  
+前提は `.mt` 専用で、道路網の選択 UI は持たず、全道路を含めてそのまま解析する。
+
+```mermaid
+flowchart LR
+	A[".mt files / folder"] --> B["upload-drop.ts"]
+	B --> C["DrmForm.svelte"]
+	C --> D["detectCrsCandidates()"]
+	D --> E["analyzeDrmFilesInWorker()"]
+	E --> F["toGeoJson()"]
+	F --> G["transformGeoJSONParallel()"]
+	G --> H["createGeoJsonEntry()"]
+	H --> I["showDataEntry"]
+```
+
+- `upload-drop.ts` は、複数ファイルの中に `.mt` が 1 件でもあれば `drm` dialog へ送る。フォルダごと受け取った場合も `dropFile` はそのまま配列で渡され、後段でまとめて処理する。
+- `DrmForm.svelte` は `getDrmInputName()` で `morivisRelativePath` を優先して入力名を扱う。これによりフォルダ入力でも相対パスを保ったまま処理でき、先頭ファイルのルート名をそのままエントリー名候補に使える。
+- 座標系はファイル名ヒントから自動判定する。4 桁コードの後ろに `A` が付くものは旧日本測地系、付かないものは JGD2000 とみなす。複数 `.mt` の判定結果が混在したときは変換を始める前にエラーで止める。
+- `analyzeDrmFilesInWorker(drmFiles, { includeAllRoads: true })` が全入力を worker に渡す。ここでは UI 側の道路種別選択は使わず、基本道路網だけに絞らず全道路を含めて読む。
+- worker 側の `toGeoJson()` は、まずリンクレコード `22/32` を `LineString` に組み立てる。リンクが 1 件も取れなかった場合だけ、ノードレコード `21/31` を `Point` として返す。
+- リンク解析では `23` `24` `93` の補助レコードも同時に読み、リンク内属性や対応全道路リンク番号一覧を元リンクの `properties` に統合する。
+- 全 `.mt` の地物は 1 つの `FeatureCollection` に連結したあと、`transformGeoJSONParallel()` で WGS84 へ変換する。bbox が妥当なら `createGeoJsonEntry()` で `LineString` か `Point` の vector entry を作り、そのまま `showDataEntry` に載せる。
+
 ## 2D → 3D 変換
 
 morivis では 2D データから 3D 表現を作る経路が複数ある。
@@ -241,6 +270,33 @@ flowchart LR
 TIN サーフェスを DEM に焼き直して 2D ラスターとして扱う。  
 同じ入力から `mesh` を選べば 3D、`dem` を選べば 2D になる。
 
+## 3D モデル配置フロー
+
+3D モデルは、entry 作成前の meta 計算と、three.js 読み込み後の実オブジェクト配置が分かれている。  
+今回の OBJ 対応では、この 2 段階を分けて見ないと挙動を追いにくい。
+
+```mermaid
+flowchart LR
+	A["File / folder"] --> B["upload-drop.ts"]
+	B --> C["inspectObjFile()"]
+	C --> D["MeshModelForm.svelte"]
+	D --> E["computeUploadedModelMetaInWorker()"]
+	E --> F{"resolvedPlacement があるか"}
+	F -- yes --> G["entry.format.georeference と transform へ反映"]
+	F -- no --> H["Zone または手動配置"]
+	G --> I["showDataEntry"]
+	H --> I
+	I --> J["threeJsManager.addModel()"]
+	J --> K["finalizeRuntimeModelObject()"]
+	K --> L["three.js custom layer に追加"]
+```
+
+- `inspectObjFile()` は OBJ の面有無を見て mesh / pointcloud を分ける。同時に `# COORDINATE_SYSTEM:` コメントに入った WKT から `AUTHORITY["EPSG","xxxx"]` を拾い、投影座標系だけを `projectedModelEpsg` として採用する。
+- `upload-drop.ts` はこの判定結果を `morivisProjectedModelEpsg` として `File` に一時付与する。複数ファイルの OBJ 一式でも単体 OBJ でも同じ扱いで、Form 側に追加の状態を増やさず引き渡せる。
+- `MeshModelForm.svelte` は `computeUploadedModelMetaInWorker()` に `projectedModelEpsg` を渡し、bounds、unit scale、skinned mesh 情報、`resolvedPlacement` をまとめて計算する。`resolvedPlacement` が返れば `entry.format.georeference` と `style.transform` に反映してそのまま登録へ進む。
+- 投影座標つき OBJ はローカル軸の向きがそのままだと縦向きに見えるケースがあるので、登録時に `baseRotationX = 90` を補正値として入れる。
+- 実オブジェクトへの地理配置は worker ではなく runtime 側で行う。`three/layer-manager.ts` が各 loader の直後に `finalizeRuntimeModelObject()` を通し、`entry.format.georeference` があれば projected 座標原点と単位を反映し、無ければ形式別の単位補正や local origin 正規化を適用する。
+
 ## worker 境界
 
 重い処理はなるべく worker に逃がしている。設計上ここを明示しておくと、フリーズ調査がしやすい。
@@ -253,10 +309,11 @@ TIN サーフェスを DEM に焼き直して 2D ラスターとして扱う。
 | 点群座標変換 | `transformPointCloudParallel()` |
 | GeoRef ベクター変形 | `warpGeoJSONByCornersParallel()` |
 | GeoRef 点群変形 | `warpPointCloudByCornersParallel()` |
+| DRM 解析 | `utils/formats/drm/worker.ts`。複数 `.mt` の EBCDIC decode、リンク/ノード GeoJSON 化、補助レコード結合を行う。 |
 | 1 バンドラスター→3Dメッシュ | `createRasterMeshEntryInWorker()` |
 | 点群→DEM ラスタライズ | `rasterizePointCloudToDemInWorker()` |
 | GPKG / GML / DXF / DM などの解析 | 形式ごとの worker 実装 |
-| uploaded 3D model の bounds 計算 | `model-bounds-parallel` 系 |
+| uploaded 3D model の meta 計算 | `model-bounds-parallel` 系。bounds、unit scale、skinned mesh、`resolvedPlacement` までを扱う。実オブジェクトへの `georeference` 適用は worker ではなく `runtime-model-finalize.ts`。 |
 
 main thread に残っている責務は、主に次の通り。
 
