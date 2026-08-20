@@ -62,6 +62,14 @@
 	const getProjContextByCrs = (crs: string): string =>
 		crs === CRS_JGD2000 ? getProjContext('4612') : TOKYO_DATUM_PROJ4
 
+	const getEntryGeometryType = (geojson: FeatureCollection): 'Point' | 'LineString' => {
+		const geometryType = geojson.features[0]?.geometry?.type
+		return geometryType === 'Point' || geometryType === 'MultiPoint' ? 'Point' : 'LineString'
+	}
+
+	const getFeatureLabel = (entryGeometryType: 'Point' | 'LineString'): string =>
+		entryGeometryType === 'Point' ? 'ノード' : '道路リンク'
+
 	const closeDialog = () => {
 		dropFile = null
 		showDialogType = null
@@ -94,7 +102,7 @@
 			})
 
 			if (geojson.features.length === 0) {
-				closeWithNotification('読み込める道路リンクが見つかりませんでした', 'warning')
+				closeWithNotification('読み込めるDRMデータが見つかりませんでした', 'warning')
 				return
 			}
 
@@ -103,6 +111,8 @@
 				geojson,
 				getProjContextByCrs(sourceCrs)
 			)) as FeatureCollection
+			const entryGeometryType = getEntryGeometryType(transformedGeojson)
+			const featureLabel = getFeatureLabel(entryGeometryType)
 			const bbox = turfBbox(transformedGeojson) as [number, number, number, number]
 
 			if (!isBboxValid(bbox)) {
@@ -112,7 +122,7 @@
 
 			const entry = await createGeoJsonEntry(
 				transformedGeojson,
-				'LineString',
+				entryGeometryType,
 				suggestedEntryName,
 				bbox,
 				undefined,
@@ -126,7 +136,7 @@
 
 			showDataEntry = entry
 			closeDialog()
-			showNotification(`${geojson.features.length}件の道路リンクを読み込みました`, 'success')
+			showNotification(`${geojson.features.length}件の${featureLabel}を読み込みました`, 'success')
 		} catch (error) {
 			closeDialog()
 			showNotification(
@@ -158,6 +168,7 @@
 		<div class="space-y-1 text-gray-300">
 			<div>対象 .mt ファイル: {drmFiles.length}件</div>
 			<div>道路網: すべて自動で読み込みます</div>
+			<div>読込対象: 線があれば道路リンク、無ければノードを読み込みます</div>
 			<div>測地系: {getCrsLabel(detectedCrs)}</div>
 		</div>
 

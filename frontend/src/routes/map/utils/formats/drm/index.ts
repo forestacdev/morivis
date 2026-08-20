@@ -1,4 +1,4 @@
-import type { LineStringGeometry } from '$routes/map/types/geometry'
+import type { LineStringGeometry, PointGeometry } from '$routes/map/types/geometry'
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson'
 
 import { readInt, readText } from './ebcdic'
@@ -7,9 +7,11 @@ type PathLikeFile = File & { morivisRelativePath?: string }
 
 export const MT_SUFFIX = '.mt'
 export const RECORD_LENGTH = 256
+export const RECORD_ID_BASIC_NODE = '21'
 export const RECORD_ID_BASIC_LINK = '22'
 export const RECORD_ID_BASIC_LINK_ATTRIBUTE = '23'
 export const RECORD_ID_LINK_CORRESPONDENCE = '24'
+export const RECORD_ID_ALL_NODE = '31'
 export const RECORD_ID_ALL_LINK = '32'
 export const RECORD_ID_ALL_LINK_ATTRIBUTE = '93'
 export const CRS_TOKYO = 'EPSG:4301'
@@ -22,6 +24,8 @@ const LINK_ATTRIBUTE_PER_RECORD = 3
 const LINK_CORRESPONDENCE_PER_RECORD = 24
 const NATIONAL_ROAD_TYPES = ['一般国道']
 const ROAD_MANAGER_NATIONAL = '国'
+const LINK_RECORD_IDS = [RECORD_ID_BASIC_LINK, RECORD_ID_ALL_LINK] as const
+const NODE_RECORD_IDS = [RECORD_ID_BASIC_NODE, RECORD_ID_ALL_NODE] as const
 
 interface Field {
 	start: number
@@ -78,6 +82,40 @@ interface Layout {
 	basicLinkNode2?: Field
 	pointStart: number
 	pointsPerRecord: number
+}
+
+interface NodeLayout {
+	nodeNo: Field
+	x: Field
+	y: Field
+	itemRecordNo?: Field
+	elevation?: Field
+	nodeType: Field
+	adjacentMeshCode: Field
+	adjacentNodeNo: Field
+	connectionCount: Field
+}
+
+const BASIC_NODE_LAYOUT: NodeLayout = {
+	nodeNo: { start: 3, length: 4 },
+	itemRecordNo: { start: 7, length: 2 },
+	x: { start: 9, length: 5 },
+	y: { start: 14, length: 5 },
+	elevation: { start: 19, length: 3 },
+	nodeType: { start: 22, length: 1 },
+	adjacentMeshCode: { start: 23, length: 6 },
+	adjacentNodeNo: { start: 29, length: 4 },
+	connectionCount: { start: 33, length: 1 }
+}
+
+const ALL_ROAD_NODE_LAYOUT: NodeLayout = {
+	nodeNo: { start: 3, length: 5 },
+	x: { start: 8, length: 5 },
+	y: { start: 13, length: 5 },
+	nodeType: { start: 18, length: 1 },
+	adjacentMeshCode: { start: 19, length: 6 },
+	adjacentNodeNo: { start: 25, length: 5 },
+	connectionCount: { start: 30, length: 1 }
 }
 
 const BASIC_LAYOUT: Layout = {
@@ -166,6 +204,11 @@ const ALL_ROAD_LAYOUT: Layout = {
 const LAYOUTS: ReadonlyMap<string, Layout> = new Map([
 	[RECORD_ID_BASIC_LINK, BASIC_LAYOUT],
 	[RECORD_ID_ALL_LINK, ALL_ROAD_LAYOUT]
+])
+
+const NODE_LAYOUTS: ReadonlyMap<string, NodeLayout> = new Map([
+	[RECORD_ID_BASIC_NODE, BASIC_NODE_LAYOUT],
+	[RECORD_ID_ALL_NODE, ALL_ROAD_NODE_LAYOUT]
 ])
 
 export const ROAD_MANAGER_LABELS: Readonly<Record<number, string>> = {
@@ -280,6 +323,16 @@ export const SPEED_LIMIT_LABELS: Readonly<Record<number, string>> = {
 	7: '100km/h',
 	8: '110km/h',
 	9: '120km/h'
+}
+
+export const NODE_TYPE_LABELS: Readonly<Record<number, string>> = {
+	0: '未調査',
+	1: '交差点ノード',
+	2: '行き止まり点ノード',
+	3: 'ダミー点ノード',
+	4: '区画辺交点ノード',
+	5: '属性変化点ノード',
+	6: '交通管制上必要なノード'
 }
 
 export const ATTRIBUTE_TYPE_LABELS: Readonly<Record<number, string>> = {
@@ -404,11 +457,28 @@ export interface DrmLinkProperties {
 	国道分類: string | null
 }
 
+export interface DrmNodeProperties {
+	メッシュコード: string
+	ノード番号: string
+	標高?: number | null
+	ノード種別コード: number | null
+	隣接メッシュコード: string | null
+	隣接メッシュノード番号: string | null
+	接続リンク本数: number | null
+	道路網: string
+	ノード種別: string | null
+}
+
 export type Position = [number, number]
 
 export interface DrmLink {
 	properties: DrmLinkProperties
 	coordinates: Position[]
+}
+
+export interface DrmNode {
+	properties: DrmNodeProperties
+	coordinate: Position
 }
 
 export interface MeshOrigin {
@@ -433,10 +503,11 @@ export interface DrmInput {
 	data: ArrayBuffer | Uint8Array
 }
 
-export type DrmFeature = Feature<LineStringGeometry, DrmLinkProperties>
+export type DrmGeometry = PointGeometry | LineStringGeometry
+export type DrmProperties = DrmLinkProperties | DrmNodeProperties
+export type DrmFeature = Feature<DrmGeometry, DrmProperties>
 
-export interface DrmFeatureCollection
-	extends FeatureCollection<LineStringGeometry, DrmLinkProperties> {
+export interface DrmFeatureCollection extends FeatureCollection<DrmGeometry, DrmProperties> {
 	crs?: string
 }
 
@@ -479,6 +550,28 @@ const getLinkNumber = (node1: string, node2: string): string => `${node1}${node2
 
 const getOptionalLinkNumber = (node1: string, node2: string): string | null =>
 	node1 && node2 ? getLinkNumber(node1, node2) : null
+
+const isLinkRecordId = (recordId: string): boolean =>
+	LINK_RECORD_IDS.some((candidate) => candidate === recordId)
+
+const isNodeRecordId = (recordId: string): boolean =>
+	NODE_RECORD_IDS.some((candidate) => candidate === recordId)
+
+const getLinkRecordIds = (options: ParseOptions): string[] => {
+	if (!options.recordId) {
+		return options.includeAllRoads ? [...LINK_RECORD_IDS] : [RECORD_ID_BASIC_LINK]
+	}
+
+	return [options.recordId]
+}
+
+const getNodeRecordIds = (options: ParseOptions): string[] => {
+	if (!options.recordId) {
+		return options.includeAllRoads ? [...NODE_RECORD_IDS] : [RECORD_ID_BASIC_NODE]
+	}
+
+	return [options.recordId]
+}
 
 interface LinkAttributeRecordLayout {
 	recordId: string
@@ -751,6 +844,24 @@ export const meshOrigin = (meshCode: string): MeshOrigin => {
 	}
 }
 
+const toCoordinate = (origin: MeshOrigin, x: number, y: number): Position => [
+	origin.lon + (x / NORMALIZED_MAX) * origin.width,
+	origin.lat + (y / NORMALIZED_MAX) * origin.height
+]
+
+const toDrmBytes = (buffer: ArrayBuffer | Uint8Array): Uint8Array => {
+	const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer)
+	if (bytes.length === 0) return bytes
+
+	if (bytes.length % RECORD_LENGTH !== 0) {
+		throw new DrmError(
+			`ファイルサイズ ${bytes.length} バイトがレコード長 ${RECORD_LENGTH} の倍数ではありません。DRMのEBCDIC形式（.mt）ではない可能性があります。`
+		)
+	}
+
+	return bytes
+}
+
 const finalize = (
 	pending: {
 		properties: DrmLinkProperties
@@ -769,10 +880,7 @@ const finalize = (
 
 	return {
 		properties: pending.properties,
-		coordinates: used.map(([x, y]) => [
-			origin.lon + (x / NORMALIZED_MAX) * origin.width,
-			origin.lat + (y / NORMALIZED_MAX) * origin.height
-		])
+		coordinates: used.map(([x, y]) => toCoordinate(origin, x, y))
 	}
 }
 
@@ -1001,26 +1109,73 @@ const collectLinks = (
 	}
 }
 
+const collectNodes = (
+	bytes: Uint8Array,
+	meshCode: string,
+	recordId: string,
+	layout: NodeLayout,
+	origin: MeshOrigin,
+	output: DrmNode[]
+) => {
+	const network = recordId === RECORD_ID_BASIC_NODE ? '基本道路網' : '全道路網'
+
+	for (let offset = 0; offset < bytes.length; offset += RECORD_LENGTH) {
+		const record = bytes.subarray(offset, offset + RECORD_LENGTH)
+		if (readText(record, 1, 2) !== recordId) continue
+
+		if (layout.itemRecordNo) {
+			const itemRecordNo = readInt(record, layout.itemRecordNo.start, layout.itemRecordNo.length)
+			if (itemRecordNo !== 1) continue
+		}
+
+		const x = readInt(record, layout.x.start, layout.x.length)
+		const y = readInt(record, layout.y.start, layout.y.length)
+		if (x === null || y === null) continue
+
+		const nodeType = readInt(record, layout.nodeType.start, layout.nodeType.length)
+		const elevation = layout.elevation
+			? readInt(record, layout.elevation.start, layout.elevation.length)
+			: null
+
+		output.push({
+			properties: {
+				メッシュコード: meshCode,
+				ノード番号: readText(record, layout.nodeNo.start, layout.nodeNo.length),
+				標高: elevation === null ? undefined : elevation * 10,
+				ノード種別コード: nodeType,
+				隣接メッシュコード: readText(
+					record,
+					layout.adjacentMeshCode.start,
+					layout.adjacentMeshCode.length
+				),
+				隣接メッシュノード番号: readText(
+					record,
+					layout.adjacentNodeNo.start,
+					layout.adjacentNodeNo.length
+				),
+				接続リンク本数: readInt(
+					record,
+					layout.connectionCount.start,
+					layout.connectionCount.length
+				),
+				道路網: network,
+				ノード種別: getCodeLabel(NODE_TYPE_LABELS, nodeType)
+			},
+			coordinate: toCoordinate(origin, x, y)
+		})
+	}
+}
+
 export const parseMesh = (
 	buffer: ArrayBuffer | Uint8Array,
 	meshCode: string,
 	options: ParseOptions = {}
 ): DrmLink[] => {
-	const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer)
+	const bytes = toDrmBytes(buffer)
 	if (bytes.length === 0) return []
 
-	if (bytes.length % RECORD_LENGTH !== 0) {
-		throw new DrmError(
-			`ファイルサイズ ${bytes.length} バイトがレコード長 ${RECORD_LENGTH} の倍数ではありません。DRMのEBCDIC形式（.mt）ではない可能性があります。`
-		)
-	}
-
 	const origin = meshOrigin(meshCode)
-	const recordIds = options.recordId
-		? [options.recordId]
-		: options.includeAllRoads
-			? [RECORD_ID_BASIC_LINK, RECORD_ID_ALL_LINK]
-			: [RECORD_ID_BASIC_LINK]
+	const recordIds = getLinkRecordIds(options)
 
 	const links: DrmLink[] = []
 	const basicLinkAttributes = collectLinkAttributes(bytes, BASIC_LINK_ATTRIBUTE_LAYOUT)
@@ -1048,7 +1203,36 @@ export const parseMesh = (
 	return links
 }
 
-export const toGeoJson = (
+const parseNodeMesh = (
+	buffer: ArrayBuffer | Uint8Array,
+	meshCode: string,
+	options: ParseOptions = {}
+): DrmNode[] => {
+	const bytes = toDrmBytes(buffer)
+	if (bytes.length === 0) return []
+
+	const origin = meshOrigin(meshCode)
+	const recordIds = getNodeRecordIds(options)
+	const nodes: DrmNode[] = []
+
+	for (const recordId of recordIds) {
+		const layout = NODE_LAYOUTS.get(recordId)
+		if (!layout) {
+			throw new DrmError(
+				`レコードID "${recordId}" のノードレイアウトは未定義です（対応: ${[...NODE_LAYOUTS.keys()].join(', ')}）。`
+			)
+		}
+
+		collectNodes(bytes, meshCode, recordId, layout, origin, nodes)
+	}
+
+	return nodes
+}
+
+const getGeoJsonCrs = (inputs: DrmInput[], options: ToGeoJsonOptions): string =>
+	options.crs ?? detectCrs(...inputs.map((input) => input.name))
+
+const toLinkGeoJson = (
 	inputs: DrmInput[],
 	options: ToGeoJsonOptions = {}
 ): DrmFeatureCollection => {
@@ -1071,7 +1255,48 @@ export const toGeoJson = (
 
 	return {
 		type: 'FeatureCollection',
-		crs: options.crs ?? detectCrs(...inputs.map((input) => input.name)),
+		crs: getGeoJsonCrs(inputs, options),
 		features
 	}
+}
+
+const toNodeGeoJson = (
+	inputs: DrmInput[],
+	options: ToGeoJsonOptions = {}
+): DrmFeatureCollection => {
+	const features: DrmFeature[] = []
+
+	for (const input of inputs) {
+		const meshCode = meshCodeFromFileName(input.name)
+
+		for (const node of parseNodeMesh(input.data, meshCode, options)) {
+			features.push({
+				type: 'Feature',
+				properties: node.properties,
+				geometry: { type: 'Point', coordinates: node.coordinate }
+			})
+		}
+	}
+
+	return {
+		type: 'FeatureCollection',
+		crs: getGeoJsonCrs(inputs, options),
+		features
+	}
+}
+
+export const toGeoJson = (
+	inputs: DrmInput[],
+	options: ToGeoJsonOptions = {}
+): DrmFeatureCollection => {
+	if (options.recordId && isNodeRecordId(options.recordId)) {
+		return toNodeGeoJson(inputs, options)
+	}
+
+	const linkGeoJson = toLinkGeoJson(inputs, options)
+	if (linkGeoJson.features.length > 0 || options.nationalRoadsOnly) {
+		return linkGeoJson
+	}
+
+	return toNodeGeoJson(inputs, options)
 }

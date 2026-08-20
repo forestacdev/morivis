@@ -11,7 +11,9 @@ import {
 	meshCodeFromFileName,
 	meshOrigin,
 	parseMesh,
+	RECORD_ID_ALL_NODE,
 	RECORD_ID_ALL_LINK,
+	RECORD_ID_BASIC_NODE,
 	RECORD_ID_BASIC_LINK,
 	RECORD_LENGTH,
 	toGeoJson
@@ -83,6 +85,18 @@ interface RecordSpec {
 	points?: [number, number][]
 	pointTotal?: number
 	continuation?: number
+}
+
+interface NodeRecordSpec {
+	nodeNo?: number
+	itemRecordNo?: number
+	x?: number
+	y?: number
+	elevation?: number
+	nodeType?: number
+	adjacentMeshCode?: number
+	adjacentNodeNo?: number
+	connectionCount?: number
 }
 
 const createBasicRecord = (spec: RecordSpec = {}): Uint8Array => {
@@ -177,6 +191,52 @@ const createAllRoadRecord = (spec: RecordSpec = {}): Uint8Array => {
 	putIfDefined(253, 1, spec.linkPassability)
 	putIfDefined(254, 1, spec.shapeSource)
 	put(256, 1, continuation)
+
+	return buffer
+}
+
+const createBasicNodeRecord = (spec: NodeRecordSpec = {}): Uint8Array => {
+	const buffer = ebcdic(' '.repeat(RECORD_LENGTH))
+	const put = (start: number, length: number, value: number | string) => {
+		buffer.set(ebcdic(String(value).padStart(length, '0')), start - 1)
+	}
+	const putIfDefined = (start: number, length: number, value: number | string | undefined) => {
+		if (value === undefined) return
+		put(start, length, value)
+	}
+
+	put(1, 2, RECORD_ID_BASIC_NODE)
+	putIfDefined(3, 4, spec.nodeNo ?? 1)
+	putIfDefined(7, 2, spec.itemRecordNo ?? 1)
+	putIfDefined(9, 5, spec.x ?? 0)
+	putIfDefined(14, 5, spec.y ?? 0)
+	putIfDefined(19, 3, spec.elevation)
+	putIfDefined(22, 1, spec.nodeType ?? 1)
+	putIfDefined(23, 6, spec.adjacentMeshCode)
+	putIfDefined(29, 4, spec.adjacentNodeNo)
+	putIfDefined(33, 1, spec.connectionCount)
+
+	return buffer
+}
+
+const createAllRoadNodeRecord = (spec: NodeRecordSpec = {}): Uint8Array => {
+	const buffer = ebcdic(' '.repeat(RECORD_LENGTH))
+	const put = (start: number, length: number, value: number | string) => {
+		buffer.set(ebcdic(String(value).padStart(length, '0')), start - 1)
+	}
+	const putIfDefined = (start: number, length: number, value: number | string | undefined) => {
+		if (value === undefined) return
+		put(start, length, value)
+	}
+
+	put(1, 2, RECORD_ID_ALL_NODE)
+	putIfDefined(3, 5, spec.nodeNo ?? 1)
+	putIfDefined(8, 5, spec.x ?? 0)
+	putIfDefined(13, 5, spec.y ?? 0)
+	putIfDefined(18, 1, spec.nodeType ?? 1)
+	putIfDefined(19, 6, spec.adjacentMeshCode)
+	putIfDefined(25, 5, spec.adjacentNodeNo)
+	putIfDefined(30, 1, spec.connectionCount)
 
 	return buffer
 }
@@ -351,6 +411,56 @@ describe('drm parser', () => {
 		expect(meshCodeFromFileName('624011.mt')).toBe('624011')
 		expect(meshCodeFromFileName('a/b/624011.mt')).toBe('624011')
 		expect(meshCodeFromFileName('c\\d\\624011.mt')).toBe('624011')
+	})
+
+	it('ノードだけの DRM を点として読む', () => {
+		const fc = toGeoJson([
+			{
+				name: '624011.mt',
+				data: concatRecords(
+					createBasicNodeRecord({
+						nodeNo: 12,
+						itemRecordNo: 1,
+						x: 5000,
+						y: 10000,
+						elevation: 23,
+						nodeType: 5,
+						adjacentMeshCode: 624012,
+						adjacentNodeNo: 34,
+						connectionCount: 3
+					}),
+					createBasicNodeRecord({
+						nodeNo: 12,
+						itemRecordNo: 2,
+						x: 9999,
+						y: 9999,
+						nodeType: 6
+					})
+				)
+			}
+		])
+
+		expect(fc.features).toHaveLength(1)
+
+		const pointFeature = fc.features[0]
+		expect(pointFeature?.geometry.type).toBe('Point')
+		expect(pointFeature?.properties).toMatchObject({
+			メッシュコード: '624011',
+			ノード番号: '0012',
+			標高: 230,
+			ノード種別コード: 5,
+			ノード種別: '属性変化点ノード',
+			隣接メッシュコード: '624012',
+			隣接メッシュノード番号: '0034',
+			接続リンク本数: 3,
+			道路網: '基本道路網'
+		})
+
+		const origin = meshOrigin('624011')
+		expect(pointFeature?.geometry).toEqual({
+			type: 'Point',
+			coordinates: [origin.lon + origin.width / 2, origin.lat + origin.height]
+		})
 	})
 
 	it('基本道路リンクの属性と座標を読む', () => {
@@ -708,6 +818,34 @@ describe('drm parser', () => {
 		expect(getDrmInputName(file)).toBe('drm3803A_EBCDIC_01北海道/3803Asono1_ho/624011.mt')
 	})
 
+	it('全道路ノードも includeAllRoads で点にする', () => {
+		const fc = toGeoJson(
+			[
+				{
+					name: '624011.mt',
+					data: createAllRoadNodeRecord({
+						nodeNo: 123,
+						x: 2500,
+						y: 7500,
+						nodeType: 2,
+						adjacentMeshCode: 624012,
+						adjacentNodeNo: 456,
+						connectionCount: 2
+					})
+				}
+			],
+			{ includeAllRoads: true }
+		)
+
+		expect(fc.features).toHaveLength(1)
+		expect(fc.features[0]?.geometry.type).toBe('Point')
+		expect(fc.features[0]?.properties).toMatchObject({
+			ノード番号: '00123',
+			ノード種別: '行き止まり点ノード',
+			道路網: '全道路網'
+		})
+	})
+
 	it('nationalRoadsOnly で一般国道だけに絞る', () => {
 		const data = concatRecords(
 			createBasicRecord({ roadType: 3, manager: 4, points: [[1, 1], [2, 2]] }),
@@ -719,7 +857,22 @@ describe('drm parser', () => {
 
 		expect(all.features).toHaveLength(2)
 		expect(onlyNational.features).toHaveLength(1)
-		expect(onlyNational.features[0]?.properties.国道分類).toBe('直轄国道')
+		expect(onlyNational.features[0]?.properties).toMatchObject({ 国道分類: '直轄国道' })
+	})
+
+	it('線とノードが混在すると線を優先する', () => {
+		const fc = toGeoJson([
+			{
+				name: '624011.mt',
+				data: concatRecords(
+					createBasicNodeRecord({ nodeNo: 5, x: 1000, y: 1000 }),
+					createBasicRecord({ points: [[0, 0], [100, 100]] })
+				)
+			}
+		])
+
+		expect(fc.features).toHaveLength(1)
+		expect(fc.features[0]?.geometry.type).toBe('LineString')
 	})
 
 	it('不正なレコード長と未定義レコードIDを弾く', () => {
