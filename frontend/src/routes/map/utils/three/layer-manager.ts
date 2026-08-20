@@ -9,17 +9,11 @@ import type { CustomLayerInterface, Map as MapLibreMap } from '$routes/map/utils
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import {
-	applyProjectedModelGeoreference,
-	resolveFbxUnitScaleMeters
-} from '$routes/map/utils/three/model-georeference';
-import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
-import {
-	centerObjectToLocalOrigin,
-	normalizeObjectToLocalOrigin
-} from '$routes/map/utils/three/object-normalization';
+import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
+import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -721,29 +715,19 @@ export class ThreeJsLayerManager {
 			};
 
 			const finalizeLoadedModel = (object: THREE.Object3D) => {
-				if (entry.format.georeference) {
-					applyProjectedModelGeoreference(object, entry.format.georeference);
-					return;
-				}
+				finalizeRuntimeModelObject(object, {
+					formatType: entry.format.type,
+					georeference: entry.format.georeference,
+					normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin
+				});
+			};
 
-				if (entry.format.type === 'fbx') {
-					const unitScaleMeters = resolveFbxUnitScaleMeters(
-						new THREE.Box3().setFromObject(object),
-						Number(
-							(object.userData as {
-								unitScaleFactor?: number;
-							}).unitScaleFactor
-						)
-					);
-					if (unitScaleMeters !== 1) {
-						object.scale.multiplyScalar(unitScaleMeters);
-						object.updateMatrixWorld(true);
-					}
-				}
-
-				if (entry.format.normalizeToLocalOrigin) {
-					normalizeObjectToLocalOrigin(object);
-				}
+			const finalizeAndLoadModel = (
+				object: THREE.Object3D,
+				animations: THREE.AnimationClip[] = []
+			) => {
+				finalizeLoadedModel(object);
+				onModelLoaded(object, animations);
 			};
 
 			const createManagedLoaderContext = () => {
@@ -774,7 +758,7 @@ export class ThreeJsLayerManager {
 				const loadObj = () => {
 					objLoader.load(
 						entry.format.url,
-						(obj) => onModelLoaded(obj),
+						(obj) => finalizeAndLoadModel(obj),
 						undefined,
 						(error) => reject(error)
 					);
@@ -825,7 +809,7 @@ export class ThreeJsLayerManager {
 						}
 						tdsLoader.load(
 							entry.format.url,
-							(object) => onModelLoaded(object),
+							(object) => finalizeAndLoadModel(object),
 							undefined,
 							(error) => reject(error)
 						);
@@ -852,7 +836,7 @@ export class ThreeJsLayerManager {
 						const colladaLoader = new ColladaLoader(manager);
 						colladaLoader.load(
 							entry.format.url,
-							(collada) => onModelLoaded(collada.scene, collada.scene.animations),
+							(collada) => finalizeAndLoadModel(collada.scene, collada.scene.animations),
 							undefined,
 							(error) => reject(error)
 						);
@@ -880,7 +864,7 @@ export class ThreeJsLayerManager {
 						rhinoLoader.setLibraryPath(RHINO3DM_LIBRARY_PATH);
 						rhinoLoader.load(
 							entry.format.url,
-							(object) => onModelLoaded(object),
+							(object) => finalizeAndLoadModel(object),
 							undefined,
 							(error) => reject(error)
 						);
@@ -923,8 +907,7 @@ export class ThreeJsLayerManager {
 
 						const buffer = await response.arrayBuffer();
 						const object = fbxLoader.parse(buffer, resourcePath);
-						finalizeLoadedModel(object);
-						onModelLoaded(
+						finalizeAndLoadModel(
 							object,
 							(object as THREE.Group & {
 								animations?: THREE.AnimationClip[];
@@ -939,7 +922,7 @@ export class ThreeJsLayerManager {
 						if (!geometry.getAttribute('normal')) {
 							geometry.computeVertexNormals();
 						}
-						onModelLoaded(
+						finalizeAndLoadModel(
 							new THREE.Mesh(
 								geometry,
 								new THREE.MeshStandardMaterial({ color: '#ffffff' })
@@ -955,7 +938,7 @@ export class ThreeJsLayerManager {
 						const loader = new ThreeMFLoader();
 						loader.load(
 							entry.format.url,
-							(object) => onModelLoaded(object),
+							(object) => finalizeAndLoadModel(object),
 							undefined,
 							(error) => reject(error)
 						);
@@ -967,7 +950,7 @@ export class ThreeJsLayerManager {
 						const loader = new AMFLoader();
 						loader.load(
 							entry.format.url,
-							(object) => onModelLoaded(object),
+							(object) => finalizeAndLoadModel(object),
 							undefined,
 							(error) => reject(error)
 						);
@@ -1010,7 +993,7 @@ export class ThreeJsLayerManager {
 			} else {
 				this.loader.load(
 					entry.format.url,
-					(gltf) => onModelLoaded(gltf.scene, gltf.animations),
+					(gltf) => finalizeAndLoadModel(gltf.scene, gltf.animations),
 					undefined,
 					(error) => reject(error)
 				);

@@ -81,7 +81,8 @@ describe('resolveDroppedFiles', () => {
 		vi.mocked(inspectObjFile).mockResolvedValue({
 			isPointCloud: false,
 			hasFaces: true,
-			vertexCount: 10
+			vertexCount: 10,
+			projectedModelEpsg: null
 		});
 		vi.mocked(findGeoReferencedImageFile).mockReturnValue(null);
 		vi.mocked(findRasterImageFile).mockReturnValue(null);
@@ -334,7 +335,8 @@ describe('resolveDroppedFiles', () => {
 		vi.mocked(inspectObjFile).mockResolvedValue({
 			isPointCloud: true,
 			hasFaces: false,
-			vertexCount: 100
+			vertexCount: 100,
+			projectedModelEpsg: null
 		});
 
 		const result = await resolveDroppedFiles(createFile('points.obj'));
@@ -344,6 +346,27 @@ describe('resolveDroppedFiles', () => {
 			dialogType: 'pointcloud',
 			dropFiles: undefined
 		});
+	});
+
+	it('OBJ の projectedModelEpsg をドロップファイルに保持する', async () => {
+		vi.mocked(inspectObjFile).mockResolvedValue({
+			isPointCloud: false,
+			hasFaces: true,
+			vertexCount: 100,
+			projectedModelEpsg: '6677'
+		});
+
+		const file = createFile('projected.obj');
+		const result = await resolveDroppedFiles(file);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'glb',
+			dropFiles: undefined
+		});
+		expect((file as File & { morivisProjectedModelEpsg?: string }).morivisProjectedModelEpsg).toBe(
+			'6677'
+		);
 	});
 
 	it('TXT が点群テキストなら pointcloud 判定になる', async () => {
