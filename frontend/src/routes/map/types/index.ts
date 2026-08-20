@@ -86,6 +86,7 @@ export type DialogType =
 	| 'wfs'
 	| 'ogcapifeatures'
 	| 'dm'
+	| 'drm'
 	| 'dwg'
 	| 'dxf'
 	| 'sima'
@@ -312,6 +313,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'測量データ交換のテキスト形式です。座標や観測成果をベクターデータとして読み込むときに使います。',
 		extensions: ['.sim']
+	},
+	{
+		label: 'DRM',
+		description:
+			'デジタル道路地図協会の道路ネットワークデータです。道路リンクを線データとして読み込むときに使います。',
+		extensions: ['.mt']
 	},
 	{
 		label: 'DM',

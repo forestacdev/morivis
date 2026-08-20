@@ -59,6 +59,15 @@ import { resolveDroppedFiles } from './upload-drop';
 const createFile = (name: string, content = 'test', type = 'text/plain') =>
 	new File([content], name, { type });
 
+const createPathLikeFile = (name: string, relativePath: string, content = 'test') => {
+	const file = createFile(name, content)
+	Object.defineProperty(file, 'morivisRelativePath', {
+		value: relativePath,
+		configurable: true
+	})
+	return file
+}
+
 describe('resolveDroppedFiles', () => {
 	beforeEach(() => {
 		vi.resetAllMocks();
@@ -136,6 +145,16 @@ describe('resolveDroppedFiles', () => {
 			dropFiles: undefined
 		});
 	});
+
+	it('単一の MT は drm ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('624011.mt', 'mt'))
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'drm',
+			dropFiles: undefined
+		})
+	})
 
 	it('単一の SVG は svg ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(
@@ -216,6 +235,29 @@ describe('resolveDroppedFiles', () => {
 			message: '対応していないXMLファイルです'
 		});
 	});
+
+	it('DRMフォルダは標高CSVを除外して drm ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles([
+			createPathLikeFile(
+				'624011.mt',
+				'drm3803A_EBCDIC_01北海道/3803Asono1_ho/624011.mt',
+				'mt'
+			),
+			createPathLikeFile(
+				'624011H.csv',
+				'drm3803A標高CSV_01北海道/3803Asono1_ho/624011H.csv',
+				'csv'
+			)
+		])
+
+		expect(result).toMatchObject({
+			type: 'dialog',
+			dialogType: 'drm'
+		})
+		expect(result.type).toBe('dialog')
+		if (result.type !== 'dialog') return
+		expect(result.dropFiles).toBeUndefined()
+	})
 
 	it('Location History JSON は locationhistory 判定になる', async () => {
 		vi.mocked(isLocationHistoryFile).mockResolvedValue(true);

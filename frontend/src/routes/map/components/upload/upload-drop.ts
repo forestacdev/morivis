@@ -160,6 +160,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	bz2: 'hrit',
 	lrit: 'hrit',
 	hrit: 'hrit',
+	mt: 'drm',
 	dm: 'dm',
 	dwg: 'dwg',
 	dxf: 'dxf',
@@ -257,6 +258,11 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 			}
 			return await resolveDroppedFiles(firstFile);
 		}
+	},
+	{
+		id: 'drm-set',
+		match: (files) => files.some((file) => hasExtension(file, '.mt')),
+		resolve: async () => createDialogDecision('drm')
 	},
 	{
 		id: 'shapefile-set',
