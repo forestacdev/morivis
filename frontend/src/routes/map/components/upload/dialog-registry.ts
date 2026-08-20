@@ -4,6 +4,7 @@ import ArcGisForm from '$routes/map/components/upload/form/ArcGisForm.svelte';
 import CsvForm from '$routes/map/components/upload/form/CsvForm.svelte';
 import DemXmlForm from '$routes/map/components/upload/form/DemXmlForm.svelte';
 import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
+import DrmForm from '$routes/map/components/upload/form/DrmForm.svelte';
 import DwgForm from '$routes/map/components/upload/form/DwgForm.svelte';
 import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 import FeatureServiceForm from '$routes/map/components/upload/form/FeatureServiceForm.svelte';
@@ -122,6 +123,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	osm: { component: OsmForm, profile: 'vector-zone-georef' },
 	georss: { component: GeoRssForm, profile: 'vector-zone-georef' },
 	gtfs: { component: GtfsForm, profile: 'drop-file' },
+	drm: { component: DrmForm, profile: 'drop-file' },
 	dm: { component: DmForm, profile: 'vector-zone-georef', fixedHeight: true },
 	dwg: { component: DwgForm, profile: 'vector-zone-georef', fixedHeight: true },
 	dxf: { component: DxfForm, profile: 'vector-zone-georef', fixedHeight: true },

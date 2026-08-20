@@ -16,6 +16,7 @@ import {
 	isRasterImageSidecarFile
 } from '$routes/map/utils/formats/raster/sidecar';
 import { isPointCloudTextFile } from '$routes/map/utils/formats/xyz';
+import type { EpsgCode } from '$routes/map/utils/proj/dict';
 import { getMatchedExtension } from '$routes/map/utils/upload-matchers-common';
 import {
 	areAllPhotoFiles,
@@ -77,6 +78,15 @@ const createNotificationDecision = (
 	level,
 	message
 });
+
+const attachProjectedModelEpsg = (file: File, projectedModelEpsg: EpsgCode | null) => {
+	if (!projectedModelEpsg) return;
+
+	Object.defineProperty(file, 'morivisProjectedModelEpsg', {
+		value: projectedModelEpsg,
+		configurable: true
+	});
+};
 
 // ZIP の中身を File[] に展開し、以降は通常の複数ファイル判定へ合流させる。
 const unzipFiles = async (file: File): Promise<File[]> => {
@@ -160,6 +170,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	bz2: 'hrit',
 	lrit: 'hrit',
 	hrit: 'hrit',
+	mt: 'drm',
 	dm: 'dm',
 	dwg: 'dwg',
 	dxf: 'dxf',
@@ -243,6 +254,7 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 			if (!objFile) return createDialogDecision('glb');
 
 			const inspection = await inspectObjFile(objFile);
+			attachProjectedModelEpsg(objFile, inspection.projectedModelEpsg);
 			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb');
 		}
 	},
@@ -257,6 +269,11 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 			}
 			return await resolveDroppedFiles(firstFile);
 		}
+	},
+	{
+		id: 'drm-set',
+		match: (files) => files.some((file) => hasExtension(file, '.mt')),
+		resolve: async () => createDialogDecision('drm')
 	},
 	{
 		id: 'shapefile-set',
@@ -372,6 +389,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 
 	if (ext === 'obj') {
 		const inspection = await inspectObjFile(file);
+		attachProjectedModelEpsg(file, inspection.projectedModelEpsg);
 		return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb');
 	}
 

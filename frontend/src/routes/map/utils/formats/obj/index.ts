@@ -3,10 +3,13 @@
  * - https://www.loc.gov/preservation/digital/formats/fdd/fdd000507.shtml
  * - https://www.fileformat.info/format/wavefrontobj/egff.htm
  */
+import { type EpsgCode, getEpsgInfo, isValidEpsg } from '$routes/map/utils/proj/dict';
+
 export interface ObjFileInspectionResult {
 	isPointCloud: boolean;
 	hasFaces: boolean;
 	vertexCount: number;
+	projectedModelEpsg: EpsgCode | null;
 }
 
 export interface ObjPointCloudParseResult {
@@ -16,10 +19,41 @@ export interface ObjPointCloudParseResult {
 }
 
 const clampColor = (value: number): number => Math.max(0, Math.min(255, Math.round(value)));
+const EPSG_AUTHORITY_PATTERN = /AUTHORITY\s*\[\s*"EPSG"\s*,\s*"(\d+)"\s*\]/gi;
+
+const detectProjectedModelEpsgFromObjText = (text: string): EpsgCode | null => {
+	const lines = text.split(/\r?\n/);
+	const coordinateSystemLineIndex = lines.findIndex((rawLine) => {
+		const line = rawLine.trim();
+		return line.startsWith('#') && line.includes('COORDINATE_SYSTEM:');
+	});
+	if (coordinateSystemLineIndex < 0) return null;
+
+	const coordinateSystemLines: string[] = [];
+	for (let index = coordinateSystemLineIndex; index < lines.length; index += 1) {
+		const line = lines[index]?.trim() ?? '';
+		if (!line.startsWith('#')) break;
+		coordinateSystemLines.push(line.replace(/^#\s?/, ''));
+	}
+
+	const candidateCodes = Array.from(
+		coordinateSystemLines.join('\n').matchAll(EPSG_AUTHORITY_PATTERN),
+		(match) => match[1]
+	).reverse();
+
+	for (const code of candidateCodes) {
+		if (!isValidEpsg(code)) continue;
+		if (!getEpsgInfo(code).projection_method) continue;
+		return code;
+	}
+
+	return null;
+};
 
 export const inspectObjFile = async (file: File): Promise<ObjFileInspectionResult> => {
 	const text = await file.text();
 	const lines = text.split(/\r?\n/);
+	const projectedModelEpsg = detectProjectedModelEpsgFromObjText(text);
 
 	let vertexCount = 0;
 	let hasFaces = false;
@@ -41,7 +75,8 @@ export const inspectObjFile = async (file: File): Promise<ObjFileInspectionResul
 	return {
 		isPointCloud: vertexCount > 0 && !hasFaces,
 		hasFaces,
-		vertexCount
+		vertexCount,
+		projectedModelEpsg
 	};
 };
 

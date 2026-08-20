@@ -9,6 +9,7 @@
 	import type { MeshFormatType } from '$routes/map/data/types/model';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
+	import { applyProjectedModelAxisOverride } from '$routes/map/utils/three/model-axis';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
@@ -52,6 +53,10 @@
 		return (file as File & { morivisModelPlacement?: ModelPlacement }).morivisModelPlacement;
 	};
 
+	const getProjectedModelEpsg = (file: File): EpsgCode | undefined => {
+		return (file as File & { morivisProjectedModelEpsg?: EpsgCode }).morivisProjectedModelEpsg;
+	};
+
 	const getMeshFormat = (pathLikeName: string): MeshFormatType => {
 		if (pathLikeName.endsWith('.obj')) return 'obj';
 		if (pathLikeName.endsWith('.3ds')) return '3ds';
@@ -87,6 +92,7 @@
 
 	const activeFormat = $derived(glbFile ? getMeshFormat(getPathLikeName(glbFile)) : null);
 	const modelPlacement = $derived(glbFile ? getModelPlacement(glbFile) : undefined);
+	const detectedProjectedModelEpsg = $derived(glbFile ? getProjectedModelEpsg(glbFile) : undefined);
 	const requiresManualRegistration = $derived(activeFormat === 'fbx' && !modelPlacement);
 
 	const mtlFile = $derived.by(() => {
@@ -247,6 +253,9 @@
 
 		const name =
 			options?.name?.trim() || modelPlacement?.name?.trim() || glbFile.name.replace(/\.[^.]+$/, '');
+		const resolvedProjectedModelEpsg =
+			options?.projectedModelEpsg ??
+			(activeFormat === 'obj' ? detectedProjectedModelEpsg : undefined);
 		const blobUrl = URL.createObjectURL(glbFile);
 		const center = mapStore.getCenter();
 		let resolvedMtlUrl: string | undefined;
@@ -260,7 +269,7 @@
 		}
 
 		const normalizeToLocalOrigin =
-			activeFormat === 'ifc' || (activeFormat === 'fbx' && !options?.projectedModelEpsg);
+			activeFormat === 'ifc' || (activeFormat === 'fbx' && !resolvedProjectedModelEpsg);
 		const entry = createGlbEntry(
 			name,
 			blobUrl,
@@ -275,6 +284,11 @@
 			supportsResourceUrls(activeFormat) ? resourceUrls : undefined,
 			normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : undefined
 		);
+		applyProjectedModelAxisOverride(
+			entry.style.transform,
+			activeFormat,
+			resolvedProjectedModelEpsg
+		);
 
 		if (activeFormat === 'ifc') {
 			showNotification('IFCの地理配置は行わず、ローカル原点に寄せて表示します', 'info');
@@ -288,7 +302,7 @@
 				style: entry.style,
 				resourceUrls,
 				normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
-				projectedModelEpsg: options?.projectedModelEpsg
+				projectedModelEpsg: resolvedProjectedModelEpsg
 			});
 
 			if (uploadedModelMeta.resolvedPlacement) {
@@ -298,7 +312,7 @@
 				entry.metaData.altitude = uploadedModelMeta.resolvedPlacement.altitude;
 				entry.format.georeference = uploadedModelMeta.resolvedPlacement.georeference;
 				showNotification(
-					`EPSG:${uploadedModelMeta.resolvedPlacement.georeference.epsg} でFBXを地理配置します`,
+					`EPSG:${uploadedModelMeta.resolvedPlacement.georeference.epsg} で${entry.metaData.attribution}を地理配置します`,
 					'info'
 				);
 			}

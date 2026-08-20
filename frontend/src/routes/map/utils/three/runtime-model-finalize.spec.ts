@@ -1,0 +1,49 @@
+import { describe, expect, it } from 'vitest';
+
+import type { ProjectedModelGeoreference } from '$routes/map/data/types/model';
+import * as THREE from 'three';
+
+import { finalizeRuntimeModelObject } from './runtime-model-finalize';
+
+describe('finalizeRuntimeModelObject', () => {
+	it('projected georeference を object に適用する', () => {
+		const object = new THREE.Group();
+		const georeference: ProjectedModelGeoreference = {
+			type: 'projected',
+			epsg: '6677',
+			projectedOrigin: [125054.296875, 785876.15625, 13.753643035888672],
+			unitScaleMeters: 1
+		};
+
+		finalizeRuntimeModelObject(object, {
+			formatType: 'obj',
+			georeference
+		});
+
+		expect(object.position.toArray()).toEqual([
+			-125054.296875,
+			-785876.15625,
+			-13.753643035888672
+		]);
+	});
+
+	it('normalizeToLocalOrigin がある場合はローカル原点へ寄せる', () => {
+		const geometry = new THREE.BoxGeometry(10, 20, 30);
+		const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial());
+		mesh.position.set(100, 200, 300);
+		mesh.updateMatrixWorld(true);
+
+		finalizeRuntimeModelObject(mesh, {
+			formatType: 'gltf',
+			normalizeToLocalOrigin: true
+		});
+
+		const box = new THREE.Box3().setFromObject(mesh);
+		expect(box.min.x).toBeCloseTo(-5, 6);
+		expect(box.max.x).toBeCloseTo(5, 6);
+		expect(box.min.y).toBeCloseTo(-10, 6);
+		expect(box.max.y).toBeCloseTo(10, 6);
+		expect(box.min.z).toBeCloseTo(0, 6);
+		expect(box.max.z).toBeCloseTo(30, 6);
+	});
+});
