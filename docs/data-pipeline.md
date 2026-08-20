@@ -108,7 +108,7 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 | profile | 典型的な形式 | 役割 |
 | --- | --- | --- |
 | `simple` | STAC, ArcGIS | `dropFile` を持たず、URL や内部状態だけで完結する。 |
-| `drop-file` | GPX, TCX, GDB, GTFS, HRIT, HDF5, MF-JSON, LocationHistory, DRM | 受け取ったファイルをそのまま解析して entry を作る。DRM もこの扱いで、dialog を開いたら追加 UI を挟まず自動登録まで進む。 |
+| `drop-file` | GPX, TCX, GDB, GTFS, HRIT, HDF5, MF-JSON, LocationHistory, DRM | 受け取ったファイルをそのまま解析して entry を作る。 |
 | `vector-zone` | GeoArrow | Zone は使うが GeoRef には流さない。 |
 | `vector-zone-georef` | GeoJSON, Shapefile, GeoParquet, DXF, GML, MojXML など | Zone と GeoRef の両方を取りうる。 |
 | `vector-georef` | SVG | GeoRef のみを持つ。 |
