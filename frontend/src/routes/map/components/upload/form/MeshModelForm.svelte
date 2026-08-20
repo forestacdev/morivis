@@ -254,7 +254,8 @@
 		const name =
 			options?.name?.trim() || modelPlacement?.name?.trim() || glbFile.name.replace(/\.[^.]+$/, '');
 		const resolvedProjectedModelEpsg =
-			options?.projectedModelEpsg ?? (activeFormat === 'obj' ? detectedProjectedModelEpsg : undefined);
+			options?.projectedModelEpsg ??
+			(activeFormat === 'obj' ? detectedProjectedModelEpsg : undefined);
 		const blobUrl = URL.createObjectURL(glbFile);
 		const center = mapStore.getCenter();
 		let resolvedMtlUrl: string | undefined;

@@ -1,11 +1,10 @@
 <script lang="ts">
-	import turfBbox from '@turf/bbox'
+	import turfBbox from '@turf/bbox';
 
-	import { createGeoJsonEntry } from '$routes/map/data/entries/vector'
-	import type { MorivisLayerEntry } from '$routes/map/data/types'
-	import type { FeatureCollection } from '$routes/map/types/geojson'
-	import type { DialogType, UploadFilesInput } from '$routes/map/types'
-	import { analyzeDrmFilesInWorker } from '$routes/map/utils/formats/drm/analyze'
+	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
+	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import {
 		CRS_JGD2000,
 		CRS_TOKYO,
@@ -13,111 +12,112 @@
 		detectCrsCandidates,
 		getDrmInputName,
 		getDrmRootName
-	} from '$routes/map/utils/formats/drm'
-	import { isBboxValid } from '$routes/map/utils/map/bbox'
-	import { transformGeoJSONParallel } from '$routes/map/utils/proj'
-	import { getProjContext } from '$routes/map/utils/proj/dict'
-	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common'
-	import { showNotification } from '$routes/stores/notification'
-	import { isProcessing } from '$routes/stores/ui'
+	} from '$routes/map/utils/formats/drm';
+	import { analyzeDrmFilesInWorker } from '$routes/map/utils/formats/drm/analyze';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
+	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
+	import { getProjContext } from '$routes/map/utils/proj/dict';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
+	import { showNotification } from '$routes/stores/notification';
+	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
-		showDataEntry: MorivisLayerEntry | null
-		showDialogType: DialogType
-		dropFile: UploadFilesInput
+		showDataEntry: MorivisLayerEntry | null;
+		showDialogType: DialogType;
+		dropFile: UploadFilesInput;
 	}
 
 	const TOKYO_DATUM_PROJ4 =
-		'+proj=longlat +ellps=bessel +towgs84=-146.414,507.337,680.507,0,0,0,0 +no_defs +type=crs'
+		'+proj=longlat +ellps=bessel +towgs84=-146.414,507.337,680.507,0,0,0,0 +no_defs +type=crs';
 
 	const CRS_LABELS: Record<string, string> = {
 		[CRS_TOKYO]: '旧日本測地系',
 		[CRS_JGD2000]: 'JGD2000'
-	}
+	};
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable()
-	}: Props = $props()
+	}: Props = $props();
 
 	const getSuggestedEntryName = (files: File[]): string => {
-		const firstFile = files[0]
-		if (!firstFile) return 'DRMデータ'
-		return getDrmRootName(getDrmInputName(firstFile)) || 'DRMデータ'
-	}
+		const firstFile = files[0];
+		if (!firstFile) return 'DRMデータ';
+		return getDrmRootName(getDrmInputName(firstFile)) || 'DRMデータ';
+	};
 
-	const allFiles = $derived(toUploadFiles(dropFile))
+	const allFiles = $derived(toUploadFiles(dropFile));
 	const drmFiles = $derived.by(() =>
 		allFiles.filter((file) => /\.mt$/i.test(getDrmInputName(file)))
-	)
-	const drmInputNames = $derived.by(() => drmFiles.map((file) => getDrmInputName(file)))
-	const crsCandidates = $derived.by(() => detectCrsCandidates(...drmInputNames))
-	const detectedCrs = $derived(detectCrs(...drmInputNames))
-	const hasMixedCrs = $derived(crsCandidates.length > 1)
-	const suggestedEntryName = $derived(getSuggestedEntryName(drmFiles))
+	);
+	const drmInputNames = $derived.by(() => drmFiles.map((file) => getDrmInputName(file)));
+	const crsCandidates = $derived.by(() => detectCrsCandidates(...drmInputNames));
+	const detectedCrs = $derived(detectCrs(...drmInputNames));
+	const hasMixedCrs = $derived(crsCandidates.length > 1);
+	const suggestedEntryName = $derived(getSuggestedEntryName(drmFiles));
 
-	const getCrsLabel = (crs: string): string => CRS_LABELS[crs] ?? crs
+	const getCrsLabel = (crs: string): string => CRS_LABELS[crs] ?? crs;
 
 	const getProjContextByCrs = (crs: string): string =>
-		crs === CRS_JGD2000 ? getProjContext('4612') : TOKYO_DATUM_PROJ4
+		crs === CRS_JGD2000 ? getProjContext('4612') : TOKYO_DATUM_PROJ4;
 
 	const getEntryGeometryType = (geojson: FeatureCollection): 'Point' | 'LineString' => {
-		const geometryType = geojson.features[0]?.geometry?.type
-		return geometryType === 'Point' || geometryType === 'MultiPoint' ? 'Point' : 'LineString'
-	}
+		const geometryType = geojson.features[0]?.geometry?.type;
+		return geometryType === 'Point' || geometryType === 'MultiPoint' ? 'Point' : 'LineString';
+	};
 
 	const getFeatureLabel = (entryGeometryType: 'Point' | 'LineString'): string =>
-		entryGeometryType === 'Point' ? 'ノード' : '道路リンク'
+		entryGeometryType === 'Point' ? 'ノード' : '道路リンク';
 
 	const closeDialog = () => {
-		dropFile = null
-		showDialogType = null
-	}
+		dropFile = null;
+		showDialogType = null;
+	};
 
 	const closeWithNotification = (
 		message: string,
 		level: 'error' | 'info' | 'warning' | 'success'
 	) => {
-		showNotification(message, level)
-		closeDialog()
-	}
+		showNotification(message, level);
+		closeDialog();
+	};
 
 	const registration = async () => {
 		if (drmFiles.length === 0) {
-			closeWithNotification('DRMの .mt ファイルが見つかりませんでした', 'warning')
-			return
+			closeWithNotification('DRMの .mt ファイルが見つかりませんでした', 'warning');
+			return;
 		}
 
 		if (hasMixedCrs) {
-			closeWithNotification('旧日本測地系版とJGD2000版の DRM を同時には読み込めません', 'error')
-			return
+			closeWithNotification('旧日本測地系版とJGD2000版の DRM を同時には読み込めません', 'error');
+			return;
 		}
 
-		isProcessing.set(true)
+		isProcessing.set(true);
 
 		try {
 			const { geojson } = await analyzeDrmFilesInWorker(drmFiles, {
 				includeAllRoads: true
-			})
+			});
 
 			if (geojson.features.length === 0) {
-				closeWithNotification('読み込めるDRMデータが見つかりませんでした', 'warning')
-				return
+				closeWithNotification('読み込めるDRMデータが見つかりませんでした', 'warning');
+				return;
 			}
 
-			const sourceCrs = geojson.crs ?? detectedCrs
+			const sourceCrs = geojson.crs ?? detectedCrs;
 			const transformedGeojson = (await transformGeoJSONParallel(
 				geojson,
 				getProjContextByCrs(sourceCrs)
-			)) as FeatureCollection
-			const entryGeometryType = getEntryGeometryType(transformedGeojson)
-			const featureLabel = getFeatureLabel(entryGeometryType)
-			const bbox = turfBbox(transformedGeojson) as [number, number, number, number]
+			)) as FeatureCollection;
+			const entryGeometryType = getEntryGeometryType(transformedGeojson);
+			const featureLabel = getFeatureLabel(entryGeometryType);
+			const bbox = turfBbox(transformedGeojson) as [number, number, number, number];
 
 			if (!isBboxValid(bbox)) {
-				closeWithNotification('DRMファイルの座標変換に失敗しました', 'error')
-				return
+				closeWithNotification('DRMファイルの座標変換に失敗しました', 'error');
+				return;
 			}
 
 			const entry = await createGeoJsonEntry(
@@ -127,33 +127,33 @@
 				bbox,
 				undefined,
 				{ attribution: 'DRM' }
-			)
+			);
 
 			if (!entry) {
-				closeWithNotification('DRMファイルの登録に失敗しました', 'error')
-				return
+				closeWithNotification('DRMファイルの登録に失敗しました', 'error');
+				return;
 			}
 
-			showDataEntry = entry
-			closeDialog()
-			showNotification(`${geojson.features.length}件の${featureLabel}を読み込みました`, 'success')
+			showDataEntry = entry;
+			closeDialog();
+			showNotification(`${geojson.features.length}件の${featureLabel}を読み込みました`, 'success');
 		} catch (error) {
-			closeDialog()
+			closeDialog();
 			showNotification(
 				error instanceof Error ? error.message : 'DRMファイルの読み込みに失敗しました',
 				'error'
-			)
-			console.error(error)
+			);
+			console.error(error);
 		} finally {
-			isProcessing.set(false)
+			isProcessing.set(false);
 		}
-	}
+	};
 
 	if (showDialogType === 'drm') {
 		queueMicrotask(() => {
-			if (drmFiles.length === 0) return
-			void registration()
-		})
+			if (drmFiles.length === 0) return;
+			void registration();
+		});
 	}
 </script>
 

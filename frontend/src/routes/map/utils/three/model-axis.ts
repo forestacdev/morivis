@@ -1,4 +1,4 @@
-import type { MeshStyle, MeshFormatType } from '$routes/map/data/types/model';
+import type { MeshFormatType, MeshStyle } from '$routes/map/data/types/model';
 import type { EpsgCode } from '$routes/map/utils/proj/dict';
 
 export const applyProjectedModelAxisOverride = (

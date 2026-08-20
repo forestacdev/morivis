@@ -135,14 +135,20 @@ export const getLogicalLayerIdFromLayer = (layer: { id: string; metadata?: unkno
 };
 
 export const ensureHighlightAnimationImages = (map: MapLibreMap) => {
-	registerStaticPatternImage(map, HIGHLIGHT_FILL_PATTERN_ID, () =>
-		createStaticFillPatternImage(HIGHLIGHT_LAYER_COLOR)
+	registerStaticPatternImage(
+		map,
+		HIGHLIGHT_FILL_PATTERN_ID,
+		() => createStaticFillPatternImage(HIGHLIGHT_LAYER_COLOR)
 	);
-	registerStaticPatternImage(map, HIGHLIGHT_LINE_PATTERN_ID, () =>
-		createStaticLinePatternImage(HIGHLIGHT_LAYER_COLOR)
+	registerStaticPatternImage(
+		map,
+		HIGHLIGHT_LINE_PATTERN_ID,
+		() => createStaticLinePatternImage(HIGHLIGHT_LAYER_COLOR)
 	);
-	registerStaticPatternImage(map, ZONE_BBOX_FILL_PATTERN_ID, () =>
-		createStaticFillPatternImage(ZONE_BBOX_PATTERN_COLOR)
+	registerStaticPatternImage(
+		map,
+		ZONE_BBOX_FILL_PATTERN_ID,
+		() => createStaticFillPatternImage(ZONE_BBOX_PATTERN_COLOR)
 	);
 };
 
@@ -226,7 +232,12 @@ class HighlightLayerRegistry {
 	private static setStaticPattern = (map: MapLibreMap, item: HighlightLayerRegistryItem) => {
 		switch (item.patternProperty) {
 			case 'fill-pattern':
-				setPaintProperty(map, item.actualLayerId, 'fill-pattern', HIGHLIGHT_FILL_PATTERN_ID);
+				setPaintProperty(
+					map,
+					item.actualLayerId,
+					'fill-pattern',
+					HIGHLIGHT_FILL_PATTERN_ID
+				);
 				break;
 			case 'fill-extrusion-pattern':
 				setPaintProperty(
@@ -237,7 +248,12 @@ class HighlightLayerRegistry {
 				);
 				break;
 			case 'line-pattern':
-				setPaintProperty(map, item.actualLayerId, 'line-pattern', HIGHLIGHT_LINE_PATTERN_ID);
+				setPaintProperty(
+					map,
+					item.actualLayerId,
+					'line-pattern',
+					HIGHLIGHT_LINE_PATTERN_ID
+				);
 				break;
 			default:
 				break;

@@ -60,13 +60,13 @@ const createFile = (name: string, content = 'test', type = 'text/plain') =>
 	new File([content], name, { type });
 
 const createPathLikeFile = (name: string, relativePath: string, content = 'test') => {
-	const file = createFile(name, content)
+	const file = createFile(name, content);
 	Object.defineProperty(file, 'morivisRelativePath', {
 		value: relativePath,
 		configurable: true
-	})
-	return file
-}
+	});
+	return file;
+};
 
 describe('resolveDroppedFiles', () => {
 	beforeEach(() => {
@@ -148,14 +148,14 @@ describe('resolveDroppedFiles', () => {
 	});
 
 	it('単一の MT は drm ダイアログ判定になる', async () => {
-		const result = await resolveDroppedFiles(createFile('624011.mt', 'mt'))
+		const result = await resolveDroppedFiles(createFile('624011.mt', 'mt'));
 
 		expect(result).toEqual({
 			type: 'dialog',
 			dialogType: 'drm',
 			dropFiles: undefined
-		})
-	})
+		});
+	});
 
 	it('単一の SVG は svg ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(
@@ -249,16 +249,16 @@ describe('resolveDroppedFiles', () => {
 				'drm3803A標高CSV_01北海道/3803Asono1_ho/624011H.csv',
 				'csv'
 			)
-		])
+		]);
 
 		expect(result).toMatchObject({
 			type: 'dialog',
 			dialogType: 'drm'
-		})
-		expect(result.type).toBe('dialog')
-		if (result.type !== 'dialog') return
-		expect(result.dropFiles).toBeUndefined()
-	})
+		});
+		expect(result.type).toBe('dialog');
+		if (result.type !== 'dialog') return;
+		expect(result.dropFiles).toBeUndefined();
+	});
 
 	it('Location History JSON は locationhistory 判定になる', async () => {
 		vi.mocked(isLocationHistoryFile).mockResolvedValue(true);
@@ -364,9 +364,10 @@ describe('resolveDroppedFiles', () => {
 			dialogType: 'glb',
 			dropFiles: undefined
 		});
-		expect((file as File & { morivisProjectedModelEpsg?: string }).morivisProjectedModelEpsg).toBe(
-			'6677'
-		);
+		expect((file as File & { morivisProjectedModelEpsg?: string; }).morivisProjectedModelEpsg)
+			.toBe(
+				'6677'
+			);
 	});
 
 	it('TXT が点群テキストなら pointcloud 判定になる', async () => {

@@ -3,7 +3,7 @@
  * - https://www.loc.gov/preservation/digital/formats/fdd/fdd000507.shtml
  * - https://www.fileformat.info/format/wavefrontobj/egff.htm
  */
-import { getEpsgInfo, isValidEpsg, type EpsgCode } from '$routes/map/utils/proj/dict';
+import { type EpsgCode, getEpsgInfo, isValidEpsg } from '$routes/map/utils/proj/dict';
 
 export interface ObjFileInspectionResult {
 	isPointCloud: boolean;

@@ -836,7 +836,8 @@ export class ThreeJsLayerManager {
 						const colladaLoader = new ColladaLoader(manager);
 						colladaLoader.load(
 							entry.format.url,
-							(collada) => finalizeAndLoadModel(collada.scene, collada.scene.animations),
+							(collada) =>
+								finalizeAndLoadModel(collada.scene, collada.scene.animations),
 							undefined,
 							(error) => reject(error)
 						);

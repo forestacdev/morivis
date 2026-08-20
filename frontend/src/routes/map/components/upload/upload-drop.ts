@@ -16,8 +16,8 @@ import {
 	isRasterImageSidecarFile
 } from '$routes/map/utils/formats/raster/sidecar';
 import { isPointCloudTextFile } from '$routes/map/utils/formats/xyz';
-import { getMatchedExtension } from '$routes/map/utils/upload-matchers-common';
 import type { EpsgCode } from '$routes/map/utils/proj/dict';
+import { getMatchedExtension } from '$routes/map/utils/upload-matchers-common';
 import {
 	areAllPhotoFiles,
 	areAllXmlFiles,
