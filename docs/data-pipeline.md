@@ -108,7 +108,7 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 | profile | 典型的な形式 | 役割 |
 | --- | --- | --- |
 | `simple` | STAC, ArcGIS | `dropFile` を持たず、URL や内部状態だけで完結する。 |
-| `drop-file` | GPX, TCX, GDB, GTFS, HRIT, HDF5, MF-JSON, LocationHistory, DRM | 受け取ったファイルをそのまま解析して entry を作る。 |
+| `drop-file` | GPX, TCX, GDB, GTFS, HRIT, HDF5, MF-JSON, LocationHistory, DRM | 受け取ったファイルをそのまま解析して entry を作る。DRM もこの扱いで、dialog を開いたら追加 UI を挟まず自動登録まで進む。 |
 | `vector-zone` | GeoArrow | Zone は使うが GeoRef には流さない。 |
 | `vector-zone-georef` | GeoJSON, Shapefile, GeoParquet, DXF, GML, MojXML など | Zone と GeoRef の両方を取りうる。 |
 | `vector-georef` | SVG | GeoRef のみを持つ。 |
@@ -180,31 +180,6 @@ flowchart LR
 	D --> E["+page finalizeGeoRefEntry()"]
 	E --> F["sourceType ごとに final entry 作成"]
 ```
-
-## DRM (.mt) フロー
-
-DRM は、他の測量系ベクターのように Zone や GeoRef に流さず、そのまま自動で entry を作る導線に寄せている。  
-前提は `.mt` 専用で、道路網の選択 UI は持たず、全道路を含めてそのまま解析する。
-
-```mermaid
-flowchart LR
-	A[".mt files / folder"] --> B["upload-drop.ts"]
-	B --> C["DrmForm.svelte"]
-	C --> D["detectCrsCandidates()"]
-	D --> E["analyzeDrmFilesInWorker()"]
-	E --> F["toGeoJson()"]
-	F --> G["transformGeoJSONParallel()"]
-	G --> H["createGeoJsonEntry()"]
-	H --> I["showDataEntry"]
-```
-
-- `upload-drop.ts` は、複数ファイルの中に `.mt` が 1 件でもあれば `drm` dialog へ送る。フォルダごと受け取った場合も `dropFile` はそのまま配列で渡され、後段でまとめて処理する。
-- `DrmForm.svelte` は `getDrmInputName()` で `morivisRelativePath` を優先して入力名を扱う。これによりフォルダ入力でも相対パスを保ったまま処理でき、先頭ファイルのルート名をそのままエントリー名候補に使える。
-- 座標系はファイル名ヒントから自動判定する。4 桁コードの後ろに `A` が付くものは旧日本測地系、付かないものは JGD2000 とみなす。複数 `.mt` の判定結果が混在したときは変換を始める前にエラーで止める。
-- `analyzeDrmFilesInWorker(drmFiles, { includeAllRoads: true })` が全入力を worker に渡す。ここでは UI 側の道路種別選択は使わず、基本道路網だけに絞らず全道路を含めて読む。
-- worker 側の `toGeoJson()` は、まずリンクレコード `22/32` を `LineString` に組み立てる。リンクが 1 件も取れなかった場合だけ、ノードレコード `21/31` を `Point` として返す。
-- リンク解析では `23` `24` `93` の補助レコードも同時に読み、リンク内属性や対応全道路リンク番号一覧を元リンクの `properties` に統合する。
-- 全 `.mt` の地物は 1 つの `FeatureCollection` に連結したあと、`transformGeoJSONParallel()` で WGS84 へ変換する。bbox が妥当なら `createGeoJsonEntry()` で `LineString` か `Point` の vector entry を作り、そのまま `showDataEntry` に載せる。
 
 ## 2D → 3D 変換
 
