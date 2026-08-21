@@ -147,6 +147,16 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('単一の SFC は sxf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('plan.sfc', 'sxf'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
+		});
+	});
+
 	it('単一の MT は drm ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(createFile('624011.mt', 'mt'));
 

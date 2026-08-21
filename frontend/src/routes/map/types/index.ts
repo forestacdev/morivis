@@ -89,6 +89,7 @@ export type DialogType =
 	| 'drm'
 	| 'dwg'
 	| 'dxf'
+	| 'sxf'
 	| 'sima'
 	| 'hdf5'
 	| 'csv'
@@ -239,6 +240,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'位置情報付きのRSS / Atomフィードです。配信フィードの点・線・面を地図に載せるときに使います。',
 		extensions: ['.georss', '.rss', '.atom']
+	},
+	{
+		label: 'SXF (SFC)',
+		description:
+			'SXF の SFC 形式で保存されたCAD図面です。公共図面や土木図面の線や文字を読み込むときに使います。',
+		extensions: ['.sfc']
 	},
 	{
 		label: 'GML',

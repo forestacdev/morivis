@@ -441,6 +441,50 @@ export const buildCadStyle = (
 	return getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig);
 };
 
+export const buildSxfStyle = (
+	data: FeatureCollection,
+	entryGeometryType: VectorEntryGeometryType,
+	propKeys: string[]
+): VectorStyle => {
+	const colorsConfig = createDefaultColorsConfig(entryGeometryType);
+	const layers = groupPropertyByGeometryType(
+		data,
+		(props) => props?.layer != null ? String(props.layer) : undefined
+	);
+	const featureTypes = groupPropertyByGeometryType(
+		data,
+		(props) => props?.type != null ? String(props.type) : undefined
+	);
+
+	if ((layers[entryGeometryType] ?? []).length > 0) {
+		colorsConfig.expressions.push({
+			type: 'match',
+			key: 'layer',
+			name: 'レイヤごとの色分け',
+			mapping: createMatchColorMapping(layers[entryGeometryType])
+		});
+		colorsConfig.key = 'layer';
+	}
+
+	if ((featureTypes[entryGeometryType] ?? []).length > 0) {
+		colorsConfig.expressions.push({
+			type: 'match',
+			key: 'type',
+			name: '要素種別ごとの色分け',
+			mapping: createMatchColorMapping(featureTypes[entryGeometryType])
+		});
+		if (!colorsConfig.key) {
+			colorsConfig.key = 'type';
+		}
+	}
+
+	const labelsConfig = createLabelsExpressions(propKeys);
+	if (entryGeometryType === 'LineString') {
+		return { ...DEFAULT_CAD_STYLE, colors: colorsConfig, labels: labelsConfig };
+	}
+	return getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig);
+};
+
 // --- 属性から自動match分類を生成 ---
 
 const MAX_UNIQUE_VALUES = 30;
