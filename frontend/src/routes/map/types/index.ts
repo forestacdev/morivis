@@ -427,8 +427,8 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: '点群',
 		description:
-			'多数の座標点で構成された3Dデータです。測量やスキャン由来の点群を表示するときに使います。',
-		extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
+			'多数の座標点で構成された3Dデータです。LAS/LAZ や COPC、各種点群テキストを表示するときに使います。',
+		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
 	}
 ];
 

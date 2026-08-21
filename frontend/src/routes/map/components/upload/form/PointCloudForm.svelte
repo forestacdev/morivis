@@ -32,7 +32,11 @@
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { transformPointCloudParallel } from '$routes/map/utils/proj/pointcloud_transformer';
-	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
+	import { isCopcFileName, parseCopcFile } from '$routes/map/utils/formats/copc';
+	import {
+		getFirstUploadFile,
+		getMatchedExtension
+	} from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -60,6 +64,7 @@
 
 	let entryName = $state('');
 	let pointCount = $state<number | null>(null);
+	let sourcePointCount = $state<number | null>(null);
 	let rawBbox = $state<[number, number, number, number] | null>(null);
 	let resolvedBbox = $state<[number, number, number, number] | null>(null);
 	let analyzed = $state(false);
@@ -80,6 +85,12 @@
 		const file = getFirstUploadFile(dropFile);
 		return file && /\.(las|laz|ply|pcd|xyz|txt|obj)$/i.test(file.name) ? file : null;
 	});
+	const getPointCloudEntryName = (fileName: string) => {
+		const matchedExtension = getMatchedExtension(fileName);
+		return matchedExtension
+			? fileName.slice(0, -matchedExtension.length)
+			: fileName.replace(/\.[^.]+$/, '');
+	};
 	const getPlacementAllowedTransformModes = () =>
 		getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 
@@ -93,7 +104,7 @@
 
 	$effect(() => {
 		if (pointCloudFile) {
-			entryName = pointCloudFile.name.replace(/\.[^.]+$/, '');
+			entryName = getPointCloudEntryName(pointCloudFile.name);
 			analyzePointCloud(pointCloudFile);
 		}
 	});
@@ -116,6 +127,7 @@
 		isProcessing.set(true);
 		analyzed = false;
 		pointCount = null;
+		sourcePointCount = null;
 		rawBbox = null;
 		resolvedBbox = null;
 		resolvedPositions = null;
@@ -128,7 +140,14 @@
 			let colors: Uint8Array | undefined = undefined;
 			let bbox: [number, number, number, number] | null = null;
 
-			if (isTextPointCloudFile(file.name)) {
+			if (isCopcFileName(file.name)) {
+				const result = await parseCopcFile(file);
+				positions = result.positions;
+				colors = result.colors;
+				pointCount = result.pointCount;
+				sourcePointCount = result.sourcePointCount;
+				bbox = result.bbox;
+			} else if (isTextPointCloudFile(file.name)) {
 				// XYZ テキスト形式
 				const result = await parseXyzFile(file);
 				positions = result.positions;
@@ -538,6 +557,11 @@
 		<div class="flex w-full flex-col gap-1 px-2 text-sm text-gray-300">
 			{#if pointCount !== null}
 				<div>点数: {pointCount.toLocaleString()}</div>
+			{/if}
+			{#if sourcePointCount !== null && pointCount !== null && pointCount < sourcePointCount}
+				<div class="text-xs text-gray-400">
+					COPC の全 {sourcePointCount.toLocaleString()} 点のうち、表示用に {pointCount.toLocaleString()} 点を読み込みました。
+				</div>
 			{/if}
 			{#if resolvedBbox}
 				<div>

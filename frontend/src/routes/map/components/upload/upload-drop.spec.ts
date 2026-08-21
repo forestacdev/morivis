@@ -415,6 +415,16 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('COPC LAZ は pointcloud 判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('forest.copc.laz', 'copc'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'pointcloud',
+			dropFiles: undefined
+		});
+	});
+
 	it('TXT が点群でなければエラー通知になる', async () => {
 		const result = await resolveDroppedFiles(createFile('memo.txt'));
 
