@@ -260,6 +260,39 @@ describe('resolveDroppedFiles', () => {
 		expect(result.dropFiles).toBeUndefined();
 	});
 
+	it('FileGDB の構成ファイル一式は filegdb ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles([
+			createPathLikeFile(
+				'a00000001.gdbtable',
+				'roads.gdb/a00000001.gdbtable',
+				'catalog-table'
+			),
+			createPathLikeFile(
+				'a00000001.gdbtablx',
+				'roads.gdb/a00000001.gdbtablx',
+				'catalog-index'
+			),
+			createPathLikeFile('a00000009.gdbtable', 'roads.gdb/a00000009.gdbtable', 'layer-table'),
+			createPathLikeFile('a00000009.gdbtablx', 'roads.gdb/a00000009.gdbtablx', 'layer-index')
+		]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'filegdb',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の Garmin GDB は gdb ダイアログ判定のまま', async () => {
+		const result = await resolveDroppedFiles(createFile('tracks.gdb'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'gdb',
+			dropFiles: undefined
+		});
+	});
+
 	it('Location History JSON は locationhistory 判定になる', async () => {
 		vi.mocked(isLocationHistoryFile).mockResolvedValue(true);
 

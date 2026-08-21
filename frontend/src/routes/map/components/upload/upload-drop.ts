@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
+import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
 import { isLikelyHritFile } from '$routes/map/utils/formats/hrit';
@@ -257,6 +258,11 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 			attachProjectedModelEpsg(objFile, inspection.projectedModelEpsg);
 			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb');
 		}
+	},
+	{
+		id: 'filegdb-set',
+		match: (files) => files.some((file) => isFileGdbRelatedFile(file)),
+		resolve: async () => createDialogDecision('filegdb')
 	},
 	{
 		id: 'photo-set',

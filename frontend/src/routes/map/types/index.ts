@@ -96,6 +96,7 @@ export type DialogType =
 	| 'xlsx'
 	| 'gpkg'
 	| 'sqlite'
+	| 'filegdb'
 	| 'gdb'
 	| 'mfjson'
 	| '3dtiles'
@@ -187,6 +188,21 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'SQLiteデータベースや SQL ダンプです。空間カラムや座標列を持つテーブルを読み込むときに使います。',
 		extensions: ['.sqlite', '.sqlite3', '.db', '.db3', '.sql']
+	},
+	{
+		label: 'Esri FileGDB',
+		description:
+			'Esri の File Geodatabase です。.gdb フォルダ内の構成ファイルをまとめて読み込むときに使います。',
+		extensions: [
+			'.gdbtable',
+			'.gdbtablx',
+			'.gdbindexes',
+			'.gdbindex',
+			'.atx',
+			'.spx',
+			'.cdf',
+			'.freelist'
+		]
 	},
 	{
 		label: 'Shapefile',

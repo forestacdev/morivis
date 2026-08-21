@@ -8,6 +8,7 @@ import DrmForm from '$routes/map/components/upload/form/DrmForm.svelte';
 import DwgForm from '$routes/map/components/upload/form/DwgForm.svelte';
 import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 import FeatureServiceForm from '$routes/map/components/upload/form/FeatureServiceForm.svelte';
+import FileGdbForm from '$routes/map/components/upload/form/FileGdbForm.svelte';
 import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
 import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
 import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
@@ -119,6 +120,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	landxml: { component: LandXmlForm, profile: 'pointcloud-georef' },
 	gpx: { component: GpxForm, profile: 'drop-file' },
 	tcx: { component: TcxForm, profile: 'drop-file' },
+	filegdb: { component: FileGdbForm, profile: 'drop-file' },
 	gdb: { component: GarminGDBForm, profile: 'drop-file' },
 	osm: { component: OsmForm, profile: 'vector-zone-georef' },
 	georss: { component: GeoRssForm, profile: 'vector-zone-georef' },
