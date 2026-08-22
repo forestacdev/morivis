@@ -24,7 +24,7 @@
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
-	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -63,8 +63,9 @@
 	let layerChecked = $state<Record<string, boolean>>({});
 
 	const sxfFile = $derived.by(() => {
-		if (!dropFile) return null;
-		return getFirstUploadFile(dropFile);
+		const files = toUploadFiles(dropFile);
+		if (files.length === 0) return null;
+		return files.find((file) => file.name.toLowerCase().endsWith('.sfc')) ?? files[0] ?? null;
 	});
 	const entryName = $derived(sxfFile?.name.replace(/\.[^.]+$/, '') ?? 'SXFデータ');
 	const selectedLayers = $derived(

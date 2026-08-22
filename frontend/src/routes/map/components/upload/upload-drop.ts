@@ -220,6 +220,10 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	grb: 'grib2'
 };
 
+const SXF_PRIMARY_EXTENSION = '.sfc';
+const SXF_P21_EXTENSION = '.p21';
+const SXF_SAF_EXTENSION = '.saf';
+
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
@@ -281,6 +285,33 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 		id: 'drm-set',
 		match: (files) => files.some((file) => hasExtension(file, '.mt')),
 		resolve: async () => createDialogDecision('drm')
+	},
+	{
+		id: 'sxf-set',
+		match: (files) =>
+			files.some(
+				(file) =>
+					hasExtension(file, SXF_PRIMARY_EXTENSION)
+					|| hasExtension(file, SXF_P21_EXTENSION)
+					|| hasExtension(file, SXF_SAF_EXTENSION)
+			),
+		resolve: async (files) => {
+			const sfcFile = files.find((file) => hasExtension(file, SXF_PRIMARY_EXTENSION));
+			if (sfcFile) {
+				return createDialogDecision('sxf');
+			}
+
+			const p21File = files.find((file) => hasExtension(file, SXF_P21_EXTENSION));
+			if (p21File) {
+				return createNotificationDecision(
+					'SXF の P21 形式はまだ未対応です。SFC ファイルをドロップしてください'
+				);
+			}
+
+			return createNotificationDecision(
+				'SXF の本体ファイル (.sfc または .p21) を一緒にドロップしてください'
+			);
+		}
 	},
 	{
 		id: 'shapefile-set',
@@ -412,6 +443,18 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 			return createDialogDecision('pointcloud');
 		}
 		return createNotificationDecision('対応していないTXTファイルです');
+	}
+
+	if (ext === 'p21') {
+		return createNotificationDecision(
+			'SXF の P21 形式はまだ未対応です。SFC ファイルをドロップしてください'
+		);
+	}
+
+	if (ext === 'saf') {
+		return createNotificationDecision(
+			'SXF の本体ファイル (.sfc または .p21) を一緒にドロップしてください'
+		);
 	}
 
 	if (ext === 'xml') {

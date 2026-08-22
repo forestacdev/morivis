@@ -178,32 +178,32 @@ describe('filegdb format utils', () => {
 
 		const result = parseFileGdbInputs([
 			{
-				name: 'あああ.gdb/a00000001.gdbtable',
+				name: '日本語名.gdb/a00000001.gdbtable',
 				data: createBuffer(1)
 			},
 			{
-				name: 'あああ.gdb/a00000001.gdbtablx',
+				name: '日本語名.gdb/a00000001.gdbtablx',
 				data: createBuffer(1)
 			},
 			{
-				name: 'あああ.gdb/a00000009.gdbindexes',
+				name: '日本語名.gdb/a00000009.gdbindexes',
 				data: createBuffer(99)
 			},
 			{
-				name: 'あああ.gdb/a00000009.spx',
+				name: '日本語名.gdb/a00000009.spx',
 				data: createBuffer(98)
 			},
 			{
-				name: 'あああ.gdb/a00000009.gdbtable',
+				name: '日本語名.gdb/a00000009.gdbtable',
 				data: createBuffer(9)
 			},
 			{
-				name: 'あああ.gdb/a00000009.gdbtablx',
+				name: '日本語名.gdb/a00000009.gdbtablx',
 				data: createBuffer(9)
 			}
 		] satisfies FileGdbInput[]);
 
-		expect(result.datasetName).toBe('あああ');
+		expect(result.datasetName).toBe('日本語名');
 		expect(result.layers).toHaveLength(1);
 		expect(result.layers[0]?.name).toBe('a00000009');
 		expect(getFileGdbGeometryTypes(result.layers[0]?.geojson as FeatureCollection)).toEqual([

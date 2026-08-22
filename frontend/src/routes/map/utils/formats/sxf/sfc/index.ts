@@ -195,6 +195,22 @@ const getNumber = (value: SxfValue | undefined): number | null => {
 };
 
 const getNumberArray = (value: SxfValue | undefined): number[] | null => {
+	if (value == null) return null;
+
+	if (isStringValue(value)) {
+		const trimmed = value.trim();
+		if (!trimmed.startsWith('(') || !trimmed.endsWith(')')) return null;
+
+		try {
+			const { values, nextIndex } = parseList(trimmed, 1, ')');
+			if (nextIndex !== trimmed.length) return null;
+			const numbers = values.map((item) => getNumber(item));
+			return numbers.every((item): item is number => item !== null) ? numbers : null;
+		} catch {
+			return null;
+		}
+	}
+
 	if (!isArrayValue(value)) return null;
 	const numbers = value.map((item) => getNumber(item));
 	return numbers.every((item): item is number => item !== null) ? numbers : null;
@@ -461,6 +477,10 @@ const parseEntityToFeature = (entity: SxfEntity): SxfGeometryFeature | null => {
 export const sxfTextToGeoJson = (text: string): FeatureCollection => {
 	const entities = parseSxfEntities(text);
 	if (entities.length === 0) {
+		if (text.includes('ISO-10303-21')) {
+			throw new SxfParseError('SXF の P21 形式はまだ未対応です。SFC ファイルを読み込んでください。');
+		}
+
 		throw new SxfParseError('SXF のフィーチャブロックが見つかりませんでした');
 	}
 

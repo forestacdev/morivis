@@ -28,4 +28,17 @@ describe('sxfTextToGeoJson', () => {
 			text: 'SXF text'
 		});
 	});
+
+	it('実データのような quoted polyline を GeoJSON に変換できる', () => {
+		const geojson = sxfTextToGeoJson(readFixture('quoted-polyline.sfc'));
+
+		expect(geojson.features).toHaveLength(2);
+		expect(geojson.features.map((feature) => feature.geometry.type)).toEqual([
+			'Polygon',
+			'LineString'
+		]);
+		expect(geojson.features[0]?.geometry).toMatchObject({
+			type: 'Polygon'
+		});
+	});
 });
