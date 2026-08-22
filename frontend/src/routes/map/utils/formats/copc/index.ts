@@ -1,4 +1,6 @@
-import { Copc, type Getter } from 'copc';
+import { Copc, Las, type Getter } from 'copc';
+
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 
 type CopcHierarchyNode = {
 	key: string;
@@ -15,6 +17,7 @@ type CopcHierarchyPage = {
 
 type CopcCoordinate = [number, number, number];
 type CopcColor = [number, number, number];
+type CopcLazPerf = Awaited<ReturnType<typeof Las.PointData.createLazPerf>>;
 
 export interface CopcParseResult {
 	positions: Float32Array;
@@ -26,8 +29,24 @@ export interface CopcParseResult {
 }
 
 export const COPC_MAX_POINTS = 120000;
+const COPC_LAZ_PERF_WASM_PATH = resolveStaticAssetPath('/vendor/laz-perf/laz-perf.wasm');
+
+let copcLazPerfPromise: Promise<CopcLazPerf> | null = null;
 
 export const isCopcFileName = (fileName: string): boolean => /\.copc\.laz$/i.test(fileName);
+
+const getCopcLazPerf = (): Promise<CopcLazPerf> => {
+	if (!copcLazPerfPromise) {
+		copcLazPerfPromise = Las.PointData.createLazPerf({
+			locateFile: (path: string) => (path.endsWith('.wasm') ? COPC_LAZ_PERF_WASM_PATH : path)
+		}).catch((error) => {
+			copcLazPerfPromise = null;
+			throw error;
+		});
+	}
+
+	return copcLazPerfPromise;
+};
 
 const createArrayBufferGetter = (arrayBuffer: ArrayBuffer): Getter => async (begin, end) =>
 	new Uint8Array(arrayBuffer.slice(begin, end));
@@ -121,10 +140,11 @@ const readCopcNodePoints = async (
 	copc: Awaited<ReturnType<typeof Copc.create>>,
 	node: CopcHierarchyNode,
 	targetCount: number,
-	hasColor: boolean
+	hasColor: boolean,
+	lazPerf: CopcLazPerf
 ): Promise<{ positions: CopcCoordinate[]; colors: CopcColor[] | null; }> => {
 	const include = hasColor ? ['X', 'Y', 'Z', 'Red', 'Green', 'Blue'] : ['X', 'Y', 'Z'];
-	const view = await Copc.loadPointDataView(getter, copc, node, { include });
+	const view = await Copc.loadPointDataView(getter, copc, node, { include, lazPerf });
 	const getX = view.getter('X');
 	const getY = view.getter('Y');
 	const getZ = view.getter('Z');
@@ -167,6 +187,7 @@ export const parseCopcFile = async (
 	}
 
 	const hasColor = copc.header.pointDataRecordFormat === 7 || copc.header.pointDataRecordFormat === 8;
+	const lazPerf = await getCopcLazPerf();
 	const positionValues: number[] = [];
 	const colorValues: number[] = [];
 	let loadedPointCount = 0;
@@ -178,7 +199,7 @@ export const parseCopcFile = async (
 		const targetCount = Math.min(node.pointCount, remaining);
 		if (targetCount <= 0) continue;
 
-		const sampled = await readCopcNodePoints(getter, copc, node, targetCount, hasColor);
+		const sampled = await readCopcNodePoints(getter, copc, node, targetCount, hasColor, lazPerf);
 
 		for (const [x, y, z] of sampled.positions) {
 			positionValues.push(x, y, z);

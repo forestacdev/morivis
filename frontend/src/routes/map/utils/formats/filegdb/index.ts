@@ -123,7 +123,7 @@ const getDataByteLength = (data: ArrayBuffer | Uint8Array): number =>
 
 const toFgdbArrayBuffer = (data: ArrayBuffer | Uint8Array): ArrayBuffer => {
 	if (data instanceof ArrayBuffer) return data;
-	return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+	return Uint8Array.from(data).buffer;
 };
 
 const summarizeTableEntry = (entry: FileGdbTableEntry) => ({

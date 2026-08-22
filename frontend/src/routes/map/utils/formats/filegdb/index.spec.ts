@@ -91,8 +91,8 @@ describe('filegdb format utils', () => {
 	});
 
 	it('カタログと各テーブルからレイヤー一覧を組み立てる', () => {
-		vi.mocked(fgdbRead).mockImplementation((table) => {
-			const id = new Uint8Array(table as ArrayBuffer)[0];
+		vi.mocked(fgdbRead).mockImplementation((table: ArrayBuffer) => {
+			const id = new Uint8Array(table)[0];
 
 			if (id === 1) {
 				return [
@@ -162,8 +162,8 @@ describe('filegdb format utils', () => {
 	});
 
 	it('日本語名の .gdb でも catalog 失敗時に feature table へフォールバックできる', () => {
-		vi.mocked(fgdbRead).mockImplementation((table) => {
-			const id = new Uint8Array(table as ArrayBuffer)[0];
+		vi.mocked(fgdbRead).mockImplementation((table: ArrayBuffer) => {
+			const id = new Uint8Array(table)[0];
 
 			if (id === 1) {
 				throw new Error('Start offset 2852126720 is outside the bounds of the buffer');
@@ -212,8 +212,8 @@ describe('filegdb format utils', () => {
 	});
 
 	it('読めない場合に診断情報を保持する', () => {
-		vi.mocked(fgdbRead).mockImplementation((table) => {
-			const id = new Uint8Array(table as ArrayBuffer)[0];
+		vi.mocked(fgdbRead).mockImplementation((table: ArrayBuffer) => {
+			const id = new Uint8Array(table)[0];
 
 			if (id === 1) {
 				throw new Error('Start offset 2852126720 is outside the bounds of the buffer');

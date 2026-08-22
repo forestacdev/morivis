@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockCreate, mockLoadHierarchyPage, mockLoadPointDataView } = vi.hoisted(() => ({
+const { mockCreate, mockCreateLazPerf, mockLoadHierarchyPage, mockLoadPointDataView } = vi.hoisted(() => ({
 	mockCreate: vi.fn(),
+	mockCreateLazPerf: vi.fn(),
 	mockLoadHierarchyPage: vi.fn(),
 	mockLoadPointDataView: vi.fn()
 }));
@@ -11,6 +12,11 @@ vi.mock('copc', () => ({
 		create: mockCreate,
 		loadHierarchyPage: mockLoadHierarchyPage,
 		loadPointDataView: mockLoadPointDataView
+	},
+	Las: {
+		PointData: {
+			createLazPerf: mockCreateLazPerf
+		}
 	}
 }));
 
@@ -53,6 +59,8 @@ const createMockView = (points: number[][], colors?: number[][]) => ({
 describe('COPC parser', () => {
 	beforeEach(() => {
 		vi.resetAllMocks();
+
+		mockCreateLazPerf.mockResolvedValue({ ready: true });
 		mockCreate.mockResolvedValue({
 			header: {
 				pointCount: 10,
@@ -163,7 +171,23 @@ describe('COPC parser', () => {
 			5
 		]);
 		expect(Array.from(result.colors ?? [])).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+		expect(mockCreateLazPerf).toHaveBeenCalledWith({
+			locateFile: expect.any(Function)
+		});
+
+		const createLazPerfOptions = mockCreateLazPerf.mock.calls[0]?.[0];
+		expect(createLazPerfOptions?.locateFile('laz-perf.wasm')).toMatch(
+			/\/vendor\/laz-perf\/laz-perf\.wasm$/
+		);
+
 		expect(mockLoadHierarchyPage).toHaveBeenCalledTimes(2);
 		expect(mockLoadPointDataView).toHaveBeenCalledTimes(2);
+		for (const call of mockLoadPointDataView.mock.calls) {
+			expect(call[3]).toEqual(
+				expect.objectContaining({
+					lazPerf: { ready: true }
+				})
+			);
+		}
 	});
 });
