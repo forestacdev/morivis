@@ -1,4 +1,4 @@
-import fgdbRead from 'fgdb/lib/read';
+import fgdbRead from 'fgdb/dist/fgdb.js';
 
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
@@ -41,6 +41,28 @@ export interface FileGdbAnalyzeResult {
 	layers: FileGdbLayer[];
 }
 
+export interface FileGdbDebugEvent {
+	message: string;
+	payload?: unknown;
+}
+
+export interface FileGdbFailureDetails {
+	datasetName: string;
+	rootPath: string | null;
+	inputs: Array<{
+		name: string;
+		bytes: number;
+	}>;
+	firstError: string | null;
+	lastError: string | null;
+	events: FileGdbDebugEvent[];
+}
+
+interface FileGdbTableEntry {
+	index: number;
+	data: ArrayBuffer | Uint8Array;
+}
+
 type FileGdbCatalogRow = {
 	Name?: string;
 	[key: string]: unknown;
@@ -50,11 +72,95 @@ const FILE_GDB_ROOT_PATTERN = /\.gdb$/i;
 const FILE_GDB_TABLE_SUFFIX = '.gdbtable';
 const FILE_GDB_TABLX_SUFFIX = '.gdbtablx';
 const FILE_GDB_SYSTEM_LAYER_PREFIX = 'GDB_';
+const FILE_GDB_DEBUG_PREFIX = '[FileGDB]';
 const SUPPORTED_GEOMETRY_TYPES = new Set<VectorEntryGeometryType>([
 	'Point',
 	'LineString',
 	'Polygon'
 ]);
+
+type FgdbProcessShim = {
+	browser?: boolean;
+	env?: Record<string, string>;
+	versions?: {
+		node?: string;
+	};
+};
+
+type FileGdbDebugReporter = (message: string, payload?: unknown) => void;
+
+export class FileGdbParseError extends Error {
+	details: FileGdbFailureDetails;
+
+	constructor(message: string, details: FileGdbFailureDetails) {
+		super(message);
+		this.name = 'FileGdbParseError';
+		this.details = details;
+	}
+}
+
+const logFileGdbDebug = (message: string, payload?: unknown) => {
+	if (!import.meta.env.DEV) return;
+
+	if (payload === undefined) {
+		console.debug(FILE_GDB_DEBUG_PREFIX, message);
+		return;
+	}
+
+	console.debug(FILE_GDB_DEBUG_PREFIX, message, payload);
+};
+
+const createFileGdbDebugReporter = (events: FileGdbDebugEvent[]): FileGdbDebugReporter =>
+	(message, payload) => {
+		events.push(payload === undefined ? { message } : { message, payload });
+		logFileGdbDebug(message, payload);
+	};
+
+const formatTableIndex = (index: number): string => `a${index.toString(16).padStart(8, '0')}`;
+
+const getDataByteLength = (data: ArrayBuffer | Uint8Array): number =>
+	data instanceof ArrayBuffer ? data.byteLength : data.byteLength;
+
+const toFgdbArrayBuffer = (data: ArrayBuffer | Uint8Array): ArrayBuffer => {
+	if (data instanceof ArrayBuffer) return data;
+	return data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+};
+
+const summarizeTableEntry = (entry: FileGdbTableEntry) => ({
+	index: formatTableIndex(entry.index),
+	bytes: getDataByteLength(entry.data)
+});
+
+const ensureFgdbProcessShim = () => {
+	const globalObject = globalThis as {
+		process?: FgdbProcessShim;
+	};
+
+	if (!globalObject.process) {
+		globalObject.process = {
+			browser: true,
+			env: {}
+		};
+		return;
+	}
+
+	// fgdb/lib/read は process.browser を直接参照する。
+	// 実 Node.js 以外で process がある場合は browser フラグだけ補う。
+	if (!globalObject.process.versions?.node) {
+		globalObject.process.browser ??= true;
+		globalObject.process.env ??= {};
+	}
+};
+
+const readFgdbTable = (
+	table: ArrayBuffer | Uint8Array,
+	tablex: ArrayBuffer | Uint8Array
+) => {
+	ensureFgdbProcessShim();
+	// fgdb/lib/read は Vite worker の prebundle で proj4 の CJS 互換が崩れる。
+	// browserify 済みの dist 版を使うと proj4 を内包したまま読める。
+	return fgdbRead(toFgdbArrayBuffer(table), toFgdbArrayBuffer(tablex));
+};
 
 const getBaseName = (pathLikeName: string): string => {
 	const normalized = pathLikeName.replace(/\\/g, '/');
@@ -90,6 +196,8 @@ const getFileGdbTableIndex = (pathLikeName: string, suffix: string): number | nu
 
 	return index;
 };
+
+const getFallbackLayerName = (index: number): string => `a${index.toString(16).padStart(8, '0')}`;
 
 const toFeatureArray = (geojson: FeatureCollection): Feature[] =>
 	Array.isArray(geojson.features) ? geojson.features : [];
@@ -130,8 +238,9 @@ const extractFileGdbRootPath = (pathLikeName: string): string | null => {
 };
 
 const readCatalogTable = (
-	tableEntries: Array<{ index: number; data: ArrayBuffer | Uint8Array }>,
-	tablxEntries: Array<{ index: number; data: ArrayBuffer | Uint8Array }>
+	tableEntries: FileGdbTableEntry[],
+	tablxEntries: FileGdbTableEntry[],
+	debug: FileGdbDebugReporter
 ): FileGdbCatalogRow[] => {
 	const firstTable = tableEntries[0];
 	const firstTablx = tablxEntries[0];
@@ -140,12 +249,37 @@ const readCatalogTable = (
 		throw new Error('FileGDB のカタログテーブル a00000001 を見つけられませんでした');
 	}
 
-	const catalog = fgdbRead(firstTable.data, firstTablx.data);
+	debug('catalog read start', {
+		table: summarizeTableEntry(firstTable),
+		tablx: summarizeTableEntry(firstTablx)
+	});
+	const catalog = readFgdbTable(firstTable.data, firstTablx.data);
 	if (!Array.isArray(catalog)) {
 		throw new Error('FileGDB のカタログを読み取れませんでした');
 	}
+	debug('catalog read success', {
+		rowCount: catalog.length,
+		sampleNames: catalog
+			.slice(0, 10)
+			.map((row) => (typeof row?.Name === 'string' ? row.Name : null))
+			.filter((value): value is string => value !== null)
+	});
 
 	return catalog as FileGdbCatalogRow[];
+};
+
+const readFeatureLayer = (
+	tableEntry: FileGdbTableEntry,
+	tablxEntry: FileGdbTableEntry,
+	name: string
+): FileGdbLayer | null => {
+	const geojson = assertFeatureCollection(readFgdbTable(tableEntry.data, tablxEntry.data), name);
+	if (!hasSupportedGeometry(geojson)) return null;
+
+	return {
+		name,
+		geojson
+	};
 };
 
 export const getFileGdbInputName = (file: File | FileGdbInput): string =>
@@ -205,6 +339,16 @@ export const getFileGdbGeometryTypes = (geojson: FeatureCollection): VectorEntry
 
 export const parseFileGdbInputs = (rawInputs: FileGdbInput[]): FileGdbAnalyzeResult => {
 	const resolved = resolveFileGdbInputSet(rawInputs);
+	const debugEvents: FileGdbDebugEvent[] = [];
+	const debug = createFileGdbDebugReporter(debugEvents);
+	debug('parse start', {
+		datasetName: resolved.datasetName,
+		rootPath: resolved.rootPath,
+		inputs: resolved.inputs.map((input) => ({
+			name: getFileGdbInputName(input),
+			bytes: getDataByteLength(input.data)
+		}))
+	});
 	const tableMap = new Map<number, ArrayBuffer | Uint8Array>();
 	const tablxMap = new Map<number, ArrayBuffer | Uint8Array>();
 
@@ -226,12 +370,16 @@ export const parseFileGdbInputs = (rawInputs: FileGdbInput[]): FileGdbAnalyzeRes
 		throw new Error('FileGDB の .gdbtable / .gdbtablx ファイルが不足しています');
 	}
 
-	const tableEntries = Array.from(tableMap.entries())
+	const tableEntries: FileGdbTableEntry[] = Array.from(tableMap.entries())
 		.sort(([left], [right]) => left - right)
 		.map(([index, data]) => ({ index, data }));
-	const tablxEntries = Array.from(tablxMap.entries())
+	const tablxEntries: FileGdbTableEntry[] = Array.from(tablxMap.entries())
 		.sort(([left], [right]) => left - right)
 		.map(([index, data]) => ({ index, data }));
+	debug('resolved table pairs', {
+		tableEntries: tableEntries.map(summarizeTableEntry),
+		tablxEntries: tablxEntries.map(summarizeTableEntry)
+	});
 
 	for (const tableEntry of tableEntries) {
 		if (!tablxMap.has(tableEntry.index)) {
@@ -241,38 +389,149 @@ export const parseFileGdbInputs = (rawInputs: FileGdbInput[]): FileGdbAnalyzeRes
 		}
 	}
 
-	const catalog = readCatalogTable(tableEntries, tablxEntries);
-	const layerRefs: Array<{ name: string; position: number }> = [];
-	let position = 1;
+	const userTableEntries = tableEntries.filter((entry) => entry.index !== 1);
+	const userTablxMap = new Map(
+		tablxEntries.filter((entry) => entry.index !== 1).map((entry) => [entry.index, entry])
+	);
+	const layers: FileGdbLayer[] = [];
+	let firstError: Error | null = null;
+	let lastError: Error | null = null;
 
-	for (const row of catalog) {
-		const layerName = typeof row?.Name === 'string' ? row.Name : null;
-		if (!layerName || layerName.startsWith(FILE_GDB_SYSTEM_LAYER_PREFIX)) continue;
+	try {
+		const catalog = readCatalogTable(tableEntries, tablxEntries, debug);
+		let position = 1;
 
-		layerRefs.push({ name: layerName, position });
-		position += 1;
-	}
+		for (const row of catalog) {
+			const layerName = typeof row?.Name === 'string' ? row.Name : null;
+			if (!layerName || layerName.startsWith(FILE_GDB_SYSTEM_LAYER_PREFIX)) continue;
 
-	const layers = layerRefs
-		.map(({ name, position: layerPosition }) => {
-			const tableEntry = tableEntries[layerPosition];
-			const tablxEntry = tablxEntries[layerPosition];
-			if (!tableEntry || !tablxEntry) {
-				throw new Error(`FileGDB レイヤー「${name}」のテーブルを見つけられませんでした`);
+			const tableEntry = userTableEntries[position - 1];
+			if (!tableEntry) {
+				debug('catalog layer skipped: table entry not found', {
+					layerName,
+					position
+				});
+				position += 1;
+				continue;
 			}
 
-			const geojson = assertFeatureCollection(fgdbRead(tableEntry.data, tablxEntry.data), name);
-			return {
-				name,
-				geojson
-			} satisfies FileGdbLayer;
-		})
-		.filter((layer) => hasSupportedGeometry(layer.geojson));
+			const tablxEntry = userTablxMap.get(tableEntry.index);
+			if (!tablxEntry) {
+				debug('catalog layer skipped: tablx entry not found', {
+					layerName,
+					tableIndex: formatTableIndex(tableEntry.index)
+				});
+				position += 1;
+				continue;
+			}
 
-	if (layers.length === 0) {
-		throw new Error('読み込み可能な FileGDB レイヤーが見つかりませんでした');
+			try {
+				debug('catalog layer read start', {
+					layerName,
+					tableIndex: formatTableIndex(tableEntry.index)
+				});
+				const layer = readFeatureLayer(tableEntry, tablxEntry, layerName);
+				if (layer) {
+					layers.push(layer);
+					debug('catalog layer read success', {
+						layerName,
+						tableIndex: formatTableIndex(tableEntry.index),
+						featureCount: layer.geojson.features.length,
+						geometryTypes: getFileGdbGeometryTypes(layer.geojson)
+					});
+				} else {
+					debug('catalog layer skipped: unsupported geometry', {
+						layerName,
+						tableIndex: formatTableIndex(tableEntry.index)
+					});
+				}
+			} catch (error) {
+				const resolvedError = error instanceof Error ? error : new Error(String(error));
+				debug('catalog layer read failed', {
+					layerName,
+					tableIndex: formatTableIndex(tableEntry.index),
+					error: resolvedError.message
+				});
+				firstError ??= resolvedError;
+				lastError = resolvedError;
+			}
+
+			position += 1;
+		}
+	} catch (error) {
+		const resolvedError = error instanceof Error ? error : new Error(String(error));
+		debug('catalog read failed', {
+			error: resolvedError.message
+		});
+		firstError ??= resolvedError;
+		lastError = resolvedError;
 	}
 
+	if (layers.length === 0) {
+		debug('fallback direct table scan start', {
+			tableIndices: userTableEntries.map((entry) => formatTableIndex(entry.index))
+		});
+		for (const tableEntry of userTableEntries) {
+			const tablxEntry = userTablxMap.get(tableEntry.index);
+			if (!tablxEntry) continue;
+
+			try {
+				debug('fallback table read start', {
+					tableIndex: formatTableIndex(tableEntry.index)
+				});
+				const layer = readFeatureLayer(
+					tableEntry,
+					tablxEntry,
+					getFallbackLayerName(tableEntry.index)
+				);
+				if (layer) {
+					layers.push(layer);
+					debug('fallback table read success', {
+						layerName: layer.name,
+						tableIndex: formatTableIndex(tableEntry.index),
+						featureCount: layer.geojson.features.length,
+						geometryTypes: getFileGdbGeometryTypes(layer.geojson)
+					});
+				} else {
+					debug('fallback table skipped: unsupported geometry', {
+						tableIndex: formatTableIndex(tableEntry.index)
+					});
+				}
+			} catch (error) {
+				const resolvedError = error instanceof Error ? error : new Error(String(error));
+				debug('fallback table read failed', {
+					tableIndex: formatTableIndex(tableEntry.index),
+					error: resolvedError.message
+				});
+				firstError ??= resolvedError;
+				lastError = resolvedError;
+			}
+		}
+	}
+
+	if (layers.length === 0) {
+		debug('parse failed: no readable layers', {
+			firstError: firstError?.message ?? null
+		});
+		const finalMessage =
+			lastError?.message ?? firstError?.message ?? '読み込み可能な FileGDB レイヤーが見つかりませんでした';
+		throw new FileGdbParseError(finalMessage, {
+			datasetName: resolved.datasetName,
+			rootPath: resolved.rootPath,
+			inputs: resolved.inputs.map((input) => ({
+				name: getFileGdbInputName(input),
+				bytes: getDataByteLength(input.data)
+			})),
+			firstError: firstError?.message ?? null,
+			lastError: lastError?.message ?? null,
+			events: debugEvents
+		});
+	}
+
+	debug('parse success', {
+		datasetName: resolved.datasetName,
+		layerNames: layers.map((layer) => layer.name)
+	});
 	return {
 		datasetName: resolved.datasetName,
 		layers

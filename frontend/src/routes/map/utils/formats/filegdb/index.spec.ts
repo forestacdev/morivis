@@ -2,13 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
-vi.mock('fgdb/lib/read', () => ({
+vi.mock('fgdb/dist/fgdb.js', () => ({
 	default: vi.fn()
 }));
 
-import fgdbRead from 'fgdb/lib/read';
+import fgdbRead from 'fgdb/dist/fgdb.js';
 
 import {
+	FileGdbParseError,
 	getFileGdbGeometryTypes,
 	parseFileGdbInputs,
 	resolveFileGdbInputSet,
@@ -158,5 +159,109 @@ describe('filegdb format utils', () => {
 				}
 			])
 		).toThrow('FileGDB の .gdbtable / .gdbtablx ファイルが不足しています');
+	});
+
+	it('日本語名の .gdb でも catalog 失敗時に feature table へフォールバックできる', () => {
+		vi.mocked(fgdbRead).mockImplementation((table) => {
+			const id = new Uint8Array(table as ArrayBuffer)[0];
+
+			if (id === 1) {
+				throw new Error('Start offset 2852126720 is outside the bounds of the buffer');
+			}
+
+			if (id === 9) {
+				return createFeatureCollection('Polygon');
+			}
+
+			throw new Error(`unexpected table id: ${id}`);
+		});
+
+		const result = parseFileGdbInputs([
+			{
+				name: 'あああ.gdb/a00000001.gdbtable',
+				data: createBuffer(1)
+			},
+			{
+				name: 'あああ.gdb/a00000001.gdbtablx',
+				data: createBuffer(1)
+			},
+			{
+				name: 'あああ.gdb/a00000009.gdbindexes',
+				data: createBuffer(99)
+			},
+			{
+				name: 'あああ.gdb/a00000009.spx',
+				data: createBuffer(98)
+			},
+			{
+				name: 'あああ.gdb/a00000009.gdbtable',
+				data: createBuffer(9)
+			},
+			{
+				name: 'あああ.gdb/a00000009.gdbtablx',
+				data: createBuffer(9)
+			}
+		] satisfies FileGdbInput[]);
+
+		expect(result.datasetName).toBe('あああ');
+		expect(result.layers).toHaveLength(1);
+		expect(result.layers[0]?.name).toBe('a00000009');
+		expect(getFileGdbGeometryTypes(result.layers[0]?.geojson as FeatureCollection)).toEqual([
+			'Polygon'
+		]);
+	});
+
+	it('読めない場合に診断情報を保持する', () => {
+		vi.mocked(fgdbRead).mockImplementation((table) => {
+			const id = new Uint8Array(table as ArrayBuffer)[0];
+
+			if (id === 1) {
+				throw new Error('Start offset 2852126720 is outside the bounds of the buffer');
+			}
+
+			if (id === 9) {
+				throw new Error('feature table parse failed');
+			}
+
+			throw new Error(`unexpected table id: ${id}`);
+		});
+
+		try {
+			parseFileGdbInputs([
+				{
+					name: 'sample.gdb/a00000001.gdbtable',
+					data: createBuffer(1)
+				},
+				{
+					name: 'sample.gdb/a00000001.gdbtablx',
+					data: createBuffer(1)
+				},
+				{
+					name: 'sample.gdb/a00000009.gdbtable',
+					data: createBuffer(9)
+				},
+				{
+					name: 'sample.gdb/a00000009.gdbtablx',
+					data: createBuffer(9)
+				}
+			] satisfies FileGdbInput[]);
+
+			throw new Error('expected parse to fail');
+		} catch (error) {
+			expect(error).toBeInstanceOf(FileGdbParseError);
+
+			const parseError = error as FileGdbParseError;
+			expect(parseError.message).toBe('feature table parse failed');
+			expect(parseError.details.firstError).toBe(
+				'Start offset 2852126720 is outside the bounds of the buffer'
+			);
+			expect(parseError.details.lastError).toBe('feature table parse failed');
+			expect(parseError.details.events.some((event) => event.message === 'catalog read failed')).toBe(
+				true
+			);
+			expect(
+				parseError.details.events.some((event) => event.message === 'fallback table read failed')
+			).toBe(true);
+		}
 	});
 });

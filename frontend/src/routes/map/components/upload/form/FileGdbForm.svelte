@@ -12,6 +12,7 @@
 	import {
 		getFileGdbGeometryTypes,
 		getFileGdbInputName,
+		type FileGdbFailureDetails,
 		type FileGdbAnalyzeResult
 	} from '$routes/map/utils/formats/filegdb';
 	import { analyzeFileGdbFilesInWorker } from '$routes/map/utils/formats/filegdb/analyze';
@@ -28,6 +29,16 @@
 		LineString: 'ライン',
 		Polygon: 'ポリゴン'
 	};
+	const logFileGdbDebug = (message: string, payload?: unknown) => {
+		if (!import.meta.env.DEV) return;
+
+		if (payload === undefined) {
+			console.debug('[FileGDB form]', message);
+			return;
+		}
+
+		console.debug('[FileGDB form]', message, payload);
+	};
 
 	let {
 		showDataEntry = $bindable(),
@@ -37,6 +48,7 @@
 
 	let parsed = $state<FileGdbAnalyzeResult | null>(null);
 	let loadedFileKey = $state('');
+	let autoRegisteredKey = $state('');
 	let selectedLayerName = $state('');
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
@@ -68,12 +80,50 @@
 			.sort()
 			.join('|');
 
-	const resetState = () => {
+	const clearParsedState = () => {
 		parsed = null;
-		loadedFileKey = '';
+		autoRegisteredKey = '';
 		selectedLayerName = '';
 		selectedGeometryType = '';
 		geometryTypeOptions = [];
+	};
+
+	const resetState = () => {
+		clearParsedState();
+		loadedFileKey = '';
+	};
+
+	const getFileGdbErrorMessage = (error: unknown): string => {
+		if (!(error instanceof Error)) {
+			return 'FileGDB の読み込みに失敗しました';
+		}
+
+		if (error.message.includes('outside the bounds of the buffer')) {
+			return 'FileGDB の内部テーブルを解釈できませんでした。現在の FileGDB パーサーでは読めない構成の可能性があります。';
+		}
+
+		return error.message;
+	};
+
+	const getFileGdbFailureDetails = (error: unknown): FileGdbFailureDetails | null => {
+		const details = (error as Error & { details?: unknown })?.details;
+		if (!details || typeof details !== 'object') return null;
+		return details as FileGdbFailureDetails;
+	};
+
+	const logFileGdbFailureDetails = (details: FileGdbFailureDetails | null) => {
+		if (!details) return;
+
+		console.groupCollapsed('[FileGDB form] failure details');
+		console.debug('[FileGDB form] summary', {
+			datasetName: details.datasetName,
+			rootPath: details.rootPath,
+			firstError: details.firstError,
+			lastError: details.lastError
+		});
+		console.debug('[FileGDB form] inputs', details.inputs);
+		console.debug('[FileGDB form] events', details.events);
+		console.groupEnd();
 	};
 
 	const cancel = () => {
@@ -84,9 +134,20 @@
 
 	const initializeFiles = async (files: File[]) => {
 		isProcessing.set(true);
+		logFileGdbDebug('initialize start', {
+			fileKey: createInputKey(files),
+			files: files.map((file) => ({
+				name: getFileGdbInputName(file),
+				bytes: file.size
+			}))
+		});
 
 		try {
 			const result = await analyzeFileGdbFilesInWorker(files);
+			logFileGdbDebug('worker result received', {
+				datasetName: result.datasetName,
+				layerNames: result.layers.map((layer) => layer.name)
+			});
 			parsed = result;
 
 			const firstLayer = result.layers[0];
@@ -97,11 +158,15 @@
 
 			selectedLayerName = firstLayer.name;
 		} catch (error) {
-			resetState();
-			showNotification(
-				error instanceof Error ? error.message : 'FileGDB の読み込みに失敗しました',
-				'error'
-			);
+			clearParsedState();
+			const failureDetails = getFileGdbFailureDetails(error);
+			logFileGdbDebug('initialize failed', {
+				fileKey: createInputKey(files),
+				error: error instanceof Error ? error.message : String(error),
+				failureDetails
+			});
+			logFileGdbFailureDetails(failureDetails);
+			showNotification(getFileGdbErrorMessage(error), 'error');
 			console.error(error);
 		} finally {
 			isProcessing.set(false);
@@ -160,6 +225,10 @@
 		const nextKey = createInputKey(inputFiles);
 		if (nextKey === loadedFileKey) return;
 
+		logFileGdbDebug('effect scheduled initialize', {
+			nextKey,
+			fileCount: inputFiles.length
+		});
 		loadedFileKey = nextKey;
 		void initializeFiles(inputFiles);
 	});
@@ -179,6 +248,21 @@
 		if (!geometryTypes.includes(selectedGeometryType as VectorEntryGeometryType)) {
 			selectedGeometryType = geometryTypes[0] ?? '';
 		}
+	});
+
+	$effect(() => {
+		if (showDialogType !== 'filegdb') return;
+		if (!parsed || !selectedLayer || !selectedGeometryType) return;
+		if (parsed.layers.length !== 1 || geometryTypeOptions.length !== 1) return;
+
+		const nextAutoRegisteredKey = `${loadedFileKey}:${selectedLayer.name}:${selectedGeometryType}`;
+		if (nextAutoRegisteredKey === autoRegisteredKey) return;
+
+		autoRegisteredKey = nextAutoRegisteredKey;
+		logFileGdbDebug('effect scheduled auto registration', {
+			autoRegisteredKey: nextAutoRegisteredKey
+		});
+		void registration();
 	});
 </script>
 

@@ -1,26 +1,43 @@
-import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
-
 import {
 	getFileGdbInputName,
+	type FileGdbFailureDetails,
 	type FileGdbAnalyzeResult,
 	type FileGdbInput
 } from '$routes/map/utils/formats/filegdb';
 import type { FileGdbWorkerResponse } from '$routes/map/utils/formats/filegdb/worker';
 import FileGdbWorker from '$routes/map/utils/formats/filegdb/worker?worker';
 
+type FileGdbWorkerError = Error & {
+	details?: FileGdbFailureDetails;
+};
+
 const analyzeFileGdbInWorker = (
 	inputs: FileGdbInput[],
 	transfer: Transferable[]
 ): Promise<FileGdbAnalyzeResult> =>
-	runSingleShotWorker<{ inputs: FileGdbInput[] }, FileGdbWorkerResponse, FileGdbAnalyzeResult>(
-		FileGdbWorker,
-		{ inputs },
-		{
-			errorPrefix: 'FileGDB worker error',
-			mapResponse: (response) => response as FileGdbAnalyzeResult,
-			transfer
-		}
-	);
+	new Promise((resolve, reject) => {
+		const worker = new FileGdbWorker();
+
+		worker.onmessage = (event: MessageEvent<FileGdbWorkerResponse>) => {
+			worker.terminate();
+
+			if ('error' in event.data) {
+				const error = new Error(event.data.error) as FileGdbWorkerError;
+				error.details = event.data.details;
+				reject(error);
+				return;
+			}
+
+			resolve(event.data);
+		};
+
+		worker.onerror = (error) => {
+			worker.terminate();
+			reject(new Error(`FileGDB worker error: ${error.message}`));
+		};
+
+		worker.postMessage({ inputs }, transfer);
+	});
 
 export const analyzeFileGdbFilesInWorker = async (
 	files: File[]
