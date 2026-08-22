@@ -6,6 +6,9 @@ import type {
 } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 
+import { SxfParseError } from '../parse-error';
+import { decodeSxfText } from '../text';
+
 type SxfValue = string | number | SxfValue[];
 
 interface SxfEntity {
@@ -25,13 +28,6 @@ const SXF_BLOCK_PATTERN = /\/\*SXF(\d*)\s*([\s\S]*?)\s*SXF\1\*\//g;
 const SXF_ENTITY_PATTERN = /#\s*(\d+)\s*=\s*([a-zA-Z0-9_]+)\s*\(([\s\S]*)\)\s*$/m;
 const NUMERIC_PATTERN = /^[+-]?(?:\d+\.?\d*|\.\d+)$/;
 const CIRCLE_SEGMENTS = 48;
-
-export class SxfParseError extends Error {
-	constructor(message: string) {
-		super(message);
-		this.name = 'SxfParseError';
-	}
-}
 
 const unescapeSxfString = (value: string): string =>
 	value.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
@@ -165,32 +161,6 @@ const parseSxfEntities = (text: string): SxfEntity[] => {
 	}
 
 	return entities;
-};
-
-const decodeCandidate = (arrayBuffer: ArrayBuffer, encoding: string): string | null => {
-	try {
-		return new TextDecoder(encoding, { fatal: false }).decode(arrayBuffer);
-	} catch {
-		return null;
-	}
-};
-
-const scoreDecodedText = (text: string): number => {
-	const blockCount = (text.match(/\/\*SXF/g) ?? []).length;
-	const replacementCount = (text.match(/�/g) ?? []).length;
-	return blockCount * 1000 - replacementCount;
-};
-
-const decodeSxfText = (arrayBuffer: ArrayBuffer): string => {
-	const candidates = ['shift-jis', 'utf-8']
-		.map((encoding) => decodeCandidate(arrayBuffer, encoding))
-		.filter((candidate): candidate is string => candidate !== null);
-
-	if (candidates.length === 0) {
-		throw new SxfParseError('SXF テキストの文字コードを判定できませんでした');
-	}
-
-	return candidates.sort((left, right) => scoreDecodedText(right) - scoreDecodedText(left))[0];
 };
 
 const getString = (value: SxfValue | undefined): string | undefined => {

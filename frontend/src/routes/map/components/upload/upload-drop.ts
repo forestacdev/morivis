@@ -303,9 +303,7 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 
 			const p21File = files.find((file) => hasExtension(file, SXF_P21_EXTENSION));
 			if (p21File) {
-				return createNotificationDecision(
-					'SXF の P21 形式はまだ未対応です。SFC ファイルをドロップしてください'
-				);
+				return createDialogDecision('sxf');
 			}
 
 			return createNotificationDecision(
@@ -446,9 +444,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 	}
 
 	if (ext === 'p21') {
-		return createNotificationDecision(
-			'SXF の P21 形式はまだ未対応です。SFC ファイルをドロップしてください'
-		);
+		return createDialogDecision('sxf');
 	}
 
 	if (ext === 'saf') {

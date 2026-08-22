@@ -77,7 +77,12 @@
 	const sxfFile = $derived.by(() => {
 		const files = toUploadFiles(dropFile);
 		if (files.length === 0) return null;
-		return files.find((file) => file.name.toLowerCase().endsWith('.sfc')) ?? files[0] ?? null;
+		return (
+			files.find((file) => file.name.toLowerCase().endsWith('.sfc'))
+			?? files.find((file) => file.name.toLowerCase().endsWith('.p21'))
+			?? files[0]
+			?? null
+		);
 	});
 	const entryName = $derived(sxfFile?.name.replace(/\.[^.]+$/, '') ?? 'SXFデータ');
 	const selectedLayers = $derived(

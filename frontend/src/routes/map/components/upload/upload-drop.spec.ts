@@ -157,13 +157,13 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
-	it('単一の P21 は SFC を促す通知になる', async () => {
+	it('単一の P21 は sxf ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(createFile('plan.p21', 'sxf'));
 
 		expect(result).toEqual({
-			type: 'notification',
-			level: 'error',
-			message: 'SXF の P21 形式はまだ未対応です。SFC ファイルをドロップしてください'
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
 		});
 	});
 
@@ -294,7 +294,7 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
-	it('SXF の P21 フォルダは未対応通知になる', async () => {
+	it('SXF の P21 フォルダは sxf ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles([
 			createPathLikeFile('D0PL0011.TIF', 'D0PL001ZP21/D0PL0011.TIF', 'image/tiff'),
 			createPathLikeFile('D0PL001Z.SAF', 'D0PL001ZP21/D0PL001Z.SAF', 'text/plain'),
@@ -302,9 +302,9 @@ describe('resolveDroppedFiles', () => {
 		]);
 
 		expect(result).toEqual({
-			type: 'notification',
-			level: 'error',
-			message: 'SXF の P21 形式はまだ未対応です。SFC ファイルをドロップしてください'
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
 		});
 	});
 
