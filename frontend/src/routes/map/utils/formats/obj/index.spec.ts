@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { inspectObjFile, parseObjPointCloudFile } from '.';
+import { inspectMtlFile, inspectObjFile, parseObjPointCloudFile } from '.';
 
 const pointCloudObj = readFileSync(
 	resolve(import.meta.dirname, '__fixtures__', 'point-cloud.obj'),
@@ -66,5 +66,23 @@ f 1 1 1`
 		);
 
 		expect(result.referencedMaterialLibraries).toEqual(['house.mtl', 'materials/wall.mtl']);
+	});
+
+	it('MTL のテクスチャ参照一覧を取り出せる', async () => {
+		const result = await inspectMtlFile(
+			createFile(
+				'house.mtl',
+				`newmtl wall
+map_Kd textures/diffuse.png
+bump -bm 0.2 normals/wall-normal.jpg
+map_Pr -o 1 2 3 roughness.webp`
+			)
+		);
+
+		expect(result.referencedTexturePaths).toEqual([
+			'textures/diffuse.png',
+			'normals/wall-normal.jpg',
+			'roughness.webp'
+		]);
 	});
 });

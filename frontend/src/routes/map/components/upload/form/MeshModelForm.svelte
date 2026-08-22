@@ -8,7 +8,7 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { MeshFormatType } from '$routes/map/data/types/model';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
-	import { inspectObjFile } from '$routes/map/utils/formats/obj';
+	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { applyProjectedModelAxisOverride } from '$routes/map/utils/three/model-axis';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
@@ -128,6 +128,38 @@
 		});
 		return resourceUrls;
 	};
+
+	const buildResourceKeySet = (files: File[]) => {
+		const resourceKeys = new Set<string>();
+		files.forEach((file) => {
+			const relativePath = getRelativePath(file);
+			const lowerFileName = file.name.toLowerCase();
+			resourceKeys.add(lowerFileName);
+
+			if (!relativePath) return;
+
+			const normalizedRelativePath = relativePath.toLowerCase();
+			resourceKeys.add(normalizedRelativePath);
+
+			const relativeWithoutRoot = normalizedRelativePath.split('/').slice(1).join('/');
+			if (relativeWithoutRoot) {
+				resourceKeys.add(relativeWithoutRoot);
+			}
+		});
+		return resourceKeys;
+	};
+
+	const hasMatchingResourceFile = (resourceKeys: Set<string>, pathLikeValue: string) => {
+		const normalizedPath = pathLikeValue.replace(/\\/g, '/').trim().toLowerCase();
+		const relativeWithoutRoot = normalizedPath.split('/').slice(1).join('/');
+		const fileName = normalizedPath.split('/').pop() ?? normalizedPath;
+		return (
+			resourceKeys.has(normalizedPath)
+			|| (relativeWithoutRoot ? resourceKeys.has(relativeWithoutRoot) : false)
+			|| resourceKeys.has(fileName)
+		);
+	};
+
 	const isSameBbox = (
 		a: [number, number, number, number] | null,
 		b: [number, number, number, number] | null
@@ -148,19 +180,41 @@
 	let objInspectionFileKey = $state<string | null>(null);
 	let isInspectingObjReferences = $state(false);
 	let referencedObjMaterialLibraries = $state<string[]>([]);
+	let mtlInspectionFileKey = $state<string | null>(null);
+	let isInspectingMtlReferences = $state(false);
+	let referencedMtlTexturePaths = $state<string[]>([]);
 
 	const requiresFbxManualRegistration = $derived(activeFormat === 'fbx' && !modelPlacement);
+	const textureResourceKeys = $derived.by(() => buildResourceKeySet(textureFiles));
 	const requiresObjMtlResolution = $derived(
 		activeFormat === 'obj'
 		&& referencedObjMaterialLibraries.length > 0
 		&& !mtlFile
 	);
+	const missingObjTexturePaths = $derived.by(() => {
+		if (!mtlFile || referencedMtlTexturePaths.length === 0) return [];
+		return referencedMtlTexturePaths.filter(
+			(pathLikeValue) => !hasMatchingResourceFile(textureResourceKeys, pathLikeValue)
+		);
+	});
+	const requiresObjTextureResolution = $derived(
+		activeFormat === 'obj' && !!mtlFile && missingObjTexturePaths.length > 0
+	);
+	const requiresObjSupplementaryResolution = $derived(
+		requiresObjMtlResolution || requiresObjTextureResolution
+	);
+	const isWaitingForObjSupplementaryInspection = $derived(
+		activeFormat === 'obj' && !!glbFile && (isInspectingObjReferences || isInspectingMtlReferences)
+	);
 	const requiresManualRegistration = $derived(
-		requiresFbxManualRegistration || requiresObjMtlResolution
+		requiresFbxManualRegistration || requiresObjSupplementaryResolution
+	);
+	const shouldShowDroppedModelPanel = $derived(
+		!!glbFile && (requiresManualRegistration || isWaitingForObjSupplementaryInspection)
 	);
 
 	$effect(() => {
-		if (!glbFile || !requiresManualRegistration) {
+		if (!shouldShowDroppedModelPanel || !glbFile) {
 			preparedDropFileKey = null;
 			return;
 		}
@@ -191,14 +245,54 @@
 		referencedObjMaterialLibraries = [];
 
 		const inspectReferences = async () => {
+			const inspectionKey = nextFileKey;
 			try {
 				const inspection = await inspectObjFile(glbFile);
+				if (objInspectionFileKey !== inspectionKey) return;
 				referencedObjMaterialLibraries = inspection.referencedMaterialLibraries;
 			} catch (error) {
+				if (objInspectionFileKey !== inspectionKey) return;
 				referencedObjMaterialLibraries = [];
 				console.warn('OBJ の参照 MTL 判定に失敗しました', error);
 			} finally {
-				isInspectingObjReferences = false;
+				if (objInspectionFileKey === inspectionKey) {
+					isInspectingObjReferences = false;
+				}
+			}
+		};
+
+		void inspectReferences();
+	});
+
+	$effect(() => {
+		if (!glbFile || activeFormat !== 'obj' || !mtlFile) {
+			mtlInspectionFileKey = null;
+			isInspectingMtlReferences = false;
+			referencedMtlTexturePaths = [];
+			return;
+		}
+
+		const nextFileKey = `${getPathLikeName(glbFile)}::${getPathLikeName(mtlFile)}`;
+		if (mtlInspectionFileKey === nextFileKey) return;
+
+		mtlInspectionFileKey = nextFileKey;
+		isInspectingMtlReferences = true;
+		referencedMtlTexturePaths = [];
+
+		const inspectReferences = async () => {
+			const inspectionKey = nextFileKey;
+			try {
+				const inspection = await inspectMtlFile(mtlFile);
+				if (mtlInspectionFileKey !== inspectionKey) return;
+				referencedMtlTexturePaths = inspection.referencedTexturePaths;
+			} catch (error) {
+				if (mtlInspectionFileKey !== inspectionKey) return;
+				referencedMtlTexturePaths = [];
+				console.warn('MTL の参照画像判定に失敗しました', error);
+			} finally {
+				if (mtlInspectionFileKey === inspectionKey) {
+					isInspectingMtlReferences = false;
+				}
 			}
 		};
 
@@ -282,8 +376,8 @@
 		if (requiresFbxManualRegistration) {
 			return isPreparingZoneSelection || !fbxSourceBbox;
 		}
-		if (requiresObjMtlResolution) {
-			return isInspectingObjReferences;
+		if (requiresObjSupplementaryResolution) {
+			return isInspectingObjReferences || isInspectingMtlReferences;
 		}
 		return false;
 	});
@@ -409,7 +503,7 @@
 
 	$effect(() => {
 		if (!glbFile || requiresManualRegistration) return;
-		if (activeFormat === 'obj' && isInspectingObjReferences) return;
+		if (activeFormat === 'obj' && (isInspectingObjReferences || isInspectingMtlReferences)) return;
 
 		const register = async () => {
 			const entry = await buildDroppedEntry();
@@ -545,7 +639,7 @@
 	};
 </script>
 
-{#if requiresManualRegistration && glbFile}
+{#if shouldShowDroppedModelPanel && glbFile}
 	<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
 		<span class="text-2xl font-bold">{activeFormat === 'fbx' ? 'FBXファイルの登録' : 'OBJファイルの登録'}</span>
 	</div>
@@ -576,6 +670,15 @@
 				</p>
 				<p class="mt-2">参照MTL: {referencedObjMaterialLibraries.join(', ')}</p>
 				<p class="mt-2">MTL なしのまま登録することもできます。</p>
+			{:else if requiresObjTextureResolution}
+				<p class="mt-2">
+					この MTL はテクスチャ画像を参照しています。画像を追加ドロップするとそのまま続行できます。
+				</p>
+				<p class="mt-2">参照MTL: {mtlFile?.name}</p>
+				<p class="mt-2">未追加画像: {missingObjTexturePaths.join(', ')}</p>
+				<p class="mt-2">画像なしのまま登録することもできます。</p>
+			{:else if isWaitingForObjSupplementaryInspection}
+				<p class="mt-2">OBJ / MTL の参照ファイルを確認しています。</p>
 			{/if}
 		</div>
 		<TextForm bind:value={droppedForms.name} label="データ名" error={droppedErrors.name} />
@@ -593,7 +696,7 @@
 			>
 				座標系を選択
 			</button>
-		{:else if requiresObjMtlResolution}
+		{:else if requiresObjSupplementaryResolution}
 			<button
 				onclick={registerDroppedObjWithoutMtl}
 				disabled={isDroppedRegistrationDisabled}
