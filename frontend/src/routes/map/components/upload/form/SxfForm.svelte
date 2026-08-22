@@ -56,7 +56,7 @@
 		Polygon: 'ポリゴン'
 	};
 
-	let rawGeojson = $state<FeatureCollection | null>(null);
+	let rawGeojson: FeatureCollection | null = null;
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 	let layersByGeometryType = $state<Record<string, string[]> | null>(null);

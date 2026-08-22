@@ -21,7 +21,7 @@ type SxfGeometryFeature =
 
 type SxfPropertyValue = FeatureProp[string];
 
-const SXF_BLOCK_PATTERN = /\/\*SXF\s*([\s\S]*?)\s*SXF\*\//g;
+const SXF_BLOCK_PATTERN = /\/\*SXF(\d*)\s*([\s\S]*?)\s*SXF\1\*\//g;
 const SXF_ENTITY_PATTERN = /#\s*(\d+)\s*=\s*([a-zA-Z0-9_]+)\s*\(([\s\S]*)\)\s*$/m;
 const NUMERIC_PATTERN = /^[+-]?(?:\d+\.?\d*|\.\d+)$/;
 const CIRCLE_SEGMENTS = 48;
@@ -52,7 +52,8 @@ const parseQuotedString = (
 	startIndex: number
 ): { value: string; nextIndex: number; } => {
 	let index = startIndex;
-	if (text[index] === '\\') {
+	const escapedWrapper = text[index] === '\\' && (text[index + 1] === "'" || text[index + 1] === '"');
+	if (escapedWrapper) {
 		index += 1;
 	}
 
@@ -62,6 +63,18 @@ const parseQuotedString = (
 
 	while (index < text.length) {
 		const current = text[index];
+
+		if (escapedWrapper && current === '\\' && index + 1 < text.length) {
+			const next = text[index + 1];
+			if (next === quote) {
+				return { value: unescapeSxfString(value), nextIndex: index + 2 };
+			}
+			if (next === '\\') {
+				value += next;
+				index += 2;
+				continue;
+			}
+		}
 
 		if (current === '\\' && index + 1 < text.length) {
 			const next = text[index + 1];
@@ -140,7 +153,7 @@ const parseSxfEntities = (text: string): SxfEntity[] => {
 	const entities: SxfEntity[] = [];
 
 	for (const match of text.matchAll(SXF_BLOCK_PATTERN)) {
-		const block = match[1]?.trim();
+		const block = match[2]?.trim();
 		if (!block) continue;
 
 		const entityMatch = block.match(SXF_ENTITY_PATTERN);
@@ -435,19 +448,40 @@ const parseArcFeature = (entity: SxfEntity): SxfGeometryFeature | null => {
 const parseTextFeature = (entity: SxfEntity): SxfGeometryFeature | null => {
 	if (entity.args.length < 5) return null;
 
-	const text = getString(entity.args[2]);
-	const x = getNumber(entity.args[3]);
-	const y = getNumber(entity.args[4]);
-	if (!text || x === null || y === null) return null;
+	const modernText = getString(entity.args[3]);
+	const modernX = getNumber(entity.args[4]);
+	const modernY = getNumber(entity.args[5]);
+	if (modernText && getNumber(entity.args[3]) === null && modernX !== null && modernY !== null) {
+		return createPointFeature(
+			entity.entityId,
+			[modernX, modernY],
+			createBaseProperties(entity, {
+				layer: getString(entity.args[0]),
+				color: getString(entity.args[1]),
+				font: getString(entity.args[2]),
+				text: modernText,
+				textHeight: getOptionalNumber(entity.args[6]),
+				textWidth: getOptionalNumber(entity.args[7]),
+				textSpacing: getOptionalNumber(entity.args[8]),
+				textRotation: getOptionalNumber(entity.args[9]),
+				textAlign: getString(entity.args[10])
+			})
+		);
+	}
+
+	const legacyText = getString(entity.args[2]);
+	const legacyX = getNumber(entity.args[3]);
+	const legacyY = getNumber(entity.args[4]);
+	if (!legacyText || legacyX === null || legacyY === null) return null;
 
 	return createPointFeature(
 		entity.entityId,
-		[x, y],
+		[legacyX, legacyY],
 		createBaseProperties(entity, {
 			layer: getString(entity.args[0]),
-			color: getString(entity.args[0]),
-			font: getString(entity.args[1]),
-			text,
+			color: getString(entity.args[1]),
+			font: undefined,
+			text: legacyText,
 			textHeight: getOptionalNumber(entity.args[5]),
 			textWidth: getOptionalNumber(entity.args[6]),
 			textSpacing: getOptionalNumber(entity.args[7]),
