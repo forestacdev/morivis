@@ -10,6 +10,7 @@ export interface ObjFileInspectionResult {
 	hasFaces: boolean;
 	vertexCount: number;
 	projectedModelEpsg: EpsgCode | null;
+	referencedMaterialLibraries: string[];
 }
 
 export interface ObjPointCloudParseResult {
@@ -54,6 +55,7 @@ export const inspectObjFile = async (file: File): Promise<ObjFileInspectionResul
 	const text = await file.text();
 	const lines = text.split(/\r?\n/);
 	const projectedModelEpsg = detectProjectedModelEpsgFromObjText(text);
+	const referencedMaterialLibraries = new Set<string>();
 
 	let vertexCount = 0;
 	let hasFaces = false;
@@ -61,6 +63,13 @@ export const inspectObjFile = async (file: File): Promise<ObjFileInspectionResul
 	for (const rawLine of lines) {
 		const line = rawLine.trim();
 		if (!line || line.startsWith('#')) continue;
+
+		if (line.startsWith('mtllib ')) {
+			const libraryPath = line.slice('mtllib '.length).trim();
+			if (libraryPath) {
+				referencedMaterialLibraries.add(libraryPath);
+			}
+		}
 
 		if (line.startsWith('f ')) {
 			hasFaces = true;
@@ -76,7 +85,8 @@ export const inspectObjFile = async (file: File): Promise<ObjFileInspectionResul
 		isPointCloud: vertexCount > 0 && !hasFaces,
 		hasFaces,
 		vertexCount,
-		projectedModelEpsg
+		projectedModelEpsg,
+		referencedMaterialLibraries: [...referencedMaterialLibraries]
 	};
 };
 

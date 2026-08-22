@@ -82,7 +82,8 @@ describe('resolveDroppedFiles', () => {
 			isPointCloud: false,
 			hasFaces: true,
 			vertexCount: 10,
-			projectedModelEpsg: null
+			projectedModelEpsg: null,
+			referencedMaterialLibraries: []
 		});
 		vi.mocked(findGeoReferencedImageFile).mockReturnValue(null);
 		vi.mocked(findRasterImageFile).mockReturnValue(null);
@@ -159,6 +160,16 @@ describe('resolveDroppedFiles', () => {
 
 	it('単一の P21 は sxf ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(createFile('plan.p21', 'sxf'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の SAF は sxf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('plan.saf', 'saf'));
 
 		expect(result).toEqual({
 			type: 'dialog',
@@ -308,6 +319,19 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('SXF の SAF だけでも sxf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles([
+			createPathLikeFile('D0PL0011.TIF', 'D0PL001ZSFC/D0PL0011.TIF', 'image/tiff'),
+			createPathLikeFile('D0PL001Z.SAF', 'D0PL001ZSFC/D0PL001Z.SAF', 'text/plain')
+		]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
+		});
+	});
+
 	it('FileGDB の構成ファイル一式は filegdb ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles([
 			createPathLikeFile(
@@ -417,7 +441,8 @@ describe('resolveDroppedFiles', () => {
 			isPointCloud: true,
 			hasFaces: false,
 			vertexCount: 100,
-			projectedModelEpsg: null
+			projectedModelEpsg: null,
+			referencedMaterialLibraries: []
 		});
 
 		const result = await resolveDroppedFiles(createFile('points.obj'));
@@ -434,7 +459,8 @@ describe('resolveDroppedFiles', () => {
 			isPointCloud: false,
 			hasFaces: true,
 			vertexCount: 100,
-			projectedModelEpsg: '6677'
+			projectedModelEpsg: '6677',
+			referencedMaterialLibraries: []
 		});
 
 		const file = createFile('projected.obj');

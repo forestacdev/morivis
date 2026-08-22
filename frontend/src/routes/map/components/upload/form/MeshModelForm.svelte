@@ -8,6 +8,7 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { MeshFormatType } from '$routes/map/data/types/model';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
+	import { inspectObjFile } from '$routes/map/utils/formats/obj';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { applyProjectedModelAxisOverride } from '$routes/map/utils/three/model-axis';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
@@ -93,7 +94,6 @@
 	const activeFormat = $derived(glbFile ? getMeshFormat(getPathLikeName(glbFile)) : null);
 	const modelPlacement = $derived(glbFile ? getModelPlacement(glbFile) : undefined);
 	const detectedProjectedModelEpsg = $derived(glbFile ? getProjectedModelEpsg(glbFile) : undefined);
-	const requiresManualRegistration = $derived(activeFormat === 'fbx' && !modelPlacement);
 
 	const mtlFile = $derived.by(() => {
 		return inputFiles.find((file) => /\.mtl$/i.test(file.name)) ?? null;
@@ -145,6 +145,19 @@
 	let fbxSourceBbox = $state<[number, number, number, number] | null>(null);
 	let isPreparingZoneSelection = $state(false);
 	let autoOpenedZoneFileKey = $state<string | null>(null);
+	let objInspectionFileKey = $state<string | null>(null);
+	let isInspectingObjReferences = $state(false);
+	let referencedObjMaterialLibraries = $state<string[]>([]);
+
+	const requiresFbxManualRegistration = $derived(activeFormat === 'fbx' && !modelPlacement);
+	const requiresObjMtlResolution = $derived(
+		activeFormat === 'obj'
+		&& referencedObjMaterialLibraries.length > 0
+		&& !mtlFile
+	);
+	const requiresManualRegistration = $derived(
+		requiresFbxManualRegistration || requiresObjMtlResolution
+	);
 
 	$effect(() => {
 		if (!glbFile || !requiresManualRegistration) {
@@ -163,7 +176,37 @@
 	});
 
 	$effect(() => {
-		if (!glbFile || !requiresManualRegistration || activeFormat !== 'fbx') {
+		if (!glbFile || activeFormat !== 'obj') {
+			objInspectionFileKey = null;
+			isInspectingObjReferences = false;
+			referencedObjMaterialLibraries = [];
+			return;
+		}
+
+		const nextFileKey = getPathLikeName(glbFile);
+		if (objInspectionFileKey === nextFileKey) return;
+
+		objInspectionFileKey = nextFileKey;
+		isInspectingObjReferences = true;
+		referencedObjMaterialLibraries = [];
+
+		const inspectReferences = async () => {
+			try {
+				const inspection = await inspectObjFile(glbFile);
+				referencedObjMaterialLibraries = inspection.referencedMaterialLibraries;
+			} catch (error) {
+				referencedObjMaterialLibraries = [];
+				console.warn('OBJ の参照 MTL 判定に失敗しました', error);
+			} finally {
+				isInspectingObjReferences = false;
+			}
+		};
+
+		void inspectReferences();
+	});
+
+	$effect(() => {
+		if (!glbFile || !requiresFbxManualRegistration || activeFormat !== 'fbx') {
 			analyzedDropFileKey = null;
 			fbxSourceBbox = null;
 			isPreparingZoneSelection = false;
@@ -223,7 +266,7 @@
 	});
 
 	$effect(() => {
-		if (!glbFile || !requiresManualRegistration || activeFormat !== 'fbx') return;
+		if (!glbFile || !requiresFbxManualRegistration || activeFormat !== 'fbx') return;
 
 		const fileKey = getPathLikeName(glbFile);
 		if (autoOpenedZoneFileKey === fileKey) return;
@@ -235,7 +278,14 @@
 	});
 
 	const isDroppedRegistrationDisabled = $derived.by(() => {
-		return !droppedForms.name.trim() || isPreparingZoneSelection || !fbxSourceBbox;
+		if (!droppedForms.name.trim()) return true;
+		if (requiresFbxManualRegistration) {
+			return isPreparingZoneSelection || !fbxSourceBbox;
+		}
+		if (requiresObjMtlResolution) {
+			return isInspectingObjReferences;
+		}
+		return false;
 	});
 
 	const validateDroppedForms = () => {
@@ -359,6 +409,7 @@
 
 	$effect(() => {
 		if (!glbFile || requiresManualRegistration) return;
+		if (activeFormat === 'obj' && isInspectingObjReferences) return;
 
 		const register = async () => {
 			const entry = await buildDroppedEntry();
@@ -400,14 +451,14 @@
 	};
 
 	$effect(() => {
-		if (!glbFile || !requiresManualRegistration || !fbxSourceBbox) return;
+		if (!glbFile || !requiresFbxManualRegistration || !fbxSourceBbox) return;
 		if (isSameBbox(focusBbox, fbxSourceBbox)) return;
 
 		focusBbox = fbxSourceBbox;
 	});
 
 	$effect(() => {
-		if (!zoneConfirmedEpsg || showDialogType !== 'glb' || !requiresManualRegistration) return;
+		if (!zoneConfirmedEpsg || showDialogType !== 'glb' || !requiresFbxManualRegistration) return;
 
 		const epsg = zoneConfirmedEpsg;
 		untrack(() => {
@@ -479,11 +530,24 @@
 		showDialogType = null;
 		dropFile = null;
 	};
+
+	const registerDroppedObjWithoutMtl = async () => {
+		if (!validateDroppedForms()) return;
+
+		const entry = await buildDroppedEntry({
+			name: droppedForms.name
+		});
+		if (!entry) return;
+
+		showDataEntry = entry;
+		showDialogType = null;
+		dropFile = null;
+	};
 </script>
 
 {#if requiresManualRegistration && glbFile}
 	<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-		<span class="text-2xl font-bold">FBXファイルの登録</span>
+		<span class="text-2xl font-bold">{activeFormat === 'fbx' ? 'FBXファイルの登録' : 'OBJファイルの登録'}</span>
 	</div>
 
 	<div
@@ -491,19 +555,27 @@
 	>
 		<div class="w-full rounded-md bg-black/15 p-3 text-sm text-gray-200">
 			<p>{glbFile.name}</p>
-			<p class="mt-2">
-				FBX は標準では座標系を持たない前提で扱います。既存の投影変換と同じ ZoneMenu
-				を自動表示します。
-			</p>
-			<p class="mt-2">現在の選択: EPSG:{selectedEpsgCode}</p>
-			{#if isPreparingZoneSelection}
-				<p class="mt-2">FBXの範囲を解析しています。</p>
-			{:else if fbxSourceBbox}
+			{#if requiresFbxManualRegistration}
 				<p class="mt-2">
-					範囲: X {fbxSourceBbox[0].toFixed(3)} - {fbxSourceBbox[2].toFixed(3)}, Y {fbxSourceBbox[1].toFixed(
-						3
-					)} - {fbxSourceBbox[3].toFixed(3)}
+					FBX は標準では座標系を持たない前提で扱います。既存の投影変換と同じ ZoneMenu
+					を自動表示します。
 				</p>
+				<p class="mt-2">現在の選択: EPSG:{selectedEpsgCode}</p>
+				{#if isPreparingZoneSelection}
+					<p class="mt-2">FBXの範囲を解析しています。</p>
+				{:else if fbxSourceBbox}
+					<p class="mt-2">
+						範囲: X {fbxSourceBbox[0].toFixed(3)} - {fbxSourceBbox[2].toFixed(3)}, Y {fbxSourceBbox[1].toFixed(
+							3
+						)} - {fbxSourceBbox[3].toFixed(3)}
+					</p>
+				{/if}
+			{:else if requiresObjMtlResolution}
+				<p class="mt-2">
+					この OBJ は `mtllib` で MTL を参照しています。`.mtl` とテクスチャ画像を追加ドロップできます。
+				</p>
+				<p class="mt-2">参照MTL: {referencedObjMaterialLibraries.join(', ')}</p>
+				<p class="mt-2">MTL なしのまま登録することもできます。</p>
 			{/if}
 		</div>
 		<TextForm bind:value={droppedForms.name} label="データ名" error={droppedErrors.name} />
@@ -511,15 +583,27 @@
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 		<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
-		<button
-			onclick={openZoneSelection}
-			disabled={isDroppedRegistrationDisabled}
-			class="c-btn-confirm min-w-[200px] p-4 text-lg {isDroppedRegistrationDisabled
-				? 'cursor-not-allowed opacity-50'
-				: 'cursor-pointer'}"
-		>
-			座標系を選択
-		</button>
+		{#if requiresFbxManualRegistration}
+			<button
+				onclick={openZoneSelection}
+				disabled={isDroppedRegistrationDisabled}
+				class="c-btn-confirm min-w-[200px] p-4 text-lg {isDroppedRegistrationDisabled
+					? 'cursor-not-allowed opacity-50'
+					: 'cursor-pointer'}"
+			>
+				座標系を選択
+			</button>
+		{:else if requiresObjMtlResolution}
+			<button
+				onclick={registerDroppedObjWithoutMtl}
+				disabled={isDroppedRegistrationDisabled}
+				class="c-btn-confirm min-w-[200px] p-4 text-lg {isDroppedRegistrationDisabled
+					? 'cursor-not-allowed opacity-50'
+					: 'cursor-pointer'}"
+			>
+				このまま登録
+			</button>
+		{/if}
 	</div>
 {:else if !glbFile}
 	<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">

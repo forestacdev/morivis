@@ -32,10 +32,10 @@ import {
 	MODEL_FILE_EXTENSIONS
 } from './upload-drop-matchers';
 
-type UploadDropDecision =
+export type UploadDropDecision =
 	| {
-		type: 'dialog';
-		dialogType: DialogType;
+			type: 'dialog';
+			dialogType: DialogType;
 		dropFiles?: File[] | null;
 	}
 	| {
@@ -306,9 +306,7 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 				return createDialogDecision('sxf');
 			}
 
-			return createNotificationDecision(
-				'SXF の本体ファイル (.sfc または .p21) を一緒にドロップしてください'
-			);
+			return createDialogDecision('sxf');
 		}
 	},
 	{
@@ -448,9 +446,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 	}
 
 	if (ext === 'saf') {
-		return createNotificationDecision(
-			'SXF の本体ファイル (.sfc または .p21) を一緒にドロップしてください'
-		);
+		return createDialogDecision('sxf');
 	}
 
 	if (ext === 'xml') {

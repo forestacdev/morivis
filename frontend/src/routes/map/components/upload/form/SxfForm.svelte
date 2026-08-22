@@ -40,6 +40,7 @@
 		transformOptionMode: TransformOptionMode;
 		selectedEpsgCode: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
+		isDragover?: boolean;
 		zoneConfirmedEpsg: EpsgCode | null;
 		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 	}
@@ -51,6 +52,7 @@
 		transformOptionMode = $bindable(),
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
+		isDragover = false,
 		zoneConfirmedEpsg = $bindable(),
 		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
@@ -66,6 +68,7 @@
 		{ key: 'm', name: 'm' },
 		{ key: 'mm', name: 'mm' }
 	];
+	const SXF_RELATED_EXTENSIONS = ['.sfc', '.p21', '.saf', '.tif', '.tiff'];
 
 	let rawGeojson = $state.raw<FeatureCollection | null>(null);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
@@ -73,18 +76,67 @@
 	let layersByGeometryType = $state<Record<string, string[]> | null>(null);
 	let layerChecked = $state<Record<string, boolean>>({});
 	let coordinateUnit = $state<'auto' | SxfCoordinateUnit>('auto');
+	let accumulatedFiles = $state<File[]>([]);
+
+	const resetAnalysisState = () => {
+		rawGeojson = null;
+		geometryTypeOptions = [];
+		selectedGeometryType = '';
+		layersByGeometryType = null;
+		layerChecked = {};
+		coordinateUnit = 'auto';
+	};
+
+	const getFileKey = (file: File) => {
+		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath ?? '';
+		return `${relativePath}:${file.name}:${file.size}:${file.lastModified}`;
+	};
+
+	const isSxfRelatedFile = (file: File) =>
+		SXF_RELATED_EXTENSIONS.some((ext) => file.name.toLowerCase().endsWith(ext));
+
+	const mergeAccumulatedFiles = (files: File[]) => {
+		const nextFiles = files.filter(isSxfRelatedFile);
+		if (nextFiles.length === 0) return;
+
+		const merged: Record<string, File> = Object.fromEntries(
+			accumulatedFiles.map((file) => [getFileKey(file), file])
+		);
+		for (const file of nextFiles) {
+			merged[getFileKey(file)] = file;
+		}
+		accumulatedFiles = Object.values(merged);
+	};
+
+	const findLastMatchingFile = (files: File[], predicate: (file: File) => boolean) => {
+		for (let index = files.length - 1; index >= 0; index -= 1) {
+			const file = files[index];
+			if (file && predicate(file)) {
+				return file;
+			}
+		}
+
+		return null;
+	};
+
+	$effect(() => {
+		if (showDialogType !== 'sxf' || !dropFile) return;
+
+		mergeAccumulatedFiles(toUploadFiles(dropFile));
+		dropFile = null;
+	});
 
 	const sxfFile = $derived.by(() => {
-		const files = toUploadFiles(dropFile);
-		if (files.length === 0) return null;
+		if (accumulatedFiles.length === 0) return null;
 		return (
-			files.find((file) => file.name.toLowerCase().endsWith('.sfc'))
-			?? files.find((file) => file.name.toLowerCase().endsWith('.p21'))
-			?? files[0]
-			?? null
+			findLastMatchingFile(accumulatedFiles, (file) => file.name.toLowerCase().endsWith('.sfc'))
+			?? findLastMatchingFile(accumulatedFiles, (file) => file.name.toLowerCase().endsWith('.p21'))
 		);
 	});
-	const entryName = $derived(sxfFile?.name.replace(/\.[^.]+$/, '') ?? 'SXFデータ');
+	const displayFile = $derived(sxfFile ?? accumulatedFiles[0] ?? null);
+	const entryName = $derived(displayFile?.name.replace(/\.[^.]+$/, '') ?? 'SXFデータ');
+	const waitingForPrimaryFile = $derived(accumulatedFiles.length > 0 && !sxfFile);
+	const accumulatedFileNames = $derived(accumulatedFiles.map((file) => file.name));
 	const selectedLayers = $derived(
 		Object.entries(layerChecked)
 			.filter(([, checked]) => checked)
@@ -153,12 +205,7 @@
 		if (!sxfFile) return;
 
 		isProcessing.set(true);
-		rawGeojson = null;
-		geometryTypeOptions = [];
-		selectedGeometryType = '';
-		layersByGeometryType = null;
-		layerChecked = {};
-		coordinateUnit = 'auto';
+		resetAnalysisState();
 
 		sxfFileToGeoJsonInWorker(sxfFile)
 			.then((geojson) => {
@@ -273,6 +320,13 @@
 	};
 
 	$effect(() => {
+		if (showDialogType === 'sxf') return;
+
+		accumulatedFiles = [];
+		resetAnalysisState();
+	});
+
+	$effect(() => {
 		if (zoneConfirmedEpsg && showDialogType === 'sxf') {
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
@@ -287,82 +341,106 @@
 	};
 </script>
 
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-2">
-	<span class="text-2xl font-bold">SXF (SFC) ファイルの登録</span>
-</div>
+<div class="flex h-full w-full flex-col">
+	<div class="flex shrink-0 items-center justify-between overflow-auto pb-2">
+		<span class="text-2xl font-bold">SXF (SFC / P21) ファイルの登録</span>
+	</div>
 
-<div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-4 overflow-x-hidden overflow-y-auto"
->
-	{#if sxfFile}
-		<div class="w-full px-2 text-sm text-gray-300">ファイル: {sxfFile.name}</div>
-	{/if}
+	<div
+		class="c-scroll flex h-full w-full grow flex-col items-center gap-4 overflow-x-hidden overflow-y-auto"
+	>
+		{#if displayFile}
+			<div class="w-full px-2 text-sm text-gray-300">
+				{sxfFile ? '本体ファイル' : '受け取り済みファイル'}: {displayFile.name}
+			</div>
+		{/if}
 
-	{#if geometryTypeOptions.length > 1}
-		<div class="w-full p-2">
-			<HorizontalSelectBox
-				label="ジオメトリタイプを選択"
-				bind:group={selectedGeometryType}
-				bind:options={geometryTypeOptions}
-			/>
-		</div>
-	{/if}
+		{#if waitingForPrimaryFile}
+			<div
+				class="border-sub bg-base/40 w-full rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors {isDragover
+					? 'border-main bg-main/10'
+					: ''}"
+			>
+				<div class="text-base text-white">
+					`.saf` を受け取りました。`.sfc` または `.p21` を追加ドロップしてください。
+				</div>
+				<div class="mt-2 text-sm text-gray-400">
+					このオーバーレイ全体に追加ドロップできます。
+				</div>
+				{#if accumulatedFileNames.length > 0}
+					<div class="mt-3 text-xs text-gray-500">
+						現在: {accumulatedFileNames.join(', ')}
+					</div>
+				{/if}
+			</div>
+		{/if}
 
-	{#if rawGeojson}
-		<div class="w-full p-2">
-			<HorizontalSelectBox
-				label="座標単位"
-				bind:group={coordinateUnit}
-				options={COORDINATE_UNIT_OPTIONS}
-			/>
-			<div class="mt-2 text-xs text-gray-400">{coordinateUnitMessage}</div>
-		</div>
-	{/if}
+		{#if geometryTypeOptions.length > 1}
+			<div class="w-full p-2">
+				<HorizontalSelectBox
+					label="ジオメトリタイプを選択"
+					bind:group={selectedGeometryType}
+					bind:options={geometryTypeOptions}
+				/>
+			</div>
+		{/if}
 
-	{#if hasSelectableLayers}
-		<div class="w-full px-2">
-			<div class="mb-2 flex items-center justify-between">
-				<span class="text-sm text-gray-300">レイヤー</span>
-				<div class="flex gap-2">
-					<button
-						class="c-btn-sub pointer-events-auto text-xs"
-						onclick={applyLayerSelectionDefaults}
-					>
-						全選択
-					</button>
-					<button
-						class="c-btn-sub pointer-events-auto text-xs"
-						onclick={() => {
-							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
-							layerChecked = Object.fromEntries(names.map((name) => [name, false]));
-						}}
-					>
-						全解除
-					</button>
+		{#if rawGeojson}
+			<div class="w-full p-2">
+				<HorizontalSelectBox
+					label="座標単位"
+					bind:group={coordinateUnit}
+					options={COORDINATE_UNIT_OPTIONS}
+				/>
+				<div class="mt-2 text-xs text-gray-400">{coordinateUnitMessage}</div>
+			</div>
+		{/if}
+
+		{#if hasSelectableLayers}
+			<div class="w-full px-2">
+				<div class="mb-2 flex items-center justify-between">
+					<span class="text-sm text-gray-300">レイヤー</span>
+					<div class="flex gap-2">
+						<button
+							class="c-btn-sub pointer-events-auto text-xs"
+							onclick={applyLayerSelectionDefaults}
+						>
+							全選択
+						</button>
+						<button
+							class="c-btn-sub pointer-events-auto text-xs"
+							onclick={() => {
+								const names = layersByGeometryType?.[selectedGeometryType] ?? [];
+								layerChecked = Object.fromEntries(names.map((name) => [name, false]));
+							}}
+						>
+							全解除
+						</button>
+					</div>
+				</div>
+				<div class="flex flex-col gap-1">
+					{#each layersByGeometryType?.[selectedGeometryType] ?? [] as layer (layer)}
+						<Checkbox label={layer} bind:value={layerChecked[layer]} />
+					{/each}
 				</div>
 			</div>
-			<div class="flex flex-col gap-1">
-				{#each layersByGeometryType?.[selectedGeometryType] ?? [] as layer (layer)}
-					<Checkbox label={layer} bind:value={layerChecked[layer]} />
-				{/each}
-			</div>
+		{/if}
+
+		<div class="w-full px-2 text-sm text-gray-400">
+			初期対応では線・折線・円・円弧・文字の一部だけを GeoJSON 化して読み込みます。
 		</div>
-	{/if}
-
-	<div class="w-full px-2 text-sm text-gray-400">
-		初期対応では線・折線・円・円弧・文字の一部だけを GeoJSON 化して読み込みます。
 	</div>
-</div>
 
-<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
-	<button
-		onclick={openZoneSelection}
-		disabled={isDecisionDisabled}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {isDecisionDisabled
-			? 'cursor-not-allowed opacity-50'
-			: ''}"
-	>
-		決定
-	</button>
+	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+		<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
+		<button
+			onclick={openZoneSelection}
+			disabled={isDecisionDisabled}
+			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {isDecisionDisabled
+				? 'cursor-not-allowed opacity-50'
+				: ''}"
+		>
+			決定
+		</button>
+	</div>
 </div>

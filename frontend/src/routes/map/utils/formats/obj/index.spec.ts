@@ -23,7 +23,8 @@ describe('obj parser', () => {
 			isPointCloud: true,
 			hasFaces: false,
 			vertexCount: 3,
-			projectedModelEpsg: null
+			projectedModelEpsg: null,
+			referencedMaterialLibraries: []
 		});
 	});
 
@@ -51,5 +52,19 @@ v 0 0 0`
 		);
 
 		expect(result.projectedModelEpsg).toBe('6677');
+	});
+
+	it('mtllib 行から参照 MTL 一覧を取り出せる', async () => {
+		const result = await inspectObjFile(
+			createFile(
+				'with-mtl.obj',
+				`mtllib house.mtl
+mtllib materials/wall.mtl
+v 0 0 0
+f 1 1 1`
+			)
+		);
+
+		expect(result.referencedMaterialLibraries).toEqual(['house.mtl', 'materials/wall.mtl']);
 	});
 });

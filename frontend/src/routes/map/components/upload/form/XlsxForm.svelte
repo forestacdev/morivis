@@ -173,6 +173,7 @@
 
 				if (entry) {
 					showDataEntry = entry;
+					dropFile = null;
 					showDialogType = null;
 					showNotification('ファイルを読み込みました', 'success');
 				} else {
@@ -221,6 +222,7 @@
 
 			if (entry) {
 				showDataEntry = entry;
+				dropFile = null;
 				showDialogType = null;
 				showNotification('ファイルを読み込みました', 'success');
 			}

@@ -340,6 +340,7 @@
 		}
 
 		showDataEntry = entry;
+		dropFile = null;
 		showDialogType = null;
 		showNotification('ファイルを読み込みました', 'success');
 	};
@@ -399,6 +400,7 @@
 			}
 
 			showDataEntry = entry;
+			dropFile = null;
 			showDialogType = null;
 			showNotification('ファイルを読み込みました', 'success');
 		} catch (error) {
@@ -442,6 +444,7 @@
 
 			if (entry) {
 				showDataEntry = entry;
+				dropFile = null;
 				showDialogType = null;
 				showNotification('ファイルを読み込みました', 'success');
 			}

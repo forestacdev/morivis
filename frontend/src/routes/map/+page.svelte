@@ -1335,6 +1335,7 @@
 {/if}
 {#if UploadDialog}
 	<UploadDialog
+		{map}
 		bind:showDialogType
 		bind:showDataEntry
 		bind:tempLayerEntries
