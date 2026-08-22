@@ -21,6 +21,11 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { sxfFileToGeoJsonInWorker } from '$routes/map/utils/formats/sxf/analyze';
+	import {
+		inferSxfCoordinateUnit,
+		scaleSxfFeatureCollection,
+		type SxfCoordinateUnit
+	} from '$routes/map/utils/formats/sxf/units';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -56,11 +61,18 @@
 		Polygon: 'ポリゴン'
 	};
 
-	let rawGeojson: FeatureCollection | null = null;
+	const COORDINATE_UNIT_OPTIONS: { key: 'auto' | SxfCoordinateUnit; name: string; }[] = [
+		{ key: 'auto', name: '自動' },
+		{ key: 'm', name: 'm' },
+		{ key: 'mm', name: 'mm' }
+	];
+
+	let rawGeojson = $state.raw<FeatureCollection | null>(null);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
 	let layersByGeometryType = $state<Record<string, string[]> | null>(null);
 	let layerChecked = $state<Record<string, boolean>>({});
+	let coordinateUnit = $state<'auto' | SxfCoordinateUnit>('auto');
 
 	const sxfFile = $derived.by(() => {
 		const files = toUploadFiles(dropFile);
@@ -76,10 +88,32 @@
 	const hasSelectableLayers = $derived(
 		!!selectedGeometryType && ((layersByGeometryType?.[selectedGeometryType] ?? []).length > 0)
 	);
+	const resolvedCoordinateUnit = $derived.by(() =>
+		coordinateUnit === 'auto'
+			? rawGeojson
+				? inferSxfCoordinateUnit(rawGeojson)
+				: 'm'
+			: coordinateUnit
+	);
+	const preparedGeojson = $derived.by(() =>
+		rawGeojson ? scaleSxfFeatureCollection(rawGeojson, resolvedCoordinateUnit) : null
+	);
+	const coordinateUnitMessage = $derived.by(() => {
+		if (!rawGeojson) return '';
+		if (coordinateUnit === 'auto') {
+			return resolvedCoordinateUnit === 'mm'
+				? '自動判定で mm とみなし、m に補正してから座標変換します'
+				: '自動判定で m のまま座標変換します';
+		}
+
+		return resolvedCoordinateUnit === 'mm'
+			? 'mm を m に補正してから座標変換します'
+			: 'm のまま座標変換します';
+	});
 	const isDecisionDisabled = $derived(
 		$isProcessing
 			|| !selectedGeometryType
-			|| rawGeojson === null
+			|| preparedGeojson === null
 			|| (hasSelectableLayers && selectedLayers.length === 0)
 	);
 
@@ -119,6 +153,7 @@
 		selectedGeometryType = '';
 		layersByGeometryType = null;
 		layerChecked = {};
+		coordinateUnit = 'auto';
 
 		sxfFileToGeoJsonInWorker(sxfFile)
 			.then((geojson) => {
@@ -156,9 +191,9 @@
 	});
 
 	const openZoneSelection = () => {
-		if (!rawGeojson || !selectedGeometryType) return;
+		if (!preparedGeojson || !selectedGeometryType) return;
 
-		const filteredGeojson = getFilteredGeojson(rawGeojson);
+		const filteredGeojson = getFilteredGeojson(preparedGeojson);
 		if (filteredGeojson.features.length === 0) {
 			showNotification('選択した条件に一致する図形がありません', 'error');
 			return;
@@ -173,14 +208,14 @@
 	};
 
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
-		if (!rawGeojson || !selectedGeometryType) return;
+		if (!preparedGeojson || !selectedGeometryType) return;
 
 		isProcessing.set(true);
 
 		try {
 			const prjContent = getProjContext(epsgCode);
 			const transformedGeojson = (await transformGeoJSONParallel(
-				rawGeojson,
+				preparedGeojson,
 				prjContent
 			)) as FeatureCollection;
 			const geojsonData = getFilteredGeojson(transformedGeojson);
@@ -265,6 +300,17 @@
 				bind:group={selectedGeometryType}
 				bind:options={geometryTypeOptions}
 			/>
+		</div>
+	{/if}
+
+	{#if rawGeojson}
+		<div class="w-full p-2">
+			<HorizontalSelectBox
+				label="座標単位"
+				bind:group={coordinateUnit}
+				options={COORDINATE_UNIT_OPTIONS}
+			/>
+			<div class="mt-2 text-xs text-gray-400">{coordinateUnitMessage}</div>
 		</div>
 	{/if}
 
