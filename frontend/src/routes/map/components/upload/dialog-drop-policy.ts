@@ -1,13 +1,17 @@
+import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { isRasterImageSidecarFile } from '$routes/map/utils/formats/raster/sidecar';
 import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 import type { DialogType, UploadFiles } from '$routes/map/types';
 import { resolveDroppedFiles, type UploadDropDecision } from './upload-drop';
-import { hasExtension } from './upload-drop-matchers';
+import { getPathLikeName, hasExtension } from './upload-drop-matchers';
 
 type PathLikeFile = File & { morivisRelativePath?: string; };
 
-type SupplementaryDropMatcher = (files: File[]) => boolean;
+type SupplementaryDropMatcher = (
+	currentFiles: UploadFiles,
+	incomingFiles: File[]
+) => boolean | Promise<boolean>;
 
 const OBJ_SUPPLEMENTARY_EXTENSIONS = [
 	'.mtl',
@@ -19,6 +23,46 @@ const OBJ_SUPPLEMENTARY_EXTENSIONS = [
 	'.gif',
 	'.webp'
 ] as const;
+
+const getPathCandidates = (value: string): string[] => {
+	const normalizedValue = value.replace(/\\/g, '/').trim().toLowerCase();
+	if (!normalizedValue) return [];
+
+	const candidates = new Set<string>([normalizedValue]);
+	const relativeWithoutRoot = normalizedValue.split('/').slice(1).join('/');
+	const fileName = normalizedValue.split('/').pop();
+
+	if (relativeWithoutRoot) {
+		candidates.add(relativeWithoutRoot);
+	}
+	if (fileName) {
+		candidates.add(fileName);
+	}
+
+	return [...candidates];
+};
+
+const getCurrentGltfExpectedResources = async (currentFiles: UploadFiles): Promise<Set<string> | null> => {
+	const gltfFile = toUploadFiles(currentFiles).find((file) => hasExtension(file, '.gltf'));
+	if (!gltfFile) return null;
+
+	try {
+		const inspection = await inspectGltfFile(gltfFile);
+		const expectedResources = new Set<string>();
+		for (const value of [...inspection.externalBufferUris, ...inspection.externalImageUris]) {
+			for (const candidate of getPathCandidates(value)) {
+				expectedResources.add(candidate);
+			}
+		}
+		return expectedResources;
+	} catch {
+		return null;
+	}
+};
+
+const matchesExpectedGltfResource = (file: File, expectedResources: Set<string>) => {
+	return getPathCandidates(getPathLikeName(file)).some((candidate) => expectedResources.has(candidate));
+};
 
 export type OpenDialogDropDecision =
 	| {
@@ -52,19 +96,30 @@ const mergeFiles = (currentFiles: UploadFiles, incomingFiles: File[]): File[] =>
 const supplementaryDropMatchers: Partial<
 	Record<Exclude<DialogType, null>, SupplementaryDropMatcher>
 > = {
-	sxf: (files) =>
+	sxf: (_currentFiles, files) =>
 		files.length > 0
 		&& files.every(
 			(file) =>
 				hasExtension(file, '.saf') || hasExtension(file, '.tif') || hasExtension(file, '.tiff')
 		),
-	glb: (files) =>
-		files.length > 0
-		&& files.every((file) =>
-			OBJ_SUPPLEMENTARY_EXTENSIONS.some((extension) => hasExtension(file, extension))
-		),
-	geotiff: (files) => files.length > 0 && files.every((file) => isRasterImageSidecarFile(file)),
-	filegdb: (files) => files.length > 0 && files.every((file) => isFileGdbRelatedFile(file))
+	glb: async (currentFiles, files) => {
+		if (files.length === 0) return false;
+		if (
+			files.every((file) =>
+				OBJ_SUPPLEMENTARY_EXTENSIONS.some((extension) => hasExtension(file, extension))
+			)
+		) {
+			return true;
+		}
+
+		const expectedResources = await getCurrentGltfExpectedResources(currentFiles);
+		if (!expectedResources || expectedResources.size === 0) return false;
+		return files.every((file) => matchesExpectedGltfResource(file, expectedResources));
+	},
+	geotiff: (_currentFiles, files) =>
+		files.length > 0 && files.every((file) => isRasterImageSidecarFile(file)),
+	filegdb: (_currentFiles, files) =>
+		files.length > 0 && files.every((file) => isFileGdbRelatedFile(file))
 };
 
 export const resolveOpenDialogDrop = async (
@@ -80,7 +135,7 @@ export const resolveOpenDialogDrop = async (
 	}
 
 	const supplementaryDropMatcher = supplementaryDropMatchers[dialogType];
-	if (supplementaryDropMatcher?.(incomingFiles)) {
+	if (await supplementaryDropMatcher?.(currentFiles, incomingFiles)) {
 		return {
 			type: 'stay',
 			dropFiles: mergeFiles(currentFiles, incomingFiles)

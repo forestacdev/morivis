@@ -97,6 +97,30 @@ describe('resolveOpenDialogDrop', () => {
 		});
 	});
 
+	it('glTFフォームで参照中の補助ファイルを追加ドロップしたときは同一フォームにファイルをマージする', async () => {
+		const currentFiles = [
+			createFile(
+				'scene.gltf',
+				JSON.stringify({
+					asset: { version: '2.0' },
+					buffers: [{ uri: 'buffers/scene.buffer' }],
+					images: [{ uri: 'textures/wall.png' }]
+				})
+			)
+		];
+		const incomingFiles = [
+			createPathLikeFile('scene.buffer', 'buffers/scene.buffer'),
+			createPathLikeFile('wall.png', 'textures/wall.png')
+		];
+
+		const result = await resolveOpenDialogDrop('glb', currentFiles, incomingFiles);
+
+		expect(result).toEqual({
+			type: 'stay',
+			dropFiles: expect.arrayContaining([currentFiles[0], ...incomingFiles])
+		});
+	});
+
 	it('FileGDBフォームで関連ファイルを追加ドロップしたときは同一フォームにファイルをマージする', async () => {
 		const currentFiles = [createPathLikeFile('a00000009.gdbtable', 'sample.gdb/a00000009.gdbtable')];
 		const incomingFiles = [createPathLikeFile('a00000009.gdbtablx', 'sample.gdb/a00000009.gdbtablx')];

@@ -38,7 +38,6 @@ export interface UploadedModelMeta {
 	resolvedPlacement?: ResolvedProjectedModelPlacement;
 }
 
-const gltfLoader = new GLTFLoader();
 const objLoader = new OBJLoader();
 const MIN_MODEL_MAX_DIMENSION_METERS = 1;
 const TARGET_MODEL_MAX_DIMENSION_METERS = 5;
@@ -67,7 +66,32 @@ let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoade
 	null;
 
 dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
-gltfLoader.setDRACOLoader(dracoLoader);
+
+const createGltfLoader = (manager?: THREE.LoadingManager) => {
+	const loader = new GLTFLoader(manager);
+	loader.setDRACOLoader(dracoLoader);
+	return loader;
+};
+
+const gltfLoader = createGltfLoader();
+
+const isBinaryGltfBuffer = (buffer: ArrayBuffer) => {
+	if (buffer.byteLength < 4) return false;
+	const magic = new Uint8Array(buffer, 0, 4);
+	return magic[0] === 0x67 && magic[1] === 0x6c && magic[2] === 0x54 && magic[3] === 0x46;
+};
+
+const resolveResourceUrl = (resourceUrls: Record<string, string>, url: string) => {
+	const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+	const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+	const fileName = normalizedUrl.split('/').pop() ?? '';
+	return (
+		resourceUrls[normalizedUrl]
+			?? resourceUrls[relativeWithoutRoot]
+			?? resourceUrls[fileName]
+			?? url
+	);
+};
 
 const loadRhino3dmLoaderModule = async () => {
 	if (!rhino3dmLoaderModulePromise) {
@@ -259,12 +283,24 @@ export interface UploadedModelObject {
 	animationNames: string[];
 }
 
-const parseGltfObject = async (file: File): Promise<UploadedModelObject> => {
+const parseGltfObject = async (
+	file: File,
+	resourceUrls?: Record<string, string>
+): Promise<UploadedModelObject> => {
 	const buffer = await file.arrayBuffer();
+	const manager = resourceUrls ? new THREE.LoadingManager() : undefined;
+	if (manager && resourceUrls) {
+		manager.setURLModifier((url) => resolveResourceUrl(resourceUrls, url));
+	}
+
+	const loader = manager ? createGltfLoader(manager) : gltfLoader;
+	const data = file.name.toLowerCase().endsWith('.gltf') && !isBinaryGltfBuffer(buffer)
+		? await file.text()
+		: buffer;
 
 	return new Promise<UploadedModelObject>((resolve, reject) => {
-		gltfLoader.parse(
-			buffer,
+		loader.parse(
+			data,
 			'',
 			(gltf) => {
 				resolve({
@@ -533,7 +569,7 @@ export const getUploadedModelObject = async (
 		return parseIfcObject(file, normalizeToLocalOrigin);
 	}
 
-	return parseGltfObject(file);
+	return parseGltfObject(file, resourceUrls);
 };
 
 const mercatorXToLng = (x: number) => x * 360 - 180;

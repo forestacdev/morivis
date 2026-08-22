@@ -45,6 +45,24 @@ let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFL
 let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null =
 	null;
 
+const isBinaryGltfBuffer = (buffer: ArrayBuffer) => {
+	if (buffer.byteLength < 4) return false;
+	const magic = new Uint8Array(buffer, 0, 4);
+	return magic[0] === 0x67 && magic[1] === 0x6c && magic[2] === 0x54 && magic[3] === 0x46;
+};
+
+const resolveResourceUrl = (resourceUrls: Record<string, string>, url: string) => {
+	const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
+	const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
+	const fileName = normalizedUrl.split('/').pop() ?? '';
+	return (
+		resourceUrls[normalizedUrl]
+			?? resourceUrls[relativeWithoutRoot]
+			?? resourceUrls[fileName]
+			?? url
+	);
+	};
+
 const loadRhino3dmLoaderModule = async () => {
 	if (!rhino3dmLoaderModulePromise) {
 		rhino3dmLoaderModulePromise = import('three/addons/loaders/3DMLoader.js');
@@ -153,6 +171,12 @@ export class ThreeJsLayerManager {
 		this.dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
 		this.loader.setDRACOLoader(this.dracoLoader);
 	}
+
+	private createGltfLoader = (manager?: THREE.LoadingManager) => {
+		const loader = new GLTFLoader(manager);
+		loader.setDRACOLoader(this.dracoLoader);
+		return loader;
+	};
 
 	private resolveShading = (style: MeshStyle): Required<MeshShadingStyle> => ({
 		...DEFAULT_MESH_SHADING,
@@ -916,6 +940,43 @@ export class ThreeJsLayerManager {
 						);
 					})
 					.catch((error) => reject(error));
+			} else if (entry.format.type === 'gltf') {
+				const resourceUrls = entry.format.resourceUrls;
+				if (!resourceUrls) {
+					this.loader.load(
+						entry.format.url,
+						(gltf) => finalizeAndLoadModel(gltf.scene, gltf.animations),
+						undefined,
+						(error) => reject(error)
+					);
+				} else {
+					const manager = createManagedLoaderContext();
+					manager.setURLModifier((url) => resolveResourceUrl(resourceUrls, url));
+					const loader = this.createGltfLoader(manager);
+
+					fetch(entry.format.url)
+						.then(async (response) => {
+							if (!response.ok) {
+								throw new Error(
+									`Failed to fetch glTF: ${response.status} ${response.statusText}`
+								);
+							}
+
+							const buffer = await response.arrayBuffer();
+							const data = isBinaryGltfBuffer(buffer)
+								? buffer
+								: new TextDecoder().decode(buffer);
+
+							loader.parse(
+								data,
+								'',
+								(gltf) => finalizeAndLoadModel(gltf.scene, gltf.animations),
+								(error) =>
+									reject(error instanceof Error ? error : new Error(String(error)))
+							);
+						})
+						.catch((error) => reject(error));
+				}
 			} else if (entry.format.type === 'drc') {
 				this.dracoLoader.load(
 					entry.format.url,
@@ -991,13 +1052,6 @@ export class ThreeJsLayerManager {
 						});
 					})
 					.catch((error) => reject(error));
-			} else {
-				this.loader.load(
-					entry.format.url,
-					(gltf) => finalizeAndLoadModel(gltf.scene, gltf.animations),
-					undefined,
-					(error) => reject(error)
-				);
 			}
 		});
 	}

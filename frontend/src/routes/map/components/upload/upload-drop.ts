@@ -191,6 +191,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	gdb: 'gdb',
 	pmtiles: 'pmtiles',
 	glb: 'glb',
+	gltf: 'glb',
 	'3ds': 'glb',
 	dae: 'glb',
 	'3dm': 'glb',
@@ -257,11 +258,11 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 		match: (files) => !!findFirstByExtensions(files, MODEL_FILE_EXTENSIONS),
 		resolve: async (files) => {
 			const objFile = files.find((file) => hasExtension(file, '.obj'));
-			if (!objFile) return createDialogDecision('glb');
+			if (!objFile) return createDialogDecision('glb', files);
 
 			const inspection = await inspectObjFile(objFile);
 			attachProjectedModelEpsg(objFile, inspection.projectedModelEpsg);
-			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb');
+			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb', files);
 		}
 	},
 	{

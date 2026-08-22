@@ -477,6 +477,30 @@ describe('resolveDroppedFiles', () => {
 			);
 	});
 
+	it('glTF 単体ドロップは glb 判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('scene.gltf'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'glb',
+			dropFiles: undefined
+		});
+	});
+
+	it('glTF と補助ファイルを同時ドロップしたときはファイル群を保持したまま glb 判定になる', async () => {
+		const gltfFile = createFile('scene.gltf');
+		const binFile = createFile('scene.bin');
+		const textureFile = createFile('wall.png');
+
+		const result = await resolveDroppedFiles([gltfFile, binFile, textureFile]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'glb',
+			dropFiles: [gltfFile, binFile, textureFile]
+		});
+	});
+
 	it('TXT が点群テキストなら pointcloud 判定になる', async () => {
 		vi.mocked(isPointCloudTextFile).mockResolvedValue(true);
 

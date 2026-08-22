@@ -384,6 +384,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.glb']
 	},
 	{
+		label: 'glTF',
+		description:
+			'JSONベースの3Dモデル形式です。外部のバッファやテクスチャを含むモデルを読み込むときに使います。',
+		extensions: ['.gltf']
+	},
+	{
 		label: 'Wavefront OBJ',
 		description: '3Dメッシュの交換形式です。建物や地形のモデル形状を読み込むときに使います。',
 		extensions: ['.obj']
