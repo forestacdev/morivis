@@ -23,7 +23,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		tileSize: 256,
 		bounds: OITA_NANBU_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/oita_aerial_laser',
-		xyzImageTile: { x: 28340, y: 13002, z: 15 }
+		xyzImageTile: { x: 14184, y: 6605, z: 14 }
 	},
 	interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 	style: { ...DEFAULT_RASTER_BASEMAP_STYLE }
