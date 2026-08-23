@@ -1,4 +1,3 @@
-import { expect } from '@playwright/test';
 /* 世界 */
 export const WEB_MERCATOR_WORLD_BBOX: [number, number, number, number] = [
 	-180, -85.051128779807, 180, 85.051128779807

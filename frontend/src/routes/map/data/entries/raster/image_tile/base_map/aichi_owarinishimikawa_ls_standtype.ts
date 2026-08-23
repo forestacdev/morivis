@@ -23,7 +23,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		tileSize: 256,
 		bounds: AICHI_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/owarinishimikawa_078',
-		xyzImageTile: { x: 28822, y: 12926, z: 15 }
+		xyzImageTile: { x: 28888, y: 12968, z: 15 }
 	},
 	interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 	style: { ...DEFAULT_RASTER_BASEMAP_STYLE }

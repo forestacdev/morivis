@@ -22,7 +22,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		tileSize: 256,
 		bounds: HIROSHIMA_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/h30_7_gouu',
-		xyzImageTile: { x: 28426, y: 12979, z: 15 }
+		xyzImageTile: { x: 14250, y: 6513, z: 14 }
 	},
 	interaction: { clickable: true },
 	style: {

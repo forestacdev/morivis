@@ -23,7 +23,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		tileSize: 256,
 		bounds: KUMAMOTO_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/h28_kumamoto_earthquake_aerial_laser',
-		xyzImageTile: { x: 28226, y: 13069, z: 15 }
+		xyzImageTile: { x: 7077, y: 3305, z: 13 }
 	},
 	interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 	style: { ...DEFAULT_RASTER_BASEMAP_STYLE }

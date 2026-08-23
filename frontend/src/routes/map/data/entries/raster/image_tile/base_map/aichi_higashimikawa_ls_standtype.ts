@@ -21,9 +21,10 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		bounds: AICHI_BBOX,
+		bounds: [136.99798827758303, 34.572235310042075, 137.8948732127684, 35.28209376976777],
+
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/higashimikawa_079',
-		xyzImageTile: { x: 28858, y: 12926, z: 15 }
+		xyzImageTile: { x: 28898, y: 12986, z: 15 }
 	},
 	interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 	style: { ...DEFAULT_RASTER_BASEMAP_STYLE }

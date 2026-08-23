@@ -22,7 +22,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		tileSize: 256,
 		bounds: AICHI_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/owarinishimikawa_078',
-		xyzImageTile: { x: 28822, y: 12926, z: 15 }
+		xyzImageTile: { x: 28888, y: 12968, z: 15 }
 	},
 	interaction: { clickable: true },
 	style: {

@@ -22,7 +22,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		tileSize: 256,
 		bounds: KUMAMOTO_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/r2_7_gouu',
-		xyzImageTile: { x: 28210, y: 13085, z: 15 }
+		xyzImageTile: { x: 14148, y: 6634, z: 14 }
 	},
 	interaction: { clickable: true },
 	style: {

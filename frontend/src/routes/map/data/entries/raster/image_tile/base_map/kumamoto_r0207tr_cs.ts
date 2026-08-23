@@ -23,7 +23,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		tileSize: 256,
 		bounds: KUMAMOTO_BBOX,
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/r2_7_gouu',
-		xyzImageTile: { x: 28210, y: 13085, z: 15 }
+		xyzImageTile: { x: 14148, y: 6634, z: 14 }
 	},
 	interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
 	style: { ...DEFAULT_RASTER_BASEMAP_STYLE }
