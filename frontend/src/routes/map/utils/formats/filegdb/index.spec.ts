@@ -9,11 +9,11 @@ vi.mock('fgdb/dist/fgdb.js', () => ({
 import fgdbRead from 'fgdb/dist/fgdb.js';
 
 import {
+	type FileGdbInput,
 	FileGdbParseError,
 	getFileGdbGeometryTypes,
 	parseFileGdbInputs,
-	resolveFileGdbInputSet,
-	type FileGdbInput
+	resolveFileGdbInputSet
 } from './index';
 
 const createFile = (name: string, relativePath?: string) => {
@@ -37,28 +37,27 @@ const createFeatureCollection = (geometryType: string): FeatureCollection => ({
 		{
 			type: 'Feature',
 			properties: { id: geometryType },
-			geometry:
-				geometryType === 'Point'
-					? { type: 'Point', coordinates: [139.7, 35.6] }
-					: geometryType === 'LineString'
-						? {
-								type: 'LineString',
-								coordinates: [
-									[139.7, 35.6],
-									[139.8, 35.7]
-								]
-							}
-						: {
-								type: 'Polygon',
-								coordinates: [
-									[
-										[139.7, 35.6],
-										[139.8, 35.6],
-										[139.8, 35.7],
-										[139.7, 35.6]
-									]
-								]
-							}
+			geometry: geometryType === 'Point'
+				? { type: 'Point', coordinates: [139.7, 35.6] }
+				: geometryType === 'LineString'
+				? {
+					type: 'LineString',
+					coordinates: [
+						[139.7, 35.6],
+						[139.8, 35.7]
+					]
+				}
+				: {
+					type: 'Polygon',
+					coordinates: [
+						[
+							[139.7, 35.6],
+							[139.8, 35.6],
+							[139.8, 35.7],
+							[139.7, 35.6]
+						]
+					]
+				}
 		}
 	]
 });
@@ -113,32 +112,34 @@ describe('filegdb format utils', () => {
 			throw new Error(`unexpected table id: ${id}`);
 		});
 
-		const result = parseFileGdbInputs([
-			{
-				name: 'sample.gdb/a00000001.gdbtable',
-				data: createBuffer(1)
-			},
-			{
-				name: 'sample.gdb/a00000001.gdbtablx',
-				data: createBuffer(1)
-			},
-			{
-				name: 'sample.gdb/a00000009.gdbtable',
-				data: createBuffer(9)
-			},
-			{
-				name: 'sample.gdb/a00000009.gdbtablx',
-				data: createBuffer(9)
-			},
-			{
-				name: 'sample.gdb/a0000000a.gdbtable',
-				data: createBuffer(10)
-			},
-			{
-				name: 'sample.gdb/a0000000a.gdbtablx',
-				data: createBuffer(10)
-			}
-		] satisfies FileGdbInput[]);
+		const result = parseFileGdbInputs(
+			[
+				{
+					name: 'sample.gdb/a00000001.gdbtable',
+					data: createBuffer(1)
+				},
+				{
+					name: 'sample.gdb/a00000001.gdbtablx',
+					data: createBuffer(1)
+				},
+				{
+					name: 'sample.gdb/a00000009.gdbtable',
+					data: createBuffer(9)
+				},
+				{
+					name: 'sample.gdb/a00000009.gdbtablx',
+					data: createBuffer(9)
+				},
+				{
+					name: 'sample.gdb/a0000000a.gdbtable',
+					data: createBuffer(10)
+				},
+				{
+					name: 'sample.gdb/a0000000a.gdbtablx',
+					data: createBuffer(10)
+				}
+			] satisfies FileGdbInput[]
+		);
 
 		expect(result.datasetName).toBe('sample');
 		expect(result.layers.map((layer) => layer.name)).toEqual(['Roads', 'Nodes']);
@@ -176,32 +177,34 @@ describe('filegdb format utils', () => {
 			throw new Error(`unexpected table id: ${id}`);
 		});
 
-		const result = parseFileGdbInputs([
-			{
-				name: '日本語名.gdb/a00000001.gdbtable',
-				data: createBuffer(1)
-			},
-			{
-				name: '日本語名.gdb/a00000001.gdbtablx',
-				data: createBuffer(1)
-			},
-			{
-				name: '日本語名.gdb/a00000009.gdbindexes',
-				data: createBuffer(99)
-			},
-			{
-				name: '日本語名.gdb/a00000009.spx',
-				data: createBuffer(98)
-			},
-			{
-				name: '日本語名.gdb/a00000009.gdbtable',
-				data: createBuffer(9)
-			},
-			{
-				name: '日本語名.gdb/a00000009.gdbtablx',
-				data: createBuffer(9)
-			}
-		] satisfies FileGdbInput[]);
+		const result = parseFileGdbInputs(
+			[
+				{
+					name: '日本語名.gdb/a00000001.gdbtable',
+					data: createBuffer(1)
+				},
+				{
+					name: '日本語名.gdb/a00000001.gdbtablx',
+					data: createBuffer(1)
+				},
+				{
+					name: '日本語名.gdb/a00000009.gdbindexes',
+					data: createBuffer(99)
+				},
+				{
+					name: '日本語名.gdb/a00000009.spx',
+					data: createBuffer(98)
+				},
+				{
+					name: '日本語名.gdb/a00000009.gdbtable',
+					data: createBuffer(9)
+				},
+				{
+					name: '日本語名.gdb/a00000009.gdbtablx',
+					data: createBuffer(9)
+				}
+			] satisfies FileGdbInput[]
+		);
 
 		expect(result.datasetName).toBe('日本語名');
 		expect(result.layers).toHaveLength(1);
@@ -227,24 +230,26 @@ describe('filegdb format utils', () => {
 		});
 
 		try {
-			parseFileGdbInputs([
-				{
-					name: 'sample.gdb/a00000001.gdbtable',
-					data: createBuffer(1)
-				},
-				{
-					name: 'sample.gdb/a00000001.gdbtablx',
-					data: createBuffer(1)
-				},
-				{
-					name: 'sample.gdb/a00000009.gdbtable',
-					data: createBuffer(9)
-				},
-				{
-					name: 'sample.gdb/a00000009.gdbtablx',
-					data: createBuffer(9)
-				}
-			] satisfies FileGdbInput[]);
+			parseFileGdbInputs(
+				[
+					{
+						name: 'sample.gdb/a00000001.gdbtable',
+						data: createBuffer(1)
+					},
+					{
+						name: 'sample.gdb/a00000001.gdbtablx',
+						data: createBuffer(1)
+					},
+					{
+						name: 'sample.gdb/a00000009.gdbtable',
+						data: createBuffer(9)
+					},
+					{
+						name: 'sample.gdb/a00000009.gdbtablx',
+						data: createBuffer(9)
+					}
+				] satisfies FileGdbInput[]
+			);
 
 			throw new Error('expected parse to fail');
 		} catch (error) {
@@ -256,11 +261,15 @@ describe('filegdb format utils', () => {
 				'Start offset 2852126720 is outside the bounds of the buffer'
 			);
 			expect(parseError.details.lastError).toBe('feature table parse failed');
-			expect(parseError.details.events.some((event) => event.message === 'catalog read failed')).toBe(
+			expect(
+				parseError.details.events.some((event) => event.message === 'catalog read failed')
+			).toBe(
 				true
 			);
 			expect(
-				parseError.details.events.some((event) => event.message === 'fallback table read failed')
+				parseError.details.events.some((event) =>
+					event.message === 'fallback table read failed'
+				)
 			).toBe(true);
 		}
 	});

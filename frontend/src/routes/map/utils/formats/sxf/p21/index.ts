@@ -151,7 +151,9 @@ const parseIdentifier = (
 	}
 
 	if (index === startIndex) {
-		throw new SxfParseError(`P21 識別子を解釈できません: ${text.slice(startIndex, startIndex + 20)}`);
+		throw new SxfParseError(
+			`P21 識別子を解釈できません: ${text.slice(startIndex, startIndex + 20)}`
+		);
 	}
 
 	return {
@@ -229,7 +231,7 @@ const parseRecord = (
 	startIndex: number
 ): { record: StepRecord; nextIndex: number; } => {
 	const { value: name, nextIndex: identifierEnd } = parseIdentifier(text, startIndex);
-	let index = skipWhitespace(text, identifierEnd);
+	const index = skipWhitespace(text, identifierEnd);
 	if (text[index] !== '(') {
 		throw new SxfParseError(`P21 レコードの引数開始が見つかりません: ${name}`);
 	}
@@ -317,7 +319,9 @@ function parseList(
 			return { values, nextIndex: index + 1 };
 		}
 
-		throw new SxfParseError(`P21 配列の区切りを解釈できません: ${text.slice(index, index + 20)}`);
+		throw new SxfParseError(
+			`P21 配列の区切りを解釈できません: ${text.slice(index, index + 20)}`
+		);
 	}
 
 	throw new SxfParseError('P21 配列の終端が見つかりません');
@@ -373,16 +377,15 @@ const parseP21Entities = (text: string): Map<string, StepEntity> => {
 		}
 
 		index = skipWhitespace(dataSection, index + 1);
-		const parsed =
-			dataSection[index] === '('
-				? parseComplexEntity(dataSection, index)
-				: (() => {
-					const record = parseRecord(dataSection, index);
-					return {
-						records: [record.record],
-						nextIndex: record.nextIndex
-					};
-				})();
+		const parsed = dataSection[index] === '('
+			? parseComplexEntity(dataSection, index)
+			: (() => {
+				const record = parseRecord(dataSection, index);
+				return {
+					records: [record.record],
+					nextIndex: record.nextIndex
+				};
+			})();
 
 		index = skipWhitespace(dataSection, parsed.nextIndex);
 		if (dataSection[index] !== ';') {
@@ -421,9 +424,13 @@ const getNumber = (value: StepValue | undefined): number | null => {
 const getReferenceId = (value: StepValue | undefined): string | null =>
 	isReference(value) ? value.id : null;
 
-const getList = (value: StepValue | undefined): StepValue[] | null => (isList(value) ? value : null);
+const getList = (
+	value: StepValue | undefined
+): StepValue[] | null => (isList(value) ? value : null);
 
-const getRecord = (value: StepValue | undefined): StepRecord | null => (isRecord(value) ? value : null);
+const getRecord = (
+	value: StepValue | undefined
+): StepRecord | null => (isRecord(value) ? value : null);
 
 const getEnumValue = (value: StepValue | undefined): string | undefined =>
 	isEnum(value) ? value.value : undefined;
@@ -523,7 +530,10 @@ const createArcCoordinates = (
 	for (let index = 0; index <= segments; index += 1) {
 		const angle = startAngle + ((normalizedEnd - startAngle) * index) / segments;
 		const radian = (angle * Math.PI) / 180;
-		coordinates.push([centerX + radius * Math.cos(radian), centerY + radius * Math.sin(radian)]);
+		coordinates.push([
+			centerX + radius * Math.cos(radian),
+			centerY + radius * Math.sin(radian)
+		]);
 	}
 
 	return coordinates;
@@ -606,7 +616,8 @@ const buildMeasureMap = (entities: Map<string, StepEntity>): Map<string, number>
 		if (!record) continue;
 
 		if (record.name === 'LENGTH_MEASURE_WITH_UNIT' || record.name === 'LENGTH_MEASURE') {
-			const value = getNestedRecordNumber(getRecord(record.args[0])) ?? getNumber(record.args[0]);
+			const value = getNestedRecordNumber(getRecord(record.args[0]))
+				?? getNumber(record.args[0]);
 			if (value !== null) {
 				measureMap.set(entityId, value);
 			}
@@ -663,7 +674,9 @@ const buildTextStyleMap = (entities: Map<string, StepEntity>): Map<string, TextS
 		const boxRecord = entity.records.find(
 			(record) => record.name === 'TEXT_STYLE_WITH_BOX_CHARACTERISTICS'
 		);
-		const spacingRecord = entity.records.find((record) => record.name === 'TEXT_STYLE_WITH_SPACING');
+		const spacingRecord = entity.records.find((record) =>
+			record.name === 'TEXT_STYLE_WITH_SPACING'
+		);
 		if (!boxRecord && !spacingRecord) continue;
 
 		const textStyle: TextStyle = {};
@@ -683,8 +696,8 @@ const buildTextStyleMap = (entities: Map<string, StepEntity>): Map<string, TextS
 			}
 		}
 
-		const spacingValue =
-			getNestedRecordNumber(getRecord(spacingRecord?.args[0])) ?? getNumber(spacingRecord?.args[0]);
+		const spacingValue = getNestedRecordNumber(getRecord(spacingRecord?.args[0]))
+			?? getNumber(spacingRecord?.args[0]);
 		if (spacingValue !== null) {
 			textStyle.textSpacing = spacingValue;
 		}
@@ -796,8 +809,8 @@ const getAxisPlacementMap = (
 			return null;
 		}
 
-		const direction =
-			resolveDirection(getReferenceId(record.args[2]) ?? '') ?? ([1, 0] as [number, number]);
+		const direction = resolveDirection(getReferenceId(record.args[2]) ?? '')
+			?? ([1, 0] as [number, number]);
 		const axis = { origin, direction };
 		axisMap.set(entityId, axis);
 		return axis;
@@ -971,7 +984,13 @@ const parseTrimmedCurveFeature = (
 			entityId,
 			[trimStartPoint, trimEndPoint],
 			createProperties({
-				...buildBaseProperties(entityId, geometryEntityId, layer, 'trimmed_curve', curveStyle),
+				...buildBaseProperties(
+					entityId,
+					geometryEntityId,
+					layer,
+					'trimmed_curve',
+					curveStyle
+				),
 				basisType: 'line'
 			})
 		);
@@ -983,7 +1002,8 @@ const parseTrimmedCurveFeature = (
 		if (!axis || radius === null || radius <= 0) return null;
 
 		const startAngle =
-			(Math.atan2(trimStartPoint[1] - axis.origin[1], trimStartPoint[0] - axis.origin[0]) * 180)
+			(Math.atan2(trimStartPoint[1] - axis.origin[1], trimStartPoint[0] - axis.origin[0])
+				* 180)
 			/ Math.PI;
 		const endAngle =
 			(Math.atan2(trimEndPoint[1] - axis.origin[1], trimEndPoint[0] - axis.origin[0]) * 180)
@@ -1029,8 +1049,7 @@ const parseTextFeature = (
 
 	const extent = resolveExtent(getReferenceId(record.args[6]) ?? '');
 	const textStyle = getStyledTextStyle(styleAssignmentId, presentationStyleMap, textStyleMap);
-	const rotation =
-		textStyle.textRotation
+	const rotation = textStyle.textRotation
 		?? (Math.atan2(axis.direction[1], axis.direction[0]) * 180) / Math.PI;
 
 	return createPointFeature(
@@ -1047,7 +1066,8 @@ const parseTextFeature = (
 			textWidth: textStyle.textWidth ?? extent?.width,
 			textSpacing: textStyle.textSpacing,
 			textRotation: rotation,
-			textAlign: `${getString(record.args[3]) ?? ''} ${getEnumValue(record.args[4]) ?? ''}`.trim()
+			textAlign: `${getString(record.args[3]) ?? ''} ${getEnumValue(record.args[4]) ?? ''}`
+				.trim()
 		})
 	);
 };

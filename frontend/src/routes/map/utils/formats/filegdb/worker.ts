@@ -1,9 +1,9 @@
 import {
-	FileGdbParseError,
-	parseFileGdbInputs,
 	type FileGdbAnalyzeResult,
 	type FileGdbFailureDetails,
-	type FileGdbInput
+	type FileGdbInput,
+	FileGdbParseError,
+	parseFileGdbInputs
 } from '$routes/map/utils/formats/filegdb';
 
 interface FileGdbWorkerRequest {
@@ -32,7 +32,9 @@ self.onmessage = async (event: MessageEvent<FileGdbWorkerRequest>) => {
 		logFileGdbWorkerDebug('message received', {
 			inputs: inputs.map((input) => ({
 				name: input.name,
-				bytes: input.data instanceof ArrayBuffer ? input.data.byteLength : input.data.byteLength
+				bytes: input.data instanceof ArrayBuffer
+					? input.data.byteLength
+					: input.data.byteLength
 			}))
 		});
 
@@ -49,10 +51,12 @@ self.onmessage = async (event: MessageEvent<FileGdbWorkerRequest>) => {
 			error: errorMessage,
 			details
 		});
-		postMessage({
-			error: errorMessage,
-			details
-		} satisfies FileGdbWorkerErrorResponse);
+		postMessage(
+			{
+				error: errorMessage,
+				details
+			} satisfies FileGdbWorkerErrorResponse
+		);
 	}
 };
 

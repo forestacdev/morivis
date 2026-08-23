@@ -13,7 +13,7 @@ import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 // - Guide to the File Geodatabase API:
 //   https://www.esri.com/arcgis-blog/products/developers/data-management/guide-to-the-file-geodatabase-api
 
-type PathLikeFile = File & { morivisRelativePath?: string };
+type PathLikeFile = File & { morivisRelativePath?: string; };
 
 export const FILE_GDB_DIALOG_EXTENSIONS = ['.gdbtable', '.gdbtablx'] as const;
 export const FILE_GDB_RELEVANT_EXTENSIONS = [
@@ -110,8 +110,8 @@ const logFileGdbDebug = (message: string, payload?: unknown) => {
 	console.debug(FILE_GDB_DEBUG_PREFIX, message, payload);
 };
 
-const createFileGdbDebugReporter = (events: FileGdbDebugEvent[]): FileGdbDebugReporter =>
-	(message, payload) => {
+const createFileGdbDebugReporter =
+	(events: FileGdbDebugEvent[]): FileGdbDebugReporter => (message, payload) => {
 		events.push(payload === undefined ? { message } : { message, payload });
 		logFileGdbDebug(message, payload);
 	};
@@ -220,8 +220,8 @@ const assertFeatureCollection = (value: unknown, layerName: string): FeatureColl
 	if (
 		typeof value !== 'object'
 		|| value === null
-		|| (value as { type?: unknown }).type !== 'FeatureCollection'
-		|| !Array.isArray((value as { features?: unknown }).features)
+		|| (value as { type?: unknown; }).type !== 'FeatureCollection'
+		|| !Array.isArray((value as { features?: unknown; }).features)
 	) {
 		throw new Error(`FileGDB レイヤー「${layerName}」を GeoJSON として解釈できませんでした`);
 	}
@@ -315,11 +315,13 @@ export const resolveFileGdbInputSet = <T extends File | FileGdbInput>(
 	const rootPath = rootPaths[0] ?? null;
 	const filteredInputs = rootPath
 		? relevantInputs.filter((input) =>
-				getFileGdbInputName(input).replace(/\\/g, '/').startsWith(`${rootPath}/`)
-			)
+			getFileGdbInputName(input).replace(/\\/g, '/').startsWith(`${rootPath}/`)
+		)
 		: relevantInputs;
 
-	const fallbackName = filteredInputs[0] ? getBaseName(getFileGdbInputName(filteredInputs[0])) : null;
+	const fallbackName = filteredInputs[0]
+		? getBaseName(getFileGdbInputName(filteredInputs[0]))
+		: null;
 
 	return {
 		datasetName: getFileGdbDatasetName(rootPath, fallbackName),
@@ -384,7 +386,9 @@ export const parseFileGdbInputs = (rawInputs: FileGdbInput[]): FileGdbAnalyzeRes
 	for (const tableEntry of tableEntries) {
 		if (!tablxMap.has(tableEntry.index)) {
 			throw new Error(
-				`FileGDB テーブル ${tableEntry.index.toString(16)} に対応する .gdbtablx が見つかりません`
+				`FileGDB テーブル ${
+					tableEntry.index.toString(16)
+				} に対応する .gdbtablx が見つかりません`
 			);
 		}
 	}
@@ -513,8 +517,8 @@ export const parseFileGdbInputs = (rawInputs: FileGdbInput[]): FileGdbAnalyzeRes
 		debug('parse failed: no readable layers', {
 			firstError: firstError?.message ?? null
 		});
-		const finalMessage =
-			lastError?.message ?? firstError?.message ?? '読み込み可能な FileGDB レイヤーが見つかりませんでした';
+		const finalMessage = lastError?.message ?? firstError?.message
+			?? '読み込み可能な FileGDB レイヤーが見つかりませんでした';
 		throw new FileGdbParseError(finalMessage, {
 			datasetName: resolved.datasetName,
 			rootPath: resolved.rootPath,

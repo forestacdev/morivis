@@ -120,7 +120,8 @@ const parsePolygonGeometry = (featureEl: Element): AnyGeometry | null => {
 };
 
 const parseFgdGeometry = (featureEl: Element): AnyGeometry | null =>
-	parsePointGeometry(featureEl) ?? parseLineGeometry(featureEl) ?? parsePolygonGeometry(featureEl);
+	parsePointGeometry(featureEl) ?? parseLineGeometry(featureEl)
+		?? parsePolygonGeometry(featureEl);
 
 const SKIP_PROPERTY_TAGS = new Set([
 	'pos',

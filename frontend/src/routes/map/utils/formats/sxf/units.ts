@@ -52,8 +52,7 @@ const getCoordinateSpan = (geojson: FeatureCollection): number => {
 export const inferSxfCoordinateUnit = (geojson: FeatureCollection): SxfCoordinateUnit =>
 	getCoordinateSpan(geojson) > SXF_AUTO_MM_SPAN_THRESHOLD ? 'mm' : 'm';
 
-export const getSxfUnitScaleFactor = (unit: SxfCoordinateUnit): number =>
-	unit === 'mm' ? 0.001 : 1;
+export const getSxfUnitScaleFactor = (unit: SxfCoordinateUnit): number => unit === 'mm' ? 0.001 : 1;
 
 const scaleCoordinates = (coordinates: unknown, factor: number): unknown => {
 	if (!Array.isArray(coordinates)) {
@@ -100,7 +99,10 @@ export const scaleSxfFeatureCollection = (
 			const geometry = feature.geometry
 				? ({
 					...feature.geometry,
-					coordinates: scaleCoordinates(feature.geometry.coordinates, factor) as typeof feature.geometry.coordinates
+					coordinates: scaleCoordinates(
+						feature.geometry.coordinates,
+						factor
+					) as typeof feature.geometry.coordinates
 				} as typeof feature.geometry)
 				: feature.geometry;
 

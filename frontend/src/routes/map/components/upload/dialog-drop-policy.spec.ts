@@ -122,8 +122,12 @@ describe('resolveOpenDialogDrop', () => {
 	});
 
 	it('FileGDBフォームで関連ファイルを追加ドロップしたときは同一フォームにファイルをマージする', async () => {
-		const currentFiles = [createPathLikeFile('a00000009.gdbtable', 'sample.gdb/a00000009.gdbtable')];
-		const incomingFiles = [createPathLikeFile('a00000009.gdbtablx', 'sample.gdb/a00000009.gdbtablx')];
+		const currentFiles = [
+			createPathLikeFile('a00000009.gdbtable', 'sample.gdb/a00000009.gdbtable')
+		];
+		const incomingFiles = [
+			createPathLikeFile('a00000009.gdbtablx', 'sample.gdb/a00000009.gdbtablx')
+		];
 
 		const result = await resolveOpenDialogDrop('filegdb', currentFiles, incomingFiles);
 
@@ -134,7 +138,9 @@ describe('resolveOpenDialogDrop', () => {
 	});
 
 	it('現在のフォームと無関係なファイルは既存判定に委譲して別フォームへ切り替える', async () => {
-		const result = await resolveOpenDialogDrop('sxf', [createFile('plan.sfc')], [createFile('data.csv')]);
+		const result = await resolveOpenDialogDrop('sxf', [createFile('plan.sfc')], [
+			createFile('data.csv')
+		]);
 
 		expect(result).toEqual({
 			type: 'delegate',

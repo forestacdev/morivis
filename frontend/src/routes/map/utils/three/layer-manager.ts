@@ -61,7 +61,7 @@ const resolveResourceUrl = (resourceUrls: Record<string, string>, url: string) =
 			?? resourceUrls[fileName]
 			?? url
 	);
-	};
+};
 
 const loadRhino3dmLoaderModule = async () => {
 	if (!rhino3dmLoaderModulePromise) {
@@ -972,7 +972,9 @@ export class ThreeJsLayerManager {
 								'',
 								(gltf) => finalizeAndLoadModel(gltf.scene, gltf.animations),
 								(error) =>
-									reject(error instanceof Error ? error : new Error(String(error)))
+									reject(
+										error instanceof Error ? error : new Error(String(error))
+									)
 							);
 						})
 						.catch((error) => reject(error));

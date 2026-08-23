@@ -2,11 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
-import {
-	getSxfUnitScaleFactor,
-	inferSxfCoordinateUnit,
-	scaleSxfFeatureCollection
-} from './units';
+import { getSxfUnitScaleFactor, inferSxfCoordinateUnit, scaleSxfFeatureCollection } from './units';
 
 const createFeatureCollection = (coordinates: number[][]): FeatureCollection => ({
 	type: 'FeatureCollection',

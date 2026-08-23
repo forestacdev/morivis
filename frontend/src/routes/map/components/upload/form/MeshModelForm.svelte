@@ -166,9 +166,9 @@
 		const relativeWithoutRoot = normalizedPath.split('/').slice(1).join('/');
 		const fileName = normalizedPath.split('/').pop() ?? normalizedPath;
 		return (
-			resourceKeys.has(normalizedPath)
-			|| (relativeWithoutRoot ? resourceKeys.has(relativeWithoutRoot) : false)
-			|| resourceKeys.has(fileName)
+			resourceKeys.has(normalizedPath) ||
+			(relativeWithoutRoot ? resourceKeys.has(relativeWithoutRoot) : false) ||
+			resourceKeys.has(fileName)
 		);
 	};
 
@@ -204,9 +204,7 @@
 	const textureResourceKeys = $derived.by(() => buildResourceKeySet(textureFiles));
 	const gltfResourceKeys = $derived.by(() => buildResourceKeySet(gltfSupplementaryFiles));
 	const requiresObjMtlResolution = $derived(
-		activeFormat === 'obj'
-		&& referencedObjMaterialLibraries.length > 0
-		&& !mtlFile
+		activeFormat === 'obj' && referencedObjMaterialLibraries.length > 0 && !mtlFile
 	);
 	const missingObjTexturePaths = $derived.by(() => {
 		if (!mtlFile || referencedMtlTexturePaths.length === 0) return [];
@@ -240,10 +238,10 @@
 		isJsonGltfFile && missingGltfResourceUris.length > 0
 	);
 	const isWaitingForModelSupplementaryInspection = $derived(
-		(!!glbFile
-			&& activeFormat === 'obj'
-			&& (isInspectingObjReferences || isInspectingMtlReferences))
-		|| (!!glbFile && isJsonGltfFile && isInspectingGltfReferences)
+		(!!glbFile &&
+			activeFormat === 'obj' &&
+			(isInspectingObjReferences || isInspectingMtlReferences)) ||
+			(!!glbFile && isJsonGltfFile && isInspectingGltfReferences)
 	);
 	const requiresModelSupplementaryResolution = $derived(
 		requiresObjSupplementaryResolution || requiresGltfSupplementaryResolution
@@ -458,9 +456,7 @@
 			return isPreparingZoneSelection || !fbxSourceBbox;
 		}
 		if (requiresModelSupplementaryResolution) {
-			return (
-				isInspectingObjReferences || isInspectingMtlReferences || isInspectingGltfReferences
-			);
+			return isInspectingObjReferences || isInspectingMtlReferences || isInspectingGltfReferences;
 		}
 		return false;
 	});
@@ -757,7 +753,8 @@
 				{/if}
 			{:else if requiresObjMtlResolution}
 				<p class="mt-2">
-					この OBJ は `mtllib` で MTL を参照しています。`.mtl` とテクスチャ画像を追加ドロップできます。
+					この OBJ は `mtllib` で MTL を参照しています。`.mtl`
+					とテクスチャ画像を追加ドロップできます。
 				</p>
 				<p class="mt-2">参照MTL: {referencedObjMaterialLibraries.join(', ')}</p>
 				<p class="mt-2">MTL なしのまま登録することもできます。</p>
@@ -770,7 +767,8 @@
 				<p class="mt-2">画像なしのまま登録することもできます。</p>
 			{:else if requiresGltfSupplementaryResolution}
 				<p class="mt-2">
-					この glTF は外部ファイルを参照しています。`.bin` や画像を追加ドロップするとそのまま続行できます。
+					この glTF は外部ファイルを参照しています。`.bin`
+					や画像を追加ドロップするとそのまま続行できます。
 				</p>
 				{#if missingGltfBufferUris.length > 0}
 					<p class="mt-2">未追加バッファ: {missingGltfBufferUris.join(', ')}</p>
@@ -798,12 +796,12 @@
 			>
 				座標系を選択
 			</button>
-			{:else if requiresModelSupplementaryResolution}
-				<button
-					onclick={registerDroppedModelWithoutSupplementaryFiles}
-					disabled={isDroppedRegistrationDisabled}
-					class="c-btn-confirm min-w-[200px] p-4 text-lg {isDroppedRegistrationDisabled
-						? 'cursor-not-allowed opacity-50'
+		{:else if requiresModelSupplementaryResolution}
+			<button
+				onclick={registerDroppedModelWithoutSupplementaryFiles}
+				disabled={isDroppedRegistrationDisabled}
+				class="c-btn-confirm min-w-[200px] p-4 text-lg {isDroppedRegistrationDisabled
+					? 'cursor-not-allowed opacity-50'
 					: 'cursor-pointer'}"
 			>
 				このまま登録

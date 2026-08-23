@@ -6,9 +6,6 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
-	import { isBboxValid } from '$routes/map/utils/map/bbox';
-	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing } from '$routes/stores/ui';
 	import {
 		getFileGdbGeometryTypes,
 		getFileGdbInputName,
@@ -16,7 +13,10 @@
 		type FileGdbAnalyzeResult
 	} from '$routes/map/utils/formats/filegdb';
 	import { analyzeFileGdbFilesInWorker } from '$routes/map/utils/formats/filegdb/analyze';
+	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
+	import { showNotification } from '$routes/stores/notification';
+	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;

@@ -145,7 +145,11 @@ describe('gtfs parser', () => {
 
 		expect(geojson.features).toHaveLength(5);
 		expect(geojson.features.map((feature) => feature.properties.time_seconds)).toEqual([
-			28830, 29430, 32400, 33000, 36000
+			28830,
+			29430,
+			32400,
+			33000,
+			36000
 		]);
 		expect(geojson.features[0]?.properties).toMatchObject({
 			stop_id: 'S1',

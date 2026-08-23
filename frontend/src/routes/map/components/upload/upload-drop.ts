@@ -34,8 +34,8 @@ import {
 
 export type UploadDropDecision =
 	| {
-			type: 'dialog';
-			dialogType: DialogType;
+		type: 'dialog';
+		dialogType: DialogType;
 		dropFiles?: File[] | null;
 	}
 	| {

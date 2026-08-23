@@ -4,8 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import { sxfTextToGeoJson } from './index';
 
-const readFixture = (path: string): string =>
-	readFileSync(new URL(path, import.meta.url), 'utf8');
+const readFixture = (path: string): string => readFileSync(new URL(path, import.meta.url), 'utf8');
 
 describe('sxfTextToGeoJson', () => {
 	it('ISO-10303-21 ヘッダ付きの SFC を P21 と誤判定しない', () => {

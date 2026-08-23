@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { mockCreate, mockCreateLazPerf, mockLoadHierarchyPage, mockLoadPointDataView } = vi.hoisted(() => ({
-	mockCreate: vi.fn(),
-	mockCreateLazPerf: vi.fn(),
-	mockLoadHierarchyPage: vi.fn(),
-	mockLoadPointDataView: vi.fn()
-}));
+const { mockCreate, mockCreateLazPerf, mockLoadHierarchyPage, mockLoadPointDataView } = vi.hoisted(
+	() => ({
+		mockCreate: vi.fn(),
+		mockCreateLazPerf: vi.fn(),
+		mockLoadHierarchyPage: vi.fn(),
+		mockLoadPointDataView: vi.fn()
+	})
+);
 
 vi.mock('copc', () => ({
 	Copc: {
@@ -170,7 +172,23 @@ describe('COPC parser', () => {
 			35.400001525878906,
 			5
 		]);
-		expect(Array.from(result.colors ?? [])).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+		expect(Array.from(result.colors ?? [])).toEqual([
+			1,
+			2,
+			3,
+			4,
+			5,
+			6,
+			7,
+			8,
+			9,
+			10,
+			11,
+			12,
+			13,
+			14,
+			15
+		]);
 		expect(mockCreateLazPerf).toHaveBeenCalledWith({
 			locateFile: expect.any(Function)
 		});

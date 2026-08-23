@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { fade, scale } from 'svelte/transition';
 
+	import { applyUploadDropDecision, checkLargeDroppedFiles } from './upload-drop-actions';
+
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
 	import { resolveOpenDialogDrop } from '$routes/map/components/upload/dialog-drop-policy';
 	import { dialogRegistry } from '$routes/map/components/upload/dialog-registry';
@@ -16,7 +18,6 @@
 	import type maplibregl from '$routes/map/utils/maplibre';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { isProcessing } from '$routes/stores/ui';
-	import { applyUploadDropDecision, checkLargeDroppedFiles } from './upload-drop-actions';
 
 	interface Props {
 		map: maplibregl.Map | null;

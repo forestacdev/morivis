@@ -1,8 +1,8 @@
 import {
-	getFileGdbInputName,
-	type FileGdbFailureDetails,
 	type FileGdbAnalyzeResult,
-	type FileGdbInput
+	type FileGdbFailureDetails,
+	type FileGdbInput,
+	getFileGdbInputName
 } from '$routes/map/utils/formats/filegdb';
 import type { FileGdbWorkerResponse } from '$routes/map/utils/formats/filegdb/worker';
 import FileGdbWorker from '$routes/map/utils/formats/filegdb/worker?worker';

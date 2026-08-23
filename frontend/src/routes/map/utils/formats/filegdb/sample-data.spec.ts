@@ -3,14 +3,16 @@ import { resolve } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { getFileGdbGeometryTypes, parseFileGdbInputs, type FileGdbInput } from './index';
+import { type FileGdbInput, getFileGdbGeometryTypes, parseFileGdbInputs } from './index';
 
 const fixtureDir = resolve(import.meta.dirname, '__fixtures__', 'geometry-types.gdb');
 
 const loadFixtureInputs = (): FileGdbInput[] =>
 	fs
 		.readdirSync(fixtureDir)
-		.filter((name) => /\.(gdbtable|gdbtablx|gdbindexes|gdbindex|atx|spx|cdf|freelist)$/i.test(name))
+		.filter((name) =>
+			/\.(gdbtable|gdbtablx|gdbindexes|gdbindex|atx|spx|cdf|freelist)$/i.test(name)
+		)
 		.sort()
 		.map((name) => ({
 			name: `geometry-types.gdb/${name}`,

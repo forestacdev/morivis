@@ -58,6 +58,8 @@ describe('raster sidecar helpers', () => {
 
 		expect(findGeoReferencedImageFile([plainImage, geoImage, worldFile])).toBe(geoImage);
 		expect(findMatchingWorldFile([plainImage, geoImage, worldFile], geoImage)).toBe(worldFile);
-		expect(findMatchingAuxXmlFile([plainImage, geoImage, auxXmlFile], geoImage)).toBe(auxXmlFile);
+		expect(findMatchingAuxXmlFile([plainImage, geoImage, auxXmlFile], geoImage)).toBe(
+			auxXmlFile
+		);
 	});
 });

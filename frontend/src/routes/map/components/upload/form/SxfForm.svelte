@@ -63,7 +63,7 @@
 		Polygon: 'ポリゴン'
 	};
 
-	const COORDINATE_UNIT_OPTIONS: { key: 'auto' | SxfCoordinateUnit; name: string; }[] = [
+	const COORDINATE_UNIT_OPTIONS: { key: 'auto' | SxfCoordinateUnit; name: string }[] = [
 		{ key: 'auto', name: '自動' },
 		{ key: 'm', name: 'm' },
 		{ key: 'mm', name: 'mm' }
@@ -88,7 +88,8 @@
 	};
 
 	const getFileKey = (file: File) => {
-		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath ?? '';
+		const relativePath =
+			(file as File & { morivisRelativePath?: string }).morivisRelativePath ?? '';
 		return `${relativePath}:${file.name}:${file.size}:${file.lastModified}`;
 	};
 
@@ -129,8 +130,8 @@
 	const sxfFile = $derived.by(() => {
 		if (accumulatedFiles.length === 0) return null;
 		return (
-			findLastMatchingFile(accumulatedFiles, (file) => file.name.toLowerCase().endsWith('.sfc'))
-			?? findLastMatchingFile(accumulatedFiles, (file) => file.name.toLowerCase().endsWith('.p21'))
+			findLastMatchingFile(accumulatedFiles, (file) => file.name.toLowerCase().endsWith('.sfc')) ??
+			findLastMatchingFile(accumulatedFiles, (file) => file.name.toLowerCase().endsWith('.p21'))
 		);
 	});
 	const displayFile = $derived(sxfFile ?? accumulatedFiles[0] ?? null);
@@ -143,7 +144,7 @@
 			.map(([layer]) => layer)
 	);
 	const hasSelectableLayers = $derived(
-		!!selectedGeometryType && ((layersByGeometryType?.[selectedGeometryType] ?? []).length > 0)
+		!!selectedGeometryType && (layersByGeometryType?.[selectedGeometryType] ?? []).length > 0
 	);
 	const resolvedCoordinateUnit = $derived.by(() =>
 		coordinateUnit === 'auto'
@@ -168,10 +169,10 @@
 			: 'm のまま座標変換します';
 	});
 	const isDecisionDisabled = $derived(
-		$isProcessing
-			|| !selectedGeometryType
-			|| preparedGeojson === null
-			|| (hasSelectableLayers && selectedLayers.length === 0)
+		$isProcessing ||
+			!selectedGeometryType ||
+			preparedGeojson === null ||
+			(hasSelectableLayers && selectedLayers.length === 0)
 	);
 
 	const extractLayer = (props: Record<string, unknown>) =>
@@ -364,9 +365,7 @@
 				<div class="text-base text-white">
 					`.saf` を受け取りました。`.sfc` または `.p21` を追加ドロップしてください。
 				</div>
-				<div class="mt-2 text-sm text-gray-400">
-					このオーバーレイ全体に追加ドロップできます。
-				</div>
+				<div class="mt-2 text-sm text-gray-400">このオーバーレイ全体に追加ドロップできます。</div>
 				{#if accumulatedFileNames.length > 0}
 					<div class="mt-3 text-xs text-gray-500">
 						現在: {accumulatedFileNames.join(', ')}

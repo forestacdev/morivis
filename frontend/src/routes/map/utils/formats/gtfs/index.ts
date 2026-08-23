@@ -140,7 +140,9 @@ const hasGtfsTableSet = (entryNames: string[]): boolean => {
 };
 
 const getMissingRequiredTables = (tables: Map<string, string>): string[] =>
-	REQUIRED_TABLES.filter((tableName) => !tables.has(tableName)).map((tableName) => `${tableName}.txt`);
+	REQUIRED_TABLES.filter((tableName) => !tables.has(tableName)).map((tableName) =>
+		`${tableName}.txt`
+	);
 
 const assertRequiredGtfsTables = (tables: Map<string, string>) => {
 	const missingTables = getMissingRequiredTables(tables);

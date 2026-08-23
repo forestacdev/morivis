@@ -1,8 +1,11 @@
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
-import { SxfParseError } from './parse-error';
 import { p21TextToGeoJson } from './p21';
-import { sxfArrayBufferToGeoJson as sfcArrayBufferToGeoJson, sxfTextToGeoJson as sfcTextToGeoJson } from './sfc';
+import { SxfParseError } from './parse-error';
+import {
+	sxfArrayBufferToGeoJson as sfcArrayBufferToGeoJson,
+	sxfTextToGeoJson as sfcTextToGeoJson
+} from './sfc';
 import { decodeSxfText, isP21Text } from './text';
 
 export { SxfParseError } from './parse-error';

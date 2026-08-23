@@ -51,7 +51,8 @@ const unquoteWavefrontToken = (value: string): string => {
 };
 
 const isMtlTextureReferenceCommand = (keyword: string): boolean => {
-	return keyword.startsWith('map_') || ['bump', 'disp', 'decal', 'norm', 'refl'].includes(keyword);
+	return keyword.startsWith('map_')
+		|| ['bump', 'disp', 'decal', 'norm', 'refl'].includes(keyword);
 };
 
 const extractMtlTexturePath = (value: string): string | null => {

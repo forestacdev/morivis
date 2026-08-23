@@ -48,7 +48,8 @@ const parseQuotedString = (
 	startIndex: number
 ): { value: string; nextIndex: number; } => {
 	let index = startIndex;
-	const escapedWrapper = text[index] === '\\' && (text[index + 1] === "'" || text[index + 1] === '"');
+	const escapedWrapper = text[index] === '\\'
+		&& (text[index + 1] === "'" || text[index + 1] === '"');
 	if (escapedWrapper) {
 		index += 1;
 	}
@@ -123,7 +124,10 @@ const parseList = (
 			continue;
 		}
 
-		if (current === "'" || current === '"' || (current === '\\' && (text[index + 1] === "'" || text[index + 1] === '"'))) {
+		if (
+			current === "'" || current === '"'
+			|| (current === '\\' && (text[index + 1] === "'" || text[index + 1] === '"'))
+		) {
 			const parsed = parseQuotedString(text, index);
 			values.push(parsed.value);
 			index = parsed.nextIndex;
@@ -293,7 +297,10 @@ const createArcCoordinates = (
 	for (let index = 0; index <= segments; index += 1) {
 		const angle = startAngle + ((normalizedEnd - startAngle) * index) / segments;
 		const radian = (angle * Math.PI) / 180;
-		coordinates.push([centerX + radius * Math.cos(radian), centerY + radius * Math.sin(radian)]);
+		coordinates.push([
+			centerX + radius * Math.cos(radian),
+			centerY + radius * Math.sin(radian)
+		]);
 	}
 
 	return coordinates;
@@ -332,7 +339,9 @@ const parseLineFeature = (entity: SxfEntity): SxfGeometryFeature | null => {
 };
 
 const parsePolylineFeature = (entity: SxfEntity): SxfGeometryFeature | null => {
-	const arrays = entity.args.map((value) => getNumberArray(value)).filter((value): value is number[] => value !== null);
+	const arrays = entity.args.map((value) => getNumberArray(value)).filter((
+		value
+	): value is number[] => value !== null);
 	if (arrays.length < 2) return null;
 
 	const xValues = arrays[0];
@@ -482,7 +491,9 @@ export const sxfTextToGeoJson = (text: string): FeatureCollection => {
 	const entities = parseSxfEntities(text);
 	if (entities.length === 0) {
 		if (text.includes('ISO-10303-21')) {
-			throw new SxfParseError('SXF の P21 形式はまだ未対応です。SFC ファイルを読み込んでください。');
+			throw new SxfParseError(
+				'SXF の P21 形式はまだ未対応です。SFC ファイルを読み込んでください。'
+			);
 		}
 
 		throw new SxfParseError('SXF のフィーチャブロックが見つかりませんでした');

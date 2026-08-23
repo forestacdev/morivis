@@ -74,7 +74,9 @@ export const checkLargeDroppedFiles = async (files: File | File[]): Promise<bool
 	if (totalSize < LARGE_FILE_THRESHOLD) return true;
 
 	return showConfirmDialog({
-		message: `ファイルサイズが大きいです（${formatSize(totalSize)}）。動作が不安定になる可能性があります。続行しますか？`,
+		message: `ファイルサイズが大きいです（${
+			formatSize(totalSize)
+		}）。動作が不安定になる可能性があります。続行しますか？`,
 		confirmText: '続行',
 		cancelText: 'キャンセル'
 	});

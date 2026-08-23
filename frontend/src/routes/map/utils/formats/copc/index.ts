@@ -1,4 +1,4 @@
-import { Copc, Las, type Getter } from 'copc';
+import { Copc, type Getter, Las } from 'copc';
 
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 
@@ -186,7 +186,8 @@ export const parseCopcFile = async (
 		throw new Error('COPC の点群データが見つかりませんでした');
 	}
 
-	const hasColor = copc.header.pointDataRecordFormat === 7 || copc.header.pointDataRecordFormat === 8;
+	const hasColor = copc.header.pointDataRecordFormat === 7
+		|| copc.header.pointDataRecordFormat === 8;
 	const lazPerf = await getCopcLazPerf();
 	const positionValues: number[] = [];
 	const colorValues: number[] = [];
@@ -199,7 +200,14 @@ export const parseCopcFile = async (
 		const targetCount = Math.min(node.pointCount, remaining);
 		if (targetCount <= 0) continue;
 
-		const sampled = await readCopcNodePoints(getter, copc, node, targetCount, hasColor, lazPerf);
+		const sampled = await readCopcNodePoints(
+			getter,
+			copc,
+			node,
+			targetCount,
+			hasColor,
+			lazPerf
+		);
 
 		for (const [x, y, z] of sampled.positions) {
 			positionValues.push(x, y, z);

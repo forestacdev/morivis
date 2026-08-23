@@ -18,6 +18,7 @@
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { isCopcFileName, parseCopcFile } from '$routes/map/utils/formats/copc';
 	import {
 		encodeAllBandsToTerrarium,
 		getMinMax,
@@ -32,7 +33,6 @@
 	import { transformBbox } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { transformPointCloudParallel } from '$routes/map/utils/proj/pointcloud_transformer';
-	import { isCopcFileName, parseCopcFile } from '$routes/map/utils/formats/copc';
 	import {
 		getFirstUploadFile,
 		getMatchedExtension
@@ -560,7 +560,8 @@
 			{/if}
 			{#if sourcePointCount !== null && pointCount !== null && pointCount < sourcePointCount}
 				<div class="text-xs text-gray-400">
-					COPC の全 {sourcePointCount.toLocaleString()} 点のうち、表示用に {pointCount.toLocaleString()} 点を読み込みました。
+					COPC の全 {sourcePointCount.toLocaleString()} 点のうち、表示用に {pointCount.toLocaleString()}
+					点を読み込みました。
 				</div>
 			{/if}
 			{#if resolvedBbox}

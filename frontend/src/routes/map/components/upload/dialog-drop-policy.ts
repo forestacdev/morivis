@@ -1,8 +1,8 @@
-import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
+import type { DialogType, UploadFiles } from '$routes/map/types';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
+import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 import { isRasterImageSidecarFile } from '$routes/map/utils/formats/raster/sidecar';
 import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
-import type { DialogType, UploadFiles } from '$routes/map/types';
 import { resolveDroppedFiles, type UploadDropDecision } from './upload-drop';
 import { getPathLikeName, hasExtension } from './upload-drop-matchers';
 
@@ -42,7 +42,9 @@ const getPathCandidates = (value: string): string[] => {
 	return [...candidates];
 };
 
-const getCurrentGltfExpectedResources = async (currentFiles: UploadFiles): Promise<Set<string> | null> => {
+const getCurrentGltfExpectedResources = async (
+	currentFiles: UploadFiles
+): Promise<Set<string> | null> => {
 	const gltfFile = toUploadFiles(currentFiles).find((file) => hasExtension(file, '.gltf'));
 	if (!gltfFile) return null;
 
@@ -61,18 +63,20 @@ const getCurrentGltfExpectedResources = async (currentFiles: UploadFiles): Promi
 };
 
 const matchesExpectedGltfResource = (file: File, expectedResources: Set<string>) => {
-	return getPathCandidates(getPathLikeName(file)).some((candidate) => expectedResources.has(candidate));
+	return getPathCandidates(getPathLikeName(file)).some((candidate) =>
+		expectedResources.has(candidate)
+	);
 };
 
 export type OpenDialogDropDecision =
 	| {
-			type: 'stay';
-			dropFiles: File[];
-	  }
+		type: 'stay';
+		dropFiles: File[];
+	}
 	| {
-			type: 'delegate';
-			decision: UploadDropDecision;
-	  };
+		type: 'delegate';
+		decision: UploadDropDecision;
+	};
 
 const getFileKey = (file: File): string => {
 	const relativePath = ((file as PathLikeFile).morivisRelativePath ?? '').toLowerCase();
@@ -100,7 +104,8 @@ const supplementaryDropMatchers: Partial<
 		files.length > 0
 		&& files.every(
 			(file) =>
-				hasExtension(file, '.saf') || hasExtension(file, '.tif') || hasExtension(file, '.tiff')
+				hasExtension(file, '.saf') || hasExtension(file, '.tif')
+				|| hasExtension(file, '.tiff')
 		),
 	glb: async (currentFiles, files) => {
 		if (files.length === 0) return false;
