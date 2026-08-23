@@ -3,7 +3,7 @@ import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style
 import type { RasterDemStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
-	id: 'tokushima_dem',
+	id: 'tokushima_naka_kaifugawa_dem',
 	type: 'raster',
 	format: {
 		type: 'image',

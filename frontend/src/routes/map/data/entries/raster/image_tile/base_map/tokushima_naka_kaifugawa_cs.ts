@@ -4,20 +4,20 @@ import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_s
 import type { RasterBaseMapStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
-	id: 'tokushima_ls_standtype',
+	id: 'tokushima_naka_kaifugawa_cs',
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://rinya-tiles.geospatial.jp/ls_standtype_117_2025/{z}/{x}/{y}.webp'
+		url: 'https://rinya-tiles.geospatial.jp/csmap_117_2025/{z}/{x}/{y}.webp'
 	},
 	metaData: {
-		name: '那賀・海部川森林計画区 林相識別図',
-		sourceDataName: '林相識別図ラスタタイルXYZ',
+		name: '那賀・海部川森林計画区 CS立体図',
+		sourceDataName: 'CS立体図ラスタタイルXYZ',
 		description:
-			'徳島県の林相識別図をラスタタイル化したデータ。森林の林相分布を地図上で確認する際に利用できる。',
+			'徳島県の地形をCS立体図で表現したラスタタイル。尾根や谷などの地形判読に利用できる。',
 		attribution: '徳島県_林野庁加工',
 		location: '徳島県',
-		tags: ['森林', '林相図'],
+		tags: ['地形', '微地形図'],
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
