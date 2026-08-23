@@ -155,23 +155,27 @@ describe('COPC parser', () => {
 		expect(result.sourcePointCount).toBe(10);
 		expect(result.isSampled).toBe(true);
 		expect(result.bbox).toEqual([140, 35, 141, 36]);
-		expect(Array.from(result.positions)).toEqual([
-			140,
-			35,
-			1,
-			140.10000610351562,
-			35.099998474121094,
-			2,
-			140.1999969482422,
-			35.20000076293945,
-			3,
-			140.3000030517578,
-			35.29999923706055,
-			4,
-			140.39999389648438,
-			35.400001525878906,
-			5
-		]);
+		expect(Array.from(result.positions)).toEqual(
+			Array.from(
+				Float32Array.from([
+					140,
+					35,
+					1,
+					140.1,
+					35.1,
+					2,
+					140.2,
+					35.2,
+					3,
+					140.3,
+					35.3,
+					4,
+					140.4,
+					35.4,
+					5
+				])
+			)
+		);
 		expect(Array.from(result.colors ?? [])).toEqual([
 			1,
 			2,
