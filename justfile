@@ -78,6 +78,7 @@ typedoc-all:
 
 # node_modules含む完全クリア & 再インストール & dev再起動
 clean-all:
+    @printf "frontend/.svelte-kit, frontend/node_modules/.vite, frontend/node_modules, node_modules を削除します。続けますか? [y/N]: " && read -r confirm && case "$confirm" in [yY]) ;; *) echo "中断しました"; exit 1 ;; esac
     rm -rf frontend/node_modules/.vite
     rm -rf frontend/.svelte-kit
     rm -rf node_modules
