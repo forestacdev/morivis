@@ -379,15 +379,10 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.pdf']
 	},
 	{
-		label: 'GLB',
-		description: 'glTFのバイナリ3Dモデルです。3D形状を地図上に配置して表示するときに使います。',
-		extensions: ['.glb']
-	},
-	{
-		label: 'glTF',
+		label: 'GLB / glTF',
 		description:
-			'JSONベースの3Dモデル形式です。外部のバッファやテクスチャを含むモデルを読み込むときに使います。',
-		extensions: ['.gltf']
+			'glTF系の3Dモデル形式です。GLBやglTFのモデルを地図上に配置して表示するときに使います。',
+		extensions: ['.glb', '.gltf']
 	},
 	{
 		label: 'Wavefront OBJ',
