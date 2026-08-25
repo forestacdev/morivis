@@ -37,7 +37,8 @@
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
-	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
+	import { ensureProjNadgridsReady } from '$routes/map/utils/proj/nadgrid';
+	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -70,6 +71,16 @@
 	let demResolution = $state<number>(256);
 	let registrationMode = $state<'dem' | 'mesh'>('dem');
 
+	type LandXmlRegistrationSnapshot = {
+		demResolution: number;
+		entryName: string;
+		parseResult: LandXmlParseResult | null;
+		registrationMode: 'dem' | 'mesh';
+		selectedSurface: LandXmlSurface | null;
+		selectedSurfaceIndex: number;
+		xmlFile: File | null;
+	};
+
 	const registrationModeOptions = [
 		{ key: 'dem', name: 'DEMラスター' },
 		{ key: 'mesh', name: '3Dメッシュ' }
@@ -84,6 +95,15 @@
 
 	const entryName = $derived(xmlFile?.name.replace(/\.[^.]+$/, '') ?? 'LandXMLデータ');
 	const selectedSurface = $derived.by(() => surfaces[Number(selectedSurfaceIndex)] ?? null);
+	const getRegistrationSnapshot = (): LandXmlRegistrationSnapshot => ({
+		demResolution,
+		entryName,
+		parseResult,
+		registrationMode,
+		selectedSurface,
+		selectedSurfaceIndex: Number(selectedSurfaceIndex),
+		xmlFile
+	});
 
 	// ファイルドロップ時: パースしてサーフェス一覧取得
 	$effect(() => {
@@ -115,17 +135,24 @@
 		}
 	});
 
-	const resolveProjString = (surface: LandXmlSurface, overrideProjString?: string) => {
+	const resolveProjString = (
+		surface: LandXmlSurface,
+		overrideProjString?: string,
+		currentParseResult: LandXmlParseResult | null = parseResult
+	) => {
 		if (overrideProjString) return overrideProjString;
 		if (surface.wktString) return surface.wktString;
-		if (parseResult?.detectedZone) {
-			return getProjContext(String(6668 + parseResult.detectedZone) as EpsgCode);
+		if (currentParseResult?.detectedZone) {
+			return getProjContext(String(6668 + currentParseResult.detectedZone) as EpsgCode);
 		}
 		return null;
 	};
 
-	const createMeshEntry = async (overrideProjString?: string) => {
-		const surface = selectedSurface;
+	const createMeshEntry = async (
+		overrideProjString?: string,
+		snapshot: LandXmlRegistrationSnapshot = getRegistrationSnapshot()
+	) => {
+		const surface = snapshot.selectedSurface;
 		if (!surface) return;
 
 		if (surface.glb.length === 0) {
@@ -133,13 +160,15 @@
 			return;
 		}
 
-		const projString = resolveProjString(surface, overrideProjString);
+		const projString = resolveProjString(surface, overrideProjString, snapshot.parseResult);
 		if (!projString) {
 			showNotification('座標系が不明です。投影法を選択してください', 'warning');
 			transformOptionMode = 'zone';
 			focusBbox = [surface.center[0], surface.center[1], surface.center[0], surface.center[1]];
 			return;
 		}
+
+		await ensureProjNadgridsReady(projString);
 
 		let bounds: [number, number, number, number];
 		let lng: number;
@@ -177,7 +206,7 @@
 
 		const entry = createMeshModelEntry({
 			id: `landxml_mesh_${crypto.randomUUID()}`,
-			name: `${entryName}_${surface.name || 'surface'}_mesh`,
+			name: `${snapshot.entryName}_${surface.name || 'surface'}_mesh`,
 			url: glbUrl,
 			attribution: 'LandXML',
 			location: DEFAULT_CUSTOM_META_DATA.location,
@@ -204,6 +233,24 @@
 		showDataEntry = entry;
 		showDialogType = null;
 		showNotification('3Dメッシュを生成しました', 'success');
+	};
+
+	const createMeshEntryWithFeedback = async (
+		overrideProjString?: string,
+		snapshot: LandXmlRegistrationSnapshot = getRegistrationSnapshot()
+	) => {
+		if (!snapshot.selectedSurface) return;
+
+		isProcessing.set(true);
+
+		try {
+			await createMeshEntry(overrideProjString, snapshot);
+		} catch (error) {
+			showNotification('3Dメッシュの生成に失敗しました', 'error');
+			console.error(error);
+		} finally {
+			isProcessing.set(false);
+		}
 	};
 
 	const prepareGeoRefData = async (projString: string) => {
@@ -271,15 +318,19 @@
 	};
 
 	/** DEM生成してエントリ作成 */
-	const createDemEntry = async (projString?: string) => {
-		if (!xmlFile) return;
+	const createDemEntry = async (
+		projString?: string,
+		snapshot: LandXmlRegistrationSnapshot = getRegistrationSnapshot()
+	) => {
+		const targetFile = snapshot.xmlFile;
+		if (!targetFile) return;
 		isProcessing.set(true);
 
 		try {
 			const demResult = await landXmlFileToDem(
-				xmlFile,
-				Number(selectedSurfaceIndex),
-				demResolution,
+				targetFile,
+				snapshot.selectedSurfaceIndex,
+				snapshot.demResolution,
 				projString
 			);
 
@@ -287,6 +338,11 @@
 
 			// bbox検証: 座標変換が正しくできたか
 			if (!isBboxValid(bbox)) {
+				if (projString) {
+					showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
+					return;
+				}
+
 				// 座標系不明 → 座標系選択UIで手動選択
 				transformOptionMode = 'zone';
 				focusBbox = bbox;
@@ -321,7 +377,7 @@
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
 					attribution: 'LandXML',
-					name: `${entryName}_dem`,
+					name: `${snapshot.entryName}_dem`,
 					tileSize: 256,
 					bounds: resolvedBbox,
 					xyzImageTile: findCenterTile(resolvedBbox)
@@ -372,12 +428,36 @@
 	};
 
 	const register = async () => {
-		if (registrationMode === 'mesh') {
-			await createMeshEntry();
+		const snapshot = getRegistrationSnapshot();
+
+		if (snapshot.registrationMode === 'mesh') {
+			await createMeshEntryWithFeedback(undefined, snapshot);
 			return;
 		}
 
-		await createDemEntry();
+		await createDemEntry(undefined, snapshot);
+	};
+
+	const confirmZoneAndRegister = async (epsgCode: EpsgCode) => {
+		const projString = getProjContext(epsgCode);
+		if (!projString) return;
+
+		const snapshot = getRegistrationSnapshot();
+
+		if (snapshot.registrationMode === 'mesh') {
+			if (!snapshot.selectedSurface) return;
+		} else if (!snapshot.xmlFile) {
+			return;
+		}
+
+		showDialogType = null;
+
+		if (snapshot.registrationMode === 'mesh') {
+			await createMeshEntryWithFeedback(projString, snapshot);
+			return;
+		}
+
+		await createDemEntry(projString, snapshot);
 	};
 
 	// 座標系選択後
@@ -386,12 +466,7 @@
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
-				const projString = getProjContext(epsg);
-				if (registrationMode === 'mesh') {
-					createMeshEntry(projString);
-					return;
-				}
-				createDemEntry(projString);
+				void confirmZoneAndRegister(epsg);
 			});
 		}
 	});

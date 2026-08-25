@@ -2,6 +2,7 @@ import type { FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
 import proj4 from 'proj4';
 
 import { normalizePrjContent } from './crs-detect';
+import { ensureProjNadgridsReady, hasTokyoNadgridReference } from './nadgrid';
 
 export { isWebMercatorPrj, isWgs84Crs, isWgs84Prj, normalizePrjContent } from './crs-detect';
 export * from './japan-plane-rectangular';
@@ -45,7 +46,7 @@ export const transformGeoJSONParallel = (
 		return Promise.resolve({ type: 'FeatureCollection', features: [] });
 	}
 
-	const numWorkers = Math.min(NUM_WORKERS, totalFeatures);
+	const numWorkers = hasTokyoNadgridReference(prjContent) ? 1 : Math.min(NUM_WORKERS, totalFeatures);
 	const batchSize = Math.ceil(totalFeatures / numWorkers);
 
 	return new Promise((resolve, reject) => {
@@ -102,10 +103,12 @@ export const transformGeoJSONParallel = (
 	});
 };
 
-export const transformBbox = (
+export const transformBbox = async (
 	bbox: [number, number, number, number],
 	prjContent: string
-): [number, number, number, number] => {
+): Promise<[number, number, number, number]> => {
+	await ensureProjNadgridsReady(prjContent);
+
 	// 左下と右上の座標を個別に変換
 	const [minX, minY, maxX, maxY] = bbox;
 	const [llX, llY] = proj4(prjContent, 'EPSG:4326', [minX, minY]);

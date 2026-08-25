@@ -613,7 +613,7 @@ export const computeUploadedModelMeta = async ({
 		)
 		: 1;
 	const resolvedPlacement = projectedModelEpsg
-		? resolveProjectedModelPlacementFromBox(
+		? await resolveProjectedModelPlacementFromBox(
 			box,
 			projectedModelEpsg,
 			formatUnitScaleMeters

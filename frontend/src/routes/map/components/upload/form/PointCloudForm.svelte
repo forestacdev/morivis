@@ -254,7 +254,7 @@
 		try {
 			// bbox変換
 			const prjContent = getProjContext(epsgCode);
-			const transformed = transformBbox(rawBbox, prjContent);
+			const transformed = await transformBbox(rawBbox, prjContent);
 
 			if (!isBboxValid(transformed)) {
 				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');

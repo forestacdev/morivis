@@ -39,8 +39,8 @@ describe('model-georeference', () => {
 		).toBeCloseTo(0.01);
 	});
 
-	it('meter FBX の bbox から地理配置を解決する', () => {
-		const placement = resolveProjectedModelPlacementFromBox(meterBox, '6674', 1);
+	it('meter FBX の bbox から地理配置を解決する', async () => {
+		const placement = await resolveProjectedModelPlacementFromBox(meterBox, '6674', 1);
 
 		expect(placement.lng).toBeCloseTo(135.7731787617, 6);
 		expect(placement.lat).toBeCloseTo(35.5044382086, 6);
@@ -50,12 +50,12 @@ describe('model-georeference', () => {
 		expect(placement.georeference.projectedOrigin[2]).toBeCloseTo(-29.3299999237, 6);
 	});
 
-	it('centimeter FBX でも同じ場所へ正規化できる', () => {
+	it('centimeter FBX でも同じ場所へ正規化できる', async () => {
 		const centimeterBox = new THREE.Box3(
 			meterBox.min.clone().multiplyScalar(100),
 			meterBox.max.clone().multiplyScalar(100)
 		);
-		const placement = resolveProjectedModelPlacementFromBox(
+		const placement = await resolveProjectedModelPlacementFromBox(
 			centimeterBox,
 			'EPSG:6674',
 			0.01

@@ -27,9 +27,6 @@
 		dropFile: UploadFilesInput;
 	}
 
-	const TOKYO_DATUM_PROJ4 =
-		'+proj=longlat +ellps=bessel +towgs84=-146.414,507.337,680.507,0,0,0,0 +no_defs +type=crs';
-
 	const CRS_LABELS: Record<string, string> = {
 		[CRS_TOKYO]: '旧日本測地系',
 		[CRS_JGD2000]: 'JGD2000'
@@ -60,7 +57,7 @@
 	const getCrsLabel = (crs: string): string => CRS_LABELS[crs] ?? crs;
 
 	const getProjContextByCrs = (crs: string): string =>
-		crs === CRS_JGD2000 ? getProjContext('4612') : TOKYO_DATUM_PROJ4;
+		crs === CRS_JGD2000 ? getProjContext('4612') : getProjContext('4301');
 
 	const getEntryGeometryType = (geojson: FeatureCollection): 'Point' | 'LineString' => {
 		const geometryType = geojson.features[0]?.geometry?.type;

@@ -1,5 +1,6 @@
 import type { ProjectedModelGeoreference } from '$routes/map/data/types/model';
 import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
+import { ensureProjNadgridsReady } from '$routes/map/utils/proj/nadgrid';
 import proj4 from 'proj4';
 import * as THREE from 'three';
 
@@ -15,11 +16,12 @@ const ensureProjDefinition = (epsg: string) => {
 	}
 
 	const epsgName = `EPSG:${normalized}`;
+	const projContext = getProjContext(normalized);
 	if (!proj4.defs(epsgName)) {
-		proj4.defs(epsgName, getProjContext(normalized));
+		proj4.defs(epsgName, projContext);
 	}
 
-	return epsgName;
+	return { epsgName, projContext };
 };
 
 export interface ResolvedProjectedModelPlacement {
@@ -67,19 +69,21 @@ export const resolveFbxUnitScaleMeters = (
 	return looksLikeProjectedMeterCoordinates ? 1 : metadataUnitScaleMeters;
 };
 
-export const resolveProjectedModelPlacementFromBox = (
+export const resolveProjectedModelPlacementFromBox = async (
 	box: THREE.Box3,
 	epsg: string,
 	unitScaleMeters = 1
-): ResolvedProjectedModelPlacement => {
+): Promise<ResolvedProjectedModelPlacement> => {
 	if (box.isEmpty()) {
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}
 
 	const center = box.getCenter(new THREE.Vector3());
 	const projectedOrigin: [number, number, number] = [center.x, center.y, box.min.z];
-	const sourceCrs = ensureProjDefinition(epsg);
-	const [lng, lat] = proj4(sourceCrs, 'EPSG:4326', [
+	const { epsgName, projContext } = ensureProjDefinition(epsg);
+	await ensureProjNadgridsReady(projContext);
+
+	const [lng, lat] = proj4(epsgName, 'EPSG:4326', [
 		projectedOrigin[0] * unitScaleMeters,
 		projectedOrigin[1] * unitScaleMeters
 	]) as [number, number];
@@ -90,7 +94,7 @@ export const resolveProjectedModelPlacementFromBox = (
 		altitude: projectedOrigin[2] * unitScaleMeters,
 		georeference: {
 			type: 'projected',
-			epsg: sourceCrs.replace(/^EPSG:/i, ''),
+			epsg: epsgName.replace(/^EPSG:/i, ''),
 			projectedOrigin,
 			unitScaleMeters
 		}

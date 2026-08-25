@@ -1,5 +1,7 @@
 import proj4 from 'proj4';
 
+import { ensureProjNadgridsReady } from './nadgrid';
+
 interface WorkerMessageData {
 	positions: Float32Array;
 	prjContent: string;
@@ -10,10 +12,12 @@ interface WorkerMessageData {
  * positions: [x0, y0, z0, x1, y1, z1, ...] のFloat32Array
  * 変換後: [lng0, lat0, z0, lng1, lat1, z1, ...]
  */
-onmessage = (event: MessageEvent<WorkerMessageData>) => {
+onmessage = async (event: MessageEvent<WorkerMessageData>) => {
 	const { positions, prjContent } = event.data;
 
 	try {
+		await ensureProjNadgridsReady(prjContent);
+
 		const count = positions.length / 3;
 		const result = new Float32Array(positions.length);
 

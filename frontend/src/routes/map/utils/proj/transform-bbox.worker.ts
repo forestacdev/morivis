@@ -13,9 +13,9 @@ interface TransformBboxWorkerErrorResponse {
 	error: string;
 }
 
-self.onmessage = (event: MessageEvent<TransformBboxWorkerRequest>) => {
+self.onmessage = async (event: MessageEvent<TransformBboxWorkerRequest>) => {
 	try {
-		const result = transformBbox(event.data.bbox, event.data.prjContent);
+		const result = await transformBbox(event.data.bbox, event.data.prjContent);
 		postMessage({ result } satisfies TransformBboxWorkerSuccessResponse);
 	} catch (error) {
 		postMessage(
