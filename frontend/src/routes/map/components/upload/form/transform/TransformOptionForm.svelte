@@ -92,6 +92,7 @@
 	}: Props = $props();
 
 	const fallbackTransformModes: ActiveTransformOptionMode[] = ['zone', 'georef'];
+	const HIDDEN_ZONE_DATUMS = new Set(['Tokyo', 'Japanese Geodetic Datum 2000']);
 
 	const PREVIEW_SOURCE_ID = 'georef_image_preview';
 	const registrationModeOptions: { key: RasterRegistrationMode; name: string }[] = [
@@ -325,7 +326,10 @@
 			try {
 				const features: Feature<PolygonGeometry | PointGeometry, PoiData['properties']>[] = [];
 
-				for (const info of getEpsgInfoArray()) {
+				// 旧測地系とJGD2000は読込時の変換には残すが、手動選択の対象にはしない。
+				for (const info of getEpsgInfoArray().filter(
+					(info) => !HIDDEN_ZONE_DATUMS.has(info.datum)
+				)) {
 					let transformedBbox: [number, number, number, number];
 
 					if (info.code === '4326') {

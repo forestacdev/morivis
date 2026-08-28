@@ -231,6 +231,7 @@
 		});
 
 		showDataEntry = entry;
+		dropFile = null;
 		showDialogType = null;
 		showNotification('3Dメッシュを生成しました', 'success');
 	};
@@ -313,6 +314,7 @@
 			});
 		}
 
+		dropFile = null;
 		showDialogType = null;
 		return true;
 	};
@@ -412,6 +414,7 @@
 			};
 
 			showDataEntry = entry;
+			dropFile = null;
 			showDialogType = null;
 			showNotification('DEMラスターを生成しました', 'success');
 		} catch (e) {
