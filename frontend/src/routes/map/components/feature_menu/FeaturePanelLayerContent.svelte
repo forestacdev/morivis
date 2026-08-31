@@ -74,11 +74,13 @@
 	});
 
 	let attributeItems = $derived.by(() => {
-		if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData?.properties) {
+		if (!targetLayer || !featureMenuData?.properties) {
 			return [];
 		}
 
-		const popupKeys = targetLayer.properties.attributeView.popupKeys;
+		const popupKeys = targetLayer.type === 'vector'
+			? targetLayer.properties.attributeView.popupKeys
+			: [];
 		const displayProps =
 			popupKeys.length > 0
 				? filterByPopupKeys(featureMenuData.properties, popupKeys)
