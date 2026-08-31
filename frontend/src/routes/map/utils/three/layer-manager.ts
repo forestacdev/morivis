@@ -179,6 +179,9 @@ export class ThreeJsLayerManager {
 	private modelGroup: THREE.Group | null = null;
 	private previewModelGroup: THREE.Group | null = null;
 	private renderer: THREE.WebGLRenderer | null = null;
+	private overlayRenderTarget: THREE.WebGLRenderTarget | null = null;
+	private overlayScene: THREE.Scene | null = null;
+	private overlayCamera: THREE.OrthographicCamera | null = null;
 	private map: MapLibreMap | null = null;
 	private loadedModels: Map<string, LoadedModel> = new Map();
 	private dracoLoader = new DRACOLoader();
@@ -687,6 +690,68 @@ export class ThreeJsLayerManager {
 		applyVisibility(this.previewModelGroup);
 	};
 
+	private restoreModelDepthState = (object: THREE.Object3D) => {
+		object.traverse((child) => {
+			if (!(child as THREE.Mesh).isMesh) return;
+
+			const mesh = child as THREE.Mesh;
+			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+			materials.forEach((material) => {
+				const originalDepthState = material.userData.morivisDepthState as
+					| { depthTest: boolean; depthWrite: boolean }
+					| undefined;
+				if (!originalDepthState) return;
+
+				material.depthTest = originalDepthState.depthTest;
+				material.depthWrite = originalDepthState.depthWrite;
+				delete material.userData.morivisDepthState;
+			});
+		});
+	};
+
+	private renderOverlayModel = (loaded: LoadedModel, mapProjectionMatrix: THREE.Matrix4) => {
+		if (!this.renderer || !this.scene || !this.camera || !this.overlayRenderTarget) return;
+		if (!this.overlayScene || !this.overlayCamera) return;
+
+		const renderTargetSize = this.renderer.getDrawingBufferSize(new THREE.Vector2());
+		if (
+			this.overlayRenderTarget.width !== renderTargetSize.x ||
+			this.overlayRenderTarget.height !== renderTargetSize.y
+		) {
+			this.overlayRenderTarget.setSize(renderTargetSize.x, renderTargetSize.y);
+		}
+
+		this.restoreModelDepthState(loaded.object);
+		this.camera.projectionMatrix = mapProjectionMatrix.clone().multiply(loaded.transform.matrix);
+		this.setOnlyEntryVisible(loaded.entry.id, loaded.entry.style.visible ?? true);
+
+		this.renderer.resetState();
+		this.renderer.setRenderTarget(this.overlayRenderTarget);
+		this.renderer.clear();
+		this.renderer.render(this.scene, this.camera);
+
+		this.renderer.resetState();
+		this.renderer.setRenderTarget(null);
+		this.renderer.render(this.overlayScene, this.overlayCamera);
+	};
+
+	private updateAnimations = () => {
+		const nowMs = performance.now();
+		const deltaSeconds =
+			this.lastRenderTimeMs == null ? 0 : Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
+		this.lastRenderTimeMs = nowMs;
+		let hasPlayingAnimation = false;
+
+		this.loadedModels.forEach((loaded) => {
+			if (loaded.entry.state?.animation?.playing && loaded.mixer) {
+				loaded.mixer.update(deltaSeconds);
+				hasPlayingAnimation = true;
+			}
+		});
+
+		return hasPlayingAnimation;
+	};
+
 	/** カスタムレイヤーを作成（初期化用） */
 	createLayer(): CustomLayerInterface {
 		return {
@@ -710,9 +775,24 @@ export class ThreeJsLayerManager {
 						antialias: true
 					});
 					this.renderer.autoClear = false;
+					this.renderer.setClearColor(0x000000, 0);
 					this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 					this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
 					this.renderer.toneMappingExposure = 1.0;
+					this.overlayRenderTarget = new THREE.WebGLRenderTarget(1, 1, {
+						depthBuffer: true,
+						stencilBuffer: false
+					});
+					this.overlayScene = new THREE.Scene();
+					this.overlayCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+					const overlayMaterial = new THREE.MeshBasicMaterial({
+						map: this.overlayRenderTarget.texture,
+						transparent: true,
+						depthTest: false,
+						depthWrite: false,
+						toneMapped: false
+					});
+					this.overlayScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), overlayMaterial));
 
 					// 全体を均一に明るくしすぎず、空と地面からの回り込みだけを薄く入れる。
 					const hemiLight = new THREE.HemisphereLight(0xeef3fb, 0x5a6470, 0.45);
@@ -739,20 +819,12 @@ export class ThreeJsLayerManager {
 					args.defaultProjectionData.mainMatrix
 				);
 				const mapProjectionMatrix = this.lastMapProjectionMatrix;
-				const nowMs = performance.now();
-				const deltaSeconds =
-					this.lastRenderTimeMs == null ? 0 : Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
-				this.lastRenderTimeMs = nowMs;
-				let hasPlayingAnimation = false;
+				const hasPlayingAnimation = this.updateAnimations();
 
 				this.loadedModels.forEach((loaded) => {
-					if (loaded.entry.state?.animation?.playing && loaded.mixer) {
-						loaded.mixer.update(deltaSeconds);
-						hasPlayingAnimation = true;
-					}
-				});
+					if (loaded.entry.style.showThroughTerrain) return;
+					this.restoreModelDepthState(loaded.object);
 
-				this.loadedModels.forEach((loaded) => {
 					const modelMatrix = loaded.transform.matrix.clone();
 					const projectionMatrix = mapProjectionMatrix.clone();
 					this.camera!.projectionMatrix = projectionMatrix.multiply(modelMatrix);
@@ -761,6 +833,11 @@ export class ThreeJsLayerManager {
 
 					this.renderer!.resetState();
 					this.renderer!.render(this.scene!, this.camera!);
+				});
+
+				this.loadedModels.forEach((loaded) => {
+					if (!loaded.entry.style.showThroughTerrain) return;
+					this.renderOverlayModel(loaded, mapProjectionMatrix);
 				});
 
 				if (hasPlayingAnimation) {
@@ -1391,12 +1468,23 @@ export class ThreeJsLayerManager {
 	dispose(): void {
 		this.clearModelHighlight();
 		this.clearAllModels();
+		this.overlayRenderTarget?.dispose();
+		this.overlayScene?.traverse((child) => {
+			if (!(child as THREE.Mesh).isMesh) return;
+			const mesh = child as THREE.Mesh;
+			mesh.geometry.dispose();
+			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+			materials.forEach((material) => material.dispose());
+		});
 		if (this.renderer) {
 			this.renderer.dispose();
 			this.renderer = null;
 		}
 		this.modelGroup = null;
 		this.previewModelGroup = null;
+		this.overlayRenderTarget = null;
+		this.overlayScene = null;
+		this.overlayCamera = null;
 		this.loadedModels.clear();
 		this.scene = null;
 		this.camera = null;

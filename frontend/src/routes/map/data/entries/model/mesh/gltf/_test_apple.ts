@@ -32,6 +32,7 @@ const entry: MeshEntry<MeshStyle> = {
 		type: 'mesh',
 		opacity: 1,
 		wireframe: false,
+		showThroughTerrain: false,
 		color: '#ffffff',
 		transform: {
 			scale: 600,

@@ -236,6 +236,7 @@ export const createGlbEntry = (
 			type: 'mesh',
 			opacity: 1,
 			wireframe: false,
+			showThroughTerrain: false,
 			color: '#ffffff',
 			shading: { ...DEFAULT_MESH_SHADING },
 			transform: {

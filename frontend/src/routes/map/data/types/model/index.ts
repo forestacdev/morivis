@@ -95,6 +95,8 @@ export interface MeshStyle {
 	opacity: Opacity;
 	visible?: boolean;
 	wireframe: boolean;
+	/** true のとき地形の地下にある部分も前面に表示する。 */
+	showThroughTerrain: boolean;
 	color: string;
 	shading?: MeshShadingStyle;
 	shadingOptions?: MeshShadingOptionStyle;

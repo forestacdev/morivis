@@ -15,7 +15,7 @@
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
-	import { mapStore } from '$routes/stores/map';
+	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	interface Props {
 		layerEntry: MeshEntry<MeshStyle>;
 		showColorOption: boolean;
@@ -43,6 +43,7 @@
 	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
 
 	const ensureShading = () => {
+		layerEntry.style.showThroughTerrain ??= false;
 		layerEntry.style.shading ??= { ...DEFAULT_MESH_SHADING };
 		if (layerEntry.style.heightColorRamp) {
 			layerEntry.style.heightColorRamp.range ??= createAdjustableRange(
@@ -126,6 +127,11 @@
 <DimensionSelector bind:layerEntry bind:showDimensionOption />
 
 <Accordion label="マテリアル" icon="mdi:format-color-highlight" bind:value={showMaterialOption}>
+	{#if $isTerrain3d}
+		<div transition:slide>
+			<Switch label="地中を表示" bind:value={layerEntry.style.showThroughTerrain} />
+		</div>
+	{/if}
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
 
 	{#if layerEntry.style.heightColorRamp}

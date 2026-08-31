@@ -397,6 +397,7 @@ export const createRasterMeshEntry = async (
 			visible: true,
 			opacity: 1,
 			wireframe: false,
+			showThroughTerrain: false,
 			color: '#ffffff',
 			shading: { ...DEFAULT_MESH_SHADING },
 			heightColorRamp: {
