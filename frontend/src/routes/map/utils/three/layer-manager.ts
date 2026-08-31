@@ -1,4 +1,5 @@
 import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
+import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 import {
 	DEFAULT_MESH_SHADING,
 	type MeshEntry,
@@ -125,6 +126,7 @@ export interface PickedModelFeature {
 	entryId: string;
 	objectId: string;
 	objectName: string;
+	formatType: MeshEntry<MeshStyle>['format']['type'];
 	attributes: FbxModelAttributes;
 }
 
@@ -148,6 +150,12 @@ const TEXTURE_SLOT_KEYS = [
 	'roughnessMap',
 	'specularMap'
 ] as const;
+
+const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>([
+	'fbx',
+	'obj',
+	'gltf'
+]);
 
 const materialHasTextureSlots = (material: THREE.Material) => {
 	return TEXTURE_SLOT_KEYS.some((key) => {
@@ -504,7 +512,7 @@ export class ThreeJsLayerManager {
 		const fill = new THREE.Mesh(
 			mesh.geometry,
 			new THREE.MeshBasicMaterial({
-				color: 0xffc400,
+				color: HIGHLIGHT_LAYER_COLOR,
 				transparent: true,
 				opacity: 0.38,
 				side: THREE.DoubleSide,
@@ -520,7 +528,7 @@ export class ThreeJsLayerManager {
 
 		const outline = new THREE.LineSegments(
 			new THREE.EdgesGeometry(mesh.geometry, 20),
-			new THREE.LineBasicMaterial({ color: 0xff8a00, depthWrite: false })
+			new THREE.LineBasicMaterial({ color: HIGHLIGHT_LAYER_COLOR, depthWrite: false })
 		);
 		outline.name = 'morivis-fbx-highlight-outline';
 		outline.userData.morivisSelectionHighlight = true;
@@ -529,6 +537,25 @@ export class ThreeJsLayerManager {
 		mesh.add(fill, outline);
 		this.selectedModelHighlight = { mesh, fill, outline };
 		this.map?.triggerRepaint();
+	};
+
+	private resolvePickedObjectName = (object: THREE.Object3D, root: THREE.Object3D) => {
+		let current: THREE.Object3D | null = object;
+		while (current && current !== root) {
+			const originalName = current.userData.originalName;
+			if (typeof originalName === 'string' && originalName) return originalName;
+			if (current.name) return current.name;
+			current = current.parent;
+		}
+
+		if ((object as THREE.Mesh).isMesh) {
+			const meshMaterial = (object as THREE.Mesh).material as THREE.Material | THREE.Material[];
+			const materials = Array.isArray(meshMaterial) ? meshMaterial : [meshMaterial];
+			const materialName = materials.find((material) => material.name)?.name;
+			if (materialName) return materialName;
+		}
+
+		return '名称なし';
 	};
 
 	private requestRepaintBurst = (frameCount = 90) => {
@@ -1390,10 +1417,10 @@ export class ThreeJsLayerManager {
 	}
 
 	pickModel(point: { x: number; y: number }): PickedModelFeature | null {
-		if (!import.meta.env.PROD) console.info('[FBX pick] 開始', { point });
+		if (!import.meta.env.PROD) console.info('[モデル pick] 開始', { point });
 		if (!this.map || !this.lastMapProjectionMatrix) {
 			if (!import.meta.env.PROD) {
-				console.info('[FBX pick] 未初期化', {
+				console.info('[モデル pick] 未初期化', {
 					hasMap: Boolean(this.map),
 					hasProjectionMatrix: Boolean(this.lastMapProjectionMatrix)
 				});
@@ -1403,7 +1430,7 @@ export class ThreeJsLayerManager {
 		const mapProjectionMatrix = this.lastMapProjectionMatrix;
 		const canvas = this.map.getCanvas();
 		if (canvas.clientWidth === 0 || canvas.clientHeight === 0) {
-			if (!import.meta.env.PROD) console.info('[FBX pick] canvas サイズが不正です');
+			if (!import.meta.env.PROD) console.info('[モデル pick] canvas サイズが不正です');
 			return null;
 		}
 		const raycaster = new THREE.Raycaster();
@@ -1413,12 +1440,12 @@ export class ThreeJsLayerManager {
 		);
 		const targetEntries = Array.from(this.loadedModels.values()).filter(
 			(loaded) =>
-				loaded.entry.format.type === 'fbx' &&
+				CLICKABLE_MODEL_FORMATS.has(loaded.entry.format.type) &&
 				loaded.entry.interaction.clickable &&
 				loaded.entry.style.visible
 		);
 		if (!import.meta.env.PROD) {
-			console.info('[FBX pick] 開始', {
+			console.info('[モデル pick] 開始', {
 				point,
 				ndc: ndc.toArray(),
 				canvas: [canvas.clientWidth, canvas.clientHeight],
@@ -1427,7 +1454,7 @@ export class ThreeJsLayerManager {
 		}
 		if (targetEntries.length === 0) {
 			if (!import.meta.env.PROD) {
-				console.info('[FBX pick] null: クリック対象のFBXがありません', {
+				console.info('[モデル pick] null: クリック対象のモデルがありません', {
 					loadedModels: Array.from(this.loadedModels.values()).map((loaded) => ({
 						id: loaded.entry.id,
 						format: loaded.entry.format.type,
@@ -1439,8 +1466,7 @@ export class ThreeJsLayerManager {
 			return null;
 		}
 		let closest: { distance: number; feature: PickedModelFeature; mesh: THREE.Mesh } | null = null;
-		let hitWithoutAttributes: { entryId: string; objectId?: number; objectName: string } | null =
-			null;
+		let hitWithoutAttributes: { entryId: string; objectId?: number; objectName: string } | null = null;
 		targetEntries.forEach((loaded) => {
 			const inverse = mapProjectionMatrix.clone().multiply(loaded.transform.matrix).invert();
 			const origin = new THREE.Vector3(ndc.x, ndc.y, -1).applyMatrix4(inverse);
@@ -1451,7 +1477,7 @@ export class ThreeJsLayerManager {
 			const hit = raycaster.intersectObject(loaded.object, true)[0];
 			loaded.object.visible = wasVisible;
 			if (!import.meta.env.PROD) {
-				console.info('[FBX pick] 判定結果', {
+				console.info('[モデル pick] 判定結果', {
 					entryId: loaded.entry.id,
 					rayOrigin: origin.toArray(),
 					rayDirection: raycaster.ray.direction.toArray(),
@@ -1475,22 +1501,26 @@ export class ThreeJsLayerManager {
 					if (!attributes) attributeObject = attributeObject.parent;
 				}
 				if (!hit) return;
-				if (!attributes) {
+				if (loaded.entry.format.type === 'fbx' && !attributes) {
 					hitWithoutAttributes = {
 						entryId: loaded.entry.id,
 						objectId: (hit.object as THREE.Object3D & { ID?: number }).ID,
-						objectName: hit.object.userData.originalName ?? hit.object.name
+						objectName: this.resolvePickedObjectName(hit.object, loaded.object)
 					};
 					return;
 				}
-				const resolvedAttributeObject = attributeObject ?? hit.object;
+				const resolvedAttributeObject =
+					loaded.entry.format.type === 'fbx' ? (attributeObject ?? hit.object) : hit.object;
 				closest = {
 					distance: hit.distance,
 					feature: {
 						entryId: loaded.entry.id,
-						objectId: String((resolvedAttributeObject as THREE.Object3D & { ID?: number }).ID ?? ''),
-						objectName: resolvedAttributeObject.userData.originalName ?? resolvedAttributeObject.name,
-						attributes
+						objectId: String(
+							(resolvedAttributeObject as THREE.Object3D & { ID?: number }).ID ?? hit.object.id
+						),
+						objectName: this.resolvePickedObjectName(resolvedAttributeObject, loaded.object),
+						formatType: loaded.entry.format.type,
+						attributes: attributes ?? {}
 					},
 					mesh: hit.object as THREE.Mesh
 				};
@@ -1505,8 +1535,8 @@ export class ThreeJsLayerManager {
 		if (!feature && !import.meta.env.PROD) {
 			console.info(
 				hitWithoutAttributes
-					? '[FBX pick] null: メッシュには命中したが属性がありません'
-					: '[FBX pick] null: レイがメッシュに命中しませんでした',
+					? '[モデル pick] null: FBX メッシュには命中したが属性がありません'
+					: '[モデル pick] null: レイがメッシュに命中しませんでした',
 				hitWithoutAttributes
 			);
 		}

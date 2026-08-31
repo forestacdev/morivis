@@ -94,7 +94,7 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile],
 			altitude: transform.altitude
 		},
-		interaction: { clickable: false },
+		interaction: { clickable: true },
 		style: {
 			type: 'mesh',
 			opacity,

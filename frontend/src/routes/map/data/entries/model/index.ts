@@ -230,7 +230,7 @@ export const createGlbEntry = (
 			altitude: transform.altitude,
 			bounds: pointToBbox(transform.lng, transform.lat)
 		},
-		interaction: { clickable: formatType === 'fbx' },
+		interaction: { clickable: ['fbx', 'obj', 'gltf'].includes(formatType) },
 		style: {
 			visible: true,
 			type: 'mesh',

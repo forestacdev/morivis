@@ -513,7 +513,7 @@
 
 			const pickedModel = threeJsManager.pickModel(e.point);
 			if (pickedModel) {
-				console.info('[FBX属性]', pickedModel);
+				console.info('[モデル属性]', pickedModel);
 				clearSearchHighlight();
 				clickedLayerIds = [pickedModel.entryId];
 				featureMenuData = {
@@ -521,6 +521,7 @@
 					featureId: pickedModel.objectId,
 					point: [e.lngLat.lng, e.lngLat.lat],
 					properties: {
+						'モデル形式': pickedModel.formatType.toUpperCase(),
 						'オブジェクト名': pickedModel.objectName,
 						'モデルID': pickedModel.objectId,
 						...pickedModel.attributes
@@ -529,7 +530,7 @@
 				setSelectedHighlight(null);
 				return;
 			}
-			if (!import.meta.env.PROD) console.info('[FBX属性] メッシュにヒットしませんでした');
+			if (!import.meta.env.PROD) console.info('[モデル属性] メッシュにヒットしませんでした');
 			threeJsManager.clearModelHighlight();
 
 			const existingLayerIds = getExistingClickableLayerIds();

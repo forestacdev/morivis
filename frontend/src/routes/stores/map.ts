@@ -45,8 +45,8 @@ import {
 	isHighlightLayerId,
 	scheduleHighlightAnimationWarmup
 } from '$routes/map/utils/layers/highlight';
-import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
-import { resolveMapLibreRequest, resolveRequestUrl } from '$routes/map/utils/platform/request';
+import { createMapInitOptions } from '$routes/map/utils/platform/map-init';
+import { fetchWithDevProxy, resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 import {
@@ -398,44 +398,7 @@ const createMapStore = () => {
 		deckOverlay = null;
 		isDeckOverlayAdded = false;
 
-		map = new maplibregl.Map({
-			...mapPosition,
-			minZoom: checkPc() ? 0 : 0, // 最小ズームレベル
-			container: mapContainer,
-			canvasContextAttributes: {
-				// WebGLのコンテキスト属性を設定
-				antialias: true, // アンチエイリアスを有効にする
-				depth: true, // 深度バッファを有効にする
-				// stencil: true, // ステンシルバッファを有効にする
-				alpha: true // アルファチャンネルを有効にする
-				// preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
-			},
-			centerClampedToGround: true, // 地図の中心を地面にクランプする
-			style: {
-				version: 8,
-				sources: {},
-				layers: []
-			},
-			fadeDuration: 0, // フェードアニメーションの時間 シンボル
-			attributionControl: false, // デフォルトの出典を非表示
-			localIdeographFontFamily: false, // ローカルのフォントを使う
-			maxPitch: 85, // 最大ピッチ角度
-			dragRotate: false, // デフォルトの右ドラッグ回転を無効化
-			pitchWithRotate: false, // デフォルトのピッチ操作を無効化
-			boxZoom: false, // Shift+ドラッグのボックスズームを無効化
-			doubleClickZoom: false, // ダブルクリックズームを無効化
-			keyboard: false, // キーボード操作を無効化
-			// maplibreLogo: true, // MapLibreのロゴを表示
-			// logoPosition: 'bottom-right' // ロゴの位置を指定
-			// renderWorldCopies: false // 世界地図を繰り返し表示しない
-			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
-			// maxZoom: 18,
-			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
-			transformRequest: (url, resourceType) => {
-				return resolveMapLibreRequest(url, resourceType);
-			}
-			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
-		});
+		map = new maplibregl.Map(createMapInitOptions(mapContainer, mapPosition));
 
 		if (get(isDebugMode)) {
 			// map.showTileBoundaries = true; // タイルの境界を表示
@@ -729,11 +692,11 @@ const createMapStore = () => {
 	// マップの初期化判定
 	const isMapValid = (_map: any): boolean => {
 		return (
-			_map
-			&& typeof _map === 'object'
-			&& typeof _map.getLayer === 'function'
-			&& typeof _map.setLayoutProperty === 'function'
-			&& !_map._removed
+			_map &&
+			typeof _map === 'object' &&
+			typeof _map.getLayer === 'function' &&
+			typeof _map.setLayoutProperty === 'function' &&
+			!_map._removed
 		); // マップが削除されていないかチェック
 	};
 
@@ -762,7 +725,7 @@ const createMapStore = () => {
 	) => {
 		(
 			overlay as unknown as {
-				setProps: (props: { width: number; height: number; layers?: LayersList; }) => void;
+				setProps: (props: { width: number; height: number; layers?: LayersList }) => void;
 			}
 		).setProps(props);
 	};
@@ -809,15 +772,13 @@ const createMapStore = () => {
 
 		if (!deckOverlay) {
 			const { width, height } = getDeckOverlaySize();
-			deckOverlay = new MapboxOverlay(
-				{
-					id: 'deckgl-overlay',
-					interleaved: true,
-					layers: [],
-					width,
-					height
-				} as unknown as ConstructorParameters<typeof MapboxOverlay>[0]
-			);
+			deckOverlay = new MapboxOverlay({
+				id: 'deckgl-overlay',
+				interleaved: true,
+				layers: [],
+				width,
+				height
+			} as unknown as ConstructorParameters<typeof MapboxOverlay>[0]);
 		}
 
 		if (!isDeckOverlayAdded) {
@@ -871,11 +832,7 @@ const createMapStore = () => {
 		currentDeckTiles3dEntries = new Map(tiles3dEntries.map((entry) => [entry.id, entry]));
 		currentDeckPointCloudEntries = new Map(pointCloudEntries.map((entry) => [entry.id, entry]));
 		currentDeckVectorEntries = new Map(deckVectorEntries.map((entry) => [entry.id, entry]));
-		const layers = await createDeckOverlay(
-			tiles3dEntries,
-			pointCloudEntries,
-			deckVectorEntries
-		);
+		const layers = await createDeckOverlay(tiles3dEntries, pointCloudEntries, deckVectorEntries);
 		setDeckOverlay(layers);
 	};
 
@@ -1139,13 +1096,11 @@ const createMapStore = () => {
 		layers.forEach((layer) => {
 			if (currentMap.getLayer(layer.id)) return;
 			if (
-				'source' in layer
-				&& typeof layer.source === 'string'
-				&& !currentMap.getSource(layer.source)
+				'source' in layer &&
+				typeof layer.source === 'string' &&
+				!currentMap.getSource(layer.source)
 			) {
-				console.warn(
-					`Skip highlight layer ${layer.id}: source "${layer.source}" not found.`
-				);
+				console.warn(`Skip highlight layer ${layer.id}: source "${layer.source}" not found.`);
 				return;
 			}
 			currentMap.addLayer(layer);
@@ -1266,9 +1221,9 @@ const createMapStore = () => {
 		lngLat:
 			| [number, number]
 			| {
-				lng: number;
-				lat: number;
-			},
+					lng: number;
+					lat: number;
+			  },
 		option?: EaseToOptions
 	) => {
 		if (!map || !isMapValid(map)) return;
@@ -1279,9 +1234,9 @@ const createMapStore = () => {
 		lngLat:
 			| [number, number]
 			| {
-				lng: number;
-				lat: number;
-			}
+					lng: number;
+					lat: number;
+			  }
 	) => {
 		if (!map || !isMapValid(map)) return;
 
@@ -1336,9 +1291,10 @@ const createMapStore = () => {
 		const targetW = bounds[2] - bounds[0];
 		const targetH = bounds[3] - bounds[1];
 		const targetArea = targetW * targetH;
-		const scaleRatio = currentArea > 0 && targetArea > 0
-			? Math.max(currentArea / targetArea, targetArea / currentArea)
-			: 1;
+		const scaleRatio =
+			currentArea > 0 && targetArea > 0
+				? Math.max(currentArea / targetArea, targetArea / currentArea)
+				: 1;
 
 		// 距離ベース: 近い→短い、遠い→長い
 		const distDuration = dist * 100;
@@ -1352,8 +1308,9 @@ const createMapStore = () => {
 		if (_entry.metaData.center) {
 			map.flyTo({
 				center: _entry.metaData.center,
-				zoom: ('minZoom' in _entry.style ? _entry.style.minZoom : null)
-					?? _entry.metaData.minZoom + 1.5,
+				zoom:
+					('minZoom' in _entry.style ? _entry.style.minZoom : null) ??
+					_entry.metaData.minZoom + 1.5,
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
 				duration: 1000,
