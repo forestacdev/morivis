@@ -75,6 +75,23 @@ const createGltfLoader = (manager?: THREE.LoadingManager) => {
 
 const gltfLoader = createGltfLoader();
 
+export const getModelBounds = (object: THREE.Object3D, format: ComputeUploadedModelMetaParams['format']) => {
+	if (format !== 'fbx') {
+		return new THREE.Box3().setFromObject(object);
+	}
+
+	const meshBounds = new THREE.Box3();
+	let hasMesh = false;
+	object.traverse((child) => {
+		if (!(child as THREE.Mesh).isMesh) return;
+		meshBounds.expandByObject(child);
+		hasMesh = true;
+	});
+
+	// CAD 由来の FBX は原点付近の補助ポリラインを含むことがあるため、地理配置は本体メッシュを基準にする。
+	return hasMesh ? meshBounds : new THREE.Box3().setFromObject(object);
+};
+
 const isBinaryGltfBuffer = (buffer: ArrayBuffer) => {
 	if (buffer.byteLength < 4) return false;
 	const magic = new Uint8Array(buffer, 0, 4);
@@ -597,7 +614,7 @@ export const computeUploadedModelMeta = async ({
 	);
 	object.updateMatrixWorld(true);
 
-	const box = new THREE.Box3().setFromObject(object);
+	const box = getModelBounds(object, format);
 	if (box.isEmpty()) {
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import * as THREE from 'three';
 
 vi.mock('$app/paths', () => ({
 	asset: (path: string) => path
@@ -66,5 +67,27 @@ describe('computeUploadedModelMeta', () => {
 		expect(result.bounds[0]).toBeCloseTo(139.6917, 3);
 		expect(result.bounds[1]).toBeCloseTo(35.6895, 3);
 		expect(result.xyzImageTile.z).toBeGreaterThanOrEqual(0);
+	});
+
+	it('FBX の地理配置用範囲は原点付近のポリラインを除外する', async () => {
+		const { getModelBounds } = await import('./model-bounds');
+		const object = new THREE.Group();
+		const mesh = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 5));
+		mesh.position.set(-20_000, -55_000, 20);
+		const line = new THREE.Line(
+			new THREE.BufferGeometry().setFromPoints([
+				new THREE.Vector3(0, 0, 0),
+				new THREE.Vector3(10, 10, 10)
+			])
+		);
+		object.add(mesh, line);
+		object.updateMatrixWorld(true);
+
+		const fbxBounds = getModelBounds(object, 'fbx');
+		const gltfBounds = getModelBounds(object, 'gltf');
+
+		expect(fbxBounds.getCenter(new THREE.Vector3()).toArray()).toEqual([-20_000, -55_000, 20]);
+		expect(gltfBounds.max.x).toBe(10);
+		expect(gltfBounds.max.y).toBe(10);
 	});
 });
