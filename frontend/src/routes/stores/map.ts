@@ -45,7 +45,12 @@ import {
 	isHighlightLayerId,
 	scheduleHighlightAnimationWarmup
 } from '$routes/map/utils/layers/highlight';
-import { createMapInitOptions } from '$routes/map/utils/platform/map-init';
+import {
+	configureProgressiveScrollZoom,
+	createMapOptions,
+	DRAG_PITCH_DEGREES_PER_PIXEL,
+	DRAG_ROTATE_DEGREES_PER_PIXEL
+} from '$routes/map/utils/platform/map-options';
 import { fetchWithDevProxy, resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
@@ -398,7 +403,8 @@ const createMapStore = () => {
 		deckOverlay = null;
 		isDeckOverlayAdded = false;
 
-		map = new maplibregl.Map(createMapInitOptions(mapContainer, mapPosition));
+		map = new maplibregl.Map(createMapOptions(mapContainer, mapPosition));
+		configureProgressiveScrollZoom(map);
 
 		if (get(isDebugMode)) {
 			// map.showTileBoundaries = true; // タイルの境界を表示
@@ -504,11 +510,14 @@ const createMapStore = () => {
 
 			// 水平方向の移動で回転（bearing）を変更
 			const currentBearing = map.getBearing();
-			map.setBearing(currentBearing + deltaX * 0.3);
+			map.setBearing(currentBearing + deltaX * DRAG_ROTATE_DEGREES_PER_PIXEL);
 
 			// 垂直方向の移動でピッチを変更
 			const currentPitch = map.getPitch();
-			const newPitch = Math.max(0, Math.min(85, currentPitch - deltaY * 0.3));
+			const newPitch = Math.max(
+				0,
+				Math.min(85, currentPitch - deltaY * DRAG_PITCH_DEGREES_PER_PIXEL)
+			);
 			map.setPitch(newPitch);
 
 			lastMouseX = e.clientX;
