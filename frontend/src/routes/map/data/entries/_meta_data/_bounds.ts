@@ -448,3 +448,10 @@ export const NAGANO_INATANI_BBOX: [number, number, number, number] = [
 	138.4352382932371,
 	36.19313431837013
 ];
+
+export const OITA_NANBU_BBOX: [number, number, number, number] = [
+	131.48830445934954,
+	32.754996350420015,
+	132.01582853424554,
+	33.06114268933909
+];

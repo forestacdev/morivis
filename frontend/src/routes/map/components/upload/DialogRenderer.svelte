@@ -29,6 +29,7 @@
 		remoteFeatureServiceUrl: string | null;
 		pendingTileUrl: string | null;
 		focusBbox: [number, number, number, number] | null;
+		isDragover: boolean;
 		zoneConfirmedEpsg: EpsgCode | null;
 		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
 		geoRefData: GeoRefData | null;
@@ -51,6 +52,7 @@
 		remoteFeatureServiceUrl = $bindable(),
 		pendingTileUrl = $bindable(),
 		focusBbox = $bindable(),
+		isDragover = false,
 		zoneConfirmedEpsg = $bindable(),
 		pendingZoneGeoRefData = $bindable(),
 		geoRefData = $bindable()
@@ -93,6 +95,7 @@
 		bind:zoneConfirmedEpsg
 		bind:pendingZoneGeoRefData
 		{selectedEpsgCode}
+		{isDragover}
 	/>
 {:else if profile === 'vector-georef'}
 	<FormComponent

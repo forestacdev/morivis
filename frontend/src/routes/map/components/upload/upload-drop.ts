@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
+import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
 import { isLikelyHritFile } from '$routes/map/utils/formats/hrit';
@@ -31,7 +32,7 @@ import {
 	MODEL_FILE_EXTENSIONS
 } from './upload-drop-matchers';
 
-type UploadDropDecision =
+export type UploadDropDecision =
 	| {
 		type: 'dialog';
 		dialogType: DialogType;
@@ -174,6 +175,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	dm: 'dm',
 	dwg: 'dwg',
 	dxf: 'dxf',
+	sfc: 'sxf',
 	sim: 'sima',
 	shp: 'shp',
 	dbf: 'shp',
@@ -189,6 +191,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	gdb: 'gdb',
 	pmtiles: 'pmtiles',
 	glb: 'glb',
+	gltf: 'glb',
 	'3ds': 'glb',
 	dae: 'glb',
 	'3dm': 'glb',
@@ -217,6 +220,10 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	grb2: 'grib2',
 	grb: 'grib2'
 };
+
+const SXF_PRIMARY_EXTENSION = '.sfc';
+const SXF_P21_EXTENSION = '.p21';
+const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
@@ -251,12 +258,17 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 		match: (files) => !!findFirstByExtensions(files, MODEL_FILE_EXTENSIONS),
 		resolve: async (files) => {
 			const objFile = files.find((file) => hasExtension(file, '.obj'));
-			if (!objFile) return createDialogDecision('glb');
+			if (!objFile) return createDialogDecision('glb', files);
 
 			const inspection = await inspectObjFile(objFile);
 			attachProjectedModelEpsg(objFile, inspection.projectedModelEpsg);
-			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb');
+			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb', files);
 		}
+	},
+	{
+		id: 'filegdb-set',
+		match: (files) => files.some((file) => isFileGdbRelatedFile(file)),
+		resolve: async () => createDialogDecision('filegdb')
 	},
 	{
 		id: 'photo-set',
@@ -274,6 +286,29 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 		id: 'drm-set',
 		match: (files) => files.some((file) => hasExtension(file, '.mt')),
 		resolve: async () => createDialogDecision('drm')
+	},
+	{
+		id: 'sxf-set',
+		match: (files) =>
+			files.some(
+				(file) =>
+					hasExtension(file, SXF_PRIMARY_EXTENSION)
+					|| hasExtension(file, SXF_P21_EXTENSION)
+					|| hasExtension(file, SXF_SAF_EXTENSION)
+			),
+		resolve: async (files) => {
+			const sfcFile = files.find((file) => hasExtension(file, SXF_PRIMARY_EXTENSION));
+			if (sfcFile) {
+				return createDialogDecision('sxf');
+			}
+
+			const p21File = files.find((file) => hasExtension(file, SXF_P21_EXTENSION));
+			if (p21File) {
+				return createDialogDecision('sxf');
+			}
+
+			return createDialogDecision('sxf');
+		}
 	},
 	{
 		id: 'shapefile-set',
@@ -405,6 +440,14 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 			return createDialogDecision('pointcloud');
 		}
 		return createNotificationDecision('対応していないTXTファイルです');
+	}
+
+	if (ext === 'p21') {
+		return createDialogDecision('sxf');
+	}
+
+	if (ext === 'saf') {
+		return createDialogDecision('sxf');
 	}
 
 	if (ext === 'xml') {

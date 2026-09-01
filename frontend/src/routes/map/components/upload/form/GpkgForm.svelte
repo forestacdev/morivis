@@ -216,7 +216,7 @@
 			if (result.epsg && result.epsg !== 4326) {
 				try {
 					const prj = getProjContext(String(result.epsg) as EpsgCode);
-					const transformed = transformBbox(result.bounds, prj);
+					const transformed = await transformBbox(result.bounds, prj);
 					if (isBboxValid(transformed)) {
 						resolvedBbox = transformed;
 					}

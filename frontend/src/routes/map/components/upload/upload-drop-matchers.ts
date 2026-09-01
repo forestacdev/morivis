@@ -4,6 +4,7 @@ const PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.heic', '.heif'];
 const XML_EXTENSION = '.xml';
 
 export const MODEL_FILE_EXTENSIONS = [
+	'.gltf',
 	'.obj',
 	'.3ds',
 	'.dae',

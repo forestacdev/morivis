@@ -22,13 +22,17 @@ export const buildGlbExportFilename = (name: string, fallback = 'model'): string
 export const downloadArrayBufferAsGlb = (glb: ArrayBuffer, filename: string): void => {
 	const blob = new Blob([glb], { type: 'model/gltf-binary' });
 	const url = URL.createObjectURL(blob);
+	downloadBlobUrlAsGlb(url, filename);
+	setTimeout(() => {
+		URL.revokeObjectURL(url);
+	}, 0);
+};
+
+export const downloadBlobUrlAsGlb = (url: string, filename: string): void => {
 	const link = document.createElement('a');
 	link.href = url;
 	link.download = filename;
 	document.body.appendChild(link);
 	link.click();
 	document.body.removeChild(link);
-	setTimeout(() => {
-		URL.revokeObjectURL(url);
-	}, 0);
 };

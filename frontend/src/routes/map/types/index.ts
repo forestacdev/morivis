@@ -89,6 +89,7 @@ export type DialogType =
 	| 'drm'
 	| 'dwg'
 	| 'dxf'
+	| 'sxf'
 	| 'sima'
 	| 'hdf5'
 	| 'csv'
@@ -96,6 +97,7 @@ export type DialogType =
 	| 'xlsx'
 	| 'gpkg'
 	| 'sqlite'
+	| 'filegdb'
 	| 'gdb'
 	| 'mfjson'
 	| '3dtiles'
@@ -156,7 +158,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: 'FlatGeobuf',
 		description:
-			'空間インデックスを持つバイナリのベクターデータです。大きめのGeoJSON系データを扱うときに使います。',
+			'空間インデックスを持つバイナリのベクターデータです。大量の地物をまとめて読み込むときに使います。',
 		extensions: ['.fgb']
 	},
 	{
@@ -189,9 +191,24 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.sqlite', '.sqlite3', '.db', '.db3', '.sql']
 	},
 	{
+		label: 'Esri FileGDB',
+		description:
+			'複数テーブルで構成されたファイル型の地理データベースです。.gdb フォルダ内の構成ファイルをまとめて読み込むときに使います。',
+		extensions: [
+			'.gdbtable',
+			'.gdbtablx',
+			'.gdbindexes',
+			'.gdbindex',
+			'.atx',
+			'.spx',
+			'.cdf',
+			'.freelist'
+		]
+	},
+	{
 		label: 'Shapefile',
 		description:
-			'ESRIが策定した複数ファイル構成のベクターデータです。`.shp` を中心に図形と属性をまとめて読み込むときに使います。',
+			'複数ファイルで構成されたベクターデータです。`.shp` を中心に図形と属性をまとめて読み込むときに使います。',
 		extensions: ['.shp', '.dbf', '.shx', '.prj', '.cpg']
 	},
 	{
@@ -203,7 +220,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: 'TCX',
 		description:
-			'Garmin系のトレーニングログデータです。運動履歴の軌跡や計測点を表示するときに使います。',
+			'トレーニング記録をXMLで表したデータです。運動履歴の軌跡や計測点を表示するときに使います。',
 		extensions: ['.tcx']
 	},
 	{
@@ -225,6 +242,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.georss', '.rss', '.atom']
 	},
 	{
+		label: 'SXF (SFC)',
+		description:
+			'SXF の SFC 形式で保存されたCAD図面です。公共図面や土木図面の線や文字を読み込むときに使います。',
+		extensions: ['.sfc']
+	},
+	{
 		label: 'GML',
 		description:
 			'地理情報をXMLで表現するベクターデータです。基盤地図情報や各種XML地図データを読み込むときに使います。',
@@ -233,7 +256,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: 'KML / KMZ',
 		description:
-			'Google Earth系の地理データです。地物やスタイル、写真オーバーレイを読み込むときに使います。',
+			'地理データをXMLや圧縮パッケージで表した形式です。地物やスタイル、写真オーバーレイを読み込むときに使います。',
 		extensions: ['.kml', '.kmz']
 	},
 	{
@@ -269,7 +292,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: 'PMTiles',
 		description:
-			'単一ファイルにまとめたクラウド向けタイルデータです。静的ホスティングされたタイルを扱うときに使います。',
+			'単一ファイルにまとめたタイルデータです。静的配信されたタイルを読み込むときに使います。',
 		extensions: ['.pmtiles']
 	},
 	{
@@ -304,8 +327,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	},
 	{
 		label: 'DXF / DWG',
-		description:
-			'CAD図面の交換形式とネイティブ形式です。図面上の線や注記を地図上で確認するときに使います。',
+		description: 'CAD図面を表す形式です。図面上の線や注記を地図上で確認するときに使います。',
 		extensions: ['.dxf', '.dwg']
 	},
 	{
@@ -317,18 +339,19 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: 'DRM',
 		description:
-			'デジタル道路地図協会の道路ネットワークデータです。道路リンクを線データとして読み込むときに使います。',
+			'道路ネットワークを表現したデータです。道路リンクや関連属性を読み込むときに使います。',
 		extensions: ['.mt']
 	},
 	{
 		label: 'DM',
 		description:
-			'公共測量の計画機関において作成された数値地形図データです。数値地図系の地物を読み込むときに使います。',
+			'数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
 		extensions: ['.dm']
 	},
 	{
 		label: 'LandXML',
-		description: '土木測量や設計で使うXML形式です。TINや線形、測点データを扱うときに使います。',
+		description:
+			'土木測量や設計の地形情報を表すXML形式です。TINや線形、測点データを扱うときに使います。',
 		extensions: ['.landxml']
 	},
 	{
@@ -356,9 +379,10 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.pdf']
 	},
 	{
-		label: 'GLB',
-		description: 'glTFのバイナリ3Dモデルです。3D形状を地図上に配置して表示するときに使います。',
-		extensions: ['.glb']
+		label: 'GLB / GLTF',
+		description:
+			'3Dシーンや3Dモデルを記述する形式です。GLTFはJSONと外部ファイルの組み合わせ、GLBはそれを1ファイルにまとめた3Dモデルを読み込むときに使います。',
+		extensions: ['.glb', '.gltf']
 	},
 	{
 		label: 'Wavefront OBJ',
@@ -411,8 +435,8 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: '点群',
 		description:
-			'多数の座標点で構成された3Dデータです。測量やスキャン由来の点群を表示するときに使います。',
-		extensions: ['.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
+			'多数の座標点で構成された3Dデータです。LAS/LAZ や COPC、各種点群テキストを表示するときに使います。',
+		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
 	}
 ];
 

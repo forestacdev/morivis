@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { inspectObjFile, parseObjPointCloudFile } from '.';
+import { inspectMtlFile, inspectObjFile, parseObjPointCloudFile } from '.';
 
 const pointCloudObj = readFileSync(
 	resolve(import.meta.dirname, '__fixtures__', 'point-cloud.obj'),
@@ -23,7 +23,8 @@ describe('obj parser', () => {
 			isPointCloud: true,
 			hasFaces: false,
 			vertexCount: 3,
-			projectedModelEpsg: null
+			projectedModelEpsg: null,
+			referencedMaterialLibraries: []
 		});
 	});
 
@@ -51,5 +52,37 @@ v 0 0 0`
 		);
 
 		expect(result.projectedModelEpsg).toBe('6677');
+	});
+
+	it('mtllib 行から参照 MTL 一覧を取り出せる', async () => {
+		const result = await inspectObjFile(
+			createFile(
+				'with-mtl.obj',
+				`mtllib house.mtl
+mtllib materials/wall.mtl
+v 0 0 0
+f 1 1 1`
+			)
+		);
+
+		expect(result.referencedMaterialLibraries).toEqual(['house.mtl', 'materials/wall.mtl']);
+	});
+
+	it('MTL のテクスチャ参照一覧を取り出せる', async () => {
+		const result = await inspectMtlFile(
+			createFile(
+				'house.mtl',
+				`newmtl wall
+map_Kd textures/diffuse.png
+bump -bm 0.2 normals/wall-normal.jpg
+map_Pr -o 1 2 3 roughness.webp`
+			)
+		);
+
+		expect(result.referencedTexturePaths).toEqual([
+			'textures/diffuse.png',
+			'normals/wall-normal.jpg',
+			'roughness.webp'
+		]);
 	});
 });

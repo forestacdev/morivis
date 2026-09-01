@@ -641,17 +641,21 @@
 	});
 
 	let mobileHasAttributeTab = $derived.by(() => {
-		if (!featureMenuData || !mobileTargetLayer || mobileTargetLayer.type !== 'vector') {
+		if (!featureMenuData || !mobileTargetLayer || !featureMenuData.properties) {
 			return false;
 		}
-
-		if (!featureMenuData.properties) return false;
 
 		const propId = featureMenuData.properties._prop_id;
 		if (propId) return false;
 
-		const popupKeys = mobileTargetLayer.properties.attributeView.popupKeys;
-		const imageKey = getPopupImageFieldKey(mobileTargetLayer.properties);
+		const popupKeys =
+			mobileTargetLayer.type === 'vector'
+				? mobileTargetLayer.properties.attributeView.popupKeys
+				: [];
+		const imageKey =
+			mobileTargetLayer.type === 'vector'
+				? getPopupImageFieldKey(mobileTargetLayer.properties)
+				: null;
 		const displayProps =
 			popupKeys.length > 0
 				? filterByPopupKeys(featureMenuData.properties, popupKeys)
@@ -1335,6 +1339,7 @@
 {/if}
 {#if UploadDialog}
 	<UploadDialog
+		{map}
 		bind:showDialogType
 		bind:showDataEntry
 		bind:tempLayerEntries

@@ -1,0 +1,32 @@
+import { AICHI_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
+import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
+import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import type { RasterBaseMapStyle, RasterImageEntry } from '$routes/map/data/types/raster';
+
+const entry: RasterImageEntry<RasterBaseMapStyle> = {
+	id: 'aichi_higashimikawa_cs',
+	type: 'raster',
+	format: {
+		type: 'image',
+		url: 'https://rinya-tiles.geospatial.jp/csmap_079_2025/{z}/{x}/{y}.webp'
+	},
+	metaData: {
+		name: '東三河森林計画区 CS立体図',
+		sourceDataName: 'CS立体図ラスタタイルXYZ',
+		description:
+			'東三河森林計画区の地形をCS立体図で表現したラスタタイル。尾根や谷などの地形判読に利用できる。',
+		attribution: '愛知県_林野庁加工',
+		location: '愛知県',
+		tags: ['地形', '微地形図'],
+		minZoom: 8,
+		maxZoom: 18,
+		tileSize: 256,
+		bounds: [136.99798827758303, 34.572235310042075, 137.8948732127684, 35.28209376976777],
+		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/higashimikawa_079',
+		xyzImageTile: { x: 28898, y: 12986, z: 15 }
+	},
+	interaction: { ...DEFAULT_RASTER_BASEMAP_INTERACTION },
+	style: { ...DEFAULT_RASTER_BASEMAP_STYLE }
+};
+
+export default entry;

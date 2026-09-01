@@ -1,5 +1,7 @@
 import proj4 from 'proj4';
 
+import { ensureProjNadgridsReady } from './nadgrid';
+
 type Coordinate = number[];
 type NestedCoordinates = Coordinate | NestedCoordinates[];
 
@@ -100,11 +102,12 @@ const transformFeature = (feature: GeoJSONFeature): GeoJSONFeature => {
 	};
 };
 
-onmessage = (event: MessageEvent<WorkerMessageData>) => {
+onmessage = async (event: MessageEvent<WorkerMessageData>) => {
 	const { features, prjContent, batchIndex } = event.data;
 
 	try {
 		if (prjContent !== cachedPrj) {
+			await ensureProjNadgridsReady(prjContent);
 			cachedConverter = proj4(prjContent, 'EPSG:4326');
 			cachedPrj = prjContent;
 		}

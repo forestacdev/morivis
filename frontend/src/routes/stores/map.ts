@@ -45,8 +45,13 @@ import {
 	isHighlightLayerId,
 	scheduleHighlightAnimationWarmup
 } from '$routes/map/utils/layers/highlight';
-import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
-import { resolveMapLibreRequest, resolveRequestUrl } from '$routes/map/utils/platform/request';
+import {
+	configureProgressiveScrollZoom,
+	createMapOptions,
+	DRAG_PITCH_DEGREES_PER_PIXEL,
+	DRAG_ROTATE_DEGREES_PER_PIXEL
+} from '$routes/map/utils/platform/map-options';
+import { fetchWithDevProxy, resolveRequestUrl } from '$routes/map/utils/platform/request';
 
 import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 import {
@@ -80,7 +85,8 @@ import {
 import { clearPointCloudDataCache, createDeckOverlay } from '$routes/map/utils/deck/overlay';
 import {
 	buildGlbExportFilename,
-	downloadArrayBufferAsGlb
+	downloadArrayBufferAsGlb,
+	downloadBlobUrlAsGlb
 } from '$routes/map/utils/formats/export/model';
 import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
@@ -398,44 +404,8 @@ const createMapStore = () => {
 		deckOverlay = null;
 		isDeckOverlayAdded = false;
 
-		map = new maplibregl.Map({
-			...mapPosition,
-			minZoom: checkPc() ? 0 : 0, // 最小ズームレベル
-			container: mapContainer,
-			canvasContextAttributes: {
-				// WebGLのコンテキスト属性を設定
-				antialias: true, // アンチエイリアスを有効にする
-				depth: true, // 深度バッファを有効にする
-				// stencil: true, // ステンシルバッファを有効にする
-				alpha: true // アルファチャンネルを有効にする
-				// preserveDrawingBuffer: true // 描画バッファを保持する 地図のスクリーンショット機能が必要な場合
-			},
-			centerClampedToGround: true, // 地図の中心を地面にクランプする
-			style: {
-				version: 8,
-				sources: {},
-				layers: []
-			},
-			fadeDuration: 0, // フェードアニメーションの時間 シンボル
-			attributionControl: false, // デフォルトの出典を非表示
-			localIdeographFontFamily: false, // ローカルのフォントを使う
-			maxPitch: 85, // 最大ピッチ角度
-			dragRotate: false, // デフォルトの右ドラッグ回転を無効化
-			pitchWithRotate: false, // デフォルトのピッチ操作を無効化
-			boxZoom: false, // Shift+ドラッグのボックスズームを無効化
-			doubleClickZoom: false, // ダブルクリックズームを無効化
-			keyboard: false, // キーボード操作を無効化
-			// maplibreLogo: true, // MapLibreのロゴを表示
-			// logoPosition: 'bottom-right' // ロゴの位置を指定
-			// renderWorldCopies: false // 世界地図を繰り返し表示しない
-			// transformCameraUpdate: true // カメラの変更をトランスフォームに反映
-			// maxZoom: 18,
-			// maxBounds: [135.120849, 33.93533, 139.031982, 37.694841]
-			transformRequest: (url, resourceType) => {
-				return resolveMapLibreRequest(url, resourceType);
-			}
-			// collectResourceTiming: true // リソースのタイミングを収集する Vector TileとGeoJSON(デバッグ用)
-		});
+		map = new maplibregl.Map(createMapOptions(mapContainer, mapPosition));
+		configureProgressiveScrollZoom(map);
 
 		if (get(isDebugMode)) {
 			// map.showTileBoundaries = true; // タイルの境界を表示
@@ -541,11 +511,14 @@ const createMapStore = () => {
 
 			// 水平方向の移動で回転（bearing）を変更
 			const currentBearing = map.getBearing();
-			map.setBearing(currentBearing + deltaX * 0.3);
+			map.setBearing(currentBearing + deltaX * DRAG_ROTATE_DEGREES_PER_PIXEL);
 
 			// 垂直方向の移動でピッチを変更
 			const currentPitch = map.getPitch();
-			const newPitch = Math.max(0, Math.min(85, currentPitch - deltaY * 0.3));
+			const newPitch = Math.max(
+				0,
+				Math.min(85, currentPitch - deltaY * DRAG_PITCH_DEGREES_PER_PIXEL)
+			);
 			map.setPitch(newPitch);
 
 			lastMouseX = e.clientX;
@@ -842,8 +815,6 @@ const createMapStore = () => {
 			return;
 		}
 		const layer = threeJsManager.createLayer();
-		// https://github.com/maplibre/maplibre-gl-js/issues/2587
-		// map.addLayer(layer, 'deck-reference-layer');
 		map.addLayer(layer);
 	};
 
@@ -1024,6 +995,16 @@ const createMapStore = () => {
 	};
 
 	const exportModelAsGlb = async (entry: MeshEntry<MeshStyle>) => {
+		if (entry.metaData.isUserUploaded !== true) {
+			throw new Error('アップロードした3Dモデルのみエクスポートできます');
+		}
+
+		const sourceFileName = entry.format.sourceFileName?.toLowerCase();
+		if (sourceFileName?.endsWith('.glb') && entry.format.url.startsWith('blob:')) {
+			downloadBlobUrlAsGlb(entry.format.url, buildGlbExportFilename(entry.metaData.name));
+			return;
+		}
+
 		const glb = await threeJsManager.exportModelAsGlb(entry.id);
 		downloadArrayBufferAsGlb(glb, buildGlbExportFilename(entry.metaData.name));
 	};

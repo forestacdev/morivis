@@ -7,12 +7,12 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	type: 'raster',
 	format: {
 		type: 'image',
-		url: 'https://forestgeo.info/opendata/21_gifu/csmap_2023/{z}/{x}/{y}.webp'
+		url: 'https://tiles.arcgis.com/tiles/jJQWqgqiNhLLjkin/arcgis/rest/services/Gifu2021CS_Mosic/MapServer/tile/{z}/{y}/{x}'
 	},
 	metaData: {
 		name: '岐阜県 CS立体図',
 		attribution: '岐阜県森林研究所',
-		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/rinya-gifu-maptiles',
+		downloadUrl: 'https://www.forest.rd.pref.gifu.lg.jp/shiyou/sinrinwebmap.html',
 		location: '岐阜県',
 		tags: ['地形', '微地形図'],
 		minZoom: 8,

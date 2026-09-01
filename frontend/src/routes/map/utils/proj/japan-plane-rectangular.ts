@@ -1,4 +1,5 @@
 import { dmsToDecimal } from './dms';
+import { TOKYO_NADGRID_PROJ4_VALUE } from './nadgrid';
 
 export type JapanPlaneRectangularZone =
 	| 1
@@ -21,7 +22,7 @@ export type JapanPlaneRectangularZone =
 	| 18
 	| 19;
 
-export type JapanPlaneRectangularDatum = 'jgd2000' | 'jgd2011';
+export type JapanPlaneRectangularDatum = 'tokyo' | 'jgd2000' | 'jgd2011';
 
 export interface JapanPlaneRectangularInfo {
 	zone: JapanPlaneRectangularZone;
@@ -50,6 +51,10 @@ const createProjContext = (
 	const base =
 		`+proj=tmerc +lat_0=${originLatitude} +lon_0=${originLongitude} +k=0.9999 +x_0=0 +y_0=0 +ellps=GRS80 +units=m +no_defs`;
 	return includeTypeCrs ? `${base} +type=crs` : base;
+};
+
+const createTokyoProjContext = (originLatitude: number, originLongitude: number): string => {
+	return `+proj=tmerc +lat_0=${originLatitude} +lon_0=${originLongitude} +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel ${TOKYO_NADGRID_PROJ4_VALUE} +units=m +no_defs +type=crs`;
 };
 
 const normalizeEpsgCode = (epsg: string | number): number | null => {
@@ -364,6 +369,11 @@ export const getJapanPlaneRectangularZoneFromEpsg = (
 		return isJapanPlaneRectangularZone(zone) ? zone : null;
 	}
 
+	if (normalized >= 30161 && normalized <= 30179) {
+		const zone = normalized - 30160;
+		return isJapanPlaneRectangularZone(zone) ? zone : null;
+	}
+
 	if (normalized >= 6669 && normalized <= 6687) {
 		const zone = normalized - 6668;
 		return isJapanPlaneRectangularZone(zone) ? zone : null;
@@ -384,7 +394,11 @@ export const getJapanPlaneRectangularEpsg = (
 	datum: JapanPlaneRectangularDatum = 'jgd2011'
 ): string | null => {
 	const info = getJapanPlaneRectangularInfo(zone);
-	return info ? info.epsg[datum] : null;
+	if (!info) return null;
+	if (datum === 'tokyo') {
+		return `EPSG:${30160 + info.zone}`;
+	}
+	return info.epsg[datum];
 };
 
 export const getJapanPlaneRectangularProj4 = (
@@ -393,6 +407,10 @@ export const getJapanPlaneRectangularProj4 = (
 ): string | null => {
 	const info = getJapanPlaneRectangularInfo(zone);
 	if (!info) return null;
+
+	if (datum === 'tokyo') {
+		return createTokyoProjContext(info.originLatitude, info.originLongitude);
+	}
 
 	return createProjContext(
 		info.originLatitude,

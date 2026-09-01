@@ -44,6 +44,7 @@ export interface MeshModelEntryConfig extends BaseModelConfig {
 		rotationY?: number;
 	};
 	wireframe?: boolean;
+	showThroughTerrain?: boolean;
 	color?: string;
 	heightColorRamp?: {
 		enabled?: boolean;
@@ -70,6 +71,7 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 		opacity = 0.7,
 		transform,
 		wireframe = false,
+		showThroughTerrain = false,
 		color = '#ffffff',
 		heightColorRamp
 	} = config;
@@ -94,11 +96,12 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile],
 			altitude: transform.altitude
 		},
-		interaction: { clickable: false },
+		interaction: { clickable: true },
 		style: {
 			type: 'mesh',
 			opacity,
 			wireframe,
+			showThroughTerrain,
 			color,
 			shading: { ...DEFAULT_MESH_SHADING },
 			...(heightColorRamp && {

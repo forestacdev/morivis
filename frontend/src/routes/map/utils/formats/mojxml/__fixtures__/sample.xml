@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <地図 xmlns="http://www.moj.go.jp/MINJI/tizuxml" xmlns:zmn="http://www.moj.go.jp/MINJI/tizuzumen">
   <地図名>テスト地図</地図名>
-  <市区町村コード>13101</市区町村コード>
-  <市区町村名>千代田区</市区町村名>
+  <市区町村コード>00000</市区町村コード>
+  <市区町村名>テスト市</市区町村名>
   <座標系>任意座標系</座標系>
   <測地系判別>任意</測地系判別>
   <空間属性>

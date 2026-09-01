@@ -26,6 +26,7 @@
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster/tile-query';
+	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import {
 		clickableVectorIds,
 		clickableRasterIds,
@@ -386,6 +387,7 @@
 		const hadContextMenu = contextMenuState?.show === true;
 
 		setSelectedHighlight(null);
+		threeJsManager.clearModelHighlight();
 		featureMenuData = null;
 		clearSearchHighlight();
 		clickedLayerIds = [];
@@ -508,6 +510,27 @@
 		try {
 			// デバッグ用コード
 			clickDebug(e);
+
+			const pickedModel = await threeJsManager.pickModel(e.point);
+			if (pickedModel) {
+				console.info('[モデル属性]', pickedModel);
+				clearSearchHighlight();
+				clickedLayerIds = [pickedModel.entryId];
+				featureMenuData = {
+					layerId: pickedModel.entryId,
+					featureId: pickedModel.objectId,
+					point: [e.lngLat.lng, e.lngLat.lat],
+					properties: {
+						オブジェクト名: pickedModel.objectName,
+						モデルID: pickedModel.objectId,
+						...pickedModel.attributes
+					}
+				};
+				setSelectedHighlight(null);
+				return;
+			}
+			if (!import.meta.env.PROD) console.info('[モデル属性] メッシュにヒットしませんでした');
+			threeJsManager.clearModelHighlight();
 
 			const existingLayerIds = getExistingClickableLayerIds();
 			if (!existingLayerIds.length) return;

@@ -8,6 +8,7 @@ import DrmForm from '$routes/map/components/upload/form/DrmForm.svelte';
 import DwgForm from '$routes/map/components/upload/form/DwgForm.svelte';
 import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 import FeatureServiceForm from '$routes/map/components/upload/form/FeatureServiceForm.svelte';
+import FileGdbForm from '$routes/map/components/upload/form/FileGdbForm.svelte';
 import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
 import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
 import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
@@ -41,6 +42,7 @@ import SimaForm from '$routes/map/components/upload/form/SimaForm.svelte';
 import SQLiteForm from '$routes/map/components/upload/form/SQLiteForm.svelte';
 import StacForm from '$routes/map/components/upload/form/StacForm.svelte';
 import SvgForm from '$routes/map/components/upload/form/SvgForm.svelte';
+import SxfForm from '$routes/map/components/upload/form/SxfForm.svelte';
 import TcxForm from '$routes/map/components/upload/form/TcxForm.svelte';
 import Tiles3DForm from '$routes/map/components/upload/form/Tiles3DForm.svelte';
 import TileUrlTypeForm from '$routes/map/components/upload/form/TileUrlTypeForm.svelte';
@@ -119,6 +121,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	landxml: { component: LandXmlForm, profile: 'pointcloud-georef' },
 	gpx: { component: GpxForm, profile: 'drop-file' },
 	tcx: { component: TcxForm, profile: 'drop-file' },
+	filegdb: { component: FileGdbForm, profile: 'drop-file' },
 	gdb: { component: GarminGDBForm, profile: 'drop-file' },
 	osm: { component: OsmForm, profile: 'vector-zone-georef' },
 	georss: { component: GeoRssForm, profile: 'vector-zone-georef' },
@@ -127,6 +130,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	dm: { component: DmForm, profile: 'vector-zone-georef', fixedHeight: true },
 	dwg: { component: DwgForm, profile: 'vector-zone-georef', fixedHeight: true },
 	dxf: { component: DxfForm, profile: 'vector-zone-georef', fixedHeight: true },
+	sxf: { component: SxfForm, profile: 'vector-zone-georef', fixedHeight: true },
 	gpkg: { component: GpkgForm, profile: 'vector-zone-georef' },
 	sqlite: { component: SQLiteForm, profile: 'vector-zone-georef' },
 	hdf5: { component: Hdf5Form, profile: 'drop-file' },

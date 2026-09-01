@@ -49,17 +49,17 @@
 	});
 
 	let hasAttributeTab = $derived.by(() => {
-		if (panelData?.kind !== 'layer-feature' || !targetLayer || targetLayer.type !== 'vector') {
+		if (panelData?.kind !== 'layer-feature' || !targetLayer || !panelData.properties) {
 			return false;
 		}
-
-		if (!panelData.properties) return false;
 
 		const propId = panelData.properties?._prop_id;
 		if (propId) return false;
 
-		const popupKeys = targetLayer.properties.attributeView.popupKeys;
-		const imageKey = getPopupImageFieldKey(targetLayer.properties);
+		const popupKeys =
+			targetLayer.type === 'vector' ? targetLayer.properties.attributeView.popupKeys : [];
+		const imageKey =
+			targetLayer.type === 'vector' ? getPopupImageFieldKey(targetLayer.properties) : null;
 		const displayProps =
 			popupKeys.length > 0
 				? filterByPopupKeys(panelData.properties, popupKeys)

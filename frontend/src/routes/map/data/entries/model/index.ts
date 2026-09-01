@@ -183,6 +183,7 @@ export const createGlbEntry = (
 	options?: {
 		normalizeToLocalOrigin?: boolean;
 		georeference?: ProjectedModelGeoreference;
+		sourceFileName?: string;
 	}
 ): MeshEntry<MeshStyle> => {
 	// 形式ごとにローカルの up 軸が違うため、読み込み基準回転を分ける。
@@ -196,6 +197,7 @@ export const createGlbEntry = (
 		format: {
 			type: formatType,
 			url,
+			...(options?.sourceFileName && { sourceFileName: options.sourceFileName }),
 			...(mtlUrl && { mtlUrl }),
 			...(resourceUrls && { resourceUrls }),
 			...(options?.normalizeToLocalOrigin != null && {
@@ -230,12 +232,13 @@ export const createGlbEntry = (
 			altitude: transform.altitude,
 			bounds: pointToBbox(transform.lng, transform.lat)
 		},
-		interaction: { clickable: false },
+		interaction: { clickable: true },
 		style: {
 			visible: true,
 			type: 'mesh',
 			opacity: 1,
 			wireframe: false,
+			showThroughTerrain: false,
 			color: '#ffffff',
 			shading: { ...DEFAULT_MESH_SHADING },
 			transform: {

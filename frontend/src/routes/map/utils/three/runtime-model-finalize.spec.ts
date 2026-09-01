@@ -11,7 +11,7 @@ describe('finalizeRuntimeModelObject', () => {
 		const georeference: ProjectedModelGeoreference = {
 			type: 'projected',
 			epsg: '6677',
-			projectedOrigin: [125054.296875, 785876.15625, 13.753643035888672],
+			projectedOrigin: [100, 200, 30],
 			unitScaleMeters: 1
 		};
 
@@ -20,11 +20,7 @@ describe('finalizeRuntimeModelObject', () => {
 			georeference
 		});
 
-		expect(object.position.toArray()).toEqual([
-			-125054.296875,
-			-785876.15625,
-			-13.753643035888672
-		]);
+		expect(object.position.toArray()).toEqual([-100, -200, -30]);
 	});
 
 	it('normalizeToLocalOrigin がある場合はローカル原点へ寄せる', () => {

@@ -82,7 +82,8 @@ describe('resolveDroppedFiles', () => {
 			isPointCloud: false,
 			hasFaces: true,
 			vertexCount: 10,
-			projectedModelEpsg: null
+			projectedModelEpsg: null,
+			referencedMaterialLibraries: []
 		});
 		vi.mocked(findGeoReferencedImageFile).mockReturnValue(null);
 		vi.mocked(findRasterImageFile).mockReturnValue(null);
@@ -143,6 +144,36 @@ describe('resolveDroppedFiles', () => {
 		expect(result).toEqual({
 			type: 'dialog',
 			dialogType: 'dwg',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の SFC は sxf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('plan.sfc', 'sxf'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の P21 は sxf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('plan.p21', 'sxf'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の SAF は sxf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('plan.saf', 'saf'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sxf',
 			dropFiles: undefined
 		});
 	});
@@ -260,6 +291,80 @@ describe('resolveDroppedFiles', () => {
 		expect(result.dropFiles).toBeUndefined();
 	});
 
+	it('SXF フォルダは TIF より SFC を優先して sxf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles([
+			createPathLikeFile('D0PL0011.TIF', 'D0PL001ZSFC/D0PL0011.TIF', 'image/tiff'),
+			createPathLikeFile('D0PL001Z.SAF', 'D0PL001ZSFC/D0PL001Z.SAF', 'text/plain'),
+			createPathLikeFile('D0PL001Z.SFC', 'D0PL001ZSFC/D0PL001Z.SFC', 'sxf')
+		]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
+		});
+	});
+
+	it('SXF の P21 フォルダは sxf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles([
+			createPathLikeFile('D0PL0011.TIF', 'D0PL001ZP21/D0PL0011.TIF', 'image/tiff'),
+			createPathLikeFile('D0PL001Z.SAF', 'D0PL001ZP21/D0PL001Z.SAF', 'text/plain'),
+			createPathLikeFile('D0PL001Z.P21', 'D0PL001ZP21/D0PL001Z.P21', 'text/plain')
+		]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
+		});
+	});
+
+	it('SXF の SAF だけでも sxf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles([
+			createPathLikeFile('D0PL0011.TIF', 'D0PL001ZSFC/D0PL0011.TIF', 'image/tiff'),
+			createPathLikeFile('D0PL001Z.SAF', 'D0PL001ZSFC/D0PL001Z.SAF', 'text/plain')
+		]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'sxf',
+			dropFiles: undefined
+		});
+	});
+
+	it('FileGDB の構成ファイル一式は filegdb ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles([
+			createPathLikeFile(
+				'a00000001.gdbtable',
+				'roads.gdb/a00000001.gdbtable',
+				'catalog-table'
+			),
+			createPathLikeFile(
+				'a00000001.gdbtablx',
+				'roads.gdb/a00000001.gdbtablx',
+				'catalog-index'
+			),
+			createPathLikeFile('a00000009.gdbtable', 'roads.gdb/a00000009.gdbtable', 'layer-table'),
+			createPathLikeFile('a00000009.gdbtablx', 'roads.gdb/a00000009.gdbtablx', 'layer-index')
+		]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'filegdb',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の Garmin GDB は gdb ダイアログ判定のまま', async () => {
+		const result = await resolveDroppedFiles(createFile('tracks.gdb'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'gdb',
+			dropFiles: undefined
+		});
+	});
+
 	it('Location History JSON は locationhistory 判定になる', async () => {
 		vi.mocked(isLocationHistoryFile).mockResolvedValue(true);
 
@@ -336,7 +441,8 @@ describe('resolveDroppedFiles', () => {
 			isPointCloud: true,
 			hasFaces: false,
 			vertexCount: 100,
-			projectedModelEpsg: null
+			projectedModelEpsg: null,
+			referencedMaterialLibraries: []
 		});
 
 		const result = await resolveDroppedFiles(createFile('points.obj'));
@@ -353,7 +459,8 @@ describe('resolveDroppedFiles', () => {
 			isPointCloud: false,
 			hasFaces: true,
 			vertexCount: 100,
-			projectedModelEpsg: '6677'
+			projectedModelEpsg: '6677',
+			referencedMaterialLibraries: []
 		});
 
 		const file = createFile('projected.obj');
@@ -370,10 +477,44 @@ describe('resolveDroppedFiles', () => {
 			);
 	});
 
+	it('glTF 単体ドロップは glb 判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('scene.gltf'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'glb',
+			dropFiles: undefined
+		});
+	});
+
+	it('glTF と補助ファイルを同時ドロップしたときはファイル群を保持したまま glb 判定になる', async () => {
+		const gltfFile = createFile('scene.gltf');
+		const binFile = createFile('scene.bin');
+		const textureFile = createFile('wall.png');
+
+		const result = await resolveDroppedFiles([gltfFile, binFile, textureFile]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'glb',
+			dropFiles: [gltfFile, binFile, textureFile]
+		});
+	});
+
 	it('TXT が点群テキストなら pointcloud 判定になる', async () => {
 		vi.mocked(isPointCloudTextFile).mockResolvedValue(true);
 
 		const result = await resolveDroppedFiles(createFile('points.txt'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'pointcloud',
+			dropFiles: undefined
+		});
+	});
+
+	it('COPC LAZ は pointcloud 判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('forest.copc.laz', 'copc'));
 
 		expect(result).toEqual({
 			type: 'dialog',

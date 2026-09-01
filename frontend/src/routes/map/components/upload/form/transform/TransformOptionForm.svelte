@@ -92,6 +92,7 @@
 	}: Props = $props();
 
 	const fallbackTransformModes: ActiveTransformOptionMode[] = ['zone', 'georef'];
+	const HIDDEN_ZONE_DATUMS = new Set(['Tokyo', 'Japanese Geodetic Datum 2000']);
 
 	const PREVIEW_SOURCE_ID = 'georef_image_preview';
 	const registrationModeOptions: { key: RasterRegistrationMode; name: string }[] = [
@@ -110,6 +111,7 @@
 	let initialized = $state(false);
 	let rafId: number | null = null;
 	let geoRefTransformMode = $state<GeoRefTransformMode>('aspect-locked');
+	let zoneBuildId = 0;
 
 	let nw = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
 	let ne = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
@@ -299,6 +301,9 @@
 	};
 
 	$effect(() => {
+		const requestId = ++zoneBuildId;
+		const currentMap = map;
+
 		if (!originalBbox) {
 			zoneFeatures = { type: 'FeatureCollection', features: [] };
 			poiData = [];
@@ -315,28 +320,36 @@
 			return;
 		}
 
-		zoneFeatures = {
-			type: 'FeatureCollection',
-			features: getEpsgInfoArray()
-				.flatMap((info) => {
+		const sourceBbox: [number, number, number, number] = [...originalBbox];
+
+		void (async () => {
+			try {
+				const features: Feature<PolygonGeometry | PointGeometry, PoiData['properties']>[] = [];
+
+				// 旧測地系とJGD2000は読込時の変換には残すが、手動選択の対象にはしない。
+				for (const info of getEpsgInfoArray().filter(
+					(info) => !HIDDEN_ZONE_DATUMS.has(info.datum)
+				)) {
 					let transformedBbox: [number, number, number, number];
 
 					if (info.code === '4326') {
 						transformedBbox = [
-							Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, originalBbox[0])),
-							Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, originalBbox[1])),
-							Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, originalBbox[2])),
-							Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, originalBbox[3]))
+							Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, sourceBbox[0])),
+							Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, sourceBbox[1])),
+							Math.max(WEB_MERCATOR_MIN_LNG, Math.min(WEB_MERCATOR_MAX_LNG, sourceBbox[2])),
+							Math.max(WEB_MERCATOR_MIN_LAT, Math.min(WEB_MERCATOR_MAX_LAT, sourceBbox[3]))
 						];
 						if (
 							transformedBbox[0] >= transformedBbox[2] ||
 							transformedBbox[1] >= transformedBbox[3]
 						) {
-							return [];
+							continue;
 						}
 					} else {
-						transformedBbox = transformBbox(originalBbox, info.proj_context);
-						if (!isBboxValid(transformedBbox)) return [];
+						transformedBbox = await transformBbox(sourceBbox, info.proj_context);
+						if (!isBboxValid(transformedBbox)) {
+							continue;
+						}
 					}
 
 					const polygonFeature: Feature<PolygonGeometry, PoiData['properties']> = {
@@ -366,34 +379,88 @@
 						}
 					};
 
-					return [polygonFeature, centerPoint];
-				})
-				.filter((feature) => feature !== undefined)
-		};
+					features.push(polygonFeature, centerPoint);
+				}
 
-		poiData = zoneFeatures.features
-			.filter((feature) => feature.geometry.type === 'Point')
-			.map((feature) => ({
-				coordinates: feature.geometry.coordinates as [number, number],
-				properties: feature.properties || {}
-			}));
+				if (requestId !== zoneBuildId) {
+					return;
+				}
 
-		const mapCenter = map.getCenter();
-		const points = zoneFeatures.features.filter(
-			(feature) => feature.geometry.type === 'Point'
-		) as Feature<PointGeometry, PoiData['properties']>[];
-		if (points.length > 0) {
-			const nearest = turfNearestPoint([mapCenter.lng, mapCenter.lat], {
-				type: 'FeatureCollection',
-				features: points
-			});
-			selectedEpsgCode = points[nearest.properties.featureIndex].properties.code;
-		}
+				zoneFeatures = {
+					type: 'FeatureCollection',
+					features
+				};
 
-		zoneBboxGeojsonData = {
-			type: 'FeatureCollection',
-			features: zoneFeatures.features.filter((feature) => feature.geometry.type === 'Polygon')
-		} as FeatureCollection<PolygonGeometry, EpsgInfoWithCode>;
+				poiData = zoneFeatures.features
+					.filter((feature) => feature.geometry.type === 'Point')
+					.map((feature) => ({
+						coordinates: feature.geometry.coordinates as [number, number],
+						properties: feature.properties || {}
+					}));
+
+				const mapCenter = currentMap.getCenter();
+				const points = zoneFeatures.features.filter(
+					(feature) => feature.geometry.type === 'Point'
+				) as Feature<PointGeometry, PoiData['properties']>[];
+				const needsNearbyFallback =
+					points.length === 0 || points.every((point) => point.properties.code === '3857');
+				if (needsNearbyFallback) {
+					const nearbySystems = getEpsgInfoArray()
+						.filter((info) => !HIDDEN_ZONE_DATUMS.has(info.datum))
+						.filter((info) => {
+							const [west, south, east, north] = info.area_of_use.bounds;
+							return (
+								info.projection_method === 'Transverse Mercator' ||
+								(mapCenter.lng >= west &&
+									mapCenter.lng <= east &&
+									mapCenter.lat >= south &&
+									mapCenter.lat <= north)
+							);
+						})
+						.map((info) => ({
+							coordinates: [
+								(info.area_of_use.bounds[0] + info.area_of_use.bounds[2]) / 2,
+								(info.area_of_use.bounds[1] + info.area_of_use.bounds[3]) / 2
+							] as [number, number],
+							properties: info
+						}));
+					poiData = [...poiData, ...nearbySystems].filter(
+						(info, index, all) =>
+							all.findIndex((item) => item.properties.code === info.properties.code) === index
+					);
+				}
+
+				const selectablePoints = poiData.map((info) => ({
+					type: 'Feature' as const,
+					geometry: { type: 'Point' as const, coordinates: info.coordinates },
+					properties: info.properties
+				}));
+				if (selectablePoints.length > 0) {
+					const nearest = turfNearestPoint([mapCenter.lng, mapCenter.lat], {
+						type: 'FeatureCollection',
+						features: selectablePoints
+					});
+					selectedEpsgCode = selectablePoints[nearest.properties.featureIndex].properties.code;
+				}
+
+				zoneBboxGeojsonData = {
+					type: 'FeatureCollection',
+					features: zoneFeatures.features.filter((feature) => feature.geometry.type === 'Polygon')
+				} as FeatureCollection<PolygonGeometry, EpsgInfoWithCode>;
+			} catch (error) {
+				if (requestId !== zoneBuildId) {
+					return;
+				}
+
+				zoneFeatures = { type: 'FeatureCollection', features: [] };
+				poiData = [];
+				zoneBboxGeojsonData = {
+					type: 'FeatureCollection',
+					features: []
+				};
+				console.error(error);
+			}
+		})();
 	});
 
 	$effect(() => {

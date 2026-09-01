@@ -8,6 +8,7 @@
 
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
+import { ensureProjNadgridsReady } from '$routes/map/utils/proj/nadgrid';
 import { reprojectGeoJson, toGlbAndContours } from 'landxml';
 import proj4 from 'proj4';
 import * as THREE from 'three';
@@ -432,6 +433,8 @@ export const rasterizeTin = async (
 	// bbox を WGS84 に変換
 	let bbox: [number, number, number, number];
 	if (projString) {
+		await ensureProjNadgridsReady(projString);
+
 		const [minX, minY, maxX, maxY] = result.bbox;
 		const sw = proj4(projString, 'EPSG:4326', [minY, minX]); // J-LandXMLはX=北,Y=東
 		const ne = proj4(projString, 'EPSG:4326', [maxY, maxX]);
