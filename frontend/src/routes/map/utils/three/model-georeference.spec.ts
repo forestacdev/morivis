@@ -30,10 +30,7 @@ describe('model-georeference', () => {
 		expect(resolveFbxUnitScaleMeters(meterBox, 100)).toBe(1);
 		expect(
 			resolveFbxUnitScaleMeters(
-				new THREE.Box3(
-					new THREE.Vector3(-5000, -5000, 0),
-					new THREE.Vector3(5000, 5000, 1000)
-				),
+				new THREE.Box3(new THREE.Vector3(-5000, -5000, 0), new THREE.Vector3(5000, 5000, 1000)),
 				1
 			)
 		).toBeCloseTo(0.01);
@@ -55,15 +52,25 @@ describe('model-georeference', () => {
 			meterBox.min.clone().multiplyScalar(100),
 			meterBox.max.clone().multiplyScalar(100)
 		);
-		const placement = await resolveProjectedModelPlacementFromBox(
-			centimeterBox,
-			'EPSG:6674',
-			0.01
-		);
+		const placement = await resolveProjectedModelPlacementFromBox(centimeterBox, 'EPSG:6674', 0.01);
 
 		expect(placement.lng).toBeCloseTo(135.7731787617, 6);
 		expect(placement.lat).toBeCloseTo(35.5044382086, 6);
 		expect(placement.altitude).toBeCloseTo(-29.3299999237, 6);
+	});
+
+	it('GLBの平面直角座標をEPSG:6673で地理配置する', async () => {
+		const placement = await resolveProjectedModelPlacementFromBox(
+			new THREE.Box3(
+				new THREE.Vector3(43835.37109375, -56888.11328125, 2.5),
+				new THREE.Vector3(43891.37109375, -56867.375, 19.141660690307617)
+			),
+			'6673'
+		);
+
+		expect(placement.lng).toBeCloseTo(134.8167507895, 6);
+		expect(placement.lat).toBeCloseTo(35.4863570887, 6);
+		expect(placement.altitude).toBeCloseTo(2.5, 6);
 	});
 
 	it('projected georeference を object に反映する', () => {
@@ -79,5 +86,35 @@ describe('model-georeference', () => {
 
 		expect(object.position.toArray()).toEqual([-10, -20, -30]);
 		expect(object.scale.toArray()).toEqual([0.01, 0.01, 0.01]);
+	});
+
+	it('ルート軸変換を持つGLBは子ノードのローカル座標で原点を引く', () => {
+		const scene = new THREE.Group();
+		const root = new THREE.Group();
+		root.rotation.x = -Math.PI / 2;
+		scene.add(root);
+
+		applyProjectedModelGeoreference(scene, {
+			type: 'projected',
+			epsg: '6673',
+			projectedOrigin: [43_860, -56_880, 10],
+			coordinateSpace: 'root-children'
+		});
+
+		expect(root.position.x).toBeCloseTo(-43_860, 9);
+		expect(root.position.y).toBeCloseTo(-10, 9);
+		expect(root.position.z).toBeCloseTo(-56_880, 9);
+	});
+
+	it('IFCのZ-up座標系で原点を引く', () => {
+		const object = new THREE.Group();
+		applyProjectedModelGeoreference(object, {
+			type: 'projected',
+			epsg: '6673',
+			projectedOrigin: [43_860, -56_880, 10],
+			coordinateSpace: 'ifc-z-up'
+		});
+
+		expect(object.position.toArray()).toEqual([-43_860, -10, -56_880]);
 	});
 });

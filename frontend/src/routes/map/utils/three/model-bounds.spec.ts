@@ -90,4 +90,30 @@ describe('computeUploadedModelMeta', () => {
 		expect(gltfBounds.max.x).toBe(10);
 		expect(gltfBounds.max.y).toBe(10);
 	});
+
+	it('ルート軸変換を除いた入力座標系の範囲を取得する', async () => {
+		const { getRootLocalSourceBounds } = await import('./model-bounds');
+		const scene = new THREE.Group();
+		const root = new THREE.Group();
+		const mesh = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 5));
+		root.rotation.x = -Math.PI / 2;
+		mesh.position.set(43_860, -56_880, 10);
+		root.add(mesh);
+		scene.add(root);
+		scene.updateMatrixWorld(true);
+
+		const sourceBounds = getRootLocalSourceBounds(scene);
+
+		expect(sourceBounds.getCenter(new THREE.Vector3()).toArray()).toEqual([43_860, -56_880, 10]);
+	});
+
+	it('web-ifc-threeのY-up座標をIFCのZ-up座標へ戻す', async () => {
+		const { getIfcSourceBounds } = await import('./model-bounds');
+		const sourceBounds = getIfcSourceBounds(
+			new THREE.Box3(new THREE.Vector3(43_835, 2.5, 56_867), new THREE.Vector3(43_891, 19, 56_888))
+		);
+
+		expect(sourceBounds.min.toArray()).toEqual([43_835, -56_888, 2.5]);
+		expect(sourceBounds.max.toArray()).toEqual([43_891, -56_867, 19]);
+	});
 });

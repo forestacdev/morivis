@@ -84,6 +84,7 @@ export interface ProjectedModelGeoreference {
 	epsg: string;
 	projectedOrigin: [number, number, number];
 	unitScaleMeters?: number;
+	coordinateSpace?: 'object' | 'root-children' | 'ifc-z-up';
 }
 
 export interface MeshShadingOptionStyle {
@@ -219,9 +220,7 @@ export type DeckVectorEntry = GeoArrowEntry | GeoJson3DEntry;
 
 export type AnyMeshEntry = MeshEntry<MeshStyle>;
 
-export type AnyTiles3DEntry =
-	| Tiles3DEntry<Tiles3DMeshStyle>
-	| Tiles3DEntry<PointCloudStyle>;
+export type AnyTiles3DEntry = Tiles3DEntry<Tiles3DMeshStyle> | Tiles3DEntry<PointCloudStyle>;
 
 export type MeshStyleEntry = MeshEntry<MeshStyle>;
 export type Tiles3DMeshStyleEntry = Tiles3DEntry<Tiles3DMeshStyle>;
@@ -231,8 +230,4 @@ export type PointCloudStyleEntry = Tiles3DEntry<PointCloudStyle> | PointCloudEnt
  * morivis の model 系内部モデル。
  * object / runtime を主分類軸とし、three.js 系と deck.gl 系の分岐元になる。
  */
-export type MorivisModelEntry =
-	| AnyMeshEntry
-	| AnyTiles3DEntry
-	| PointCloudEntry
-	| DeckVectorEntry;
+export type MorivisModelEntry = AnyMeshEntry | AnyTiles3DEntry | PointCloudEntry | DeckVectorEntry;

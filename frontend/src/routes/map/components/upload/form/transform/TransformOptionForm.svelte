@@ -402,19 +402,50 @@
 				const points = zoneFeatures.features.filter(
 					(feature) => feature.geometry.type === 'Point'
 				) as Feature<PointGeometry, PoiData['properties']>[];
-				if (points.length > 0) {
+				const needsNearbyFallback =
+					points.length === 0 || points.every((point) => point.properties.code === '3857');
+				if (needsNearbyFallback) {
+					const nearbySystems = getEpsgInfoArray()
+						.filter((info) => !HIDDEN_ZONE_DATUMS.has(info.datum))
+						.filter((info) => {
+							const [west, south, east, north] = info.area_of_use.bounds;
+							return (
+								info.projection_method === 'Transverse Mercator' ||
+								(mapCenter.lng >= west &&
+									mapCenter.lng <= east &&
+									mapCenter.lat >= south &&
+									mapCenter.lat <= north)
+							);
+						})
+						.map((info) => ({
+							coordinates: [
+								(info.area_of_use.bounds[0] + info.area_of_use.bounds[2]) / 2,
+								(info.area_of_use.bounds[1] + info.area_of_use.bounds[3]) / 2
+							] as [number, number],
+							properties: info
+						}));
+					poiData = [...poiData, ...nearbySystems].filter(
+						(info, index, all) =>
+							all.findIndex((item) => item.properties.code === info.properties.code) === index
+					);
+				}
+
+				const selectablePoints = poiData.map((info) => ({
+					type: 'Feature' as const,
+					geometry: { type: 'Point' as const, coordinates: info.coordinates },
+					properties: info.properties
+				}));
+				if (selectablePoints.length > 0) {
 					const nearest = turfNearestPoint([mapCenter.lng, mapCenter.lat], {
 						type: 'FeatureCollection',
-						features: points
+						features: selectablePoints
 					});
-					selectedEpsgCode = points[nearest.properties.featureIndex].properties.code;
+					selectedEpsgCode = selectablePoints[nearest.properties.featureIndex].properties.code;
 				}
 
 				zoneBboxGeojsonData = {
 					type: 'FeatureCollection',
-					features: zoneFeatures.features.filter(
-						(feature) => feature.geometry.type === 'Polygon'
-					)
+					features: zoneFeatures.features.filter((feature) => feature.geometry.type === 'Polygon')
 				} as FeatureCollection<PolygonGeometry, EpsgInfoWithCode>;
 			} catch (error) {
 				if (requestId !== zoneBuildId) {

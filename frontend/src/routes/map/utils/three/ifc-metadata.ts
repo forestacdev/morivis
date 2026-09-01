@@ -1,5 +1,5 @@
-import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { type EpsgCode, getProjContext } from '$routes/map/utils/proj/dict';
+import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
 import proj4 from 'proj4';
 
 // IFC georeferencing helper for future use.
@@ -10,8 +10,6 @@ import proj4 from 'proj4';
 // https://standards.buildingsmart.org/IFC/RELEASE/IFC4_3/HTML/lexical/IfcProjectedCRS.htm
 // IfcMapConversion:
 // https://standards.buildingsmart.org/IFC/RELEASE/IFC4/ADD1/HTML/schema/ifcrepresentationresource/lexical/ifcmapconversion.htm
-
-const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
 
 export type IfcPlacementQuality = 'exact' | 'requires_epsg' | 'approximate' | 'normalized';
 
@@ -30,6 +28,9 @@ export interface IfcPlacementMetadata {
 	xAxisAbscissa?: number;
 	xAxisOrdinate?: number;
 }
+
+export const hasIfcGeographicCoordinates = (metadata: IfcPlacementMetadata | undefined) =>
+	Number.isFinite(metadata?.lng) && Number.isFinite(metadata?.lat);
 
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
 let webIfcModulePromise: Promise<typeof import('web-ifc')> | null = null;
@@ -214,7 +215,7 @@ export const readIfcPlacementMetadata = async (
 ): Promise<IfcPlacementMetadata | undefined> => {
 	const [{ IFCLoader }, webIfc] = await Promise.all([loadIfcLoaderModule(), loadWebIfcModule()]);
 	const loader = new IFCLoader();
-	await loader.ifcManager.setWasmPath(IFC_WASM_PATH);
+	await configureIfcWasmPath(loader.ifcManager);
 
 	const buffer = await file.arrayBuffer();
 	const model = await loader.parse(buffer);

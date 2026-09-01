@@ -13,6 +13,7 @@ import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
 import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import {
@@ -25,10 +26,8 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { clone as cloneSkinnedObject } from 'three/addons/utils/SkeletonUtils.js';
 
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
-const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
 let rhino3dmLoaderModulePromise: Promise<
 	typeof import('three/addons/loaders/3DMLoader.js')
@@ -656,24 +655,37 @@ export class ThreeJsLayerManager {
 		return clonedMaterial;
 	};
 
-	private createGlbExportObject = (loaded: LoadedModel): THREE.Object3D => {
-		const exportObject = cloneSkinnedObject(loaded.object);
+	private prepareGlbExportObject = (loaded: LoadedModel): (() => void) => {
+		const originalPosition = loaded.object.position.clone();
+		const originalMaterials: Array<{
+			mesh: THREE.Mesh;
+			material: THREE.Material | THREE.Material[];
+		}> = [];
+		const exportMaterials: THREE.Material[] = [];
 
-		exportObject.visible = true;
-		exportObject.traverse((child) => {
+		loaded.object.traverse((child) => {
 			if (!(child as THREE.Mesh).isMesh) return;
 
 			const mesh = child as THREE.Mesh;
+			originalMaterials.push({ mesh, material: mesh.material });
 			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-			const exportMaterials = materials.map((material) =>
+			const convertedMaterials = materials.map((material) =>
 				this.createGlbExportMaterial(material, loaded.entry.style)
 			);
-			mesh.material = Array.isArray(mesh.material) ? exportMaterials : exportMaterials[0];
+			exportMaterials.push(...convertedMaterials);
+			mesh.material = Array.isArray(mesh.material) ? convertedMaterials : convertedMaterials[0];
 		});
-		centerObjectToLocalOrigin(exportObject);
-		exportObject.updateMatrixWorld(true);
+		centerObjectToLocalOrigin(loaded.object);
+		loaded.object.updateMatrixWorld(true);
 
-		return exportObject;
+		return () => {
+			originalMaterials.forEach(({ mesh, material }) => {
+				mesh.material = material;
+			});
+			exportMaterials.forEach((material) => material.dispose());
+			loaded.object.position.copy(originalPosition);
+			loaded.object.updateMatrixWorld(true);
+		};
 	};
 
 	private setOnlyEntryVisible = (entryId: string, visible: boolean) => {
@@ -1209,7 +1221,7 @@ export class ThreeJsLayerManager {
 				loadIfcLoaderModule()
 					.then(({ IFCLoader }) => {
 						const loader = new IFCLoader();
-						return loader.ifcManager.setWasmPath(IFC_WASM_PATH).then(() => {
+						return configureIfcWasmPath(loader.ifcManager).then(() => {
 							loader.load(
 								entry.format.url,
 								(object) => {
@@ -1407,28 +1419,41 @@ export class ThreeJsLayerManager {
 		}
 
 		const exporter = new GLTFExporter();
-		const exportObject = this.createGlbExportObject(loaded);
+		const restoreExportObject = this.prepareGlbExportObject(loaded);
 		const animations = loaded.actions?.map((action) => action.getClip()) ?? [];
+		let restored = false;
+		const restore = () => {
+			if (restored) return;
+			restored = true;
+			restoreExportObject();
+		};
 
 		return new Promise<ArrayBuffer>((resolve, reject) => {
-			exporter.parse(
-				exportObject,
-				(result) => {
-					if (result instanceof ArrayBuffer) {
-						resolve(result);
-						return;
-					}
+			try {
+				exporter.parse(
+					loaded.object,
+					(result) => {
+						restore();
+						if (result instanceof ArrayBuffer) {
+							resolve(result);
+							return;
+						}
 
-					reject(new Error('GLB の書き出し結果が binary ではありませんでした'));
-				},
-				(error) => {
-					reject(error instanceof Error ? error : new Error(String(error)));
-				},
-				{
-					binary: true,
-					animations
-				}
-			);
+						reject(new Error('GLB の書き出し結果が binary ではありませんでした'));
+					},
+					(error) => {
+						restore();
+						reject(error instanceof Error ? error : new Error(String(error)));
+					},
+					{
+						binary: true,
+						animations
+					}
+				);
+			} catch (error) {
+				restore();
+				reject(error instanceof Error ? error : new Error(String(error)));
+			}
 		});
 	}
 
@@ -1554,7 +1579,8 @@ export class ThreeJsLayerManager {
 			return null;
 		}
 		let closest: { distance: number; feature: PickedModelFeature; mesh: THREE.Mesh } | null = null;
-		let hitWithoutAttributes: { entryId: string; objectId?: number; objectName: string } | null = null;
+		let hitWithoutAttributes: { entryId: string; objectId?: number; objectName: string } | null =
+			null;
 		targetEntries.forEach((loaded) => {
 			const inverse = mapProjectionMatrix.clone().multiply(loaded.transform.matrix).invert();
 			const origin = new THREE.Vector3(ndc.x, ndc.y, -1).applyMatrix4(inverse);

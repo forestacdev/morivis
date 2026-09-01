@@ -8,8 +8,11 @@ import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
+import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
 import {
+	applyProjectedModelGeoreference,
 	georeferenceCornerToLocal,
+	getProjectedModelCoordinateRoots,
 	type ResolvedProjectedModelPlacement,
 	resolveFbxUnitScaleMeters,
 	resolveProjectedModelPlacementFromBox
@@ -42,22 +45,17 @@ const objLoader = new OBJLoader();
 const MIN_MODEL_MAX_DIMENSION_METERS = 1;
 const TARGET_MODEL_MAX_DIMENSION_METERS = 5;
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
-const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
 const dracoLoader = new DRACOLoader();
-let rhino3dmLoaderModulePromise:
-	| Promise<
-		typeof import('three/addons/loaders/3DMLoader.js')
-	>
-	| null = null;
+let rhino3dmLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/3DMLoader.js')
+> | null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
 let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
 	null;
-let colladaLoaderModulePromise:
-	| Promise<
-		typeof import('three/addons/loaders/ColladaLoader.js')
-	>
-	| null = null;
+let colladaLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/ColladaLoader.js')
+> | null = null;
 let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
 	null;
 let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
@@ -75,7 +73,10 @@ const createGltfLoader = (manager?: THREE.LoadingManager) => {
 
 const gltfLoader = createGltfLoader();
 
-export const getModelBounds = (object: THREE.Object3D, format: ComputeUploadedModelMetaParams['format']) => {
+export const getModelBounds = (
+	object: THREE.Object3D,
+	format: ComputeUploadedModelMetaParams['format']
+) => {
 	if (format !== 'fbx') {
 		return new THREE.Box3().setFromObject(object);
 	}
@@ -92,6 +93,38 @@ export const getModelBounds = (object: THREE.Object3D, format: ComputeUploadedMo
 	return hasMesh ? meshBounds : new THREE.Box3().setFromObject(object);
 };
 
+/** ルート軸変換を除いた、入力座標系での範囲を返す。 */
+export const getRootLocalSourceBounds = (object: THREE.Object3D) => {
+	object.updateMatrixWorld(true);
+	const box = new THREE.Box3().makeEmpty();
+
+	const roots = getProjectedModelCoordinateRoots(object);
+	roots.forEach((root) => {
+		const rootInverse = root.matrixWorld.clone().invert();
+		root.traverse((child) => {
+			const mesh = child as THREE.Mesh;
+			const position = mesh.geometry?.getAttribute('position');
+			if (!mesh.isMesh || !position) return;
+
+			mesh.geometry.computeBoundingBox();
+			if (!mesh.geometry.boundingBox) return;
+
+			const localBox = mesh.geometry.boundingBox.clone();
+			const matrix = rootInverse.clone().multiply(mesh.matrixWorld);
+			box.union(localBox.applyMatrix4(matrix));
+		});
+	});
+
+	return box;
+};
+
+/** web-ifc-three が焼き込んだ Y-up 座標を、IFC の Z-up 座標へ戻す。 */
+export const getIfcSourceBounds = (box: THREE.Box3) =>
+	new THREE.Box3(
+		new THREE.Vector3(box.min.x, -box.max.z, box.min.y),
+		new THREE.Vector3(box.max.x, -box.min.z, box.max.y)
+	);
+
 const isBinaryGltfBuffer = (buffer: ArrayBuffer) => {
 	if (buffer.byteLength < 4) return false;
 	const magic = new Uint8Array(buffer, 0, 4);
@@ -103,10 +136,10 @@ const resolveResourceUrl = (resourceUrls: Record<string, string>, url: string) =
 	const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 	const fileName = normalizedUrl.split('/').pop() ?? '';
 	return (
-		resourceUrls[normalizedUrl]
-			?? resourceUrls[relativeWithoutRoot]
-			?? resourceUrls[fileName]
-			?? url
+		resourceUrls[normalizedUrl] ??
+		resourceUrls[relativeWithoutRoot] ??
+		resourceUrls[fileName] ??
+		url
 	);
 };
 
@@ -171,10 +204,8 @@ const ensureFbxLoaderWindowShim = () => {
 		createElementNS: (namespace: string, name: string) => unknown;
 		createElement: (name: string) => unknown;
 	};
-	type FbxLoaderWindowShim =
-		& Window
-		& typeof globalThis
-		& {
+	type FbxLoaderWindowShim = Window &
+		typeof globalThis & {
 			innerWidth?: number;
 			innerHeight?: number;
 			document?: FbxLoaderDocumentShim;
@@ -220,30 +251,30 @@ const ensureFbxLoaderWindowShim = () => {
 
 	const existingWindow = globalScope.window;
 	const existingDocument = globalScope.document ?? existingWindow?.document;
-	const documentShim = existingDocument
-		?? {
-			createElementNS: (_namespace: string, name: string) => {
-				if (name === 'img') {
-					return createShimImageElement();
-				}
-				if (name === 'canvas') {
-					return new OffscreenCanvas(1, 1);
-				}
-				return {};
-			},
-			createElement: (name: string) => {
-				if (name === 'img') {
-					return createShimImageElement();
-				}
-				if (name === 'canvas') {
-					return new OffscreenCanvas(1, 1);
-				}
-				return {};
+	const documentShim = existingDocument ?? {
+		createElementNS: (_namespace: string, name: string) => {
+			if (name === 'img') {
+				return createShimImageElement();
 			}
-		};
+			if (name === 'canvas') {
+				return new OffscreenCanvas(1, 1);
+			}
+			return {};
+		},
+		createElement: (name: string) => {
+			if (name === 'img') {
+				return createShimImageElement();
+			}
+			if (name === 'canvas') {
+				return new OffscreenCanvas(1, 1);
+			}
+			return {};
+		}
+	};
 
-	const windowShim = existingWindow
-		?? ({
+	const windowShim =
+		existingWindow ??
+		({
 			innerWidth: 1,
 			innerHeight: 1,
 			document: documentShim
@@ -311,9 +342,10 @@ const parseGltfObject = async (
 	}
 
 	const loader = manager ? createGltfLoader(manager) : gltfLoader;
-	const data = file.name.toLowerCase().endsWith('.gltf') && !isBinaryGltfBuffer(buffer)
-		? await file.text()
-		: buffer;
+	const data =
+		file.name.toLowerCase().endsWith('.gltf') && !isBinaryGltfBuffer(buffer)
+			? await file.text()
+			: buffer;
 
 	return new Promise<UploadedModelObject>((resolve, reject) => {
 		loader.parse(
@@ -354,10 +386,10 @@ const parseTdsObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl]
-					?? resourceUrls[relativeWithoutRoot]
-					?? resourceUrls[fileName]
-					?? url
+				resourceUrls[normalizedUrl] ??
+				resourceUrls[relativeWithoutRoot] ??
+				resourceUrls[fileName] ??
+				url
 			);
 		});
 	}
@@ -387,10 +419,10 @@ const parseDaeObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl]
-					?? resourceUrls[relativeWithoutRoot]
-					?? resourceUrls[fileName]
-					?? url
+				resourceUrls[normalizedUrl] ??
+				resourceUrls[relativeWithoutRoot] ??
+				resourceUrls[fileName] ??
+				url
 			);
 		});
 	}
@@ -418,10 +450,10 @@ const parse3dmObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl]
-					?? resourceUrls[relativeWithoutRoot]
-					?? resourceUrls[fileName]
-					?? url
+				resourceUrls[normalizedUrl] ??
+				resourceUrls[relativeWithoutRoot] ??
+				resourceUrls[fileName] ??
+				url
 			);
 		});
 	}
@@ -454,10 +486,10 @@ const parseFbxObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl]
-					?? resourceUrls[relativeWithoutRoot]
-					?? resourceUrls[fileName]
-					?? url
+				resourceUrls[normalizedUrl] ??
+				resourceUrls[relativeWithoutRoot] ??
+				resourceUrls[fileName] ??
+				url
 			);
 		});
 	}
@@ -468,8 +500,8 @@ const parseFbxObject = async (
 	if (normalizeToLocalOrigin) {
 		normalizeObjectToLocalOrigin(object);
 	}
-	const animations = (object as THREE.Group & { animations?: THREE.AnimationClip[]; }).animations
-		?? [];
+	const animations =
+		(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? [];
 	return {
 		object,
 		animationNames: animations.map((clip, index) => clip.name || `Animation ${index + 1}`)
@@ -528,7 +560,7 @@ const parseIfcObject = async (
 ): Promise<UploadedModelObject> => {
 	const { IFCLoader } = await loadIfcLoaderModule();
 	const loader = new IFCLoader();
-	await loader.ifcManager.setWasmPath(IFC_WASM_PATH);
+	await configureIfcWasmPath(loader.ifcManager);
 	const url = URL.createObjectURL(file);
 	try {
 		const object = (await loader.loadAsync(url)) as THREE.Object3D;
@@ -618,25 +650,45 @@ export const computeUploadedModelMeta = async ({
 	if (box.isEmpty()) {
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}
+	const coordinateSpace =
+		format === 'gltf' ? 'root-children' : format === 'ifc' ? 'ifc-z-up' : 'object';
+	const sourceBox =
+		coordinateSpace === 'root-children'
+			? getRootLocalSourceBounds(object)
+			: coordinateSpace === 'ifc-z-up'
+				? getIfcSourceBounds(box)
+				: box;
 
-	const formatUnitScaleMeters = format === 'fbx'
-		? resolveFbxUnitScaleMeters(
-			box,
-			Number(
-				(object.userData as {
-					unitScaleFactor?: number;
-				}).unitScaleFactor
-			)
-		)
-		: 1;
+	const formatUnitScaleMeters =
+		format === 'fbx'
+			? resolveFbxUnitScaleMeters(
+					box,
+					Number(
+						(
+							object.userData as {
+								unitScaleFactor?: number;
+							}
+						).unitScaleFactor
+					)
+				)
+			: 1;
 	const resolvedPlacement = projectedModelEpsg
 		? await resolveProjectedModelPlacementFromBox(
-			box,
-			projectedModelEpsg,
-			formatUnitScaleMeters
-		)
+				sourceBox,
+				projectedModelEpsg,
+				formatUnitScaleMeters,
+				coordinateSpace
+			)
 		: undefined;
 	const resolvedGeoreference = georeference ?? resolvedPlacement?.georeference;
+	const usesLocalCoordinateGeoreference =
+		resolvedGeoreference?.coordinateSpace !== undefined &&
+		resolvedGeoreference.coordinateSpace !== 'object';
+	if (usesLocalCoordinateGeoreference && resolvedGeoreference) {
+		applyProjectedModelGeoreference(object, resolvedGeoreference);
+		object.updateMatrixWorld(true);
+	}
+	const displayBox = usesLocalCoordinateGeoreference ? getModelBounds(object, format) : box;
 
 	let hasSkinnedMesh = false;
 	object.traverse((child) => {
@@ -644,7 +696,7 @@ export const computeUploadedModelMeta = async ({
 			hasSkinnedMesh = true;
 		}
 	});
-	const size = box.getSize(new THREE.Vector3());
+	const size = displayBox.getSize(new THREE.Vector3());
 	const unitScaleMeters = resolvedGeoreference?.unitScaleMeters ?? formatUnitScaleMeters;
 	const localMaxDimension = Math.max(size.x, size.y, size.z) * unitScaleMeters;
 	const scaleMultiplier =
@@ -666,14 +718,14 @@ export const computeUploadedModelMeta = async ({
 		terrainEnabled
 	);
 	const corners = [
-		new THREE.Vector3(box.min.x, box.min.y, box.min.z),
-		new THREE.Vector3(box.min.x, box.min.y, box.max.z),
-		new THREE.Vector3(box.min.x, box.max.y, box.min.z),
-		new THREE.Vector3(box.min.x, box.max.y, box.max.z),
-		new THREE.Vector3(box.max.x, box.min.y, box.min.z),
-		new THREE.Vector3(box.max.x, box.min.y, box.max.z),
-		new THREE.Vector3(box.max.x, box.max.y, box.min.z),
-		new THREE.Vector3(box.max.x, box.max.y, box.max.z)
+		new THREE.Vector3(displayBox.min.x, displayBox.min.y, displayBox.min.z),
+		new THREE.Vector3(displayBox.min.x, displayBox.min.y, displayBox.max.z),
+		new THREE.Vector3(displayBox.min.x, displayBox.max.y, displayBox.min.z),
+		new THREE.Vector3(displayBox.min.x, displayBox.max.y, displayBox.max.z),
+		new THREE.Vector3(displayBox.max.x, displayBox.min.y, displayBox.min.z),
+		new THREE.Vector3(displayBox.max.x, displayBox.min.y, displayBox.max.z),
+		new THREE.Vector3(displayBox.max.x, displayBox.max.y, displayBox.min.z),
+		new THREE.Vector3(displayBox.max.x, displayBox.max.y, displayBox.max.z)
 	];
 
 	let west = Number.POSITIVE_INFINITY;
@@ -682,9 +734,10 @@ export const computeUploadedModelMeta = async ({
 	let north = Number.NEGATIVE_INFINITY;
 
 	corners.forEach((corner) => {
-		const localCorner = resolvedGeoreference
-			? georeferenceCornerToLocal(corner, resolvedGeoreference)
-			: corner;
+		const localCorner =
+			resolvedGeoreference && !usesLocalCoordinateGeoreference
+				? georeferenceCornerToLocal(corner, resolvedGeoreference)
+				: corner;
 		const world = localCorner.applyMatrix4(modelMatrix);
 		const lng = mercatorXToLng(world.x);
 		const lat = mercatorYToLat(world.y);
@@ -696,14 +749,14 @@ export const computeUploadedModelMeta = async ({
 
 	const bounds: [number, number, number, number] = [west, south, east, north];
 	const sourceBbox: [number, number, number, number] = [
-		box.min.x * formatUnitScaleMeters,
-		box.min.y * formatUnitScaleMeters,
-		box.max.x * formatUnitScaleMeters,
-		box.max.y * formatUnitScaleMeters
+		sourceBox.min.x * formatUnitScaleMeters,
+		sourceBox.min.y * formatUnitScaleMeters,
+		sourceBox.max.x * formatUnitScaleMeters,
+		sourceBox.max.y * formatUnitScaleMeters
 	];
 	return {
 		bounds,
-		...(format === 'fbx' && { sourceBbox }),
+		...((format === 'fbx' || format === 'gltf' || format === 'ifc') && { sourceBbox }),
 		xyzImageTile: findCenterTile(bounds),
 		scaleMultiplier,
 		localMaxDimension,
