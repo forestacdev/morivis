@@ -506,7 +506,10 @@
 			activeFormat,
 			resolvedMtlUrl,
 			supportsResourceUrls(activeFormat) ? resourceUrls : undefined,
-			normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : undefined
+			{
+				...(normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : {}),
+				sourceFileName: glbFile.name
+			}
 		);
 		applyProjectedModelAxisOverride(
 			entry.style.transform,

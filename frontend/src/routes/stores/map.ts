@@ -85,7 +85,8 @@ import {
 import { clearPointCloudDataCache, createDeckOverlay } from '$routes/map/utils/deck/overlay';
 import {
 	buildGlbExportFilename,
-	downloadArrayBufferAsGlb
+	downloadArrayBufferAsGlb,
+	downloadBlobUrlAsGlb
 } from '$routes/map/utils/formats/export/model';
 import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
@@ -988,6 +989,16 @@ const createMapStore = () => {
 	};
 
 	const exportModelAsGlb = async (entry: MeshEntry<MeshStyle>) => {
+		if (entry.metaData.isUserUploaded !== true) {
+			throw new Error('アップロードした3Dモデルのみエクスポートできます');
+		}
+
+		const sourceFileName = entry.format.sourceFileName?.toLowerCase();
+		if (sourceFileName?.endsWith('.glb') && entry.format.url.startsWith('blob:')) {
+			downloadBlobUrlAsGlb(entry.format.url, buildGlbExportFilename(entry.metaData.name));
+			return;
+		}
+
 		const glb = await threeJsManager.exportModelAsGlb(entry.id);
 		downloadArrayBufferAsGlb(glb, buildGlbExportFilename(entry.metaData.name));
 	};

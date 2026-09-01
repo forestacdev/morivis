@@ -70,6 +70,7 @@
 
 	let isHovered = $state(false);
 	let isCheckBoxHovered = $state(false);
+	let isDownloading = $state(false);
 
 	let isGeojsonCustomLayer = $derived.by(() => {
 		return (
@@ -96,6 +97,10 @@
 		return (
 			entry.type === 'model' && entry.style.type === 'mesh' && entry.format.type !== '3d-tiles'
 		);
+	};
+
+	const isExportableThreeMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
+		return isThreeMeshEntry(entry) && entry.metaData.isUserUploaded === true;
 	};
 
 	const toggleLayerVisibility = () => {
@@ -160,7 +165,7 @@
 	};
 
 	const downloadLayer = async () => {
-		if (!layerEntry) return;
+		if (!layerEntry || isDownloading) return;
 
 		if (isGeojsonCustomLayer) {
 			GeojsonCache.export(layerEntry.id, layerEntry.metaData.name);
@@ -173,7 +178,9 @@
 		}
 
 		if (isThreeMeshEntry(layerEntry)) {
+			isDownloading = true;
 			try {
+				await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 				await mapStore.exportModelAsGlb(layerEntry);
 			} catch (error) {
 				console.error('GLB export failed:', error);
@@ -181,6 +188,8 @@
 					error instanceof Error ? error.message : 'GLB のダウンロードに失敗しました',
 					'error'
 				);
+			} finally {
+				isDownloading = false;
 			}
 		}
 	};
@@ -661,8 +670,12 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						{#if isGeojsonCustomLayer || isTiffCustomLayer || isThreeMeshEntry(layerEntry)}
-							<button onclick={downloadLayer} class="cursor-pointer">
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || isExportableThreeMeshEntry(layerEntry)}
+							<button
+								onclick={downloadLayer}
+								disabled={isDownloading}
+								class="cursor-pointer disabled:cursor-wait disabled:opacity-50"
+							>
 								<Icon icon={ICONS.download} class="h-8 w-8" />
 							</button>
 						{/if}
@@ -697,8 +710,12 @@
 							</button>
 						{/if}
 
-						{#if isGeojsonCustomLayer || isTiffCustomLayer || isThreeMeshEntry(layerEntry)}
-							<button onclick={downloadLayer} class="cursor-pointer">
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || isExportableThreeMeshEntry(layerEntry)}
+							<button
+								onclick={downloadLayer}
+								disabled={isDownloading}
+								class="cursor-pointer disabled:cursor-wait disabled:opacity-50"
+							>
 								<Icon icon={ICONS.download} class="h-8 w-8" />
 							</button>
 						{/if}

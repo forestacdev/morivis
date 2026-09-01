@@ -163,6 +163,8 @@ export interface MeshEntry<T> extends BaseModelEntry {
 	format: {
 		type: MeshFormatType;
 		url: string;
+		/** アップロード元が GLB のとき、再変換せずに直接ダウンロードするための元ファイル名 */
+		sourceFileName?: string;
 		mtlUrl?: string;
 		resourceUrls?: Record<string, string>;
 		normalizeToLocalOrigin?: boolean;
