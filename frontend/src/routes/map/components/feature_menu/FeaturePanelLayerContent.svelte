@@ -78,9 +78,8 @@
 			return [];
 		}
 
-		const popupKeys = targetLayer.type === 'vector'
-			? targetLayer.properties.attributeView.popupKeys
-			: [];
+		const popupKeys =
+			targetLayer.type === 'vector' ? targetLayer.properties.attributeView.popupKeys : [];
 		const displayProps =
 			popupKeys.length > 0
 				? filterByPopupKeys(featureMenuData.properties, popupKeys)

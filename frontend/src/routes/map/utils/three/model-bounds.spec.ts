@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { beforeAll, describe, expect, it, vi } from 'vitest';
 import * as THREE from 'three';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$app/paths', () => ({
 	asset: (path: string) => path
@@ -104,13 +104,20 @@ describe('computeUploadedModelMeta', () => {
 
 		const sourceBounds = getRootLocalSourceBounds(scene);
 
-		expect(sourceBounds.getCenter(new THREE.Vector3()).toArray()).toEqual([43_860, -56_880, 10]);
+		expect(sourceBounds.getCenter(new THREE.Vector3()).toArray()).toEqual([
+			43_860,
+			-56_880,
+			10
+		]);
 	});
 
 	it('web-ifc-threeのY-up座標をIFCのZ-up座標へ戻す', async () => {
 		const { getIfcSourceBounds } = await import('./model-bounds');
 		const sourceBounds = getIfcSourceBounds(
-			new THREE.Box3(new THREE.Vector3(43_835, 2.5, 56_867), new THREE.Vector3(43_891, 19, 56_888))
+			new THREE.Box3(
+				new THREE.Vector3(43_835, 2.5, 56_867),
+				new THREE.Vector3(43_891, 19, 56_888)
+			)
 		);
 
 		expect(sourceBounds.min.toArray()).toEqual([43_835, -56_888, 2.5]);

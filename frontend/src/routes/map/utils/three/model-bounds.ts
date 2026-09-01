@@ -7,8 +7,8 @@ import type { MeshStyle, ProjectedModelGeoreference } from '$routes/map/data/typ
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
-import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
+import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import {
 	applyProjectedModelGeoreference,
 	georeferenceCornerToLocal,
@@ -47,15 +47,19 @@ const TARGET_MODEL_MAX_DIMENSION_METERS = 5;
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
 const dracoLoader = new DRACOLoader();
-let rhino3dmLoaderModulePromise: Promise<
-	typeof import('three/addons/loaders/3DMLoader.js')
-> | null = null;
+let rhino3dmLoaderModulePromise:
+	| Promise<
+		typeof import('three/addons/loaders/3DMLoader.js')
+	>
+	| null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
 let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
 	null;
-let colladaLoaderModulePromise: Promise<
-	typeof import('three/addons/loaders/ColladaLoader.js')
-> | null = null;
+let colladaLoaderModulePromise:
+	| Promise<
+		typeof import('three/addons/loaders/ColladaLoader.js')
+	>
+	| null = null;
 let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
 	null;
 let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
@@ -136,10 +140,10 @@ const resolveResourceUrl = (resourceUrls: Record<string, string>, url: string) =
 	const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 	const fileName = normalizedUrl.split('/').pop() ?? '';
 	return (
-		resourceUrls[normalizedUrl] ??
-		resourceUrls[relativeWithoutRoot] ??
-		resourceUrls[fileName] ??
-		url
+		resourceUrls[normalizedUrl]
+			?? resourceUrls[relativeWithoutRoot]
+			?? resourceUrls[fileName]
+			?? url
 	);
 };
 
@@ -204,8 +208,10 @@ const ensureFbxLoaderWindowShim = () => {
 		createElementNS: (namespace: string, name: string) => unknown;
 		createElement: (name: string) => unknown;
 	};
-	type FbxLoaderWindowShim = Window &
-		typeof globalThis & {
+	type FbxLoaderWindowShim =
+		& Window
+		& typeof globalThis
+		& {
 			innerWidth?: number;
 			innerHeight?: number;
 			document?: FbxLoaderDocumentShim;
@@ -272,9 +278,8 @@ const ensureFbxLoaderWindowShim = () => {
 		}
 	};
 
-	const windowShim =
-		existingWindow ??
-		({
+	const windowShim = existingWindow
+		?? ({
 			innerWidth: 1,
 			innerHeight: 1,
 			document: documentShim
@@ -342,10 +347,9 @@ const parseGltfObject = async (
 	}
 
 	const loader = manager ? createGltfLoader(manager) : gltfLoader;
-	const data =
-		file.name.toLowerCase().endsWith('.gltf') && !isBinaryGltfBuffer(buffer)
-			? await file.text()
-			: buffer;
+	const data = file.name.toLowerCase().endsWith('.gltf') && !isBinaryGltfBuffer(buffer)
+		? await file.text()
+		: buffer;
 
 	return new Promise<UploadedModelObject>((resolve, reject) => {
 		loader.parse(
@@ -386,10 +390,10 @@ const parseTdsObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl] ??
-				resourceUrls[relativeWithoutRoot] ??
-				resourceUrls[fileName] ??
-				url
+				resourceUrls[normalizedUrl]
+					?? resourceUrls[relativeWithoutRoot]
+					?? resourceUrls[fileName]
+					?? url
 			);
 		});
 	}
@@ -419,10 +423,10 @@ const parseDaeObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl] ??
-				resourceUrls[relativeWithoutRoot] ??
-				resourceUrls[fileName] ??
-				url
+				resourceUrls[normalizedUrl]
+					?? resourceUrls[relativeWithoutRoot]
+					?? resourceUrls[fileName]
+					?? url
 			);
 		});
 	}
@@ -450,10 +454,10 @@ const parse3dmObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl] ??
-				resourceUrls[relativeWithoutRoot] ??
-				resourceUrls[fileName] ??
-				url
+				resourceUrls[normalizedUrl]
+					?? resourceUrls[relativeWithoutRoot]
+					?? resourceUrls[fileName]
+					?? url
 			);
 		});
 	}
@@ -486,10 +490,10 @@ const parseFbxObject = async (
 			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 			const fileName = normalizedUrl.split('/').pop() ?? '';
 			return (
-				resourceUrls[normalizedUrl] ??
-				resourceUrls[relativeWithoutRoot] ??
-				resourceUrls[fileName] ??
-				url
+				resourceUrls[normalizedUrl]
+					?? resourceUrls[relativeWithoutRoot]
+					?? resourceUrls[fileName]
+					?? url
 			);
 		});
 	}
@@ -500,8 +504,8 @@ const parseFbxObject = async (
 	if (normalizeToLocalOrigin) {
 		normalizeObjectToLocalOrigin(object);
 	}
-	const animations =
-		(object as THREE.Group & { animations?: THREE.AnimationClip[] }).animations ?? [];
+	const animations = (object as THREE.Group & { animations?: THREE.AnimationClip[]; }).animations
+		?? [];
 	return {
 		object,
 		animationNames: animations.map((clip, index) => clip.name || `Animation ${index + 1}`)
@@ -650,40 +654,40 @@ export const computeUploadedModelMeta = async ({
 	if (box.isEmpty()) {
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}
-	const coordinateSpace =
-		format === 'gltf' ? 'root-children' : format === 'ifc' ? 'ifc-z-up' : 'object';
-	const sourceBox =
-		coordinateSpace === 'root-children'
-			? getRootLocalSourceBounds(object)
-			: coordinateSpace === 'ifc-z-up'
-				? getIfcSourceBounds(box)
-				: box;
+	const coordinateSpace = format === 'gltf'
+		? 'root-children'
+		: format === 'ifc'
+		? 'ifc-z-up'
+		: 'object';
+	const sourceBox = coordinateSpace === 'root-children'
+		? getRootLocalSourceBounds(object)
+		: coordinateSpace === 'ifc-z-up'
+		? getIfcSourceBounds(box)
+		: box;
 
-	const formatUnitScaleMeters =
-		format === 'fbx'
-			? resolveFbxUnitScaleMeters(
-					box,
-					Number(
-						(
-							object.userData as {
-								unitScaleFactor?: number;
-							}
-						).unitScaleFactor
-					)
-				)
-			: 1;
+	const formatUnitScaleMeters = format === 'fbx'
+		? resolveFbxUnitScaleMeters(
+			box,
+			Number(
+				(
+					object.userData as {
+						unitScaleFactor?: number;
+					}
+				).unitScaleFactor
+			)
+		)
+		: 1;
 	const resolvedPlacement = projectedModelEpsg
 		? await resolveProjectedModelPlacementFromBox(
-				sourceBox,
-				projectedModelEpsg,
-				formatUnitScaleMeters,
-				coordinateSpace
-			)
+			sourceBox,
+			projectedModelEpsg,
+			formatUnitScaleMeters,
+			coordinateSpace
+		)
 		: undefined;
 	const resolvedGeoreference = georeference ?? resolvedPlacement?.georeference;
-	const usesLocalCoordinateGeoreference =
-		resolvedGeoreference?.coordinateSpace !== undefined &&
-		resolvedGeoreference.coordinateSpace !== 'object';
+	const usesLocalCoordinateGeoreference = resolvedGeoreference?.coordinateSpace !== undefined
+		&& resolvedGeoreference.coordinateSpace !== 'object';
 	if (usesLocalCoordinateGeoreference && resolvedGeoreference) {
 		applyProjectedModelGeoreference(object, resolvedGeoreference);
 		object.updateMatrixWorld(true);
@@ -734,10 +738,9 @@ export const computeUploadedModelMeta = async ({
 	let north = Number.NEGATIVE_INFINITY;
 
 	corners.forEach((corner) => {
-		const localCorner =
-			resolvedGeoreference && !usesLocalCoordinateGeoreference
-				? georeferenceCornerToLocal(corner, resolvedGeoreference)
-				: corner;
+		const localCorner = resolvedGeoreference && !usesLocalCoordinateGeoreference
+			? georeferenceCornerToLocal(corner, resolvedGeoreference)
+			: corner;
 		const world = localCorner.applyMatrix4(modelMatrix);
 		const lng = mercatorXToLng(world.x);
 		const lat = mercatorYToLat(world.y);

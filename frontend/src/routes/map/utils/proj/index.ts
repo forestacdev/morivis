@@ -46,7 +46,9 @@ export const transformGeoJSONParallel = (
 		return Promise.resolve({ type: 'FeatureCollection', features: [] });
 	}
 
-	const numWorkers = hasTokyoNadgridReference(prjContent) ? 1 : Math.min(NUM_WORKERS, totalFeatures);
+	const numWorkers = hasTokyoNadgridReference(prjContent)
+		? 1
+		: Math.min(NUM_WORKERS, totalFeatures);
 	const batchSize = Math.ceil(totalFeatures / numWorkers);
 
 	return new Promise((resolve, reject) => {

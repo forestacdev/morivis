@@ -68,15 +68,27 @@ describe('parseFbxModelAttributes', () => {
 		const model = createNode(
 			'Model',
 			[encodeId(modelId), encodeString('PLANESURFACE'), encodeString('Mesh')],
-			[(propertiesOffset) => createNode('Properties70', [], [
-				(propertyOffset) => createNode('P', [
-					encodeString('項目 - GUID'), encodeString('KString'), encodeString(''),
-					encodeString('U'), encodeString('fixture-guid')
-				], [], propertyOffset)
-			], propertiesOffset)],
+			[(propertiesOffset) =>
+				createNode('Properties70', [], [
+					(propertyOffset) =>
+						createNode(
+							'P',
+							[
+								encodeString('項目 - GUID'),
+								encodeString('KString'),
+								encodeString(''),
+								encodeString('U'),
+								encodeString('fixture-guid')
+							],
+							[],
+							propertyOffset
+						)
+				], propertiesOffset)],
 			27
 		);
-		const attributes = parseFbxModelAttributes(joinBytes([header, model, new Uint8Array(25)]).buffer);
+		const attributes = parseFbxModelAttributes(
+			joinBytes([header, model, new Uint8Array(25)]).buffer
+		);
 
 		expect(attributes[String(modelId)]?.['項目 - GUID']).toBe('fixture-guid');
 	});

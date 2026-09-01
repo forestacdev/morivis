@@ -702,11 +702,11 @@ const createMapStore = () => {
 	// マップの初期化判定
 	const isMapValid = (_map: any): boolean => {
 		return (
-			_map &&
-			typeof _map === 'object' &&
-			typeof _map.getLayer === 'function' &&
-			typeof _map.setLayoutProperty === 'function' &&
-			!_map._removed
+			_map
+			&& typeof _map === 'object'
+			&& typeof _map.getLayer === 'function'
+			&& typeof _map.setLayoutProperty === 'function'
+			&& !_map._removed
 		); // マップが削除されていないかチェック
 	};
 
@@ -735,7 +735,7 @@ const createMapStore = () => {
 	) => {
 		(
 			overlay as unknown as {
-				setProps: (props: { width: number; height: number; layers?: LayersList }) => void;
+				setProps: (props: { width: number; height: number; layers?: LayersList; }) => void;
 			}
 		).setProps(props);
 	};
@@ -782,13 +782,15 @@ const createMapStore = () => {
 
 		if (!deckOverlay) {
 			const { width, height } = getDeckOverlaySize();
-			deckOverlay = new MapboxOverlay({
-				id: 'deckgl-overlay',
-				interleaved: true,
-				layers: [],
-				width,
-				height
-			} as unknown as ConstructorParameters<typeof MapboxOverlay>[0]);
+			deckOverlay = new MapboxOverlay(
+				{
+					id: 'deckgl-overlay',
+					interleaved: true,
+					layers: [],
+					width,
+					height
+				} as unknown as ConstructorParameters<typeof MapboxOverlay>[0]
+			);
 		}
 
 		if (!isDeckOverlayAdded) {
@@ -840,7 +842,11 @@ const createMapStore = () => {
 		currentDeckTiles3dEntries = new Map(tiles3dEntries.map((entry) => [entry.id, entry]));
 		currentDeckPointCloudEntries = new Map(pointCloudEntries.map((entry) => [entry.id, entry]));
 		currentDeckVectorEntries = new Map(deckVectorEntries.map((entry) => [entry.id, entry]));
-		const layers = await createDeckOverlay(tiles3dEntries, pointCloudEntries, deckVectorEntries);
+		const layers = await createDeckOverlay(
+			tiles3dEntries,
+			pointCloudEntries,
+			deckVectorEntries
+		);
 		setDeckOverlay(layers);
 	};
 
@@ -1114,11 +1120,13 @@ const createMapStore = () => {
 		layers.forEach((layer) => {
 			if (currentMap.getLayer(layer.id)) return;
 			if (
-				'source' in layer &&
-				typeof layer.source === 'string' &&
-				!currentMap.getSource(layer.source)
+				'source' in layer
+				&& typeof layer.source === 'string'
+				&& !currentMap.getSource(layer.source)
 			) {
-				console.warn(`Skip highlight layer ${layer.id}: source "${layer.source}" not found.`);
+				console.warn(
+					`Skip highlight layer ${layer.id}: source "${layer.source}" not found.`
+				);
 				return;
 			}
 			currentMap.addLayer(layer);
@@ -1239,9 +1247,9 @@ const createMapStore = () => {
 		lngLat:
 			| [number, number]
 			| {
-					lng: number;
-					lat: number;
-			  },
+				lng: number;
+				lat: number;
+			},
 		option?: EaseToOptions
 	) => {
 		if (!map || !isMapValid(map)) return;
@@ -1252,9 +1260,9 @@ const createMapStore = () => {
 		lngLat:
 			| [number, number]
 			| {
-					lng: number;
-					lat: number;
-			  }
+				lng: number;
+				lat: number;
+			}
 	) => {
 		if (!map || !isMapValid(map)) return;
 
@@ -1309,10 +1317,9 @@ const createMapStore = () => {
 		const targetW = bounds[2] - bounds[0];
 		const targetH = bounds[3] - bounds[1];
 		const targetArea = targetW * targetH;
-		const scaleRatio =
-			currentArea > 0 && targetArea > 0
-				? Math.max(currentArea / targetArea, targetArea / currentArea)
-				: 1;
+		const scaleRatio = currentArea > 0 && targetArea > 0
+			? Math.max(currentArea / targetArea, targetArea / currentArea)
+			: 1;
 
 		// 距離ベース: 近い→短い、遠い→長い
 		const distDuration = dist * 100;
@@ -1326,9 +1333,8 @@ const createMapStore = () => {
 		if (_entry.metaData.center) {
 			map.flyTo({
 				center: _entry.metaData.center,
-				zoom:
-					('minZoom' in _entry.style ? _entry.style.minZoom : null) ??
-					_entry.metaData.minZoom + 1.5,
+				zoom: ('minZoom' in _entry.style ? _entry.style.minZoom : null)
+					?? _entry.metaData.minZoom + 1.5,
 				bearing: map.getBearing(),
 				pitch: map.getPitch(),
 				duration: 1000,

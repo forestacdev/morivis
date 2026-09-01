@@ -56,10 +56,10 @@
 		const propId = panelData.properties?._prop_id;
 		if (propId) return false;
 
-		const popupKeys = targetLayer.type === 'vector'
-			? targetLayer.properties.attributeView.popupKeys
-			: [];
-		const imageKey = targetLayer.type === 'vector' ? getPopupImageFieldKey(targetLayer.properties) : null;
+		const popupKeys =
+			targetLayer.type === 'vector' ? targetLayer.properties.attributeView.popupKeys : [];
+		const imageKey =
+			targetLayer.type === 'vector' ? getPopupImageFieldKey(targetLayer.properties) : null;
 		const displayProps =
 			popupKeys.length > 0
 				? filterByPopupKeys(panelData.properties, popupKeys)

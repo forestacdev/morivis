@@ -327,8 +327,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	},
 	{
 		label: 'DXF / DWG',
-		description:
-			'CAD図面を表す形式です。図面上の線や注記を地図上で確認するときに使います。',
+		description: 'CAD図面を表す形式です。図面上の線や注記を地図上で確認するときに使います。',
 		extensions: ['.dxf', '.dwg']
 	},
 	{
@@ -351,7 +350,8 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	},
 	{
 		label: 'LandXML',
-		description: '土木測量や設計の地形情報を表すXML形式です。TINや線形、測点データを扱うときに使います。',
+		description:
+			'土木測量や設計の地形情報を表すXML形式です。TINや線形、測点データを扱うときに使います。',
 		extensions: ['.landxml']
 	},
 	{

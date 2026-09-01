@@ -106,10 +106,16 @@ const createJgd2000PlaneRectangularDefinitions = (): Record<
 	(typeof JGD2000_JAPAN_PLANE_RECTANGULAR_CODES)[number],
 	EpsgInfo
 > => {
-	const definitions = {} as Record<(typeof JGD2000_JAPAN_PLANE_RECTANGULAR_CODES)[number], EpsgInfo>;
+	const definitions = {} as Record<
+		(typeof JGD2000_JAPAN_PLANE_RECTANGULAR_CODES)[number],
+		EpsgInfo
+	>;
 
 	for (const info of getJapanPlaneRectangularSystems()) {
-		const jgd2000Code = info.epsg.jgd2000.replace('EPSG:', '') as (typeof JGD2000_JAPAN_PLANE_RECTANGULAR_CODES)[number];
+		const jgd2000Code = info.epsg.jgd2000.replace(
+			'EPSG:',
+			''
+		) as (typeof JGD2000_JAPAN_PLANE_RECTANGULAR_CODES)[number];
 		const jgd2011Code = info.epsg.jgd2011.replace('EPSG:', '') as StaticEpsgCode;
 		const baseDefinition = epsg_definitions[jgd2011Code] as EpsgInfo;
 		const jgd2000Proj = getJapanPlaneRectangularProj4(info.zone, 'jgd2000');
@@ -129,14 +135,17 @@ const createJgd2000PlaneRectangularDefinitions = (): Record<
 	return definitions;
 };
 
-const createTokyoDefinitions = (): Record<'4301', EpsgInfo> &
-	Record<(typeof TOKYO_JAPAN_PLANE_RECTANGULAR_CODES)[number], EpsgInfo> => {
+const createTokyoDefinitions = ():
+	& Record<'4301', EpsgInfo>
+	& Record<(typeof TOKYO_JAPAN_PLANE_RECTANGULAR_CODES)[number], EpsgInfo> =>
+{
 	const baseGeographicDefinition = epsg_definitions['4612'] as EpsgInfo;
 	const definitions = {
 		'4301': {
 			...baseGeographicDefinition,
 			citation: 'Tokyo',
-			proj_context: `+proj=longlat +ellps=bessel ${TOKYO_NADGRID_PROJ4_VALUE} +no_defs +type=crs`,
+			proj_context:
+				`+proj=longlat +ellps=bessel ${TOKYO_NADGRID_PROJ4_VALUE} +no_defs +type=crs`,
 			wkt: TOKYO_GEOGRAPHIC_WKT,
 			datum: 'Tokyo',
 			ellipsoid: {
@@ -146,8 +155,9 @@ const createTokyoDefinitions = (): Record<'4301', EpsgInfo> &
 			},
 			name_ja: '旧日本測地系 / 地理座標系'
 		}
-	} as Record<'4301', EpsgInfo> &
-		Record<(typeof TOKYO_JAPAN_PLANE_RECTANGULAR_CODES)[number], EpsgInfo>;
+	} as
+		& Record<'4301', EpsgInfo>
+		& Record<(typeof TOKYO_JAPAN_PLANE_RECTANGULAR_CODES)[number], EpsgInfo>;
 
 	for (const info of getJapanPlaneRectangularSystems()) {
 		const tokyoCode = getJapanPlaneRectangularEpsg(info.zone, 'tokyo')?.replace(

@@ -3,14 +3,20 @@ export type FbxModelAttributes = Record<string, FbxAttributeValue>;
 
 const BINARY_HEADER_PREFIX = 'Kaydara FBX Binary  ';
 
-export const parseFbxModelAttributes = (buffer: ArrayBuffer): Record<string, FbxModelAttributes> => {
+export const parseFbxModelAttributes = (
+	buffer: ArrayBuffer
+): Record<string, FbxModelAttributes> => {
 	const bytes = new Uint8Array(buffer);
-	if (new TextDecoder().decode(bytes.subarray(0, BINARY_HEADER_PREFIX.length)) !== BINARY_HEADER_PREFIX) {
+	if (
+		new TextDecoder().decode(bytes.subarray(0, BINARY_HEADER_PREFIX.length))
+			!== BINARY_HEADER_PREFIX
+	) {
 		return {};
 	}
 	const view = new DataView(buffer);
 	const decoder = new TextDecoder();
-	const getString = (offset: number, length: number) => decoder.decode(bytes.subarray(offset, offset + length));
+	const getString = (offset: number, length: number) =>
+		decoder.decode(bytes.subarray(offset, offset + length));
 	const readProperty = (offset: number): [FbxAttributeValue | null, number] => {
 		const type = String.fromCharCode(view.getUint8(offset));
 		offset += 1;
@@ -49,8 +55,12 @@ export const parseFbxModelAttributes = (buffer: ArrayBuffer): Record<string, Fbx
 		}
 		const currentModelId = name === 'Model' && values[0] != null ? String(values[0]) : modelId;
 		if (name === 'P' && currentModelId && typeof values[0] === 'string') {
-			const propertyValues = values.slice(4).filter((item): item is FbxAttributeValue => item != null);
-			const value = propertyValues.length === 1 ? propertyValues[0] : propertyValues.map(String).join(', ');
+			const propertyValues = values.slice(4).filter((item): item is FbxAttributeValue =>
+				item != null
+			);
+			const value = propertyValues.length === 1
+				? propertyValues[0]
+				: propertyValues.map(String).join(', ');
 			if (value !== '') (attributes[currentModelId] ??= {})[values[0]] = value;
 		}
 		while (cursor + 25 <= end) {

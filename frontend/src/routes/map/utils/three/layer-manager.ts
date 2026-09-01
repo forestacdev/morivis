@@ -1,5 +1,5 @@
-import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
+import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import {
 	DEFAULT_MESH_SHADING,
 	type MeshEntry,
@@ -10,16 +10,21 @@ import type { CustomLayerInterface, Map as MapLibreMap } from '$routes/map/utils
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import {
+	type FbxModelAttributes,
+	parseFbxModelAttributes
+} from '$routes/map/utils/three/fbx-attributes';
+import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
+import {
+	getIfcAttributes,
+	getModelObjectAttributes,
+	type ModelAttributes
+} from '$routes/map/utils/three/model-attributes';
+import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
-import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
 import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
-import {
-	parseFbxModelAttributes,
-	type FbxModelAttributes
-} from '$routes/map/utils/three/fbx-attributes';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -29,15 +34,19 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
-let rhino3dmLoaderModulePromise: Promise<
-	typeof import('three/addons/loaders/3DMLoader.js')
-> | null = null;
+let rhino3dmLoaderModulePromise:
+	| Promise<
+		typeof import('three/addons/loaders/3DMLoader.js')
+	>
+	| null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
 let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
 	null;
-let colladaLoaderModulePromise: Promise<
-	typeof import('three/addons/loaders/ColladaLoader.js')
-> | null = null;
+let colladaLoaderModulePromise:
+	| Promise<
+		typeof import('three/addons/loaders/ColladaLoader.js')
+	>
+	| null = null;
 let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
 	null;
 let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
@@ -56,10 +65,10 @@ const resolveResourceUrl = (resourceUrls: Record<string, string>, url: string) =
 	const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 	const fileName = normalizedUrl.split('/').pop() ?? '';
 	return (
-		resourceUrls[normalizedUrl] ??
-		resourceUrls[relativeWithoutRoot] ??
-		resourceUrls[fileName] ??
-		url
+		resourceUrls[normalizedUrl]
+			?? resourceUrls[relativeWithoutRoot]
+			?? resourceUrls[fileName]
+			?? url
 	);
 };
 
@@ -119,20 +128,22 @@ interface LoadedModel {
 	mixer?: THREE.AnimationMixer;
 	actions?: THREE.AnimationAction[];
 	lastClipIndex?: number;
+	resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>;
 }
 
 export interface PickedModelFeature {
 	entryId: string;
 	objectId: string;
 	objectName: string;
-	formatType: MeshEntry<MeshStyle>['format']['type'];
-	attributes: FbxModelAttributes;
+	attributes: ModelAttributes;
 }
 
 interface ModelHighlight {
 	mesh: THREE.Mesh;
 	fill: THREE.Mesh;
 	outline: THREE.LineSegments;
+	geometry: THREE.BufferGeometry;
+	expressId?: number;
 }
 
 const TEXTURE_SLOT_KEYS = [
@@ -153,7 +164,14 @@ const TEXTURE_SLOT_KEYS = [
 const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>([
 	'fbx',
 	'obj',
-	'gltf'
+	'gltf',
+	'3ds',
+	'dae',
+	'3dm',
+	'drc',
+	'3mf',
+	'amf',
+	'ifc'
 ]);
 
 const materialHasTextureSlots = (material: THREE.Material) => {
@@ -231,10 +249,9 @@ export class ThreeJsLayerManager {
 			baseColor.multiply(sourceMaterial.color);
 		}
 
-		const map =
-			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
-				? sourceMaterial.map
-				: null;
+		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+			? sourceMaterial.map
+			: null;
 		const colorRamp = style.heightColorRamp;
 		const [colorRampMin, colorRampMax] = getAdjustableRangeValue(
 			colorRamp?.range,
@@ -253,27 +270,25 @@ export class ThreeJsLayerManager {
 		const colorRampArray = colorRamp?.enabled
 			? this.colorMapManager.createColorArray(colorRamp.colorMap)
 			: null;
-		const colorRampRgbaArray =
-			colorRampArray != null
-				? new Uint8Array(
-						Array.from({ length: 256 * 4 }, (_, i) => {
-							const colorIndex = Math.floor(i / 4);
-							const channel = i % 4;
-							if (channel === 3) return 255;
-							return colorRampArray[colorIndex * 3 + channel] ?? 0;
-						})
-					)
-				: null;
-		const colorRampTexture =
-			colorRamp?.enabled && colorRampMax > colorRampMin
-				? new THREE.DataTexture(
-						colorRampRgbaArray,
-						1,
-						256,
-						THREE.RGBAFormat,
-						THREE.UnsignedByteType
-					)
-				: null;
+		const colorRampRgbaArray = colorRampArray != null
+			? new Uint8Array(
+				Array.from({ length: 256 * 4 }, (_, i) => {
+					const colorIndex = Math.floor(i / 4);
+					const channel = i % 4;
+					if (channel === 3) return 255;
+					return colorRampArray[colorIndex * 3 + channel] ?? 0;
+				})
+			)
+			: null;
+		const colorRampTexture = colorRamp?.enabled && colorRampMax > colorRampMin
+			? new THREE.DataTexture(
+				colorRampRgbaArray,
+				1,
+				256,
+				THREE.RGBAFormat,
+				THREE.UnsignedByteType
+			)
+			: null;
 		if (colorRampTexture) {
 			colorRampTexture.colorSpace = THREE.SRGBColorSpace;
 			colorRampTexture.minFilter = THREE.LinearFilter;
@@ -376,10 +391,9 @@ export class ThreeJsLayerManager {
 			baseColor.multiply(sourceMaterial.color);
 		}
 
-		const map =
-			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
-				? sourceMaterial.map
-				: null;
+		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+			? sourceMaterial.map
+			: null;
 
 		const material = new THREE.MeshBasicMaterial({
 			color: baseColor,
@@ -398,18 +412,17 @@ export class ThreeJsLayerManager {
 		sourceMaterial: THREE.Material,
 		style: MeshStyle
 	): THREE.Material => {
-		const map =
-			getTextureSlot(sourceMaterial, 'map') ?? getTextureSlot(sourceMaterial, 'emissiveMap');
+		const map = getTextureSlot(sourceMaterial, 'map')
+			?? getTextureSlot(sourceMaterial, 'emissiveMap');
 		const alphaMap = getTextureSlot(sourceMaterial, 'alphaMap');
 
 		const material = new THREE.MeshBasicMaterial({
 			color: new THREE.Color(style.color),
 			map,
 			alphaMap,
-			transparent:
-				style.opacity < 1 ||
-				alphaMap != null ||
-				('transparent' in sourceMaterial && sourceMaterial.transparent === true),
+			transparent: style.opacity < 1
+				|| alphaMap != null
+				|| ('transparent' in sourceMaterial && sourceMaterial.transparent === true),
 			opacity: style.opacity,
 			wireframe: style.wireframe,
 			side: THREE.DoubleSide
@@ -445,16 +458,15 @@ export class ThreeJsLayerManager {
 		formatType?: MeshEntry<MeshStyle>['format']['type']
 	) => {
 		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-		const originalMaterials =
-			(mesh.userData.originalMaterials as THREE.Material[] | undefined) ??
-			currentMaterials.map((material) => material.clone());
+		const originalMaterials = (mesh.userData.originalMaterials as THREE.Material[] | undefined)
+			?? currentMaterials.map((material) => material.clone());
 
 		if (!mesh.userData.originalMaterials) {
 			mesh.userData.originalMaterials = originalMaterials;
 		}
 
-		const useShaderMaterial =
-			Boolean(style.shading?.enabled) || Boolean(style.heightColorRamp?.enabled);
+		const useShaderMaterial = Boolean(style.shading?.enabled)
+			|| Boolean(style.heightColorRamp?.enabled);
 		const isSkinnedMesh = (mesh as THREE.SkinnedMesh).isSkinnedMesh === true;
 		const hasTexturedMaterial = originalMaterials.some(materialHasTextureSlots);
 
@@ -463,12 +475,12 @@ export class ThreeJsLayerManager {
 			hasTexturedMaterial && formatType === 'fbx'
 				? this.createFbxTexturedMaterial(sourceMaterial, style)
 				: hasTexturedMaterial
-					? this.createStyledSourceMaterial(sourceMaterial, style)
-					: isSkinnedMesh
-						? this.createStyledSourceMaterial(sourceMaterial, style)
-						: useShaderMaterial
-							? this.createShaderMaterial(sourceMaterial, style)
-							: this.createFlatMaterial(sourceMaterial, style)
+				? this.createStyledSourceMaterial(sourceMaterial, style)
+				: isSkinnedMesh
+				? this.createStyledSourceMaterial(sourceMaterial, style)
+				: useShaderMaterial
+				? this.createShaderMaterial(sourceMaterial, style)
+				: this.createFlatMaterial(sourceMaterial, style)
 		);
 
 		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
@@ -502,17 +514,49 @@ export class ThreeJsLayerManager {
 		highlight.fill.removeFromParent();
 		highlight.outline.removeFromParent();
 		(highlight.fill.material as THREE.Material).dispose();
+		if (highlight.geometry !== highlight.mesh.geometry) highlight.geometry.dispose();
 		highlight.outline.geometry.dispose();
 		(highlight.outline.material as THREE.Material).dispose();
 		this.map?.triggerRepaint();
 	}
 
-	private highlightModelMesh = (mesh: THREE.Mesh) => {
-		if (this.selectedModelHighlight?.mesh === mesh) return;
+	private getIfcHighlightGeometry = (mesh: THREE.Mesh, expressId: number) => {
+		const sourceGeometry = mesh.geometry;
+		const expressIds = sourceGeometry.getAttribute('expressID');
+		if (!expressIds) return null;
+		const sourceIndex = sourceGeometry.getIndex();
+		const vertexCount = sourceIndex?.count ?? sourceGeometry.getAttribute('position').count;
+		const indices: number[] = [];
+		for (let offset = 0; offset < vertexCount; offset += 3) {
+			const firstVertex = sourceIndex ? sourceIndex.getX(offset) : offset;
+			if (expressIds.getX(firstVertex) !== expressId) continue;
+			indices.push(
+				sourceIndex ? sourceIndex.getX(offset) : offset,
+				sourceIndex ? sourceIndex.getX(offset + 1) : offset + 1,
+				sourceIndex ? sourceIndex.getX(offset + 2) : offset + 2
+			);
+		}
+		if (indices.length === 0) return null;
+		const geometry = sourceGeometry.clone();
+		geometry.clearGroups();
+		geometry.setIndex(indices);
+		return geometry;
+	};
+
+	private highlightModelMesh = (mesh: THREE.Mesh, expressId?: number) => {
+		if (
+			this.selectedModelHighlight?.mesh === mesh
+			&& this.selectedModelHighlight.expressId === expressId
+		) {
+			return;
+		}
 		this.clearModelHighlight();
+		const geometry = expressId == null
+			? mesh.geometry
+			: (this.getIfcHighlightGeometry(mesh, expressId) ?? mesh.geometry);
 
 		const fill = new THREE.Mesh(
-			mesh.geometry,
+			geometry,
 			new THREE.MeshBasicMaterial({
 				color: HIGHLIGHT_LAYER_COLOR,
 				transparent: true,
@@ -529,7 +573,7 @@ export class ThreeJsLayerManager {
 		fill.raycast = () => undefined;
 
 		const outline = new THREE.LineSegments(
-			new THREE.EdgesGeometry(mesh.geometry, 20),
+			new THREE.EdgesGeometry(geometry, 20),
 			new THREE.LineBasicMaterial({ color: HIGHLIGHT_LAYER_COLOR, depthWrite: false })
 		);
 		outline.name = 'morivis-fbx-highlight-outline';
@@ -537,7 +581,7 @@ export class ThreeJsLayerManager {
 		outline.raycast = () => undefined;
 
 		mesh.add(fill, outline);
-		this.selectedModelHighlight = { mesh, fill, outline };
+		this.selectedModelHighlight = { mesh, fill, outline, geometry, expressId };
 		this.map?.triggerRepaint();
 	};
 
@@ -551,13 +595,69 @@ export class ThreeJsLayerManager {
 		}
 
 		if ((object as THREE.Mesh).isMesh) {
-			const meshMaterial = (object as THREE.Mesh).material as THREE.Material | THREE.Material[];
+			const meshMaterial = (object as THREE.Mesh).material as
+				| THREE.Material
+				| THREE.Material[];
 			const materials = Array.isArray(meshMaterial) ? meshMaterial : [meshMaterial];
 			const materialName = materials.find((material) => material.name)?.name;
 			if (materialName) return materialName;
 		}
 
 		return '名称なし';
+	};
+
+	private getFbxAttributeObject = (object: THREE.Object3D) => {
+		let current: THREE.Object3D | null = object;
+		while (current) {
+			const attributes = current.userData.morivisFbxAttributes as
+				| FbxModelAttributes
+				| undefined;
+			if (attributes) return { object: current, attributes };
+			current = current.parent;
+		}
+		return { object, attributes: undefined };
+	};
+
+	private getIfcExpressId = (
+		model: THREE.Object3D,
+		hit: THREE.Intersection<THREE.Object3D>
+	): number | undefined => {
+		const ifcModel = model as THREE.Object3D & {
+			ifcManager?: {
+				getExpressId: (geometry: THREE.BufferGeometry, faceIndex: number) => number;
+			} | null;
+		};
+		const mesh = hit.object as THREE.Mesh;
+		if (!ifcModel.ifcManager || !mesh.geometry || hit.faceIndex == null) return undefined;
+		return ifcModel.ifcManager.getExpressId(mesh.geometry, hit.faceIndex);
+	};
+
+	private resolveIfcAttributes = async (
+		model: THREE.Object3D,
+		hit: THREE.Intersection<THREE.Object3D>
+	): Promise<ModelAttributes> => {
+		const ifcModel = model as THREE.Object3D & {
+			modelID?: number;
+			ifcManager?: {
+				getItemProperties: (
+					modelId: number,
+					expressId: number
+				) => Promise<Record<string, unknown>>;
+				getPropertySets: (
+					modelId: number,
+					expressId: number
+				) => Promise<Record<string, unknown>[]>;
+				getIfcType: (modelId: number, expressId: number) => string | Promise<string>;
+			} | null;
+		};
+		const expressId = this.getIfcExpressId(model, hit);
+		if (ifcModel.modelID == null || expressId == null || !ifcModel.ifcManager) return {};
+		const [item, propertySets, ifcType] = await Promise.all([
+			ifcModel.ifcManager.getItemProperties(ifcModel.modelID, expressId),
+			ifcModel.ifcManager.getPropertySets(ifcModel.modelID, expressId),
+			ifcModel.ifcManager.getIfcType(ifcModel.modelID, expressId)
+		]);
+		return { ...getIfcAttributes(expressId, item, propertySets), 'IFC クラス': ifcType };
 	};
 
 	private requestRepaintBurst = (frameCount = 90) => {
@@ -624,18 +724,15 @@ export class ThreeJsLayerManager {
 		style: MeshStyle
 	): THREE.Material => {
 		if (material instanceof THREE.ShaderMaterial) {
-			const baseColor =
-				material.uniforms.uBaseColor?.value instanceof THREE.Color
-					? material.uniforms.uBaseColor.value.clone()
-					: new THREE.Color(style.color);
-			const map =
-				material.uniforms.uMap?.value instanceof THREE.Texture
-					? material.uniforms.uMap.value
-					: null;
-			const opacity =
-				typeof material.uniforms.uOpacity?.value === 'number'
-					? material.uniforms.uOpacity.value
-					: style.opacity;
+			const baseColor = material.uniforms.uBaseColor?.value instanceof THREE.Color
+				? material.uniforms.uBaseColor.value.clone()
+				: new THREE.Color(style.color);
+			const map = material.uniforms.uMap?.value instanceof THREE.Texture
+				? material.uniforms.uMap.value
+				: null;
+			const opacity = typeof material.uniforms.uOpacity?.value === 'number'
+				? material.uniforms.uOpacity.value
+				: style.opacity;
 
 			return new THREE.MeshStandardMaterial({
 				color: baseColor,
@@ -655,7 +752,7 @@ export class ThreeJsLayerManager {
 		return clonedMaterial;
 	};
 
-	private prepareGlbExportObject = (loaded: LoadedModel): (() => void) => {
+	private prepareGlbExportObject = (loaded: LoadedModel): () => void => {
 		const originalPosition = loaded.object.position.clone();
 		const originalMaterials: Array<{
 			mesh: THREE.Mesh;
@@ -673,7 +770,9 @@ export class ThreeJsLayerManager {
 				this.createGlbExportMaterial(material, loaded.entry.style)
 			);
 			exportMaterials.push(...convertedMaterials);
-			mesh.material = Array.isArray(mesh.material) ? convertedMaterials : convertedMaterials[0];
+			mesh.material = Array.isArray(mesh.material)
+				? convertedMaterials
+				: convertedMaterials[0];
 		});
 		centerObjectToLocalOrigin(loaded.object);
 		loaded.object.updateMatrixWorld(true);
@@ -710,7 +809,7 @@ export class ThreeJsLayerManager {
 			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 			materials.forEach((material) => {
 				const originalDepthState = material.userData.morivisDepthState as
-					| { depthTest: boolean; depthWrite: boolean }
+					| { depthTest: boolean; depthWrite: boolean; }
 					| undefined;
 				if (!originalDepthState) return;
 
@@ -727,14 +826,16 @@ export class ThreeJsLayerManager {
 
 		const renderTargetSize = this.renderer.getDrawingBufferSize(new THREE.Vector2());
 		if (
-			this.overlayRenderTarget.width !== renderTargetSize.x ||
-			this.overlayRenderTarget.height !== renderTargetSize.y
+			this.overlayRenderTarget.width !== renderTargetSize.x
+			|| this.overlayRenderTarget.height !== renderTargetSize.y
 		) {
 			this.overlayRenderTarget.setSize(renderTargetSize.x, renderTargetSize.y);
 		}
 
 		this.restoreModelDepthState(loaded.object);
-		this.camera.projectionMatrix = mapProjectionMatrix.clone().multiply(loaded.transform.matrix);
+		this.camera.projectionMatrix = mapProjectionMatrix.clone().multiply(
+			loaded.transform.matrix
+		);
 		this.setOnlyEntryVisible(loaded.entry.id, loaded.entry.style.visible ?? true);
 
 		this.renderer.resetState();
@@ -749,8 +850,9 @@ export class ThreeJsLayerManager {
 
 	private updateAnimations = () => {
 		const nowMs = performance.now();
-		const deltaSeconds =
-			this.lastRenderTimeMs == null ? 0 : Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
+		const deltaSeconds = this.lastRenderTimeMs == null
+			? 0
+			: Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
 		this.lastRenderTimeMs = nowMs;
 		let hasPlayingAnimation = false;
 
@@ -804,7 +906,9 @@ export class ThreeJsLayerManager {
 						depthWrite: false,
 						toneMapped: false
 					});
-					this.overlayScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), overlayMaterial));
+					this.overlayScene.add(
+						new THREE.Mesh(new THREE.PlaneGeometry(2, 2), overlayMaterial)
+					);
 
 					// 全体を均一に明るくしすぎず、空と地面からの回り込みだけを薄く入れる。
 					const hemiLight = new THREE.HemisphereLight(0xeef3fb, 0x5a6470, 0.45);
@@ -900,7 +1004,10 @@ export class ThreeJsLayerManager {
 
 			const onModelLoaded = (
 				model: THREE.Group | THREE.Object3D,
-				animations: THREE.AnimationClip[] = []
+				animations: THREE.AnimationClip[] = [],
+				resolveAttributes?: (
+					hit: THREE.Intersection<THREE.Object3D>
+				) => Promise<ModelAttributes>
 			) => {
 				this.applyStyleToObject(model, entry.style, entry.format.type);
 
@@ -909,7 +1016,8 @@ export class ThreeJsLayerManager {
 				const loaded: LoadedModel = {
 					entry,
 					object: model,
-					transform
+					transform,
+					resolveAttributes
 				};
 				if (animations.length > 0) {
 					loaded.mixer = new THREE.AnimationMixer(model);
@@ -959,10 +1067,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -1002,10 +1110,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -1036,10 +1144,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -1048,7 +1156,8 @@ export class ThreeJsLayerManager {
 						const colladaLoader = new ColladaLoader(manager);
 						colladaLoader.load(
 							entry.format.url,
-							(collada) => finalizeAndLoadModel(collada.scene, collada.scene.animations),
+							(collada) =>
+								finalizeAndLoadModel(collada.scene, collada.scene.animations),
 							undefined,
 							(error) => reject(error)
 						);
@@ -1063,10 +1172,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -1091,10 +1200,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl] ??
-							resourceUrls[relativeWithoutRoot] ??
-							resourceUrls[fileName] ??
-							url
+							resourceUrls[normalizedUrl]
+								?? resourceUrls[relativeWithoutRoot]
+								?? resourceUrls[fileName]
+								?? url
 						);
 					});
 				}
@@ -1112,7 +1221,9 @@ export class ThreeJsLayerManager {
 
 						const response = await fetch(entry.format.url);
 						if (!response.ok) {
-							throw new Error(`Failed to fetch FBX: ${response.status} ${response.statusText}`);
+							throw new Error(
+								`Failed to fetch FBX: ${response.status} ${response.statusText}`
+							);
 						}
 
 						const buffer = await response.arrayBuffer();
@@ -1121,7 +1232,7 @@ export class ThreeJsLayerManager {
 						let modelIdCount = 0;
 						let matchedAttributeCount = 0;
 						object.traverse((child) => {
-							const modelId = (child as THREE.Object3D & { ID?: number }).ID;
+							const modelId = (child as THREE.Object3D & { ID?: number; }).ID;
 							if (modelId == null) return;
 							modelIdCount += 1;
 							const attributes = attributesByModelId[String(modelId)];
@@ -1164,17 +1275,24 @@ export class ThreeJsLayerManager {
 					fetch(entry.format.url)
 						.then(async (response) => {
 							if (!response.ok) {
-								throw new Error(`Failed to fetch glTF: ${response.status} ${response.statusText}`);
+								throw new Error(
+									`Failed to fetch glTF: ${response.status} ${response.statusText}`
+								);
 							}
 
 							const buffer = await response.arrayBuffer();
-							const data = isBinaryGltfBuffer(buffer) ? buffer : new TextDecoder().decode(buffer);
+							const data = isBinaryGltfBuffer(buffer)
+								? buffer
+								: new TextDecoder().decode(buffer);
 
 							loader.parse(
 								data,
 								'',
 								(gltf) => finalizeAndLoadModel(gltf.scene, gltf.animations),
-								(error) => reject(error instanceof Error ? error : new Error(String(error)))
+								(error) =>
+									reject(
+										error instanceof Error ? error : new Error(String(error))
+									)
 							);
 						})
 						.catch((error) => reject(error));
@@ -1187,7 +1305,10 @@ export class ThreeJsLayerManager {
 							geometry.computeVertexNormals();
 						}
 						finalizeAndLoadModel(
-							new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#ffffff' }))
+							new THREE.Mesh(
+								geometry,
+								new THREE.MeshStandardMaterial({ color: '#ffffff' })
+							)
 						);
 					},
 					undefined,
@@ -1225,21 +1346,12 @@ export class ThreeJsLayerManager {
 							loader.load(
 								entry.format.url,
 								(object) => {
-									console.log('[IFC] layer load before normalization', {
-										entryId: entry.id,
-										name: entry.metaData.name,
-										normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
-										transform: entry.style.transform
-									});
 									finalizeLoadedModel(object);
-									console.log('[IFC] layer load after normalization', {
-										entryId: entry.id,
-										name: entry.metaData.name,
-										position: object.position.toArray(),
-										rotation: [object.rotation.x, object.rotation.y, object.rotation.z],
-										scale: object.scale.toArray()
-									});
-									onModelLoaded(object);
+									onModelLoaded(
+										object,
+										[],
+										(hit) => this.resolveIfcAttributes(object, hit)
+									);
 								},
 								undefined,
 								(error) => reject(error)
@@ -1273,9 +1385,9 @@ export class ThreeJsLayerManager {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
 		if (
-			this.selectedModelHighlight &&
-			loaded.object.getObjectById(this.selectedModelHighlight.mesh.id) ===
-				this.selectedModelHighlight.mesh
+			this.selectedModelHighlight
+			&& loaded.object.getObjectById(this.selectedModelHighlight.mesh.id)
+				=== this.selectedModelHighlight.mesh
 		) {
 			this.clearModelHighlight();
 		}
@@ -1287,7 +1399,9 @@ export class ThreeJsLayerManager {
 				mesh.geometry.dispose();
 				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 				materials.forEach((mat) => mat.dispose());
-				const originalMaterials = mesh.userData.originalMaterials as THREE.Material[] | undefined;
+				const originalMaterials = mesh.userData.originalMaterials as
+					| THREE.Material[]
+					| undefined;
 				originalMaterials?.forEach((material) => material.dispose());
 			}
 		});
@@ -1375,13 +1489,12 @@ export class ThreeJsLayerManager {
 			if (positionAttribute.itemSize !== 3) return;
 			if (positionAttribute.count !== heights.length) return;
 			const uvAttribute = mesh.geometry.getAttribute('uv');
-			const uvBufferAttribute =
-				uvAttribute instanceof THREE.BufferAttribute &&
-				uvAttribute.itemSize === 2 &&
-				normalizedHeights != null &&
-				uvAttribute.count === normalizedHeights.length
-					? uvAttribute
-					: null;
+			const uvBufferAttribute = uvAttribute instanceof THREE.BufferAttribute
+					&& uvAttribute.itemSize === 2
+					&& normalizedHeights != null
+					&& uvAttribute.count === normalizedHeights.length
+				? uvAttribute
+				: null;
 
 			for (let i = 0; i < positionAttribute.count; i++) {
 				positionAttribute.setY(i, heights[i] ?? 0);
@@ -1529,7 +1642,7 @@ export class ThreeJsLayerManager {
 		return Array.from(this.loadedModels.keys());
 	}
 
-	pickModel(point: { x: number; y: number }): PickedModelFeature | null {
+	async pickModel(point: { x: number; y: number; }): Promise<PickedModelFeature | null> {
 		if (!import.meta.env.PROD) console.info('[モデル pick] 開始', { point });
 		if (!this.map || !this.lastMapProjectionMatrix) {
 			if (!import.meta.env.PROD) {
@@ -1553,9 +1666,7 @@ export class ThreeJsLayerManager {
 		);
 		const targetEntries = Array.from(this.loadedModels.values()).filter(
 			(loaded) =>
-				CLICKABLE_MODEL_FORMATS.has(loaded.entry.format.type) &&
-				loaded.entry.interaction.clickable &&
-				loaded.entry.style.visible
+				CLICKABLE_MODEL_FORMATS.has(loaded.entry.format.type) && loaded.entry.style.visible
 		);
 		if (!import.meta.env.PROD) {
 			console.info('[モデル pick] 開始', {
@@ -1578,10 +1689,12 @@ export class ThreeJsLayerManager {
 			}
 			return null;
 		}
-		let closest: { distance: number; feature: PickedModelFeature; mesh: THREE.Mesh } | null = null;
-		let hitWithoutAttributes: { entryId: string; objectId?: number; objectName: string } | null =
-			null;
-		targetEntries.forEach((loaded) => {
+		let closest: {
+			distance: number;
+			loaded: LoadedModel;
+			hit: THREE.Intersection<THREE.Object3D>;
+		} | null = null;
+		for (const loaded of targetEntries) {
 			const inverse = mapProjectionMatrix.clone().multiply(loaded.transform.matrix).invert();
 			const origin = new THREE.Vector3(ndc.x, ndc.y, -1).applyMatrix4(inverse);
 			const target = new THREE.Vector3(ndc.x, ndc.y, 1).applyMatrix4(inverse);
@@ -1597,65 +1710,57 @@ export class ThreeJsLayerManager {
 					rayDirection: raycaster.ray.direction.toArray(),
 					hit: hit
 						? {
-								distance: hit.distance,
-								objectId: (hit.object as THREE.Object3D & { ID?: number }).ID,
-								objectName: hit.object.userData.originalName ?? hit.object.name,
-								hasAttributes: Boolean(hit.object.userData.morivisFbxAttributes)
-							}
+							distance: hit.distance,
+							objectId: (hit.object as THREE.Object3D & { ID?: number; }).ID,
+							objectName: hit.object.userData.originalName ?? hit.object.name,
+							hasAttributes: Boolean(hit.object.userData.morivisFbxAttributes)
+						}
 						: null
 				});
 			}
-			if (!hit || !closest || hit.distance < closest.distance) {
-				let attributeObject: THREE.Object3D | null = hit?.object ?? null;
-				let attributes: FbxModelAttributes | undefined;
-				while (attributeObject && !attributes) {
-					attributes = attributeObject.userData.morivisFbxAttributes as
-						| FbxModelAttributes
-						| undefined;
-					if (!attributes) attributeObject = attributeObject.parent;
-				}
-				if (!hit) return;
-				if (loaded.entry.format.type === 'fbx' && !attributes) {
-					hitWithoutAttributes = {
-						entryId: loaded.entry.id,
-						objectId: (hit.object as THREE.Object3D & { ID?: number }).ID,
-						objectName: this.resolvePickedObjectName(hit.object, loaded.object)
-					};
-					return;
-				}
-				const resolvedAttributeObject =
-					loaded.entry.format.type === 'fbx' ? (attributeObject ?? hit.object) : hit.object;
-				closest = {
-					distance: hit.distance,
-					feature: {
-						entryId: loaded.entry.id,
-						objectId: String(
-							(resolvedAttributeObject as THREE.Object3D & { ID?: number }).ID ?? hit.object.id
-						),
-						objectName: this.resolvePickedObjectName(resolvedAttributeObject, loaded.object),
-						formatType: loaded.entry.format.type,
-						attributes: attributes ?? {}
-					},
-					mesh: hit.object as THREE.Mesh
-				};
+			if (hit && (!closest || hit.distance < closest.distance)) {
+				closest = { distance: hit.distance, loaded, hit };
 			}
-		});
-		const picked = closest as {
-			distance: number;
-			feature: PickedModelFeature;
-			mesh: THREE.Mesh;
-		} | null;
-		const feature = picked?.feature ?? null;
-		if (!feature && !import.meta.env.PROD) {
-			console.info(
-				hitWithoutAttributes
-					? '[モデル pick] null: FBX メッシュには命中したが属性がありません'
-					: '[モデル pick] null: レイがメッシュに命中しませんでした',
-				hitWithoutAttributes
-			);
 		}
-		if (picked) this.highlightModelMesh(picked.mesh);
-		return feature;
+		if (!closest) {
+			if (!import.meta.env.PROD) {
+				console.info('[モデル pick] null: レイがメッシュに命中しませんでした');
+			}
+			return null;
+		}
+		const { loaded, hit } = closest;
+		const fbxAttributeObject = this.getFbxAttributeObject(hit.object);
+		const expressId = loaded.entry.format.type === 'ifc'
+			? this.getIfcExpressId(loaded.object, hit)
+			: undefined;
+		let formatAttributes: ModelAttributes = Object.fromEntries(
+			Object.entries(fbxAttributeObject.attributes ?? {}).map(([key, value]) => [
+				key,
+				Array.isArray(value) ? value.join(', ') : value
+			])
+		);
+		if (loaded.resolveAttributes) {
+			try {
+				formatAttributes = {
+					...formatAttributes,
+					...(await loaded.resolveAttributes(hit))
+				};
+			} catch (error) {
+				console.warn('[モデル属性] 形式固有属性の取得に失敗しました', error);
+			}
+		}
+		const attributeObject = loaded.entry.format.type === 'fbx'
+			? fbxAttributeObject.object
+			: hit.object;
+		const objectId = expressId ?? (attributeObject as THREE.Object3D & { ID?: number; }).ID
+			?? attributeObject.id;
+		this.highlightModelMesh(hit.object as THREE.Mesh, expressId);
+		return {
+			entryId: loaded.entry.id,
+			objectId: String(objectId),
+			objectName: this.resolvePickedObjectName(attributeObject, loaded.object),
+			attributes: { ...getModelObjectAttributes(hit.object), ...formatAttributes }
+		};
 	}
 }
 

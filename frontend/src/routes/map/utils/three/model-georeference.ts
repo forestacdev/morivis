@@ -58,11 +58,10 @@ export const resolveFbxUnitScaleMeters = (box: THREE.Box3, unitScaleFactor?: num
 
 	// 一部のFBXは unitScaleFactor=1 を持ちながら、座標値自体はすでに meter の
 	// 平面直角座標になっている。大きな世界座標オフセットを持つ場合は縮尺を上書きする。
-	const looksLikeProjectedMeterCoordinates =
-		metadataUnitScaleMeters < 1 &&
-		maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS &&
-		maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS &&
-		offsetRatio >= MIN_PROJECTED_OFFSET_RATIO;
+	const looksLikeProjectedMeterCoordinates = metadataUnitScaleMeters < 1
+		&& maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS
+		&& maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS
+		&& offsetRatio >= MIN_PROJECTED_OFFSET_RATIO;
 
 	return looksLikeProjectedMeterCoordinates ? 1 : metadataUnitScaleMeters;
 };

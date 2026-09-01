@@ -511,7 +511,7 @@
 			// デバッグ用コード
 			clickDebug(e);
 
-			const pickedModel = threeJsManager.pickModel(e.point);
+			const pickedModel = await threeJsManager.pickModel(e.point);
 			if (pickedModel) {
 				console.info('[モデル属性]', pickedModel);
 				clearSearchHighlight();
@@ -521,9 +521,8 @@
 					featureId: pickedModel.objectId,
 					point: [e.lngLat.lng, e.lngLat.lat],
 					properties: {
-						'モデル形式': pickedModel.formatType.toUpperCase(),
-						'オブジェクト名': pickedModel.objectName,
-						'モデルID': pickedModel.objectId,
+						オブジェクト名: pickedModel.objectName,
+						モデルID: pickedModel.objectId,
 						...pickedModel.attributes
 					}
 				};

@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	getEpsgInfoArray,
-	getName,
-	getProjContext,
-	getWkt,
-	isValidEpsg
-} from './dict';
+import { getEpsgInfoArray, getName, getProjContext, getWkt, isValidEpsg } from './dict';
 
 describe('proj dict', () => {
 	it('旧日本測地系の地理座標系と平面直角座標系を有効な EPSG として扱える', () => {
