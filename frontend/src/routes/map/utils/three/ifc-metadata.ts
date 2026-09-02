@@ -13,7 +13,11 @@ import proj4 from 'proj4';
 
 export type IfcPlacementQuality = 'exact' | 'requires_epsg' | 'approximate' | 'normalized';
 
-export interface IfcPlacementMetadata {
+export interface IfcHeaderMetadata {
+	description?: string;
+}
+
+export interface IfcPlacementMetadata extends IfcHeaderMetadata {
 	lng?: number;
 	lat?: number;
 	altitude?: number;
@@ -51,10 +55,57 @@ const loadWebIfcModule = async () => {
 
 const unwrapIfcValue = (value: unknown): any => {
 	if (value && typeof value === 'object' && 'value' in value) {
-		return unwrapIfcValue((value as { value: unknown; }).value);
+		return unwrapIfcValue((value as { value: unknown }).value);
 	}
 	return value;
 };
+
+const splitIfcHeaderArguments = (value: string) => {
+	const argumentsList: string[] = [];
+	let start = 0;
+	let depth = 0;
+	let inString = false;
+	for (let index = 0; index < value.length; index += 1) {
+		const character = value[index];
+		if (character === "'") {
+			if (inString && value[index + 1] === "'") {
+				index += 1;
+				continue;
+			}
+			inString = !inString;
+			continue;
+		}
+		if (inString) continue;
+		if (character === '(') depth += 1;
+		if (character === ')') depth -= 1;
+		if (character === ',' && depth === 0) {
+			argumentsList.push(value.slice(start, index).trim());
+			start = index + 1;
+		}
+	}
+	argumentsList.push(value.slice(start).trim());
+	return argumentsList;
+};
+
+const parseIfcHeaderString = (value: string | undefined) => {
+	if (!value || value === '$') return undefined;
+	const match = value.match(/^'([\s\S]*)'$/);
+	return match?.[1].replaceAll("''", "'") || undefined;
+};
+
+/** STEP の FILE_NAME ヘッダーから、出力時に記録されたソフトウェア情報を説明文にする。 */
+export const parseIfcHeaderMetadata = (content: string): IfcHeaderMetadata => {
+	const match = content.match(/FILE_NAME\s*\(([\s\S]*?)\)\s*;/i);
+	if (!match) return {};
+	const values = splitIfcHeaderArguments(match[1]);
+	const applicationName = parseIfcHeaderString(values[5]);
+	return {
+		...(applicationName && { description: `IFCファイル。作成元ソフト: ${applicationName}。` })
+	};
+};
+
+const readIfcHeaderMetadata = async (file: File) =>
+	parseIfcHeaderMetadata(await file.slice(0, 64 * 1024).text());
 
 const resolveIfcEntity = async (model: any, value: unknown) => {
 	const unwrapped = unwrapIfcValue(value);
@@ -98,9 +149,7 @@ const parseLengthUnitScale = async (model: any, project: any) => {
 
 		const conversionFactor = await resolveIfcEntity(model, unit?.ConversionFactor);
 		const valueComponent = Number(
-			unwrapIfcValue(
-				conversionFactor?.ValueComponent?.value ?? conversionFactor?.ValueComponent
-			)
+			unwrapIfcValue(conversionFactor?.ValueComponent?.value ?? conversionFactor?.ValueComponent)
 		);
 		if (Number.isFinite(valueComponent) && valueComponent > 0) {
 			return valueComponent;
@@ -165,9 +214,10 @@ const parseMapConversionPlacement = async (model: any, mapConversion: any) => {
 			eastings,
 			northings
 		]) as [number, number];
-		const baseRotationZ = Number.isFinite(xAxisAbscissa) && Number.isFinite(xAxisOrdinate)
-			? (Math.atan2(xAxisOrdinate, xAxisAbscissa) * 180) / Math.PI
-			: undefined;
+		const baseRotationZ =
+			Number.isFinite(xAxisAbscissa) && Number.isFinite(xAxisOrdinate)
+				? (Math.atan2(xAxisOrdinate, xAxisAbscissa) * 180) / Math.PI
+				: undefined;
 
 		return {
 			lng,
@@ -191,9 +241,10 @@ export const resolveIfcPlacementWithEpsg = (
 			metadata.eastings,
 			metadata.northings
 		]) as [number, number];
-		const baseRotationZ = metadata.xAxisAbscissa != null && metadata.xAxisOrdinate != null
-			? (Math.atan2(metadata.xAxisOrdinate, metadata.xAxisAbscissa) * 180) / Math.PI
-			: undefined;
+		const baseRotationZ =
+			metadata.xAxisAbscissa != null && metadata.xAxisOrdinate != null
+				? (Math.atan2(metadata.xAxisOrdinate, metadata.xAxisAbscissa) * 180) / Math.PI
+				: undefined;
 
 		return {
 			...metadata,
@@ -213,6 +264,7 @@ export const resolveIfcPlacementWithEpsg = (
 export const readIfcPlacementMetadata = async (
 	file: File
 ): Promise<IfcPlacementMetadata | undefined> => {
+	const headerMetadata = await readIfcHeaderMetadata(file);
 	const [{ IFCLoader }, webIfc] = await Promise.all([loadIfcLoaderModule(), loadWebIfcModule()]);
 	const loader = new IFCLoader();
 	await configureIfcWasmPath(loader.ifcManager);
@@ -232,6 +284,7 @@ export const readIfcPlacementMetadata = async (
 			const mapConversion = await model.getItemProperties(mapConversionId, false);
 			const placement = await parseMapConversionPlacement(model, mapConversion);
 			return {
+				...headerMetadata,
 				...placement,
 				unitScale
 			};
@@ -241,6 +294,7 @@ export const readIfcPlacementMetadata = async (
 		const siteId = Array.isArray(siteIds) ? siteIds[0] : undefined;
 		if (siteId == null) {
 			return {
+				...headerMetadata,
 				unitScale,
 				placementQuality: 'normalized',
 				missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
@@ -253,6 +307,7 @@ export const readIfcPlacementMetadata = async (
 		const refElevation = Number(unwrapIfcValue(site?.RefElevation) ?? 0);
 
 		return {
+			...headerMetadata,
 			lng: Number.isFinite(lng) ? lng : undefined,
 			lat: Number.isFinite(lat) ? lat : undefined,
 			altitude: Number.isFinite(refElevation) ? refElevation * unitScale : undefined,

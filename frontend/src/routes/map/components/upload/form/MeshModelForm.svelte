@@ -703,6 +703,9 @@
 				sourceFileName: glbFile.name
 			}
 		);
+		if (activeFormat === 'ifc' && ifcPlacementMetadata?.description) {
+			entry.metaData.description = ifcPlacementMetadata.description;
+		}
 		applyProjectedModelAxisOverride(
 			entry.style.transform,
 			activeFormat,

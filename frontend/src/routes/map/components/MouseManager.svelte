@@ -723,6 +723,7 @@
 	$effect(() => {
 		if (!featureMenuData) {
 			setSelectedHighlight(null);
+			threeJsManager.clearModelHighlight();
 		}
 	});
 </script>

@@ -209,25 +209,26 @@ export const createGlbEntry = (
 		},
 		metaData: {
 			...DEFAULT_CUSTOM_META_DATA,
-			attribution: formatType === 'obj'
-				? 'OBJ'
-				: formatType === '3ds'
-				? '3DS'
-				: formatType === 'dae'
-				? 'DAE'
-				: formatType === '3dm'
-				? '3DM'
-				: formatType === 'fbx'
-				? 'FBX'
-				: formatType === 'drc'
-				? 'DRC'
-				: formatType === '3mf'
-				? '3MF'
-				: formatType === 'amf'
-				? 'AMF'
-				: formatType === 'ifc'
-				? 'IFC'
-				: 'GLB',
+			attribution:
+				formatType === 'obj'
+					? 'OBJ'
+					: formatType === '3ds'
+						? '3DS'
+						: formatType === 'dae'
+							? 'DAE'
+							: formatType === '3dm'
+								? '3DM'
+								: formatType === 'fbx'
+									? 'FBX'
+									: formatType === 'drc'
+										? 'DRC'
+										: formatType === '3mf'
+											? '3MF'
+											: formatType === 'amf'
+												? 'AMF'
+												: formatType === 'ifc'
+													? 'IFC'
+													: 'GLB',
 			name,
 			altitude: transform.altitude,
 			bounds: pointToBbox(transform.lng, transform.lat)

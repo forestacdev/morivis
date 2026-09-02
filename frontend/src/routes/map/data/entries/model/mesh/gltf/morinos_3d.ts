@@ -13,7 +13,7 @@ const baseEntry = createMeshModelEntry({
 		lng: 136.919515,
 		lat: 35.553991,
 		altitude: 116,
-		rotationY: 2
+		rotationY: 358
 	},
 	opacity: 0.7,
 	xyzImageTile: 'zoom_15'

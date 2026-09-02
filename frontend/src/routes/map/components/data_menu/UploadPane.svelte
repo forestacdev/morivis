@@ -382,7 +382,7 @@
 					}}
 					class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 px-6 text-black transition-colors hover:text-white"
 				>
-					フォーム一覧
+					対応形式一覧
 				</button>
 			</div>
 			<div class="marquee-container overflow-hidden">
@@ -408,7 +408,7 @@
 		<div class="bg-main flex max-h-[80dvh] w-full max-w-[880px] flex-col gap-4 rounded-xl p-5">
 			<div class="flex items-center justify-between gap-4">
 				<div class="flex flex-col gap-1">
-					<span class="text-xl font-bold text-white">フォーム一覧</span>
+					<span class="text-xl font-bold text-white">対応形式一覧</span>
 					<span class="text-sm text-gray-400">
 						URL指定系とファイル系のフォームをここから直接開けます
 					</span>
