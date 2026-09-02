@@ -5,6 +5,7 @@ import type {
 	RasterDiscreteDimension
 } from '$routes/map/data/types/raster';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+import type { ColorsStyle } from '$routes/map/data/types/vector/style';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { Table } from 'apache-arrow';
 
@@ -99,6 +100,8 @@ export interface MeshStyle {
 	/** true のとき地形の地下にある部分も前面に表示する。 */
 	showThroughTerrain: boolean;
 	color: string;
+	/** IFC など、モデル内パーツの属性を使う色分け設定。 */
+	partColors?: ColorsStyle;
 	shading?: MeshShadingStyle;
 	shadingOptions?: MeshShadingOptionStyle;
 	heightColorRamp?: MeshHeightColorRampStyle;

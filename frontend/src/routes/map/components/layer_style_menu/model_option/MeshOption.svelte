@@ -8,6 +8,7 @@
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import ColorScaleDem from '$routes/map/components/layer_style_menu/extension_menu/ColorScaleDem.svelte';
+	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
 	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
 	import { createAdjustableRange } from '$routes/map/data/types';
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
@@ -33,6 +34,7 @@
 	let showAnimationOption = $state(false);
 	let showTransformOption = $state(false);
 	let showRotateOption = $state(false);
+	let showPartColorOption = $state(false);
 
 	const colorMapManager = new ColorMapManager();
 	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
@@ -41,6 +43,8 @@
 	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);
 	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? true);
 	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
+	const isIfc = $derived(layerEntry.format.type === 'ifc');
+
 
 	const ensureShading = () => {
 		layerEntry.style.showThroughTerrain ??= false;
@@ -125,6 +129,14 @@
 {/if}
 
 <DimensionSelector bind:layerEntry bind:showDimensionOption />
+
+	{#if isIfc}
+		{#if layerEntry.style.partColors}
+			<ColorOption bind:colorStyle={layerEntry.style.partColors} bind:showColorOption={showPartColorOption} />
+		{:else}
+			<div class="mb-2 text-sm text-base/70">IFC属性を解析中です</div>
+		{/if}
+{/if}
 
 <Accordion label="マテリアル" icon="mdi:format-color-highlight" bind:value={showMaterialOption}>
 	{#if $isTerrain3d}

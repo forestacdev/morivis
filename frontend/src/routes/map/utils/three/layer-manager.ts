@@ -9,6 +9,8 @@ import {
 import type { CustomLayerInterface, Map as MapLibreMap } from '$routes/map/utils/maplibre';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
+import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
 import {
 	type FbxModelAttributes,
 	parseFbxModelAttributes
@@ -289,6 +291,7 @@ export class ThreeJsLayerManager {
 				THREE.UnsignedByteType
 			)
 			: null;
+		const partColorTexture = this.createPartColorTexture(style);
 		if (colorRampTexture) {
 			colorRampTexture.colorSpace = THREE.SRGBColorSpace;
 			colorRampTexture.minFilter = THREE.LinearFilter;
@@ -312,18 +315,24 @@ export class ThreeJsLayerManager {
 				uUseMap: { value: Boolean(map) },
 				uColorRamp: { value: colorRampTexture },
 				uUseHeightColorRamp: { value: Boolean(colorRampTexture) },
+				uUsePartColors: { value: Boolean(style.partColors?.show) },
+				uPartColorPalette: { value: partColorTexture },
+				uPartColorPaletteSize: { value: partColorTexture?.image.width ?? 1 },
 				uHeightRampMin: { value: colorRampMin },
 				uHeightRampMax: { value: colorRampMax },
 				uHeightRampSourceMin: { value: colorRampSourceMin },
 				uHeightRampSourceMax: { value: colorRampSourceMax }
 			},
 			vertexShader: `
+				attribute float morivisPartColorIndex;
 				varying vec3 vNormal;
 				varying vec2 vUv;
+				varying float vPartColorIndex;
 
 				void main() {
 					vNormal = normalize(normalMatrix * normal);
 					vUv = uv;
+					vPartColorIndex = morivisPartColorIndex;
 					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 				}
 			`,
@@ -337,6 +346,9 @@ export class ThreeJsLayerManager {
 				uniform bool uUseMap;
 				uniform sampler2D uColorRamp;
 				uniform bool uUseHeightColorRamp;
+				uniform bool uUsePartColors;
+				uniform sampler2D uPartColorPalette;
+				uniform float uPartColorPaletteSize;
 				uniform float uHeightRampMin;
 				uniform float uHeightRampMax;
 				uniform float uHeightRampSourceMin;
@@ -344,6 +356,7 @@ export class ThreeJsLayerManager {
 
 				varying vec3 vNormal;
 				varying vec2 vUv;
+				varying float vPartColorIndex;
 
 				void main() {
 					vec4 texel = uUseMap ? texture2D(uMap, vUv) : vec4(1.0);
@@ -361,7 +374,13 @@ export class ThreeJsLayerManager {
 					float rampDenominator = max(selectedMax - selectedMin, 0.000001);
 					float rampValue = clamp((vUv.y - selectedMin) / rampDenominator, 0.0, 1.0);
 					vec3 rampColor = texture2D(uColorRamp, vec2(0.5, rampValue)).rgb;
-					vec3 surfaceColor = uUseHeightColorRamp ? rampColor : (uBaseColor * texel.rgb);
+					vec3 partColor = texture2D(
+						uPartColorPalette,
+						vec2((vPartColorIndex + 0.5) / uPartColorPaletteSize, 0.5)
+					).rgb;
+					vec3 surfaceColor = uUsePartColors
+						? partColor
+						: (uUseHeightColorRamp ? rampColor : (uBaseColor * texel.rgb));
 					vec3 normalDir = normalize(vNormal);
 					float diffuse = max(dot(normalDir, normalize(uLightDirection)), 0.0);
 					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
@@ -379,7 +398,57 @@ export class ThreeJsLayerManager {
 		});
 		material.userData.morivisShaderShading = true;
 		material.userData.colorRampTexture = colorRampTexture;
+		material.userData.morivisPartColorPalette = partColorTexture;
 		return material;
+	};
+
+	private getPartPaletteColors = (style: MeshStyle) => {
+		const expression = style.partColors?.expressions.find(
+			(candidate) => candidate.key === style.partColors?.key
+		);
+		if (!expression) return [style.color];
+		if (expression.type === 'match') {
+			return [expression.noData?.value ?? style.color, ...expression.mapping.values];
+		}
+		if (expression.type === 'step') {
+			return [style.color, ...generateNumberAndColorMap(expression.mapping).values];
+		}
+		return [style.color];
+	};
+
+	private createPartColorTexture = (style: MeshStyle) => {
+		if (!style.partColors?.show) return null;
+		const colors = this.getPartPaletteColors(style);
+		const data = new Uint8Array(colors.length * 4);
+		colors.forEach((color, index) => {
+			const value = new THREE.Color(color);
+			data.set([value.r * 255, value.g * 255, value.b * 255, 255], index * 4);
+		});
+		const texture = new THREE.DataTexture(data, colors.length, 1, THREE.RGBAFormat);
+		texture.colorSpace = THREE.SRGBColorSpace;
+		texture.minFilter = THREE.NearestFilter;
+		texture.magFilter = THREE.NearestFilter;
+		texture.generateMipmaps = false;
+		texture.needsUpdate = true;
+		return texture;
+	};
+
+	private updatePartColorPalette = (material: THREE.Material, style: MeshStyle) => {
+		if (!(material instanceof THREE.ShaderMaterial)) return false;
+		const texture = material.userData.morivisPartColorPalette;
+		if (!(texture instanceof THREE.DataTexture)) return false;
+		const colors = this.getPartPaletteColors(style);
+		if (texture.image.width !== colors.length) return false;
+		const data = texture.image.data as Uint8Array;
+		colors.forEach((color, index) => {
+			const value = new THREE.Color(color);
+			data.set([value.r * 255, value.g * 255, value.b * 255, 255], index * 4);
+		});
+		texture.needsUpdate = true;
+		material.uniforms.uOpacity.value = style.opacity;
+		material.uniforms.uUsePartColors.value = Boolean(style.partColors?.show);
+		material.wireframe = style.wireframe;
+		return true;
 	};
 
 	private createFlatMaterial = (
@@ -467,12 +536,22 @@ export class ThreeJsLayerManager {
 
 		const useShaderMaterial = Boolean(style.shading?.enabled)
 			|| Boolean(style.heightColorRamp?.enabled);
+		const usePartColorMaterial = Boolean(style.partColors?.show)
+			&& mesh.geometry.getAttribute('morivisPartColorIndex') != null;
+		if (
+			usePartColorMaterial
+			&& currentMaterials.every((material) => this.updatePartColorPalette(material, style))
+		) {
+			return;
+		}
 		const isSkinnedMesh = (mesh as THREE.SkinnedMesh).isSkinnedMesh === true;
 		const hasTexturedMaterial = originalMaterials.some(materialHasTextureSlots);
 
 		const nextMaterials = originalMaterials.map((sourceMaterial) =>
-			// FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
-			hasTexturedMaterial && formatType === 'fbx'
+			usePartColorMaterial
+				? this.createShaderMaterial(sourceMaterial, style)
+				// FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
+				: hasTexturedMaterial && formatType === 'fbx'
 				? this.createFbxTexturedMaterial(sourceMaterial, style)
 				: hasTexturedMaterial
 				? this.createStyledSourceMaterial(sourceMaterial, style)
@@ -504,6 +583,81 @@ export class ThreeJsLayerManager {
 			}
 		});
 		this.map?.triggerRepaint();
+	};
+
+	private applyIfcPartColors = async (object: THREE.Object3D, style: MeshStyle) => {
+		const ifcModel = object as THREE.Object3D & {
+			modelID?: number;
+			ifcManager?: {
+				getIfcType: (modelId: number, expressId: number) => string | Promise<string>;
+			} | null;
+		};
+		if (ifcModel.modelID == null || !ifcModel.ifcManager) return;
+
+		const expressIds = new Set<number>();
+		object.traverse((child) => {
+			if (!(child as THREE.Mesh).isMesh) return;
+			const attribute = (child as THREE.Mesh).geometry.getAttribute('expressID');
+			for (let index = 0; attribute && index < attribute.count; index += 1) {
+				expressIds.add(attribute.getX(index));
+			}
+		});
+		const cachedClasses = object.userData.morivisIfcClasses as Map<number, string> | undefined;
+		const classesByExpressId = cachedClasses ?? new Map<number, string>();
+		if (!cachedClasses) {
+			await Promise.all(
+				Array.from(expressIds).map(async (expressId) => {
+					classesByExpressId.set(
+						expressId,
+						await ifcModel.ifcManager!.getIfcType(ifcModel.modelID!, expressId)
+					);
+				})
+			);
+			object.userData.morivisIfcClasses = classesByExpressId;
+		}
+		if (!style.partColors) {
+			const expressions = buildVectorTileColorExpressions({
+				id: 'ifc-parts',
+				fields: {},
+				attributes: [{
+					attribute: 'IFC クラス',
+					values: Array.from(new Set(classesByExpressId.values()))
+				}]
+			});
+			if (expressions.length > 0) {
+				style.partColors = { key: expressions[0].key, show: true, expressions };
+			}
+		}
+		const partColors = style.partColors;
+		if (!partColors?.show) return;
+
+		object.traverse((child) => {
+			if (!(child as THREE.Mesh).isMesh) return;
+			const mesh = child as THREE.Mesh;
+			const expressIdAttribute = mesh.geometry.getAttribute('expressID');
+			if (!expressIdAttribute) return;
+			const expression = partColors.expressions.find(
+				(candidate) => candidate.key === partColors.key
+			);
+			if (!expression || expression.type !== 'match') return;
+			const categoryIndexes = new Map(
+				expression.mapping.categories.map((category, index) => [category, index + 1])
+			);
+			const signature = `${expression.key}\u0000${expression.mapping.categories.join('\u0000')}`;
+			if (mesh.geometry.userData.morivisPartColorSignature === signature) return;
+			const colorIndexes = new Float32Array(expressIdAttribute.count);
+			for (let index = 0; index < expressIdAttribute.count; index += 1) {
+				const value = expression.key === 'IFC クラス'
+					? classesByExpressId.get(expressIdAttribute.getX(index))
+					: undefined;
+				colorIndexes[index] = categoryIndexes.get(value ?? '') ?? 0;
+			}
+			mesh.geometry.setAttribute(
+				'morivisPartColorIndex',
+				new THREE.BufferAttribute(colorIndexes, 1)
+			);
+			mesh.geometry.userData.morivisPartColorSignature = signature;
+		});
 	};
 
 	clearModelHighlight(): void {
@@ -1002,13 +1156,16 @@ export class ThreeJsLayerManager {
 				}
 			}
 
-			const onModelLoaded = (
+			const onModelLoaded = async (
 				model: THREE.Group | THREE.Object3D,
 				animations: THREE.AnimationClip[] = [],
 				resolveAttributes?: (
 					hit: THREE.Intersection<THREE.Object3D>
 				) => Promise<ModelAttributes>
 			) => {
+				if (entry.format.type === 'ifc') {
+					await this.applyIfcPartColors(model, entry.style);
+				}
 				this.applyStyleToObject(model, entry.style, entry.format.type);
 
 				model.visible = entry.style.visible ?? true;
@@ -1047,7 +1204,9 @@ export class ThreeJsLayerManager {
 				animations: THREE.AnimationClip[] = []
 			) => {
 				finalizeLoadedModel(object);
-				onModelLoaded(object, animations);
+				void onModelLoaded(object, animations).catch((error) =>
+					reject(error instanceof Error ? error : new Error(String(error)))
+				);
 			};
 
 			const createManagedLoaderContext = () => {
@@ -1452,6 +1611,28 @@ export class ThreeJsLayerManager {
 		if (!loaded) return;
 		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, color } };
 		this.applyStyleToObject(loaded.object, loaded.entry.style, loaded.entry.format.type);
+		this.syncAnimationState(loaded);
+	}
+
+	async setModelPartColors(entry: MeshEntry<MeshStyle>): Promise<void> {
+		const loaded = this.loadedModels.get(entry.id);
+		if (!loaded) return;
+		loaded.entry = entry;
+		if (entry.format.type === 'ifc') {
+			await this.applyIfcPartColors(loaded.object, entry.style);
+		}
+		this.applyStyleToObject(loaded.object, entry.style, entry.format.type);
+	}
+
+	async setModelStyle(entry: MeshEntry<MeshStyle>): Promise<void> {
+		const loaded = this.loadedModels.get(entry.id);
+		if (!loaded) return;
+		loaded.entry = entry;
+		loaded.transform = calculateModelTransform(entry.style);
+		if (entry.format.type === 'ifc') {
+			await this.applyIfcPartColors(loaded.object, entry.style);
+		}
+		this.applyStyleToObject(loaded.object, entry.style, entry.format.type);
 		this.syncAnimationState(loaded);
 	}
 

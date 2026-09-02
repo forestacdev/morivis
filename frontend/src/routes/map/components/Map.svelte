@@ -856,7 +856,9 @@
 		if (updateId !== styleUpdateId) return;
 		await (previewMeshEntry
 			? mapStore.setThreeLayer([previewMeshEntry], 'preview')
-			: mapStore.setThreeLayer(meshEntries, 'main'));
+			: showDataEntry
+				? mapStore.setThreeLayer([], 'preview')
+				: mapStore.setThreeLayer(meshEntries, 'main'));
 
 		mapStore.terrainReload();
 

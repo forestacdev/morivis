@@ -899,9 +899,13 @@ const createMapStore = () => {
 		newEntries: MeshEntry<MeshStyle>[],
 		_type: 'main' | 'preview' = 'main'
 	): Promise<void> => {
-		if (_type === 'preview' && newEntries.length > 0) {
-			ensureThreeLayer();
-			await threeJsManager.addModel(newEntries[0], 'preview'); // プレビュー用に最初のモデルを追加
+		if (_type === 'preview') {
+			if (newEntries.length > 0) {
+				ensureThreeLayer();
+				await threeJsManager.addModel(newEntries[0], 'preview');
+			} else {
+				threeJsManager.clearPreview();
+			}
 			return;
 		}
 
@@ -983,12 +987,7 @@ const createMapStore = () => {
 	};
 
 	const setModelStyle = (entry: MeshEntry<MeshStyle>) => {
-		threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
-		threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
-		threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
-		threeJsManager.setModelColor(entry.id, entry.style.color);
-		threeJsManager.setModelTransform(entry.id, entry.style);
-		threeJsManager.setModelAnimationState(entry);
+		void threeJsManager.setModelStyle(entry);
 		if (map && isMapValid(map)) {
 			map.triggerRepaint();
 		}
