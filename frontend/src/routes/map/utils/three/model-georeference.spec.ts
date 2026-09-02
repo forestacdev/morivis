@@ -1,6 +1,7 @@
 import type { ProjectedModelGeoreference } from '$routes/map/data/types/model';
 import {
 	applyProjectedModelGeoreference,
+	getModelCoordinateMode,
 	getModelUnitScaleMeters,
 	resolveFbxUnitScaleMeters,
 	resolveProjectedModelPlacementFromBox
@@ -20,6 +21,14 @@ const misleadingMeterBox = new THREE.Box3(
 );
 
 describe('model-georeference', () => {
+	it('原点近傍のモデルはローカル座標として扱う', () => {
+		expect(getModelCoordinateMode([-40, -25, 40, 25])).toBe('local');
+	});
+
+	it('大きなオフセットを持つモデルは投影座標としてゾーン選択する', () => {
+		expect(getModelCoordinateMode([120_000, -240_000, 120_100, -239_900])).toBe('projected');
+	});
+
 	it('FBX unitScaleFactor から meter scale を解決する', () => {
 		expect(getModelUnitScaleMeters(100)).toBeCloseTo(1);
 		expect(getModelUnitScaleMeters(1)).toBeCloseTo(0.01);

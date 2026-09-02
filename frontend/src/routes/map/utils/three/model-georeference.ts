@@ -9,6 +9,31 @@ const MIN_PROJECTED_WORLD_OFFSET_METERS = 10_000;
 const MAX_PROJECTED_WORLD_OFFSET_METERS = 1_000_000;
 const MIN_PROJECTED_OFFSET_RATIO = 20;
 
+export type ModelCoordinateMode = 'local' | 'projected';
+
+/**
+ * Mago 3D Tiler に CRS を渡すべき、平面直角座標らしい入力範囲かを判定する。
+ * EPSG 自体はファイルから確定できないため、この結果はゾーン選択の表示にだけ使う。
+ */
+export const getModelCoordinateMode = (
+	bbox: [number, number, number, number] | null
+): ModelCoordinateMode => {
+	if (!bbox || bbox.some((value) => !Number.isFinite(value))) return 'local';
+
+	const [minX, minY, maxX, maxY] = bbox;
+	const centerX = (minX + maxX) / 2;
+	const centerY = (minY + maxY) / 2;
+	const maxAbsPlanarOffset = Math.max(Math.abs(centerX), Math.abs(centerY));
+	const maxPlanarExtent = Math.max(Math.abs(maxX - minX), Math.abs(maxY - minY));
+	const offsetRatio = maxPlanarExtent > 1e-6 ? maxAbsPlanarOffset / maxPlanarExtent : 0;
+
+	return maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS &&
+		maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS &&
+		offsetRatio >= MIN_PROJECTED_OFFSET_RATIO
+		? 'projected'
+		: 'local';
+};
+
 const ensureProjDefinition = (epsg: string) => {
 	const normalized = epsg.replace(/^EPSG:/i, '');
 	if (!isValidEpsg(normalized)) {
