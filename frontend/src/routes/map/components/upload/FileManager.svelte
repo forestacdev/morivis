@@ -48,8 +48,14 @@
 	};
 
 	$effect(() => {
+		// エントリー作成後に残った入力を再解析して同じフォームを開き直さない。
+		if (showDataEntry) {
+			dropFile = null;
+			return;
+		}
+
 		if (dropFile && !showDialogType) {
-			setFile(dropFile);
+			void setFile(dropFile);
 		}
 	});
 </script>
