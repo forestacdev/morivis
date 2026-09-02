@@ -33,6 +33,7 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
@@ -1765,6 +1766,24 @@ export class ThreeJsLayerManager {
 	setGroupVisibility(visible: boolean): void {
 		if (!this.modelGroup) return;
 		this.modelGroup.visible = visible;
+	}
+
+	/** 地図用の投影行列を使わない、単体表示用のモデルクローンを返す。 */
+	createModelViewObject(entryId: string): THREE.Object3D | null {
+		const loaded = this.loadedModels.get(entryId);
+		if (!loaded) return null;
+
+		const object = cloneSkeleton(loaded.object);
+		const selectionHighlights: THREE.Object3D[] = [];
+		object.traverse((child) => {
+			if (child.userData.morivisSelectionHighlight) {
+				selectionHighlights.push(child);
+				return;
+			}
+			child.visible = true;
+		});
+		selectionHighlights.forEach((highlight) => highlight.parent?.remove(highlight));
+		return object;
 	}
 
 	async exportModelAsGlb(entryId: string): Promise<ArrayBuffer> {

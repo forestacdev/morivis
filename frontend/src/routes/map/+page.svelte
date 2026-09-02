@@ -40,6 +40,7 @@
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
+	import ModelViewCanvas from '$routes/map/components/model_view/ModelViewCanvas.svelte';
 	import MobileDebugLogger from '$routes/map/components/mobile/DebugLogger.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
@@ -70,6 +71,7 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
 		MorivisRasterEntry,
 		RasterDemStyle,
@@ -123,7 +125,14 @@
 		warpGeoJSONByCornersParallel,
 		warpPointCloudByCornersParallel
 	} from '$routes/map/utils/transform/georef';
-	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
+	import {
+		isStreetView,
+		mapMode,
+		modelViewEntryId,
+		selectedLayerId,
+		isStyleEdit,
+		isDebugMode
+	} from '$routes/stores';
 	import { debugLog } from '$routes/stores/debug';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
@@ -167,6 +176,15 @@
 	};
 
 	let layerEntries = $state<MorivisLayerEntry[]>([]); // アクティブなレイヤーデータ
+	const isMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
+		return entry.type === 'model' && entry.style.type === 'mesh';
+	};
+	let modelViewEntry = $derived.by(() => {
+		const entryId = $modelViewEntryId;
+		if (!entryId) return null;
+		const entry = layerEntries.find((candidate) => candidate.id === entryId);
+		return entry && isMeshEntry(entry) ? entry : null;
+	});
 	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<UploadFiles>(null); // ドロップしたファイル
 	let remoteGeoZarrUrl = $state<string | null>(null);
@@ -1326,6 +1344,12 @@
 					bind:showAngleMarker
 					bind:isExternalCameraUpdate
 				/>
+			{/if}
+
+			{#if modelViewEntry}
+				{#key modelViewEntry.id}
+					<ModelViewCanvas entry={modelViewEntry} />
+				{/key}
 			{/if}
 
 			{#if !$isStreetView && !showDataEntry}

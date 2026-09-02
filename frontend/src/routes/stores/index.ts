@@ -1,5 +1,5 @@
 import { PUBLIC_INIT_DEBUG_MODE } from '$env/static/public';
-import { writable } from 'svelte/store';
+import { derived, writable } from 'svelte/store';
 
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 
@@ -23,6 +23,21 @@ export const isStyleEdit = writable<boolean>(false);
 
 /** ストリートビュー */
 export const isStreetView = writable<boolean>(false);
+
+/** 単体表示中の3DモデルID */
+export const modelViewEntryId = writable<string | null>(null);
+
+/** 単体3Dモデルビューの表示状態 */
+export const isModelView = derived(modelViewEntryId, (entryId) => entryId !== null);
+
+export const openModelView = (entryId: string) => {
+	isStreetView.set(false);
+	modelViewEntryId.set(entryId);
+};
+
+export const closeModelView = () => {
+	modelViewEntryId.set(null);
+};
 
 /** 選択中のレイヤーid */
 export const selectedLayerId = writable<string>('');
