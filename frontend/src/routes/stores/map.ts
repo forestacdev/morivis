@@ -993,6 +993,11 @@ const createMapStore = () => {
 		}
 	};
 
+	const loadIfcPartColorAttributes = async (entry: MeshEntry<MeshStyle>) => {
+		await threeJsManager.loadIfcPartColorAttributes(entry);
+		setModelStyle(entry);
+	};
+
 	const exportModelAsGlb = async (entry: MeshEntry<MeshStyle>) => {
 		if (entry.metaData.isUserUploaded !== true) {
 			throw new Error('アップロードした3Dモデルのみエクスポートできます');
@@ -1674,6 +1679,7 @@ const createMapStore = () => {
 		setThreeLayer,
 		setTemporalModelTimeStep,
 		setModelStyle,
+		loadIfcPartColorAttributes,
 		exportModelAsGlb,
 		setDeckModelStyleEntries,
 		setDeckModelVisibility,

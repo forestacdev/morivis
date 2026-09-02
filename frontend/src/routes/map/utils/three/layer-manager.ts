@@ -625,7 +625,7 @@ export class ThreeJsLayerManager {
 				}]
 			});
 			if (expressions.length > 0) {
-				style.partColors = { key: expressions[0].key, show: true, expressions };
+				style.partColors = { key: expressions[0].key, show: false, expressions };
 			}
 		}
 		const partColors = style.partColors;
@@ -647,10 +647,15 @@ export class ThreeJsLayerManager {
 			if (mesh.geometry.userData.morivisPartColorSignature === signature) return;
 			const colorIndexes = new Float32Array(expressIdAttribute.count);
 			for (let index = 0; index < expressIdAttribute.count; index += 1) {
+				const partAttributes = object.userData.morivisIfcPartAttributes as
+					| Map<number, ModelAttributes>
+					| undefined;
 				const value = expression.key === 'IFC クラス'
 					? classesByExpressId.get(expressIdAttribute.getX(index))
-					: undefined;
-				colorIndexes[index] = categoryIndexes.get(value ?? '') ?? 0;
+					: partAttributes?.get(expressIdAttribute.getX(index))?.[expression.key];
+				colorIndexes[index] = categoryIndexes.get(
+					typeof value === 'boolean' ? String(value) : (value ?? '')
+				) ?? 0;
 			}
 			mesh.geometry.setAttribute(
 				'morivisPartColorIndex',
@@ -1622,6 +1627,62 @@ export class ThreeJsLayerManager {
 			await this.applyIfcPartColors(loaded.object, entry.style);
 		}
 		this.applyStyleToObject(loaded.object, entry.style, entry.format.type);
+	}
+
+	async loadIfcPartColorAttributes(entry: MeshEntry<MeshStyle>): Promise<void> {
+		const loaded = this.loadedModels.get(entry.id);
+		if (!loaded || entry.format.type !== 'ifc' || !entry.style.partColors) return;
+		const model = loaded.object as THREE.Object3D & {
+			modelID?: number;
+			ifcManager?: {
+				getItemProperties: (modelId: number, expressId: number) => Promise<Record<string, unknown>>;
+				getPropertySets: (modelId: number, expressId: number) => Promise<Record<string, unknown>[]>;
+				getIfcType: (modelId: number, expressId: number) => string | Promise<string>;
+			} | null;
+		};
+		if (model.modelID == null || !model.ifcManager) return;
+		const cached = model.userData.morivisIfcPartAttributes as Map<number, ModelAttributes> | undefined;
+		const attributesByExpressId = cached ?? new Map<number, ModelAttributes>();
+		if (!cached) {
+			const expressIds = new Set<number>();
+			model.traverse((child) => {
+				if (!(child as THREE.Mesh).isMesh) return;
+				const attribute = (child as THREE.Mesh).geometry.getAttribute('expressID');
+				for (let index = 0; attribute && index < attribute.count; index += 1) {
+					expressIds.add(attribute.getX(index));
+				}
+			});
+			await Promise.all(Array.from(expressIds).map(async (expressId) => {
+				const [item, propertySets, ifcType] = await Promise.all([
+					model.ifcManager!.getItemProperties(model.modelID!, expressId),
+					model.ifcManager!.getPropertySets(model.modelID!, expressId),
+					model.ifcManager!.getIfcType(model.modelID!, expressId)
+				]);
+				attributesByExpressId.set(expressId, {
+					...getIfcAttributes(expressId, item, propertySets),
+					'IFC クラス': ifcType
+				});
+			}));
+			model.userData.morivisIfcPartAttributes = attributesByExpressId;
+		}
+		const valuesByAttribute = new Map<string, Set<string | number | boolean>>();
+		attributesByExpressId.forEach((attributes) => {
+			Object.entries(attributes).forEach(([key, value]) => {
+				const values = valuesByAttribute.get(key) ?? new Set<string | number | boolean>();
+				values.add(value);
+				valuesByAttribute.set(key, values);
+			});
+		});
+		const expressions = buildVectorTileColorExpressions({
+			id: 'ifc-parts',
+			fields: {},
+			attributes: Array.from(valuesByAttribute, ([attribute, values]) => ({
+				attribute,
+				values: Array.from(values)
+			}))
+		}).filter((expression) => expression.type === 'match');
+		entry.style.partColors.expressions = expressions;
+		entry.style.partColors.key = expressions[0]?.key ?? entry.style.partColors.key;
 	}
 
 	async setModelStyle(entry: MeshEntry<MeshStyle>): Promise<void> {

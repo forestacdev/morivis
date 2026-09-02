@@ -35,6 +35,7 @@
 	let showTransformOption = $state(false);
 	let showRotateOption = $state(false);
 	let showPartColorOption = $state(false);
+	let isLoadingPartAttributes = $state(false);
 
 	const colorMapManager = new ColorMapManager();
 	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
@@ -44,6 +45,14 @@
 	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? true);
 	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
 	const isIfc = $derived(layerEntry.format.type === 'ifc');
+	const loadPartAttributes = async () => {
+		isLoadingPartAttributes = true;
+		try {
+			await mapStore.loadIfcPartColorAttributes(layerEntry);
+		} finally {
+			isLoadingPartAttributes = false;
+		}
+	};
 
 
 	const ensureShading = () => {
@@ -133,6 +142,13 @@
 	{#if isIfc}
 		{#if layerEntry.style.partColors}
 			<ColorOption bind:colorStyle={layerEntry.style.partColors} bind:showColorOption={showPartColorOption} />
+			<button
+				class="c-btn-confirm mb-2 w-full rounded-lg p-2 text-sm disabled:opacity-50"
+				disabled={isLoadingPartAttributes}
+				onclick={loadPartAttributes}
+			>
+				{isLoadingPartAttributes ? 'IFC属性を読み込み中' : '他の属性を読み込む'}
+			</button>
 		{:else}
 			<div class="mb-2 text-sm text-base/70">IFC属性を解析中です</div>
 		{/if}
