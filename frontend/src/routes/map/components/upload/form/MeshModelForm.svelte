@@ -12,7 +12,6 @@
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import {
-		hasIfcGeographicCoordinates,
 		readIfcPlacementMetadata,
 		type IfcPlacementMetadata
 	} from '$routes/map/utils/three/ifc-metadata';
@@ -219,7 +218,7 @@
 	const requiresIfcZoneSelection = $derived(
 		activeFormat === 'ifc' &&
 			!isInspectingIfcPlacement &&
-			!hasIfcGeographicCoordinates(ifcPlacementMetadata)
+			ifcPlacementMetadata?.requiresEpsg === true
 	);
 	const textureResourceKeys = $derived.by(() => buildResourceKeySet(textureFiles));
 	const gltfResourceKeys = $derived.by(() => buildResourceKeySet(gltfSupplementaryFiles));

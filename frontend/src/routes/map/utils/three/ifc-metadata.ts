@@ -12,6 +12,7 @@ import proj4 from 'proj4';
 // https://standards.buildingsmart.org/IFC/RELEASE/IFC4/ADD1/HTML/schema/ifcrepresentationresource/lexical/ifcmapconversion.htm
 
 export type IfcPlacementQuality = 'exact' | 'requires_epsg' | 'approximate' | 'normalized';
+export type IfcCoordinateMode = 'absolute' | 'local' | 'unknown';
 
 export interface IfcHeaderMetadata {
 	description?: string;
@@ -25,6 +26,7 @@ export interface IfcPlacementMetadata extends IfcHeaderMetadata {
 	baseRotationZ?: number;
 	requiresEpsg?: boolean;
 	placementQuality?: IfcPlacementQuality;
+	coordinateMode?: IfcCoordinateMode;
 	missingRequirements?: string[];
 	eastings?: number;
 	northings?: number;
@@ -106,6 +108,26 @@ export const parseIfcHeaderMetadata = (content: string): IfcHeaderMetadata => {
 
 const readIfcHeaderMetadata = async (file: File) =>
 	parseIfcHeaderMetadata(await file.slice(0, 64 * 1024).text());
+
+export const getIfcCoordinateMode = (content: string): IfcCoordinateMode => {
+	const matches = content.matchAll(
+		/IFCCARTESIANPOINT\s*\(\s*\(\s*([-+\d.E]+)\s*,\s*([-+\d.E]+)/gi
+	);
+	let count = 0;
+	let absoluteCount = 0;
+	for (const match of matches) {
+		const x = Number(match[1]);
+		const y = Number(match[2]);
+		if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+		count += 1;
+		if (Math.abs(x) > 1000 || Math.abs(y) > 1000) absoluteCount += 1;
+	}
+	if (count === 0) return 'unknown';
+	return absoluteCount / count >= 0.5 ? 'absolute' : 'local';
+};
+
+const detectIfcCoordinateMode = async (file: File) =>
+	getIfcCoordinateMode(await file.slice(0, 1024 * 1024).text());
 
 const resolveIfcEntity = async (model: any, value: unknown) => {
 	const unwrapped = unwrapIfcValue(value);
@@ -264,7 +286,10 @@ export const resolveIfcPlacementWithEpsg = (
 export const readIfcPlacementMetadata = async (
 	file: File
 ): Promise<IfcPlacementMetadata | undefined> => {
-	const headerMetadata = await readIfcHeaderMetadata(file);
+	const [headerMetadata, coordinateMode] = await Promise.all([
+		readIfcHeaderMetadata(file),
+		detectIfcCoordinateMode(file)
+	]);
 	const [{ IFCLoader }, webIfc] = await Promise.all([loadIfcLoaderModule(), loadWebIfcModule()]);
 	const loader = new IFCLoader();
 	await configureIfcWasmPath(loader.ifcManager);
@@ -296,8 +321,17 @@ export const readIfcPlacementMetadata = async (
 			return {
 				...headerMetadata,
 				unitScale,
-				placementQuality: 'normalized',
-				missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
+				coordinateMode,
+				...(coordinateMode === 'absolute'
+					? {
+						requiresEpsg: true,
+						placementQuality: 'requires_epsg' as const,
+						missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
+					}
+					: {
+						placementQuality: 'normalized' as const,
+						missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
+					})
 			};
 		}
 
@@ -305,15 +339,30 @@ export const readIfcPlacementMetadata = async (
 		const lat = parseAngleComponentList(site?.RefLatitude);
 		const lng = parseAngleComponentList(site?.RefLongitude);
 		const refElevation = Number(unwrapIfcValue(site?.RefElevation) ?? 0);
+		const hasSiteCoordinates = Number.isFinite(lng) && Number.isFinite(lat);
 
 		return {
 			...headerMetadata,
-			lng: Number.isFinite(lng) ? lng : undefined,
-			lat: Number.isFinite(lat) ? lat : undefined,
+			lng: hasSiteCoordinates ? lng : undefined,
+			lat: hasSiteCoordinates ? lat : undefined,
 			altitude: Number.isFinite(refElevation) ? refElevation * unitScale : undefined,
 			unitScale,
-			placementQuality: 'approximate',
-			missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
+			coordinateMode,
+			...(hasSiteCoordinates
+				? {
+					placementQuality: 'approximate' as const,
+					missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
+				}
+				: coordinateMode === 'absolute'
+					? {
+						requiresEpsg: true,
+						placementQuality: 'requires_epsg' as const,
+						missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
+					}
+					: {
+						placementQuality: 'normalized' as const,
+						missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
+					})
 		};
 	} finally {
 		await model.ifcManager?.dispose?.();
