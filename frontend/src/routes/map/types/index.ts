@@ -124,6 +124,7 @@ export type DialogType =
 	| 'locationhistory'
 	| 'gtfs'
 	| 'hrit'
+	| 'bcf'
 	| null;
 
 export interface SupportedFileGroup {
@@ -431,6 +432,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'BIMで使う建築モデル形式です。建物の部材や属性を含む3Dデータを読み込むときに使います。',
 		extensions: ['.ifc']
+	},
+	{
+		label: 'BIM Collaboration Format',
+		description:
+			'IFCモデルに対する課題、コメント、視点を共有するBIM協議ファイルです。読み込み済みIFCの対象部材を確認するときに使います。',
+		extensions: ['.bcf']
 	},
 	{
 		label: '点群',

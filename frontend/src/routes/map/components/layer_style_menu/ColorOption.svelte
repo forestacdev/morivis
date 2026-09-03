@@ -9,14 +9,20 @@
 		colorStyle: ColorsStyle;
 		showColorOption: boolean;
 		layerType?: VectorLayerType;
+		showExpressionWhenDisabled?: boolean;
 	}
 
-	let { colorStyle = $bindable(), showColorOption = $bindable(), layerType }: Props = $props();
+	let {
+		colorStyle = $bindable(),
+		showColorOption = $bindable(),
+		layerType,
+		showExpressionWhenDisabled = false
+	}: Props = $props();
 </script>
 
 <Accordion label={'色の調整'} icon={'mdi:paint'} bind:value={showColorOption}>
 	<Switch label={'塗りつぶし'} bind:value={colorStyle.show} />
-	{#if colorStyle.show}
+	{#if colorStyle.show || showExpressionWhenDisabled}
 		<div transition:slide={{ duration: 300 }}>
 			<ExpressionSelect bind:style={colorStyle} expressionType={'color'} {layerType} />
 		</div>

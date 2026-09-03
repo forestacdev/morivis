@@ -63,7 +63,7 @@
 
 {#if profile === 'simple'}
 	<FormComponent bind:showDataEntry bind:showDialogType />
-{:else if profile === 'drop-file'}
+{:else if profile === 'drop-file' || profile === 'side-panel'}
 	<FormComponent bind:showDataEntry bind:showDialogType bind:dropFile />
 {:else if profile === 'model-georef'}
 	<FormComponent

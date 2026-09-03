@@ -994,8 +994,9 @@ const createMapStore = () => {
 	};
 
 	const loadIfcPartColorAttributes = async (entry: MeshEntry<MeshStyle>) => {
-		await threeJsManager.loadIfcPartColorAttributes(entry);
+		const attributeCount = await threeJsManager.loadIfcPartColorAttributes(entry);
 		setModelStyle(entry);
+		return attributeCount;
 	};
 
 	const exportModelAsGlb = async (entry: MeshEntry<MeshStyle>) => {

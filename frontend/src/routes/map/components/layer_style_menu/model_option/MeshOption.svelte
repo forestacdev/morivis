@@ -35,7 +35,6 @@
 	let showTransformOption = $state(false);
 	let showRotateOption = $state(false);
 	let showPartColorOption = $state(false);
-	let isLoadingPartAttributes = $state(false);
 
 	const colorMapManager = new ColorMapManager();
 	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
@@ -45,16 +44,11 @@
 	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? true);
 	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
 	const isIfc = $derived(layerEntry.format.type === 'ifc');
-	const loadPartAttributes = async () => {
-		isLoadingPartAttributes = true;
-		try {
-			await mapStore.loadIfcPartColorAttributes(layerEntry);
-		} finally {
-			isLoadingPartAttributes = false;
-		}
-	};
-
-
+	const hasPartColorProfile = $derived(
+		layerEntry.properties?.ifc?.extractionProfiles.some((profile) => profile.type === 'part-colors')
+	);
+	let isLoadingPartAttributes = $state(false);
+	let partColorAttributeCount = $state<number | null>(null);
 	const ensureShading = () => {
 		layerEntry.style.showThroughTerrain ??= false;
 		layerEntry.style.shading ??= { ...DEFAULT_MESH_SHADING };
@@ -93,6 +87,29 @@
 				}
 			};
 		}
+	});
+
+	$effect(() => {
+		if (!isIfc || !hasPartColorProfile) return;
+		let isCurrent = true;
+		isLoadingPartAttributes = true;
+		void mapStore
+			.loadIfcPartColorAttributes(layerEntry)
+			.then((attributeCount) => {
+				if (!isCurrent) return;
+				partColorAttributeCount = attributeCount;
+			})
+			.catch((error) => {
+				if (!isCurrent) return;
+				console.error('IFC色分け属性の事前読込に失敗しました', error);
+				partColorAttributeCount = 0;
+			})
+			.finally(() => {
+				if (isCurrent) isLoadingPartAttributes = false;
+			});
+		return () => {
+			isCurrent = false;
+		};
 	});
 
 	$effect(() => {
@@ -140,19 +157,18 @@
 <DimensionSelector bind:layerEntry bind:showDimensionOption />
 
 	{#if isIfc}
-		{#if layerEntry.style.partColors}
-			<ColorOption bind:colorStyle={layerEntry.style.partColors} bind:showColorOption={showPartColorOption} />
-			<button
-				class="c-btn-confirm mb-2 w-full rounded-lg p-2 text-sm disabled:opacity-50"
-				disabled={isLoadingPartAttributes}
-				onclick={loadPartAttributes}
-			>
-				{isLoadingPartAttributes ? 'IFC属性を読み込み中' : '他の属性を読み込む'}
-			</button>
+		{#if isLoadingPartAttributes && partColorAttributeCount === null}
+			<div class="mb-2 text-sm text-base/70">IFC色分け属性を解析中です</div>
+		{:else if layerEntry.style.partColors && (partColorAttributeCount ?? 0) > 0}
+			<ColorOption
+				bind:colorStyle={layerEntry.style.partColors}
+				bind:showColorOption={showPartColorOption}
+				showExpressionWhenDisabled
+			/>
 		{:else}
-			<div class="mb-2 text-sm text-base/70">IFC属性を解析中です</div>
+			<div class="mb-2 text-sm text-base/70">色分けに使える事前定義属性がありません</div>
 		{/if}
-{/if}
+	{/if}
 
 <Accordion label="マテリアル" icon="mdi:format-color-highlight" bind:value={showMaterialOption}>
 	{#if $isTerrain3d}

@@ -27,6 +27,15 @@ export interface ModelAnimationState {
 	speed: number;
 }
 
+/** IFC の実体クラスと属性キーを限定して、初期表示用の色分け候補を定義する。 */
+export interface IfcPartColorProfile {
+	type: 'part-colors';
+	elementTypes: string[];
+	attributeKeys: string[];
+}
+
+export type IfcExtractionProfile = IfcPartColorProfile;
+
 interface BaseModelEntry {
 	id: string;
 	type: 'model';
@@ -36,6 +45,9 @@ interface BaseModelEntry {
 			dimension: RasterDiscreteDimension;
 		};
 		animation?: ModelAnimationProperties;
+		ifc?: {
+			extractionProfiles: IfcExtractionProfile[];
+		};
 	};
 	interaction: {
 		clickable: boolean;

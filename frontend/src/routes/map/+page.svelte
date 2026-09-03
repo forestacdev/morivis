@@ -128,7 +128,7 @@
 	import {
 		isStreetView,
 		mapMode,
-		modelViewEntryId,
+		modelViewRequest,
 		selectedLayerId,
 		isStyleEdit,
 		isDebugMode
@@ -179,11 +179,12 @@
 	const isMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
 		return entry.type === 'model' && entry.style.type === 'mesh';
 	};
-	let modelViewEntry = $derived.by(() => {
-		const entryId = $modelViewEntryId;
-		if (!entryId) return null;
-		const entry = layerEntries.find((candidate) => candidate.id === entryId);
-		return entry && isMeshEntry(entry) ? entry : null;
+	let modelViewEntries = $derived.by(() => {
+		const request = $modelViewRequest;
+		if (!request) return [];
+		return request.entryIds
+			.map((entryId) => layerEntries.find((candidate) => candidate.id === entryId))
+			.filter((entry): entry is MeshEntry<MeshStyle> => Boolean(entry && isMeshEntry(entry)));
 	});
 	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<UploadFiles>(null); // ドロップしたファイル
@@ -1346,9 +1347,13 @@
 				/>
 			{/if}
 
-			{#if modelViewEntry}
-				{#key modelViewEntry.id}
-					<ModelViewCanvas entry={modelViewEntry} />
+			{#if modelViewEntries.length > 0}
+				{#key $modelViewRequest?.entryIds.join(':')}
+					<ModelViewCanvas
+						entries={modelViewEntries}
+						initialCamera={$modelViewRequest?.camera}
+						includeHighlights={$modelViewRequest?.includeHighlights ?? false}
+					/>
 				{/key}
 			{/if}
 

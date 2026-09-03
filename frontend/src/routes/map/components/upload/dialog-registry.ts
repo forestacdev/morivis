@@ -1,6 +1,7 @@
 import type { Component } from 'svelte';
 
 import ArcGisForm from '$routes/map/components/upload/form/ArcGisForm.svelte';
+import BcfForm from '$routes/map/components/upload/form/BcfForm.svelte';
 import CsvForm from '$routes/map/components/upload/form/CsvForm.svelte';
 import DemXmlForm from '$routes/map/components/upload/form/DemXmlForm.svelte';
 import DmForm from '$routes/map/components/upload/form/DmForm.svelte';
@@ -58,6 +59,7 @@ import type { DialogType } from '$routes/map/types';
 export type DialogProfile =
 	| 'simple'
 	| 'drop-file'
+	| 'side-panel'
 	| 'model-georef'
 	| 'vector-zone'
 	| 'vector-zone-georef'
@@ -135,5 +137,6 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	sqlite: { component: SQLiteForm, profile: 'vector-zone-georef' },
 	hdf5: { component: Hdf5Form, profile: 'drop-file' },
 	mojxml: { component: MojXmlForm, profile: 'vector-zone-georef' },
-	sima: { component: SimaForm, profile: 'vector-zone-georef' }
+	sima: { component: SimaForm, profile: 'vector-zone-georef' },
+	bcf: { component: BcfForm, profile: 'side-panel' }
 };

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade, scale } from 'svelte/transition';
+	import { fade, fly, scale } from 'svelte/transition';
 
 	import { applyUploadDropDecision, checkLargeDroppedFiles } from './upload-drop-actions';
 
@@ -97,25 +97,15 @@
 </script>
 
 {#if activeDialogDefinition}
-	<DropContainer
-		bind:isDragover
-		disabled={isTransformOverlayActive}
-		onDropFile={handleDialogDrop}
-		class="absolute bottom-0 z-30 h-full w-full {isTransformOverlayActive
-			? 'pointer-events-none'
-			: ''}"
-	>
-		<div
-			transition:fade={{ duration: 200 }}
-			class="flex h-full w-full items-center justify-center bg-black/50 backdrop-blur-[3px] {isDragover
-				? 'bg-black/60'
-				: ''} {isTransformOverlayActive ? 'pointer-events-none opacity-0' : ''}"
+	{#if activeDialogDefinition.profile === 'side-panel'}
+		<DropContainer
+			bind:isDragover
+			onDropFile={handleDialogDrop}
+			class="absolute bottom-4 left-4 top-4 z-30 w-[min(32rem,calc(100vw-2rem))]"
 		>
-			<div
-				transition:scale={{ duration: 300, start: 0.9 }}
-				class="bg-opacity-8 bg-main flex max-w-[600px] grow flex-col rounded-md p-4 text-base {isFixedHeight
-					? 'h-[600px]'
-					: 'max-h-[700px]'} {isDragover ? 'ring-main/40 ring-2' : ''}"
+			<aside
+				transition:fly={{ x: -24, duration: 200 }}
+				class="bg-opacity-8 bg-main flex h-full flex-col rounded-md p-4 text-base shadow-2xl {isDragover ? 'ring-main/40 ring-2' : ''}"
 			>
 				<DialogRenderer
 					component={activeDialogDefinition.component}
@@ -139,9 +129,55 @@
 					{selectedEpsgCode}
 					{isDragover}
 				/>
+			</aside>
+		</DropContainer>
+	{:else}
+		<DropContainer
+			bind:isDragover
+			disabled={isTransformOverlayActive}
+			onDropFile={handleDialogDrop}
+			class="absolute bottom-0 z-30 h-full w-full {isTransformOverlayActive
+				? 'pointer-events-none'
+				: ''}"
+		>
+			<div
+				transition:fade={{ duration: 200 }}
+				class="flex h-full w-full items-center justify-center bg-black/50 backdrop-blur-[3px] {isDragover
+					? 'bg-black/60'
+					: ''} {isTransformOverlayActive ? 'pointer-events-none opacity-0' : ''}"
+			>
+				<div
+					transition:scale={{ duration: 300, start: 0.9 }}
+					class="bg-opacity-8 bg-main flex max-w-[600px] grow flex-col rounded-md p-4 text-base {isFixedHeight
+						? 'h-[600px]'
+						: 'max-h-[700px]'} {isDragover ? 'ring-main/40 ring-2' : ''}"
+				>
+					<DialogRenderer
+						component={activeDialogDefinition.component}
+						profile={activeDialogDefinition.profile}
+						bind:showDataEntry
+						bind:showDialogType
+						bind:transformOptionMode
+						bind:dropFile
+						bind:remoteGeoZarrUrl
+						bind:remotePmtilesUrl
+						bind:remoteRasterUrl
+						bind:remoteVectorUrl
+						bind:remoteTiles3dUrl
+						bind:remoteWmtsUrl
+						bind:remoteFeatureServiceUrl
+						bind:pendingTileUrl
+						bind:focusBbox
+						bind:zoneConfirmedEpsg
+						bind:pendingZoneGeoRefData
+						bind:geoRefData
+						{selectedEpsgCode}
+						{isDragover}
+					/>
+				</div>
 			</div>
-		</div>
-	</DropContainer>
+		</DropContainer>
+	{/if}
 {/if}
 
 {#if !$isProcessing}

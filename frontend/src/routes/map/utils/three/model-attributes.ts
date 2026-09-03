@@ -72,14 +72,20 @@ export const getIfcAttributes = (
 	if (typeof item.type === 'string') attributes['IFC クラス'] = item.type;
 	propertySets.forEach((propertySet) => {
 		const propertySetName = getIfcName(propertySet);
-		const properties = propertySet.HasProperties;
+		const properties = propertySet.HasProperties ?? propertySet.Quantities;
 		if (!Array.isArray(properties)) return;
 		properties.forEach((property) => {
 			if (!property || typeof property !== 'object') return;
 			const typedProperty = property as Record<string, unknown>;
 			const name = unwrapIfcValue(typedProperty.Name);
 			const value = unwrapIfcValue(typedProperty.NominalValue)
-				?? unwrapIfcValue(typedProperty.ListValues);
+				?? unwrapIfcValue(typedProperty.ListValues)
+				?? unwrapIfcValue(typedProperty.LengthValue)
+				?? unwrapIfcValue(typedProperty.AreaValue)
+				?? unwrapIfcValue(typedProperty.VolumeValue)
+				?? unwrapIfcValue(typedProperty.CountValue)
+				?? unwrapIfcValue(typedProperty.WeightValue)
+				?? unwrapIfcValue(typedProperty.TimeValue);
 			if (name !== undefined && value !== undefined) {
 				attributes[`${propertySetName}.${name}`] = value;
 			}

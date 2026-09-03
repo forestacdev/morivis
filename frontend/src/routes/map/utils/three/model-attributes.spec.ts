@@ -60,4 +60,20 @@ describe('getIfcAttributes', () => {
 		expect(attributes.Representation).toBeUndefined();
 		expect(attributes['Pset_Test.Unconfigured']).toBeUndefined();
 	});
+
+	it('quantity set の数値を属性値として扱う', () => {
+		const attributes = getIfcAttributes(7, {}, [
+			{
+				Name: { value: 'Qto_ElementBaseQuantities' },
+				Quantities: [
+					{
+						Name: { value: 'NetVolume' },
+						VolumeValue: { value: 1.25 }
+					}
+				]
+			}
+		]);
+
+		expect(attributes['Qto_ElementBaseQuantities.NetVolume']).toBe(1.25);
+	});
 });

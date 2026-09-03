@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
+
 	import GeoArrowOption from './model_option/GeoArrowOption.svelte';
 	import MeshOption from './model_option/MeshOption.svelte';
 	import PointCloudOption from './model_option/PoinbtCloudOption..svelte';
@@ -12,6 +14,7 @@
 		Tiles3DMeshStyleEntry,
 		PointCloudStyleEntry
 	} from '$routes/map/data/types/model';
+	import { openModelView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -32,6 +35,11 @@
 
 	const isTiles3DMeshEntry = (entry: MorivisModelEntry): entry is Tiles3DMeshStyleEntry => {
 		return entry.style.type === '3d-tiles-mesh';
+	};
+
+	const openSingleModelView = () => {
+		if (!isThreeMeshEntry(layerEntry)) return;
+		openModelView(layerEntry.id);
 	};
 
 	$effect(() => {
@@ -56,7 +64,13 @@
 	{/if}
 
 	{#if isThreeMeshEntry(layerEntry)}
-		<!-- Model options go here -->
+		<button
+			class="c-btn-confirm mb-2 flex w-full items-center justify-center gap-2 rounded-lg p-2 text-sm"
+			onclick={openSingleModelView}
+		>
+			<Icon icon="mdi:cube-scan" class="h-5 w-5" />
+			モデルビューで開く
+		</button>
 		<MeshOption bind:layerEntry bind:showColorOption bind:showDimensionOption />
 	{/if}
 {/if}

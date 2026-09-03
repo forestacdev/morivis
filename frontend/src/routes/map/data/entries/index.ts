@@ -171,8 +171,8 @@ export const layerDataFuse = new Fuse(geoDataEntries, {
 	getFn: (obj: MorivisLayerEntry, path: string | string[]) => {
 		const values = [];
 		if (obj.metaData.name) values.push(encode(obj.metaData.name));
-		if (obj.metaData.location) values.push(encode(obj.metaData.location));
-		if (obj.metaData.attribution) values.push(encode(obj.metaData.attribution));
+		if (typeof obj.metaData.location === 'string') values.push(encode(obj.metaData.location));
+		if (typeof obj.metaData.attribution === 'string') values.push(encode(obj.metaData.attribution));
 		if (obj.metaData.tags && Array.isArray(obj.metaData.tags)) {
 			obj.metaData.tags.forEach((tag) => {
 				values.push(encode(tag));

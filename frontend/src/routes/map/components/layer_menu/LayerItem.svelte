@@ -21,7 +21,7 @@
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
-	import { openModelView, selectedLayerId, isStyleEdit } from '$routes/stores';
+	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -101,11 +101,6 @@
 
 	const isExportableThreeMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
 		return isThreeMeshEntry(entry) && entry.metaData.isUserUploaded === true;
-	};
-
-	const openSingleModelView = () => {
-		if (!isThreeMeshEntry(layerEntry)) return;
-		openModelView(layerEntry.id);
 	};
 
 	const toggleLayerVisibility = () => {
@@ -672,17 +667,6 @@
 							</button>
 						{/if}
 
-						{#if isThreeMeshEntry(layerEntry)}
-							<button
-								class="cursor-pointer"
-								onclick={openSingleModelView}
-								aria-label="モデルビューで開く"
-								title="モデルビューで開く"
-							>
-								<Icon icon="mdi:cube-scan" class="h-8 w-8" />
-							</button>
-						{/if}
-
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
@@ -723,17 +707,6 @@
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
 								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
-							</button>
-						{/if}
-
-						{#if isThreeMeshEntry(layerEntry)}
-							<button
-								class="cursor-pointer"
-								onclick={openSingleModelView}
-								aria-label="モデルビューで開く"
-								title="モデルビューで開く"
-							>
-								<Icon icon="mdi:cube-scan" class="h-8 w-8" />
 							</button>
 						{/if}
 

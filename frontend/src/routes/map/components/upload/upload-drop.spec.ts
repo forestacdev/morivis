@@ -102,6 +102,16 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('単一の BCF は bcf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('test-issues.bcf', 'bcf'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'bcf',
+			dropFiles: undefined
+		});
+	});
+
 	it('単一の XLSX は xlsx ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(
 			createFile(

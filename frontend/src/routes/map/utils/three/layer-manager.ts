@@ -2,6 +2,7 @@ import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import {
 	DEFAULT_MESH_SHADING,
+	type IfcPartColorProfile,
 	type MeshEntry,
 	type MeshShadingStyle,
 	type MeshStyle
@@ -37,19 +38,16 @@ import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
-let rhino3dmLoaderModulePromise:
-	| Promise<
-		typeof import('three/addons/loaders/3DMLoader.js')
-	>
-	| null = null;
+let rhino3dmLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/3DMLoader.js')
+> | null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
+let webIfcModulePromise: Promise<typeof import('web-ifc')> | null = null;
 let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
 	null;
-let colladaLoaderModulePromise:
-	| Promise<
-		typeof import('three/addons/loaders/ColladaLoader.js')
-	>
-	| null = null;
+let colladaLoaderModulePromise: Promise<
+	typeof import('three/addons/loaders/ColladaLoader.js')
+> | null = null;
 let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
 	null;
 let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
@@ -68,10 +66,10 @@ const resolveResourceUrl = (resourceUrls: Record<string, string>, url: string) =
 	const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 	const fileName = normalizedUrl.split('/').pop() ?? '';
 	return (
-		resourceUrls[normalizedUrl]
-			?? resourceUrls[relativeWithoutRoot]
-			?? resourceUrls[fileName]
-			?? url
+		resourceUrls[normalizedUrl] ??
+		resourceUrls[relativeWithoutRoot] ??
+		resourceUrls[fileName] ??
+		url
 	);
 };
 
@@ -87,6 +85,13 @@ const loadIfcLoaderModule = async () => {
 		ifcLoaderModulePromise = import('web-ifc-three/IFCLoader.js');
 	}
 	return ifcLoaderModulePromise;
+};
+
+const loadWebIfcModule = async () => {
+	if (!webIfcModulePromise) {
+		webIfcModulePromise = import('web-ifc');
+	}
+	return webIfcModulePromise;
 };
 
 const loadTdsLoaderModule = async () => {
@@ -176,6 +181,12 @@ const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>(
 	'amf',
 	'ifc'
 ]);
+const IFC_ATTRIBUTE_BATCH_SIZE = 32;
+
+const getIfcPartColorProfile = (entry: MeshEntry<MeshStyle>): IfcPartColorProfile | undefined =>
+	entry.properties?.ifc?.extractionProfiles.find(
+		(profile): profile is IfcPartColorProfile => profile.type === 'part-colors'
+	);
 
 const materialHasTextureSlots = (material: THREE.Material) => {
 	return TEXTURE_SLOT_KEYS.some((key) => {
@@ -211,7 +222,8 @@ export class ThreeJsLayerManager {
 	private lastRenderTimeMs: number | null = null;
 	private repaintBurstHandle: number | null = null;
 	private lastMapProjectionMatrix: THREE.Matrix4 | null = null;
-	private selectedModelHighlight: ModelHighlight | null = null;
+	private selectedModelHighlights: ModelHighlight[] = [];
+	private ifcPartAttributeLoads = new Map<string, Promise<number>>();
 
 	constructor() {
 		this.dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
@@ -252,9 +264,10 @@ export class ThreeJsLayerManager {
 			baseColor.multiply(sourceMaterial.color);
 		}
 
-		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
-			? sourceMaterial.map
-			: null;
+		const map =
+			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+				? sourceMaterial.map
+				: null;
 		const colorRamp = style.heightColorRamp;
 		const [colorRampMin, colorRampMax] = getAdjustableRangeValue(
 			colorRamp?.range,
@@ -273,25 +286,27 @@ export class ThreeJsLayerManager {
 		const colorRampArray = colorRamp?.enabled
 			? this.colorMapManager.createColorArray(colorRamp.colorMap)
 			: null;
-		const colorRampRgbaArray = colorRampArray != null
-			? new Uint8Array(
-				Array.from({ length: 256 * 4 }, (_, i) => {
-					const colorIndex = Math.floor(i / 4);
-					const channel = i % 4;
-					if (channel === 3) return 255;
-					return colorRampArray[colorIndex * 3 + channel] ?? 0;
-				})
-			)
-			: null;
-		const colorRampTexture = colorRamp?.enabled && colorRampMax > colorRampMin
-			? new THREE.DataTexture(
-				colorRampRgbaArray,
-				1,
-				256,
-				THREE.RGBAFormat,
-				THREE.UnsignedByteType
-			)
-			: null;
+		const colorRampRgbaArray =
+			colorRampArray != null
+				? new Uint8Array(
+						Array.from({ length: 256 * 4 }, (_, i) => {
+							const colorIndex = Math.floor(i / 4);
+							const channel = i % 4;
+							if (channel === 3) return 255;
+							return colorRampArray[colorIndex * 3 + channel] ?? 0;
+						})
+					)
+				: null;
+		const colorRampTexture =
+			colorRamp?.enabled && colorRampMax > colorRampMin
+				? new THREE.DataTexture(
+						colorRampRgbaArray,
+						1,
+						256,
+						THREE.RGBAFormat,
+						THREE.UnsignedByteType
+					)
+				: null;
 		const partColorTexture = this.createPartColorTexture(style);
 		if (colorRampTexture) {
 			colorRampTexture.colorSpace = THREE.SRGBColorSpace;
@@ -461,9 +476,10 @@ export class ThreeJsLayerManager {
 			baseColor.multiply(sourceMaterial.color);
 		}
 
-		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
-			? sourceMaterial.map
-			: null;
+		const map =
+			'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
+				? sourceMaterial.map
+				: null;
 
 		const material = new THREE.MeshBasicMaterial({
 			color: baseColor,
@@ -482,17 +498,18 @@ export class ThreeJsLayerManager {
 		sourceMaterial: THREE.Material,
 		style: MeshStyle
 	): THREE.Material => {
-		const map = getTextureSlot(sourceMaterial, 'map')
-			?? getTextureSlot(sourceMaterial, 'emissiveMap');
+		const map =
+			getTextureSlot(sourceMaterial, 'map') ?? getTextureSlot(sourceMaterial, 'emissiveMap');
 		const alphaMap = getTextureSlot(sourceMaterial, 'alphaMap');
 
 		const material = new THREE.MeshBasicMaterial({
 			color: new THREE.Color(style.color),
 			map,
 			alphaMap,
-			transparent: style.opacity < 1
-				|| alphaMap != null
-				|| ('transparent' in sourceMaterial && sourceMaterial.transparent === true),
+			transparent:
+				style.opacity < 1 ||
+				alphaMap != null ||
+				('transparent' in sourceMaterial && sourceMaterial.transparent === true),
 			opacity: style.opacity,
 			wireframe: style.wireframe,
 			side: THREE.DoubleSide
@@ -528,20 +545,22 @@ export class ThreeJsLayerManager {
 		formatType?: MeshEntry<MeshStyle>['format']['type']
 	) => {
 		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-		const originalMaterials = (mesh.userData.originalMaterials as THREE.Material[] | undefined)
-			?? currentMaterials.map((material) => material.clone());
+		const originalMaterials =
+			(mesh.userData.originalMaterials as THREE.Material[] | undefined) ??
+			currentMaterials.map((material) => material.clone());
 
 		if (!mesh.userData.originalMaterials) {
 			mesh.userData.originalMaterials = originalMaterials;
 		}
 
-		const useShaderMaterial = Boolean(style.shading?.enabled)
-			|| Boolean(style.heightColorRamp?.enabled);
-		const usePartColorMaterial = Boolean(style.partColors?.show)
-			&& mesh.geometry.getAttribute('morivisPartColorIndex') != null;
+		const useShaderMaterial =
+			Boolean(style.shading?.enabled) || Boolean(style.heightColorRamp?.enabled);
+		const usePartColorMaterial =
+			Boolean(style.partColors?.show) &&
+			mesh.geometry.getAttribute('morivisPartColorIndex') != null;
 		if (
-			usePartColorMaterial
-			&& currentMaterials.every((material) => this.updatePartColorPalette(material, style))
+			usePartColorMaterial &&
+			currentMaterials.every((material) => this.updatePartColorPalette(material, style))
 		) {
 			return;
 		}
@@ -551,16 +570,16 @@ export class ThreeJsLayerManager {
 		const nextMaterials = originalMaterials.map((sourceMaterial) =>
 			usePartColorMaterial
 				? this.createShaderMaterial(sourceMaterial, style)
-				// FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
-				: hasTexturedMaterial && formatType === 'fbx'
-				? this.createFbxTexturedMaterial(sourceMaterial, style)
-				: hasTexturedMaterial
-				? this.createStyledSourceMaterial(sourceMaterial, style)
-				: isSkinnedMesh
-				? this.createStyledSourceMaterial(sourceMaterial, style)
-				: useShaderMaterial
-				? this.createShaderMaterial(sourceMaterial, style)
-				: this.createFlatMaterial(sourceMaterial, style)
+				: // FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
+					hasTexturedMaterial && formatType === 'fbx'
+					? this.createFbxTexturedMaterial(sourceMaterial, style)
+					: hasTexturedMaterial
+						? this.createStyledSourceMaterial(sourceMaterial, style)
+						: isSkinnedMesh
+							? this.createStyledSourceMaterial(sourceMaterial, style)
+							: useShaderMaterial
+								? this.createShaderMaterial(sourceMaterial, style)
+								: this.createFlatMaterial(sourceMaterial, style)
 		);
 
 		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
@@ -594,6 +613,8 @@ export class ThreeJsLayerManager {
 			} | null;
 		};
 		if (ifcModel.modelID == null || !ifcModel.ifcManager) return;
+		style.partColors ??= { key: 'IFC クラス', show: false, expressions: [] };
+		if (!style.partColors.show) return;
 
 		const expressIds = new Set<number>();
 		object.traverse((child) => {
@@ -606,27 +627,37 @@ export class ThreeJsLayerManager {
 		const cachedClasses = object.userData.morivisIfcClasses as Map<number, string> | undefined;
 		const classesByExpressId = cachedClasses ?? new Map<number, string>();
 		if (!cachedClasses) {
-			await Promise.all(
-				Array.from(expressIds).map(async (expressId) => {
-					classesByExpressId.set(
-						expressId,
-						await ifcModel.ifcManager!.getIfcType(ifcModel.modelID!, expressId)
-					);
-				})
-			);
+			const ids = Array.from(expressIds);
+			for (let offset = 0; offset < ids.length; offset += IFC_ATTRIBUTE_BATCH_SIZE) {
+				const results = await Promise.allSettled(
+					ids.slice(offset, offset + IFC_ATTRIBUTE_BATCH_SIZE).map(async (expressId) => {
+						return {
+							expressId,
+							ifcType: await ifcModel.ifcManager!.getIfcType(ifcModel.modelID!, expressId)
+						};
+					})
+				);
+				results.forEach((result) => {
+					if (result.status !== 'fulfilled') return;
+					classesByExpressId.set(result.value.expressId, result.value.ifcType);
+				});
+			}
 			object.userData.morivisIfcClasses = classesByExpressId;
 		}
-		if (!style.partColors) {
+		if (style.partColors.expressions.length === 0) {
 			const expressions = buildVectorTileColorExpressions({
 				id: 'ifc-parts',
 				fields: {},
-				attributes: [{
-					attribute: 'IFC クラス',
-					values: Array.from(new Set(classesByExpressId.values()))
-				}]
+				attributes: [
+					{
+						attribute: 'IFC クラス',
+						values: Array.from(new Set(classesByExpressId.values()))
+					}
+				]
 			});
 			if (expressions.length > 0) {
-				style.partColors = { key: expressions[0].key, show: false, expressions };
+				style.partColors.key = expressions[0].key;
+				style.partColors.expressions = expressions;
 			}
 		}
 		const partColors = style.partColors;
@@ -651,12 +682,12 @@ export class ThreeJsLayerManager {
 				const partAttributes = object.userData.morivisIfcPartAttributes as
 					| Map<number, ModelAttributes>
 					| undefined;
-				const value = expression.key === 'IFC クラス'
-					? classesByExpressId.get(expressIdAttribute.getX(index))
-					: partAttributes?.get(expressIdAttribute.getX(index))?.[expression.key];
-				colorIndexes[index] = categoryIndexes.get(
-					typeof value === 'boolean' ? String(value) : (value ?? '')
-				) ?? 0;
+				const value =
+					expression.key === 'IFC クラス'
+						? classesByExpressId.get(expressIdAttribute.getX(index))
+						: partAttributes?.get(expressIdAttribute.getX(index))?.[expression.key];
+				colorIndexes[index] =
+					categoryIndexes.get(typeof value === 'boolean' ? String(value) : (value ?? '')) ?? 0;
 			}
 			mesh.geometry.setAttribute(
 				'morivisPartColorIndex',
@@ -667,18 +698,99 @@ export class ThreeJsLayerManager {
 	};
 
 	clearModelHighlight(): void {
-		const highlight = this.selectedModelHighlight;
-		if (!highlight) return;
+		if (this.selectedModelHighlights.length === 0) return;
 
-		this.selectedModelHighlight = null;
-		highlight.fill.removeFromParent();
-		highlight.outline.removeFromParent();
-		(highlight.fill.material as THREE.Material).dispose();
-		if (highlight.geometry !== highlight.mesh.geometry) highlight.geometry.dispose();
-		highlight.outline.geometry.dispose();
-		(highlight.outline.material as THREE.Material).dispose();
+		this.selectedModelHighlights.forEach((highlight) => {
+			highlight.fill.removeFromParent();
+			highlight.outline.removeFromParent();
+			(highlight.fill.material as THREE.Material).dispose();
+			if (highlight.geometry !== highlight.mesh.geometry) highlight.geometry.dispose();
+			highlight.outline.geometry.dispose();
+			(highlight.outline.material as THREE.Material).dispose();
+		});
+		this.selectedModelHighlights = [];
 		this.map?.triggerRepaint();
 	}
+
+	/** BCF が保持する IFC GlobalId から、読み込み済みIFCの対象部材をハイライトする。 */
+	async highlightIfcGlobalId(globalId: string): Promise<string | null> {
+		const entryIds = await this.highlightIfcGlobalIds([globalId]);
+		return entryIds[0] ?? null;
+	}
+
+	/** BCFの選択部材をまとめてハイライトする。 */
+	async highlightIfcGlobalIds(globalIds: string[]): Promise<string[]> {
+		const requestedIds = new Set(globalIds.map((globalId) => globalId.trim()).filter(Boolean));
+		if (requestedIds.size === 0) return [];
+
+		const targets: { entryId: string; mesh: THREE.Mesh; expressId: number }[] = [];
+		for (const loaded of this.loadedModels.values()) {
+			if (loaded.entry.format.type !== 'ifc') continue;
+			const index = await this.getIfcGlobalIdIndex(loaded);
+			requestedIds.forEach((globalId) => {
+				const target = index.get(globalId);
+				if (target) targets.push({ entryId: loaded.entry.id, ...target });
+			});
+		}
+
+		if (targets.length === 0) return [];
+		this.clearModelHighlight();
+		targets.forEach((target) => this.addModelHighlight(target.mesh, target.expressId));
+		this.map?.triggerRepaint();
+		return Array.from(new Set(targets.map((target) => target.entryId)));
+	}
+
+	private getIfcGlobalIdIndex = async (loaded: LoadedModel) => {
+		const model = loaded.object as THREE.Object3D & {
+			modelID?: number;
+			ifcManager?: {
+				getItemProperties: (modelId: number, expressId: number) => Promise<Record<string, unknown>>;
+			} | null;
+		};
+		const cached = model.userData.morivisIfcGlobalIdIndex as
+			| Map<string, { expressId: number; mesh: THREE.Mesh }>
+			| undefined;
+		if (cached) return cached;
+
+		const index = new Map<string, { expressId: number; mesh: THREE.Mesh }>();
+		if (model.modelID == null || !model.ifcManager) return index;
+
+		const meshesByExpressId = new Map<number, THREE.Mesh>();
+		model.traverse((child) => {
+			if (!(child as THREE.Mesh).isMesh) return;
+			const mesh = child as THREE.Mesh;
+			const expressIds = mesh.geometry.getAttribute('expressID');
+			for (let index = 0; expressIds && index < expressIds.count; index += 1) {
+				meshesByExpressId.set(expressIds.getX(index), mesh);
+			}
+		});
+
+		const expressIds = Array.from(meshesByExpressId.keys());
+		for (let offset = 0; offset < expressIds.length; offset += 50) {
+			const batch = expressIds.slice(offset, offset + 50);
+			const results = await Promise.allSettled(
+				batch.map(async (expressId) => {
+					const item = await model.ifcManager!.getItemProperties(model.modelID!, expressId);
+					const globalIdValue = item.GlobalId;
+					const globalId =
+						globalIdValue && typeof globalIdValue === 'object' && 'value' in globalIdValue
+							? globalIdValue.value
+							: globalIdValue;
+					const mesh = meshesByExpressId.get(expressId);
+					return typeof globalId === 'string' && mesh
+						? { globalId, expressId, mesh }
+						: null;
+				})
+			);
+			results.forEach((result) => {
+				if (result.status !== 'fulfilled' || result.value == null) return;
+				index.set(result.value.globalId, result.value);
+			});
+		}
+
+		model.userData.morivisIfcGlobalIdIndex = index;
+		return index;
+	};
 
 	private getIfcHighlightGeometry = (mesh: THREE.Mesh, expressId: number) => {
 		const sourceGeometry = mesh.geometry;
@@ -705,15 +817,22 @@ export class ThreeJsLayerManager {
 
 	private highlightModelMesh = (mesh: THREE.Mesh, expressId?: number) => {
 		if (
-			this.selectedModelHighlight?.mesh === mesh
-			&& this.selectedModelHighlight.expressId === expressId
+			this.selectedModelHighlights.length === 1 &&
+			this.selectedModelHighlights[0].mesh === mesh &&
+			this.selectedModelHighlights[0].expressId === expressId
 		) {
 			return;
 		}
 		this.clearModelHighlight();
-		const geometry = expressId == null
-			? mesh.geometry
-			: (this.getIfcHighlightGeometry(mesh, expressId) ?? mesh.geometry);
+		this.addModelHighlight(mesh, expressId);
+		this.map?.triggerRepaint();
+	};
+
+	private addModelHighlight = (mesh: THREE.Mesh, expressId?: number) => {
+		const geometry =
+			expressId == null
+				? mesh.geometry
+				: (this.getIfcHighlightGeometry(mesh, expressId) ?? mesh.geometry);
 
 		const fill = new THREE.Mesh(
 			geometry,
@@ -741,8 +860,7 @@ export class ThreeJsLayerManager {
 		outline.raycast = () => undefined;
 
 		mesh.add(fill, outline);
-		this.selectedModelHighlight = { mesh, fill, outline, geometry, expressId };
-		this.map?.triggerRepaint();
+		this.selectedModelHighlights.push({ mesh, fill, outline, geometry, expressId });
 	};
 
 	private resolvePickedObjectName = (object: THREE.Object3D, root: THREE.Object3D) => {
@@ -755,9 +873,7 @@ export class ThreeJsLayerManager {
 		}
 
 		if ((object as THREE.Mesh).isMesh) {
-			const meshMaterial = (object as THREE.Mesh).material as
-				| THREE.Material
-				| THREE.Material[];
+			const meshMaterial = (object as THREE.Mesh).material as THREE.Material | THREE.Material[];
 			const materials = Array.isArray(meshMaterial) ? meshMaterial : [meshMaterial];
 			const materialName = materials.find((material) => material.name)?.name;
 			if (materialName) return materialName;
@@ -769,9 +885,7 @@ export class ThreeJsLayerManager {
 	private getFbxAttributeObject = (object: THREE.Object3D) => {
 		let current: THREE.Object3D | null = object;
 		while (current) {
-			const attributes = current.userData.morivisFbxAttributes as
-				| FbxModelAttributes
-				| undefined;
+			const attributes = current.userData.morivisFbxAttributes as FbxModelAttributes | undefined;
 			if (attributes) return { object: current, attributes };
 			current = current.parent;
 		}
@@ -799,25 +913,54 @@ export class ThreeJsLayerManager {
 		const ifcModel = model as THREE.Object3D & {
 			modelID?: number;
 			ifcManager?: {
-				getItemProperties: (
-					modelId: number,
-					expressId: number
-				) => Promise<Record<string, unknown>>;
+				getItemProperties: (modelId: number, expressId: number) => Promise<Record<string, unknown>>;
 				getPropertySets: (
 					modelId: number,
-					expressId: number
+					expressId: number,
+					recursive?: boolean
+				) => Promise<Record<string, unknown>[]>;
+				getTypeProperties: (
+					modelId: number,
+					expressId: number,
+					recursive?: boolean
 				) => Promise<Record<string, unknown>[]>;
 				getIfcType: (modelId: number, expressId: number) => string | Promise<string>;
 			} | null;
 		};
 		const expressId = this.getIfcExpressId(model, hit);
 		if (ifcModel.modelID == null || expressId == null || !ifcModel.ifcManager) return {};
-		const [item, propertySets, ifcType] = await Promise.all([
+		const cachedAttributes = (
+			model.userData.morivisIfcPartAttributes as Map<number, ModelAttributes> | undefined
+		)?.get(expressId);
+		const [itemResult, propertySetsResult, typePropertiesResult, ifcTypeResult] = await Promise.allSettled([
 			ifcModel.ifcManager.getItemProperties(ifcModel.modelID, expressId),
-			ifcModel.ifcManager.getPropertySets(ifcModel.modelID, expressId),
+			ifcModel.ifcManager.getPropertySets(ifcModel.modelID, expressId, true),
+			ifcModel.ifcManager.getTypeProperties(ifcModel.modelID, expressId, true),
 			ifcModel.ifcManager.getIfcType(ifcModel.modelID, expressId)
 		]);
-		return { ...getIfcAttributes(expressId, item, propertySets), 'IFC クラス': ifcType };
+		const item = itemResult.status === 'fulfilled' ? itemResult.value : {};
+		const propertySets = propertySetsResult.status === 'fulfilled' ? propertySetsResult.value : [];
+		const typeProperties = typePropertiesResult.status === 'fulfilled'
+			? typePropertiesResult.value
+			: [];
+		const ifcType = ifcTypeResult.status === 'fulfilled' ? ifcTypeResult.value : undefined;
+		if (!import.meta.env.PROD) {
+			const failed = [itemResult, propertySetsResult, typePropertiesResult, ifcTypeResult].filter(
+				(result) => result.status === 'rejected'
+			);
+			if (failed.length > 0) {
+				console.warn('[IFC属性] 一部の属性取得に失敗しました', {
+					expressId,
+					failedCount: failed.length,
+					errors: failed.map((result) => String((result as PromiseRejectedResult).reason))
+				});
+			}
+		}
+		return {
+			...cachedAttributes,
+			...getIfcAttributes(expressId, item, [...propertySets, ...typeProperties]),
+			...(ifcType ? { 'IFC クラス': ifcType } : {})
+		};
 	};
 
 	private requestRepaintBurst = (frameCount = 90) => {
@@ -884,15 +1027,18 @@ export class ThreeJsLayerManager {
 		style: MeshStyle
 	): THREE.Material => {
 		if (material instanceof THREE.ShaderMaterial) {
-			const baseColor = material.uniforms.uBaseColor?.value instanceof THREE.Color
-				? material.uniforms.uBaseColor.value.clone()
-				: new THREE.Color(style.color);
-			const map = material.uniforms.uMap?.value instanceof THREE.Texture
-				? material.uniforms.uMap.value
-				: null;
-			const opacity = typeof material.uniforms.uOpacity?.value === 'number'
-				? material.uniforms.uOpacity.value
-				: style.opacity;
+			const baseColor =
+				material.uniforms.uBaseColor?.value instanceof THREE.Color
+					? material.uniforms.uBaseColor.value.clone()
+					: new THREE.Color(style.color);
+			const map =
+				material.uniforms.uMap?.value instanceof THREE.Texture
+					? material.uniforms.uMap.value
+					: null;
+			const opacity =
+				typeof material.uniforms.uOpacity?.value === 'number'
+					? material.uniforms.uOpacity.value
+					: style.opacity;
 
 			return new THREE.MeshStandardMaterial({
 				color: baseColor,
@@ -912,7 +1058,7 @@ export class ThreeJsLayerManager {
 		return clonedMaterial;
 	};
 
-	private prepareGlbExportObject = (loaded: LoadedModel): () => void => {
+	private prepareGlbExportObject = (loaded: LoadedModel): (() => void) => {
 		const originalPosition = loaded.object.position.clone();
 		const originalMaterials: Array<{
 			mesh: THREE.Mesh;
@@ -930,9 +1076,7 @@ export class ThreeJsLayerManager {
 				this.createGlbExportMaterial(material, loaded.entry.style)
 			);
 			exportMaterials.push(...convertedMaterials);
-			mesh.material = Array.isArray(mesh.material)
-				? convertedMaterials
-				: convertedMaterials[0];
+			mesh.material = Array.isArray(mesh.material) ? convertedMaterials : convertedMaterials[0];
 		});
 		centerObjectToLocalOrigin(loaded.object);
 		loaded.object.updateMatrixWorld(true);
@@ -969,7 +1113,7 @@ export class ThreeJsLayerManager {
 			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 			materials.forEach((material) => {
 				const originalDepthState = material.userData.morivisDepthState as
-					| { depthTest: boolean; depthWrite: boolean; }
+					| { depthTest: boolean; depthWrite: boolean }
 					| undefined;
 				if (!originalDepthState) return;
 
@@ -986,16 +1130,14 @@ export class ThreeJsLayerManager {
 
 		const renderTargetSize = this.renderer.getDrawingBufferSize(new THREE.Vector2());
 		if (
-			this.overlayRenderTarget.width !== renderTargetSize.x
-			|| this.overlayRenderTarget.height !== renderTargetSize.y
+			this.overlayRenderTarget.width !== renderTargetSize.x ||
+			this.overlayRenderTarget.height !== renderTargetSize.y
 		) {
 			this.overlayRenderTarget.setSize(renderTargetSize.x, renderTargetSize.y);
 		}
 
 		this.restoreModelDepthState(loaded.object);
-		this.camera.projectionMatrix = mapProjectionMatrix.clone().multiply(
-			loaded.transform.matrix
-		);
+		this.camera.projectionMatrix = mapProjectionMatrix.clone().multiply(loaded.transform.matrix);
 		this.setOnlyEntryVisible(loaded.entry.id, loaded.entry.style.visible ?? true);
 
 		this.renderer.resetState();
@@ -1010,9 +1152,8 @@ export class ThreeJsLayerManager {
 
 	private updateAnimations = () => {
 		const nowMs = performance.now();
-		const deltaSeconds = this.lastRenderTimeMs == null
-			? 0
-			: Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
+		const deltaSeconds =
+			this.lastRenderTimeMs == null ? 0 : Math.max((nowMs - this.lastRenderTimeMs) / 1000, 0);
 		this.lastRenderTimeMs = nowMs;
 		let hasPlayingAnimation = false;
 
@@ -1066,9 +1207,7 @@ export class ThreeJsLayerManager {
 						depthWrite: false,
 						toneMapped: false
 					});
-					this.overlayScene.add(
-						new THREE.Mesh(new THREE.PlaneGeometry(2, 2), overlayMaterial)
-					);
+					this.overlayScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), overlayMaterial));
 
 					// 全体を均一に明るくしすぎず、空と地面からの回り込みだけを薄く入れる。
 					const hemiLight = new THREE.HemisphereLight(0xeef3fb, 0x5a6470, 0.45);
@@ -1165,9 +1304,7 @@ export class ThreeJsLayerManager {
 			const onModelLoaded = async (
 				model: THREE.Group | THREE.Object3D,
 				animations: THREE.AnimationClip[] = [],
-				resolveAttributes?: (
-					hit: THREE.Intersection<THREE.Object3D>
-				) => Promise<ModelAttributes>
+				resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>
 			) => {
 				if (entry.format.type === 'ifc') {
 					await this.applyIfcPartColors(model, entry.style);
@@ -1193,6 +1330,11 @@ export class ThreeJsLayerManager {
 				} else {
 					this.modelGroup!.add(model);
 				}
+				if (entry.format.type === 'ifc' && entry.properties?.ifc?.extractionProfiles.length) {
+					void this.preloadIfcProfiles(entry).catch((error) => {
+						console.error('IFC事前定義属性の読み込みに失敗しました', error);
+					});
+				}
 				this.requestRepaintBurst(entry.format.type === 'fbx' ? 180 : 30);
 				resolve();
 			};
@@ -1207,10 +1349,13 @@ export class ThreeJsLayerManager {
 
 			const finalizeAndLoadModel = (
 				object: THREE.Object3D,
-				animations: THREE.AnimationClip[] = []
+				animations: THREE.AnimationClip[] = [],
+				resolveAttributes?: (
+					hit: THREE.Intersection<THREE.Object3D>
+				) => Promise<ModelAttributes>
 			) => {
 				finalizeLoadedModel(object);
-				void onModelLoaded(object, animations).catch((error) =>
+				void onModelLoaded(object, animations, resolveAttributes).catch((error) =>
 					reject(error instanceof Error ? error : new Error(String(error)))
 				);
 			};
@@ -1232,10 +1377,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
 						);
 					});
 				}
@@ -1275,10 +1420,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
 						);
 					});
 				}
@@ -1309,10 +1454,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
 						);
 					});
 				}
@@ -1321,8 +1466,7 @@ export class ThreeJsLayerManager {
 						const colladaLoader = new ColladaLoader(manager);
 						colladaLoader.load(
 							entry.format.url,
-							(collada) =>
-								finalizeAndLoadModel(collada.scene, collada.scene.animations),
+							(collada) => finalizeAndLoadModel(collada.scene, collada.scene.animations),
 							undefined,
 							(error) => reject(error)
 						);
@@ -1337,10 +1481,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
 						);
 					});
 				}
@@ -1365,10 +1509,10 @@ export class ThreeJsLayerManager {
 						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
 						const fileName = normalizedUrl.split('/').pop() ?? '';
 						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
+							resourceUrls[normalizedUrl] ??
+							resourceUrls[relativeWithoutRoot] ??
+							resourceUrls[fileName] ??
+							url
 						);
 					});
 				}
@@ -1386,9 +1530,7 @@ export class ThreeJsLayerManager {
 
 						const response = await fetch(entry.format.url);
 						if (!response.ok) {
-							throw new Error(
-								`Failed to fetch FBX: ${response.status} ${response.statusText}`
-							);
+							throw new Error(`Failed to fetch FBX: ${response.status} ${response.statusText}`);
 						}
 
 						const buffer = await response.arrayBuffer();
@@ -1397,7 +1539,7 @@ export class ThreeJsLayerManager {
 						let modelIdCount = 0;
 						let matchedAttributeCount = 0;
 						object.traverse((child) => {
-							const modelId = (child as THREE.Object3D & { ID?: number; }).ID;
+							const modelId = (child as THREE.Object3D & { ID?: number }).ID;
 							if (modelId == null) return;
 							modelIdCount += 1;
 							const attributes = attributesByModelId[String(modelId)];
@@ -1440,24 +1582,17 @@ export class ThreeJsLayerManager {
 					fetch(entry.format.url)
 						.then(async (response) => {
 							if (!response.ok) {
-								throw new Error(
-									`Failed to fetch glTF: ${response.status} ${response.statusText}`
-								);
+								throw new Error(`Failed to fetch glTF: ${response.status} ${response.statusText}`);
 							}
 
 							const buffer = await response.arrayBuffer();
-							const data = isBinaryGltfBuffer(buffer)
-								? buffer
-								: new TextDecoder().decode(buffer);
+							const data = isBinaryGltfBuffer(buffer) ? buffer : new TextDecoder().decode(buffer);
 
 							loader.parse(
 								data,
 								'',
 								(gltf) => finalizeAndLoadModel(gltf.scene, gltf.animations),
-								(error) =>
-									reject(
-										error instanceof Error ? error : new Error(String(error))
-									)
+								(error) => reject(error instanceof Error ? error : new Error(String(error)))
 							);
 						})
 						.catch((error) => reject(error));
@@ -1470,10 +1605,7 @@ export class ThreeJsLayerManager {
 							geometry.computeVertexNormals();
 						}
 						finalizeAndLoadModel(
-							new THREE.Mesh(
-								geometry,
-								new THREE.MeshStandardMaterial({ color: '#ffffff' })
-							)
+							new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: '#ffffff' }))
 						);
 					},
 					undefined,
@@ -1510,14 +1642,10 @@ export class ThreeJsLayerManager {
 						return configureIfcWasmPath(loader.ifcManager).then(() => {
 							loader.load(
 								entry.format.url,
-								(object) => {
-									finalizeLoadedModel(object);
-									onModelLoaded(
-										object,
-										[],
-										(hit) => this.resolveIfcAttributes(object, hit)
-									);
-								},
+								(object) =>
+									finalizeAndLoadModel(object, [], (hit) =>
+										this.resolveIfcAttributes(object, hit)
+									),
 								undefined,
 								(error) => reject(error)
 							);
@@ -1550,9 +1678,9 @@ export class ThreeJsLayerManager {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
 		if (
-			this.selectedModelHighlight
-			&& loaded.object.getObjectById(this.selectedModelHighlight.mesh.id)
-				=== this.selectedModelHighlight.mesh
+			this.selectedModelHighlights.some(
+				(highlight) => loaded.object.getObjectById(highlight.mesh.id) === highlight.mesh
+			)
 		) {
 			this.clearModelHighlight();
 		}
@@ -1564,9 +1692,7 @@ export class ThreeJsLayerManager {
 				mesh.geometry.dispose();
 				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 				materials.forEach((mat) => mat.dispose());
-				const originalMaterials = mesh.userData.originalMaterials as
-					| THREE.Material[]
-					| undefined;
+				const originalMaterials = mesh.userData.originalMaterials as THREE.Material[] | undefined;
 				originalMaterials?.forEach((material) => material.dispose());
 			}
 		});
@@ -1630,45 +1756,128 @@ export class ThreeJsLayerManager {
 		this.applyStyleToObject(loaded.object, entry.style, entry.format.type);
 	}
 
-	async loadIfcPartColorAttributes(entry: MeshEntry<MeshStyle>): Promise<void> {
+	async loadIfcPartColorAttributes(entry: MeshEntry<MeshStyle>): Promise<number> {
+		const pending = this.ifcPartAttributeLoads.get(entry.id);
+		if (pending) return pending;
+		const load = this.loadIfcPartColorAttributesInternal(entry);
+		this.ifcPartAttributeLoads.set(entry.id, load);
+		try {
+			return await load;
+		} finally {
+			this.ifcPartAttributeLoads.delete(entry.id);
+		}
+	}
+
+	private async loadIfcPartColorAttributesInternal(entry: MeshEntry<MeshStyle>): Promise<number> {
 		const loaded = this.loadedModels.get(entry.id);
-		if (!loaded || entry.format.type !== 'ifc' || !entry.style.partColors) return;
+		if (!loaded || entry.format.type !== 'ifc') return 0;
+		entry.style.partColors ??= { key: 'IFC クラス', show: false, expressions: [] };
 		const model = loaded.object as THREE.Object3D & {
 			modelID?: number;
 			ifcManager?: {
 				getItemProperties: (modelId: number, expressId: number) => Promise<Record<string, unknown>>;
-				getPropertySets: (modelId: number, expressId: number) => Promise<Record<string, unknown>[]>;
+				getPropertySets: (
+					modelId: number,
+					expressId: number,
+					recursive?: boolean
+				) => Promise<Record<string, unknown>[]>;
+				getTypeProperties: (
+					modelId: number,
+					expressId: number,
+					recursive?: boolean
+				) => Promise<Record<string, unknown>[]>;
 				getIfcType: (modelId: number, expressId: number) => string | Promise<string>;
+				getAllItemsOfType?: (modelId: number, type: number, verbose: boolean) => Promise<number[]>;
 			} | null;
 		};
-		if (model.modelID == null || !model.ifcManager) return;
-		const cached = model.userData.morivisIfcPartAttributes as Map<number, ModelAttributes> | undefined;
+		if (!import.meta.env.PROD) {
+			console.info('[IFC属性色分け] モデル実体', {
+				entryId: entry.id,
+				modelId: model.modelID ?? null,
+				hasIfcManager: Boolean(model.ifcManager),
+				hasCachedAttributes: Boolean(model.userData.morivisIfcPartAttributes)
+			});
+		}
+		if (model.modelID == null || !model.ifcManager) return 0;
+		const cached = model.userData.morivisIfcPartAttributes as
+			| Map<number, ModelAttributes>
+			| undefined;
 		const attributesByExpressId = cached ?? new Map<number, ModelAttributes>();
 		if (!cached) {
+			const profile = getIfcPartColorProfile(entry);
 			const expressIds = new Set<number>();
-			model.traverse((child) => {
-				if (!(child as THREE.Mesh).isMesh) return;
-				const attribute = (child as THREE.Mesh).geometry.getAttribute('expressID');
-				for (let index = 0; attribute && index < attribute.count; index += 1) {
-					expressIds.add(attribute.getX(index));
-				}
-			});
-			await Promise.all(Array.from(expressIds).map(async (expressId) => {
-				const [item, propertySets, ifcType] = await Promise.all([
-					model.ifcManager!.getItemProperties(model.modelID!, expressId),
-					model.ifcManager!.getPropertySets(model.modelID!, expressId),
-					model.ifcManager!.getIfcType(model.modelID!, expressId)
-				]);
-				attributesByExpressId.set(expressId, {
-					...getIfcAttributes(expressId, item, propertySets),
-					'IFC クラス': ifcType
+			if (profile && model.ifcManager.getAllItemsOfType) {
+				const webIfc = await loadWebIfcModule();
+				const results = await Promise.allSettled(
+					profile.elementTypes.map((elementType) => {
+						const type = webIfc[elementType as keyof typeof webIfc];
+						if (typeof type !== 'number') {
+							return Promise.resolve({ elementType, expressIds: [] as number[] });
+						}
+						return model.ifcManager!
+							.getAllItemsOfType!(model.modelID!, type, false)
+							.then((ids) => ({ elementType, expressIds: ids }));
+					})
+				);
+				results.forEach((result) => {
+					if (result.status !== 'fulfilled') return;
+					result.value.expressIds.forEach((expressId) => expressIds.add(expressId));
 				});
-			}));
+				if (!import.meta.env.PROD) {
+					console.info('[IFC属性色分け] 事前定義クラス取得結果', {
+						entryId: entry.id,
+						classes: results.map((result, index) => ({
+							className: profile.elementTypes[index],
+							count: result.status === 'fulfilled' ? result.value.expressIds.length : 0,
+							error: result.status === 'rejected' ? String(result.reason) : undefined
+						}))
+					});
+				}
+			} else {
+				model.traverse((child) => {
+					if (!(child as THREE.Mesh).isMesh) return;
+					const attribute = (child as THREE.Mesh).geometry.getAttribute('expressID');
+					for (let index = 0; attribute && index < attribute.count; index += 1) {
+						expressIds.add(attribute.getX(index));
+					}
+				});
+			}
+			const ids = Array.from(expressIds);
+			if (!import.meta.env.PROD) {
+				console.info('[IFC属性色分け] Express ID収集結果', {
+					entryId: entry.id,
+					profile: profile?.type ?? 'geometry',
+					expressIdCount: ids.length,
+					sampleExpressIds: ids.slice(0, 10)
+				});
+			}
+			for (let offset = 0; offset < ids.length; offset += IFC_ATTRIBUTE_BATCH_SIZE) {
+				const results = await Promise.allSettled(
+					ids.slice(offset, offset + IFC_ATTRIBUTE_BATCH_SIZE).map(async (expressId) => {
+						const [item, propertySets, typeProperties, ifcType] = await Promise.all([
+							model.ifcManager!.getItemProperties(model.modelID!, expressId),
+							model.ifcManager!.getPropertySets(model.modelID!, expressId, true),
+							model.ifcManager!.getTypeProperties(model.modelID!, expressId, true),
+							model.ifcManager!.getIfcType(model.modelID!, expressId)
+						]);
+						return [expressId, {
+							...getIfcAttributes(expressId, item, [...propertySets, ...typeProperties]),
+							'IFC クラス': ifcType
+						}] as const;
+					})
+				);
+				results.forEach((result) => {
+					if (result.status !== 'fulfilled') return;
+					attributesByExpressId.set(result.value[0], result.value[1]);
+				});
+			}
 			model.userData.morivisIfcPartAttributes = attributesByExpressId;
 		}
+		const selectedKeys = getIfcPartColorProfile(entry)?.attributeKeys;
 		const valuesByAttribute = new Map<string, Set<string | number | boolean>>();
 		attributesByExpressId.forEach((attributes) => {
 			Object.entries(attributes).forEach(([key, value]) => {
+				if (selectedKeys && !selectedKeys.includes(key)) return;
 				const values = valuesByAttribute.get(key) ?? new Set<string | number | boolean>();
 				values.add(value);
 				valuesByAttribute.set(key, values);
@@ -1677,13 +1886,47 @@ export class ThreeJsLayerManager {
 		const expressions = buildVectorTileColorExpressions({
 			id: 'ifc-parts',
 			fields: {},
-			attributes: Array.from(valuesByAttribute, ([attribute, values]) => ({
-				attribute,
-				values: Array.from(values)
-			}))
-		}).filter((expression) => expression.type === 'match');
+			attributes: Array.from(valuesByAttribute, ([attribute, values]) => {
+				const valuesArray = Array.from(values);
+				const numericValues = valuesArray.filter(
+					(value): value is number => typeof value === 'number' && Number.isFinite(value)
+				);
+				return {
+					attribute,
+					values: valuesArray,
+					type: numericValues.length === valuesArray.length ? 'number' : 'string',
+					min: numericValues.length > 0 ? Math.min(...numericValues) : undefined,
+					max: numericValues.length > 0 ? Math.max(...numericValues) : undefined
+				};
+			})
+		});
 		entry.style.partColors.expressions = expressions;
 		entry.style.partColors.key = expressions[0]?.key ?? entry.style.partColors.key;
+		if (!import.meta.env.PROD) {
+			console.info('[IFC属性色分け] 事前定義属性結果', {
+				entryId: entry.id,
+				attributePartCount: attributesByExpressId.size,
+				expressionKeys: expressions.map((expression) => expression.key)
+			});
+		}
+		return expressions.length;
+	}
+
+	async getIfcPartAttributes(entry: MeshEntry<MeshStyle>): Promise<ModelAttributes[]> {
+		await this.loadIfcPartColorAttributes(entry);
+		const loaded = this.loadedModels.get(entry.id);
+		if (!loaded || entry.format.type !== 'ifc') return [];
+		const attributes = loaded.object.userData.morivisIfcPartAttributes as
+			| Map<number, ModelAttributes>
+			| undefined;
+		return attributes ? Array.from(attributes.values()) : [];
+	}
+
+	private async preloadIfcProfiles(entry: MeshEntry<MeshStyle>): Promise<void> {
+		const profiles = entry.properties?.ifc?.extractionProfiles ?? [];
+		if (profiles.some((profile) => profile.type === 'part-colors')) {
+			await this.loadIfcPartColorAttributes(entry);
+		}
 	}
 
 	async setModelStyle(entry: MeshEntry<MeshStyle>): Promise<void> {
@@ -1732,12 +1975,13 @@ export class ThreeJsLayerManager {
 			if (positionAttribute.itemSize !== 3) return;
 			if (positionAttribute.count !== heights.length) return;
 			const uvAttribute = mesh.geometry.getAttribute('uv');
-			const uvBufferAttribute = uvAttribute instanceof THREE.BufferAttribute
-					&& uvAttribute.itemSize === 2
-					&& normalizedHeights != null
-					&& uvAttribute.count === normalizedHeights.length
-				? uvAttribute
-				: null;
+			const uvBufferAttribute =
+				uvAttribute instanceof THREE.BufferAttribute &&
+				uvAttribute.itemSize === 2 &&
+				normalizedHeights != null &&
+				uvAttribute.count === normalizedHeights.length
+					? uvAttribute
+					: null;
 
 			for (let i = 0; i < positionAttribute.count; i++) {
 				positionAttribute.setY(i, heights[i] ?? 0);
@@ -1769,7 +2013,7 @@ export class ThreeJsLayerManager {
 	}
 
 	/** 地図用の投影行列を使わない、単体表示用のモデルクローンを返す。 */
-	createModelViewObject(entryId: string): THREE.Object3D | null {
+	createModelViewObject(entryId: string, includeHighlights = false): THREE.Object3D | null {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return null;
 
@@ -1782,7 +2026,9 @@ export class ThreeJsLayerManager {
 			}
 			child.visible = true;
 		});
-		selectionHighlights.forEach((highlight) => highlight.parent?.remove(highlight));
+		if (!includeHighlights) {
+			selectionHighlights.forEach((highlight) => highlight.parent?.remove(highlight));
+		}
 		return object;
 	}
 
@@ -1903,7 +2149,7 @@ export class ThreeJsLayerManager {
 		return Array.from(this.loadedModels.keys());
 	}
 
-	async pickModel(point: { x: number; y: number; }): Promise<PickedModelFeature | null> {
+	async pickModel(point: { x: number; y: number }): Promise<PickedModelFeature | null> {
 		if (!import.meta.env.PROD) console.info('[モデル pick] 開始', { point });
 		if (!this.map || !this.lastMapProjectionMatrix) {
 			if (!import.meta.env.PROD) {
@@ -1971,11 +2217,11 @@ export class ThreeJsLayerManager {
 					rayDirection: raycaster.ray.direction.toArray(),
 					hit: hit
 						? {
-							distance: hit.distance,
-							objectId: (hit.object as THREE.Object3D & { ID?: number; }).ID,
-							objectName: hit.object.userData.originalName ?? hit.object.name,
-							hasAttributes: Boolean(hit.object.userData.morivisFbxAttributes)
-						}
+								distance: hit.distance,
+								objectId: (hit.object as THREE.Object3D & { ID?: number }).ID,
+								objectName: hit.object.userData.originalName ?? hit.object.name,
+								hasAttributes: Boolean(hit.object.userData.morivisFbxAttributes)
+							}
 						: null
 				});
 			}
@@ -1991,9 +2237,8 @@ export class ThreeJsLayerManager {
 		}
 		const { loaded, hit } = closest;
 		const fbxAttributeObject = this.getFbxAttributeObject(hit.object);
-		const expressId = loaded.entry.format.type === 'ifc'
-			? this.getIfcExpressId(loaded.object, hit)
-			: undefined;
+		const expressId =
+			loaded.entry.format.type === 'ifc' ? this.getIfcExpressId(loaded.object, hit) : undefined;
 		let formatAttributes: ModelAttributes = Object.fromEntries(
 			Object.entries(fbxAttributeObject.attributes ?? {}).map(([key, value]) => [
 				key,
@@ -2010,11 +2255,10 @@ export class ThreeJsLayerManager {
 				console.warn('[モデル属性] 形式固有属性の取得に失敗しました', error);
 			}
 		}
-		const attributeObject = loaded.entry.format.type === 'fbx'
-			? fbxAttributeObject.object
-			: hit.object;
-		const objectId = expressId ?? (attributeObject as THREE.Object3D & { ID?: number; }).ID
-			?? attributeObject.id;
+		const attributeObject =
+			loaded.entry.format.type === 'fbx' ? fbxAttributeObject.object : hit.object;
+		const objectId =
+			expressId ?? (attributeObject as THREE.Object3D & { ID?: number }).ID ?? attributeObject.id;
 		this.highlightModelMesh(hit.object as THREE.Mesh, expressId);
 		return {
 			entryId: loaded.entry.id,

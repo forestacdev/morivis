@@ -218,7 +218,8 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	bin: 'grib2',
 	grib2: 'grib2',
 	grb2: 'grib2',
-	grb: 'grib2'
+	grb: 'grib2',
+	bcf: 'bcf'
 };
 
 const SXF_PRIMARY_EXTENSION = '.sfc';

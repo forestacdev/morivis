@@ -6,13 +6,15 @@
 
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
-	import { closeModelView } from '$routes/stores';
+	import { closeModelView, type ModelViewCamera } from '$routes/stores';
 
 	interface Props {
-		entry: MeshEntry<MeshStyle>;
+		entries: MeshEntry<MeshStyle>[];
+		initialCamera?: ModelViewCamera;
+		includeHighlights?: boolean;
 	}
 
-	let { entry }: Props = $props();
+	let { entries, initialCamera, includeHighlights = false }: Props = $props();
 	let canvas = $state<HTMLCanvasElement>();
 	let isLoading = $state(true);
 	let errorMessage = $state<string | null>(null);
@@ -33,7 +35,10 @@
 		const scene = new THREE.Scene();
 		scene.background = new THREE.Color('#101915');
 
-		const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 1_000_000);
+		const camera: THREE.PerspectiveCamera | THREE.OrthographicCamera =
+			initialCamera?.type === 'orthographic'
+				? new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 1_000_000)
+				: new THREE.PerspectiveCamera(45, 1, 0.01, 1_000_000);
 		const renderer = new THREE.WebGLRenderer({ canvas: targetCanvas, antialias: true });
 		renderer.outputColorSpace = THREE.SRGBColorSpace;
 		renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -52,8 +57,10 @@
 		fillLight.position.set(-4, 2, -3);
 		scene.add(fillLight);
 
-		const model = threeJsManager.createModelViewObject(entry.id);
-		if (!model) {
+		const models = entries
+			.map((entry) => threeJsManager.createModelViewObject(entry.id, includeHighlights))
+			.filter((model): model is THREE.Object3D => model !== null);
+		if (models.length === 0) {
 			errorMessage = 'モデルを地図に読み込んだ後に、もう一度開いてください。';
 			isLoading = false;
 			controls.dispose();
@@ -62,7 +69,7 @@
 		}
 
 		const modelRoot = new THREE.Group();
-		modelRoot.add(model);
+		modelRoot.add(...models);
 		scene.add(modelRoot);
 		modelRoot.updateWorldMatrix(true, true);
 		const initialBounds = new THREE.Box3().setFromObject(modelRoot);
@@ -73,7 +80,8 @@
 			renderer.dispose();
 			return;
 		}
-		modelRoot.position.sub(initialBounds.getCenter(new THREE.Vector3()));
+		const sourceCenter = initialBounds.getCenter(new THREE.Vector3());
+		modelRoot.position.sub(sourceCenter);
 
 		const fitModel = () => {
 			modelRoot.updateWorldMatrix(true, true);
@@ -81,11 +89,21 @@
 			const center = bounds.getCenter(new THREE.Vector3());
 			const size = bounds.getSize(new THREE.Vector3());
 			const largestDimension = Math.max(size.x, size.y, size.z, 1);
-			const distance = largestDimension / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)));
+			const distance = largestDimension / (2 * Math.tan(THREE.MathUtils.degToRad(45 / 2)));
 
 			camera.near = Math.max(largestDimension / 10_000, 0.001);
 			camera.far = Math.max(largestDimension * 100, 1_000);
-			camera.position.copy(center).add(new THREE.Vector3(distance, distance * 0.7, distance));
+			if (camera instanceof THREE.PerspectiveCamera) {
+				camera.fov = 45;
+				camera.position.copy(center).add(new THREE.Vector3(distance, distance * 0.7, distance));
+			} else {
+				const halfSize = largestDimension * 0.65;
+				camera.left = -halfSize;
+				camera.right = halfSize;
+				camera.top = halfSize;
+				camera.bottom = -halfSize;
+				camera.position.copy(center).add(new THREE.Vector3(distance, distance * 0.7, distance));
+			}
 			camera.updateProjectionMatrix();
 			controls.target.copy(center);
 			controls.maxDistance = largestDimension * 20;
@@ -94,6 +112,27 @@
 
 		resetView = fitModel;
 		fitModel();
+		if (initialCamera) {
+			const position = new THREE.Vector3(...initialCamera.position).sub(sourceCenter);
+			const target = new THREE.Vector3(...initialCamera.position)
+				.add(new THREE.Vector3(...initialCamera.direction))
+				.sub(sourceCenter);
+			camera.position.copy(position);
+			camera.up.set(...initialCamera.up);
+			if (camera instanceof THREE.PerspectiveCamera && initialCamera.fieldOfView) {
+				camera.fov = initialCamera.fieldOfView;
+			}
+			if (camera instanceof THREE.OrthographicCamera && initialCamera.viewToWorldScale) {
+				const halfScale = initialCamera.viewToWorldScale / 2;
+				camera.top = halfScale;
+				camera.bottom = -halfScale;
+				camera.left = -halfScale;
+				camera.right = halfScale;
+			}
+			camera.updateProjectionMatrix();
+			controls.target.copy(target);
+			controls.update();
+		}
 		isLoading = false;
 
 		const resize = () => {
@@ -101,7 +140,15 @@
 			if (clientWidth === 0 || clientHeight === 0) return;
 			renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 			renderer.setSize(clientWidth, clientHeight, false);
-			camera.aspect = clientWidth / clientHeight;
+			if (camera instanceof THREE.PerspectiveCamera) {
+				camera.aspect = clientWidth / clientHeight;
+			} else {
+				const centerX = (camera.left + camera.right) / 2;
+				const halfHeight = (camera.top - camera.bottom) / 2;
+				const halfWidth = halfHeight * (clientWidth / clientHeight);
+				camera.left = centerX - halfWidth;
+				camera.right = centerX + halfWidth;
+			}
 			camera.updateProjectionMatrix();
 		};
 		const resizeObserver = new ResizeObserver(resize);
@@ -147,7 +194,9 @@
 			</button>
 			<div class="min-w-0 pr-2">
 				<p class="truncate text-sm text-white/60">3Dモデルビュー</p>
-				<h1 class="truncate text-base font-medium">{entry.metaData.name}</h1>
+				<h1 class="truncate text-base font-medium">
+					{entries.length === 1 ? entries[0].metaData.name : `${entries.length}件のモデル`}
+				</h1>
 			</div>
 		</div>
 
