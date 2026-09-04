@@ -4,7 +4,6 @@
 	import { getMapScale } from '$routes/map/utils/map/scale';
 	import { type Map as MapLibreMap } from '$routes/map/utils/maplibre';
 	import { checkMobileWidth } from '$routes/map/utils/platform/viewport';
-	import { isModelView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 	import { isMobile, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
 
@@ -13,7 +12,7 @@
 	let scaleText = $state<string>('');
 	let map: MapLibreMap | null = null;
 	let show = $derived.by(() => {
-		if ($showLayerMenu || $showDataMenu || $showOtherMenu || $isModelView) {
+		if ($showLayerMenu || $showDataMenu || $showOtherMenu) {
 			return !checkMobileWidth();
 		}
 		return true;

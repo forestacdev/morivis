@@ -146,7 +146,8 @@
 		showInfoDialog,
 		showSearchMenu,
 		showTermsDialog,
-		isProcessing
+		isProcessing,
+		showModelView
 	} from '$routes/stores/ui';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -1273,7 +1274,9 @@
 			</div>
 
 			<!-- フッター -->
-			<Footer />
+			{#if !$showModelView}
+				<Footer />
+			{/if}
 
 			<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 
@@ -1362,7 +1365,9 @@
 				<MobileMapControl />
 			{/if}
 
-			<MobileFooter {showDataEntry} {featureMenuData} />
+			{#if !$showModelView}
+				<MobileFooter {showDataEntry} {featureMenuData} />
+			{/if}
 		</div>
 	{/if}
 {/if}

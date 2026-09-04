@@ -23,7 +23,7 @@
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import { isBBoxOverlapping } from '$routes/map/utils/map/bbox';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-	import { isModelView } from '$routes/stores';
+	import { showModelView } from '$routes/stores/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import {
 		selectedBaseMap,
@@ -245,7 +245,7 @@
 </script>
 
 <!-- レイヤーメニュー -->
-{#if $showLayerMenu && !$isModelView}
+{#if $showLayerMenu && !$showModelView}
 	<div
 		transition:fly={{
 			duration: 300,

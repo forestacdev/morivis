@@ -16,7 +16,7 @@
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
-	import { isModelView } from '$routes/stores';
+	import { showModelView } from '$routes/stores/ui';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	interface Props {
 		layerEntry: MeshEntry<MeshStyle>;
@@ -249,7 +249,7 @@
 	{/if}
 </Accordion>
 
-{#if !$isModelView}
+{#if !$showModelView}
 	<Accordion label="変形・移動" icon="gis:cube-3d" bind:value={showTransformOption}>
 		{#if canEditScale}
 			<RangeSlider
