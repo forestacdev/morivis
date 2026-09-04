@@ -622,6 +622,8 @@
 		let resolvedMtlUrl: string | undefined;
 		let resourceUrls: Record<string, string> | undefined;
 		const resourceFiles = activeFormat === 'gltf' ? gltfSupplementaryFiles : textureFiles;
+		const isLocalFbx =
+			activeFormat === 'fbx' && getModelCoordinateMode(projectedCandidateSourceBbox) === 'local';
 
 		if (resourceFiles.length > 0) {
 			resourceUrls = buildResourceUrls(resourceFiles);
@@ -631,7 +633,7 @@
 		}
 
 		const normalizeToLocalOrigin =
-			(activeFormat === 'ifc' || activeFormat === 'fbx' || activeFormat === 'gltf') &&
+			(activeFormat === 'ifc' || activeFormat === 'gltf' || (activeFormat === 'fbx' && !isLocalFbx)) &&
 			!resolvedProjectedModelEpsg;
 		const entry = createGlbEntry(
 			name,
@@ -647,6 +649,7 @@
 			supportsResourceUrls(activeFormat) ? resourceUrls : undefined,
 			{
 				...(normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : {}),
+				...(isLocalFbx ? { preserveSourceOrientation: true } : {}),
 				sourceFileName: glbFile.name
 			}
 		);

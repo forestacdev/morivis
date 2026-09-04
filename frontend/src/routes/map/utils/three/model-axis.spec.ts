@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { applyProjectedModelAxisOverride } from './model-axis';
+import { applyProjectedModelAxisOverride, getModelBaseRotationX } from './model-axis';
+
+describe('getModelBaseRotationX', () => {
+	it('ローカルFBXではCAD向けの軸回転を適用しない', () => {
+		expect(getModelBaseRotationX('fbx', true)).toBe(-180);
+	});
+
+	it('投影座標を持つFBXはCAD向けの軸回転を維持する', () => {
+		expect(getModelBaseRotationX('fbx')).toBe(90);
+	});
+});
 
 describe('applyProjectedModelAxisOverride', () => {
 	it('投影座標系を持つ OBJ は FBX と同じ軸補正に合わせる', () => {

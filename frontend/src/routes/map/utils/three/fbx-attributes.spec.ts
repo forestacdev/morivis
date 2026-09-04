@@ -92,4 +92,14 @@ describe('parseFbxModelAttributes', () => {
 
 		expect(attributes[String(modelId)]?.['項目 - GUID']).toBe('fixture-guid');
 	});
+
+	it('途中で切れたFBX属性を安全に無視する', () => {
+		const header = new Uint8Array(27);
+		header.set(new TextEncoder().encode('Kaydara FBX Binary  '));
+		header.set([0, 0x1a, 0], 20);
+		new DataView(header.buffer).setUint32(23, 7700, true);
+		const truncated = joinBytes([header, new Uint8Array(8)]).buffer;
+
+		expect(parseFbxModelAttributes(truncated)).toEqual({});
+	});
 });

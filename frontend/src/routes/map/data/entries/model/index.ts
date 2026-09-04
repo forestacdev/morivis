@@ -16,6 +16,7 @@ import type {
 } from '$routes/map/data/types/model';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';
+import { getModelBaseRotationX } from '$routes/map/utils/three/model-axis';
 import type { Table } from 'apache-arrow';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
@@ -182,14 +183,12 @@ export const createGlbEntry = (
 	resourceUrls?: Record<string, string>,
 	options?: {
 		normalizeToLocalOrigin?: boolean;
+		preserveSourceOrientation?: boolean;
 		georeference?: ProjectedModelGeoreference;
 		sourceFileName?: string;
 	}
 ): MeshEntry<MeshStyle> => {
-	// 形式ごとにローカルの up 軸が違うため、読み込み基準回転を分ける。
-	// FBX は今回の変換元では Z-up で出てくるが、描画時に Y/Z を反転しているため
-	// 基準回転は +90 度側に寄せないと上下が逆転する。
-	const baseRotationX = formatType === '3mf' ? 90 : formatType === 'fbx' ? 90 : -180;
+	const baseRotationX = getModelBaseRotationX(formatType, options?.preserveSourceOrientation);
 
 	return {
 		id: 'glb_' + crypto.randomUUID(),
