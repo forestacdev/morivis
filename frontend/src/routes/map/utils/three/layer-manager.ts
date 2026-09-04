@@ -35,7 +35,6 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { clone as cloneSkeleton } from 'three/addons/utils/SkeletonUtils.js';
 
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
@@ -155,6 +154,31 @@ interface ModelHighlight {
 	expressId?: number;
 }
 
+export interface ModelViewCameraOptions {
+	type: 'orthographic' | 'perspective';
+	position: [number, number, number];
+	direction: [number, number, number];
+	up: [number, number, number];
+	viewToWorldScale?: number;
+	fieldOfView?: number;
+}
+
+export interface ModelViewSession {
+	camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+	getTarget: () => THREE.Vector3;
+	resetView: () => void;
+	resize: () => void;
+}
+
+interface ActiveModelView {
+	entryIds: Set<string>;
+	camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+	target: THREE.Vector3;
+	highlightVisibility: Map<THREE.Object3D, boolean>;
+	modelGroupVisible: boolean;
+	previewVisible: boolean;
+}
+
 const TEXTURE_SLOT_KEYS = [
 	'map',
 	'alphaMap',
@@ -225,6 +249,7 @@ export class ThreeJsLayerManager {
 	private lastMapProjectionMatrix: THREE.Matrix4 | null = null;
 	private selectedModelHighlights: ModelHighlight[] = [];
 	private ifcPartAttributeLoads = new Map<string, Promise<number>>();
+	private activeModelView: ActiveModelView | null = null;
 
 	constructor() {
 		this.dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
@@ -1178,6 +1203,22 @@ export class ThreeJsLayerManager {
 		return hasPlayingAnimation;
 	};
 
+	private renderActiveModelView = () => {
+		if (!this.scene || !this.renderer || !this.activeModelView) return;
+
+		this.loadedModels.forEach((loaded) => {
+			loaded.object.visible =
+				this.activeModelView!.entryIds.has(loaded.entry.id) && (loaded.entry.style.visible ?? true);
+		});
+		this.renderer.resetState();
+		this.renderer.setRenderTarget(null);
+		this.renderer.setClearColor(0x101915, 1);
+		this.renderer.clear(true, true, true);
+		this.renderer.render(this.scene, this.activeModelView.camera);
+		this.renderer.setClearColor(0x000000, 0);
+		this.renderer.resetState();
+	};
+
 	/** カスタムレイヤーを作成（初期化用） */
 	createLayer(): CustomLayerInterface {
 		return {
@@ -1246,6 +1287,11 @@ export class ThreeJsLayerManager {
 				);
 				const mapProjectionMatrix = this.lastMapProjectionMatrix;
 				const hasPlayingAnimation = this.updateAnimations();
+				if (this.activeModelView) {
+					this.renderActiveModelView();
+					if (hasPlayingAnimation) this.map?.triggerRepaint();
+					return;
+				}
 
 				this.loadedModels.forEach((loaded) => {
 					if (loaded.entry.style.showThroughTerrain) return;
@@ -2029,39 +2075,137 @@ export class ThreeJsLayerManager {
 		this.modelGroup.visible = visible;
 	}
 
-	/** 地図用の投影行列を使わない、単体表示用のモデルクローンを返す。 */
-	createModelViewObject(entry: MeshEntry<MeshStyle>, includeHighlights = false): THREE.Object3D | null {
-		const loaded = this.loadedModels.get(entry.id);
-		if (!loaded) return null;
-
-		const object = cloneSkeleton(loaded.object);
-		const selectionHighlights: THREE.Object3D[] = [];
-		object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-				const clonedMaterials = materials.map((material) => material.clone());
-				mesh.material = Array.isArray(mesh.material) ? clonedMaterials : clonedMaterials[0];
-				delete mesh.userData.originalMaterials;
-			}
-			if (child.userData.morivisSelectionHighlight) {
-				selectionHighlights.push(child);
-				return;
-			}
-			child.visible = true;
-		});
-		if (!includeHighlights) {
-			selectionHighlights.forEach((highlight) => highlight.parent?.remove(highlight));
+	/** 既存の MapLibre/Three.js 描画コンテキストで単体ビューを開始する。 */
+	openModelView(
+		entryIds: string[],
+		initialCamera?: ModelViewCameraOptions,
+		includeHighlights = false
+	): ModelViewSession | null {
+		if (!this.scene || !this.renderer || !this.map || !this.modelGroup || !this.previewModelGroup) {
+			return null;
 		}
-		object.visible = entry.style.visible ?? true;
-		this.applyStyleToObject(object, entry.style, entry.format.type);
-		return object;
+		const loaded = entryIds
+			.map((entryId) => this.loadedModels.get(entryId))
+			.filter((model): model is LoadedModel => model != null);
+		if (loaded.length === 0) return null;
+
+		this.closeModelView();
+		const bounds = new THREE.Box3();
+		loaded.forEach((model) => {
+			model.object.updateWorldMatrix(true, true);
+			bounds.expandByObject(model.object);
+		});
+		if (bounds.isEmpty()) return null;
+
+		const camera: THREE.PerspectiveCamera | THREE.OrthographicCamera =
+			initialCamera?.type === 'orthographic'
+				? new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 1_000_000)
+				: new THREE.PerspectiveCamera(45, 1, 0.01, 1_000_000);
+		const activeModelView: ActiveModelView = {
+			entryIds: new Set(loaded.map((model) => model.entry.id)),
+			camera,
+			target: new THREE.Vector3(),
+			highlightVisibility: new Map(),
+			modelGroupVisible: this.modelGroup.visible,
+			previewVisible: this.previewModelGroup.visible
+		};
+		this.activeModelView = activeModelView;
+		this.modelGroup.visible = true;
+		this.previewModelGroup.visible = false;
+		loaded.forEach((model) => {
+			model.object.traverse((child) => {
+				if (!child.userData.morivisSelectionHighlight) return;
+				activeModelView.highlightVisibility.set(child, child.visible);
+				child.visible = includeHighlights;
+			});
+		});
+
+		const fitModel = () => {
+			const center = bounds.getCenter(new THREE.Vector3());
+			const size = bounds.getSize(new THREE.Vector3());
+			const largestDimension = Math.max(size.x, size.y, size.z, 1);
+			const distance = largestDimension / (2 * Math.tan(THREE.MathUtils.degToRad(45 / 2)));
+
+			camera.near = Math.max(largestDimension / 10_000, 0.001);
+			camera.far = Math.max(largestDimension * 100, 1_000);
+			camera.position.copy(center).add(new THREE.Vector3(distance, distance * 0.7, distance));
+			if (camera instanceof THREE.PerspectiveCamera) {
+				camera.fov = 45;
+			} else {
+				const halfSize = largestDimension * 0.65;
+				camera.top = halfSize;
+				camera.bottom = -halfSize;
+			}
+			activeModelView.target.copy(center);
+			this.resizeModelView();
+		};
+
+		fitModel();
+		if (initialCamera) {
+			camera.position.set(...initialCamera.position);
+			camera.up.set(...initialCamera.up);
+			activeModelView.target
+				.set(...initialCamera.position)
+				.add(new THREE.Vector3(...initialCamera.direction));
+			if (camera instanceof THREE.PerspectiveCamera && initialCamera.fieldOfView) {
+				camera.fov = initialCamera.fieldOfView;
+			}
+			if (camera instanceof THREE.OrthographicCamera && initialCamera.viewToWorldScale) {
+				const halfScale = initialCamera.viewToWorldScale / 2;
+				camera.top = halfScale;
+				camera.bottom = -halfScale;
+			}
+			this.resizeModelView();
+		}
+		this.map.triggerRepaint();
+
+		return {
+			camera,
+			getTarget: () => activeModelView.target.clone(),
+			resetView: fitModel,
+			resize: this.resizeModelView
+		};
 	}
 
-	/** 単体表示用クローンの可視状態とマテリアルを現在のスタイルで更新する。 */
-	updateModelViewStyle(object: THREE.Object3D, entry: MeshEntry<MeshStyle>): void {
-		object.visible = entry.style.visible ?? true;
-		this.applyStyleToObject(object, entry.style, entry.format.type);
+	private resizeModelView = () => {
+		const activeModelView = this.activeModelView;
+		const canvas = this.map?.getCanvas();
+		if (!activeModelView || !canvas || canvas.clientWidth === 0 || canvas.clientHeight === 0) return;
+
+		const { camera } = activeModelView;
+		const aspect = canvas.clientWidth / canvas.clientHeight;
+		if (camera instanceof THREE.PerspectiveCamera) {
+			camera.aspect = aspect;
+		} else {
+			const halfHeight = (camera.top - camera.bottom) / 2;
+			camera.left = -halfHeight * aspect;
+			camera.right = halfHeight * aspect;
+		}
+		camera.updateProjectionMatrix();
+	};
+
+	requestModelViewRepaint(): void {
+		if (this.activeModelView) this.map?.triggerRepaint();
+	}
+
+	closeModelView(): void {
+		const activeModelView = this.activeModelView;
+		if (!activeModelView) return;
+
+		activeModelView.highlightVisibility.forEach((visible, highlight) => {
+			highlight.visible = visible;
+		});
+		if (this.modelGroup) {
+			this.modelGroup.visible = activeModelView.modelGroupVisible;
+		}
+		if (this.previewModelGroup) {
+			this.previewModelGroup.visible = activeModelView.previewVisible;
+		}
+		this.loadedModels.forEach((loaded) => {
+			loaded.object.visible = loaded.entry.style.visible ?? true;
+		});
+		this.activeModelView = null;
+		this.map?.triggerRepaint();
 	}
 
 	async exportModelAsGlb(entryId: string): Promise<ArrayBuffer> {
