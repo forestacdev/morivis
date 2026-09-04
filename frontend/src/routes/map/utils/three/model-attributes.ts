@@ -19,14 +19,19 @@ const toAttributeValue = (value: unknown): ModelAttributeValue | undefined => {
 	return undefined;
 };
 
-const getUserDataAttributes = (object: THREE.Object3D): ModelAttributes =>
-	Object.fromEntries(
-		Object.entries(object.userData).flatMap(([key, value]) => {
-			if (key === 'entryId' || key === 'originalName' || key.startsWith('morivis')) return [];
+const getUserDataAttributes = (object: THREE.Object3D): ModelAttributes => {
+	const attributes: ModelAttributes = {};
+	let current: THREE.Object3D | null = object;
+	while (current) {
+		Object.entries(current.userData).forEach(([key, value]) => {
+			if (key === 'entryId' || key === 'originalName' || key.startsWith('morivis')) return;
 			const attributeValue = toAttributeValue(value);
-			return attributeValue === undefined ? [] : [[key, attributeValue]];
-		})
-	);
+			if (attributeValue !== undefined && !(key in attributes)) attributes[key] = attributeValue;
+		});
+		current = current.parent;
+	}
+	return attributes;
+};
 
 /** 形式を問わず Three.js ノード、geometry、material に付随する識別情報を返す。 */
 export const getModelObjectAttributes = (object: THREE.Object3D): ModelAttributes => {

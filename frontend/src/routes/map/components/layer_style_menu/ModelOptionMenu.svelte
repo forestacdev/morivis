@@ -73,13 +73,18 @@
 	{/if}
 
 	{#if isThreeMeshEntry(layerEntry)}
-		<button
-			class="c-btn-confirm mb-2 flex w-full items-center justify-center gap-2 rounded-lg p-2 text-sm"
-			onclick={openSingleModelView}
-		>
-			<Icon icon={isCurrentModelView ? 'material-symbols:close-rounded' : 'mdi:cube-scan'} class="h-5 w-5" />
-			{isCurrentModelView ? 'モデルビューを閉じる' : 'モデルビューで開く'}
-		</button>
+		<div class="px-4 py-3">
+			<button
+				class="c-btn-confirm flex w-full items-center justify-center gap-2 p-2 text-sm rounded-full"
+				onclick={openSingleModelView}
+			>
+				<Icon
+					icon={isCurrentModelView ? 'material-symbols:close-rounded' : 'mdi:cube-scan'}
+					class="h-5 w-5"
+				/>
+				{isCurrentModelView ? 'モデルビューを閉じる' : 'モデルビューで開く'}
+			</button>
+		</div>
 		<MeshOption bind:layerEntry bind:showColorOption bind:showDimensionOption />
 	{/if}
 {/if}

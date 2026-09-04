@@ -37,6 +37,9 @@
 		showDataEntry: MorivisLayerEntry | null;
 		focusFeature: (result: ResultData) => void;
 		hideControls?: boolean;
+		onResetModelView?: () => void;
+		modelViewFpsMode?: boolean;
+		onToggleModelViewFps?: () => void;
 	}
 
 	let {
@@ -49,7 +52,10 @@
 		selectedSearchResultData = $bindable(),
 		focusFeature,
 		showDataEntry = $bindable(),
-		hideControls = false
+		hideControls = false,
+		onResetModelView,
+		modelViewFpsMode = false,
+		onToggleModelViewFps
 	}: Props = $props();
 	const resetlayerEntries = getResetLayerEntries();
 
@@ -239,7 +245,7 @@
 	let isFocus = $state<boolean>(false); // 検索フォームがフォーカスされているかどうか
 </script>
 
-<div class="bg-main top-2 right-2 flex w-full items-center justify-between p-2 max-lg:hidden">
+<div class="bg-main relative z-20 flex w-full items-center justify-between p-2 max-lg:hidden">
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
 		<div class="flex h-full items-end justify-center gap-2"></div>
@@ -293,6 +299,32 @@
 			>
 				<Icon icon={ICONS.menu} class="h-8 w-8" />
 			</button>
+		</div>
+	{:else}
+		<div class="ml-auto flex items-center gap-2">
+			{#if onToggleModelViewFps}
+				<button
+					class="flex h-11 cursor-pointer items-center gap-2 rounded-xl border px-3 text-sm font-medium shadow-lg {modelViewFpsMode
+						? 'border-accent bg-accent text-white'
+						: 'border-white/30 bg-white/15 text-white hover:bg-white/25'}"
+					onclick={onToggleModelViewFps}
+					aria-pressed={modelViewFpsMode}
+					aria-label="FPS操作を切り替える"
+				>
+					<Icon icon="mdi:gamepad-variant-outline" class="h-5 w-5" />
+					FPS操作
+				</button>
+			{/if}
+			{#if onResetModelView}
+				<button
+					class="grid h-11 w-11 cursor-pointer place-items-center rounded-xl border border-white/30 bg-white/15 text-white shadow-lg hover:bg-white/25"
+					onclick={onResetModelView}
+					aria-label="表示を初期位置に戻す"
+					title="表示を戻す"
+				>
+					<Icon icon="mdi:fit-to-screen-outline" class="h-6 w-6" />
+				</button>
+			{/if}
 		</div>
 	{/if}
 </div>

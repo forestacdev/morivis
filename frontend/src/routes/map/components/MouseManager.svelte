@@ -524,7 +524,8 @@
 						オブジェクト名: pickedModel.objectName,
 						モデルID: pickedModel.objectId,
 						...pickedModel.attributes
-					}
+					},
+					modelPart: pickedModel.part
 				};
 				setSelectedHighlight(null);
 				return;

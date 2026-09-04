@@ -19,6 +19,20 @@ describe('getModelObjectAttributes', () => {
 		expect(attributes['マテリアル名']).toBe('concrete');
 		expect(attributes.entryId).toBeUndefined();
 	});
+
+	it('親ノードのカスタム属性を子メッシュの属性として継承する', () => {
+		const parent = new THREE.Group();
+		parent.userData = { _prop_id: 'test-component', category: 'parent' };
+		const mesh = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial());
+		mesh.userData = { category: 'child' };
+		parent.add(mesh);
+
+		const attributes = getModelObjectAttributes(mesh);
+
+		expect(attributes._prop_id).toBe('test-component');
+		expect(attributes.category).toBe('child');
+	});
+
 });
 
 describe('getIfcAttributes', () => {

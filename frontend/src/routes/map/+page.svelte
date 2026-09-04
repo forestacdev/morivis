@@ -249,6 +249,8 @@
 	// 地物情報のデータ
 	let featureMenuData = $state<FeatureMenuData | null>(null);
 	let highlightMarkerState = $state<HighlightMarkerState | null>(null);
+	let resetModelView = $state<(() => void) | null>(null);
+	let modelViewFpsMode = $state(false);
 
 	// 選択マーカー
 	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
@@ -685,6 +687,7 @@
 		return Object.entries(displayProps).some(
 			([key, value]) =>
 				key !== '_prop_id' &&
+				key !== '_part_id' &&
 				value !== '' &&
 				value !== null &&
 				value !== undefined &&
@@ -871,8 +874,19 @@
 				オブジェクト名: picked.objectName,
 				モデルID: picked.objectId,
 				...picked.attributes
-			}
+			},
+			modelPart: picked.part
 		};
+	};
+
+	const setModelViewReset = (resetView: (() => void) | null) => {
+		resetModelView = resetView;
+	};
+	const toggleModelViewFps = () => {
+		modelViewFpsMode = !modelViewFpsMode;
+	};
+	const setModelViewFpsMode = (enabled: boolean) => {
+		modelViewFpsMode = enabled;
 	};
 
 	// streetビューの表示切り替え時
@@ -1249,6 +1263,9 @@
 						bind:showDataEntry
 						{focusFeature}
 						hideControls={$showModelView}
+						onResetModelView={resetModelView ?? undefined}
+						modelViewFpsMode={modelViewFpsMode}
+						onToggleModelViewFps={toggleModelViewFps}
 					/>
 
 					<div class="min-h-0 flex-1">
@@ -1372,7 +1389,10 @@
 						entries={modelViewEntries}
 						initialCamera={$modelViewRequest?.camera}
 						includeHighlights={$modelViewRequest?.includeHighlights ?? false}
+						fpsMode={modelViewFpsMode}
 						onModelPicked={showModelAttributes}
+						onResetViewChange={setModelViewReset}
+						onFpsModeChange={setModelViewFpsMode}
 					/>
 				{/key}
 			{/if}

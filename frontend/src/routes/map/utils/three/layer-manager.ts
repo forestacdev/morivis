@@ -27,6 +27,7 @@ import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import type { ModelPartData } from '$routes/map/data/types/model';
 import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import * as THREE from 'three';
@@ -38,6 +39,9 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
+const MODEL_VIEW_FPS_MOVEMENT_SPEED_DIVISOR = 5;
+const MODEL_VIEW_FPS_MIN_MOVEMENT_SPEED = 1;
+const MODEL_VIEW_INITIAL_CAMERA_DISTANCE_SCALE = 0.75;
 let rhino3dmLoaderModulePromise: Promise<
 	typeof import('three/addons/loaders/3DMLoader.js')
 > | null = null;
@@ -144,6 +148,7 @@ export interface PickedModelFeature {
 	objectId: string;
 	objectName: string;
 	attributes: ModelAttributes;
+	part?: ModelPartData;
 }
 
 interface ModelHighlight {
@@ -166,6 +171,7 @@ export interface ModelViewCameraOptions {
 export interface ModelViewSession {
 	camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
 	canvas: HTMLCanvasElement;
+	movementSpeed: number;
 	getTarget: () => THREE.Vector3;
 	resetView: () => void;
 	resize: () => void;
@@ -852,16 +858,39 @@ export class ThreeJsLayerManager {
 		return geometry;
 	};
 
-	private highlightModelMesh = (mesh: THREE.Mesh, expressId?: number) => {
+	private getModelPartNode = (object: THREE.Object3D) => {
+		let current: THREE.Object3D | null = object;
+		while (current) {
+			const partId = current.userData._part_id ?? current.userData._prop_id;
+			if (typeof partId === 'string' && partId) return { id: partId, object: current };
+			current = current.parent;
+		}
+		return undefined;
+	};
+
+	private getModelPartId = (object: THREE.Object3D) => this.getModelPartNode(object)?.id;
+
+	private getModelPartMeshes = (mesh: THREE.Mesh) => {
+		const partNode = this.getModelPartNode(mesh)?.object;
+		if (!partNode) return [mesh];
+		const partMeshes: THREE.Mesh[] = [];
+		partNode.traverse((child) => {
+			if ((child as THREE.Mesh).isMesh) partMeshes.push(child as THREE.Mesh);
+		});
+		return partMeshes.length > 0 ? partMeshes : [mesh];
+	};
+
+	private highlightModelMeshes = (meshes: THREE.Mesh[], expressId?: number) => {
 		if (
-			this.selectedModelHighlights.length === 1 &&
-			this.selectedModelHighlights[0].mesh === mesh &&
-			this.selectedModelHighlights[0].expressId === expressId
+			this.selectedModelHighlights.length === meshes.length &&
+			this.selectedModelHighlights.every(
+				(highlight, index) => highlight.mesh === meshes[index] && highlight.expressId === expressId
+			)
 		) {
 			return;
 		}
 		this.clearModelHighlight();
-		this.addModelHighlight(mesh, expressId);
+		meshes.forEach((mesh) => this.addModelHighlight(mesh, expressId));
 		this.map?.triggerRepaint();
 	};
 
@@ -2098,6 +2127,8 @@ export class ThreeJsLayerManager {
 			bounds.expandByObject(model.object);
 		});
 		if (bounds.isEmpty()) return null;
+		const modelSize = bounds.getSize(new THREE.Vector3());
+		const largestDimension = Math.max(modelSize.x, modelSize.y, modelSize.z, 1);
 
 		const camera: THREE.PerspectiveCamera | THREE.OrthographicCamera =
 			initialCamera?.type === 'orthographic'
@@ -2124,9 +2155,9 @@ export class ThreeJsLayerManager {
 
 		const fitModel = () => {
 			const center = bounds.getCenter(new THREE.Vector3());
-			const size = bounds.getSize(new THREE.Vector3());
-			const largestDimension = Math.max(size.x, size.y, size.z, 1);
-			const distance = largestDimension / (2 * Math.tan(THREE.MathUtils.degToRad(45 / 2)));
+			const distance =
+				(largestDimension / (2 * Math.tan(THREE.MathUtils.degToRad(45 / 2)))) *
+				MODEL_VIEW_INITIAL_CAMERA_DISTANCE_SCALE;
 
 			camera.near = Math.max(largestDimension / 10_000, 0.001);
 			camera.far = Math.max(largestDimension * 100, 1_000);
@@ -2164,6 +2195,10 @@ export class ThreeJsLayerManager {
 		return {
 			camera,
 			canvas,
+			movementSpeed: Math.max(
+				largestDimension / MODEL_VIEW_FPS_MOVEMENT_SPEED_DIVISOR,
+				MODEL_VIEW_FPS_MIN_MOVEMENT_SPEED
+			),
 			getTarget: () => activeModelView.target.clone(),
 			resetView: fitModel,
 			resize: this.resizeModelView
@@ -2355,12 +2390,22 @@ export class ThreeJsLayerManager {
 			loaded.entry.format.type === 'fbx' ? fbxAttributeObject.object : hit.object;
 		const objectId =
 			expressId ?? (attributeObject as THREE.Object3D & { ID?: number }).ID ?? attributeObject.id;
-		this.highlightModelMesh(hit.object as THREE.Mesh, expressId);
+		const hitMesh = hit.object as THREE.Mesh;
+		const partId = this.getModelPartId(hit.object);
+		const part = partId ? loaded.entry.properties?.detailsById?.[partId] : undefined;
+		this.highlightModelMeshes(
+			expressId == null ? this.getModelPartMeshes(hitMesh) : [hitMesh],
+			expressId
+		);
+		const attributes = { ...getModelObjectAttributes(hit.object), ...formatAttributes, ...part?.attributes };
+		delete attributes._prop_id;
+		if (partId) attributes._part_id = partId;
 		return {
 			entryId: loaded.entry.id,
 			objectId: String(objectId),
 			objectName: this.resolvePickedObjectName(attributeObject, loaded.object),
-			attributes: { ...getModelObjectAttributes(hit.object), ...formatAttributes }
+			attributes,
+			part
 		};
 	};
 

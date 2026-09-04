@@ -114,8 +114,7 @@ export const propData: PropData = {
 				url: `${FEATURE_IMAGE_BASE_PATH}/fac_center/01.webp`
 			}
 		],
-		description:
-			`アカデミーの玄関であるエントランスホールからテクニカルゾーン、宿泊ゾーン、森の体験ゾーンへと繋がっていきます。
+		description: `アカデミーの玄関であるエントランスホールからテクニカルゾーン、宿泊ゾーン、森の体験ゾーンへと繋がっていきます。
                         ここには講義室や事務室、ゆったりとした学生ホールなどを備えています。`,
 		url: 'https://www.forest.ac.jp/facilities/centerzone/'
 	},
@@ -126,8 +125,7 @@ export const propData: PropData = {
 				url: `${FEATURE_IMAGE_BASE_PATH}/fac_cottage/01.webp`
 			}
 		],
-		description:
-			`ゲストや研修・講座受講者のための宿泊施設六角形ユニットで構成され、大小様々な部屋が15部屋あり、最大30人が利用できます。
+		description: `ゲストや研修・講座受講者のための宿泊施設六角形ユニットで構成され、大小様々な部屋が15部屋あり、最大30人が利用できます。
                         厨房、食堂、洗面所、共同浴室、談話室も備えています。`,
 		url: 'https://www.forest.ac.jp/facilities/stay/'
 	},
@@ -169,8 +167,7 @@ export const propData: PropData = {
 				url: `${FEATURE_IMAGE_BASE_PATH}/fac_koubou/01.webp`
 			}
 		],
-		description:
-			`一般県民向けの木工講座などをサポートする施設工作に関するさまざまな木工機械などを備えています`,
+		description: `一般県民向けの木工講座などをサポートする施設工作に関するさまざまな木工機械などを備えています`,
 		url: 'https://www.forest.ac.jp/facilities/testroom/'
 	},
 	fac_morinos: {
@@ -184,8 +181,7 @@ export const propData: PropData = {
 				id: 'FkFaESLWENI'
 			}
 		],
-		description:
-			`すべての人と森をつなぎ、森と暮らす楽しさと森林文化の豊かさを次世代に伝えていく「森の入り口」森林総合教育センターです。`,
+		description: `すべての人と森をつなぎ、森と暮らす楽しさと森林文化の豊かさを次世代に伝えていく「森の入り口」森林総合教育センターです。`,
 		url: 'https://morinos.net/'
 	},
 	fac_open_labo: {
@@ -246,8 +242,7 @@ export const propData: PropData = {
 				url: `${FEATURE_IMAGE_BASE_PATH}/fac_tech_a/01.webp`
 			}
 		],
-		description:
-			`研修施設と高性能林業機械の保管庫を備える施設前面の広大な実習用グラウンドと合わせて森林技術者のための短期技術研修部門のエリア、テクニカルゾーンを構成します。`,
+		description: `研修施設と高性能林業機械の保管庫を備える施設前面の広大な実習用グラウンドと合わせて森林技術者のための短期技術研修部門のエリア、テクニカルゾーンを構成します。`,
 		url: 'https://www.forest.ac.jp/facilities/technicalzone/'
 	},
 	fac_tech_b: {
@@ -257,8 +252,7 @@ export const propData: PropData = {
 				url: `${FEATURE_IMAGE_BASE_PATH}/fac_tech_b/01.webp`
 			}
 		],
-		description:
-			`研修施設と高性能林業機械の保管庫を備える施設前面の広大な実習用グラウンドと合わせて森林技術者のための短期技術研修部門のエリア、テクニカルゾーンを構成します。`,
+		description: `研修施設と高性能林業機械の保管庫を備える施設前面の広大な実習用グラウンドと合わせて森林技術者のための短期技術研修部門のエリア、テクニカルゾーンを構成します。`,
 		url: 'https://www.forest.ac.jp/facilities/technicalzone/'
 	},
 	fac_information: {
@@ -763,8 +757,7 @@ export const propData: PropData = {
 				url: `${FEATURE_IMAGE_BASE_PATH}/oosugi/01.webp`
 			}
 		],
-		description:
-			'樹齢約100年のヒノキ林に混在する大径のスギ。このスギにオオタカが毎年営巣する。',
+		description: '樹齢約100年のヒノキ林に混在する大径のスギ。このスギにオオタカが毎年営巣する。',
 		url: null
 	},
 	sumiyakigoya: {

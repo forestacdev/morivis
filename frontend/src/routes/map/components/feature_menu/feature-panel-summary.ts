@@ -259,6 +259,31 @@ export const getLayerFeaturePanelSummary = async (
 	featureMenuData: FeatureMenuData,
 	layerEntries: MorivisLayerEntry[]
 ): Promise<FeaturePanelSummaryData | null> => {
+	const modelPart = featureMenuData.modelPart;
+	if (modelPart) {
+		return {
+			title: modelPart.name,
+			media: modelPart.imageUrl
+				? [
+						{
+							type: 'image',
+							url: modelPart.imageUrl,
+							alt: modelPart.name,
+							source: 'static',
+							fit: 'cover'
+						}
+					]
+				: undefined,
+			description: modelPart.description
+				? {
+						text: modelPart.description,
+						source: 'static',
+						linkUrl: modelPart.url,
+						linkLabel: modelPart.url ? '詳細を見る' : undefined
+					}
+				: undefined
+		};
+	}
 	const targetLayer = layerEntries.find((entry) => entry.id === featureMenuData.layerId) ?? null;
 	const data = featureMenuData.properties
 		? propData[featureMenuData.properties._prop_id as string]

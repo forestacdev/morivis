@@ -7,6 +7,7 @@ import type {
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { ColorsStyle } from '$routes/map/data/types/vector/style';
 import type { FeatureCollection } from '$routes/map/types/geojson';
+import type { ModelAttributes } from '$routes/map/utils/three/model-attributes';
 import type { Table } from 'apache-arrow';
 
 interface ModelMetaData extends BaseMetaData {
@@ -36,6 +37,15 @@ export interface IfcPartColorProfile {
 
 export type IfcExtractionProfile = IfcPartColorProfile;
 
+/** GLB の _part_id で参照する、モデルentry内の部材詳細。 */
+export interface ModelPartData {
+	name: string;
+	description?: string;
+	url?: string;
+	imageUrl?: string;
+	attributes?: ModelAttributes;
+}
+
 interface BaseModelEntry {
 	id: string;
 	type: 'model';
@@ -48,6 +58,8 @@ interface BaseModelEntry {
 		ifc?: {
 			extractionProfiles: IfcExtractionProfile[];
 		};
+		/** GLB のノードに付与した _part_id ごとの詳細情報。 */
+		detailsById?: Record<string, ModelPartData>;
 	};
 	interaction: {
 		clickable: boolean;

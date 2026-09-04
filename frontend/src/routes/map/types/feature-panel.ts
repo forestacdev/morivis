@@ -1,4 +1,5 @@
 import type { FeatureProp } from '$routes/map/types/properties';
+import type { ModelPartData } from '$routes/map/data/types/model';
 import type {
 	ResultAddressData,
 	ResultCoordinateData,
@@ -17,6 +18,7 @@ export interface FeatureMenuData {
 	properties: FeatureProp | null;
 	featureId: string | number;
 	layerId: string;
+	modelPart?: ModelPartData;
 }
 
 export type LayerFeaturePanelData = FeatureMenuData & {
