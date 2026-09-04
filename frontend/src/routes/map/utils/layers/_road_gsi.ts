@@ -276,6 +276,7 @@ export const roadLineLayers: LineLayerSpecification[] = [
 		source: 'v',
 		'source-layer': 'RdCL',
 		minzoom: 11,
+		maxzoom: 24,
 		filter: [
 			'step',
 			['zoom'],

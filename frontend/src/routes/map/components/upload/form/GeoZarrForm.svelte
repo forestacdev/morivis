@@ -190,6 +190,7 @@
 					tileSize: 256,
 					bounds: metadata.bbox,
 					minZoom: 0,
+					maxZoom: 24,
 					xyzImageTile: findCenterTile(metadata.bbox)
 				},
 				properties: {

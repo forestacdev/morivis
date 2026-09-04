@@ -195,6 +195,7 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線駅ククリ',
 		minzoom: 11,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -212,6 +213,7 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線',
 		minzoom: 11,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -225,6 +227,7 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線旗竿',
 		minzoom: 14,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -246,6 +249,7 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線橋ククリ',
 		minzoom: 14,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -261,6 +265,7 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線地下トンネルククリ',
 		minzoom: 11,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -303,6 +308,7 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線地下トンネル',
 		minzoom: 11,
+		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',

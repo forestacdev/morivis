@@ -504,6 +504,7 @@
 				tileSize: 256,
 				bounds: resolvedBbox,
 				minZoom: 0,
+				maxZoom: 24,
 				xyzImageTile: findCenterTile(resolvedBbox)
 			},
 			properties: {

@@ -62,8 +62,8 @@ export const createOutLineLayer = (layer: LayerItem, style: PolygonStyle) => {
 			['zoom'],
 			0,
 			baseWidth * Math.pow(2, 0 - baseZoom),
-			25,
-			baseWidth * Math.pow(2, 25 - baseZoom)
+			24,
+			baseWidth * Math.pow(2, 24 - baseZoom)
 		];
 	};
 

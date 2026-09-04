@@ -106,6 +106,7 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 		type: 'raster',
 		source: 'base_seamlessphoto',
 		minzoom: 8,
+		maxzoom: 24,
 		paint: {
 			'raster-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0, 9, 0.9],
 			'raster-brightness-min': 0,
@@ -117,6 +118,7 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 	// 	id: 'base_gsi_rinya_m',
 	// 	source: 'base_gsi_rinya_m',
 	// 	type: 'raster',
+	// 	maxzoom: 24,
 	// 	minzoom: 12,
 	// 	paint: {
 	// 		'raster-opacity': 0.9,
@@ -144,6 +146,7 @@ export const baseMapReliefLayers: RasterLayerSpecification[] = [
 	{
 		id: 'relief_layer',
 		source: 'relief',
+		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',
 		paint: {
@@ -218,6 +221,7 @@ export const baseMapSlopeLayers: RasterLayerSpecification[] = [
 	{
 		id: 'slope_layer',
 		source: 'slope',
+		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',
 		paint: {
@@ -244,6 +248,7 @@ export const baseMapAspectLayers: RasterLayerSpecification[] = [
 	{
 		id: 'aspect_layer',
 		source: 'aspect',
+		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',
 		paint: {
@@ -270,6 +275,7 @@ export const baseMapCurvatureLayers: RasterLayerSpecification[] = [
 	{
 		id: 'curvature_layer',
 		source: 'curvature',
+		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',
 		paint: {
@@ -285,6 +291,7 @@ export const baseMapOsmSources: Record<string, RasterSourceSpecification> = {
 		tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
 		tileSize: 256,
 		minzoom: 0,
+		maxzoom: 24,
 		attribution: '© OpenStreetMap contributors'
 	}
 };
@@ -295,6 +302,7 @@ export const baseMapOsmLayers: (RasterLayerSpecification | BackgroundLayerSpecif
 		source: 'osm',
 		type: 'raster',
 		minzoom: 0,
+		maxzoom: 24,
 		paint: {
 			'raster-opacity': 0.9,
 			'raster-brightness-min': 0,

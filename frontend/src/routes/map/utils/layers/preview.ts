@@ -38,6 +38,7 @@ export const previewBaseLayers: LayerSpecification[] = [
 	// 	id: 'preview_base_layer_1',
 	// 	source: 'preview_base_1',
 	// 	type: 'raster',
+	// 	maxzoom: 24,
 	// 	paint: {
 	// 		'raster-opacity': 1.0,
 	// 		'raster-brightness-max': 0,
@@ -658,6 +659,7 @@ export const previewBaseLayers: LayerSpecification[] = [
 		source: 'v',
 		'source-layer': 'Cntr',
 		minzoom: 7,
+		maxzoom: 24,
 		layout: {
 			'line-cap': 'round',
 			'line-join': 'round'

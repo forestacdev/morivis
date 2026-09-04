@@ -16,6 +16,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		location: '不明',
 		tags: [],
 		minZoom: 1,
+		maxZoom: 24,
 		tileSize: 256,
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
 		downloadUrl: '',

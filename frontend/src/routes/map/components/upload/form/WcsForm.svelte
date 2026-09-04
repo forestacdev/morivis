@@ -230,6 +230,7 @@
 					tileSize: 512,
 					bounds: resolvedBounds,
 					minZoom: 0,
+					maxZoom: 24,
 					xyzImageTile: findCenterTile(resolvedBounds)
 				},
 				...(rangeSummary && {
