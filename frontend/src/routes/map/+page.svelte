@@ -72,6 +72,7 @@
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import type { PickedModelFeature } from '$routes/map/utils/three/layer-manager';
 	import type {
 		MorivisRasterEntry,
 		RasterDemStyle,
@@ -860,6 +861,20 @@
 		showSelectionMarker = false;
 	};
 
+	const showModelAttributes = (picked: PickedModelFeature) => {
+		const center = mapStore.getMap()?.getCenter();
+		featureMenuData = {
+			layerId: picked.entryId,
+			featureId: picked.objectId,
+			point: center ? [center.lng, center.lat] : [0, 0],
+			properties: {
+				オブジェクト名: picked.objectName,
+				モデルID: picked.objectId,
+				...picked.attributes
+			}
+		};
+	};
+
 	// streetビューの表示切り替え時
 	isStreetView.subscribe(async (value) => {
 		if (!streetViewPoint) return;
@@ -1223,17 +1238,19 @@
 				<div class="flex w-full flex-1 flex-col overflow-hidden">
 					<!-- 上部余白 -->
 					<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
-					<HeaderMenu
-						{layerEntries}
-						bind:inputSearchWord
-						bind:featureMenuData
-						bind:selectedSearchResultData
-						bind:searchResults
-						bind:showSelectionMarker
-						bind:selectionMarkerLngLat
-						bind:showDataEntry
-						{focusFeature}
-					/>
+					{#if !$showModelView}
+						<HeaderMenu
+							{layerEntries}
+							bind:inputSearchWord
+							bind:featureMenuData
+							bind:selectedSearchResultData
+							bind:searchResults
+							bind:showSelectionMarker
+							bind:selectionMarkerLngLat
+							bind:showDataEntry
+							{focusFeature}
+						/>
+					{/if}
 
 					<MapLibreMap
 						bind:maplibreMap={map}
@@ -1356,6 +1373,7 @@
 						entries={modelViewEntries}
 						initialCamera={$modelViewRequest?.camera}
 						includeHighlights={$modelViewRequest?.includeHighlights ?? false}
+						onModelPicked={showModelAttributes}
 					/>
 				{/key}
 			{/if}

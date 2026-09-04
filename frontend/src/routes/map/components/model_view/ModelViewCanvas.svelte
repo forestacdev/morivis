@@ -6,18 +6,20 @@
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import {
 		threeJsManager,
+		type PickedModelFeature,
 		type ModelViewSession
 	} from '$routes/map/utils/three/layer-manager';
 	import { closeModelView, type ModelViewCamera } from '$routes/stores';
 
 	interface Props {
-		entries: MeshEntry<MeshStyle>[];
-		initialCamera?: ModelViewCamera;
-		includeHighlights?: boolean;
-	}
+	entries: MeshEntry<MeshStyle>[];
+	initialCamera?: ModelViewCamera;
+	includeHighlights?: boolean;
+	onModelPicked?: (picked: PickedModelFeature) => void;
+}
 
-	let { entries, initialCamera, includeHighlights = false }: Props = $props();
-	let interactionTarget = $state<HTMLDivElement>();
+let { entries, initialCamera, includeHighlights = false, onModelPicked }: Props = $props();
+let interactionTarget = $state<HTMLButtonElement>();
 	let isLoading = $state(true);
 	let errorMessage = $state<string | null>(null);
 	let resetView: () => void = () => {};
@@ -30,6 +32,25 @@
 		if (event.key === 'Escape') close();
 	};
 
+	let pointerDownPosition: { x: number; y: number } | null = null;
+	const onPointerDown = (event: PointerEvent) => {
+		if (event.button === 0) pointerDownPosition = { x: event.clientX, y: event.clientY };
+	};
+	const onModelClick = async (event: MouseEvent) => {
+		const pointerDown = pointerDownPosition;
+		pointerDownPosition = null;
+		if (!pointerDown || Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y) > 4) {
+			return;
+		}
+		const picked = await threeJsManager.pickModelInActiveView({
+			clientX: event.clientX,
+			clientY: event.clientY
+		});
+		if (picked) {
+			onModelPicked?.(picked);
+			threeJsManager.requestModelViewRepaint();
+		}
+	};
 	onMount(() => {
 		if (!interactionTarget) return;
 		const session: ModelViewSession | null = threeJsManager.openModelView(
@@ -88,7 +109,14 @@
 	class="pointer-events-none fixed inset-0 z-0 overflow-hidden text-white"
 	aria-label="3Dモデルビュー"
 >
-	<div bind:this={interactionTarget} class="pointer-events-auto absolute inset-0 touch-none"></div>
+	<button
+		type="button"
+		bind:this={interactionTarget}
+		class="pointer-events-auto absolute inset-0 cursor-pointer border-0 bg-transparent p-0 touch-none"
+		aria-label="3Dモデル操作領域"
+		onpointerdown={onPointerDown}
+		onclick={onModelClick}
+	></button>
 
 	<div class="pointer-events-none absolute top-0 right-0 z-10 p-3 lg:p-5">
 		<button

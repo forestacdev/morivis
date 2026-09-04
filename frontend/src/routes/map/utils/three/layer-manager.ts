@@ -2325,6 +2325,79 @@ export class ThreeJsLayerManager {
 		return Array.from(this.loadedModels.keys());
 	}
 
+	private createPickedModelFeature = async (
+		loaded: LoadedModel,
+		hit: THREE.Intersection<THREE.Object3D>
+	): Promise<PickedModelFeature> => {
+		const fbxAttributeObject = this.getFbxAttributeObject(hit.object);
+		const expressId =
+			loaded.entry.format.type === 'ifc' ? this.getIfcExpressId(loaded.object, hit) : undefined;
+		let formatAttributes: ModelAttributes = Object.fromEntries(
+			Object.entries(fbxAttributeObject.attributes ?? {}).map(([key, value]) => [
+				key,
+				Array.isArray(value) ? value.join(', ') : value
+			])
+		);
+		if (loaded.resolveAttributes) {
+			try {
+				formatAttributes = {
+					...formatAttributes,
+					...(await loaded.resolveAttributes(hit))
+				};
+			} catch (error) {
+				console.warn('[モデル属性] 形式固有属性の取得に失敗しました', error);
+			}
+		}
+		const attributeObject =
+			loaded.entry.format.type === 'fbx' ? fbxAttributeObject.object : hit.object;
+		const objectId =
+			expressId ?? (attributeObject as THREE.Object3D & { ID?: number }).ID ?? attributeObject.id;
+		this.highlightModelMesh(hit.object as THREE.Mesh, expressId);
+		return {
+			entryId: loaded.entry.id,
+			objectId: String(objectId),
+			objectName: this.resolvePickedObjectName(attributeObject, loaded.object),
+			attributes: { ...getModelObjectAttributes(hit.object), ...formatAttributes }
+		};
+	};
+
+	async pickModelInActiveView(
+		point: { clientX: number; clientY: number }
+	): Promise<PickedModelFeature | null> {
+		const activeModelView = this.activeModelView;
+		const canvas = this.map?.getCanvas();
+		if (!activeModelView || !canvas) return null;
+
+		const rect = canvas.getBoundingClientRect();
+		if (rect.width === 0 || rect.height === 0) return null;
+		const raycaster = new THREE.Raycaster();
+		raycaster.setFromCamera(
+			new THREE.Vector2(
+				((point.clientX - rect.left) / rect.width) * 2 - 1,
+				1 - ((point.clientY - rect.top) / rect.height) * 2
+			),
+			activeModelView.camera
+		);
+		const targetEntries = Array.from(this.loadedModels.values()).filter(
+			(loaded) =>
+				activeModelView.entryIds.has(loaded.entry.id) &&
+				CLICKABLE_MODEL_FORMATS.has(loaded.entry.format.type) &&
+				(loaded.entry.style.visible ?? true)
+		);
+		let closest: { loaded: LoadedModel; hit: THREE.Intersection<THREE.Object3D> } | null = null;
+		for (const loaded of targetEntries) {
+			const hit = raycaster
+				.intersectObject(loaded.object, true)
+				.find((intersection) => !intersection.object.userData.morivisSelectionHighlight);
+			if (hit && (!closest || hit.distance < closest.hit.distance)) {
+				closest = { loaded, hit };
+			}
+		}
+		if (!closest) return null;
+
+		return this.createPickedModelFeature(closest.loaded, closest.hit);
+	}
+
 	async pickModel(point: { x: number; y: number }): Promise<PickedModelFeature | null> {
 		if (!import.meta.env.PROD) console.info('[モデル pick] 開始', { point });
 		if (!this.map || !this.lastMapProjectionMatrix) {
@@ -2411,37 +2484,7 @@ export class ThreeJsLayerManager {
 			}
 			return null;
 		}
-		const { loaded, hit } = closest;
-		const fbxAttributeObject = this.getFbxAttributeObject(hit.object);
-		const expressId =
-			loaded.entry.format.type === 'ifc' ? this.getIfcExpressId(loaded.object, hit) : undefined;
-		let formatAttributes: ModelAttributes = Object.fromEntries(
-			Object.entries(fbxAttributeObject.attributes ?? {}).map(([key, value]) => [
-				key,
-				Array.isArray(value) ? value.join(', ') : value
-			])
-		);
-		if (loaded.resolveAttributes) {
-			try {
-				formatAttributes = {
-					...formatAttributes,
-					...(await loaded.resolveAttributes(hit))
-				};
-			} catch (error) {
-				console.warn('[モデル属性] 形式固有属性の取得に失敗しました', error);
-			}
-		}
-		const attributeObject =
-			loaded.entry.format.type === 'fbx' ? fbxAttributeObject.object : hit.object;
-		const objectId =
-			expressId ?? (attributeObject as THREE.Object3D & { ID?: number }).ID ?? attributeObject.id;
-		this.highlightModelMesh(hit.object as THREE.Mesh, expressId);
-		return {
-			entryId: loaded.entry.id,
-			objectId: String(objectId),
-			objectName: this.resolvePickedObjectName(attributeObject, loaded.object),
-			attributes: { ...getModelObjectAttributes(hit.object), ...formatAttributes }
-		};
+		return this.createPickedModelFeature(closest.loaded, closest.hit);
 	}
 }
 
