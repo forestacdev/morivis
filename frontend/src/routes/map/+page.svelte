@@ -1238,62 +1238,61 @@
 				<div class="flex w-full flex-1 flex-col overflow-hidden">
 					<!-- 上部余白 -->
 					<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->
-					{#if !$showModelView}
-						<HeaderMenu
-							{layerEntries}
-							bind:inputSearchWord
-							bind:featureMenuData
-							bind:selectedSearchResultData
-							bind:searchResults
-							bind:showSelectionMarker
-							bind:selectionMarkerLngLat
-							bind:showDataEntry
-							{focusFeature}
-						/>
-					{/if}
-
-					<MapLibreMap
-						bind:maplibreMap={map}
-						bind:layerEntries
-						bind:tempLayerEntries
-						bind:showDataEntry
+					<HeaderMenu
+						{layerEntries}
+						bind:inputSearchWord
 						bind:featureMenuData
-						bind:highlightMarkerState
+						bind:selectedSearchResultData
+						bind:searchResults
 						bind:showSelectionMarker
 						bind:selectionMarkerLngLat
-						bind:showAngleMarker
-						bind:angleMarkerLngLat
-						bind:cameraBearing
-						bind:dropFile
-						bind:showDialogType
-						bind:drawGeojsonData
-						{transformOptionMode}
-						bind:focusBbox
-						bind:isExternalCameraUpdate
-						bind:selectedSearchId
-						bind:selectedSearchResultData
-						bind:contextMenuState
-						bind:isDragover
-						{geoRefPreviewData}
-						previewOpacity={geoRefPreviewOpacity}
-						{searchResults}
-						{selectedEpsgCode}
-						{zoneBboxGeojsonData}
-						{streetViewLineData}
-						{streetViewPointData}
-						{showMapCanvas}
-						{searchGeojsonData}
+						bind:showDataEntry
 						{focusFeature}
+						hideControls={$showModelView}
 					/>
+
+					<div class="min-h-0 flex-1">
+						<MapLibreMap
+							bind:maplibreMap={map}
+							bind:layerEntries
+							bind:tempLayerEntries
+							bind:showDataEntry
+							bind:featureMenuData
+							bind:highlightMarkerState
+							bind:showSelectionMarker
+							bind:selectionMarkerLngLat
+							bind:showAngleMarker
+							bind:angleMarkerLngLat
+							bind:cameraBearing
+							bind:dropFile
+							bind:showDialogType
+							bind:drawGeojsonData
+							{transformOptionMode}
+							bind:focusBbox
+							bind:isExternalCameraUpdate
+							bind:selectedSearchId
+							bind:selectedSearchResultData
+							bind:contextMenuState
+							bind:isDragover
+							{geoRefPreviewData}
+							previewOpacity={geoRefPreviewOpacity}
+							{searchResults}
+							{selectedEpsgCode}
+							{zoneBboxGeojsonData}
+							{streetViewLineData}
+							{streetViewPointData}
+							{showMapCanvas}
+							{searchGeojsonData}
+							{focusFeature}
+						/>
+					</div>
 				</div>
 				<!-- 右側余白 -->
 				<div class="bg-main p-2 max-lg:hidden"></div>
 			</div>
 
 			<!-- フッター -->
-			{#if !$showModelView}
-				<Footer />
-			{/if}
+			<Footer />
 
 			<LayerStyleMenu bind:layerEntry={isStyleEditEntry} bind:tempLayerEntries />
 
@@ -1383,9 +1382,7 @@
 				<MobileMapControl />
 			{/if}
 
-			{#if !$showModelView}
-				<MobileFooter {showDataEntry} {featureMenuData} />
-			{/if}
+			<MobileFooter {showDataEntry} {featureMenuData} />
 		</div>
 	{/if}
 {/if}

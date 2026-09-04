@@ -36,6 +36,7 @@
 		searchResults: ResultData[] | null;
 		showDataEntry: MorivisLayerEntry | null;
 		focusFeature: (result: ResultData) => void;
+		hideControls?: boolean;
 	}
 
 	let {
@@ -47,7 +48,8 @@
 		searchResults = $bindable(),
 		selectedSearchResultData = $bindable(),
 		focusFeature,
-		showDataEntry = $bindable()
+		showDataEntry = $bindable(),
+		hideControls = false
 	}: Props = $props();
 	const resetlayerEntries = getResetLayerEntries();
 
@@ -242,79 +244,83 @@
 	<div class="flex h-full items-center gap-4 pl-2">
 		<div class="flex h-full items-end justify-center gap-2"></div>
 	</div>
-	<!-- 中央 -->
-	{#if !$showDataMenu}
-		<div
-			bind:this={searchContainerRef}
-			class="relative flex max-w-[400px] flex-1 items-center rounded-full border transition-[border-color,filter] duration-150 {showDataEntry
-				? 'pointer-events-none opacity-0'
-				: ''} {isFocus ? 'border-accent set-glow' : 'border-sub'}"
-		>
-			<Geocoder
-				{layerEntries}
-				bind:searchResults
-				{searchSuggests}
-				bind:inputSearchWord
-				searchFeature={(v) => searchFeature(v)}
-				bind:isFocus
-			/>
-
-			<button
-				onclick={() => {
-					if (inputSearchWord) {
-						searchFeature(inputSearchWord);
-					}
-				}}
-				disabled={$isProcessing}
-				class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full bg-black p-2 px-4 text-base transition-colors delay-100 duration-100"
+	{#if !hideControls}
+		<!-- 中央 -->
+		{#if !$showDataMenu}
+			<div
+				bind:this={searchContainerRef}
+				class="relative flex max-w-[400px] flex-1 items-center rounded-full border transition-[border-color,filter] duration-150 {showDataEntry
+					? 'pointer-events-none opacity-0'
+					: ''} {isFocus ? 'border-accent set-glow' : 'border-sub'}"
 			>
-				<Icon icon={ICONS.search} class="transition-[width, height] h-6 w-6 duration-100" />
+				<Geocoder
+					{layerEntries}
+					bind:searchResults
+					{searchSuggests}
+					bind:inputSearchWord
+					searchFeature={(v) => searchFeature(v)}
+					bind:isFocus
+				/>
+
+				<button
+					onclick={() => {
+						if (inputSearchWord) {
+							searchFeature(inputSearchWord);
+						}
+					}}
+					disabled={$isProcessing}
+					class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full bg-black p-2 px-4 text-base transition-colors delay-100 duration-100"
+				>
+					<Icon icon={ICONS.search} class="transition-[width, height] h-6 w-6 duration-100" />
+				</button>
+			</div>
+		{/if}
+		<!-- 右側 -->
+		<div
+			class="flex items-center rounded-lg pr-1 max-lg:hidden {showDataEntry
+				? 'pointer-events-none opacity-0'
+				: ''}"
+		>
+			<GeolocateControl />
+			<StreetViewControl />
+			<TerrainControl />
+			<GlobeControl />
+
+			<!-- ハンバーガーメニュー -->
+			<button
+				class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base drop-shadow-lg duration-100"
+				onclick={() => showOtherMenu.set(true)}
+			>
+				<Icon icon={ICONS.menu} class="h-8 w-8" />
 			</button>
 		</div>
 	{/if}
-	<!-- 右側 -->
-	<div
-		class="flex items-center rounded-lg pr-1 max-lg:hidden {showDataEntry
-			? 'pointer-events-none opacity-0'
-			: ''}"
-	>
-		<GeolocateControl />
-		<StreetViewControl />
-		<TerrainControl />
-		<GlobeControl />
-
-		<!-- ハンバーガーメニュー -->
-		<button
-			class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base drop-shadow-lg duration-100"
-			onclick={() => showOtherMenu.set(true)}
-		>
-			<Icon icon={ICONS.menu} class="h-8 w-8" />
-		</button>
-	</div>
 </div>
 
 <!-- サジェスト -->
-<div class="pointer-events-none relative w-full">
-	<div class="absolute top-0 z-20 flex w-full items-center justify-between p-2 max-lg:hidden">
-		<!-- 左スペース -->
-		<div class="flex h-full items-center"></div>
-		<div class="flex max-w-[400px] flex-1 items-center">
-			<SearchSuggest
-				{focusFeature}
-				bind:featureMenuData
-				bind:inputSearchWord
-				{layerEntries}
-				bind:showSelectionMarker
-				bind:selectionMarkerLngLat
-				bind:searchSuggests
-				bind:showDataEntry
-			/>
-		</div>
-		<!-- 右スペース -->
+	{#if !hideControls}
+		<div class="pointer-events-none relative w-full">
+			<div class="absolute top-0 z-20 flex w-full items-center justify-between p-2 max-lg:hidden">
+				<!-- 左スペース -->
+				<div class="flex h-full items-center"></div>
+				<div class="flex max-w-[400px] flex-1 items-center">
+					<SearchSuggest
+						{focusFeature}
+						bind:featureMenuData
+						bind:inputSearchWord
+						{layerEntries}
+						bind:showSelectionMarker
+						bind:selectionMarkerLngLat
+						bind:searchSuggests
+						bind:showDataEntry
+					/>
+				</div>
+				<!-- 右スペース -->
 
-		<div class="flex w-[240px] items-center rounded-lg max-lg:hidden"></div>
-	</div>
-</div>
+				<div class="flex w-[240px] items-center rounded-lg max-lg:hidden"></div>
+			</div>
+		</div>
+	{/if}
 
 <style>
 	.set-glow {

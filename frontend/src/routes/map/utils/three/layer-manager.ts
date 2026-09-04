@@ -165,6 +165,7 @@ export interface ModelViewCameraOptions {
 
 export interface ModelViewSession {
 	camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
+	canvas: HTMLCanvasElement;
 	getTarget: () => THREE.Vector3;
 	resetView: () => void;
 	resize: () => void;
@@ -177,7 +178,6 @@ interface ActiveModelView {
 	highlightVisibility: Map<THREE.Object3D, boolean>;
 	modelGroupVisible: boolean;
 	previewVisible: boolean;
-	canvasBackground: string;
 }
 
 const TEXTURE_SLOT_KEYS = [
@@ -2109,12 +2109,9 @@ export class ThreeJsLayerManager {
 			target: new THREE.Vector3(),
 			highlightVisibility: new Map(),
 			modelGroupVisible: this.modelGroup.visible,
-			previewVisible: this.previewModelGroup.visible,
-			canvasBackground: canvas.style.background
+			previewVisible: this.previewModelGroup.visible
 		};
 		this.activeModelView = activeModelView;
-		canvas.style.background =
-			'radial-gradient(circle at 28% 18%, #315d62 0%, rgba(24, 65, 63, 0.55) 26%, transparent 52%), linear-gradient(145deg, #071815 0%, #0f2927 52%, #1a211b 100%)';
 		this.modelGroup.visible = true;
 		this.previewModelGroup.visible = false;
 		loaded.forEach((model) => {
@@ -2166,6 +2163,7 @@ export class ThreeJsLayerManager {
 
 		return {
 			camera,
+			canvas,
 			getTarget: () => activeModelView.target.clone(),
 			resetView: fitModel,
 			resize: this.resizeModelView
@@ -2205,9 +2203,6 @@ export class ThreeJsLayerManager {
 		}
 		if (this.previewModelGroup) {
 			this.previewModelGroup.visible = activeModelView.previewVisible;
-		}
-		if (this.map) {
-			this.map.getCanvas().style.background = activeModelView.canvasBackground;
 		}
 		this.loadedModels.forEach((loaded) => {
 			loaded.object.visible = loaded.entry.style.visible ?? true;

@@ -24,6 +24,8 @@
 	let isLoading = $state(true);
 	let errorMessage = $state<string | null>(null);
 	let resetView: () => void = () => {};
+	const MODEL_VIEW_BACKGROUND =
+		'radial-gradient(circle at 50% 44%, rgba(150, 175, 178, 0.62) 0%, rgba(213, 226, 227, 0.78) 30%, transparent 62%), linear-gradient(145deg, #ffffff 0%, #edf3f4 54%, #dce7e8 100%)';
 
 	const close = () => {
 		closeModelView();
@@ -40,7 +42,10 @@
 	const onModelClick = async (event: MouseEvent) => {
 		const pointerDown = pointerDownPosition;
 		pointerDownPosition = null;
-		if (!pointerDown || Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y) > 4) {
+		if (
+			!pointerDown ||
+			Math.hypot(event.clientX - pointerDown.x, event.clientY - pointerDown.y) > 4
+		) {
 			return;
 		}
 		const picked = await threeJsManager.pickModelInActiveView({
@@ -64,6 +69,8 @@
 			isLoading = false;
 			return;
 		}
+		const originalCanvasBackground = session.canvas.style.background;
+		session.canvas.style.background = MODEL_VIEW_BACKGROUND;
 
 		const controls = new OrbitControls(session.camera, interactionTarget);
 		controls.enableDamping = true;
@@ -112,6 +119,7 @@
 			cancelAnimationFrame(animationFrame);
 			controls.dispose();
 			zoomControls.dispose();
+			session.canvas.style.background = originalCanvasBackground;
 			threeJsManager.closeModelView();
 		};
 	});
@@ -136,7 +144,7 @@
 		<button
 			class="pointer-events-auto grid h-11 w-11 cursor-pointer place-items-center rounded-xl border border-white/15 bg-black/65 text-white shadow-2xl backdrop-blur hover:bg-white/15"
 			onclick={() => resetView()}
-			aria-label="表示を初期位置に戻す"
+			aria-label="    "
 			title="表示を戻す"
 		>
 			<Icon icon="mdi:fit-to-screen-outline" class="h-6 w-6" />
@@ -150,7 +158,9 @@
 	</div>
 
 	{#if isLoading || errorMessage}
-		<div class="pointer-events-auto absolute inset-0 z-20 grid place-items-center bg-[#101915]/80 p-6 text-center">
+		<div
+			class="pointer-events-auto absolute inset-0 z-20 grid place-items-center bg-[#101915]/80 p-6 text-center"
+		>
 			<div
 				class="max-w-sm rounded-2xl border border-white/15 bg-black/65 px-6 py-5 shadow-2xl backdrop-blur"
 			>
