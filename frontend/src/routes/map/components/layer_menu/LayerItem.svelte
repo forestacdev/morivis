@@ -670,7 +670,7 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						{#if isGeojsonCustomLayer || isTiffCustomLayer || isExportableThreeMeshEntry(layerEntry)}
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
 							<button
 								onclick={downloadLayer}
 								disabled={isDownloading}
@@ -710,7 +710,7 @@
 							</button>
 						{/if}
 
-						{#if isGeojsonCustomLayer || isTiffCustomLayer || isExportableThreeMeshEntry(layerEntry)}
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
 							<button
 								onclick={downloadLayer}
 								disabled={isDownloading}

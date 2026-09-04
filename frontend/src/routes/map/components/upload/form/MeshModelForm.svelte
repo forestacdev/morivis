@@ -18,6 +18,7 @@
 	import { applyProjectedModelAxisOverride } from '$routes/map/utils/three/model-axis';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
 	import { getModelCoordinateMode } from '$routes/map/utils/three/model-georeference';
+	import { inspectFbxTextureReferences } from '$routes/map/utils/three/fbx-references';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -212,6 +213,9 @@
 	let mtlInspectionFileKey = $state<string | null>(null);
 	let isInspectingMtlReferences = $state(false);
 	let referencedMtlTexturePaths = $state<string[]>([]);
+	let fbxInspectionFileKey = $state<string | null>(null);
+	let isInspectingFbxReferences = $state(false);
+	let referencedFbxTexturePaths = $state<string[]>([]);
 	let gltfInspectionFileKey = $state<string | null>(null);
 	let isInspectingGltfReferences = $state(false);
 	let referencedGltfBufferUris = $state<string[]>([]);
@@ -257,6 +261,15 @@
 	const requiresObjSupplementaryResolution = $derived(
 		requiresObjMtlResolution || requiresObjTextureResolution
 	);
+	const missingFbxTexturePaths = $derived.by(() => {
+		if (activeFormat !== 'fbx' || referencedFbxTexturePaths.length === 0) return [];
+		return referencedFbxTexturePaths.filter(
+			(pathLikeValue) => !hasMatchingResourceFile(textureResourceKeys, pathLikeValue)
+		);
+	});
+	const requiresFbxTextureResolution = $derived(
+		activeFormat === 'fbx' && missingFbxTexturePaths.length > 0
+	);
 	const missingGltfBufferUris = $derived.by(() => {
 		if (!isJsonGltfFile || referencedGltfBufferUris.length === 0) return [];
 		return referencedGltfBufferUris.filter(
@@ -280,12 +293,15 @@
 		(!!glbFile &&
 			activeFormat === 'obj' &&
 			(isInspectingObjReferences || isInspectingMtlReferences)) ||
+			(!!glbFile && activeFormat === 'fbx' && isInspectingFbxReferences) ||
 			(!!glbFile && isJsonGltfFile && isInspectingGltfReferences) ||
 			isInspectingProjectedCandidateCoordinates ||
 			(!!glbFile && activeFormat === 'ifc' && isInspectingIfcPlacement)
 	);
 	const requiresModelSupplementaryResolution = $derived(
-		requiresObjSupplementaryResolution || requiresGltfSupplementaryResolution
+		requiresObjSupplementaryResolution ||
+			requiresFbxTextureResolution ||
+			requiresGltfSupplementaryResolution
 	);
 	const requiresManualRegistration = $derived(
 		requiresProjectedCandidateZoneSelection ||
@@ -375,6 +391,41 @@
 			} finally {
 				if (mtlInspectionFileKey === inspectionKey) {
 					isInspectingMtlReferences = false;
+				}
+			}
+		};
+
+		void inspectReferences();
+	});
+
+	$effect(() => {
+		if (!glbFile || activeFormat !== 'fbx') {
+			fbxInspectionFileKey = null;
+			isInspectingFbxReferences = false;
+			referencedFbxTexturePaths = [];
+			return;
+		}
+
+		const nextFileKey = getPathLikeName(glbFile);
+		if (fbxInspectionFileKey === nextFileKey) return;
+
+		fbxInspectionFileKey = nextFileKey;
+		isInspectingFbxReferences = true;
+		referencedFbxTexturePaths = [];
+
+		const inspectReferences = async () => {
+			const inspectionKey = nextFileKey;
+			try {
+				const paths = await inspectFbxTextureReferences(glbFile);
+				if (fbxInspectionFileKey !== inspectionKey) return;
+				referencedFbxTexturePaths = paths;
+			} catch (error) {
+				if (fbxInspectionFileKey !== inspectionKey) return;
+				referencedFbxTexturePaths = [];
+				console.warn('FBX の参照画像判定に失敗しました', error);
+			} finally {
+				if (fbxInspectionFileKey === inspectionKey) {
+					isInspectingFbxReferences = false;
 				}
 			}
 		};
@@ -594,7 +645,12 @@
 			return isPreparingIfcZoneSelection || !ifcSourceBbox;
 		}
 		if (requiresModelSupplementaryResolution) {
-			return isInspectingObjReferences || isInspectingMtlReferences || isInspectingGltfReferences;
+			return (
+				isInspectingObjReferences ||
+				isInspectingMtlReferences ||
+				isInspectingFbxReferences ||
+				isInspectingGltfReferences
+			);
 		}
 		return false;
 	});
@@ -740,6 +796,7 @@
 	$effect(() => {
 		if (!glbFile || requiresManualRegistration || isWaitingForModelSupplementaryInspection) return;
 		if (activeFormat === 'obj' && (isInspectingObjReferences || isInspectingMtlReferences)) return;
+		if (activeFormat === 'fbx' && isInspectingFbxReferences) return;
 		if (activeFormat === 'gltf' && isInspectingGltfReferences) return;
 
 		const register = async () => {
@@ -943,6 +1000,12 @@
 				</p>
 				<p class="mt-2">参照MTL: {mtlFile?.name}</p>
 				<p class="mt-2">未追加画像: {missingObjTexturePaths.join(', ')}</p>
+				<p class="mt-2">画像なしのまま登録することもできます。</p>
+			{:else if requiresFbxTextureResolution}
+				<p class="mt-2">
+					この FBX はテクスチャ画像を参照しています。画像を追加ドロップするとそのまま続行できます。
+				</p>
+				<p class="mt-2">未追加画像: {missingFbxTexturePaths.join(', ')}</p>
 				<p class="mt-2">画像なしのまま登録することもできます。</p>
 			{:else if requiresGltfSupplementaryResolution}
 				<p class="mt-2">

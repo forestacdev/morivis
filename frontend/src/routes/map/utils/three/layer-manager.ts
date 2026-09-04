@@ -1536,7 +1536,7 @@ export class ThreeJsLayerManager {
 
 						const buffer = await response.arrayBuffer();
 						const object = fbxLoader.parse(buffer, resourcePath);
-						const fallbackTextureMaterialCount = applyFbxTextureFallback(object, resourceUrls);
+						const fallbackTextureResult = applyFbxTextureFallback(object, resourceUrls);
 						const attributesByModelId = parseFbxModelAttributes(buffer);
 						let modelIdCount = 0;
 						let matchedAttributeCount = 0;
@@ -1555,7 +1555,11 @@ export class ThreeJsLayerManager {
 								attributeModelCount: Object.keys(attributesByModelId).length,
 								modelIdCount,
 								matchedAttributeCount,
-								fallbackTextureMaterialCount
+								fallbackTextureMaterialCount: fallbackTextureResult.mappedMaterialCount,
+								fallbackTextureMappings: fallbackTextureResult.mappings,
+								resourceTextureFiles: Object.keys(resourceUrls ?? {}).filter(
+									(path) => !path.includes('/')
+								)
 							});
 						}
 						finalizeAndLoadModel(

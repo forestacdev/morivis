@@ -8,6 +8,18 @@ const MATERIAL_ALIASES: Record<string, string[]> = {
 	hairshadow: ['hs']
 };
 
+export interface FbxTextureFallbackResult {
+	mappedMaterialCount: number;
+	mappings: Array<{ materialName: string; textureFileName: string }>;
+}
+
+export const configureFbxFallbackTexture = (texture: THREE.Texture) => {
+	// Blender が出力した FBX の UV 値は、追加画像をそのまま参照する。
+	texture.flipY = false;
+	texture.colorSpace = THREE.SRGBColorSpace;
+	texture.needsUpdate = true;
+};
+
 /** FBX 内にテクスチャ接続がない場合だけ、同梱画像名からマテリアル用画像を推定する。 */
 export const resolveFbxTextureFile = (materialName: string, textureFiles: string[]) => {
 	const material = normalize(materialName);
@@ -22,7 +34,6 @@ export const resolveFbxTextureFile = (materialName: string, textureFiles: string
 			else if (material.startsWith(texture)) score = 800 + texture.length;
 			else if (texture.startsWith(material)) score = 700 + material.length;
 			else if (materialBase && texture.includes(materialBase)) score = 500 + materialBase.length;
-			else if (textureBase && material.includes(textureBase)) score = 400 + textureBase.length;
 			if (aliases.includes(texture)) score = Math.max(score, 900 + texture.length);
 			return { fileName, score };
 		})
@@ -37,14 +48,15 @@ export const resolveFbxTextureFile = (materialName: string, textureFiles: string
 export const applyFbxTextureFallback = (
 	object: THREE.Object3D,
 	resourceUrls: Record<string, string> | undefined
-) => {
-	if (!resourceUrls) return 0;
+): FbxTextureFallbackResult => {
+	if (!resourceUrls) return { mappedMaterialCount: 0, mappings: [] };
 	const textureFiles = Object.keys(resourceUrls).filter((path) => !path.includes('/'));
-	if (textureFiles.length === 0) return 0;
+	if (textureFiles.length === 0) return { mappedMaterialCount: 0, mappings: [] };
 
 	const textureLoader = new THREE.TextureLoader();
 	const textures = new Map<string, THREE.Texture>();
 	let mappedMaterialCount = 0;
+	const mappings: FbxTextureFallbackResult['mappings'] = [];
 	object.traverse((child) => {
 		if (!(child as THREE.Mesh).isMesh) return;
 		const mesh = child as THREE.Mesh;
@@ -55,13 +67,14 @@ export const applyFbxTextureFallback = (
 			const url = fileName && resourceUrls[fileName];
 			if (!fileName || !url) return;
 			const texture = textures.get(fileName) ?? textureLoader.load(url);
-			texture.colorSpace = THREE.SRGBColorSpace;
+			configureFbxFallbackTexture(texture);
 			textures.set(fileName, texture);
 			material.map = texture;
 			material.needsUpdate = true;
 			mappedMaterialCount += 1;
+			mappings.push({ materialName: material.name, textureFileName: fileName });
 		});
 	});
 
-	return mappedMaterialCount;
+	return { mappedMaterialCount, mappings };
 };
