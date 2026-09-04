@@ -16,6 +16,7 @@
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+	import { isModelView } from '$routes/stores';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	interface Props {
 		layerEntry: MeshEntry<MeshStyle>;
@@ -248,74 +249,76 @@
 	{/if}
 </Accordion>
 
-<Accordion label="変形・移動" icon="gis:cube-3d" bind:value={showTransformOption}>
-	{#if canEditScale}
-		<RangeSlider
-			label="スケール"
-			bind:value={layerEntry.style.transform.scale}
-			min={0.01}
-			max={100}
-			step={0.01}
-			icon="mdi:resize"
-		/>
-	{/if}
+{#if !$isModelView}
+	<Accordion label="変形・移動" icon="gis:cube-3d" bind:value={showTransformOption}>
+		{#if canEditScale}
+			<RangeSlider
+				label="スケール"
+				bind:value={layerEntry.style.transform.scale}
+				min={0.01}
+				max={100}
+				step={0.01}
+				icon="mdi:resize"
+			/>
+		{/if}
 
-	{#if canEditHeightScale && layerEntry.style.transform.heightScale != null}
-		<RangeSlider
-			label="高さ倍率"
-			bind:value={layerEntry.style.transform.heightScale}
-			min={0.01}
-			max={100}
-			step={0.01}
-			icon="mdi:image-filter-hdr"
-		/>
-	{/if}
+		{#if canEditHeightScale && layerEntry.style.transform.heightScale != null}
+			<RangeSlider
+				label="高さ倍率"
+				bind:value={layerEntry.style.transform.heightScale}
+				min={0.01}
+				max={100}
+				step={0.01}
+				icon="mdi:image-filter-hdr"
+			/>
+		{/if}
 
-	{#if canEditHeightOffset && layerEntry.style.transform.heightOffset != null}
-		<RangeSlider
-			label="高さオフセット (m)"
-			bind:value={layerEntry.style.transform.heightOffset}
-			min={-100}
-			max={1000}
-			step={1}
-			isInt
-			icon="mdi:arrow-up-down"
-		/>
-	{/if}
-</Accordion>
-
-{#if canEditRotation}
-	<Accordion label="回転" icon="lucide:rotate-3d" bind:value={showRotateOption}>
-		<RangeSlider
-			label="X回転 (°)"
-			bind:value={layerEntry.style.transform.rotationX}
-			min={0}
-			max={360}
-			step={1}
-			isInt
-			icon="mdi:rotate-right"
-		/>
-
-		<RangeSlider
-			label="Y回転 (°)"
-			bind:value={layerEntry.style.transform.rotationY}
-			min={0}
-			max={360}
-			step={1}
-			isInt
-			icon="mdi:rotate-right"
-		/>
-
-		<RangeSlider
-			label="Z回転 (°)"
-			bind:value={layerEntry.style.transform.rotationZ}
-			min={0}
-			max={360}
-			step={1}
-			isInt
-			icon="mdi:rotate-right"
-		/>
+		{#if canEditHeightOffset && layerEntry.style.transform.heightOffset != null}
+			<RangeSlider
+				label="高さオフセット (m)"
+				bind:value={layerEntry.style.transform.heightOffset}
+				min={-100}
+				max={1000}
+				step={1}
+				isInt
+				icon="mdi:arrow-up-down"
+			/>
+		{/if}
 	</Accordion>
+
+	{#if canEditRotation}
+		<Accordion label="回転" icon="lucide:rotate-3d" bind:value={showRotateOption}>
+			<RangeSlider
+				label="X回転 (°)"
+				bind:value={layerEntry.style.transform.rotationX}
+				min={0}
+				max={360}
+				step={1}
+				isInt
+				icon="mdi:rotate-right"
+			/>
+
+			<RangeSlider
+				label="Y回転 (°)"
+				bind:value={layerEntry.style.transform.rotationY}
+				min={0}
+				max={360}
+				step={1}
+				isInt
+				icon="mdi:rotate-right"
+			/>
+
+			<RangeSlider
+				label="Z回転 (°)"
+				bind:value={layerEntry.style.transform.rotationZ}
+				min={0}
+				max={360}
+				step={1}
+				isInt
+				icon="mdi:rotate-right"
+			/>
+		</Accordion>
+	{/if}
 {/if}
 
 <style>

@@ -14,7 +14,7 @@
 		Tiles3DMeshStyleEntry,
 		PointCloudStyleEntry
 	} from '$routes/map/data/types/model';
-	import { openModelView } from '$routes/stores';
+	import { closeModelView, modelViewRequest, openModelView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -36,9 +36,18 @@
 	const isTiles3DMeshEntry = (entry: MorivisModelEntry): entry is Tiles3DMeshStyleEntry => {
 		return entry.style.type === '3d-tiles-mesh';
 	};
+	const isCurrentModelView = $derived(
+		isThreeMeshEntry(layerEntry) &&
+			$modelViewRequest?.entryIds.length === 1 &&
+			$modelViewRequest.entryIds[0] === layerEntry.id
+	);
 
 	const openSingleModelView = () => {
 		if (!isThreeMeshEntry(layerEntry)) return;
+		if (isCurrentModelView) {
+			closeModelView();
+			return;
+		}
 		openModelView(layerEntry.id);
 	};
 
@@ -68,8 +77,8 @@
 			class="c-btn-confirm mb-2 flex w-full items-center justify-center gap-2 rounded-lg p-2 text-sm"
 			onclick={openSingleModelView}
 		>
-			<Icon icon="mdi:cube-scan" class="h-5 w-5" />
-			モデルビューで開く
+			<Icon icon={isCurrentModelView ? 'material-symbols:close-rounded' : 'mdi:cube-scan'} class="h-5 w-5" />
+			{isCurrentModelView ? 'モデルビューを閉じる' : 'モデルビューで開く'}
 		</button>
 		<MeshOption bind:layerEntry bind:showColorOption bind:showDimensionOption />
 	{/if}

@@ -19,6 +19,15 @@
 	let isLoading = $state(true);
 	let errorMessage = $state<string | null>(null);
 	let resetView: () => void = () => {};
+	let refreshStyle: () => void = () => {};
+
+	interface ModelViewAnimation {
+		entry: MeshEntry<MeshStyle>;
+		mixer: THREE.AnimationMixer;
+		actions: THREE.AnimationAction[];
+		lastStateKey?: string;
+		lastClipIndex?: number;
+	}
 
 	const close = () => {
 		closeModelView();
@@ -26,6 +35,41 @@
 
 	const onKeydown = (event: KeyboardEvent) => {
 		if (event.key === 'Escape') close();
+	};
+
+	$effect(() => {
+		entries.forEach((entry) => $state.snapshot(entry.style));
+		refreshStyle();
+	});
+
+	const syncAnimation = (animation: ModelViewAnimation) => {
+		const state = animation.entry.state?.animation;
+		const clipIndex = Math.min(
+			Math.max(state?.currentClipIndex ?? 0, 0),
+			animation.actions.length - 1
+		);
+		const playing = state?.playing ?? false;
+		const speed = Math.max(state?.speed ?? 1, 0);
+		const stateKey = `${clipIndex}:${playing}:${speed}`;
+		if (animation.lastStateKey === stateKey) return playing;
+
+		animation.actions.forEach((action, index) => {
+			if (index === clipIndex) {
+				if (animation.lastClipIndex !== clipIndex) action.reset();
+				action.enabled = true;
+				action.setLoop(THREE.LoopRepeat, Infinity);
+				action.clampWhenFinished = false;
+				action.timeScale = speed;
+				action.paused = !playing;
+				action.play();
+				return;
+			}
+			action.stop();
+		});
+
+		animation.lastStateKey = stateKey;
+		animation.lastClipIndex = clipIndex;
+		return playing;
 	};
 
 	onMount(() => {
@@ -57,10 +101,16 @@
 		fillLight.position.set(-4, 2, -3);
 		scene.add(fillLight);
 
-		const models = entries
-			.map((entry) => threeJsManager.createModelViewObject(entry.id, includeHighlights))
-			.filter((model): model is THREE.Object3D => model !== null);
-		if (models.length === 0) {
+		const modelRecords = entries
+			.map((entry) => ({
+				entry,
+				model: threeJsManager.createModelViewObject(entry, includeHighlights)
+			}))
+			.filter(
+				(record): record is { entry: MeshEntry<MeshStyle>; model: THREE.Object3D } =>
+					record.model !== null
+			);
+		if (modelRecords.length === 0) {
 			errorMessage = 'モデルを地図に読み込んだ後に、もう一度開いてください。';
 			isLoading = false;
 			controls.dispose();
@@ -69,8 +119,20 @@
 		}
 
 		const modelRoot = new THREE.Group();
-		modelRoot.add(...models);
+		modelRoot.add(...modelRecords.map((record) => record.model));
 		scene.add(modelRoot);
+		refreshStyle = () => {
+			modelRecords.forEach(({ entry, model }) => {
+				threeJsManager.updateModelViewStyle(model, entry);
+			});
+		};
+		const animations = modelRecords.flatMap(({ entry, model }) => {
+			const clips =
+				(model as THREE.Object3D & { animations?: THREE.AnimationClip[] }).animations ?? [];
+			if (clips.length === 0) return [];
+			const mixer = new THREE.AnimationMixer(model);
+			return [{ entry, mixer, actions: clips.map((clip) => mixer.clipAction(clip)) }];
+		});
 		modelRoot.updateWorldMatrix(true, true);
 		const initialBounds = new THREE.Box3().setFromObject(modelRoot);
 		if (initialBounds.isEmpty()) {
@@ -155,14 +217,23 @@
 		resizeObserver.observe(targetCanvas);
 		resize();
 
-		renderer.setAnimationLoop(() => {
+		let lastAnimationTimeMs: number | null = null;
+		renderer.setAnimationLoop((timeMs) => {
+			const deltaSeconds =
+				lastAnimationTimeMs == null ? 0 : Math.max((timeMs - lastAnimationTimeMs) / 1_000, 0);
+			lastAnimationTimeMs = timeMs;
+			animations.forEach((animation) => {
+				if (syncAnimation(animation)) animation.mixer.update(deltaSeconds);
+			});
 			controls.update();
 			renderer.render(scene, camera);
 		});
 
 		return () => {
+			refreshStyle = () => {};
 			resizeObserver.disconnect();
 			renderer.setAnimationLoop(null);
+			animations.forEach(({ mixer }) => mixer.stopAllAction());
 			controls.dispose();
 			scene.remove(modelRoot);
 			renderer.dispose();
@@ -173,33 +244,12 @@
 <svelte:window onkeydown={onKeydown} />
 
 <section
-	class="fixed inset-0 z-50 overflow-hidden bg-[#101915] text-white"
+	class="fixed inset-0 z-0 overflow-hidden bg-[#101915] text-white"
 	aria-label="3Dモデルビュー"
 >
 	<canvas bind:this={canvas} class="h-full w-full touch-none"></canvas>
 
-	<div
-		class="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-3 lg:p-5"
-	>
-		<div
-			class="pointer-events-auto flex max-w-[min(34rem,calc(100vw-8rem))] items-center gap-2 rounded-xl border border-white/15 bg-black/65 px-2 py-2 shadow-2xl backdrop-blur"
-		>
-			<button
-				class="grid h-10 w-10 shrink-0 cursor-pointer place-items-center rounded-lg text-white hover:bg-white/15"
-				onclick={close}
-				aria-label="モデルビューを閉じる"
-				title="閉じる"
-			>
-				<Icon icon="ep:back" class="h-6 w-6" />
-			</button>
-			<div class="min-w-0 pr-2">
-				<p class="truncate text-sm text-white/60">3Dモデルビュー</p>
-				<h1 class="truncate text-base font-medium">
-					{entries.length === 1 ? entries[0].metaData.name : `${entries.length}件のモデル`}
-				</h1>
-			</div>
-		</div>
-
+	<div class="pointer-events-none absolute top-0 p-3 lg:p-5 right-0">
 		<button
 			class="pointer-events-auto grid h-11 w-11 cursor-pointer place-items-center rounded-xl border border-white/15 bg-black/65 text-white shadow-2xl backdrop-blur hover:bg-white/15"
 			onclick={() => resetView()}

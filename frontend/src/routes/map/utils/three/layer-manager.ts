@@ -2030,13 +2030,20 @@ export class ThreeJsLayerManager {
 	}
 
 	/** 地図用の投影行列を使わない、単体表示用のモデルクローンを返す。 */
-	createModelViewObject(entryId: string, includeHighlights = false): THREE.Object3D | null {
-		const loaded = this.loadedModels.get(entryId);
+	createModelViewObject(entry: MeshEntry<MeshStyle>, includeHighlights = false): THREE.Object3D | null {
+		const loaded = this.loadedModels.get(entry.id);
 		if (!loaded) return null;
 
 		const object = cloneSkeleton(loaded.object);
 		const selectionHighlights: THREE.Object3D[] = [];
 		object.traverse((child) => {
+			if ((child as THREE.Mesh).isMesh) {
+				const mesh = child as THREE.Mesh;
+				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+				const clonedMaterials = materials.map((material) => material.clone());
+				mesh.material = Array.isArray(mesh.material) ? clonedMaterials : clonedMaterials[0];
+				delete mesh.userData.originalMaterials;
+			}
 			if (child.userData.morivisSelectionHighlight) {
 				selectionHighlights.push(child);
 				return;
@@ -2046,7 +2053,13 @@ export class ThreeJsLayerManager {
 		if (!includeHighlights) {
 			selectionHighlights.forEach((highlight) => highlight.parent?.remove(highlight));
 		}
+		this.applyStyleToObject(object, entry.style, entry.format.type);
 		return object;
+	}
+
+	/** 単体表示用クローンのマテリアルだけを現在のスタイルで更新する。 */
+	updateModelViewStyle(object: THREE.Object3D, entry: MeshEntry<MeshStyle>): void {
+		this.applyStyleToObject(object, entry.style, entry.format.type);
 	}
 
 	async exportModelAsGlb(entryId: string): Promise<ArrayBuffer> {
