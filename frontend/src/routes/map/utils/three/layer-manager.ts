@@ -345,12 +345,18 @@ export class ThreeJsLayerManager {
 				varying vec3 vNormal;
 				varying vec2 vUv;
 				varying float vPartColorIndex;
+				#include <skinning_pars_vertex>
 
 				void main() {
-					vNormal = normalize(normalMatrix * normal);
+					vec3 objectNormal = vec3(normal);
+					#include <skinbase_vertex>
+					#include <skinnormal_vertex>
+					vNormal = normalize(normalMatrix * objectNormal);
+					vec3 transformed = vec3(position);
+					#include <skinning_vertex>
 					vUv = uv;
 					vPartColorIndex = morivisPartColorIndex;
-					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed, 1.0);
 				}
 			`,
 			fragmentShader: `
@@ -567,21 +573,25 @@ export class ThreeJsLayerManager {
 		}
 		const isSkinnedMesh = (mesh as THREE.SkinnedMesh).isSkinnedMesh === true;
 		const hasTexturedMaterial = originalMaterials.some(materialHasTextureSlots);
+		const createMaterial = (sourceMaterial: THREE.Material) => {
+			if (usePartColorMaterial || useShaderMaterial) {
+				return this.createShaderMaterial(sourceMaterial, style);
+			}
+			// スキニング済み FBX はローダーが作った標準マテリアルを保ち、ボーン変形を引き継ぐ。
+			if (isSkinnedMesh) {
+				return this.createStyledSourceMaterial(sourceMaterial, style);
+			}
+			// FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
+			if (hasTexturedMaterial && formatType === 'fbx') {
+				return this.createFbxTexturedMaterial(sourceMaterial, style);
+			}
+			if (hasTexturedMaterial) {
+				return this.createStyledSourceMaterial(sourceMaterial, style);
+			}
+			return this.createFlatMaterial(sourceMaterial, style);
+		};
 
-		const nextMaterials = originalMaterials.map((sourceMaterial) =>
-			usePartColorMaterial
-				? this.createShaderMaterial(sourceMaterial, style)
-				: // FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
-					hasTexturedMaterial && formatType === 'fbx'
-					? this.createFbxTexturedMaterial(sourceMaterial, style)
-					: hasTexturedMaterial
-						? this.createStyledSourceMaterial(sourceMaterial, style)
-						: isSkinnedMesh
-							? this.createStyledSourceMaterial(sourceMaterial, style)
-							: useShaderMaterial
-								? this.createShaderMaterial(sourceMaterial, style)
-								: this.createFlatMaterial(sourceMaterial, style)
-		);
+		const nextMaterials = originalMaterials.map(createMaterial);
 
 		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
 		currentMaterials.forEach((material) => {

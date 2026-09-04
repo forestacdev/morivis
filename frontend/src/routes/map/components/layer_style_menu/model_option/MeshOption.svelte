@@ -38,7 +38,6 @@
 
 	const colorMapManager = new ColorMapManager();
 	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
-	const canEditShading = $derived(layerEntry.style.shadingOptions?.enabled ?? true);
 	const canEditScale = $derived(layerEntry.style.transformOptions?.scale ?? true);
 	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);
 	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? true);
@@ -66,9 +65,6 @@
 
 	$effect(() => {
 		ensureShading();
-		if (!canEditShading && layerEntry.style.shading) {
-			layerEntry.style.shading.enabled = false;
-		}
 		if (animationClips.length > 0 && !layerEntry.state?.animation) {
 			layerEntry.state = {
 				...layerEntry.state,
@@ -208,10 +204,8 @@
 			</div>
 		{/if}
 	{/if}
-	{#if canEditShading}
-		<Switch label="陰影" bind:value={layerEntry.style.shading!.enabled} />
-	{/if}
-	{#if canEditShading && layerEntry.style.shading!.enabled}
+	<Switch label="陰影" bind:value={layerEntry.style.shading!.enabled} />
+	{#if layerEntry.style.shading!.enabled}
 		<div transition:slide class="mb-4 flex w-full flex-col gap-2">
 			<RangeSlider
 				label="陰影強度"

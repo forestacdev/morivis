@@ -67,7 +67,7 @@ export interface MeshShadingStyle {
 }
 
 export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
-	enabled: true,
+	enabled: false,
 	shadeStrength: 0.85,
 	ambientStrength: 0.35,
 	azimuthDeg: 180,
@@ -100,10 +100,6 @@ export interface ProjectedModelGeoreference {
 	coordinateSpace?: 'object' | 'root-children' | 'ifc-z-up';
 }
 
-export interface MeshShadingOptionStyle {
-	enabled?: boolean;
-}
-
 export interface MeshStyle {
 	type: 'mesh';
 	opacity: Opacity;
@@ -115,7 +111,6 @@ export interface MeshStyle {
 	/** IFC など、モデル内パーツの属性を使う色分け設定。 */
 	partColors?: ColorsStyle;
 	shading?: MeshShadingStyle;
-	shadingOptions?: MeshShadingOptionStyle;
 	heightColorRamp?: MeshHeightColorRampStyle;
 	transformOptions?: MeshTransformOptionStyle;
 	transform: {

@@ -741,14 +741,6 @@
 				entry.format.georeference = uploadedModelMeta.resolvedPlacement.georeference;
 			}
 
-			if (uploadedModelMeta.hasSkinnedMesh) {
-				entry.style.shadingOptions = {
-					enabled: false
-				};
-				if (entry.style.shading) {
-					entry.style.shading.enabled = false;
-				}
-			}
 			if (uploadedModelMeta.animationNames.length > 0) {
 				entry.properties = {
 					...entry.properties,
