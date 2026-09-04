@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import {
@@ -12,14 +13,14 @@
 	import { closeModelView, type ModelViewCamera } from '$routes/stores';
 
 	interface Props {
-	entries: MeshEntry<MeshStyle>[];
-	initialCamera?: ModelViewCamera;
-	includeHighlights?: boolean;
-	onModelPicked?: (picked: PickedModelFeature) => void;
-}
+		entries: MeshEntry<MeshStyle>[];
+		initialCamera?: ModelViewCamera;
+		includeHighlights?: boolean;
+		onModelPicked?: (picked: PickedModelFeature) => void;
+	}
 
-let { entries, initialCamera, includeHighlights = false, onModelPicked }: Props = $props();
-let interactionTarget = $state<HTMLButtonElement>();
+	let { entries, initialCamera, includeHighlights = false, onModelPicked }: Props = $props();
+	let interactionTarget = $state<HTMLButtonElement>();
 	let isLoading = $state(true);
 	let errorMessage = $state<string | null>(null);
 	let resetView: () => void = () => {};
@@ -67,10 +68,19 @@ let interactionTarget = $state<HTMLButtonElement>();
 		const controls = new OrbitControls(session.camera, interactionTarget);
 		controls.enableDamping = true;
 		controls.dampingFactor = 0.08;
+		controls.enablePan = true;
+		controls.enableZoom = false;
 		controls.screenSpacePanning = true;
+		const zoomControls = new TrackballControls(session.camera, interactionTarget);
+		zoomControls.noPan = true;
+		zoomControls.noRotate = true;
+		zoomControls.zoomSpeed = 0.2;
 		const syncControls = () => {
-			controls.target.copy(session.getTarget());
+			const target = session.getTarget();
+			controls.target.copy(target);
+			zoomControls.target.copy(target);
 			controls.update();
+			zoomControls.update();
 		};
 		resetView = () => {
 			session.resetView();
@@ -82,6 +92,7 @@ let interactionTarget = $state<HTMLButtonElement>();
 
 		const resizeObserver = new ResizeObserver(() => {
 			session.resize();
+			zoomControls.handleResize();
 			threeJsManager.requestModelViewRepaint();
 		});
 		resizeObserver.observe(interactionTarget);
@@ -89,6 +100,8 @@ let interactionTarget = $state<HTMLButtonElement>();
 		let animationFrame = 0;
 		const renderFrame = () => {
 			controls.update();
+			zoomControls.target.copy(controls.target);
+			zoomControls.update();
 			threeJsManager.requestModelViewRepaint();
 			animationFrame = requestAnimationFrame(renderFrame);
 		};
@@ -98,6 +111,7 @@ let interactionTarget = $state<HTMLButtonElement>();
 			resizeObserver.disconnect();
 			cancelAnimationFrame(animationFrame);
 			controls.dispose();
+			zoomControls.dispose();
 			threeJsManager.closeModelView();
 		};
 	});
@@ -131,7 +145,7 @@ let interactionTarget = $state<HTMLButtonElement>();
 
 	<div class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center p-4">
 		<p class="rounded-full bg-black/65 px-4 py-2 text-xs text-white/70 backdrop-blur">
-			ドラッグで回転、ホイールまたはピンチで拡大縮小
+			ドラッグで回転、右ドラッグで移動、ホイールまたはピンチで拡大縮小
 		</p>
 	</div>
 
