@@ -7,7 +7,7 @@ import {
 	type TaxonomicRank
 } from '$routes/map/api/inaturalist';
 import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
-import { type MediaData, propData } from '$routes/map/data/entries/_prop_data';
+import type { MediaData } from '$routes/map/data/types/details';
 import {
 	ProtectionForestNameToCodeDict,
 	ProtectionForestTypes
@@ -79,9 +79,11 @@ const getLayerFeatureMedia = async (
 	targetLayer: MorivisLayerEntry | null,
 	iNaturalistData?: Awaited<ReturnType<typeof getImageByName>> | null
 ): Promise<FeaturePanelMedia[]> => {
-	const data = featureMenuData.properties
-		? propData[featureMenuData.properties._prop_id as string]
-		: null;
+	const propId = featureMenuData.properties?._prop_id;
+	const data =
+		targetLayer?.type === 'vector' && typeof propId === 'string'
+			? targetLayer.properties.detailsById?.[propId]
+			: undefined;
 
 	const fetchMedia = async (): Promise<FeaturePanelMedia[]> => {
 		if (data?.medias && data.medias.length > 0) {
@@ -285,10 +287,11 @@ export const getLayerFeaturePanelSummary = async (
 		};
 	}
 	const targetLayer = layerEntries.find((entry) => entry.id === featureMenuData.layerId) ?? null;
-	const data = featureMenuData.properties
-		? propData[featureMenuData.properties._prop_id as string]
-		: null;
 	const propId = featureMenuData.properties?._prop_id;
+	const data =
+		targetLayer?.type === 'vector' && typeof propId === 'string'
+			? targetLayer.properties.detailsById?.[propId]
+			: undefined;
 	const descriptionKey = targetLayer && targetLayer.type === 'vector'
 		? targetLayer.properties.attributeView.descriptionKey
 		: null;

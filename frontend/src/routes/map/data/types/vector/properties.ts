@@ -3,6 +3,7 @@ import type {
 	SharedDiscreteDimension,
 	TemporalBehavior
 } from '$routes/map/data/types';
+import type { DetailsById } from '$routes/map/data/types/details';
 import type { FeatureProp } from '$routes/map/types/properties';
 
 /**
@@ -512,6 +513,8 @@ export interface FieldDef {
 export interface VectorProperties {
 	fields: FieldDef[];
 	attributeView: AttributeView;
+	/** 地物の _prop_id ごとの詳細情報。 */
+	detailsById?: DetailsById;
 	images?: VectorImages;
 	temporal?: VectorTemporal;
 	/**
