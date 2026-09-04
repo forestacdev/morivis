@@ -19,7 +19,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		downloadUrl: 'https://wiki.openstreetmap.org/wiki/Japan/OSMFJ_Tileserver',
 		location: '世界',
 		minZoom: 0,
-		maxZoom: 24,
 		tileSize: 512,
 		tags: ['背景地図'],
 		bounds: WEB_MERCATOR_WORLD_BBOX,

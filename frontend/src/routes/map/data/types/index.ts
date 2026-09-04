@@ -112,8 +112,8 @@ export interface BaseMetaData {
 	attribution: AttributionKey;
 	tags: Tag[];
 	location: Region;
-	maxZoom: number;
-	minZoom: number;
+	maxZoom?: number;
+	minZoom?: number;
 	bounds: [number, number, number, number];
 	coverImage?: string;
 	mapImage?: string;

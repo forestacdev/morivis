@@ -195,7 +195,6 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線駅ククリ',
 		minzoom: 11,
-		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -213,7 +212,6 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線',
 		minzoom: 11,
-		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -227,7 +225,6 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線旗竿',
 		minzoom: 14,
-		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -249,7 +246,6 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線橋ククリ',
 		minzoom: 14,
-		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -265,7 +261,6 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線地下トンネルククリ',
 		minzoom: 11,
-		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -308,7 +303,6 @@ export const railLineLayers: LineLayerSpecification[] = [
 	{
 		id: '鉄道中心線地下トンネル',
 		minzoom: 11,
-		maxzoom: 24,
 		type: 'line',
 		source: 'v',
 		'source-layer': 'RailCL',
@@ -319,12 +313,7 @@ export const railLineLayers: LineLayerSpecification[] = [
 				['get', 'vt_rtcode'],
 				'地下鉄',
 				'rgba(0,155,191,1)',
-				[
-					'case',
-					['==', ['get', 'vt_sngldbl'], '駅部分'],
-					'rgb(173,173,173)',
-					'rgb(180, 180, 180)'
-				]
+				['case', ['==', ['get', 'vt_sngldbl'], '駅部分'], 'rgb(173,173,173)', 'rgb(180, 180, 180)']
 			],
 			'line-opacity': railTunnelLineOpacity,
 			'line-width': [

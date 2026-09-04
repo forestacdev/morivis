@@ -91,7 +91,6 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 			location,
 			tags,
 			minZoom: 0,
-			maxZoom: 24,
 			bounds: resolveBounds(bounds),
 			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile],
 			altitude: transform.altitude
@@ -178,7 +177,6 @@ export function createPointCloudEntry(
 			location,
 			tags,
 			minZoom: 0,
-			maxZoom: 24,
 			bounds: resolveBounds(bounds),
 			xyzImageTile: IMAGE_TILE_XYZ_SETS[xyzImageTile]
 		},

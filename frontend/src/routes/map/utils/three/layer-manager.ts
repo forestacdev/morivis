@@ -16,6 +16,7 @@ import {
 	type FbxModelAttributes,
 	parseFbxModelAttributes
 } from '$routes/map/utils/three/fbx-attributes';
+import { applyFbxTextureFallback } from '$routes/map/utils/three/fbx-textures';
 import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
 import {
 	getIfcAttributes,
@@ -1535,6 +1536,7 @@ export class ThreeJsLayerManager {
 
 						const buffer = await response.arrayBuffer();
 						const object = fbxLoader.parse(buffer, resourcePath);
+						const fallbackTextureMaterialCount = applyFbxTextureFallback(object, resourceUrls);
 						const attributesByModelId = parseFbxModelAttributes(buffer);
 						let modelIdCount = 0;
 						let matchedAttributeCount = 0;
@@ -1552,7 +1554,8 @@ export class ThreeJsLayerManager {
 							console.info('[FBX属性] 読み込み結果', {
 								attributeModelCount: Object.keys(attributesByModelId).length,
 								modelIdCount,
-								matchedAttributeCount
+								matchedAttributeCount,
+								fallbackTextureMaterialCount
 							});
 						}
 						finalizeAndLoadModel(

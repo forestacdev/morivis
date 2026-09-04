@@ -7,7 +7,6 @@ export const DEFAULT_CUSTOM_META_DATA: BaseMetaData = {
 	description: 'ユーザーがアップロードしたデータ',
 	attribution: 'カスタムデータ',
 	location: '不明',
-	maxZoom: 24,
 	minZoom: 0,
 	tags: [],
 	bounds: WEB_MERCATOR_WORLD_BBOX,

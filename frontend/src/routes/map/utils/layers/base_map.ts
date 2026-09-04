@@ -106,7 +106,6 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 		type: 'raster',
 		source: 'base_seamlessphoto',
 		minzoom: 8,
-		maxzoom: 24,
 		paint: {
 			'raster-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0, 9, 0.9],
 			'raster-brightness-min': 0,
@@ -118,7 +117,6 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 	// 	id: 'base_gsi_rinya_m',
 	// 	source: 'base_gsi_rinya_m',
 	// 	type: 'raster',
-	// 	maxzoom: 24,
 	// 	minzoom: 12,
 	// 	paint: {
 	// 		'raster-opacity': 0.9,
@@ -133,9 +131,9 @@ export const baseMapReliefSources: Record<string, RasterSourceSpecification> = {
 	relief: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&baseUrl='
-			+ encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp')
-			+ '&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -146,7 +144,6 @@ export const baseMapReliefLayers: RasterLayerSpecification[] = [
 	{
 		id: 'relief_layer',
 		source: 'relief',
-		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',
 		paint: {
@@ -208,9 +205,9 @@ export const baseMapSlopeSources: Record<string, RasterSourceSpecification> = {
 	slope: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&baseUrl='
-			+ encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp')
-			+ '&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -221,7 +218,6 @@ export const baseMapSlopeLayers: RasterLayerSpecification[] = [
 	{
 		id: 'slope_layer',
 		source: 'slope',
-		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',
 		paint: {
@@ -235,9 +231,9 @@ export const baseMapAspectSources: Record<string, RasterSourceSpecification> = {
 	aspect: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&baseUrl='
-			+ encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp')
-			+ '&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -248,7 +244,6 @@ export const baseMapAspectLayers: RasterLayerSpecification[] = [
 	{
 		id: 'aspect_layer',
 		source: 'aspect',
-		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',
 		paint: {
@@ -262,9 +257,9 @@ export const baseMapCurvatureSources: Record<string, RasterSourceSpecification> 
 	curvature: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=cs&tileSize=512&baseUrl='
-			+ encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp')
-			+ '&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=cs&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -275,7 +270,6 @@ export const baseMapCurvatureLayers: RasterLayerSpecification[] = [
 	{
 		id: 'curvature_layer',
 		source: 'curvature',
-		maxzoom: 24,
 		minzoom: 0,
 		type: 'raster',
 		paint: {
@@ -291,7 +285,6 @@ export const baseMapOsmSources: Record<string, RasterSourceSpecification> = {
 		tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
 		tileSize: 256,
 		minzoom: 0,
-		maxzoom: 24,
 		attribution: '© OpenStreetMap contributors'
 	}
 };
@@ -302,7 +295,6 @@ export const baseMapOsmLayers: (RasterLayerSpecification | BackgroundLayerSpecif
 		source: 'osm',
 		type: 'raster',
 		minzoom: 0,
-		maxzoom: 24,
 		paint: {
 			'raster-opacity': 0.9,
 			'raster-brightness-min': 0,

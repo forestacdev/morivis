@@ -86,7 +86,6 @@
 					source: 'hillshademap',
 					type: 'raster',
 					minzoom: 2,
-					maxzoom: 24,
 					paint: {
 						'raster-opacity': 1.0
 					}

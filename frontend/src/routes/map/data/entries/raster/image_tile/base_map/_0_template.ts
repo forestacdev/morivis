@@ -17,7 +17,6 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		attribution: 'カスタムデータ',
 		location: '不明',
 		minZoom: 0,
-		maxZoom: 24,
 		tileSize: 256,
 		tags: [],
 		bounds: WEB_MERCATOR_JAPAN_BOUNDS,
