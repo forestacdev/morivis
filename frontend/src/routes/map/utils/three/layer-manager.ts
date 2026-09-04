@@ -2053,12 +2053,14 @@ export class ThreeJsLayerManager {
 		if (!includeHighlights) {
 			selectionHighlights.forEach((highlight) => highlight.parent?.remove(highlight));
 		}
+		object.visible = entry.style.visible ?? true;
 		this.applyStyleToObject(object, entry.style, entry.format.type);
 		return object;
 	}
 
-	/** 単体表示用クローンのマテリアルだけを現在のスタイルで更新する。 */
+	/** 単体表示用クローンの可視状態とマテリアルを現在のスタイルで更新する。 */
 	updateModelViewStyle(object: THREE.Object3D, entry: MeshEntry<MeshStyle>): void {
+		object.visible = entry.style.visible ?? true;
 		this.applyStyleToObject(object, entry.style, entry.format.type);
 	}
 
