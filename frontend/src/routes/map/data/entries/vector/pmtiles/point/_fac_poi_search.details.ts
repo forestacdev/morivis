@@ -150,6 +150,10 @@ export const facPoiSearchDetailsById: DetailsById = {
 			{
 				type: 'youtube',
 				id: 'FkFaESLWENI'
+			},
+			{
+				type: 'youtube',
+				id: '2Hs5LEKPukQ'
 			}
 		],
 		description: `すべての人と森をつなぎ、森と暮らす楽しさと森林文化の豊かさを次世代に伝えていく「森の入り口」森林総合教育センターです。`,
