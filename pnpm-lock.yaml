@@ -123,6 +123,9 @@ importers:
       '@pixiv/three-vrm':
         specifier: ^3.5.5
         version: 3.5.5(three@0.176.0)
+      '@pixiv/three-vrm-animation':
+        specifier: ^3.5.5
+        version: 3.5.5(three@0.176.0)
       '@tailwindcss/typography':
         specifier: ^0.5.15
         version: 0.5.19(tailwindcss@4.1.17)
@@ -2352,6 +2355,11 @@ packages:
   '@petamoriken/float16@3.9.3':
     resolution: {integrity: sha512-8awtpHXCx/bNpFt4mt2xdkgtgVvKqty8VbjHI/WWWQuEw+KLzFot3f4+LkQY9YmOtq7A5GdOnqoIC8Pdygjk2g==}
 
+  '@pixiv/three-vrm-animation@3.5.5':
+    resolution: {integrity: sha512-Q0kEtmftxfv0iCUHQkJH2jAr1zmT9ywYXnAzhxnLPMYCsx0Kken3J3U2GJF9PdGZmLlKpoK0LFEXVdD/L7ZA4Q==}
+    peerDependencies:
+      three: '>=0.137'
+
   '@pixiv/three-vrm-core@3.5.5':
     resolution: {integrity: sha512-jjaXZbMVRsk2HAGVxqDLmSJyGOJqbMcJpuTHR1TY/TN1FxiKdAzSqdr/ZUcczYipNf8IL9vDT9NX2XmWj+ybRQ==}
     peerDependencies:
@@ -2407,6 +2415,9 @@ packages:
 
   '@pixiv/types-vrmc-vrm-1.0@3.5.5':
     resolution: {integrity: sha512-WnemHHo2375BcBdumEhvrupZzsMSzTfdWlokmV9sUX2oC+OAQqJFfBjLF8ppkOhzHpl4MAPJqEfuhBJtNPm9ww==}
+
+  '@pixiv/types-vrmc-vrm-animation-1.0@3.5.5':
+    resolution: {integrity: sha512-pyow6wBLdRZbLQbtHqu8uvYG+NXJbwIiLVK6pM6UvtaYotecOv43t6qIdMLYuieV+F+bEJcdfOLFZZVolrOOcQ==}
 
   '@playwright/test@1.57.0':
     resolution: {integrity: sha512-6TyEnHgd6SArQO8UO2OMTxshln3QMWBtPGrOCgs3wVEmQmwyuNtB10IZMfmYDE0riwNR1cu4q+pPcxMVtaG3TA==}
@@ -8790,6 +8801,13 @@ snapshots:
 
   '@petamoriken/float16@3.9.3': {}
 
+  '@pixiv/three-vrm-animation@3.5.5(three@0.176.0)':
+    dependencies:
+      '@pixiv/three-vrm-core': 3.5.5(three@0.176.0)
+      '@pixiv/types-vrmc-vrm-1.0': 3.5.5
+      '@pixiv/types-vrmc-vrm-animation-1.0': 3.5.5
+      three: 0.176.0
+
   '@pixiv/three-vrm-core@3.5.5(three@0.176.0)':
     dependencies:
       '@pixiv/types-vrm-0.0': 3.5.5
@@ -8848,6 +8866,10 @@ snapshots:
   '@pixiv/types-vrmc-springbone-extended-collider-1.0@3.5.5': {}
 
   '@pixiv/types-vrmc-vrm-1.0@3.5.5': {}
+
+  '@pixiv/types-vrmc-vrm-animation-1.0@3.5.5':
+    dependencies:
+      '@pixiv/types-vrmc-vrm-1.0': 3.5.5
 
   '@playwright/test@1.57.0':
     dependencies:

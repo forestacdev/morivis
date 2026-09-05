@@ -42,6 +42,8 @@ import {
 import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
 import {
 	getInitialModelAnimationState,
+	isEmbeddedModelAnimationClip,
+	isVrmaModelAnimationClip,
 	isVmdModelAnimationClip
 } from '$routes/map/utils/three/model-animation';
 import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
@@ -50,6 +52,7 @@ import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-mode
 import {
 	createVrmLoader,
 	getVrmFromGltf,
+	loadVrmAnimationClip,
 	rotateVrm0IfNeeded
 } from '$routes/map/utils/three/vrm-loader';
 import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
@@ -178,6 +181,16 @@ interface LoadedModel {
 		lastPlaying?: boolean;
 	};
 	vrm?: VRM;
+	vrmAnimation?: {
+		mixer: THREE.AnimationMixer;
+		clips: Map<number, THREE.AnimationClip>;
+		actions: Map<number, THREE.AnimationAction>;
+		activeClipIndex?: number;
+		activeAction?: THREE.AnimationAction;
+		loadingClipIndex?: number;
+		lastLoop?: boolean;
+		lastPlaying?: boolean;
+	};
 	resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>;
 }
 
@@ -1174,9 +1187,18 @@ export class ThreeJsLayerManager {
 
 	private syncAnimationState = (loaded: LoadedModel) => {
 		this.syncMmdAnimationState(loaded);
+		this.syncVrmAnimationState(loaded);
 		if (!loaded.mixer || !loaded.actions || loaded.actions.length === 0) return;
 
 		const animationState = loaded.entry.state?.animation;
+		const clips = loaded.entry.properties?.animation?.clips;
+		const selectedClip = clips?.[
+			Math.min(Math.max(animationState?.currentClipIndex ?? 0, 0), Math.max(clips.length - 1, 0))
+		];
+		if (!isEmbeddedModelAnimationClip(selectedClip)) {
+			loaded.actions.forEach((action) => action.stop());
+			return;
+		}
 		const clipIndex = Math.min(
 			Math.max(animationState?.currentClipIndex ?? 0, 0),
 			loaded.actions.length - 1
@@ -1212,6 +1234,90 @@ export class ThreeJsLayerManager {
 		if (playing) {
 			this.map?.triggerRepaint();
 		}
+	};
+
+	private syncVrmAnimationState = (loaded: LoadedModel) => {
+		const vrm = loaded.vrm;
+		const animationState = loaded.entry.state?.animation;
+		const clips = loaded.entry.properties?.animation?.clips;
+		if (!vrm || !animationState || !clips?.length) return;
+
+		const clipIndex = Math.min(Math.max(animationState.currentClipIndex, 0), clips.length - 1);
+		const clip = clips[clipIndex];
+		const vrmAnimation = loaded.vrmAnimation;
+		if (!clip || !isVrmaModelAnimationClip(clip)) {
+			if (vrmAnimation) {
+				vrmAnimation.activeAction?.stop();
+				vrmAnimation.activeAction = undefined;
+				vrmAnimation.activeClipIndex = undefined;
+				vrmAnimation.lastPlaying = false;
+			}
+			return;
+		}
+
+		const runtime =
+			vrmAnimation ?? {
+				mixer: new THREE.AnimationMixer(vrm.scene),
+				clips: new Map<number, THREE.AnimationClip>(),
+				actions: new Map<number, THREE.AnimationAction>()
+			};
+		if (!vrmAnimation) loaded.vrmAnimation = runtime;
+
+		const configureAction = (action: THREE.AnimationAction, reset: boolean) => {
+			const loop = animationState.loop ?? true;
+			if (reset) action.reset();
+			action.enabled = true;
+			action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+			action.clampWhenFinished = !loop;
+			action.timeScale = Math.max(animationState.speed, 0);
+			action.paused = !animationState.playing;
+			action.play();
+			runtime.activeClipIndex = clipIndex;
+			runtime.activeAction = action;
+			runtime.lastLoop = loop;
+			runtime.lastPlaying = animationState.playing;
+			if (animationState.playing) this.map?.triggerRepaint();
+		};
+
+		const cachedAction = runtime.actions.get(clipIndex);
+		if (cachedAction) {
+			const shouldReset =
+				runtime.activeClipIndex !== clipIndex ||
+				runtime.lastLoop !== animationState.loop ||
+				(!runtime.lastPlaying && animationState.playing);
+			if (runtime.activeAction && runtime.activeAction !== cachedAction) {
+				runtime.activeAction.stop();
+			}
+			configureAction(cachedAction, shouldReset);
+			return;
+		}
+
+		if (runtime.loadingClipIndex === clipIndex) return;
+		runtime.loadingClipIndex = clipIndex;
+		void loadVrmAnimationClip(clip.url, vrm)
+			.then((animationClip) => {
+				if (
+					runtime.loadingClipIndex !== clipIndex ||
+					this.loadedModels.get(loaded.entry.id) !== loaded ||
+					loaded.entry.state?.animation?.currentClipIndex !== clipIndex
+				) {
+					return;
+				}
+
+				const action = runtime.mixer.clipAction(animationClip);
+				runtime.clips.set(clipIndex, animationClip);
+				runtime.actions.set(clipIndex, action);
+				runtime.loadingClipIndex = undefined;
+				if (runtime.activeAction && runtime.activeAction !== action) {
+					runtime.activeAction.stop();
+				}
+				configureAction(action, true);
+			})
+			.catch((error) => {
+				if (runtime.loadingClipIndex !== clipIndex) return;
+				runtime.loadingClipIndex = undefined;
+				console.error(`VRMAモーションの読み込みに失敗しました: ${clip.name}`, error);
+			});
 	};
 
 	private syncMmdAnimationState = (loaded: LoadedModel) => {
@@ -1460,11 +1566,30 @@ export class ThreeJsLayerManager {
 		let hasPlayingAnimation = false;
 
 		this.loadedModels.forEach((loaded) => {
-			if (loaded.entry.state?.animation?.playing && loaded.mixer) {
+			const animationState = loaded.entry.state?.animation;
+			const clips = loaded.entry.properties?.animation?.clips;
+			const selectedClip = clips?.[
+				Math.min(
+					Math.max(animationState?.currentClipIndex ?? 0, 0),
+					Math.max((clips?.length ?? 0) - 1, 0)
+				)
+			];
+			const isPlayingEmbeddedAnimation =
+				animationState?.playing && isEmbeddedModelAnimationClip(selectedClip);
+
+			if (isPlayingEmbeddedAnimation && loaded.mixer) {
 				loaded.mixer.update(deltaSeconds);
 				hasPlayingAnimation = true;
 			}
-			if (loaded.entry.state?.animation?.playing && loaded.vrm) {
+			if (animationState?.playing && loaded.vrmAnimation?.activeClipIndex != null) {
+				loaded.vrmAnimation.mixer.update(deltaSeconds);
+				hasPlayingAnimation = true;
+			}
+			if (
+				animationState?.playing &&
+				loaded.vrm &&
+				(isPlayingEmbeddedAnimation || loaded.vrmAnimation?.activeClipIndex != null)
+			) {
 				loaded.vrm.update(deltaSeconds);
 				hasPlayingAnimation = true;
 			}

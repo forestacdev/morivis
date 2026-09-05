@@ -2,12 +2,21 @@ import type {
 	ModelAnimationClip,
 	ModelAnimationProperties,
 	ModelAnimationState,
-	VmdModelAnimationClip
+	VmdModelAnimationClip,
+	VrmaModelAnimationClip
 } from '$routes/map/data/types/model';
 
 export const isVmdModelAnimationClip = (
-	clip: ModelAnimationClip | VmdModelAnimationClip
+	clip: ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip
 ): clip is VmdModelAnimationClip => clip.type === 'vmd';
+
+export const isVrmaModelAnimationClip = (
+	clip: ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip
+): clip is VrmaModelAnimationClip => clip.type === 'vrma';
+
+export const isEmbeddedModelAnimationClip = (
+	clip: ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip | undefined
+): clip is ModelAnimationClip => !clip || clip.type === undefined || clip.type === 'embedded';
 
 export const getInitialModelAnimationState = (
 	properties: ModelAnimationProperties | undefined

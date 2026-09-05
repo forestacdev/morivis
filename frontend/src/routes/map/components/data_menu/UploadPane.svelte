@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { tick } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
@@ -400,7 +401,7 @@
 	</DropContainer>
 </div>
 
-{#if showFormListDialog}
+{#if !showFormListDialog}
 	<div
 		transition:fade={{ duration: 200 }}
 		class="absolute inset-0 z-20 flex items-center justify-center bg-black/60 p-4"
@@ -431,12 +432,18 @@
 							{#each group.dialogs as dialog (dialog.type)}
 								<button
 									onclick={() => showUploadDialog(dialog.type)}
-									class="bg-base hover:bg-accent group flex min-h-[112px] cursor-pointer flex-col gap-2 rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
+									class="bg-base hover:bg-accent group flex min-h-[112px] overflow-hidden relative cursor-pointer flex-col gap-2 rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
 								>
-									<span class="font-semibold">{dialog.label}</span>
-									<span class="text-xs leading-5 text-black/70 group-hover:text-white/80">
-										{dialog.description}
-									</span>
+									<Icon
+										icon="mdi:arrow-right"
+										class="text-gray-300 w-32 h-32 absolute z-0 right-0"
+									/>
+									<div class="absolute flex flex-col gap-3">
+										<span class="font-semibold">{dialog.label}</span>
+										<span class="text-xs leading-5 text-black/70 group-hover:text-white/80">
+											{dialog.description}
+										</span>
+									</div>
 								</button>
 							{/each}
 						</div>

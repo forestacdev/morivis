@@ -28,8 +28,15 @@ export interface VmdModelAnimationClip {
 	url: string;
 }
 
+/** VRM に適用する VRM Animation モーション。 */
+export interface VrmaModelAnimationClip {
+	name: string;
+	type: 'vrma';
+	url: string;
+}
+
 export interface ModelAnimationProperties {
-	clips: Array<ModelAnimationClip | VmdModelAnimationClip>;
+	clips: Array<ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip>;
 	/** 初期選択するプリセット。未指定時は先頭。 */
 	defaultClipIndex?: number;
 	/** 初回表示時に既定プリセットを再生する。 */

@@ -26,6 +26,7 @@ const MODEL_TEXTURE_EXTENSIONS = [
 	'.spa',
 	'.sph'
 ] as const;
+const VRMA_EXTENSION = '.vrma';
 
 const getPathCandidates = (value: string): string[] => {
 	const normalizedValue = value.replace(/\\/g, '/').trim().toLowerCase();
@@ -112,6 +113,10 @@ const supplementaryDropMatchers: Partial<
 		),
 	model: async (currentFiles, files) => {
 		if (files.length === 0) return false;
+		const hasVrmModel = toUploadFiles(currentFiles).some((file) => hasExtension(file, '.vrm'));
+		if (hasVrmModel && files.every((file) => hasExtension(file, VRMA_EXTENSION))) {
+			return true;
+		}
 		if (
 			files.every((file) =>
 				MODEL_TEXTURE_EXTENSIONS.some((extension) => hasExtension(file, extension))

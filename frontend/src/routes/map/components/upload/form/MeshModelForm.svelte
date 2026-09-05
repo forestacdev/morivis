@@ -148,6 +148,9 @@
 	const vmdFiles = $derived.by(() => {
 		return inputFiles.filter((file) => /\.vmd$/i.test(getPathLikeName(file)));
 	});
+	const vrmaFiles = $derived.by(() => {
+		return inputFiles.filter((file) => /\.vrma$/i.test(getPathLikeName(file)));
+	});
 
 	const isJsonGltfFile = $derived(
 		!!glbFile && activeFormat === 'gltf' && getPathLikeName(glbFile).endsWith('.gltf')
@@ -161,6 +164,7 @@
 	const modelSupplementaryFiles = $derived.by(() => {
 		if (activeFormat === 'gltf') return gltfSupplementaryFiles;
 		if (activeFormat === 'pmx') return [...textureFiles, ...vmdFiles];
+		if (activeFormat === 'vrm') return vrmaFiles;
 		return textureFiles;
 	});
 
@@ -790,6 +794,39 @@
 				};
 			}
 		}
+		if (activeFormat === 'vrm' && resourceUrls && vrmaFiles.length > 0) {
+			const clips = vrmaFiles.flatMap((file) => {
+				const url = resourceUrls?.[file.name.toLowerCase()];
+				if (!url) return [];
+				return [
+					{
+						name: file.name.replace(/\.vrma$/i, ''),
+						type: 'vrma' as const,
+						url
+					}
+				];
+			});
+			if (clips.length > 0) {
+				entry.properties = {
+					...entry.properties,
+					animation: {
+						clips,
+						defaultClipIndex: 0,
+						autoPlay: true,
+						defaultLoop: true
+					}
+				};
+				entry.state = {
+					...entry.state,
+					animation: {
+						currentClipIndex: 0,
+						playing: true,
+						speed: 1,
+						loop: true
+					}
+				};
+			}
+		}
 		if (activeFormat === 'ifc' && ifcPlacementMetadata?.description) {
 			entry.metaData.description = ifcPlacementMetadata.description;
 		}
@@ -819,22 +856,29 @@
 			}
 
 			if (uploadedModelMeta.animationNames.length > 0) {
+				const configuredAnimation = entry.properties?.animation;
 				entry.properties = {
 					...entry.properties,
 					animation: {
-						clips: uploadedModelMeta.animationNames.map((clipName) => ({ name: clipName })),
-						defaultLoop: true
+						...configuredAnimation,
+						clips: [
+							...(configuredAnimation?.clips ?? []),
+							...uploadedModelMeta.animationNames.map((clipName) => ({ name: clipName }))
+						],
+						defaultLoop: configuredAnimation?.defaultLoop ?? true
 					}
 				};
-				entry.state = {
-					...entry.state,
-					animation: {
-						currentClipIndex: 0,
-						playing: false,
-						speed: 1,
-						loop: true
-					}
-				};
+				if (!entry.state?.animation) {
+					entry.state = {
+						...entry.state,
+						animation: {
+							currentClipIndex: 0,
+							playing: false,
+							speed: 1,
+							loop: true
+						}
+					};
+				}
 			}
 			if (uploadedModelMeta.scaleMultiplier !== 1) {
 				entry.style.transform.baseScale =
@@ -1089,6 +1133,10 @@
 				<p class="mt-2">
 					VMDモーションを{vmdFiles.length}件追加します。先頭のモーションを既定で再生します。
 				</p>
+			{:else if activeFormat === 'vrm' && vrmaFiles.length > 0}
+				<p class="mt-2">
+					VRMAモーションを{vrmaFiles.length}件追加します。先頭のモーションを既定で再生します。
+				</p>
 			{:else if requiresGltfSupplementaryResolution}
 				<p class="mt-2">
 					この glTF は外部ファイルを参照しています。`.bin`
@@ -1143,7 +1191,7 @@
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
 		<TextForm
 			bind:value={forms.url}
-			label="3Dモデル URL (GLTF / GLB / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC / PMX)"
+			label="3Dモデル URL (GLTF / GLB / VRM / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC / PMX)"
 			error={errors.url}
 		/>
 	</div>

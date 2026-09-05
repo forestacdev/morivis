@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { getInitialModelAnimationState, isVmdModelAnimationClip } from './model-animation';
+import {
+	getInitialModelAnimationState,
+	isVmdModelAnimationClip,
+	isVrmaModelAnimationClip
+} from './model-animation';
 
 describe('model animation presets', () => {
 	it('returns the configured default state for an animation preset', () => {
@@ -39,9 +43,16 @@ describe('model animation presets', () => {
 	});
 
 	it('identifies VMD presets by their explicit source type', () => {
-		expect(isVmdModelAnimationClip({ name: 'motion-a', type: 'vmd', url: 'blob:motion-a' })).toBe(
+		expect(isVmdModelAnimationClip({ name: 'motion-a', type: 'vmd', url: 'blob:motion-a' }))
+			.toBe(true);
+		expect(isVmdModelAnimationClip({ name: 'idle', type: 'embedded' })).toBe(false);
+	});
+
+	it('identifies VRMA presets by their explicit source type', () => {
+		expect(isVrmaModelAnimationClip({ name: 'walk', type: 'vrma', url: 'blob:walk' })).toBe(
 			true
 		);
-		expect(isVmdModelAnimationClip({ name: 'idle', type: 'embedded' })).toBe(false);
+		expect(isVrmaModelAnimationClip({ name: 'motion-a', type: 'vmd', url: 'blob:motion-a' }))
+			.toBe(false);
 	});
 });

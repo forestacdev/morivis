@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getVrmFromGltf, rotateVrm0IfNeeded } from './vrm-loader';
+import { getVrmAnimationFromGltf, getVrmFromGltf, rotateVrm0IfNeeded } from './vrm-loader';
 
 describe('getVrmFromGltf', () => {
 	it('VRMローダーが登録したモデル実体を取得する', () => {
@@ -12,6 +12,20 @@ describe('getVrmFromGltf', () => {
 	it('VRM拡張がないGLTFはエラーにする', () => {
 		expect(() => getVrmFromGltf({ userData: {} } as never)).toThrow(
 			'VRMとして認識できませんでした'
+		);
+	});
+
+	it('VRM Animation拡張から先頭のモーションを取得する', () => {
+		const animation = { duration: 1 };
+
+		expect(getVrmAnimationFromGltf({ userData: { vrmAnimations: [animation] } } as never)).toBe(
+			animation
+		);
+	});
+
+	it('VRM Animation拡張がないGLTFはエラーにする', () => {
+		expect(() => getVrmAnimationFromGltf({ userData: {} } as never)).toThrow(
+			'VRMAとして認識できませんでした'
 		);
 	});
 

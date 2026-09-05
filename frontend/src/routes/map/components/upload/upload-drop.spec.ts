@@ -132,6 +132,19 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('VRM と VRMA を同時にドロップするとモデルダイアログでまとめて扱う', async () => {
+		const vrmFile = createFile('test-avatar.vrm', 'vrm');
+		const vrmaFile = createFile('test-motion.vrma', 'vrma');
+
+		const result = await resolveDroppedFiles([vrmFile, vrmaFile]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: [vrmFile, vrmaFile]
+		});
+	});
+
 	it('通常の3D Gaussian Splatting PLYは専用ダイアログ判定になる', async () => {
 		const header = [
 			'ply',
