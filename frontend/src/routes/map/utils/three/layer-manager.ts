@@ -155,7 +155,7 @@ export interface PickedModelFeature {
 interface ModelHighlight {
 	mesh: THREE.Mesh;
 	fill: THREE.Mesh;
-	outline: THREE.LineSegments;
+	outline?: THREE.LineSegments;
 	geometry: THREE.BufferGeometry;
 	expressId?: number;
 }
@@ -751,11 +751,13 @@ export class ThreeJsLayerManager {
 
 		this.selectedModelHighlights.forEach((highlight) => {
 			highlight.fill.removeFromParent();
-			highlight.outline.removeFromParent();
 			(highlight.fill.material as THREE.Material).dispose();
 			if (highlight.geometry !== highlight.mesh.geometry) highlight.geometry.dispose();
-			highlight.outline.geometry.dispose();
-			(highlight.outline.material as THREE.Material).dispose();
+			if (highlight.outline) {
+				highlight.outline.removeFromParent();
+				highlight.outline.geometry.dispose();
+				(highlight.outline.material as THREE.Material).dispose();
+			}
 		});
 		this.selectedModelHighlights = [];
 		this.map?.triggerRepaint();
@@ -881,7 +883,9 @@ export class ThreeJsLayerManager {
 		if (!partNode) return [mesh];
 		const partMeshes: THREE.Mesh[] = [];
 		partNode.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) partMeshes.push(child as THREE.Mesh);
+			if ((child as THREE.Mesh).isMesh && !child.userData.morivisSelectionHighlight) {
+				partMeshes.push(child as THREE.Mesh);
+			}
 		});
 		return partMeshes.length > 0 ? partMeshes : [mesh];
 	};
@@ -906,32 +910,48 @@ export class ThreeJsLayerManager {
 				? mesh.geometry
 				: (this.getIfcHighlightGeometry(mesh, expressId) ?? mesh.geometry);
 
-		const fill = new THREE.Mesh(
-			geometry,
-			new THREE.MeshBasicMaterial({
-				color: HIGHLIGHT_LAYER_COLOR,
-				transparent: true,
-				opacity: 0.38,
-				side: THREE.DoubleSide,
-				depthWrite: false,
-				polygonOffset: true,
-				polygonOffsetFactor: -1,
-				polygonOffsetUnits: -1
-			})
-		);
+		const fillMaterial = new THREE.MeshBasicMaterial({
+			color: HIGHLIGHT_LAYER_COLOR,
+			transparent: true,
+			opacity: 0.38,
+			side: THREE.DoubleSide,
+			depthWrite: false,
+			polygonOffset: true,
+			polygonOffsetFactor: -1,
+			polygonOffsetUnits: -1
+		});
+		const sourceSkinnedMesh = mesh as THREE.SkinnedMesh;
+		let fill: THREE.Mesh;
+		if (sourceSkinnedMesh.isSkinnedMesh) {
+			const skinnedFill = new THREE.SkinnedMesh(geometry, fillMaterial);
+			skinnedFill.bindMode = sourceSkinnedMesh.bindMode;
+			skinnedFill.bind(sourceSkinnedMesh.skeleton, sourceSkinnedMesh.bindMatrix);
+			skinnedFill.morphTargetInfluences = sourceSkinnedMesh.morphTargetInfluences;
+			skinnedFill.morphTargetDictionary = sourceSkinnedMesh.morphTargetDictionary;
+			fill = skinnedFill;
+		} else {
+			fill = new THREE.Mesh(geometry, fillMaterial);
+			fill.morphTargetInfluences = mesh.morphTargetInfluences;
+			fill.morphTargetDictionary = mesh.morphTargetDictionary;
+		}
 		fill.name = 'morivis-fbx-highlight-fill';
 		fill.userData.morivisSelectionHighlight = true;
 		fill.raycast = () => undefined;
 
-		const outline = new THREE.LineSegments(
-			new THREE.EdgesGeometry(geometry, 20),
-			new THREE.LineBasicMaterial({ color: HIGHLIGHT_LAYER_COLOR, depthWrite: false })
-		);
-		outline.name = 'morivis-fbx-highlight-outline';
-		outline.userData.morivisSelectionHighlight = true;
-		outline.raycast = () => undefined;
+		const outline = sourceSkinnedMesh.isSkinnedMesh
+			? undefined
+			: new THREE.LineSegments(
+					new THREE.EdgesGeometry(geometry, 20),
+					new THREE.LineBasicMaterial({ color: HIGHLIGHT_LAYER_COLOR, depthWrite: false })
+				);
+		if (outline) {
+			outline.name = 'morivis-fbx-highlight-outline';
+			outline.userData.morivisSelectionHighlight = true;
+			outline.raycast = () => undefined;
+		}
 
-		mesh.add(fill, outline);
+		mesh.add(fill);
+		if (outline) mesh.add(outline);
 		this.selectedModelHighlights.push({ mesh, fill, outline, geometry, expressId });
 	};
 
