@@ -514,6 +514,9 @@
 			const pickedModel = await threeJsManager.pickModel(e.point);
 			if (pickedModel) {
 				console.info('[モデル属性]', pickedModel);
+				if (pickedModel.propId) {
+					console.info('[_prop_id]', pickedModel.propId);
+				}
 				clearSearchHighlight();
 				clickedLayerIds = [pickedModel.entryId];
 				featureMenuData = {

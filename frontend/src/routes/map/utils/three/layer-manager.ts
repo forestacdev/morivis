@@ -147,6 +147,7 @@ export interface PickedModelFeature {
 	entryId: string;
 	objectId: string;
 	objectName: string;
+	propId?: string;
 	attributes: ModelAttributes;
 	part?: ModelPartData;
 }
@@ -861,8 +862,8 @@ export class ThreeJsLayerManager {
 	private getModelPartNode = (object: THREE.Object3D) => {
 		let current: THREE.Object3D | null = object;
 		while (current) {
-			const partId = current.userData._part_id ?? current.userData._prop_id;
-			if (typeof partId === 'string' && partId) return { id: partId, object: current };
+			const propId = current.userData._prop_id;
+			if (typeof propId === 'string' && propId) return { id: propId, object: current };
 			current = current.parent;
 		}
 		return undefined;
@@ -2391,19 +2392,19 @@ export class ThreeJsLayerManager {
 		const objectId =
 			expressId ?? (attributeObject as THREE.Object3D & { ID?: number }).ID ?? attributeObject.id;
 		const hitMesh = hit.object as THREE.Mesh;
-		const partId = this.getModelPartId(hit.object);
-		const part = partId ? loaded.entry.properties?.detailsById?.[partId] : undefined;
+		const propId = this.getModelPartId(hit.object);
+		const part = propId ? loaded.entry.properties?.detailsById?.[propId] : undefined;
 		this.highlightModelMeshes(
 			expressId == null ? this.getModelPartMeshes(hitMesh) : [hitMesh],
 			expressId
 		);
 		const attributes = { ...getModelObjectAttributes(hit.object), ...formatAttributes, ...part?.attributes };
 		delete attributes._prop_id;
-		if (partId) attributes._part_id = partId;
 		return {
 			entryId: loaded.entry.id,
 			objectId: String(objectId),
 			objectName: this.resolvePickedObjectName(attributeObject, loaded.object),
+			propId,
 			attributes,
 			part
 		};

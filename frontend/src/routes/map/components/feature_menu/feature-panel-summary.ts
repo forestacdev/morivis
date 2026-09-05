@@ -37,13 +37,14 @@ export const hasFeaturePanelSummaryContent = (summary: FeaturePanelSummaryData):
 // _prop_data.ts の静的メディア定義を FeaturePanel 用メディア形式に変換する。
 const convertMediaData = (
 	media: MediaData,
-	targetLayer: MorivisLayerEntry | null
+	targetLayer: MorivisLayerEntry | null,
+	title = targetLayer?.metaData.name
 ): FeaturePanelMedia => {
 	if (media.type === 'image') {
 		return {
 			type: 'image',
 			url: media.url,
-			alt: targetLayer?.metaData.name ?? '画像',
+			alt: title ?? '画像',
 			source: 'static',
 			fit: 'cover'
 		};
@@ -53,7 +54,7 @@ const convertMediaData = (
 		return {
 			type: 'youtube',
 			url: `https://www.youtube.com/embed/${media.id}`,
-			title: targetLayer?.metaData.name ?? 'YouTube video'
+			title: title ?? 'YouTube video'
 		};
 	}
 
@@ -61,14 +62,14 @@ const convertMediaData = (
 		return {
 			type: 'video',
 			url: media.url,
-			title: targetLayer?.metaData.name ?? '動画'
+			title: title ?? '動画'
 		};
 	}
 
 	return {
 		type: 'audio',
 		url: media.url,
-		title: targetLayer?.metaData.name ?? '音声',
+		title: title ?? '音声',
 		source: 'static'
 	};
 };
@@ -265,16 +266,8 @@ export const getLayerFeaturePanelSummary = async (
 	if (modelPart) {
 		return {
 			title: modelPart.name,
-			media: modelPart.imageUrl
-				? [
-						{
-							type: 'image',
-							url: modelPart.imageUrl,
-							alt: modelPart.name,
-							source: 'static',
-							fit: 'cover'
-						}
-					]
+			media: modelPart.medias?.length
+				? modelPart.medias.map((media) => convertMediaData(media, null, modelPart.name))
 				: undefined,
 			description: modelPart.description
 				? {

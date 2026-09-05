@@ -90,7 +90,6 @@
 				const [key, value] = entry;
 			return (
 				key !== '_prop_id' &&
-				key !== '_part_id' &&
 				value !== '' &&
 					value !== null &&
 					value !== undefined &&
