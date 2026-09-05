@@ -143,6 +143,10 @@
 		);
 	});
 
+	const vmdFiles = $derived.by(() => {
+		return inputFiles.filter((file) => /\.vmd$/i.test(getPathLikeName(file)));
+	});
+
 	const isJsonGltfFile = $derived(
 		!!glbFile && activeFormat === 'gltf' && getPathLikeName(glbFile).endsWith('.gltf')
 	);
@@ -150,6 +154,12 @@
 	const gltfSupplementaryFiles = $derived.by(() => {
 		if (!glbFile || !isJsonGltfFile) return [];
 		return inputFiles.filter((file) => file !== glbFile);
+	});
+
+	const modelSupplementaryFiles = $derived.by(() => {
+		if (activeFormat === 'gltf') return gltfSupplementaryFiles;
+		if (activeFormat === 'pmx') return [...textureFiles, ...vmdFiles];
+		return textureFiles;
 	});
 
 	const getRelativePath = (file: File) => {
@@ -599,7 +609,7 @@
 			return;
 		}
 
-		const resourceFiles = activeFormat === 'gltf' ? gltfSupplementaryFiles : textureFiles;
+		const resourceFiles = modelSupplementaryFiles;
 		const nextFileKey = [getPathLikeName(glbFile), ...resourceFiles.map(getPathLikeName)].join(
 			'::'
 		);
@@ -709,7 +719,7 @@
 		const center = mapStore.getCenter();
 		let resolvedMtlUrl: string | undefined;
 		let resourceUrls: Record<string, string> | undefined;
-		const resourceFiles = activeFormat === 'gltf' ? gltfSupplementaryFiles : textureFiles;
+		const resourceFiles = modelSupplementaryFiles;
 		const isLocalFbx =
 			activeFormat === 'fbx' && getModelCoordinateMode(projectedCandidateSourceBbox) === 'local';
 
@@ -744,6 +754,37 @@
 				sourceFileName: glbFile.name
 			}
 		);
+		if (activeFormat === 'pmx' && resourceUrls && vmdFiles.length > 0) {
+			const clips = vmdFiles.flatMap((file) => {
+				const url = resourceUrls?.[file.name.toLowerCase()];
+				if (!url) return [];
+				return [
+					{
+						name: file.name.replace(/\.vmd$/i, ''),
+						type: 'vmd' as const,
+						url
+					}
+				];
+			});
+			if (clips.length > 0) {
+				entry.properties = {
+					...entry.properties,
+					animation: {
+						clips,
+						defaultClipIndex: 0,
+						autoPlay: true
+					}
+				};
+				entry.state = {
+					...entry.state,
+					animation: {
+						currentClipIndex: 0,
+						playing: true,
+						speed: 1
+					}
+				};
+			}
+		}
 		if (activeFormat === 'ifc' && ifcPlacementMetadata?.description) {
 			entry.metaData.description = ifcPlacementMetadata.description;
 		}
@@ -1036,6 +1077,10 @@
 				</p>
 				<p class="mt-2">未追加画像: {missingFbxTexturePaths.join(', ')}</p>
 				<p class="mt-2">画像なしのまま登録することもできます。</p>
+			{:else if activeFormat === 'pmx' && vmdFiles.length > 0}
+				<p class="mt-2">
+					VMDモーションを{vmdFiles.length}件追加します。先頭のモーションを既定で再生します。
+				</p>
 			{:else if requiresGltfSupplementaryResolution}
 				<p class="mt-2">
 					この glTF は外部ファイルを参照しています。`.bin`

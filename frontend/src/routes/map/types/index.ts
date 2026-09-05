@@ -473,7 +473,8 @@ export const SUPPORTED_FILE_ACCEPT = [
 	'.gif',
 	'.spa',
 	'.sph',
-	'.tga'
+	'.tga',
+	'.vmd' // PMX に紐づける MikuMikuDance モーション
 ].join(',');
 
 export interface ClickedLayerFeaturesData {

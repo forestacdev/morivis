@@ -478,6 +478,10 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 		return await resolveXmlFiles([file]);
 	}
 
+	if (ext === 'vmd') {
+		return createNotificationDecision('PMXファイル(.pmx)と一緒にドロップしてください');
+	}
+
 	if (
 		ext === 'mtl'
 		|| ext === 'tfw'

@@ -16,6 +16,7 @@
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
 	import { showModelView } from '$routes/stores/ui';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	interface Props {
@@ -67,13 +68,11 @@
 	$effect(() => {
 		ensureShading();
 		if (animationClips.length > 0 && !layerEntry.state?.animation) {
+			const animationState = getInitialModelAnimationState(layerEntry.properties?.animation);
+			if (!animationState) return;
 			layerEntry.state = {
 				...layerEntry.state,
-				animation: {
-					currentClipIndex: 0,
-					playing: false,
-					speed: 1
-				}
+				animation: animationState
 			};
 		}
 		if (temporalDimension && !layerEntry.state?.dimension) {

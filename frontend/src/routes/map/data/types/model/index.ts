@@ -17,10 +17,25 @@ interface ModelMetaData extends BaseMetaData {
 
 export interface ModelAnimationClip {
 	name: string;
+	/** モデルファイル内に含まれる Three.js のアニメーション。 */
+	type?: 'embedded';
+}
+
+/** PMX/PMD に適用する MikuMikuDance モーション。 */
+export interface VmdModelAnimationClip {
+	name: string;
+	type: 'vmd';
+	url: string;
 }
 
 export interface ModelAnimationProperties {
-	clips: ModelAnimationClip[];
+	clips: Array<ModelAnimationClip | VmdModelAnimationClip>;
+	/** 初期選択するプリセット。未指定時は先頭。 */
+	defaultClipIndex?: number;
+	/** 初回表示時に既定プリセットを再生する。 */
+	autoPlay?: boolean;
+	/** 初回表示時の再生速度。 */
+	defaultSpeed?: number;
 }
 
 export interface ModelAnimationState {

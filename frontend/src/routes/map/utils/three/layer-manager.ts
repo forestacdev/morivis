@@ -38,8 +38,12 @@ import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import {
+	getInitialModelAnimationState,
+	isVmdModelAnimationClip
+} from '$routes/map/utils/three/model-animation';
 import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
-import { loadPmxObject } from '$routes/map/utils/three/pmx-loader';
+import { loadPmxModel, type LoadedPmxModel } from '$routes/map/utils/three/pmx-loader';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
 import * as THREE from 'three';
@@ -152,6 +156,12 @@ interface LoadedModel {
 	mixer?: THREE.AnimationMixer;
 	actions?: THREE.AnimationAction[];
 	lastClipIndex?: number;
+	mmd?: {
+		model: LoadedPmxModel;
+		activeClipIndex?: number;
+		loadingClipIndex?: number;
+		elapsedSeconds: number;
+	};
 	resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>;
 }
 
@@ -1132,6 +1142,7 @@ export class ThreeJsLayerManager {
 	};
 
 	private syncAnimationState = (loaded: LoadedModel) => {
+		this.syncMmdAnimationState(loaded);
 		if (!loaded.mixer || !loaded.actions || loaded.actions.length === 0) return;
 
 		const animationState = loaded.entry.state?.animation;
@@ -1163,6 +1174,44 @@ export class ThreeJsLayerManager {
 		if (playing) {
 			this.map?.triggerRepaint();
 		}
+	};
+
+	private syncMmdAnimationState = (loaded: LoadedModel) => {
+		const mmd = loaded.mmd;
+		const animationState = loaded.entry.state?.animation;
+		const clips = loaded.entry.properties?.animation?.clips;
+		if (!mmd || !animationState || !clips?.length) return;
+
+		const clipIndex = Math.min(Math.max(animationState.currentClipIndex, 0), clips.length - 1);
+		const clip = clips[clipIndex];
+		if (!clip || !isVmdModelAnimationClip(clip)) return;
+		if (mmd.activeClipIndex === clipIndex || mmd.loadingClipIndex === clipIndex) return;
+
+		mmd.loadingClipIndex = clipIndex;
+		void mmd.model.loader
+			.loadAnimation(clip.url)
+			.then((animation) => {
+				if (
+					mmd.loadingClipIndex !== clipIndex ||
+					this.loadedModels.get(loaded.entry.id) !== loaded ||
+					loaded.entry.state?.animation?.currentClipIndex !== clipIndex
+				) {
+					return;
+				}
+
+				mmd.model.model.setAnimation(animation);
+				mmd.activeClipIndex = clipIndex;
+				mmd.loadingClipIndex = undefined;
+				mmd.elapsedSeconds = 0;
+				if (loaded.entry.state?.animation?.playing) {
+					this.map?.triggerRepaint();
+				}
+			})
+			.catch((error) => {
+				if (mmd.loadingClipIndex !== clipIndex) return;
+				mmd.loadingClipIndex = undefined;
+				console.error(`MMDモーションの読み込みに失敗しました: ${clip.name}`, error);
+			});
 	};
 
 	private createGlbExportMaterial = (
@@ -1346,6 +1395,12 @@ export class ThreeJsLayerManager {
 				loaded.mixer.update(deltaSeconds);
 				hasPlayingAnimation = true;
 			}
+			if (loaded.entry.state?.animation?.playing && loaded.mmd?.activeClipIndex != null) {
+				const speed = Math.max(loaded.entry.state.animation.speed, 0);
+				loaded.mmd.elapsedSeconds += deltaSeconds * speed;
+				loaded.mmd.model.model.update(loaded.mmd.elapsedSeconds);
+				hasPlayingAnimation = true;
+			}
 		});
 
 		return hasPlayingAnimation;
@@ -1522,7 +1577,8 @@ export class ThreeJsLayerManager {
 			const onModelLoaded = async (
 				model: THREE.Group | THREE.Object3D,
 				animations: THREE.AnimationClip[] = [],
-				resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>
+				resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>,
+				mmdModel?: LoadedPmxModel
 			) => {
 				if (isMeshModelEntry(entry)) {
 					if (entry.format.type === 'ifc') {
@@ -1539,11 +1595,26 @@ export class ThreeJsLayerManager {
 					entry,
 					object: model,
 					transform,
+					...(mmdModel && {
+						mmd: {
+							model: mmdModel,
+							elapsedSeconds: 0
+						}
+					}),
 					resolveAttributes
 				};
 				if (animations.length > 0) {
 					loaded.mixer = new THREE.AnimationMixer(model);
 					loaded.actions = animations.map((clip) => loaded.mixer!.clipAction(clip));
+				}
+				if (isMeshModelEntry(entry) && !loaded.entry.state?.animation) {
+					const animationState = getInitialModelAnimationState(entry.properties?.animation);
+					if (animationState) {
+						loaded.entry.state = {
+							...loaded.entry.state,
+							animation: animationState
+						};
+					}
 				}
 				this.loadedModels.set(entry.id, loaded);
 				this.syncAnimationState(loaded);
@@ -1600,10 +1671,11 @@ export class ThreeJsLayerManager {
 			const finalizeAndLoadModel = (
 				object: THREE.Object3D,
 				animations: THREE.AnimationClip[] = [],
-				resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>
+				resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>,
+				mmdModel?: LoadedPmxModel
 			) => {
 				finalizeLoadedModel(object);
-				void onModelLoaded(object, animations, resolveAttributes).catch((error) =>
+				void onModelLoaded(object, animations, resolveAttributes, mmdModel).catch((error) =>
 					reject(error instanceof Error ? error : new Error(String(error)))
 				);
 			};
@@ -1905,8 +1977,8 @@ export class ThreeJsLayerManager {
 					})
 					.catch((error) => reject(error));
 			} else if (entry.format.type === 'pmx') {
-				loadPmxObject(entry.format.url, entry.format.resourceUrls)
-					.then((object) => finalizeAndLoadModel(object))
+				loadPmxModel(entry.format.url, entry.format.resourceUrls)
+					.then((mmdModel) => finalizeAndLoadModel(mmdModel.model.root, [], undefined, mmdModel))
 					.catch((error) => reject(error));
 			}
 		});
