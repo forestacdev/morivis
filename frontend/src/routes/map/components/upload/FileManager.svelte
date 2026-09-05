@@ -5,6 +5,7 @@
 	import { applyUploadDropDecision, checkLargeDroppedFiles } from './upload-drop-actions';
 
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { DialogType, UploadFiles } from '$routes/map/types';
 	import type maplibregl from '$routes/map/utils/maplibre';
 
@@ -15,6 +16,7 @@
 		tempLayerEntries: MorivisLayerEntry[];
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
+		transformOptionMode: TransformOptionMode;
 		focusBbox: [number, number, number, number] | null;
 	}
 
@@ -25,6 +27,7 @@
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
+		transformOptionMode,
 		focusBbox = $bindable()
 	}: Props = $props();
 
@@ -54,7 +57,9 @@
 			return;
 		}
 
-		if (dropFile && !showDialogType) {
+		// 位置合わせ中は入力を保持する。ここで同じ画像フォームを開き直すと、
+		// GeoRef用のBlob URL生成が繰り返される。
+		if (dropFile && !showDialogType && !transformOptionMode) {
 			void setFile(dropFile);
 		}
 	});

@@ -64,6 +64,9 @@ describe('computeUploadedModelMeta', () => {
 		expect(result.animationNames).toEqual([]);
 		expect(result.bounds[0]).toBeLessThan(result.bounds[2]);
 		expect(result.bounds[1]).toBeLessThan(result.bounds[3]);
+		expect(result.localBounds[0]).toBeLessThan(result.localBounds[3]);
+		expect(result.localBounds[1]).toBeLessThan(result.localBounds[4]);
+		expect(result.localBounds[2]).toBeLessThan(result.localBounds[5]);
 		expect(result.bounds[0]).toBeCloseTo(139.6917, 3);
 		expect(result.bounds[1]).toBeCloseTo(35.6895, 3);
 		expect(result.xyzImageTile.z).toBeGreaterThanOrEqual(0);

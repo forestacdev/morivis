@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { inspectGaussianSplatPly, parseGaussianSplatPly } from './index';
+import {
+	getGaussianSplatRenderBounds,
+	inspectGaussianSplatPly,
+	parseGaussianSplatPly
+} from './index';
 
 const gaussianProperties = [
 	'x',
@@ -61,6 +65,7 @@ describe('3D Gaussian Splatting PLY', () => {
 		const data = parseGaussianSplatPly(buffer);
 		expect(Array.from(data.positions)).toEqual([2, 1, -3, 8, 5, 4]);
 		expect(Array.from(data.bounds)).toEqual([2, 1, -3, 8, 5, 4]);
+		expect(getGaussianSplatRenderBounds(data.bounds)).toEqual([2, 0, -3, 8, 4, 4]);
 		expect(data.opacities[0]).toBeCloseTo(0.5);
 		expect(data.opacities[1]).toBeCloseTo(0.75);
 		expect(data.scales[0]).toBeCloseTo(2);

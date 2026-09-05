@@ -33,6 +33,7 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { ThreeModelEntry } from '$routes/map/data/types/model';
+	import { removeGaussianSplatData } from '$routes/map/utils/formats/gaussian-splat/cache';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PointGeometry, PolygonGeometry } from '$routes/map/types/geometry';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
@@ -147,7 +148,7 @@
 		initialModelLat = transform.lat;
 		modelMarkerLngLat = new maplibregl.LngLat(transform.lng, transform.lat);
 		modelPlacementInitialized = true;
-		threeJsManager.setPlacementPreview((showDataEntry as ThreeModelEntry).style);
+		threeJsManager.setPlacementPreview(showDataEntry as ThreeModelEntry);
 		showDataMenu.set(false);
 	});
 
@@ -163,7 +164,7 @@
 		if (modelMarkerLngLat.lng !== modelLng || modelMarkerLngLat.lat !== modelLat) {
 			modelMarkerLngLat = new maplibregl.LngLat(modelLng, modelLat);
 		}
-		threeJsManager.setPlacementPreview({
+		threeJsManager.setPlacementPreview(entry, {
 			...entry.style,
 			transform: { ...transform, lng: modelLng, lat: modelLat, altitude: modelAltitude }
 		});
@@ -308,6 +309,9 @@
 
 	const handleCancel = () => {
 		if (isModelPlacementActive) {
+			if (showDataEntry?.style.type === 'gaussian-splat') {
+				removeGaussianSplatData(showDataEntry.id);
+			}
 			modelPlacementInitialized = false;
 			threeJsManager.clearPlacementPreview();
 			showDataEntry = null;

@@ -1135,6 +1135,7 @@
 		bind:tempLayerEntries
 		bind:showDataEntry
 		bind:showDialogType
+		{transformOptionMode}
 		bind:focusBbox
 	/>
 

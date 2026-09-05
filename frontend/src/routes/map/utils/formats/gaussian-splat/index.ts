@@ -1,15 +1,7 @@
 const HEADER_SEARCH_LIMIT = 128 * 1024;
 const SH_C0 = 0.28209479177387814;
 
-type PlyScalarType =
-	| 'char'
-	| 'uchar'
-	| 'short'
-	| 'ushort'
-	| 'int'
-	| 'uint'
-	| 'float'
-	| 'double';
+type PlyScalarType = 'char' | 'uchar' | 'short' | 'ushort' | 'int' | 'uint' | 'float' | 'double';
 
 interface PlyProperty {
 	name: string;
@@ -27,9 +19,9 @@ interface ParsedPlyHeader {
 }
 
 export type GaussianSplatPlyInspection =
-	| { kind: 'gaussian-splat'; splatCount: number; shDegree: number; }
-	| { kind: 'super-splat'; reason: string; }
-	| { kind: 'other-ply'; };
+	| { kind: 'gaussian-splat'; splatCount: number; shDegree: number }
+	| { kind: 'super-splat'; reason: string }
+	| { kind: 'other-ply' };
 
 export interface GaussianSplatData {
 	positions: Float32Array;
@@ -38,6 +30,18 @@ export interface GaussianSplatData {
 	scales: Float32Array;
 	bounds: [number, number, number, number, number, number];
 }
+
+/** 描画時にY下端を高さ0へ揃えた3DGSのローカル範囲。 */
+export const getGaussianSplatRenderBounds = (
+	bounds: GaussianSplatData['bounds']
+): GaussianSplatData['bounds'] => [
+	bounds[0],
+	0,
+	bounds[2],
+	bounds[3],
+	bounds[4] - bounds[1],
+	bounds[5]
+];
 
 export class GaussianSplatPlyError extends Error {}
 
@@ -168,14 +172,22 @@ export const inspectGaussianSplatPlyFile = async (file: File) => {
 
 const getNumber = (view: DataView, offset: number, type: PlyScalarType) => {
 	switch (type) {
-		case 'char': return view.getInt8(offset);
-		case 'uchar': return view.getUint8(offset);
-		case 'short': return view.getInt16(offset, true);
-		case 'ushort': return view.getUint16(offset, true);
-		case 'int': return view.getInt32(offset, true);
-		case 'uint': return view.getUint32(offset, true);
-		case 'float': return view.getFloat32(offset, true);
-		case 'double': return view.getFloat64(offset, true);
+		case 'char':
+			return view.getInt8(offset);
+		case 'uchar':
+			return view.getUint8(offset);
+		case 'short':
+			return view.getInt16(offset, true);
+		case 'ushort':
+			return view.getUint16(offset, true);
+		case 'int':
+			return view.getInt32(offset, true);
+		case 'uint':
+			return view.getUint32(offset, true);
+		case 'float':
+			return view.getFloat32(offset, true);
+		case 'double':
+			return view.getFloat64(offset, true);
 	}
 };
 
@@ -238,9 +250,15 @@ export const parseGaussianSplatPly = (buffer: ArrayBuffer): GaussianSplatData =>
 		positions[itemOffset] = positionX;
 		positions[itemOffset + 1] = positionY;
 		positions[itemOffset + 2] = positionZ;
-		colors[itemOffset] = toColorChannel(0.5 + SH_C0 * getNumber(view, offset + dc0.offset, dc0.type));
-		colors[itemOffset + 1] = toColorChannel(0.5 + SH_C0 * getNumber(view, offset + dc1.offset, dc1.type));
-		colors[itemOffset + 2] = toColorChannel(0.5 + SH_C0 * getNumber(view, offset + dc2.offset, dc2.type));
+		colors[itemOffset] = toColorChannel(
+			0.5 + SH_C0 * getNumber(view, offset + dc0.offset, dc0.type)
+		);
+		colors[itemOffset + 1] = toColorChannel(
+			0.5 + SH_C0 * getNumber(view, offset + dc1.offset, dc1.type)
+		);
+		colors[itemOffset + 2] = toColorChannel(
+			0.5 + SH_C0 * getNumber(view, offset + dc2.offset, dc2.type)
+		);
 		opacities[index] = sigmoid(getNumber(view, offset + opacity.offset, opacity.type));
 		const maxLogScale = Math.max(
 			...scales.map((scale) => getNumber(view, offset + scale.offset, scale.type))

@@ -137,6 +137,9 @@ export interface ModelTransformStyle {
 	};
 }
 
+/** 描画時のローカル座標におけるモデル範囲 [minX, minY, minZ, maxX, maxY, maxZ]。 */
+export type ModelLocalBounds = [number, number, number, number, number, number];
+
 export interface MeshStyle extends ModelTransformStyle {
 	type: 'mesh';
 	opacity: Opacity;
@@ -208,6 +211,7 @@ export interface MeshEntry<T> extends BaseModelEntry {
 		resourceUrls?: Record<string, string>;
 		normalizeToLocalOrigin?: boolean;
 		georeference?: ProjectedModelGeoreference;
+		localBounds?: ModelLocalBounds;
 	};
 	style: T;
 }
@@ -244,6 +248,7 @@ export interface GaussianSplatEntry extends BaseModelEntry {
 		url: string;
 		sourceFileName?: string;
 		encoding: 'ply';
+		localBounds?: ModelLocalBounds;
 	};
 	properties?: ModelEntryProperties & {
 		gaussianSplat: {

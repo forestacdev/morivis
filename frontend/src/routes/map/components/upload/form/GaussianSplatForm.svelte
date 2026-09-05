@@ -5,9 +5,13 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import {
+		getGaussianSplatRenderBounds,
 		inspectGaussianSplatPlyFile,
 		type GaussianSplatPlyInspection
 	} from '$routes/map/utils/formats/gaussian-splat';
+	import { setGaussianSplatData } from '$routes/map/utils/formats/gaussian-splat/cache';
+	import { parseGaussianSplatInWorker } from '$routes/map/utils/formats/gaussian-splat/gaussian-splat-parallel';
+	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -61,31 +65,47 @@
 		dropFile = null;
 	};
 
-	const register = () => {
+	const register = async () => {
 		if (!splatFile || inspection?.kind !== 'gaussian-splat') return;
 		if (!name.trim()) {
 			showNotification('データ名を入力してください', 'warning');
 			return;
 		}
-		const center = mapStore.getCenter();
-		const entry = createGaussianSplatEntry(
-			name.trim(),
-			URL.createObjectURL(splatFile),
-			{
-				lng: center?.lng ?? 0,
-				lat: center?.lat ?? 0,
-				altitude: 0
-			},
-			{
-				gaussianSplat: {
-					splatCount: inspection.splatCount,
-					shDegree: inspection.shDegree
+
+		isProcessing.set(true);
+		try {
+			const data = await parseGaussianSplatInWorker(await splatFile.arrayBuffer());
+			const center = mapStore.getCenter();
+			const entry = createGaussianSplatEntry(
+				name.trim(),
+				URL.createObjectURL(splatFile),
+				{
+					lng: center?.lng ?? 0,
+					lat: center?.lat ?? 0,
+					altitude: 0
+				},
+				{
+					gaussianSplat: {
+						splatCount: inspection.splatCount,
+						shDegree: inspection.shDegree
+					}
 				}
-			}
-		);
-		entry.format.sourceFileName = splatFile.name;
-		showDataEntry = entry;
-		transformOptionMode = 'georef';
+			);
+			entry.format.sourceFileName = splatFile.name;
+			entry.format.localBounds = getGaussianSplatRenderBounds(data.bounds);
+			entry.metaData.bounds = getModelGeoBoundsFromLocalBounds(
+				entry.format.localBounds,
+				entry.style
+			);
+			setGaussianSplatData(entry.id, data);
+			showDataEntry = entry;
+			transformOptionMode = 'georef';
+		} catch (error) {
+			console.error('3D Gaussian Splatting の範囲解析に失敗しました', error);
+			showNotification('3D Gaussian Splatting の範囲を取得できませんでした', 'error');
+		} finally {
+			isProcessing.set(false);
+		}
 	};
 </script>
 

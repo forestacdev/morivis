@@ -138,7 +138,9 @@
 	});
 
 	const textureFiles = $derived.by(() => {
-		return inputFiles.filter((file) => /\.(png|jpe?g|bmp|tga|gif|webp|dds|spa|sph)$/i.test(file.name));
+		return inputFiles.filter((file) =>
+			/\.(png|jpe?g|bmp|tga|gif|webp|dds|spa|sph)$/i.test(file.name)
+		);
 	});
 
 	const isJsonGltfFile = $derived(
@@ -598,7 +600,9 @@
 		}
 
 		const resourceFiles = activeFormat === 'gltf' ? gltfSupplementaryFiles : textureFiles;
-		const nextFileKey = [getPathLikeName(glbFile), ...resourceFiles.map(getPathLikeName)].join('::');
+		const nextFileKey = [getPathLikeName(glbFile), ...resourceFiles.map(getPathLikeName)].join(
+			'::'
+		);
 		if (analyzedProjectedCandidateFileKey === nextFileKey) return;
 
 		analyzedProjectedCandidateFileKey = nextFileKey;
@@ -791,6 +795,7 @@
 			}
 			entry.metaData.bounds = uploadedModelMeta.bounds;
 			entry.metaData.xyzImageTile = uploadedModelMeta.xyzImageTile;
+			entry.format.localBounds = uploadedModelMeta.localBounds;
 
 			if (!import.meta.env.PROD) {
 				console.info('[model-entry] created', {
@@ -866,7 +871,8 @@
 	};
 
 	$effect(() => {
-		if (!glbFile || !requiresProjectedCandidateZoneSelection || !projectedCandidateSourceBbox) return;
+		if (!glbFile || !requiresProjectedCandidateZoneSelection || !projectedCandidateSourceBbox)
+			return;
 		if (isSameBbox(focusBbox, projectedCandidateSourceBbox)) return;
 
 		focusBbox = projectedCandidateSourceBbox;
@@ -988,15 +994,15 @@
 	>
 		<div class="w-full rounded-md bg-black/15 p-3 text-sm text-gray-200">
 			<p>{glbFile.name}</p>
-				{#if requiresProjectedCandidateZoneSelection}
-					<p class="mt-2">
-						{activeFormat?.toUpperCase()} は平面直角座標らしい座標値を持ちます。ZoneMenu で投影座標系を選択して配置します。
-					</p>
-					<p class="mt-2">現在の選択: EPSG:{selectedEpsgCode}</p>
-					{#if isInspectingProjectedCandidateCoordinates}
-						<p class="mt-2">モデルの座標範囲を解析しています。</p>
-					{:else if projectedCandidateSourceBbox}
-						{@const sourceBbox = projectedCandidateSourceBbox}
+			{#if requiresProjectedCandidateZoneSelection}
+				<p class="mt-2">
+					{activeFormat?.toUpperCase()} は平面直角座標らしい座標値を持ちます。ZoneMenu で投影座標系を選択して配置します。
+				</p>
+				<p class="mt-2">現在の選択: EPSG:{selectedEpsgCode}</p>
+				{#if isInspectingProjectedCandidateCoordinates}
+					<p class="mt-2">モデルの座標範囲を解析しています。</p>
+				{:else if projectedCandidateSourceBbox}
+					{@const sourceBbox = projectedCandidateSourceBbox}
 					<p class="mt-2">
 						範囲: X {sourceBbox?.[0].toFixed(3)} - {sourceBbox?.[2].toFixed(3)}, Y {sourceBbox?.[1].toFixed(
 							3
@@ -1051,7 +1057,7 @@
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 		<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
-			{#if requiresProjectedCandidateZoneSelection || requiresIfcZoneSelection}
+		{#if requiresProjectedCandidateZoneSelection || requiresIfcZoneSelection}
 			<button
 				onclick={openZoneSelection}
 				disabled={isDroppedRegistrationDisabled}
@@ -1084,7 +1090,7 @@
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
 		<TextForm
 			bind:value={forms.url}
-				label="3Dモデル URL (GLTF / GLB / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC / PMX)"
+			label="3Dモデル URL (GLTF / GLB / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC / PMX)"
 			error={errors.url}
 		/>
 	</div>
