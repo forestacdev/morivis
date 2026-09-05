@@ -4,7 +4,7 @@
 	import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js';
 	import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls.js';
 
-	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import type { ThreeModelEntry } from '$routes/map/data/types/model';
 	import {
 		threeJsManager,
 		type PickedModelFeature,
@@ -13,7 +13,7 @@
 	import { closeModelView, type ModelViewCamera } from '$routes/stores';
 
 	interface Props {
-		entries: MeshEntry<MeshStyle>[];
+		entries: ThreeModelEntry[];
 		initialCamera?: ModelViewCamera;
 		includeHighlights?: boolean;
 		fpsMode?: boolean;

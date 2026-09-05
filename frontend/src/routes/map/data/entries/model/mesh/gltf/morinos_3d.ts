@@ -148,6 +148,110 @@ const entry = {
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_0946-720x480.jpg'
 					}
 				]
+			},
+			'9d4680c3-95e2-4824-8924-468ad9649879': {
+				name: '大きな豆型テーブル',
+				description:
+					'この【ミズナラ】の豆型テーブルは、morinosのためにデザインした特別なテーブルです。主にスタッフさんが仕事をするためのもので、持ち上げると動かすことが出来ます。だから、この位置にないことも。形は、ふたつの円がくっつこうとしているような、曲線を描いた天板です。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi59/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/04/IMG_1532-scaled.jpeg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/04/IMG_4482.jpg'
+					}
+				]
+			},
+			'8046eb1e-4bbd-45b5-b6b5-5763afbb4ce9': {
+				name: '土壁',
+				description:
+					'東のメインエントランスを入ると、真っ先に目に飛び込んでくる十二単のような色鮮やかな左官壁。自然の色が織りなす美しい仕上がりです。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi45/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/05/IMG_1895-scaled.jpg'
+					},
+					{
+						type: 'youtube',
+						id: 'XaWI1wtRbuY'
+					}
+				]
+			},
+			'0fcfa9bc-972a-499b-badb-21a1de3b003e': {
+				name: 'ソファ',
+				description:
+					'ソファで足を伸ばして仕事をしてもいいですね。スタッフもここでお弁当を食べてもいいかもしれません。来館者と一緒にすごせる憩いの場です。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi30/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/04/IMG_4718-2-720x540.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/04/IMG_4730-2-720x543.jpg'
+					}
+				]
+			},
+			'f267bea0-4dfb-48b6-877c-7e6ed8768030': {
+				name: '南向きのカウンター',
+				description:
+					'外であそぶ子どもを見ながらコーヒーを飲める、PCを持ってくれば仕事もできる、誰でも使えるヒノキの一枚板カウンターです。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi59/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/03/20200514_0061-scaled.jpg'
+					}
+				]
+			},
+			'08e9f1cd-a1f5-4758-a7c0-179630a97bdf': {
+				name: '南向きのカウンター',
+				description:
+					'外であそぶ子どもを見ながらコーヒーを飲める、PCを持ってくれば仕事もできる、誰でも使えるヒノキの一枚板カウンターです。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi59/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/04/IMG_1691-2-720x480.jpg'
+					}
+				]
+			},
+			'70e569ef-c7e1-4568-8799-d15e6b7d666f': {
+				name: 'みみ付きデスク',
+				description:
+					'みみ付きというのは、四辺のうち一つを、皮を剥いた木の表面のままにしているということです。使うときは体に触れる部分なので、直線でなく木そのままの凸凹を感じてもらうことができます。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi59/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/04/IMG_1721-2.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/03/IMG_1514-720x540.jpeg'
+					}
+				]
+			},
+			'fdf4735c-39ef-4bcd-8b7e-44c86d8222f1': {
+				name: '工作椅子',
+				description:
+					'工作椅子は、横に倒すと低く座ることができて、小さなお子さんでも座ってもらえます。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi59/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/04/IMG_1486-720x540.jpeg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/04/IMG_1504D.jpg'
+					}
+				]
 			}
 		}
 	},

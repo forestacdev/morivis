@@ -11,9 +11,12 @@
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
 
+	const applyStyle = () => {
+		mapStore.setModelStyle({ ...layerEntry, style: { ...layerEntry.style } });
+	};
+
 	$effect(() => {
-		$state.snapshot(layerEntry.style);
-		mapStore.setModelStyle(layerEntry);
+		applyStyle();
 	});
 </script>
 
@@ -25,6 +28,7 @@
 		max={5}
 		step={0.05}
 		icon="mdi:circle-outline"
+		onInput={applyStyle}
 	/>
 	<p class="pb-2 text-sm text-base/70">色・透明度はPLYの3D Gaussian Splatting属性を使用します。</p>
 </Accordion>

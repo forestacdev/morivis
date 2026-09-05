@@ -195,7 +195,7 @@
 		if (!request) return [];
 		return request.entryIds
 			.map((entryId) => layerEntries.find((candidate) => candidate.id === entryId))
-			.filter((entry): entry is MeshEntry<MeshStyle> => Boolean(entry && isMeshEntry(entry)));
+			.filter((entry): entry is ThreeModelEntry => Boolean(entry && isThreeModelEntry(entry)));
 	});
 	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<UploadFiles>(null); // ドロップしたファイル
