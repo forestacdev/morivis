@@ -383,7 +383,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: 'GLB / GLTF',
 		description:
-			'3Dシーンを記述する形式です。GLTFはJSONと外部ファイルの組み合わせ、GLBは1ファイルにまとめた3Dモデルを読み込むときに使います。',
+			'3Dモデルの形状、材質、テクスチャ、アニメーションなどを記録するファイルです。GLTFはJSONと外部リソースで構成され、GLBは同じ内容を単一のバイナリファイルにまとめます。',
 		extensions: ['.glb', '.gltf']
 	},
 	{
