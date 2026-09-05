@@ -273,7 +273,7 @@
 
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
 	let pendingZoneGeoRefData = $state.raw<PendingZoneGeoRefData | null>(null);
-	let transformOptionMode = $state<'zone' | 'georef' | null>(null);
+	let transformOptionMode = $state<'zone' | 'georef' | 'model-placement' | null>(null);
 	let isPreparingGeoRefData = $state(false);
 
 	let geoRefData = $state.raw<GeoRefData | null>(null);
@@ -1350,7 +1350,9 @@
 				{/await}
 			</MobileFeatureMenuCard>
 
-			<PreviewMenu bind:showDataEntry />
+			{#if transformOptionMode !== 'model-placement'}
+				<PreviewMenu bind:showDataEntry />
+			{/if}
 
 			{#if !transformOptionMode}
 				<DataMenu
@@ -1367,7 +1369,7 @@
 					bind:pendingTileUrl
 				/>
 			{/if}
-			{#if showDataEntry}
+			{#if showDataEntry && transformOptionMode !== 'model-placement'}
 				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
 			{/if}
 
@@ -1443,6 +1445,7 @@
 		bind:geoRefPreviewData
 		bind:previewOpacity={geoRefPreviewOpacity}
 		bind:showDialogType
+		bind:showDataEntry
 		bind:dropFile
 		bind:transformOptionMode
 		onZoneConfirm={(epsgCode: EpsgCode) => {

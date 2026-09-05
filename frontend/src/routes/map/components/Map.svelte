@@ -846,6 +846,7 @@
 
 		const previewMeshEntry =
 			showDataEntry &&
+			transformOptionMode !== 'model-placement' &&
 			showDataEntry.type === 'model' &&
 			showDataEntry.style.type === 'mesh' &&
 			showDataEntry.format.type !== '3d-tiles'

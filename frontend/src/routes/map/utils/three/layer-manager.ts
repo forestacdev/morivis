@@ -258,6 +258,7 @@ export class ThreeJsLayerManager {
 	private selectedModelHighlights: ModelHighlight[] = [];
 	private ifcPartAttributeLoads = new Map<string, Promise<number>>();
 	private activeModelView: ActiveModelView | null = null;
+	private placementPreview: { object: THREE.Group; transform: ModelTransform } | null = null;
 
 	constructor() {
 		this.dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
@@ -566,6 +567,9 @@ export class ThreeJsLayerManager {
 		sourceMaterial: THREE.Material,
 		style: MeshStyle
 	): THREE.Material => {
+		if (typeof sourceMaterial.clone !== 'function') {
+			return this.createFlatMaterial(new THREE.MeshBasicMaterial(), style);
+		}
 		const material = sourceMaterial.clone();
 		if ('color' in material && material.color instanceof THREE.Color) {
 			material.color = material.color.clone().multiply(new THREE.Color(style.color));
@@ -587,7 +591,9 @@ export class ThreeJsLayerManager {
 		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 		const originalMaterials =
 			(mesh.userData.originalMaterials as THREE.Material[] | undefined) ??
-			currentMaterials.map((material) => material.clone());
+			currentMaterials.map((material) =>
+				typeof material.clone === 'function' ? material.clone() : new THREE.MeshBasicMaterial()
+			);
 
 		if (!mesh.userData.originalMaterials) {
 			mesh.userData.originalMaterials = originalMaterials;
@@ -632,7 +638,7 @@ export class ThreeJsLayerManager {
 			if (colorRampTexture instanceof THREE.Texture) {
 				colorRampTexture.dispose();
 			}
-			material.dispose();
+			if (typeof material.dispose === 'function') material.dispose();
 		});
 	};
 
@@ -1217,6 +1223,43 @@ export class ThreeJsLayerManager {
 		this.renderer.render(this.overlayScene, this.overlayCamera);
 	};
 
+	setPlacementPreview(style: MeshStyle): void {
+		if (!this.scene) return;
+		if (!this.placementPreview) {
+			const object = new THREE.Group();
+			const geometry = new THREE.BoxGeometry(20, 20, 12);
+			const surface = new THREE.Mesh(
+				geometry,
+				new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.18 })
+			);
+			surface.position.z = 6;
+			const edges = new THREE.LineSegments(
+				new THREE.EdgesGeometry(geometry),
+				new THREE.LineBasicMaterial({ color: 0xfef3c7 })
+			);
+			edges.position.z = 6;
+			object.add(surface, edges);
+			this.scene.add(object);
+			this.placementPreview = { object, transform: calculateModelTransform(style) };
+		} else {
+			this.placementPreview.transform = calculateModelTransform(style);
+		}
+		this.map?.triggerRepaint();
+	}
+
+	clearPlacementPreview(): void {
+		if (!this.placementPreview) return;
+		this.scene?.remove(this.placementPreview.object);
+		this.placementPreview.object.traverse((child) => {
+			if ((child as THREE.Mesh).geometry) (child as THREE.Mesh).geometry.dispose();
+			const material = (child as THREE.Mesh).material;
+			if (Array.isArray(material)) material.forEach((item) => item.dispose());
+			else material?.dispose();
+		});
+		this.placementPreview = null;
+		this.map?.triggerRepaint();
+	}
+
 	private updateAnimations = () => {
 		const nowMs = performance.now();
 		const deltaSeconds =
@@ -1312,7 +1355,8 @@ export class ThreeJsLayerManager {
 
 			render: (_gl, args) => {
 				if (!this.scene || !this.camera || !this.renderer) return;
-				if (this.loadedModels.size === 0) return;
+				if (this.loadedModels.size === 0 && !this.placementPreview) return;
+				if (this.placementPreview) this.placementPreview.object.visible = false;
 				this.lastMapProjectionMatrix = new THREE.Matrix4().fromArray(
 					args.defaultProjectionData.mainMatrix
 				);
@@ -1322,6 +1366,16 @@ export class ThreeJsLayerManager {
 					this.renderActiveModelView();
 					if (hasPlayingAnimation) this.map?.triggerRepaint();
 					return;
+				}
+
+				if (this.placementPreview) {
+					this.setOnlyEntryVisible('', false);
+					this.placementPreview.object.visible = true;
+					this.camera.projectionMatrix = mapProjectionMatrix
+						.clone()
+						.multiply(this.placementPreview.transform.matrix);
+					this.renderer.resetState();
+					this.renderer.render(this.scene, this.camera);
 				}
 
 				this.loadedModels.forEach((loaded) => {

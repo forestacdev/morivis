@@ -2,13 +2,15 @@
 	import turfBbox from '@turf/bbox';
 	import turfCenter from '@turf/center';
 	import turfNearestPoint from '@turf/nearest-point';
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
 	import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import GeoRefMarker from '$routes/map/components/marker/GeoRefMarker.svelte';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
+	import ModelPlacementMenu from '$routes/map/components/upload/form/transform/ModelPlacementMenu.svelte';
+	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import type {
 		ActiveTransformOptionMode,
 		TransformOptionMode
@@ -29,6 +31,8 @@
 		WEB_MERCATOR_MAX_LNG
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PointGeometry, PolygonGeometry } from '$routes/map/types/geometry';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
@@ -65,6 +69,7 @@
 		geoRefData: GeoRefData | null;
 		geoRefPreviewData: GeoRefPreviewData | null;
 		previewOpacity: number;
+		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
@@ -82,6 +87,7 @@
 		geoRefData = $bindable(),
 		geoRefPreviewData = $bindable(),
 		previewOpacity = $bindable(),
+		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
 		transformOptionMode = $bindable(),
@@ -112,6 +118,42 @@
 	let rafId: number | null = null;
 	let geoRefTransformMode = $state<GeoRefTransformMode>('aspect-locked');
 	let zoneBuildId = 0;
+	let modelPlacementInitialized = $state(false);
+	let modelLng = $state(0);
+	let modelLat = $state(0);
+	let modelAltitude = $state(0);
+	let initialModelLng = $state(0);
+	let initialModelLat = $state(0);
+	let modelMarkerLngLat = $state(new maplibregl.LngLat(0, 0));
+
+	$effect(() => {
+		if (transformOptionMode !== 'model-placement' || !showDataEntry || modelPlacementInitialized) return;
+		if (showDataEntry.type !== 'model' || showDataEntry.style.type !== 'mesh') return;
+		const transform = (showDataEntry as MeshEntry<MeshStyle>).style.transform;
+		modelLng = transform.lng;
+		modelLat = transform.lat;
+		modelAltitude = transform.altitude;
+		initialModelLng = transform.lng;
+		initialModelLat = transform.lat;
+		modelMarkerLngLat = new maplibregl.LngLat(transform.lng, transform.lat);
+		modelPlacementInitialized = true;
+		threeJsManager.setPlacementPreview((showDataEntry as MeshEntry<MeshStyle>).style);
+		showDataMenu.set(false);
+	});
+
+	$effect(() => {
+		if (transformOptionMode !== 'model-placement' || !showDataEntry) return;
+		if (showDataEntry.type !== 'model' || showDataEntry.style.type !== 'mesh') return;
+		const entry = showDataEntry as MeshEntry<MeshStyle>;
+		const transform = entry.style.transform;
+		if (modelMarkerLngLat.lng !== modelLng || modelMarkerLngLat.lat !== modelLat) {
+			modelMarkerLngLat = new maplibregl.LngLat(modelLng, modelLat);
+		}
+		threeJsManager.setPlacementPreview({
+			...entry.style,
+			transform: { ...transform, lng: modelLng, lat: modelLat, altitude: modelAltitude }
+		});
+	});
 
 	let nw = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
 	let ne = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
@@ -218,7 +260,44 @@
 		dropFile = null;
 	};
 
+	const createPlacedModelEntry = (): MeshEntry<MeshStyle> | null => {
+		if (showDataEntry?.type !== 'model' || showDataEntry.style.type !== 'mesh') return null;
+
+		const entry = showDataEntry as MeshEntry<MeshStyle>;
+		const transform = entry.style.transform;
+		const lngDelta = modelLng - initialModelLng;
+		const latDelta = modelLat - initialModelLat;
+		const bounds = entry.metaData.bounds;
+
+		return {
+			...entry,
+			metaData: {
+				...entry.metaData,
+				altitude: modelAltitude,
+				bounds: [
+					bounds[0] + lngDelta,
+					bounds[1] + latDelta,
+					bounds[2] + lngDelta,
+					bounds[3] + latDelta
+				]
+			},
+			style: {
+				...entry.style,
+				transform: { ...transform, lng: modelLng, lat: modelLat, altitude: modelAltitude }
+			}
+		};
+	};
+
 	const handleCancel = () => {
+		if (transformOptionMode === 'model-placement') {
+			modelPlacementInitialized = false;
+			threeJsManager.clearPlacementPreview();
+			showDataEntry = null;
+			transformOptionMode = null;
+			showDialogType = null;
+			dropFile = null;
+			return;
+		}
 		if (transformOptionMode === 'georef') {
 			cleanupGeoRef();
 			return;
@@ -227,6 +306,19 @@
 	};
 
 	const handleConfirm = async () => {
+		if (transformOptionMode === 'model-placement') {
+			const placedEntry = createPlacedModelEntry();
+			if (!placedEntry) return;
+
+			showDataEntry = placedEntry;
+			modelPlacementInitialized = false;
+			threeJsManager.clearPlacementPreview();
+			transformOptionMode = null;
+			await tick();
+			showDialogType = null;
+			dropFile = null;
+			return;
+		}
 		if (transformOptionMode === 'zone') {
 			const code = selectedEpsgCode;
 			resetZone();
@@ -569,6 +661,7 @@
 	const isTransformModeSwitchVisible = $derived(transModeOptions.length > 1);
 
 	$effect(() => {
+		if (transformOptionMode === 'model-placement') return;
 		if (!transformOptionMode) return;
 		if (normalizedAllowedTransformModes.includes(transformOptionMode)) return;
 		transformOptionMode = normalizedAllowedTransformModes[0] ?? null;
@@ -600,6 +693,8 @@
 					fitToCurrentCorners(300);
 				}}
 			/>
+		{:else if transformOptionMode === 'model-placement'}
+			<ModelPlacementMenu bind:lng={modelLng} bind:lat={modelLat} bind:altitude={modelAltitude} />
 		{/if}
 
 		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2 pb-2">
@@ -661,6 +756,16 @@
 			label="SW"
 			onDrag={(lngLat) => {
 				handleGeoRefCornerDrag('sw', lngLat);
+			}}
+		/>
+	{:else if transformOptionMode === 'model-placement'}
+		<GeoRefMarker
+			{map}
+			bind:lngLat={modelMarkerLngLat}
+			label="3D"
+			onDrag={(lngLat) => {
+				modelLng = lngLat.lng;
+				modelLat = lngLat.lat;
 			}}
 		/>
 	{/if}

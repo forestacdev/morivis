@@ -796,6 +796,14 @@
 			if (!entry) return;
 
 			showDataEntry = entry;
+			if (
+				!modelPlacement &&
+				!detectedProjectedModelEpsg &&
+				getModelCoordinateMode(projectedCandidateSourceBbox) === 'local'
+			) {
+				transformOptionMode = 'model-placement';
+				return;
+			}
 			showDialogType = null;
 			dropFile = null;
 		};
