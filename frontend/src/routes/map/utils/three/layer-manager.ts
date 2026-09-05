@@ -574,9 +574,8 @@ export class ThreeJsLayerManager {
 		if ('color' in material && material.color instanceof THREE.Color) {
 			material.color = material.color.clone().multiply(new THREE.Color(style.color));
 		}
-		material.transparent = true;
-		material.opacity = style.opacity;
-		material.side = THREE.DoubleSide;
+		material.opacity *= style.opacity;
+		material.transparent = material.transparent || material.opacity < 1;
 		if ('wireframe' in material) {
 			material.wireframe = style.wireframe;
 		}
