@@ -1,7 +1,59 @@
+import * as THREE from 'three';
+
 export type FbxAttributeValue = string | number | boolean | Array<string | number | boolean>;
 export type FbxModelAttributes = Record<string, FbxAttributeValue>;
 
 const BINARY_HEADER_PREFIX = 'Kaydara FBX Binary  ';
+
+const getFbxVector3 = (value: FbxAttributeValue | undefined) => {
+	const values = Array.isArray(value)
+		? value
+		: typeof value === 'string'
+			? value.split(',')
+			: [value];
+	if (values.length < 3) return undefined;
+
+	const vector = values.slice(0, 3).map((item) => Number(item));
+	return vector.every(Number.isFinite)
+		? new THREE.Vector3(vector[0], vector[1], vector[2])
+		: undefined;
+};
+
+export const applyFbxCurveGeometricScaling = (
+	object: THREE.Object3D,
+	attributesByModelId: Record<string, FbxModelAttributes>
+) => {
+	// FBXLoader は Mesh には GeometricScaling を適用するが、NurbsCurve を作る Line には適用しない。
+	const geometryUseCounts = new Map<THREE.BufferGeometry, number>();
+	object.traverse((child) => {
+		if (!(child as THREE.Line).isLine) return;
+		const geometry = (child as THREE.Line).geometry;
+		geometryUseCounts.set(geometry, (geometryUseCounts.get(geometry) ?? 0) + 1);
+	});
+
+	let appliedCount = 0;
+	object.traverse((child) => {
+		if (!(child as THREE.Line).isLine || child.userData.morivisFbxGeometricScalingApplied) return;
+		const modelId = (child as THREE.Object3D & { ID?: number }).ID;
+		if (modelId == null) return;
+		const scaling = getFbxVector3(attributesByModelId[String(modelId)]?.GeometricScaling);
+		if (!scaling || scaling.equals(new THREE.Vector3(1, 1, 1))) return;
+
+		const line = child as THREE.Line;
+		const geometry = line.geometry;
+		// 同じ曲線ジオメトリを複数の Model が共有する場合、Model ごとの縮尺を分離する。
+		const scaledGeometry =
+			(geometryUseCounts.get(geometry) ?? 0) > 1 ? geometry.clone() : geometry;
+		scaledGeometry.scale(scaling.x, scaling.y, scaling.z);
+		scaledGeometry.computeBoundingBox();
+		scaledGeometry.computeBoundingSphere();
+		line.geometry = scaledGeometry;
+		line.userData.morivisFbxGeometricScalingApplied = true;
+		appliedCount += 1;
+	});
+
+	return appliedCount;
+};
 
 export const parseFbxModelAttributes = (
 	buffer: ArrayBuffer

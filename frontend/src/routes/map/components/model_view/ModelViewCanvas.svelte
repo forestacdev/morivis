@@ -104,12 +104,49 @@
 		const pointerLockControls = new PointerLockControls(session.camera, target);
 		const pressedKeys = new Set<string>();
 		let fpsModeEnabled = false;
+		let animationFrame = 0;
+		let previousFrameTime = performance.now();
+		const renderFrame = (timeMs: number) => {
+			animationFrame = 0;
+			const deltaSeconds = Math.min(Math.max((timeMs - previousFrameTime) / 1_000, 0), 0.1);
+			previousFrameTime = timeMs;
+			if (!fpsModeEnabled) {
+				const orbitChanged = controls.update();
+				zoomControls.target.copy(controls.target);
+				zoomControls.update();
+				if (orbitChanged) requestRender();
+				return;
+			}
+			if (!pointerLockControls.isLocked || pressedKeys.size === 0) return;
+
+			const distance = session.movementSpeed * deltaSeconds;
+			if (pressedKeys.has('KeyW')) pointerLockControls.moveForward(distance);
+			if (pressedKeys.has('KeyS')) pointerLockControls.moveForward(-distance);
+			if (pressedKeys.has('KeyA')) pointerLockControls.moveRight(-distance);
+			if (pressedKeys.has('KeyD')) pointerLockControls.moveRight(distance);
+			if (pressedKeys.has('Space')) session.camera.position.y += distance;
+			if (pressedKeys.has('ShiftLeft') || pressedKeys.has('ShiftRight')) {
+				session.camera.position.y -= distance;
+			}
+			requestRender();
+		};
+		const requestRender = () => {
+			threeJsManager.requestModelViewRepaint();
+			if (animationFrame !== 0) return;
+			animationFrame = requestAnimationFrame(renderFrame);
+		};
+		const onControlsChange = () => {
+			requestRender();
+		};
+		controls.addEventListener('change', onControlsChange);
+		zoomControls.addEventListener('change', onControlsChange);
 		setFpsMode = (enabled) => {
 			fpsModeEnabled = enabled;
 			controls.enabled = !enabled;
 			zoomControls.enabled = !enabled;
 			pressedKeys.clear();
 			if (!enabled && pointerLockControls.isLocked) pointerLockControls.unlock();
+			requestRender();
 		};
 		setFpsMode(fpsMode);
 		handleFpsKeyDown = (event) => {
@@ -126,6 +163,7 @@
 			}
 			event.preventDefault();
 			pressedKeys.add(event.code);
+			requestRender();
 			return true;
 		};
 		handleFpsKeyUp = (event) => {
@@ -150,7 +188,7 @@
 		const resetView = () => {
 			session.resetView();
 			syncControls();
-			threeJsManager.requestModelViewRepaint();
+			requestRender();
 		};
 		onResetViewChange?.(resetView);
 		syncControls();
@@ -159,41 +197,17 @@
 		const resizeObserver = new ResizeObserver(() => {
 			session.resize();
 			zoomControls.handleResize();
-			threeJsManager.requestModelViewRepaint();
+			requestRender();
 		});
 		resizeObserver.observe(target);
-
-		let animationFrame = 0;
-		let previousFrameTime = performance.now();
-		const renderFrame = (timeMs: number) => {
-			const deltaSeconds = Math.min(Math.max((timeMs - previousFrameTime) / 1_000, 0), 0.1);
-			previousFrameTime = timeMs;
-			if (!fpsModeEnabled) {
-				controls.update();
-				zoomControls.target.copy(controls.target);
-				zoomControls.update();
-			}
-			if (fpsModeEnabled && pointerLockControls.isLocked) {
-				const distance = session.movementSpeed * deltaSeconds;
-				if (pressedKeys.has('KeyW')) pointerLockControls.moveForward(distance);
-				if (pressedKeys.has('KeyS')) pointerLockControls.moveForward(-distance);
-				if (pressedKeys.has('KeyA')) pointerLockControls.moveRight(-distance);
-				if (pressedKeys.has('KeyD')) pointerLockControls.moveRight(distance);
-				if (pressedKeys.has('Space')) session.camera.position.y += distance;
-				if (pressedKeys.has('ShiftLeft') || pressedKeys.has('ShiftRight')) {
-					session.camera.position.y -= distance;
-				}
-			}
-			threeJsManager.requestModelViewRepaint();
-			animationFrame = requestAnimationFrame(renderFrame);
-		};
-		animationFrame = requestAnimationFrame(renderFrame);
 
 		return () => {
 			resizeObserver.disconnect();
 			cancelAnimationFrame(animationFrame);
 			target.removeEventListener('click', lockPointer);
 			pointerLockControls.removeEventListener('unlock', unlockPointer);
+			controls.removeEventListener('change', onControlsChange);
+			zoomControls.removeEventListener('change', onControlsChange);
 			controls.dispose();
 			zoomControls.dispose();
 			if (pointerLockControls.isLocked) pointerLockControls.unlock();

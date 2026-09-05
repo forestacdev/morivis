@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import * as THREE from 'three';
 
-import { parseFbxModelAttributes } from './fbx-attributes';
+import { applyFbxCurveGeometricScaling, parseFbxModelAttributes } from './fbx-attributes';
 
 describe('parseFbxModelAttributes', () => {
 	const encodeString = (value: string) => {
@@ -101,5 +102,24 @@ describe('parseFbxModelAttributes', () => {
 		const truncated = joinBytes([header, new Uint8Array(8)]).buffer;
 
 		expect(parseFbxModelAttributes(truncated)).toEqual({});
+	});
+
+	it('NurbsCurveのGeometricScalingをラインの頂点座標へ適用する', () => {
+		const geometry = new THREE.BufferGeometry().setFromPoints([
+			new THREE.Vector3(0, 0, 0),
+			new THREE.Vector3(2_000, 0, 0)
+		]);
+		const line = new THREE.Line(geometry, new THREE.LineBasicMaterial());
+		(line as THREE.Object3D & { ID?: number }).ID = 42;
+		const root = new THREE.Group();
+		root.add(line);
+
+		const appliedCount = applyFbxCurveGeometricScaling(root, {
+			42: { GeometricScaling: '0.0005, 0.0005, 0.0005' }
+		});
+
+		expect(appliedCount).toBe(1);
+		expect((line.geometry.getAttribute('position') as THREE.BufferAttribute).getX(1)).toBe(1);
+		expect(applyFbxCurveGeometricScaling(root, {})).toBe(0);
 	});
 });

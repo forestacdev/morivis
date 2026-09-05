@@ -20,6 +20,7 @@ import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
 import {
+	applyFbxCurveGeometricScaling,
 	type FbxModelAttributes,
 	parseFbxModelAttributes
 } from '$routes/map/utils/three/fbx-attributes';
@@ -38,6 +39,7 @@ import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
 import {
 	getInitialModelAnimationState,
 	isVmdModelAnimationClip
@@ -253,6 +255,11 @@ interface ActiveModelView {
 	camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
 	target: THREE.Vector3;
 	highlightVisibility: Map<THREE.Object3D, boolean>;
+	axisWrappers: Array<{
+		object: THREE.Object3D;
+		parent: THREE.Object3D;
+		wrapper: THREE.Group;
+	}>;
 	modelGroupVisible: boolean;
 	previewVisible: boolean;
 }
@@ -1930,6 +1937,10 @@ export class ThreeJsLayerManager {
 						const object = fbxLoader.parse(buffer, resourcePath);
 						const fallbackTextureResult = applyFbxTextureFallback(object, resourceUrls);
 						const attributesByModelId = parseFbxModelAttributes(buffer);
+						const geometricScalingCurveCount = applyFbxCurveGeometricScaling(
+							object,
+							attributesByModelId
+						);
 						let modelIdCount = 0;
 						let matchedAttributeCount = 0;
 						object.traverse((child) => {
@@ -1947,6 +1958,7 @@ export class ThreeJsLayerManager {
 								attributeModelCount: Object.keys(attributesByModelId).length,
 								modelIdCount,
 								matchedAttributeCount,
+								geometricScalingCurveCount,
 								fallbackTextureMaterialCount: fallbackTextureResult.mappedMaterialCount,
 								fallbackTextureMappings: fallbackTextureResult.mappings,
 								resourceTextureFiles: Object.keys(resourceUrls ?? {}).filter(
@@ -2455,12 +2467,34 @@ export class ThreeJsLayerManager {
 		const isGaussianSplatOnlyView = loaded.every((model) => isGaussianSplatEntry(model.entry));
 
 		this.closeModelView();
+		const axisWrappers = loaded.flatMap((model) => {
+			if (!isMeshModelEntry(model.entry)) return [];
+			const rotationX = getModelViewAxisRotationX(
+				model.entry.format.type,
+				model.entry.style.transform.baseRotationX
+			);
+			const parent = model.object.parent;
+			if (rotationX === 0 || !parent) return [];
+
+			const wrapper = new THREE.Group();
+			wrapper.rotation.x = THREE.MathUtils.degToRad(rotationX);
+			parent.add(wrapper);
+			wrapper.add(model.object);
+			return [{ object: model.object, parent, wrapper }];
+		});
 		const bounds = new THREE.Box3();
 		loaded.forEach((model) => {
 			model.object.updateWorldMatrix(true, true);
 			bounds.expandByObject(model.object);
 		});
-		if (bounds.isEmpty()) return null;
+		if (bounds.isEmpty()) {
+			axisWrappers.forEach(({ object, parent, wrapper }) => {
+				wrapper.remove(object);
+				parent.add(object);
+				wrapper.parent?.remove(wrapper);
+			});
+			return null;
+		}
 		const modelSize = bounds.getSize(new THREE.Vector3());
 		const largestDimension = Math.max(modelSize.x, modelSize.y, modelSize.z, 1);
 
@@ -2473,6 +2507,7 @@ export class ThreeJsLayerManager {
 			camera,
 			target: new THREE.Vector3(),
 			highlightVisibility: new Map(),
+			axisWrappers,
 			modelGroupVisible: this.modelGroup.visible,
 			previewVisible: this.previewModelGroup.visible
 		};
@@ -2571,6 +2606,11 @@ export class ThreeJsLayerManager {
 
 		activeModelView.highlightVisibility.forEach((visible, highlight) => {
 			highlight.visible = visible;
+		});
+		activeModelView.axisWrappers.forEach(({ object, parent, wrapper }) => {
+			wrapper.remove(object);
+			parent.add(object);
+			wrapper.parent?.remove(wrapper);
 		});
 		if (this.modelGroup) {
 			this.modelGroup.visible = activeModelView.modelGroupVisible;

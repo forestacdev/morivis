@@ -12,6 +12,10 @@ import type {
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import {
+	applyFbxCurveGeometricScaling,
+	parseFbxModelAttributes
+} from '$routes/map/utils/three/fbx-attributes';
 import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
 import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import {
@@ -508,6 +512,7 @@ const parseFbxObject = async (
 	const loader = new FBXLoader(manager);
 	const buffer = await file.arrayBuffer();
 	const object = loader.parse(buffer, '');
+	applyFbxCurveGeometricScaling(object, parseFbxModelAttributes(buffer));
 	if (normalizeToLocalOrigin) {
 		normalizeObjectToLocalOrigin(object);
 	}

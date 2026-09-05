@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { applyProjectedModelAxisOverride, getModelBaseRotationX } from './model-axis';
+import {
+	applyProjectedModelAxisOverride,
+	getModelBaseRotationX,
+	getModelViewAxisRotationX
+} from './model-axis';
 
 describe('getModelBaseRotationX', () => {
 	it('ローカルFBXではCAD向けの軸回転を適用しない', () => {
@@ -55,5 +59,15 @@ describe('applyProjectedModelAxisOverride', () => {
 		applyProjectedModelAxisOverride(transform, 'obj');
 
 		expect(transform.baseRotationX).toBe(-180);
+	});
+});
+
+describe('getModelViewAxisRotationX', () => {
+	it('CAD系FBXをモデルビューのY-up座標へ変換する', () => {
+		expect(getModelViewAxisRotationX('fbx', 90)).toBe(-90);
+	});
+
+	it('ソースの向きを維持するFBXには追加回転を適用しない', () => {
+		expect(getModelViewAxisRotationX('fbx', -180)).toBe(0);
 	});
 });

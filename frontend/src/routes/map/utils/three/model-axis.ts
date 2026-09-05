@@ -11,6 +11,10 @@ export const getModelBaseRotationX = (
 	return -180;
 };
 
+/** MapLibre用のZ-up FBX補正を、Y-upの単体ビューで打ち消す。 */
+export const getModelViewAxisRotationX = (format: MeshFormatType, baseRotationX?: number) =>
+	format === 'fbx' && baseRotationX === 90 ? -90 : 0;
+
 export const applyProjectedModelAxisOverride = (
 	transform: MeshStyle['transform'],
 	format: MeshFormatType,
