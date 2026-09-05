@@ -190,16 +190,16 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	sql: 'sqlite',
 	gdb: 'gdb',
 	pmtiles: 'pmtiles',
-	glb: 'glb',
-	gltf: 'glb',
-	'3ds': 'glb',
-	dae: 'glb',
-	'3dm': 'glb',
-	fbx: 'glb',
-	drc: 'glb',
-	'3mf': 'glb',
-	amf: 'glb',
-	ifc: 'glb',
+	glb: 'model',
+	gltf: 'model',
+	'3ds': 'model',
+	dae: 'model',
+	'3dm': 'model',
+	fbx: 'model',
+	drc: 'model',
+	'3mf': 'model',
+	amf: 'model',
+	ifc: 'model',
 	h5: 'hdf5',
 	tiff: 'geotiff',
 	tif: 'geotiff',
@@ -248,7 +248,7 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 			}
 
 			if (kmlModel && kmlModel.modelFiles.length > 0) {
-				return createDialogDecision('glb', kmlModel.modelFiles);
+				return createDialogDecision('model', kmlModel.modelFiles);
 			}
 
 			return createDialogDecision('kml');
@@ -259,11 +259,11 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 		match: (files) => !!findFirstByExtensions(files, MODEL_FILE_EXTENSIONS),
 		resolve: async (files) => {
 			const objFile = files.find((file) => hasExtension(file, '.obj'));
-			if (!objFile) return createDialogDecision('glb', files);
+			if (!objFile) return createDialogDecision('model', files);
 
 			const inspection = await inspectObjFile(objFile);
 			attachProjectedModelEpsg(objFile, inspection.projectedModelEpsg);
-			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb', files);
+			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'model', files);
 		}
 	},
 	{
@@ -418,7 +418,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 	if (ext === 'kmz') {
 		const kmzModel = await extractModelFromKmz(file).catch(() => null);
 		if (kmzModel && kmzModel.modelFiles.length > 0) {
-			return createDialogDecision('glb', kmzModel.modelFiles);
+			return createDialogDecision('model', kmzModel.modelFiles);
 		}
 		return createDialogDecision('kml');
 	}
@@ -426,7 +426,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 	if (ext === 'obj') {
 		const inspection = await inspectObjFile(file);
 		attachProjectedModelEpsg(file, inspection.projectedModelEpsg);
-		return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb');
+		return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'model');
 	}
 
 	if (ext === 'jpg' || ext === 'jpeg' || ext === 'heic' || ext === 'heif') {

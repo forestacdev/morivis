@@ -89,7 +89,7 @@ describe('resolveOpenDialogDrop', () => {
 		const currentFiles = [createFile('house.obj')];
 		const incomingFiles = [createFile('house.mtl'), createFile('wall.webp')];
 
-		const result = await resolveOpenDialogDrop('glb', currentFiles, incomingFiles);
+		const result = await resolveOpenDialogDrop('model', currentFiles, incomingFiles);
 
 		expect(result).toEqual({
 			type: 'stay',
@@ -113,7 +113,7 @@ describe('resolveOpenDialogDrop', () => {
 			createPathLikeFile('wall.png', 'textures/wall.png')
 		];
 
-		const result = await resolveOpenDialogDrop('glb', currentFiles, incomingFiles);
+		const result = await resolveOpenDialogDrop('model', currentFiles, incomingFiles);
 
 		expect(result).toEqual({
 			type: 'stay',

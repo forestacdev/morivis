@@ -107,7 +107,7 @@ const supplementaryDropMatchers: Partial<
 				hasExtension(file, '.saf') || hasExtension(file, '.tif')
 				|| hasExtension(file, '.tiff')
 		),
-	glb: async (currentFiles, files) => {
+	model: async (currentFiles, files) => {
 		if (files.length === 0) return false;
 		if (
 			files.every((file) =>

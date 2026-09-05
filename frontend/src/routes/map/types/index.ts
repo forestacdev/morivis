@@ -102,7 +102,7 @@ export type DialogType =
 	| 'mfjson'
 	| '3dtiles'
 	| 'pmtiles'
-	| 'glb'
+	| 'model'
 	| 'arcgis'
 	| 'pointcloud'
 	| 'mbtiles'

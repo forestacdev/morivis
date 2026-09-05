@@ -403,7 +403,7 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
-	it('KMZ からモデル群が抽出できると glb ダイアログへ進む', async () => {
+	it('KMZ からモデル群が抽出できるとモデルダイアログへ進む', async () => {
 		const modelFiles = [createFile('building.glb', 'glb', 'model/gltf-binary')];
 		vi.mocked(extractModelFromKmz).mockResolvedValue({
 			modelFiles,
@@ -414,7 +414,7 @@ describe('resolveDroppedFiles', () => {
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: modelFiles
 		});
 	});
@@ -478,7 +478,7 @@ describe('resolveDroppedFiles', () => {
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: undefined
 		});
 		expect((file as File & { morivisProjectedModelEpsg?: string; }).morivisProjectedModelEpsg)
@@ -487,17 +487,17 @@ describe('resolveDroppedFiles', () => {
 			);
 	});
 
-	it('glTF 単体ドロップは glb 判定になる', async () => {
+	it('glTF 単体ドロップはモデル判定になる', async () => {
 		const result = await resolveDroppedFiles(createFile('scene.gltf'));
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: undefined
 		});
 	});
 
-	it('glTF と補助ファイルを同時ドロップしたときはファイル群を保持したまま glb 判定になる', async () => {
+	it('glTF と補助ファイルを同時ドロップしたときはファイル群を保持したままモデル判定になる', async () => {
 		const gltfFile = createFile('scene.gltf');
 		const binFile = createFile('scene.bin');
 		const textureFile = createFile('wall.png');
@@ -506,7 +506,7 @@ describe('resolveDroppedFiles', () => {
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: [gltfFile, binFile, textureFile]
 		});
 	});
@@ -603,7 +603,7 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
-	it('複数 KML でローカルモデル群が解決できると glb 判定になる', async () => {
+	it('複数 KML でローカルモデル群が解決できるとモデル判定になる', async () => {
 		const modelFiles = [createFile('building.glb', 'glb', 'model/gltf-binary')];
 		vi.mocked(extractModelFromKml).mockResolvedValue({
 			modelFiles
@@ -616,7 +616,7 @@ describe('resolveDroppedFiles', () => {
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: modelFiles
 		});
 	});

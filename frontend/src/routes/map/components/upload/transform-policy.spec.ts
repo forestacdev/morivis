@@ -38,6 +38,6 @@ describe('3Dモデルの座標処理ポリシー', () => {
 				coordinateMode: 'local'
 			})
 		).toBe('placement-missing');
-		expect(getAllowedTransformModesForIssue('glb', 'placement-missing')).toEqual(['georef']);
+		expect(getAllowedTransformModesForIssue('model', 'placement-missing')).toEqual(['georef']);
 	});
 });

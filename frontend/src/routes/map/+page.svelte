@@ -290,7 +290,7 @@
 			return geoRefData.allowedTransformModes;
 		}
 
-		if (showDialogType === 'glb' && isModelPlacementActive) {
+		if (showDialogType === 'model' && isModelPlacementActive) {
 			return getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 		}
 

@@ -819,7 +819,7 @@
 
 			showDataEntry = entry;
 			if (requiresModelPlacement) {
-				transformOptionMode = getDefaultTransformModeForIssue('glb', 'placement-missing');
+				transformOptionMode = getDefaultTransformModeForIssue('model', 'placement-missing');
 				return;
 			}
 			showDialogType = null;
@@ -877,7 +877,7 @@
 	$effect(() => {
 		if (
 			!zoneConfirmedEpsg ||
-			showDialogType !== 'glb' ||
+			showDialogType !== 'model' ||
 			(!requiresProjectedCandidateZoneSelection && !requiresIfcZoneSelection)
 		)
 			return;
