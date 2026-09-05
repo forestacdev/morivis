@@ -166,6 +166,11 @@
 
 	const isZoneRegistrationActive = $derived(transformOptionMode === 'zone');
 	const isGeoRefRegistrationActive = $derived(transformOptionMode === 'georef');
+	const isModelPlacementActive = $derived(
+		transformOptionMode === 'georef' &&
+		showDataEntry?.type === 'model' &&
+		showDataEntry.style.type === 'mesh'
+	);
 
 	// 監視用のデータを保持
 	let layerWatchTargets = $derived.by(() => {
@@ -846,7 +851,7 @@
 
 		const previewMeshEntry =
 			showDataEntry &&
-			transformOptionMode !== 'model-placement' &&
+			!isModelPlacementActive &&
 			showDataEntry.type === 'model' &&
 			showDataEntry.style.type === 'mesh' &&
 			showDataEntry.format.type !== '3d-tiles'

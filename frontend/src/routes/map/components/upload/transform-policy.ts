@@ -4,6 +4,12 @@ import type { DialogType } from '$routes/map/types';
 export type SpatialIssue = 'resolved' | 'crs-missing' | 'placement-missing';
 export type TransformChoice = 'none' | 'zone-only' | 'georef-only' | 'zone-or-georef';
 
+export interface ModelSpatialContext {
+	hasEmbeddedEpsg: boolean;
+	hasExplicitPlacement: boolean;
+	coordinateMode: 'local' | 'projected' | null;
+}
+
 export interface TransformPolicy {
 	onCrsMissing: TransformChoice;
 	onPlacementMissing: TransformChoice;
@@ -58,7 +64,8 @@ const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPo
 	geotiff: createPolicy('zone-only', 'georef-only', 'zone'),
 	pointcloud: createPolicy('zone-only', 'georef-only', 'zone'),
 	landxml: createPolicy('zone-only', 'georef-only', 'zone'),
-	glb: createPolicy('zone-only', 'none', 'zone'),
+	// 3Dモデルは平面直角座標なら座標系を選び、ローカル原点ならGeoRefFormで配置する。
+	glb: createPolicy('zone-only', 'georef-only', 'zone'),
 	geopdf: createPolicy('none', 'georef-only', 'georef'),
 	svg: createPolicy('none', 'georef-only', 'georef'),
 	demxml: createPolicy('none', 'georef-only', 'georef'),
@@ -94,4 +101,16 @@ export const getDefaultTransformModeForIssue = (
 	}
 
 	return allowedModes[0] ?? null;
+};
+
+/** ファイル内の座標情報と座標値の範囲から、3Dモデルに必要な操作を決める。 */
+export const getModelSpatialIssue = ({
+	hasEmbeddedEpsg,
+	hasExplicitPlacement,
+	coordinateMode
+}: ModelSpatialContext): SpatialIssue | null => {
+	if (hasEmbeddedEpsg || hasExplicitPlacement) return 'resolved';
+	if (coordinateMode === 'projected') return 'crs-missing';
+	if (coordinateMode === 'local') return 'placement-missing';
+	return null;
 };

@@ -3,6 +3,10 @@
 	import * as yup from 'yup';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import {
+		getDefaultTransformModeForIssue,
+		getModelSpatialIssue
+	} from '$routes/map/components/upload/transform-policy';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { createGlbEntry } from '$routes/map/data/entries/model';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
@@ -12,6 +16,7 @@
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import {
+		hasIfcGeographicCoordinates,
 		readIfcPlacementMetadata,
 		type IfcPlacementMetadata
 	} from '$routes/map/utils/three/ifc-metadata';
@@ -99,8 +104,18 @@
 		'3dm',
 		'fbx',
 		'drc',
+		'3mf',
+		'amf',
 		'ifc'
 	]);
+
+	const getIfcModelCoordinateMode = (
+		metadata: IfcPlacementMetadata | undefined
+	): 'local' | 'projected' | null => {
+		if (metadata?.requiresEpsg || metadata?.coordinateMode === 'absolute') return 'projected';
+		if (metadata?.coordinateMode === 'local') return 'local';
+		return null;
+	};
 
 	const inputFiles = $derived.by(() => toUploadFiles(dropFile));
 
@@ -234,16 +249,27 @@
 			!modelPlacement &&
 			!detectedProjectedModelEpsg
 	);
+	const modelSpatialIssue = $derived.by(() => {
+		if (!activeFormat) return null;
+
+		return getModelSpatialIssue({
+			hasEmbeddedEpsg:
+				!!detectedProjectedModelEpsg ||
+				(activeFormat === 'ifc' && hasIfcGeographicCoordinates(ifcPlacementMetadata)),
+			hasExplicitPlacement: !!modelPlacement,
+			coordinateMode:
+				activeFormat === 'ifc'
+					? getIfcModelCoordinateMode(ifcPlacementMetadata)
+					: getModelCoordinateMode(projectedCandidateSourceBbox)
+		});
+	});
 	const requiresProjectedCandidateZoneSelection = $derived(
-		requiresProjectedCandidateCoordinateInspection &&
-			!isInspectingProjectedCandidateCoordinates &&
-			getModelCoordinateMode(projectedCandidateSourceBbox) === 'projected'
+		requiresProjectedCandidateCoordinateInspection && modelSpatialIssue === 'crs-missing'
 	);
 	const requiresIfcZoneSelection = $derived(
-		activeFormat === 'ifc' &&
-			!isInspectingIfcPlacement &&
-			ifcPlacementMetadata?.requiresEpsg === true
+		activeFormat === 'ifc' && !isInspectingIfcPlacement && modelSpatialIssue === 'crs-missing'
 	);
+	const requiresModelPlacement = $derived(modelSpatialIssue === 'placement-missing');
 	const textureResourceKeys = $derived.by(() => buildResourceKeySet(textureFiles));
 	const gltfResourceKeys = $derived.by(() => buildResourceKeySet(gltfSupplementaryFiles));
 	const requiresObjMtlResolution = $derived(
@@ -718,10 +744,6 @@
 			resolvedProjectedModelEpsg
 		);
 
-		if (activeFormat === 'ifc' && !resolvedProjectedModelEpsg) {
-			showNotification('IFCの地理配置は行わず、ローカル原点に寄せて表示します', 'info');
-		}
-
 		try {
 			isProcessing.set(true);
 			const uploadedModelMeta = await computeUploadedModelMetaInWorker({
@@ -796,12 +818,8 @@
 			if (!entry) return;
 
 			showDataEntry = entry;
-			if (
-				!modelPlacement &&
-				!detectedProjectedModelEpsg &&
-				getModelCoordinateMode(projectedCandidateSourceBbox) === 'local'
-			) {
-				transformOptionMode = 'model-placement';
+			if (requiresModelPlacement) {
+				transformOptionMode = getDefaultTransformModeForIssue('glb', 'placement-missing');
 				return;
 			}
 			showDialogType = null;

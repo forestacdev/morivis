@@ -52,7 +52,10 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
-	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefConfirmPayload,
 		GeoRefData,
@@ -154,16 +157,16 @@
 
 	// アップロード関連コンポーネント（PC時のみ動的ロード）
 	let UploadDialog = $state.raw<any>(null);
-	let TransformOptionForm = $state.raw<any>(null);
+	let GeoRefForm = $state.raw<any>(null);
 
 	const isPc = typeof window !== 'undefined' && checkPc();
 	if (isPc) {
 		Promise.all([
 			import('$routes/map/components/upload/BaseDialog.svelte'),
-			import('$routes/map/components/upload/form/transform/TransformOptionForm.svelte')
-		]).then(([uploadMod, transformOptionMod]) => {
+			import('$routes/map/components/upload/form/transform/GeoRefForm.svelte')
+		]).then(([uploadMod, geoRefMod]) => {
 			UploadDialog = uploadMod.default;
-			TransformOptionForm = transformOptionMod.default;
+			GeoRefForm = geoRefMod.default;
 		});
 	}
 
@@ -273,8 +276,11 @@
 
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
 	let pendingZoneGeoRefData = $state.raw<PendingZoneGeoRefData | null>(null);
-	let transformOptionMode = $state<'zone' | 'georef' | 'model-placement' | null>(null);
+	let transformOptionMode = $state<TransformOptionMode>(null);
 	let isPreparingGeoRefData = $state(false);
+	let isModelPlacementActive = $derived(
+		transformOptionMode === 'georef' && !!showDataEntry && isMeshEntry(showDataEntry)
+	);
 
 	let geoRefData = $state.raw<GeoRefData | null>(null);
 	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
@@ -282,6 +288,10 @@
 	let allowedTransformModes = $derived.by(() => {
 		if (geoRefData?.allowedTransformModes?.length) {
 			return geoRefData.allowedTransformModes;
+		}
+
+		if (showDialogType === 'glb' && isModelPlacementActive) {
+			return getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 		}
 
 		if (showDialogType && (transformOptionMode === 'zone' || pendingZoneGeoRefData)) {
@@ -1350,7 +1360,7 @@
 				{/await}
 			</MobileFeatureMenuCard>
 
-			{#if transformOptionMode !== 'model-placement'}
+			{#if !isModelPlacementActive}
 				<PreviewMenu bind:showDataEntry />
 			{/if}
 
@@ -1369,7 +1379,7 @@
 					bind:pendingTileUrl
 				/>
 			{/if}
-			{#if showDataEntry && transformOptionMode !== 'model-placement'}
+			{#if showDataEntry && !isModelPlacementActive}
 				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
 			{/if}
 
@@ -1434,8 +1444,8 @@
 
 <ImagePreviewDialog bind:imagePreviewUrl bind:imageBounds />
 
-{#if map && transformOptionMode && TransformOptionForm}
-	<TransformOptionForm
+{#if map && transformOptionMode && GeoRefForm}
+	<GeoRefForm
 		{map}
 		{allowedTransformModes}
 		bind:selectedEpsgCode
