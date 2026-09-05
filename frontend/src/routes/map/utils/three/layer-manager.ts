@@ -46,6 +46,7 @@ import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normal
 import { loadPmxModel, type LoadedPmxModel } from '$routes/map/utils/three/pmx-loader';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
+import type { ThreeMmdAnimation } from '@yohawing/three-mmd-loader/three';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -158,6 +159,7 @@ interface LoadedModel {
 	lastClipIndex?: number;
 	mmd?: {
 		model: LoadedPmxModel;
+		animations: Map<number, ThreeMmdAnimation>;
 		activeClipIndex?: number;
 		loadingClipIndex?: number;
 		elapsedSeconds: number;
@@ -1186,6 +1188,16 @@ export class ThreeJsLayerManager {
 		const clip = clips[clipIndex];
 		if (!clip || !isVmdModelAnimationClip(clip)) return;
 		if (mmd.activeClipIndex === clipIndex || mmd.loadingClipIndex === clipIndex) return;
+		const cachedAnimation = mmd.animations.get(clipIndex);
+		if (cachedAnimation) {
+			mmd.model.model.setAnimation(cachedAnimation);
+			mmd.activeClipIndex = clipIndex;
+			mmd.elapsedSeconds = 0;
+			if (animationState.playing) {
+				this.map?.triggerRepaint();
+			}
+			return;
+		}
 
 		mmd.loadingClipIndex = clipIndex;
 		void mmd.model.loader
@@ -1200,6 +1212,7 @@ export class ThreeJsLayerManager {
 				}
 
 				mmd.model.model.setAnimation(animation);
+				mmd.animations.set(clipIndex, animation);
 				mmd.activeClipIndex = clipIndex;
 				mmd.loadingClipIndex = undefined;
 				mmd.elapsedSeconds = 0;
@@ -1598,6 +1611,7 @@ export class ThreeJsLayerManager {
 					...(mmdModel && {
 						mmd: {
 							model: mmdModel,
+							animations: new Map(),
 							elapsedSeconds: 0
 						}
 					}),

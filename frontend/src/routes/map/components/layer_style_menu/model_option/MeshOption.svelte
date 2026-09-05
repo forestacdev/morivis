@@ -32,11 +32,14 @@
 	}: Props = $props();
 	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
 	let animationClips = $derived(layerEntry.properties?.animation?.clips ?? []);
+	let isPmx = $derived(layerEntry.format.type === 'pmx');
+	let canConfigureAnimation = $derived(isPmx || animationClips.length > 0);
 	let showMaterialOption = $state(false);
 	let showAnimationOption = $state(false);
 	let showTransformOption = $state(false);
 	let showRotateOption = $state(false);
 	let showPartColorOption = $state(false);
+	let mmdMotionInput = $state<HTMLInputElement>();
 
 	const colorMapManager = new ColorMapManager();
 	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
@@ -61,6 +64,41 @@
 				layerEntry.style.heightColorRamp.sourceMax ?? layerEntry.style.heightColorRamp.max ?? 0
 			);
 		}
+	};
+
+	const openMmdMotionPicker = () => {
+		mmdMotionInput?.click();
+	};
+
+	const addMmdMotionFiles = (event: Event) => {
+		const input = event.currentTarget as HTMLInputElement;
+		const files = Array.from(input.files ?? []).filter((file) => /\.vmd$/i.test(file.name));
+		input.value = '';
+		if (files.length === 0) return;
+
+		const animation = layerEntry.properties?.animation;
+		const currentClipIndex = animation?.clips.length ?? 0;
+		const clips = files.map((file) => ({
+			name: file.name.replace(/\.vmd$/i, ''),
+			type: 'vmd' as const,
+			url: URL.createObjectURL(file)
+		}));
+
+		layerEntry.properties = {
+			...layerEntry.properties,
+			animation: {
+				...animation,
+				clips: [...(animation?.clips ?? []), ...clips]
+			}
+		};
+		layerEntry.state = {
+			...layerEntry.state,
+			animation: {
+				currentClipIndex,
+				playing: true,
+				speed: layerEntry.state?.animation?.speed ?? animation?.defaultSpeed ?? 1
+			}
+		};
 	};
 
 	ensureShading();
@@ -120,10 +158,24 @@
 	});
 </script>
 
-{#if animationClips.length > 0}
+{#if canConfigureAnimation}
 	<Accordion label="アニメーション" icon="mdi:run-fast" bind:value={showAnimationOption}>
+		{#if isPmx}
+			<input
+				bind:this={mmdMotionInput}
+				type="file"
+				accept=".vmd"
+				multiple
+				onchange={addMmdMotionFiles}
+				class="hidden"
+			/>
+			<button type="button" onclick={openMmdMotionPicker} class="c-btn-sub w-full">
+				VMDモーションを追加
+			</button>
+		{/if}
+
 		{#if animationClips.length > 0 && layerEntry.state?.animation}
-			<div class="">
+			<div class:mt-3={isPmx}>
 				<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
 			</div>
 
@@ -146,6 +198,8 @@
 					/>
 				</div>
 			{/if}
+		{:else if isPmx}
+			<p class="mt-3 text-sm text-base/70">VMDモーションを追加すると再生できます。</p>
 		{/if}
 	</Accordion>
 {/if}
