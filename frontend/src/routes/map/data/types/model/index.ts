@@ -213,6 +213,8 @@ export interface PointCloudEntry extends BaseModelEntry {
 		url?: string;
 		/** 変換済みの位置データ [x,y,z, x,y,z, ...] */
 		positions?: Float32Array;
+		/** METER_OFFSETS で描画する場合の地理座標原点 [経度, 緯度, 高さ] */
+		coordinateOrigin?: [number, number, number];
 		/** 色データ [r,g,b, r,g,b, ...] (0-255) */
 		colors?: Uint8Array;
 		/** 点数 */

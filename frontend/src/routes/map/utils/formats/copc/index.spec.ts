@@ -154,10 +154,11 @@ describe('COPC parser', () => {
 		expect(result.pointCount).toBe(5);
 		expect(result.sourcePointCount).toBe(10);
 		expect(result.isSampled).toBe(true);
+		expect(result.projection).toBeNull();
 		expect(result.bbox).toEqual([140, 35, 141, 36]);
 		expect(Array.from(result.positions)).toEqual(
 			Array.from(
-				Float32Array.from([
+				Float64Array.from([
 					140,
 					35,
 					1,

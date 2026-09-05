@@ -1,5 +1,6 @@
 import { Copc, type Getter, Las } from 'copc';
 
+import { getLasProjection, type LasProjection } from '$routes/map/utils/formats/las';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 
 type CopcHierarchyNode = {
@@ -20,11 +21,12 @@ type CopcColor = [number, number, number];
 type CopcLazPerf = Awaited<ReturnType<typeof Las.PointData.createLazPerf>>;
 
 export interface CopcParseResult {
-	positions: Float32Array;
+	positions: Float64Array;
 	colors?: Uint8Array;
 	pointCount: number;
 	sourcePointCount: number;
 	bbox: [number, number, number, number] | null;
+	projection: LasProjection | null;
 	isSampled: boolean;
 }
 
@@ -176,6 +178,7 @@ export const parseCopcFile = async (
 	maxPoints = COPC_MAX_POINTS
 ): Promise<CopcParseResult> => {
 	const arrayBuffer = await file.arrayBuffer();
+	const projection = getLasProjection(arrayBuffer);
 	const getter = createArrayBufferGetter(arrayBuffer);
 	const copc = await Copc.create(getter);
 	const totalPointCount = Math.max(copc.header.pointCount ?? 0, 0);
@@ -227,11 +230,12 @@ export const parseCopcFile = async (
 	}
 
 	return {
-		positions: new Float32Array(positionValues),
+		positions: new Float64Array(positionValues),
 		colors: hasColor ? new Uint8Array(colorValues) : undefined,
 		pointCount: loadedPointCount,
 		sourcePointCount: Math.max(totalPointCount, loadedPointCount),
 		bbox,
+		projection,
 		isSampled: loadedPointCount < totalPointCount
 	};
 };

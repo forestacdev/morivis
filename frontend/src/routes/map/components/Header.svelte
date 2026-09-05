@@ -245,7 +245,7 @@
 	let isFocus = $state<boolean>(false); // 検索フォームがフォーカスされているかどうか
 </script>
 
-<div class="bg-main relative z-20 flex w-full items-center justify-between p-2 max-lg:hidden">
+<div class="bg-main relative z-20 flex w-full items-center justify-between my-2 max-lg:hidden">
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
 		<div class="flex h-full items-end justify-center gap-2"></div>
@@ -285,7 +285,7 @@
 	{/if}
 	<!-- 右側 -->
 
-	{#if !hideControls}
+	{#if !hideControls && !$showDataMenu}
 		<div
 			class="flex items-center rounded-lg pr-1 max-lg:hidden {showDataEntry
 				? 'pointer-events-none opacity-0'

@@ -85,6 +85,7 @@ export const createPointCloudEntry = (
 		positions: Float32Array;
 		colors?: Uint8Array;
 		pointCount: number;
+		coordinateOrigin?: [number, number, number];
 	},
 	bounds?: [number, number, number, number]
 ): PointCloudEntry => ({
@@ -94,7 +95,8 @@ export const createPointCloudEntry = (
 		type: 'point-cloud',
 		positions: config.positions,
 		colors: config.colors,
-		pointCount: config.pointCount
+		pointCount: config.pointCount,
+		coordinateOrigin: config.coordinateOrigin
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
