@@ -846,7 +846,8 @@
 								entry.format.type === 'drc' ||
 								entry.format.type === '3mf' ||
 								entry.format.type === 'amf' ||
-								entry.format.type === 'ifc')
+								entry.format.type === 'ifc' ||
+								entry.format.type === 'pmx')
 					) as MeshEntry<MeshStyle>[]);
 
 		const previewMeshEntry =

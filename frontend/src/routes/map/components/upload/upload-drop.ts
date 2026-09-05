@@ -200,6 +200,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	'3mf': 'model',
 	amf: 'model',
 	ifc: 'model',
+	pmx: 'model',
 	h5: 'hdf5',
 	tiff: 'geotiff',
 	tif: 'geotiff',

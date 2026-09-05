@@ -13,7 +13,8 @@ export const MODEL_FILE_EXTENSIONS = [
 	'.drc',
 	'.3mf',
 	'.amf',
-	'.ifc'
+	'.ifc',
+	'.pmx'
 ] as const;
 
 // ディレクトリドロップ時は仮想的な相対パスを優先し、拡張子判定を安定させる。

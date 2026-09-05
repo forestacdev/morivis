@@ -13,7 +13,7 @@ type SupplementaryDropMatcher = (
 	incomingFiles: File[]
 ) => boolean | Promise<boolean>;
 
-const OBJ_SUPPLEMENTARY_EXTENSIONS = [
+const MODEL_TEXTURE_EXTENSIONS = [
 	'.mtl',
 	'.png',
 	'.jpg',
@@ -21,7 +21,10 @@ const OBJ_SUPPLEMENTARY_EXTENSIONS = [
 	'.bmp',
 	'.tga',
 	'.gif',
-	'.webp'
+	'.webp',
+	'.dds',
+	'.spa',
+	'.sph'
 ] as const;
 
 const getPathCandidates = (value: string): string[] => {
@@ -111,7 +114,7 @@ const supplementaryDropMatchers: Partial<
 		if (files.length === 0) return false;
 		if (
 			files.every((file) =>
-				OBJ_SUPPLEMENTARY_EXTENSIONS.some((extension) => hasExtension(file, extension))
+				MODEL_TEXTURE_EXTENSIONS.some((extension) => hasExtension(file, extension))
 			)
 		) {
 			return true;

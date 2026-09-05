@@ -112,6 +112,16 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('単一の PMX はモデルダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('test-model.pmx', 'pmx'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: undefined
+		});
+	});
+
 	it('単一の XLSX は xlsx ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(
 			createFile(

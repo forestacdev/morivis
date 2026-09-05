@@ -1,4 +1,5 @@
 import type { AdjustableRange, BaseMetaData, Opacity } from '$routes/map/data/types';
+import type { MediaData } from '$routes/map/data/types/details';
 import type {
 	ColorMapType,
 	RasterDimensionState,
@@ -6,7 +7,6 @@ import type {
 } from '$routes/map/data/types/raster';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { ColorsStyle } from '$routes/map/data/types/vector/style';
-import type { MediaData } from '$routes/map/data/types/details';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { ModelAttributes } from '$routes/map/utils/three/model-attributes';
 import type { Table } from 'apache-arrow';
@@ -181,7 +181,8 @@ export type MeshFormatType =
 	| 'drc'
 	| '3mf'
 	| 'amf'
-	| 'ifc';
+	| 'ifc'
+	| 'pmx';
 
 export interface MeshEntry<T> extends BaseModelEntry {
 	format: {

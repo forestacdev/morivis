@@ -97,6 +97,18 @@ describe('resolveOpenDialogDrop', () => {
 		});
 	});
 
+	it('PMXフォームで DDS テクスチャを追加ドロップしたときは同一フォームにファイルをマージする', async () => {
+		const currentFiles = [createFile('test-model.pmx')];
+		const incomingFiles = [createFile('test-texture.dds')];
+
+		const result = await resolveOpenDialogDrop('model', currentFiles, incomingFiles);
+
+		expect(result).toEqual({
+			type: 'stay',
+			dropFiles: expect.arrayContaining([currentFiles[0], incomingFiles[0]])
+		});
+	});
+
 	it('glTFフォームで参照中の補助ファイルを追加ドロップしたときは同一フォームにファイルをマージする', async () => {
 		const currentFiles = [
 			createFile(

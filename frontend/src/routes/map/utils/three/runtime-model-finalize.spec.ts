@@ -62,4 +62,20 @@ describe('finalizeRuntimeModelObject', () => {
 		expect(box.min.z).toBeCloseTo(0, 6);
 		expect(box.max.z).toBeCloseTo(30, 6);
 	});
+
+	it('PMX は Y-up のローカルモデルとして最下端を地図の高さ 0 に合わせる', () => {
+		const geometry = new THREE.BoxGeometry(10, 20, 30);
+		const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial());
+		mesh.position.set(100, 200, 300);
+		mesh.updateMatrixWorld(true);
+
+		finalizeRuntimeModelObject(mesh, {
+			formatType: 'pmx',
+			normalizeToLocalOrigin: true
+		});
+
+		const box = new THREE.Box3().setFromObject(mesh);
+		expect(box.min.y).toBeCloseTo(0, 6);
+		expect(box.max.y).toBeCloseTo(20, 6);
+	});
 });

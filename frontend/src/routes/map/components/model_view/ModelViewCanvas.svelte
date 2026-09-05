@@ -119,7 +119,9 @@
 				return true;
 			}
 			if (!fpsModeEnabled || !pointerLockControls.isLocked) return false;
-			if (!['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'ShiftRight'].includes(event.code)) {
+			if (
+				!['KeyW', 'KeyA', 'KeyS', 'KeyD', 'Space', 'ShiftLeft', 'ShiftRight'].includes(event.code)
+			) {
 				return false;
 			}
 			event.preventDefault();

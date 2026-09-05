@@ -3,7 +3,11 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
-import type { MeshStyle, ProjectedModelGeoreference } from '$routes/map/data/types/model';
+import type {
+	MeshFormatType,
+	MeshStyle,
+	ProjectedModelGeoreference
+} from '$routes/map/data/types/model';
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
@@ -18,10 +22,11 @@ import {
 	resolveProjectedModelPlacementFromBox
 } from '$routes/map/utils/three/model-georeference';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
+import { loadPmxObject } from '$routes/map/utils/three/pmx-loader';
 
 export interface ComputeUploadedModelMetaParams {
 	file: File;
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc';
+	format: MeshFormatType;
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 	normalizeToLocalOrigin?: boolean;
@@ -584,9 +589,24 @@ const parseIfcObject = async (
 	}
 };
 
+const parsePmxObject = async (
+	file: File,
+	normalizeToLocalOrigin = false
+): Promise<UploadedModelObject> => {
+	// Worker では画像を読み込まず、形状範囲の算出だけを行う。
+	const object = await loadPmxObject(file);
+	if (normalizeToLocalOrigin) {
+		normalizeObjectToLocalOrigin(object, 'y');
+	}
+	return {
+		object,
+		animationNames: []
+	};
+};
+
 export const getUploadedModelObject = async (
 	file: File,
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc',
+	format: MeshFormatType,
 	resourceUrls?: Record<string, string>,
 	normalizeToLocalOrigin = false
 ) => {
@@ -624,6 +644,10 @@ export const getUploadedModelObject = async (
 
 	if (format === 'ifc') {
 		return parseIfcObject(file, normalizeToLocalOrigin);
+	}
+
+	if (format === 'pmx') {
+		return parsePmxObject(file, normalizeToLocalOrigin);
 	}
 
 	return parseGltfObject(file, resourceUrls, normalizeToLocalOrigin);

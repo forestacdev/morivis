@@ -40,11 +40,11 @@
 	import LayerMenu from '$routes/map/components/layer_menu/LayerMenu.svelte';
 	import LayerStyleMenu from '$routes/map/components/layer_style_menu/LayerStyleMenu.svelte';
 	import MapLibreMap from '$routes/map/components/Map.svelte';
-	import ModelViewCanvas from '$routes/map/components/model_view/ModelViewCanvas.svelte';
 	import MobileDebugLogger from '$routes/map/components/mobile/DebugLogger.svelte';
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
+	import ModelViewCanvas from '$routes/map/components/model_view/ModelViewCanvas.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
@@ -75,7 +75,6 @@
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
-	import type { PickedModelFeature } from '$routes/map/utils/three/layer-manager';
 	import type {
 		MorivisRasterEntry,
 		RasterDemStyle,
@@ -125,6 +124,7 @@
 		type EpsgCode,
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
+	import type { PickedModelFeature } from '$routes/map/utils/three/layer-manager';
 	import {
 		warpGeoJSONByCornersParallel,
 		warpPointCloudByCornersParallel
@@ -1273,7 +1273,7 @@
 						{focusFeature}
 						hideControls={$showModelView}
 						onResetModelView={resetModelView ?? undefined}
-						modelViewFpsMode={modelViewFpsMode}
+						{modelViewFpsMode}
 						onToggleModelViewFps={toggleModelViewFps}
 					/>
 

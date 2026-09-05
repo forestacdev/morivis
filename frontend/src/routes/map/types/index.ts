@@ -413,6 +413,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.fbx']
 	},
 	{
+		label: 'MikuMikuDance PMX',
+		description:
+			'MikuMikuDanceで使う3Dモデル形式です。キャラクターなどのスキニング済みモデルを読み込むときに使います。',
+		extensions: ['.pmx']
+	},
+	{
 		label: 'Draco DRC',
 		description: '圧縮された3Dメッシュ形式です。軽量化された3D形状を表示するときに使います。',
 		extensions: ['.drc']
@@ -460,7 +466,13 @@ export const SUPPORTED_FILE_ACCEPT = [
 	'.jgw',
 	'.wld', // ワールドファイル
 	'.aux.xml',
-	'.mtl'
+	'.mtl',
+	'.bmp',
+	'.dds',
+	'.gif',
+	'.spa',
+	'.sph',
+	'.tga'
 ].join(',');
 
 export interface ClickedLayerFeaturesData {

@@ -250,9 +250,10 @@
 	<div class="flex h-full items-center gap-4 pl-2">
 		<div class="flex h-full items-end justify-center gap-2"></div>
 	</div>
-	{#if !hideControls}
-		<!-- 中央 -->
-		{#if !$showDataMenu}
+
+	<!-- 中央 -->
+	{#if !$showDataMenu}
+		{#if !hideControls}
 			<div
 				bind:this={searchContainerRef}
 				class="relative flex max-w-[400px] flex-1 items-center rounded-full border transition-[border-color,filter] duration-150 {showDataEntry
@@ -281,7 +282,10 @@
 				</button>
 			</div>
 		{/if}
-		<!-- 右側 -->
+	{/if}
+	<!-- 右側 -->
+
+	{#if !hideControls}
 		<div
 			class="flex items-center rounded-lg pr-1 max-lg:hidden {showDataEntry
 				? 'pointer-events-none opacity-0'
@@ -300,8 +304,10 @@
 				<Icon icon={ICONS.menu} class="h-8 w-8" />
 			</button>
 		</div>
-	{:else}
-		<div class="ml-auto flex items-center gap-2">
+	{/if}
+
+	{#if hideControls}
+		<div class="ml-auto flex items-center gap-2 p-1.5">
 			{#if onToggleModelViewFps}
 				<button
 					class="flex h-11 cursor-pointer items-center gap-2 rounded-xl border px-3 text-sm font-medium shadow-lg {modelViewFpsMode
@@ -311,13 +317,13 @@
 					aria-pressed={modelViewFpsMode}
 					aria-label="FPS操作を切り替える"
 				>
-					<Icon icon="mdi:gamepad-variant-outline" class="h-5 w-5" />
+					<Icon icon="mdi:gamepad-variant-outline" class="h-6 w-6" />
 					FPS操作
 				</button>
 			{/if}
 			{#if onResetModelView}
 				<button
-					class="grid h-11 w-11 cursor-pointer place-items-center rounded-xl border border-white/30 bg-white/15 text-white shadow-lg hover:bg-white/25"
+					class="grid p-2 cursor-pointer place-items-center rounded-xl border border-white/30 bg-white/15 text-white shadow-lg hover:bg-white/25"
 					onclick={onResetModelView}
 					aria-label="表示を初期位置に戻す"
 					title="表示を戻す"
@@ -330,29 +336,29 @@
 </div>
 
 <!-- サジェスト -->
-	{#if !hideControls}
-		<div class="pointer-events-none relative w-full">
-			<div class="absolute top-0 z-20 flex w-full items-center justify-between p-2 max-lg:hidden">
-				<!-- 左スペース -->
-				<div class="flex h-full items-center"></div>
-				<div class="flex max-w-[400px] flex-1 items-center">
-					<SearchSuggest
-						{focusFeature}
-						bind:featureMenuData
-						bind:inputSearchWord
-						{layerEntries}
-						bind:showSelectionMarker
-						bind:selectionMarkerLngLat
-						bind:searchSuggests
-						bind:showDataEntry
-					/>
-				</div>
-				<!-- 右スペース -->
-
-				<div class="flex w-[240px] items-center rounded-lg max-lg:hidden"></div>
+{#if !hideControls}
+	<div class="pointer-events-none relative w-full">
+		<div class="absolute top-0 z-20 flex w-full items-center justify-between p-2 max-lg:hidden">
+			<!-- 左スペース -->
+			<div class="flex h-full items-center"></div>
+			<div class="flex max-w-[400px] flex-1 items-center">
+				<SearchSuggest
+					{focusFeature}
+					bind:featureMenuData
+					bind:inputSearchWord
+					{layerEntries}
+					bind:showSelectionMarker
+					bind:selectionMarkerLngLat
+					bind:searchSuggests
+					bind:showDataEntry
+				/>
 			</div>
+			<!-- 右スペース -->
+
+			<div class="flex w-[240px] items-center rounded-lg max-lg:hidden"></div>
 		</div>
-	{/if}
+	</div>
+{/if}
 
 <style>
 	.set-glow {

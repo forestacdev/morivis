@@ -27,6 +27,7 @@ const getMeshFormatType = (path: string): MeshFormatType => {
 	if (normalizedPath.endsWith('.3mf')) return '3mf';
 	if (normalizedPath.endsWith('.amf')) return 'amf';
 	if (normalizedPath.endsWith('.ifc')) return 'ifc';
+	if (normalizedPath.endsWith('.pmx')) return 'pmx';
 	return 'gltf';
 };
 
