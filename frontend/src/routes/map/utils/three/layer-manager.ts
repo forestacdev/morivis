@@ -2265,6 +2265,7 @@ export class ThreeJsLayerManager {
 			.map((entryId) => this.loadedModels.get(entryId))
 			.filter((model): model is LoadedModel => model != null);
 		if (loaded.length === 0) return null;
+		const isGaussianSplatOnlyView = loaded.every((model) => isGaussianSplatEntry(model.entry));
 
 		this.closeModelView();
 		const bounds = new THREE.Box3();
@@ -2307,8 +2308,8 @@ export class ThreeJsLayerManager {
 
 			camera.near = Math.max(largestDimension / 10_000, 0.001);
 			camera.far = Math.max(largestDimension * 100, 1_000);
-			// モデルビューはThree.js標準のY-upで固定し、MapLibreの座標系を持ち込まない。
-			camera.up.set(0, 1, 0);
+			// 3DGS PLYはMapLibreの画面座標と上下が逆になるため、単体ビューだけ上方向を反転する。
+			camera.up.set(0, isGaussianSplatOnlyView ? -1 : 1, 0);
 			camera.position.copy(center).add(new THREE.Vector3(distance, distance * 0.7, distance));
 			camera.lookAt(center);
 			if (camera instanceof THREE.PerspectiveCamera) {

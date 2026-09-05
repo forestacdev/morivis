@@ -9,7 +9,7 @@
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries, layerDataFuse } from '$routes/map/data/entries';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DialogType, UploadFiles } from '$routes/map/types';
+	import { SUPPORTED_FILE_ACCEPT, type DialogType, type UploadFiles } from '$routes/map/types';
 	import { encode } from '$routes/map/utils/data/normalize';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
@@ -335,6 +335,16 @@
 			/>
 		{/if}
 	</div>
+
+	{#if isMobile}
+		<label
+			transition:scale={{ duration: 200 }}
+			class="absolute bottom-22 right-4 bg-accent grid cursor-pointer place-items-center rounded-full p-2 text-white shadow-2xl"
+		>
+			<Icon icon="material-symbols:add" class=" h-8 w-8" />
+			<input type="file" multiple accept={SUPPORTED_FILE_ACCEPT} class="hidden" />
+		</label>
+	{/if}
 {/if}
 
 <style>
