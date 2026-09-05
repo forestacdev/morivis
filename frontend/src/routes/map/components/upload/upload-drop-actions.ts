@@ -18,6 +18,7 @@ const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024;
 
 const getMeshFormatType = (path: string): MeshFormatType => {
 	const normalizedPath = path.toLowerCase();
+	if (normalizedPath.endsWith('.vrm')) return 'vrm';
 	if (normalizedPath.endsWith('.obj')) return 'obj';
 	if (normalizedPath.endsWith('.3ds')) return '3ds';
 	if (normalizedPath.endsWith('.dae')) return 'dae';

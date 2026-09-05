@@ -193,6 +193,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	pmtiles: 'pmtiles',
 	glb: 'model',
 	gltf: 'model',
+	vrm: 'model',
 	'3ds': 'model',
 	dae: 'model',
 	'3dm': 'model',

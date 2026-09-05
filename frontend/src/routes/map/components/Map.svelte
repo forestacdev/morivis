@@ -839,6 +839,7 @@
 							entry.type === 'model' &&
 							(entry.format.type === 'gaussian-splat' ||
 								entry.format.type === 'gltf' ||
+								entry.format.type === 'vrm' ||
 								entry.format.type === 'obj' ||
 								entry.format.type === '3ds' ||
 								entry.format.type === 'dae' ||

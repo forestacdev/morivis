@@ -208,6 +208,7 @@ export interface GeoArrowStyle {
 /** mesh 系 model entry の入力形式。主に three.js 側で読む 3D モデル形式を表す。 */
 export type MeshFormatType =
 	| 'gltf'
+	| 'vrm'
 	| 'obj'
 	| '3ds'
 	| 'dae'

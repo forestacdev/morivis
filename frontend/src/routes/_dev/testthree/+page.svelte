@@ -37,10 +37,11 @@
 	};
 
 	const MODEL_FILE_ACCEPT =
-		'.glb,.gltf,.obj,.3ds,.dae,.3dm,.fbx,.drc,.3mf,.amf,.ifc,.mtl,.bin,.png,.jpg,.jpeg,.bmp,.tga,.gif,.webp';
+		'.glb,.gltf,.vrm,.obj,.3ds,.dae,.3dm,.fbx,.drc,.3mf,.amf,.ifc,.mtl,.bin,.png,.jpg,.jpeg,.bmp,.tga,.gif,.webp';
 
 	const FORMAT_EXTENSIONS: Array<{ format: MeshFormatType; extensions: string[] }> = [
 		{ format: 'gltf', extensions: ['.glb', '.gltf'] },
+		{ format: 'vrm', extensions: ['.vrm'] },
 		{ format: 'obj', extensions: ['.obj'] },
 		{ format: '3ds', extensions: ['.3ds'] },
 		{ format: 'dae', extensions: ['.dae'] },

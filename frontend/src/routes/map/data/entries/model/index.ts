@@ -213,6 +213,8 @@ export const createGlbEntry = (
 			...DEFAULT_CUSTOM_META_DATA,
 			attribution: formatType === 'obj'
 				? 'OBJ'
+				: formatType === 'vrm'
+				? 'VRM'
 				: formatType === '3ds'
 				? '3DS'
 				: formatType === 'dae'

@@ -119,6 +119,7 @@
 		"@mapbox/tilebelt": "^2.0.3",
 		"@mapbox/togeojson": "^0.16.2",
 		"@mapbox/vector-tile": "^2.0.3",
+		"@pixiv/three-vrm": "^3.5.5",
 		"@tailwindcss/typography": "^0.5.15",
 		"@turf/bbox": "^7.2.0",
 		"@turf/bbox-polygon": "^7.2.0",

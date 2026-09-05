@@ -381,10 +381,10 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.pdf']
 	},
 	{
-		label: 'GLB / GLTF',
+		label: 'GLB / GLTF / VRM',
 		description:
-			'3Dシーンや3Dモデルを記述する形式です。GLTFはJSONと外部ファイルの組み合わせ、GLBはそれを1ファイルにまとめた3Dモデルを読み込むときに使います。',
-		extensions: ['.glb', '.gltf']
+			'3Dシーンやアバターを記述する形式です。GLTFはJSONと外部ファイルの組み合わせ、GLBとVRMは1ファイルにまとめた3Dモデルを読み込むときに使います。',
+		extensions: ['.glb', '.gltf', '.vrm']
 	},
 	{
 		label: 'Wavefront OBJ',

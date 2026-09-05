@@ -47,8 +47,14 @@ import {
 import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import { loadPmxModel, type LoadedPmxModel } from '$routes/map/utils/three/pmx-loader';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
+import {
+	createVrmLoader,
+	getVrmFromGltf,
+	rotateVrm0IfNeeded
+} from '$routes/map/utils/three/vrm-loader';
 import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
 import type { ThreeMmdAnimation } from '@yohawing/three-mmd-loader/three';
+import type { VRM } from '@pixiv/three-vrm';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -171,6 +177,7 @@ interface LoadedModel {
 		durationSeconds?: number;
 		lastPlaying?: boolean;
 	};
+	vrm?: VRM;
 	resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>;
 }
 
@@ -283,6 +290,7 @@ const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>(
 	'fbx',
 	'obj',
 	'gltf',
+	'vrm',
 	'3ds',
 	'dae',
 	'3dm',
@@ -699,6 +707,10 @@ export class ThreeJsLayerManager {
 			}
 			// スキニング済みメッシュはローダーが作った材質を保ち、ボーン変形を引き継ぐ。
 			if (isSkinnedMesh) {
+				return this.createStyledSourceMaterial(sourceMaterial, style);
+			}
+			// VRM の MToon はテクスチャ未使用でも独自の透過・輪郭設定を持つため、そのまま複製する。
+			if (formatType === 'vrm') {
 				return this.createStyledSourceMaterial(sourceMaterial, style);
 			}
 			// FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
@@ -1452,6 +1464,10 @@ export class ThreeJsLayerManager {
 				loaded.mixer.update(deltaSeconds);
 				hasPlayingAnimation = true;
 			}
+			if (loaded.entry.state?.animation?.playing && loaded.vrm) {
+				loaded.vrm.update(deltaSeconds);
+				hasPlayingAnimation = true;
+			}
 			if (loaded.entry.state?.animation?.playing && loaded.mmd?.activeClipIndex != null) {
 				const animation = loaded.entry.state.animation;
 				const speed = Math.max(animation.speed, 0);
@@ -1657,7 +1673,8 @@ export class ThreeJsLayerManager {
 				model: THREE.Group | THREE.Object3D,
 				animations: THREE.AnimationClip[] = [],
 				resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>,
-				mmdModel?: LoadedPmxModel
+				mmdModel?: LoadedPmxModel,
+				vrm?: VRM
 			) => {
 				if (isMeshModelEntry(entry)) {
 					if (entry.format.type === 'ifc') {
@@ -1681,6 +1698,7 @@ export class ThreeJsLayerManager {
 							elapsedSeconds: 0
 						}
 					}),
+					...(vrm && { vrm }),
 					resolveAttributes
 				};
 				if (animations.length > 0) {
@@ -1752,10 +1770,12 @@ export class ThreeJsLayerManager {
 				object: THREE.Object3D,
 				animations: THREE.AnimationClip[] = [],
 				resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>,
-				mmdModel?: LoadedPmxModel
+				mmdModel?: LoadedPmxModel,
+				vrm?: VRM
 			) => {
 				finalizeLoadedModel(object);
-				void onModelLoaded(object, animations, resolveAttributes, mmdModel).catch((error) =>
+				vrm?.update(0);
+				void onModelLoaded(object, animations, resolveAttributes, mmdModel, vrm).catch((error) =>
 					reject(error instanceof Error ? error : new Error(String(error)))
 				);
 			};
@@ -2008,6 +2028,37 @@ export class ThreeJsLayerManager {
 						})
 						.catch((error) => reject(error));
 				}
+			} else if (entry.format.type === 'vrm') {
+				const manager = createManagedLoaderContext();
+				createVrmLoader(this.dracoLoader, manager)
+					.then((loader) => {
+						loader.load(
+							entry.format.url,
+							(gltf) => {
+								try {
+									const vrm = getVrmFromGltf(gltf);
+									void rotateVrm0IfNeeded(vrm)
+										.then(() =>
+											finalizeAndLoadModel(
+												vrm.scene,
+												gltf.animations,
+												undefined,
+												undefined,
+												vrm
+											)
+										)
+										.catch((error) =>
+											reject(error instanceof Error ? error : new Error(String(error)))
+										);
+								} catch (error) {
+									reject(error instanceof Error ? error : new Error(String(error)));
+								}
+							},
+							undefined,
+							(error) => reject(error)
+						);
+					})
+					.catch((error) => reject(error));
 			} else if (entry.format.type === 'drc') {
 				this.dracoLoader.load(
 					entry.format.url,

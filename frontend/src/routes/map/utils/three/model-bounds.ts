@@ -28,6 +28,11 @@ import {
 } from '$routes/map/utils/three/model-georeference';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import { loadPmxObject } from '$routes/map/utils/three/pmx-loader';
+import {
+	createVrmLoader,
+	getVrmFromGltf,
+	rotateVrm0IfNeeded
+} from '$routes/map/utils/three/vrm-loader';
 
 export interface ComputeUploadedModelMetaParams {
 	file: File;
@@ -381,6 +386,47 @@ const parseGltfObject = async (
 	});
 };
 
+const parseVrmObject = async (
+	file: File,
+	normalizeToLocalOrigin = false
+): Promise<UploadedModelObject> => {
+	const loader = await createVrmLoader(dracoLoader);
+	const buffer = await file.arrayBuffer();
+
+	return new Promise<UploadedModelObject>((resolve, reject) => {
+		loader.parse(
+			buffer,
+			'',
+			(gltf) => {
+				const vrm = (() => {
+					try {
+						return getVrmFromGltf(gltf);
+					} catch (error) {
+						reject(error instanceof Error ? error : new Error(String(error)));
+						return null;
+					}
+				})();
+				if (!vrm) return;
+
+				void rotateVrm0IfNeeded(vrm)
+					.then(() => {
+					if (normalizeToLocalOrigin) {
+						normalizeObjectToLocalOrigin(vrm.scene, 'y');
+					}
+					resolve({
+						object: vrm.scene,
+						animationNames: gltf.animations.map(
+							(clip, index) => clip.name || `Animation ${index + 1}`
+						)
+					});
+					})
+					.catch((error) => reject(error instanceof Error ? error : new Error(String(error))));
+			},
+			(error) => reject(error instanceof Error ? error : new Error(String(error)))
+		);
+	});
+};
+
 const parseObjObject = async (file: File): Promise<UploadedModelObject> => {
 	const text = await file.text();
 	return {
@@ -653,6 +699,10 @@ export const getUploadedModelObject = async (
 		return parsePmxObject(file, normalizeToLocalOrigin);
 	}
 
+	if (format === 'vrm') {
+		return parseVrmObject(file, normalizeToLocalOrigin);
+	}
+
 	return parseGltfObject(file, resourceUrls, normalizeToLocalOrigin);
 };
 
@@ -686,7 +736,11 @@ export const computeUploadedModelMeta = async ({
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}
 	const coordinateSpace =
-		format === 'gltf' ? 'root-children' : format === 'ifc' ? 'ifc-z-up' : 'object';
+		format === 'gltf' || format === 'vrm'
+			? 'root-children'
+			: format === 'ifc'
+				? 'ifc-z-up'
+				: 'object';
 	const sourceBox =
 		coordinateSpace === 'root-children'
 			? getRootLocalSourceBounds(object)
@@ -799,7 +853,9 @@ export const computeUploadedModelMeta = async ({
 			displayBox.max.y,
 			displayBox.max.z
 		],
-		...((format === 'fbx' || format === 'gltf' || format === 'ifc') && { sourceBbox }),
+		...((format === 'fbx' || format === 'gltf' || format === 'vrm' || format === 'ifc') && {
+			sourceBbox
+		}),
 		xyzImageTile: findCenterTile(bounds),
 		scaleMultiplier,
 		localMaxDimension,

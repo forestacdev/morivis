@@ -5,6 +5,7 @@ const XML_EXTENSION = '.xml';
 
 export const MODEL_FILE_EXTENSIONS = [
 	'.gltf',
+	'.vrm',
 	'.obj',
 	'.3ds',
 	'.dae',

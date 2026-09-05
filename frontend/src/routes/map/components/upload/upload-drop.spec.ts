@@ -122,6 +122,16 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('単一の VRM はモデルダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('test-avatar.vrm', 'vrm'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: undefined
+		});
+	});
+
 	it('通常の3D Gaussian Splatting PLYは専用ダイアログ判定になる', async () => {
 		const header = [
 			'ply',

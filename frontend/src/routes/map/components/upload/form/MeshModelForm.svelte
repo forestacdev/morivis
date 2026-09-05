@@ -71,6 +71,7 @@
 	};
 
 	const getMeshFormat = (pathLikeName: string): MeshFormatType => {
+		if (pathLikeName.endsWith('.vrm')) return 'vrm';
 		if (pathLikeName.endsWith('.gltf')) return 'gltf';
 		if (pathLikeName.endsWith('.obj')) return 'obj';
 		if (pathLikeName.endsWith('.3ds')) return '3ds';
@@ -88,6 +89,7 @@
 	const supportsResourceUrls = (format: MeshFormatType) => {
 		return (
 			format === 'gltf' ||
+			format === 'vrm' ||
 			format === 'obj' ||
 			format === '3ds' ||
 			format === 'dae' ||
@@ -124,7 +126,7 @@
 	const glbFile = $derived.by(() => {
 		return (
 			inputFiles.find((file) =>
-				/\.(glb|gltf|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc|pmx)$/i.test(getPathLikeName(file))
+				/\.(glb|gltf|vrm|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc|pmx)$/i.test(getPathLikeName(file))
 			) ?? null
 		);
 	});
@@ -733,6 +735,7 @@
 		const normalizeToLocalOrigin =
 			(activeFormat === 'ifc' ||
 				activeFormat === 'gltf' ||
+				activeFormat === 'vrm' ||
 				activeFormat === 'pmx' ||
 				(activeFormat === 'fbx' && !isLocalFbx)) &&
 			!resolvedProjectedModelEpsg;
@@ -982,7 +985,8 @@
 	const registrationFromUrl = () => {
 		const center = mapStore.getCenter();
 		const format = getMeshFormat(forms.url.trim().toLowerCase());
-		const normalizeToLocalOrigin = format === 'ifc' || format === 'fbx' || format === 'pmx';
+		const normalizeToLocalOrigin =
+			format === 'ifc' || format === 'fbx' || format === 'pmx' || format === 'vrm';
 		const entry = createGlbEntry(
 			forms.name,
 			forms.url.trim(),
