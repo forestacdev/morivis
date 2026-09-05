@@ -26,6 +26,11 @@
 	} from '$routes/map/utils/formats/geotiff';
 	import { getLasProjection } from '$routes/map/utils/formats/las';
 	import {
+		getPointCloudBbox,
+		normalizePointCloudUpAxis,
+		type PointCloudUpAxis
+	} from '$routes/map/utils/formats/pointcloud/axis';
+	import {
 		createPointCloudMeterOffsets,
 		type PointCloudMeterOffsets,
 		type PointCloudSourcePositions
@@ -82,10 +87,15 @@
 	let rasterResolution = $state(1024);
 	let pendingRegistrationAfterTransform = $state(false);
 	let projectedPointCloud: PointCloudMeterOffsets | null = null;
+	let plyUpAxis = $state<PointCloudUpAxis>('z-up');
 
 	const registrationModeOptions = [
 		{ key: 'pointcloud', name: '点群' },
 		{ key: 'raster', name: 'DEMラスター' }
+	];
+	const plyUpAxisOptions = [
+		{ key: 'z-up', name: 'Z-up（測量・点群）' },
+		{ key: 'y-up', name: 'Y-up（3Dモデル系）' }
 	];
 
 	const pointCloudFile = $derived.by(() => {
@@ -112,12 +122,16 @@
 	$effect(() => {
 		if (pointCloudFile) {
 			entryName = getPointCloudEntryName(pointCloudFile.name);
-			analyzePointCloud(pointCloudFile);
+			analyzePointCloud(
+				pointCloudFile,
+				isPlyPointCloudFile(pointCloudFile.name) ? plyUpAxis : 'z-up'
+			);
 		}
 	});
 
 	const isTextPointCloudFile = (fileName: string) => /\.(xyz|txt)$/i.test(fileName);
 	const isObjPointCloudFile = (fileName: string) => /\.obj$/i.test(fileName);
+	const isPlyPointCloudFile = (fileName: string) => /\.ply$/i.test(fileName);
 	const isLasPointCloudFile = (fileName: string) => /\.(las|laz)$/i.test(fileName);
 	const transformPositions = transformPointCloudParallel;
 	const transformPointCloudData = async (
@@ -172,7 +186,7 @@
 		return error.message;
 	};
 
-	const analyzePointCloud = async (file: File) => {
+	const analyzePointCloud = async (file: File, upAxis: PointCloudUpAxis) => {
 		isProcessing.set(true);
 		analyzed = false;
 		pointCount = null;
@@ -271,6 +285,11 @@
 				if (data.header?.boundingBox) {
 					const [mins, maxs] = data.header.boundingBox;
 					bbox = [mins[0], mins[1], maxs[0], maxs[1]];
+				}
+
+				if (isPlyPointCloudFile(file.name) && positions) {
+					positions = normalizePointCloudUpAxis(positions, upAxis);
+					bbox = getPointCloudBbox(positions);
 				}
 			}
 
@@ -660,6 +679,16 @@
 	{/if}
 
 	{#if analyzed}
+		{#if pointCloudFile && isPlyPointCloudFile(pointCloudFile.name)}
+			<div class="w-full p-2">
+				<HorizontalSelectBox
+					label="上方向"
+					bind:group={plyUpAxis}
+					options={plyUpAxisOptions}
+				/>
+			</div>
+		{/if}
+
 		<div class="flex w-full flex-col gap-1 px-2 text-sm text-gray-300">
 			{#if pointCount !== null}
 				<div>点数: {pointCount.toLocaleString()}</div>
