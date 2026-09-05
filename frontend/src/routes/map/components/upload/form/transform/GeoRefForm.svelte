@@ -148,6 +148,7 @@
 		initialModelLat = transform.lat;
 		modelMarkerLngLat = new maplibregl.LngLat(transform.lng, transform.lat);
 		modelPlacementInitialized = true;
+		mapStore.ensureThreeLayer();
 		threeJsManager.setPlacementPreview(showDataEntry as ThreeModelEntry);
 		showDataMenu.set(false);
 	});
