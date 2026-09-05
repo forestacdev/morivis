@@ -32,7 +32,7 @@
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import type { ThreeModelEntry } from '$routes/map/data/types/model';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PointGeometry, PolygonGeometry } from '$routes/map/types/geometry';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
@@ -128,14 +128,18 @@
 	let modelMarkerLngLat = $state(new maplibregl.LngLat(0, 0));
 	const isModelPlacementActive = $derived(
 		transformOptionMode === 'georef' &&
-		showDataEntry?.type === 'model' &&
-		showDataEntry.style.type === 'mesh'
+			showDataEntry?.type === 'model' &&
+			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat')
 	);
 
 	$effect(() => {
 		if (!isModelPlacementActive || !showDataEntry || modelPlacementInitialized) return;
-		if (showDataEntry.type !== 'model' || showDataEntry.style.type !== 'mesh') return;
-		const transform = (showDataEntry as MeshEntry<MeshStyle>).style.transform;
+		if (
+			showDataEntry.type !== 'model' ||
+			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
+		)
+			return;
+		const transform = (showDataEntry as ThreeModelEntry).style.transform;
 		modelLng = transform.lng;
 		modelLat = transform.lat;
 		modelAltitude = transform.altitude;
@@ -143,14 +147,18 @@
 		initialModelLat = transform.lat;
 		modelMarkerLngLat = new maplibregl.LngLat(transform.lng, transform.lat);
 		modelPlacementInitialized = true;
-		threeJsManager.setPlacementPreview((showDataEntry as MeshEntry<MeshStyle>).style);
+		threeJsManager.setPlacementPreview((showDataEntry as ThreeModelEntry).style);
 		showDataMenu.set(false);
 	});
 
 	$effect(() => {
 		if (!isModelPlacementActive || !showDataEntry) return;
-		if (showDataEntry.type !== 'model' || showDataEntry.style.type !== 'mesh') return;
-		const entry = showDataEntry as MeshEntry<MeshStyle>;
+		if (
+			showDataEntry.type !== 'model' ||
+			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
+		)
+			return;
+		const entry = showDataEntry as ThreeModelEntry;
 		const transform = entry.style.transform;
 		if (modelMarkerLngLat.lng !== modelLng || modelMarkerLngLat.lat !== modelLat) {
 			modelMarkerLngLat = new maplibregl.LngLat(modelLng, modelLat);
@@ -266,10 +274,14 @@
 		dropFile = null;
 	};
 
-	const createPlacedModelEntry = (): MeshEntry<MeshStyle> | null => {
-		if (showDataEntry?.type !== 'model' || showDataEntry.style.type !== 'mesh') return null;
+	const createPlacedModelEntry = (): ThreeModelEntry | null => {
+		if (
+			showDataEntry?.type !== 'model' ||
+			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
+		)
+			return null;
 
-		const entry = showDataEntry as MeshEntry<MeshStyle>;
+		const entry = showDataEntry as ThreeModelEntry;
 		const transform = entry.style.transform;
 		const lngDelta = modelLng - initialModelLng;
 		const latDelta = modelLat - initialModelLat;
@@ -291,7 +303,7 @@
 				...entry.style,
 				transform: { ...transform, lng: modelLng, lat: modelLat, altitude: modelAltitude }
 			}
-		};
+		} as ThreeModelEntry;
 	};
 
 	const handleCancel = () => {

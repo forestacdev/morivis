@@ -103,6 +103,7 @@ export type DialogType =
 	| '3dtiles'
 	| 'pmtiles'
 	| 'model'
+	| 'gaussian-splat'
 	| 'arcgis'
 	| 'pointcloud'
 	| 'mbtiles'
@@ -448,7 +449,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: '点群',
 		description:
-			'多数の座標点で構成された3Dデータです。LAS/LAZ や COPC、各種点群テキストを表示するときに使います。',
+			'多数の座標点で構成された3Dデータです。LAS/LAZ や COPC、各種点群テキストを表示するときに使います。3D Gaussian Splatting の通常PLYは自動判別します。',
 		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
 	}
 ];

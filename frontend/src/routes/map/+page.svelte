@@ -74,7 +74,7 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
+	import type { MeshEntry, MeshStyle, ThreeModelEntry } from '$routes/map/data/types/model';
 	import type {
 		MorivisRasterEntry,
 		RasterDemStyle,
@@ -184,6 +184,12 @@
 	const isMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
 		return entry.type === 'model' && entry.style.type === 'mesh';
 	};
+	const isThreeModelEntry = (entry: MorivisLayerEntry): entry is ThreeModelEntry => {
+		return (
+			entry.type === 'model' &&
+			(entry.style.type === 'mesh' || entry.style.type === 'gaussian-splat')
+		);
+	};
 	let modelViewEntries = $derived.by(() => {
 		const request = $modelViewRequest;
 		if (!request) return [];
@@ -279,7 +285,7 @@
 	let transformOptionMode = $state<TransformOptionMode>(null);
 	let isPreparingGeoRefData = $state(false);
 	let isModelPlacementActive = $derived(
-		transformOptionMode === 'georef' && !!showDataEntry && isMeshEntry(showDataEntry)
+		transformOptionMode === 'georef' && !!showDataEntry && isThreeModelEntry(showDataEntry)
 	);
 
 	let geoRefData = $state.raw<GeoRefData | null>(null);
@@ -290,7 +296,7 @@
 			return geoRefData.allowedTransformModes;
 		}
 
-		if (showDialogType === 'model' && isModelPlacementActive) {
+		if (showDialogType && isModelPlacementActive) {
 			return getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 		}
 

@@ -11,6 +11,7 @@ import DxfForm from '$routes/map/components/upload/form/DxfForm.svelte';
 import FeatureServiceForm from '$routes/map/components/upload/form/FeatureServiceForm.svelte';
 import FileGdbForm from '$routes/map/components/upload/form/FileGdbForm.svelte';
 import GarminGDBForm from '$routes/map/components/upload/form/GarminGDBForm.svelte';
+import GaussianSplatForm from '$routes/map/components/upload/form/GaussianSplatForm.svelte';
 import GeoArrowForm from '$routes/map/components/upload/form/GeoArrowForm.svelte';
 import GeoJsonForm from '$routes/map/components/upload/form/GeoJsonForm.svelte';
 import GeoParquetForm from '$routes/map/components/upload/form/GeoParquetForm.svelte';
@@ -105,6 +106,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	demxml: { component: DemXmlForm, profile: 'raster-georef' },
 	pmtiles: { component: PmtilesForm, profile: 'remote-pmtiles' },
 	model: { component: MeshModelForm, profile: 'model-georef' },
+	'gaussian-splat': { component: GaussianSplatForm, profile: 'model-georef' },
 	geophoto: { component: GeoPhotoForm, profile: 'drop-file' },
 	geopdf: { component: GeoPdfForm, profile: 'raster-georef' },
 	geotiff: { component: GeoTiffForm, profile: 'pointcloud-georef' },

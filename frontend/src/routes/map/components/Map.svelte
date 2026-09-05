@@ -26,9 +26,9 @@
 	import type {
 		AnyTiles3DEntry,
 		DeckVectorEntry,
-		PointCloudEntry
+		PointCloudEntry,
+		ThreeModelEntry
 	} from '$routes/map/data/types/model';
-	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
 		RasterBaseMapStyle,
 		RasterCogEntry,
@@ -168,8 +168,8 @@
 	const isGeoRefRegistrationActive = $derived(transformOptionMode === 'georef');
 	const isModelPlacementActive = $derived(
 		transformOptionMode === 'georef' &&
-		showDataEntry?.type === 'model' &&
-		showDataEntry.style.type === 'mesh'
+			showDataEntry?.type === 'model' &&
+			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat')
 	);
 
 	// 監視用のデータを保持
@@ -831,13 +831,14 @@
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
 
-		const meshEntries =
+		const threeModelEntries =
 			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) =>
 							entry.type === 'model' &&
-							(entry.format.type === 'gltf' ||
+							(entry.format.type === 'gaussian-splat' ||
+								entry.format.type === 'gltf' ||
 								entry.format.type === 'obj' ||
 								entry.format.type === '3ds' ||
 								entry.format.type === 'dae' ||
@@ -848,24 +849,24 @@
 								entry.format.type === 'amf' ||
 								entry.format.type === 'ifc' ||
 								entry.format.type === 'pmx')
-					) as MeshEntry<MeshStyle>[]);
+					) as ThreeModelEntry[]);
 
-		const previewMeshEntry =
+		const previewThreeModelEntry =
 			showDataEntry &&
 			!isModelPlacementActive &&
 			showDataEntry.type === 'model' &&
-			showDataEntry.style.type === 'mesh' &&
+			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat') &&
 			showDataEntry.format.type !== '3d-tiles'
-				? (showDataEntry as MeshEntry<MeshStyle>)
+				? (showDataEntry as ThreeModelEntry)
 				: null;
 
 		// setThreeLayerの直前にも確認して、古いモデル状態の上書きを防ぐ。
 		if (updateId !== styleUpdateId) return;
-		await (previewMeshEntry
-			? mapStore.setThreeLayer([previewMeshEntry], 'preview')
+		await (previewThreeModelEntry
+			? mapStore.setThreeLayer([previewThreeModelEntry], 'preview')
 			: showDataEntry
 				? mapStore.setThreeLayer([], 'preview')
-				: mapStore.setThreeLayer(meshEntries, 'main'));
+				: mapStore.setThreeLayer(threeModelEntries, 'main'));
 
 		mapStore.terrainReload();
 

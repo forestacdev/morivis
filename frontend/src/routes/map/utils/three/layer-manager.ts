@@ -2,12 +2,18 @@ import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import {
 	DEFAULT_MESH_SHADING,
+	type GaussianSplatEntry,
+	type GaussianSplatStyle,
 	type IfcPartColorProfile,
 	type MeshEntry,
 	type MeshShadingStyle,
-	type MeshStyle
+	type MeshStyle,
+	type ModelTransformStyle,
+	type ThreeModelEntry,
+	type ThreeModelStyle
 } from '$routes/map/data/types/model';
 import type { ModelPartData } from '$routes/map/data/types/model';
+import { parseGaussianSplatInWorker } from '$routes/map/utils/formats/gaussian-splat/gaussian-splat-parallel';
 import type { CustomLayerInterface, Map as MapLibreMap } from '$routes/map/utils/maplibre';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
@@ -18,6 +24,10 @@ import {
 } from '$routes/map/utils/three/fbx-attributes';
 import { applyFbxTextureFallback } from '$routes/map/utils/three/fbx-textures';
 import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
+import {
+	applyGaussianSplatStyle,
+	createGaussianSplatObject
+} from '$routes/map/utils/three/gaussian-splat-renderer';
 import {
 	getIfcAttributes,
 	getModelObjectAttributes,
@@ -139,7 +149,7 @@ const loadAmfLoaderModule = async () => {
 };
 
 interface LoadedModel {
-	entry: MeshEntry<MeshStyle>;
+	entry: ThreeModelEntry;
 	object: THREE.Object3D;
 	transform: ModelTransform;
 	mixer?: THREE.AnimationMixer;
@@ -147,6 +157,12 @@ interface LoadedModel {
 	lastClipIndex?: number;
 	resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>;
 }
+
+const isMeshModelEntry = (entry: ThreeModelEntry): entry is MeshEntry<MeshStyle> =>
+	entry.style.type === 'mesh';
+
+const isGaussianSplatEntry = (entry: ThreeModelEntry): entry is GaussianSplatEntry =>
+	entry.style.type === 'gaussian-splat';
 
 export interface PickedModelFeature {
 	entryId: string;
@@ -1170,7 +1186,7 @@ export class ThreeJsLayerManager {
 		return clonedMaterial;
 	};
 
-	private prepareGlbExportObject = (loaded: LoadedModel): () => void => {
+	private prepareGlbExportObject = (loaded: LoadedModel & { entry: MeshEntry<MeshStyle>; }): (() => void) => {
 		const originalPosition = loaded.object.position.clone();
 		const originalMaterials: Array<{
 			mesh: THREE.Mesh;
@@ -1266,7 +1282,7 @@ export class ThreeJsLayerManager {
 		this.renderer.render(this.overlayScene, this.overlayCamera);
 	};
 
-	setPlacementPreview(style: MeshStyle): void {
+	setPlacementPreview(style: ThreeModelStyle): void {
 		if (!this.scene) return;
 		if (!this.placementPreview) {
 			const object = new THREE.Group();
@@ -1425,7 +1441,14 @@ export class ThreeJsLayerManager {
 				}
 
 				this.loadedModels.forEach((loaded) => {
-					if (loaded.entry.style.showThroughTerrain) return;
+					if (isMeshModelEntry(loaded.entry) && loaded.entry.style.showThroughTerrain) return;
+					if (isGaussianSplatEntry(loaded.entry)) {
+						applyGaussianSplatStyle(
+							loaded.object,
+							loaded.entry.style,
+							this.map?.getCanvas().clientHeight
+						);
+					}
 					this.restoreModelDepthState(loaded.object);
 
 					const modelMatrix = loaded.transform.matrix.clone();
@@ -1439,7 +1462,7 @@ export class ThreeJsLayerManager {
 				});
 
 				this.loadedModels.forEach((loaded) => {
-					if (!loaded.entry.style.showThroughTerrain) return;
+					if (!isMeshModelEntry(loaded.entry) || !loaded.entry.style.showThroughTerrain) return;
 					this.renderOverlayModel(loaded, mapProjectionMatrix);
 				});
 
@@ -1455,15 +1478,10 @@ export class ThreeJsLayerManager {
 	}
 
 	/** モデルを追加。プレビューに同じIDのモデルがあれば再利用する */
-	addModel(entry: MeshEntry<MeshStyle>, _type: 'main' | 'preview' = 'main'): Promise<void> {
+	addModel(entry: ThreeModelEntry, _type: 'main' | 'preview' = 'main'): Promise<void> {
 		return new Promise((resolve, reject) => {
 			if (!this.modelGroup || !this.previewModelGroup) {
 				reject(new Error('modelGroup not initialized'));
-				return;
-			}
-
-			if (entry.style.type !== 'mesh') {
-				reject(new Error('Entry style type must be "mesh"'));
 				return;
 			}
 
@@ -1496,10 +1514,14 @@ export class ThreeJsLayerManager {
 					hit: THREE.Intersection<THREE.Object3D>
 				) => Promise<ModelAttributes>
 			) => {
-				if (entry.format.type === 'ifc') {
-					await this.applyIfcPartColors(model, entry.style);
+				if (isMeshModelEntry(entry)) {
+					if (entry.format.type === 'ifc') {
+						await this.applyIfcPartColors(model, entry.style);
+					}
+					this.applyStyleToObject(model, entry.style, entry.format.type);
+				} else {
+					applyGaussianSplatStyle(model, entry.style, this.map?.getCanvas().clientHeight);
 				}
-				this.applyStyleToObject(model, entry.style, entry.format.type);
 
 				model.visible = entry.style.visible ?? true;
 				model.userData.entryId = entry.id;
@@ -1521,17 +1543,37 @@ export class ThreeJsLayerManager {
 					this.modelGroup!.add(model);
 				}
 				if (
-					entry.format.type === 'ifc' && entry.properties?.ifc?.extractionProfiles.length
+					isMeshModelEntry(entry) &&
+					entry.format.type === 'ifc' &&
+					entry.properties?.ifc?.extractionProfiles.length
 				) {
 					void this.preloadIfcProfiles(entry).catch((error) => {
 						console.error('IFC事前定義属性の読み込みに失敗しました', error);
 					});
 				}
 				this.requestRepaintBurst(
-					entry.format.type === 'fbx' || entry.format.type === 'pmx' ? 180 : 30
+					isMeshModelEntry(entry) &&
+						(entry.format.type === 'fbx' || entry.format.type === 'pmx')
+						? 180
+						: 30
 				);
 				resolve();
 			};
+
+			if (isGaussianSplatEntry(entry)) {
+				fetch(entry.format.url)
+					.then(async (response) => {
+						if (!response.ok) {
+							throw new Error(
+								`3D Gaussian Splatting PLYを取得できません: ${response.status} ${response.statusText}`
+							);
+						}
+						return await parseGaussianSplatInWorker(await response.arrayBuffer());
+					})
+					.then((data) => onModelLoaded(createGaussianSplatObject(data, entry.style)))
+					.catch((error) => reject(error instanceof Error ? error : new Error(String(error))));
+				return;
+			}
 
 			const finalizeLoadedModel = (object: THREE.Object3D) => {
 				finalizeRuntimeModelObject(object, {
@@ -1877,11 +1919,11 @@ export class ThreeJsLayerManager {
 	}
 
 	/** 複数のモデルを追加 */
-	async addModels(entries: MeshEntry<MeshStyle>[]): Promise<void> {
+	async addModels(entries: ThreeModelEntry[]): Promise<void> {
 		await Promise.all(entries.map((entry) => this.addModel(entry)));
 	}
 
-	updateTransform(entries: MeshEntry<MeshStyle>[]): void {
+	updateTransform(entries: ThreeModelEntry[]): void {
 		entries.forEach((entry) => {
 			const loaded = this.loadedModels.get(entry.id);
 			if (!loaded) return;
@@ -1907,12 +1949,14 @@ export class ThreeJsLayerManager {
 
 		loaded.object.parent?.remove(loaded.object);
 		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh) {
-				const mesh = child as THREE.Mesh;
-				mesh.geometry.dispose();
-				const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+			if ((child as THREE.Mesh).isMesh || (child as THREE.Points).isPoints) {
+				const drawable = child as THREE.Mesh | THREE.Points;
+				drawable.geometry.dispose();
+				const materials = Array.isArray(drawable.material)
+					? drawable.material
+					: [drawable.material];
 				materials.forEach((mat) => mat.dispose());
-				const originalMaterials = mesh.userData.originalMaterials as
+				const originalMaterials = drawable.userData.originalMaterials as
 					| THREE.Material[]
 					| undefined;
 				originalMaterials?.forEach((material) => material.dispose());
@@ -1930,7 +1974,7 @@ export class ThreeJsLayerManager {
 	}
 
 	/** モデルを入れ替え（既存をすべて削除して新しいモデルを追加） */
-	async replaceModels(entries: MeshEntry<MeshStyle>[]): Promise<void> {
+	async replaceModels(entries: ThreeModelEntry[]): Promise<void> {
 		this.clearAllModels();
 		await this.addModels(entries);
 	}
@@ -1939,7 +1983,10 @@ export class ThreeJsLayerManager {
 	setModelVisibility(entryId: string, visible: boolean): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, visible } };
+		loaded.entry = {
+			...loaded.entry,
+			style: { ...loaded.entry.style, visible }
+		} as ThreeModelEntry;
 		loaded.object.visible = visible;
 	}
 
@@ -1947,14 +1994,21 @@ export class ThreeJsLayerManager {
 	setModelOpacity(entryId: string, opacity: MeshStyle['opacity']): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, opacity } };
-		this.applyStyleToObject(loaded.object, loaded.entry.style, loaded.entry.format.type);
+		loaded.entry = {
+			...loaded.entry,
+			style: { ...loaded.entry.style, opacity }
+		} as ThreeModelEntry;
+		if (isMeshModelEntry(loaded.entry)) {
+			this.applyStyleToObject(loaded.object, loaded.entry.style, loaded.entry.format.type);
+		} else {
+			applyGaussianSplatStyle(loaded.object, loaded.entry.style, this.map?.getCanvas().clientHeight);
+		}
 		this.syncAnimationState(loaded);
 	}
 
 	setModelWireframe(entryId: string, wireframe: boolean): void {
 		const loaded = this.loadedModels.get(entryId);
-		if (!loaded) return;
+		if (!loaded || !isMeshModelEntry(loaded.entry)) return;
 		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, wireframe } };
 		this.applyStyleToObject(loaded.object, loaded.entry.style, loaded.entry.format.type);
 		this.syncAnimationState(loaded);
@@ -1962,7 +2016,7 @@ export class ThreeJsLayerManager {
 
 	setModelColor(entryId: string, color: string): void {
 		const loaded = this.loadedModels.get(entryId);
-		if (!loaded) return;
+		if (!loaded || !isMeshModelEntry(loaded.entry)) return;
 		loaded.entry = { ...loaded.entry, style: { ...loaded.entry.style, color } };
 		this.applyStyleToObject(loaded.object, loaded.entry.style, loaded.entry.format.type);
 		this.syncAnimationState(loaded);
@@ -2163,24 +2217,28 @@ export class ThreeJsLayerManager {
 		}
 	}
 
-	async setModelStyle(entry: MeshEntry<MeshStyle>): Promise<void> {
+	async setModelStyle(entry: ThreeModelEntry): Promise<void> {
 		const loaded = this.loadedModels.get(entry.id);
 		if (!loaded) return;
 		loaded.entry = entry;
 		loaded.transform = calculateModelTransform(entry.style);
-		if (entry.format.type === 'ifc') {
-			await this.applyIfcPartColors(loaded.object, entry.style);
+		if (isMeshModelEntry(entry)) {
+			if (entry.format.type === 'ifc') {
+				await this.applyIfcPartColors(loaded.object, entry.style);
+			}
+			this.applyStyleToObject(loaded.object, entry.style, entry.format.type);
+		} else {
+			applyGaussianSplatStyle(loaded.object, entry.style, this.map?.getCanvas().clientHeight);
 		}
-		this.applyStyleToObject(loaded.object, entry.style, entry.format.type);
 		this.syncAnimationState(loaded);
 	}
 
-	setModelTransform(entryId: string, style: MeshStyle): void {
+	setModelTransform(entryId: string, style: ModelTransformStyle): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
 		const newTransform = calculateModelTransform(style);
 		loaded.transform = newTransform;
-		loaded.entry = { ...loaded.entry, style };
+		loaded.entry = { ...loaded.entry, style } as ThreeModelEntry;
 		this.syncAnimationState(loaded);
 	}
 
@@ -2395,9 +2453,13 @@ export class ThreeJsLayerManager {
 		if (!loaded) {
 			throw new Error('モデルがまだ読み込まれていません');
 		}
+		if (!isMeshModelEntry(loaded.entry)) {
+			throw new Error('3D Gaussian Splatting はGLBに書き出せません');
+		}
+		const meshLoaded = loaded as LoadedModel & { entry: MeshEntry<MeshStyle>; };
 
 		const exporter = new GLTFExporter();
-		const restoreExportObject = this.prepareGlbExportObject(loaded);
+		const restoreExportObject = this.prepareGlbExportObject(meshLoaded);
 		const animations = loaded.actions?.map((action) => action.getClip()) ?? [];
 		let restored = false;
 		const restore = () => {
@@ -2579,6 +2641,7 @@ export class ThreeJsLayerManager {
 		const targetEntries = Array.from(this.loadedModels.values()).filter(
 			(loaded) =>
 				activeModelView.entryIds.has(loaded.entry.id)
+				&& isMeshModelEntry(loaded.entry)
 				&& CLICKABLE_MODEL_FORMATS.has(loaded.entry.format.type)
 				&& (loaded.entry.style.visible ?? true)
 		);
@@ -2621,7 +2684,9 @@ export class ThreeJsLayerManager {
 		);
 		const targetEntries = Array.from(this.loadedModels.values()).filter(
 			(loaded) =>
-				CLICKABLE_MODEL_FORMATS.has(loaded.entry.format.type) && loaded.entry.style.visible
+				isMeshModelEntry(loaded.entry) &&
+				CLICKABLE_MODEL_FORMATS.has(loaded.entry.format.type) &&
+				loaded.entry.style.visible
 		);
 		if (!import.meta.env.PROD) {
 			console.info('[モデル pick] 開始', {

@@ -66,6 +66,7 @@ import {
 	type MeshEntry,
 	type MeshStyle,
 	type PointCloudEntry,
+	type ThreeModelEntry,
 	type Tiles3DMeshStyleEntry
 } from '$routes/map/data/types/model';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
@@ -896,7 +897,7 @@ const createMapStore = () => {
 
 	// Three.js モデルを設定（差分更新）
 	const setThreeLayer = async (
-		newEntries: MeshEntry<MeshStyle>[],
+		newEntries: ThreeModelEntry[],
 		_type: 'main' | 'preview' = 'main'
 	): Promise<void> => {
 		if (_type === 'preview') {
@@ -927,8 +928,8 @@ const createMapStore = () => {
 		for (const entry of entriesToAdd) {
 			await threeJsManager.addModel(entry);
 			const currentIndex = entry.state?.dimension?.currentIndex;
-			if (currentIndex != null && currentIndex > 0) {
-				applyTemporalModelMeshTimeStep(entry, currentIndex);
+			if (entry.style.type === 'mesh' && currentIndex != null && currentIndex > 0) {
+				applyTemporalModelMeshTimeStep(entry as MeshEntry<MeshStyle>, currentIndex);
 			}
 		}
 
@@ -937,7 +938,9 @@ const createMapStore = () => {
 			if (currentIds.has(entry.id)) {
 				threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
 				threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
-				threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
+				if (entry.style.type === 'mesh') {
+					threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
+				}
 				threeJsManager.setModelTransform(entry.id, entry.style);
 			}
 		}
@@ -986,7 +989,7 @@ const createMapStore = () => {
 		}
 	};
 
-	const setModelStyle = (entry: MeshEntry<MeshStyle>) => {
+	const setModelStyle = (entry: ThreeModelEntry) => {
 		void threeJsManager.setModelStyle(entry);
 		if (map && isMapValid(map)) {
 			map.triggerRepaint();

@@ -66,6 +66,7 @@ const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPo
 	landxml: createPolicy('zone-only', 'georef-only', 'zone'),
 	// 3Dモデルは平面直角座標なら座標系を選び、ローカル原点ならGeoRefFormで配置する。
 	model: createPolicy('zone-only', 'georef-only', 'zone'),
+	'gaussian-splat': createPolicy('none', 'georef-only', 'georef'),
 	geopdf: createPolicy('none', 'georef-only', 'georef'),
 	svg: createPolicy('none', 'georef-only', 'georef'),
 	demxml: createPolicy('none', 'georef-only', 'georef'),

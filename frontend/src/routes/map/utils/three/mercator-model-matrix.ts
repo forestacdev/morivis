@@ -1,4 +1,4 @@
-import type { MeshStyle } from '$routes/map/data/types/model';
+import type { ModelTransformStyle } from '$routes/map/data/types/model';
 import * as THREE from 'three';
 
 const EARTH_CIRCUMFERENCE = 40075016.68557849;
@@ -38,7 +38,7 @@ const buildMercatorAnchorMatrix = (
 };
 
 export const buildMercatorModelMatrix = (
-	transform: MeshStyle['transform'],
+	transform: ModelTransformStyle['transform'],
 	terrainEnabled: boolean
 ): THREE.Matrix4 => {
 	const {

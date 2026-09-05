@@ -5,6 +5,7 @@ import type {
 	AnyTiles3DEntry,
 	GeoArrowEntry,
 	GeoJson3DEntry,
+	GaussianSplatEntry,
 	MeshEntry,
 	MeshFormatType,
 	MeshStyle,
@@ -259,3 +260,50 @@ export const createGlbEntry = (
 		}
 	};
 };
+
+export const createGaussianSplatEntry = (
+	name: string,
+	url: string,
+	transform: {
+		lng: number;
+		lat: number;
+		altitude: number;
+	},
+	properties: GaussianSplatEntry['properties']
+): GaussianSplatEntry => ({
+	id: 'gaussian_splat_' + crypto.randomUUID(),
+	type: 'model',
+	format: {
+		type: 'gaussian-splat',
+		url,
+		encoding: 'ply',
+		sourceFileName: name
+	},
+	metaData: {
+		...DEFAULT_CUSTOM_META_DATA,
+		attribution: '3D Gaussian Splatting',
+		name,
+		altitude: transform.altitude,
+		bounds: pointToBbox(transform.lng, transform.lat)
+	},
+	properties,
+	interaction: { clickable: false },
+	style: {
+		visible: true,
+		type: 'gaussian-splat',
+		opacity: 1,
+		splatScale: 1,
+		transform: {
+			lng: transform.lng,
+			lat: transform.lat,
+			altitude: transform.altitude,
+			heightOffset: 0,
+			heightScale: 1,
+			baseRotationX: 0,
+			scale: 1,
+			rotationX: 0,
+			rotationY: 0,
+			rotationZ: 0
+		}
+	}
+});

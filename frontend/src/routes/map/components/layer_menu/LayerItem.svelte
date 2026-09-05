@@ -11,7 +11,7 @@
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { MeshStyle, MeshEntry } from '$routes/map/data/types/model';
+	import type { MeshStyle, MeshEntry, ThreeModelEntry } from '$routes/map/data/types/model';
 	import { unregisterGeoZarr } from '$routes/map/protocol/geozarr';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
@@ -99,6 +99,12 @@
 		);
 	};
 
+	const isThreeModelEntry = (entry: MorivisLayerEntry): entry is ThreeModelEntry => {
+		return (
+			isThreeMeshEntry(entry) || (entry.type === 'model' && entry.style.type === 'gaussian-splat')
+		);
+	};
+
 	const isExportableThreeMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
 		return isThreeMeshEntry(entry) && entry.metaData.isUserUploaded === true;
 	};
@@ -110,7 +116,7 @@
 		if (layerEntry.type !== 'model') return;
 
 		// モデルは setStyle 再生成の対象外なので、表示切替を描画系へ直接同期する。
-		if (isThreeMeshEntry(layerEntry)) {
+		if (isThreeModelEntry(layerEntry)) {
 			mapStore.setModelStyle(layerEntry);
 			return;
 		}

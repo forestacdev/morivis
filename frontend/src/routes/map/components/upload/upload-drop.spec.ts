@@ -122,6 +122,38 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('通常の3D Gaussian Splatting PLYは専用ダイアログ判定になる', async () => {
+		const header = [
+			'ply',
+			'format binary_little_endian 1.0',
+			'element vertex 1',
+			'property float x',
+			'property float y',
+			'property float z',
+			'property float f_dc_0',
+			'property float f_dc_1',
+			'property float f_dc_2',
+			'property float opacity',
+			'property float scale_0',
+			'property float scale_1',
+			'property float scale_2',
+			'property float rot_0',
+			'property float rot_1',
+			'property float rot_2',
+			'property float rot_3',
+			'end_header',
+			''
+		].join('\n');
+
+		const result = await resolveDroppedFiles(createFile('synthetic-splats.ply', header));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'gaussian-splat',
+			dropFiles: undefined
+		});
+	});
+
 	it('単一の XLSX は xlsx ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(
 			createFile(

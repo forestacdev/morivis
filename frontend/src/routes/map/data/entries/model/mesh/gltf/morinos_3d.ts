@@ -99,6 +99,55 @@ const entry = {
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_0987-720x480.jpg'
 					}
 				]
+			},
+			'd2258ec0-612e-4ffc-ac3a-0c14017979c0': {
+				name: '樹皮付き方立',
+				description: '方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi25/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_0968-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_5569-720x480.jpg'
+					}
+				]
+			},
+			'77164639-4feb-49d5-b86e-af26be2296c0': {
+				name: 'ガラスコーナー',
+				description: 'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi4/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/%E3%82%B3%E3%83%BC%E3%83%8A%E3%83%BC.jpg'
+					}
+				]
+			},
+			'6b32906e-178c-4979-88c3-00c39cd9242d': {
+				name: '照明',
+				description:
+					'内部に照明や火災報知器、防犯センサーなど機能的な設備が仕込まれています。スリット内の色は、単純な黒ではなく、照明器具の黒に合わせて調色して目立たないようにそろえています。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi9/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1397-720x1080.jpg'
+					}
+				]
+			},
+			'579911d9-7392-4416-9222-2d165f561c90': {
+				name: '登り梁',
+				description: 'morinosの大きな無柱内部空間を支える大きな登り梁。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi6/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_0946-720x480.jpg'
+					}
+				]
 			}
 		}
 	},

@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import type { DialogType } from '$routes/map/types';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
+import { inspectGaussianSplatPlyFile } from '$routes/map/utils/formats/gaussian-splat';
 import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
 import { isLikelyHritFile } from '$routes/map/utils/formats/hrit';
@@ -442,6 +443,18 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 			return createDialogDecision('pointcloud');
 		}
 		return createNotificationDecision('対応していないTXTファイルです');
+	}
+
+	if (ext === 'ply') {
+		const inspection = await inspectGaussianSplatPlyFile(file);
+		if (inspection.kind === 'gaussian-splat') {
+			return createDialogDecision('gaussian-splat');
+		}
+		if (inspection.kind === 'super-splat') {
+			return createNotificationDecision(
+				'SuperSplat 圧縮 PLY は未対応です。通常 PLY に書き出してから読み込んでください。'
+			);
+		}
 	}
 
 	if (ext === 'p21') {

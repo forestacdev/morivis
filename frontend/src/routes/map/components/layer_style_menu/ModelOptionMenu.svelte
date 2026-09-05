@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 
 	import GeoArrowOption from './model_option/GeoArrowOption.svelte';
+	import GaussianSplatOption from './model_option/GaussianSplatOption.svelte';
 	import MeshOption from './model_option/MeshOption.svelte';
 	import PointCloudOption from './model_option/PoinbtCloudOption..svelte';
 	import Tiles3DMeshOption from './model_option/Tiles3DMeshOption.svelte';
@@ -9,8 +10,10 @@
 	import type {
 		MorivisModelEntry,
 		DeckVectorEntry,
+		GaussianSplatEntry,
 		MeshEntry,
 		MeshStyle,
+		ThreeModelEntry,
 		Tiles3DMeshStyleEntry,
 		PointCloudStyleEntry
 	} from '$routes/map/data/types/model';
@@ -33,17 +36,21 @@
 		return entry.style.type === 'mesh' && entry.format.type !== '3d-tiles';
 	};
 
+	const isThreeModelEntry = (entry: MorivisModelEntry): entry is ThreeModelEntry => {
+		return isThreeMeshEntry(entry) || entry.style.type === 'gaussian-splat';
+	};
+
 	const isTiles3DMeshEntry = (entry: MorivisModelEntry): entry is Tiles3DMeshStyleEntry => {
 		return entry.style.type === '3d-tiles-mesh';
 	};
 	const isCurrentModelView = $derived(
-		isThreeMeshEntry(layerEntry) &&
+		isThreeModelEntry(layerEntry) &&
 			$modelViewRequest?.entryIds.length === 1 &&
 			$modelViewRequest.entryIds[0] === layerEntry.id
 	);
 
 	const openSingleModelView = () => {
-		if (!isThreeMeshEntry(layerEntry)) return;
+		if (!isThreeModelEntry(layerEntry)) return;
 		if (isCurrentModelView) {
 			closeModelView();
 			return;
@@ -72,7 +79,7 @@
 		<Tiles3DMeshOption bind:layerEntry bind:showColorOption />
 	{/if}
 
-	{#if isThreeMeshEntry(layerEntry)}
+	{#if isThreeModelEntry(layerEntry)}
 		<div class="px-4 py-3">
 			<button
 				class="c-btn-confirm flex w-full items-center justify-center gap-2 p-2 text-sm rounded-full"
@@ -85,7 +92,14 @@
 				{isCurrentModelView ? 'モデルビューを閉じる' : 'モデルビューで開く'}
 			</button>
 		</div>
-		<MeshOption bind:layerEntry bind:showColorOption bind:showDimensionOption />
+		{#if isThreeMeshEntry(layerEntry)}
+			<MeshOption bind:layerEntry bind:showColorOption bind:showDimensionOption />
+		{:else}
+			<GaussianSplatOption
+				bind:layerEntry={layerEntry as GaussianSplatEntry}
+				bind:showColorOption
+			/>
+		{/if}
 	{/if}
 {/if}
 

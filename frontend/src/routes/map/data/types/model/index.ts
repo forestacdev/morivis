@@ -47,21 +47,23 @@ export interface ModelPartData {
 	attributes?: ModelAttributes;
 }
 
+export interface ModelEntryProperties {
+	temporal?: {
+		dimension: RasterDiscreteDimension;
+	};
+	animation?: ModelAnimationProperties;
+	ifc?: {
+		extractionProfiles: IfcExtractionProfile[];
+	};
+	/** GLB のノードに付与した _prop_id ごとの詳細情報。 */
+	detailsById?: Record<string, ModelPartData>;
+}
+
 interface BaseModelEntry {
 	id: string;
 	type: 'model';
 	metaData: ModelMetaData;
-	properties?: {
-		temporal?: {
-			dimension: RasterDiscreteDimension;
-		};
-		animation?: ModelAnimationProperties;
-		ifc?: {
-			extractionProfiles: IfcExtractionProfile[];
-		};
-		/** GLB のノードに付与した _prop_id ごとの詳細情報。 */
-		detailsById?: Record<string, ModelPartData>;
-	};
+	properties?: ModelEntryProperties;
 	interaction: {
 		clickable: boolean;
 	};
@@ -113,19 +115,7 @@ export interface ProjectedModelGeoreference {
 	coordinateSpace?: 'object' | 'root-children' | 'ifc-z-up';
 }
 
-export interface MeshStyle {
-	type: 'mesh';
-	opacity: Opacity;
-	visible?: boolean;
-	wireframe: boolean;
-	/** true のとき地形の地下にある部分も前面に表示する。 */
-	showThroughTerrain: boolean;
-	color: string;
-	/** IFC など、モデル内パーツの属性を使う色分け設定。 */
-	partColors?: ColorsStyle;
-	shading?: MeshShadingStyle;
-	heightColorRamp?: MeshHeightColorRampStyle;
-	transformOptions?: MeshTransformOptionStyle;
+export interface ModelTransformStyle {
 	transform: {
 		lng: number;
 		lat: number;
@@ -145,6 +135,30 @@ export interface MeshStyle {
 		rotationY: number;
 		rotationZ: number;
 	};
+}
+
+export interface MeshStyle extends ModelTransformStyle {
+	type: 'mesh';
+	opacity: Opacity;
+	visible?: boolean;
+	wireframe: boolean;
+	/** true のとき地形の地下にある部分も前面に表示する。 */
+	showThroughTerrain: boolean;
+	color: string;
+	/** IFC など、モデル内パーツの属性を使う色分け設定。 */
+	partColors?: ColorsStyle;
+	shading?: MeshShadingStyle;
+	heightColorRamp?: MeshHeightColorRampStyle;
+	transformOptions?: MeshTransformOptionStyle;
+}
+
+/** 通常 PLY の 3D Gaussian Splatting 向けスタイル。 */
+export interface GaussianSplatStyle extends ModelTransformStyle {
+	type: 'gaussian-splat';
+	opacity: Opacity;
+	visible?: boolean;
+	/** 元データのスプラット半径に掛ける表示倍率。 */
+	splatScale: number;
 }
 
 export interface Tiles3DMeshStyle {
@@ -223,6 +237,23 @@ export interface PointCloudEntry extends BaseModelEntry {
 	style: PointCloudStyle;
 }
 
+/** Three.js で描画する通常 PLY の 3D Gaussian Splatting entry。 */
+export interface GaussianSplatEntry extends BaseModelEntry {
+	format: {
+		type: 'gaussian-splat';
+		url: string;
+		sourceFileName?: string;
+		encoding: 'ply';
+	};
+	properties?: ModelEntryProperties & {
+		gaussianSplat: {
+			splatCount: number;
+			shDegree: number;
+		};
+	};
+	style: GaussianSplatStyle;
+}
+
 export interface GeoArrowEntry extends BaseModelEntry {
 	format: {
 		type: 'geoarrow';
@@ -245,6 +276,8 @@ export interface GeoJson3DEntry extends BaseModelEntry {
 export type DeckVectorEntry = GeoArrowEntry | GeoJson3DEntry;
 
 export type AnyMeshEntry = MeshEntry<MeshStyle>;
+export type ThreeModelEntry = AnyMeshEntry | GaussianSplatEntry;
+export type ThreeModelStyle = MeshStyle | GaussianSplatStyle;
 
 export type AnyTiles3DEntry = Tiles3DEntry<Tiles3DMeshStyle> | Tiles3DEntry<PointCloudStyle>;
 
@@ -256,4 +289,8 @@ export type PointCloudStyleEntry = Tiles3DEntry<PointCloudStyle> | PointCloudEnt
  * morivis の model 系内部モデル。
  * object / runtime を主分類軸とし、three.js 系と deck.gl 系の分岐元になる。
  */
-export type MorivisModelEntry = AnyMeshEntry | AnyTiles3DEntry | PointCloudEntry | DeckVectorEntry;
+export type MorivisModelEntry =
+	| ThreeModelEntry
+	| AnyTiles3DEntry
+	| PointCloudEntry
+	| DeckVectorEntry;
