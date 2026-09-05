@@ -25,6 +25,7 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { getLasProjection } from '$routes/map/utils/formats/las';
+	import { parseObjPointCloudFile } from '$routes/map/utils/formats/obj';
 	import {
 		getPointCloudBbox,
 		normalizePointCloudUpAxis,
@@ -35,7 +36,6 @@
 		type PointCloudMeterOffsets,
 		type PointCloudSourcePositions
 	} from '$routes/map/utils/formats/pointcloud/coordinate-offsets';
-	import { parseObjPointCloudFile } from '$routes/map/utils/formats/obj';
 	import { rasterizePointCloudToDemInWorker } from '$routes/map/utils/formats/pointcloud/rasterize';
 	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { parseXyzFile } from '$routes/map/utils/formats/xyz';
@@ -297,10 +297,10 @@
 			analyzed = true;
 
 			if (
-				rawBbox
-				&& positions
-				&& detectedProjection?.coordinateType === 'projected'
-				&& detectedProjection.definition.includes('+units=m')
+				rawBbox &&
+				positions &&
+				detectedProjection?.coordinateType === 'projected' &&
+				detectedProjection.definition.includes('+units=m')
 			) {
 				try {
 					const transformed = await createProjectedPointCloud(
@@ -681,11 +681,7 @@
 	{#if analyzed}
 		{#if pointCloudFile && isPlyPointCloudFile(pointCloudFile.name)}
 			<div class="w-full p-2">
-				<HorizontalSelectBox
-					label="上方向"
-					bind:group={plyUpAxis}
-					options={plyUpAxisOptions}
-				/>
+				<HorizontalSelectBox label="上方向" bind:group={plyUpAxis} options={plyUpAxisOptions} />
 			</div>
 		{/if}
 

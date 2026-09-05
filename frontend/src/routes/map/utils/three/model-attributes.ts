@@ -26,7 +26,9 @@ const getUserDataAttributes = (object: THREE.Object3D): ModelAttributes => {
 		Object.entries(current.userData).forEach(([key, value]) => {
 			if (key === 'entryId' || key === 'originalName' || key.startsWith('morivis')) return;
 			const attributeValue = toAttributeValue(value);
-			if (attributeValue !== undefined && !(key in attributes)) attributes[key] = attributeValue;
+			if (attributeValue !== undefined && !(key in attributes)) {
+				attributes[key] = attributeValue;
+			}
 		});
 		current = current.parent;
 	}

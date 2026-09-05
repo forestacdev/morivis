@@ -3,11 +3,11 @@
 	import * as yup from 'yup';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		getDefaultTransformModeForIssue,
 		getModelSpatialIssue
 	} from '$routes/map/components/upload/transform-policy';
-	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { createGlbEntry } from '$routes/map/data/entries/model';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { MeshFormatType } from '$routes/map/data/types/model';
@@ -15,7 +15,10 @@
 	import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
+	import { inspectFbxTextureReferences } from '$routes/map/utils/three/fbx-references';
 	import {
+		hasIfcExactGeoreference,
+		getIfcPlacementCoordinateMode,
 		hasIfcGeographicCoordinates,
 		readIfcPlacementMetadata,
 		type IfcPlacementMetadata
@@ -23,7 +26,6 @@
 	import { applyProjectedModelAxisOverride } from '$routes/map/utils/three/model-axis';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
 	import { getModelCoordinateMode } from '$routes/map/utils/three/model-georeference';
-	import { inspectFbxTextureReferences } from '$routes/map/utils/three/fbx-references';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -60,6 +62,11 @@
 	const getPathLikeName = (file: File) => {
 		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
 		return (relativePath ?? file.name).toLowerCase();
+	};
+
+	const logIfcUpload = (event: string, details: Record<string, unknown>) => {
+		if (import.meta.env.PROD) return;
+		console.info(`[IFC upload] ${event}`, details);
 	};
 
 	const getModelPlacement = (file: File): ModelPlacement | undefined => {
@@ -112,14 +119,6 @@
 		'amf',
 		'ifc'
 	]);
-
-	const getIfcModelCoordinateMode = (
-		metadata: IfcPlacementMetadata | undefined
-	): 'local' | 'projected' | null => {
-		if (metadata?.requiresEpsg || metadata?.coordinateMode === 'absolute') return 'projected';
-		if (metadata?.coordinateMode === 'local') return 'local';
-		return null;
-	};
 
 	const inputFiles = $derived.by(() => toUploadFiles(dropFile));
 
@@ -274,12 +273,12 @@
 
 		return getModelSpatialIssue({
 			hasEmbeddedEpsg:
-				!!detectedProjectedModelEpsg ||
-				(activeFormat === 'ifc' && hasIfcGeographicCoordinates(ifcPlacementMetadata)),
+					!!detectedProjectedModelEpsg ||
+					(activeFormat === 'ifc' && hasIfcExactGeoreference(ifcPlacementMetadata)),
 			hasExplicitPlacement: !!modelPlacement,
 			coordinateMode:
 				activeFormat === 'ifc'
-					? getIfcModelCoordinateMode(ifcPlacementMetadata)
+					? getIfcPlacementCoordinateMode(ifcPlacementMetadata)
 					: getModelCoordinateMode(projectedCandidateSourceBbox)
 		});
 	});
@@ -532,6 +531,11 @@
 		ifcInspectionFileKey = nextFileKey;
 		isInspectingIfcPlacement = true;
 		ifcPlacementMetadata = undefined;
+		logIfcUpload('inspection-start', {
+			fileName: glbFile.name,
+			fileKey: nextFileKey,
+			fileSize: glbFile.size
+		});
 
 		const inspectPlacement = async () => {
 			const inspectionKey = nextFileKey;
@@ -539,9 +543,22 @@
 				const metadata = await readIfcPlacementMetadata(glbFile);
 				if (ifcInspectionFileKey !== inspectionKey) return;
 				ifcPlacementMetadata = metadata;
+				logIfcUpload('inspection-complete', {
+					fileName: glbFile.name,
+					fileKey: inspectionKey,
+					metadata,
+					hasGeographicCoordinates: hasIfcGeographicCoordinates(metadata),
+					hasExactGeoreference: hasIfcExactGeoreference(metadata),
+					coordinateMode: getIfcPlacementCoordinateMode(metadata)
+				});
 			} catch (error) {
 				if (ifcInspectionFileKey !== inspectionKey) return;
 				ifcPlacementMetadata = undefined;
+				logIfcUpload('inspection-failed', {
+					fileName: glbFile.name,
+					fileKey: inspectionKey,
+					error
+				});
 				console.warn('IFC の地理座標判定に失敗しました', error);
 			} finally {
 				if (ifcInspectionFileKey === inspectionKey) {
@@ -551,6 +568,21 @@
 		};
 
 		void inspectPlacement();
+	});
+
+	$effect(() => {
+		if (!glbFile || activeFormat !== 'ifc') return;
+		logIfcUpload('spatial-decision', {
+			fileName: glbFile.name,
+			fileKey: getPathLikeName(glbFile),
+			isInspectingIfcPlacement,
+			metadata: ifcPlacementMetadata,
+			modelSpatialIssue,
+			requiresIfcZoneSelection,
+			requiresModelPlacement,
+			isWaitingForModelSupplementaryInspection,
+			transformOptionMode
+		});
 	});
 
 	$effect(() => {
@@ -674,6 +706,14 @@
 		if (autoOpenedZoneFileKey === fileKey) return;
 
 		autoOpenedZoneFileKey = fileKey;
+		if (activeFormat === 'ifc') {
+			logIfcUpload('open-zone-selection', {
+				fileName: glbFile.name,
+				fileKey,
+				metadata: ifcPlacementMetadata,
+				sourceBbox: ifcSourceBbox
+			});
+		}
 		focusBbox = null;
 		transformOptionMode = 'zone';
 		showNotification(
@@ -910,19 +950,57 @@
 	};
 
 	$effect(() => {
+		if (activeFormat === 'ifc') {
+			logIfcUpload('registration-gate', {
+				fileName: glbFile?.name,
+				fileKey: glbFile ? getPathLikeName(glbFile) : null,
+				requiresManualRegistration,
+				isWaitingForModelSupplementaryInspection,
+				isInspectingIfcPlacement,
+				requiresIfcZoneSelection,
+				requiresModelPlacement,
+				transformOptionMode
+			});
+		}
 		if (!glbFile || requiresManualRegistration || isWaitingForModelSupplementaryInspection) return;
 		if (activeFormat === 'obj' && (isInspectingObjReferences || isInspectingMtlReferences)) return;
 		if (activeFormat === 'fbx' && isInspectingFbxReferences) return;
 		if (activeFormat === 'gltf' && isInspectingGltfReferences) return;
 
 		const register = async () => {
+			if (activeFormat === 'ifc') {
+				logIfcUpload('auto-registration-start', {
+					fileName: glbFile.name,
+					fileKey: getPathLikeName(glbFile),
+					metadata: ifcPlacementMetadata,
+					modelSpatialIssue,
+					requiresModelPlacement
+				});
+			}
 			const entry = await buildDroppedEntry();
 			if (!entry) return;
 
 			showDataEntry = entry;
 			if (requiresModelPlacement) {
-				transformOptionMode = getDefaultTransformModeForIssue('model', 'placement-missing');
+				const transformMode = getDefaultTransformModeForIssue('model', 'placement-missing');
+				if (activeFormat === 'ifc') {
+					logIfcUpload('open-model-placement', {
+						fileName: glbFile.name,
+						fileKey: getPathLikeName(glbFile),
+						entryId: entry.id,
+						transformMode
+					});
+				}
+				transformOptionMode = transformMode;
 				return;
+			}
+			if (activeFormat === 'ifc') {
+				logIfcUpload('skip-model-placement', {
+					fileName: glbFile.name,
+					fileKey: getPathLikeName(glbFile),
+					entryId: entry.id,
+					metadata: ifcPlacementMetadata
+				});
 			}
 			showDialogType = null;
 			dropFile = null;

@@ -296,7 +296,13 @@ export const previewBaseLayers: LayerSpecification[] = [
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
 		minzoom: 8,
-		filter: ['all', ['==', '$type', 'LineString'], ['in', 'class', 'minor', 'service', 'track']],
+		filter: ['all', ['==', '$type', 'LineString'], [
+			'in',
+			'class',
+			'minor',
+			'service',
+			'track'
+		]],
 		layout: {
 			'line-cap': 'round',
 			'line-join': 'round',
@@ -579,7 +585,10 @@ export const previewBaseLayers: LayerSpecification[] = [
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
 		minzoom: 13,
-		filter: ['all', ['==', '$type', 'LineString'], ['==', 'class', 'rail'], ['!has', 'service']],
+		filter: ['all', ['==', '$type', 'LineString'], ['==', 'class', 'rail'], [
+			'!has',
+			'service'
+		]],
 		layout: { 'line-join': 'round', visibility: 'visible' },
 		paint: {
 			'line-color': 'rgb(35,35,35)',
@@ -596,7 +605,10 @@ export const previewBaseLayers: LayerSpecification[] = [
 		source: 'openmaptiles',
 		'source-layer': 'transportation',
 		minzoom: 13,
-		filter: ['all', ['==', '$type', 'LineString'], ['==', 'class', 'rail'], ['!has', 'service']],
+		filter: ['all', ['==', '$type', 'LineString'], ['==', 'class', 'rail'], [
+			'!has',
+			'service'
+		]],
 		layout: { 'line-join': 'round', visibility: 'visible' },
 		paint: {
 			'line-color': 'rgb(12,12,12)',

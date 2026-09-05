@@ -3,8 +3,8 @@ import {
 	applyGaussianSplatStyle,
 	createGaussianSplatObject
 } from '$routes/map/utils/three/gaussian-splat-renderer';
-import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
+import { describe, expect, it } from 'vitest';
 
 const createStyle = (splatScale: number): GaussianSplatStyle => ({
 	type: 'gaussian-splat',

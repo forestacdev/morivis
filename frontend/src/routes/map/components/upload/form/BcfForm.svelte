@@ -44,7 +44,8 @@
 		const urls: Record<string, string> = {};
 		parsed.topics.forEach((topic) => {
 			topic.viewpoints.forEach((viewpoint, index) => {
-				if (viewpoint.snapshot) urls[`${topic.guid}:${index}`] = URL.createObjectURL(viewpoint.snapshot);
+				if (viewpoint.snapshot)
+					urls[`${topic.guid}:${index}`] = URL.createObjectURL(viewpoint.snapshot);
 			});
 		});
 		snapshotUrls = urls;
@@ -64,7 +65,10 @@
 				return [];
 			}
 			selectedLayerId.set(entryIds[0]);
-			showNotification(`${topic.selectionIfcGuids.length}件の対象IFC部材をハイライトしました`, 'success');
+			showNotification(
+				`${topic.selectionIfcGuids.length}件の対象IFC部材をハイライトしました`,
+				'success'
+			);
 			return entryIds;
 		} catch (error) {
 			console.error('BCFのIFC部材ハイライトに失敗しました', error);
@@ -127,7 +131,9 @@
 		<div>
 			<h2 class="text-lg font-bold">BCF課題</h2>
 			<p class="text-xs text-base/60">
-				{document ? `BCF ${document.version ?? '不明'} / ${document.topics.length}件` : '読み込み中'}
+				{document
+					? `BCF ${document.version ?? '不明'} / ${document.topics.length}件`
+					: '読み込み中'}
 			</p>
 		</div>
 		<button class="c-btn-cancel rounded-lg px-3 py-2 text-sm" onclick={close}>閉じる</button>
@@ -135,7 +141,10 @@
 
 	{#if document && activeTopic}
 		<div class="grid min-h-0 grow grid-cols-[9rem_minmax(0,1fr)] gap-3">
-			<nav class="c-scroll flex min-h-0 flex-col gap-2 overflow-y-auto pr-1" aria-label="BCF課題一覧">
+			<nav
+				class="c-scroll flex min-h-0 flex-col gap-2 overflow-y-auto pr-1"
+				aria-label="BCF課題一覧"
+			>
 				{#each document.topics as topic (topic.guid)}
 					<button
 						class={[
@@ -147,7 +156,8 @@
 						onclick={() => (activeTopicGuid = topic.guid)}
 					>
 						<span class="line-clamp-3 font-medium">{topic.title}</span>
-						{#if topic.status}<span class="mt-2 block text-xs text-base/60">{topic.status}</span>{/if}
+						{#if topic.status}<span class="mt-2 block text-xs text-base/60">{topic.status}</span
+							>{/if}
 					</button>
 
 					{#if activeTopic.viewpoints.some((viewpoint) => viewpoint.camera)}
@@ -167,9 +177,15 @@
 					<div>
 						<h3 class="text-xl font-bold">{activeTopic.title}</h3>
 						<div class="mt-2 flex flex-wrap gap-2 text-xs">
-							{#if activeTopic.status}<span class="rounded bg-sub px-2 py-1">状態: {activeTopic.status}</span>{/if}
-							{#if activeTopic.type}<span class="rounded bg-sub px-2 py-1">種別: {activeTopic.type}</span>{/if}
-							{#if activeTopic.priority}<span class="rounded bg-sub px-2 py-1">優先度: {activeTopic.priority}</span>{/if}
+							{#if activeTopic.status}<span class="rounded bg-sub px-2 py-1"
+									>状態: {activeTopic.status}</span
+								>{/if}
+							{#if activeTopic.type}<span class="rounded bg-sub px-2 py-1"
+									>種別: {activeTopic.type}</span
+								>{/if}
+							{#if activeTopic.priority}<span class="rounded bg-sub px-2 py-1"
+									>優先度: {activeTopic.priority}</span
+								>{/if}
 						</div>
 					</div>
 
@@ -190,7 +206,11 @@
 					{#each activeTopic.viewpoints as viewpoint, index (`${activeTopic.guid}:${viewpoint.guid ?? index}`)}
 						{#if snapshotUrls[`${activeTopic.guid}:${index}`]}
 							<figure class="overflow-hidden rounded-lg border border-sub bg-black/10">
-								<img src={snapshotUrls[`${activeTopic.guid}:${index}`]} alt={`${activeTopic.title} のBCFスナップショット`} class="h-auto w-full" />
+								<img
+									src={snapshotUrls[`${activeTopic.guid}:${index}`]}
+									alt={`${activeTopic.title} のBCFスナップショット`}
+									class="h-auto w-full"
+								/>
 								{#if viewpoint.camera}
 									<figcaption class="px-3 py-2 text-xs text-base/60">
 										{viewpoint.camera.type === 'orthographic' ? '平行投影' : '透視投影'}の視点
@@ -205,7 +225,10 @@
 							<h4 class="text-sm font-medium">コメント</h4>
 							{#each activeTopic.comments as comment, index (`${activeTopic.guid}:${comment.guid ?? index}`)}
 								<article class="rounded-lg bg-sub/40 p-3 text-sm">
-									{#if comment.author || comment.date}<p class="mb-1 text-xs text-base/60">{comment.author ?? '不明'} {comment.date ?? ''}</p>{/if}
+									{#if comment.author || comment.date}<p class="mb-1 text-xs text-base/60">
+											{comment.author ?? '不明'}
+											{comment.date ?? ''}
+										</p>{/if}
 									<p class="whitespace-pre-wrap">{comment.text}</p>
 								</article>
 							{/each}
@@ -214,8 +237,12 @@
 
 					{#if activeTopic.visibilityExceptionIfcGuids.length > 0}
 						<details class="rounded-lg bg-sub/40 p-3 text-xs text-base/70">
-							<summary class="cursor-pointer">表示条件の例外: {activeTopic.visibilityExceptionIfcGuids.length}件</summary>
-							<p class="mt-2">BCFの視点で表示状態を補足する部材です。対象部材のハイライトには含めません。</p>
+							<summary class="cursor-pointer"
+								>表示条件の例外: {activeTopic.visibilityExceptionIfcGuids.length}件</summary
+							>
+							<p class="mt-2">
+								BCFの視点で表示状態を補足する部材です。対象部材のハイライトには含めません。
+							</p>
 						</details>
 					{/if}
 				</div>

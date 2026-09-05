@@ -13,7 +13,8 @@ interface GaussianSplatUniforms {
 const getMaterial = (object: THREE.Object3D) => {
 	if (!(object as THREE.Points).isPoints) return null;
 	const material = (object as THREE.Points).material;
-	return material instanceof THREE.ShaderMaterial && material.userData[GAUSSIAN_SPLAT_MATERIAL_KEY]
+	return material instanceof THREE.ShaderMaterial
+			&& material.userData[GAUSSIAN_SPLAT_MATERIAL_KEY]
 		? material
 		: null;
 };

@@ -9,10 +9,16 @@
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
 	import { geoDataEntries, layerDataFuse } from '$routes/map/data/entries';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import { SUPPORTED_FILE_ACCEPT, type DialogType, type UploadFiles } from '$routes/map/types';
+	import { SUPPORTED_FILE_GROUPS, type DialogType, type UploadFiles } from '$routes/map/types';
 	import { encode } from '$routes/map/utils/data/normalize';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
+
+	const mobileFileAccept = SUPPORTED_FILE_GROUPS.filter(
+		(group) => ['GPX', '画像 (EXIF GPS)', '点群'].includes(group.label)
+	)
+		.flatMap((group) => group.extensions)
+		.join(',');
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
@@ -336,13 +342,26 @@
 		{/if}
 	</div>
 
-	{#if isMobile}
+    <!-- モバイル用アップロードボタン -->
+	{#if $isMobile}
 		<label
 			transition:scale={{ duration: 200 }}
 			class="absolute bottom-22 right-4 bg-accent grid cursor-pointer place-items-center rounded-full p-2 text-white shadow-2xl"
 		>
 			<Icon icon="material-symbols:add" class=" h-8 w-8" />
-			<input type="file" multiple accept={SUPPORTED_FILE_ACCEPT} class="hidden" />
+			<span class="sr-only">ファイルをアップロード</span>
+			<input
+				type="file"
+				multiple
+				accept={mobileFileAccept}
+				class="hidden"
+				onchange={(event) => {
+					const input = event.currentTarget;
+					if (!input.files?.length) return;
+					dropFile = Array.from(input.files);
+					input.value = '';
+				}}
+			/>
 		</label>
 	{/if}
 {/if}

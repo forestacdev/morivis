@@ -3,9 +3,9 @@ import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bo
 import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	AnyTiles3DEntry,
+	GaussianSplatEntry,
 	GeoArrowEntry,
 	GeoJson3DEntry,
-	GaussianSplatEntry,
 	MeshEntry,
 	MeshFormatType,
 	MeshStyle,

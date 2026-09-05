@@ -9,8 +9,6 @@
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import GeoRefMarker from '$routes/map/components/marker/GeoRefMarker.svelte';
 	import ZoneMarker from '$routes/map/components/marker/ZoneMarker.svelte';
-	import ModelPlacementMenu from '$routes/map/components/upload/form/transform/ModelPlacementMenu.svelte';
-	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import type {
 		ActiveTransformOptionMode,
 		TransformOptionMode
@@ -23,6 +21,7 @@
 		RasterRegistrationMode
 	} from '$routes/map/components/upload/form/transform/georef-types';
 	import GeoRefMenu from '$routes/map/components/upload/form/transform/GeoRefMenu.svelte';
+	import ModelPlacementMenu from '$routes/map/components/upload/form/transform/ModelPlacementMenu.svelte';
 	import ZoneMenu from '$routes/map/components/upload/form/transform/ZoneMenu.svelte';
 	import {
 		WEB_MERCATOR_MIN_LAT,
@@ -30,12 +29,12 @@
 		WEB_MERCATOR_MIN_LNG,
 		WEB_MERCATOR_MAX_LNG
 	} from '$routes/map/data/entries/_meta_data/_bounds';
-	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { ThreeModelEntry } from '$routes/map/data/types/model';
-	import { removeGaussianSplatData } from '$routes/map/utils/formats/gaussian-splat/cache';
+	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PointGeometry, PolygonGeometry } from '$routes/map/types/geometry';
+	import { removeGaussianSplatData } from '$routes/map/utils/formats/gaussian-splat/cache';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid, isFiniteBbox } from '$routes/map/utils/map/bbox';
 	import type { ImageSource } from '$routes/map/utils/maplibre';
@@ -46,6 +45,7 @@
 		type EpsgCode,
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
+	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import {
 		applyAspectLockedGeoRefDrag,
 		getGeoRefAspectRatio,

@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-	getAllowedTransformModesForIssue,
-	getModelSpatialIssue
-} from './transform-policy';
+import { getAllowedTransformModesForIssue, getModelSpatialIssue } from './transform-policy';
 
 describe('3Dモデルの座標処理ポリシー', () => {
 	it('内蔵EPSGまたは明示配置があるモデルは操作を要求しない', () => {

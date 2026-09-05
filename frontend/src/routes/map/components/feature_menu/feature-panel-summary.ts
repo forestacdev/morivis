@@ -7,13 +7,13 @@ import {
 	type TaxonomicRank
 } from '$routes/map/api/inaturalist';
 import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
-import type { MediaData } from '$routes/map/data/types/details';
 import {
 	ProtectionForestNameToCodeDict,
 	ProtectionForestTypes
 } from '$routes/map/data/forest/protection_forest';
 import { getTimberSpeciesData } from '$routes/map/data/forest/timber_species';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
+import type { MediaData } from '$routes/map/data/types/details';
 import { formatFieldValue } from '$routes/map/data/types/vector/properties';
 import type {
 	FeatureMenuData,
@@ -81,10 +81,9 @@ const getLayerFeatureMedia = async (
 	iNaturalistData?: Awaited<ReturnType<typeof getImageByName>> | null
 ): Promise<FeaturePanelMedia[]> => {
 	const propId = featureMenuData.properties?._prop_id;
-	const data =
-		targetLayer?.type === 'vector' && typeof propId === 'string'
-			? targetLayer.properties.detailsById?.[propId]
-			: undefined;
+	const data = targetLayer?.type === 'vector' && typeof propId === 'string'
+		? targetLayer.properties.detailsById?.[propId]
+		: undefined;
 
 	const fetchMedia = async (): Promise<FeaturePanelMedia[]> => {
 		if (data?.medias && data.medias.length > 0) {
@@ -271,20 +270,19 @@ export const getLayerFeaturePanelSummary = async (
 				: undefined,
 			description: modelPart.description
 				? {
-						text: modelPart.description,
-						source: 'static',
-						linkUrl: modelPart.url,
-						linkLabel: modelPart.url ? '詳細を見る' : undefined
-					}
+					text: modelPart.description,
+					source: 'static',
+					linkUrl: modelPart.url,
+					linkLabel: modelPart.url ? '詳細を見る' : undefined
+				}
 				: undefined
 		};
 	}
 	const targetLayer = layerEntries.find((entry) => entry.id === featureMenuData.layerId) ?? null;
 	const propId = featureMenuData.properties?._prop_id;
-	const data =
-		targetLayer?.type === 'vector' && typeof propId === 'string'
-			? targetLayer.properties.detailsById?.[propId]
-			: undefined;
+	const data = targetLayer?.type === 'vector' && typeof propId === 'string'
+		? targetLayer.properties.detailsById?.[propId]
+		: undefined;
 	const descriptionKey = targetLayer && targetLayer.type === 'vector'
 		? targetLayer.properties.attributeView.descriptionKey
 		: null;

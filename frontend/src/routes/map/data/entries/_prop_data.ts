@@ -1,4 +1,7 @@
-export { facPoiSearchDetailsById as propData, getPrimaryImageMedia } from '$routes/map/data/entries/vector/pmtiles/point/_fac_poi_search.details';
+export {
+	facPoiSearchDetailsById as propData,
+	getPrimaryImageMedia
+} from '$routes/map/data/entries/vector/pmtiles/point/_fac_poi_search.details';
 export type {
 	AudioMediaData,
 	ImageMediaData,

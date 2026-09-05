@@ -4,8 +4,8 @@
 	import { resolveDroppedFiles } from './upload-drop';
 	import { applyUploadDropDecision, checkLargeDroppedFiles } from './upload-drop-actions';
 
-	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFiles } from '$routes/map/types';
 	import type maplibregl from '$routes/map/utils/maplibre';
 

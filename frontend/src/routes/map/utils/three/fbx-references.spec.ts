@@ -31,11 +31,15 @@ describe('inspectFbxTextureReferences', () => {
 			'test-model.fbx'
 		);
 
-		await expect(inspectFbxTextureReferences(file)).resolves.toEqual(['textures/test-color.png']);
+		await expect(inspectFbxTextureReferences(file)).resolves.toEqual([
+			'textures/test-color.png'
+		]);
 	});
 
 	it('Binary FBX の相対テクスチャ参照を取得する', async () => {
-		await expect(inspectFbxTextureReferences(createBinaryFbxWithRelativeTexturePath('test.png'))).resolves.toEqual([
+		await expect(
+			inspectFbxTextureReferences(createBinaryFbxWithRelativeTexturePath('test.png'))
+		).resolves.toEqual([
 			'test.png'
 		]);
 	});

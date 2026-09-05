@@ -319,7 +319,12 @@ export const railLineLayers: LineLayerSpecification[] = [
 				['get', 'vt_rtcode'],
 				'地下鉄',
 				'rgba(0,155,191,1)',
-				['case', ['==', ['get', 'vt_sngldbl'], '駅部分'], 'rgb(173,173,173)', 'rgb(180, 180, 180)']
+				[
+					'case',
+					['==', ['get', 'vt_sngldbl'], '駅部分'],
+					'rgb(173,173,173)',
+					'rgb(180, 180, 180)'
+				]
 			],
 			'line-opacity': railTunnelLineOpacity,
 			'line-width': [

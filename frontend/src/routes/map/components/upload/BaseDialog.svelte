@@ -105,7 +105,9 @@
 		>
 			<aside
 				transition:fly={{ x: -24, duration: 200 }}
-				class="bg-opacity-8 bg-main flex h-full flex-col rounded-md p-4 text-base shadow-2xl {isDragover ? 'ring-main/40 ring-2' : ''}"
+				class="bg-opacity-8 bg-main flex h-full flex-col rounded-md p-4 text-base shadow-2xl {isDragover
+					? 'ring-main/40 ring-2'
+					: ''}"
 			>
 				<DialogRenderer
 					component={activeDialogDefinition.component}

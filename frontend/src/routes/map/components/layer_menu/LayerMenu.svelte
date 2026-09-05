@@ -23,7 +23,6 @@
 	import { getLayerType, type LayerType } from '$routes/map/utils/entries';
 	import { isBBoxOverlapping } from '$routes/map/utils/map/bbox';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
-	import { showModelView } from '$routes/stores/ui';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import {
 		selectedBaseMap,
@@ -36,6 +35,7 @@
 	} from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
 	import { showLayerAddedNotification } from '$routes/stores/notification';
+	import { showModelView } from '$routes/stores/ui';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {

@@ -1,5 +1,5 @@
-import type { FeatureProp } from '$routes/map/types/properties';
 import type { ModelPartData } from '$routes/map/data/types/model';
+import type { FeatureProp } from '$routes/map/types/properties';
 import type {
 	ResultAddressData,
 	ResultCoordinateData,

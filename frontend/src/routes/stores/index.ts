@@ -2,7 +2,10 @@ import { PUBLIC_INIT_DEBUG_MODE } from '$env/static/public';
 import { writable } from 'svelte/store';
 
 import type { MorivisLayerEntry } from '$routes/map/data/types';
-import { isStreetView as streetViewStore, showModelView as modelViewStore } from '$routes/stores/ui';
+import {
+	isStreetView as streetViewStore,
+	showModelView as modelViewStore
+} from '$routes/stores/ui';
 
 export { isStreetView, isStyleEdit } from '$routes/stores/ui';
 

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 
-	import GeoArrowOption from './model_option/GeoArrowOption.svelte';
 	import GaussianSplatOption from './model_option/GaussianSplatOption.svelte';
+	import GeoArrowOption from './model_option/GeoArrowOption.svelte';
 	import MeshOption from './model_option/MeshOption.svelte';
 	import PointCloudOption from './model_option/PoinbtCloudOption..svelte';
 	import Tiles3DMeshOption from './model_option/Tiles3DMeshOption.svelte';

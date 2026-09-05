@@ -64,7 +64,9 @@ const toArray = <T>(value: T | T[] | undefined): T[] => {
 };
 
 const asRecord = (value: unknown): XmlRecord | null => {
-	return value && typeof value === 'object' && !Array.isArray(value) ? (value as XmlRecord) : null;
+	return value && typeof value === 'object' && !Array.isArray(value)
+		? (value as XmlRecord)
+		: null;
 };
 
 const getText = (value: unknown): string | undefined => {
@@ -212,7 +214,8 @@ export const parseBcfArchive = async (archive: ArrayBuffer): Promise<BcfDocument
 			const viewpointFiles = Object.entries(zip.files)
 				.filter(
 					([path, entry]) =>
-						path.startsWith(directory) && path.toLowerCase().endsWith('.bcfv') && !entry.dir
+						path.startsWith(directory) && path.toLowerCase().endsWith('.bcfv')
+						&& !entry.dir
 				)
 				.map(([, entry]) => entry);
 			const markupXml = await markupFile.async('text');
@@ -224,14 +227,18 @@ export const parseBcfArchive = async (archive: ArrayBuffer): Promise<BcfDocument
 					const record = asRecord(viewpoint);
 					const viewpointName = getText(record?.Viewpoint);
 					const snapshotName = getText(record?.Snapshot);
-					return viewpointName && snapshotName ? [[viewpointName, snapshotName] as const] : [];
+					return viewpointName && snapshotName
+						? [[viewpointName, snapshotName] as const]
+						: [];
 				})
 			);
 			const viewpoints = await Promise.all(
 				viewpointFiles.map(async (entry) => {
 					const fileName = entry.name.slice(directory.length);
 					const snapshotName = snapshotsByViewpoint.get(fileName);
-					const snapshotFile = snapshotName ? zip.file(`${directory}${snapshotName}`) : null;
+					const snapshotFile = snapshotName
+						? zip.file(`${directory}${snapshotName}`)
+						: null;
 					return parseViewpoint(
 						await entry.async('text'),
 						snapshotFile ? await snapshotFile.async('blob') : undefined

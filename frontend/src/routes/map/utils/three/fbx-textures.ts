@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
-const normalize = (value: string) => value.toLowerCase().replace(/\.[^.]+$/, '').replace(/[^a-z0-9]/g, '');
+const normalize = (value: string) =>
+	value.toLowerCase().replace(/\.[^.]+$/, '').replace(/[^a-z0-9]/g, '');
 
 const removeTrailingNumber = (value: string) => value.replace(/\d+$/, '');
 
@@ -10,7 +11,7 @@ const MATERIAL_ALIASES: Record<string, string[]> = {
 
 export interface FbxTextureFallbackResult {
 	mappedMaterialCount: number;
-	mappings: Array<{ materialName: string; textureFileName: string }>;
+	mappings: Array<{ materialName: string; textureFileName: string; }>;
 }
 
 export const configureFbxFallbackTexture = (texture: THREE.Texture) => {
@@ -33,7 +34,9 @@ export const resolveFbxTextureFile = (materialName: string, textureFiles: string
 			if (texture === material) score = 1000;
 			else if (material.startsWith(texture)) score = 800 + texture.length;
 			else if (texture.startsWith(material)) score = 700 + material.length;
-			else if (materialBase && texture.includes(materialBase)) score = 500 + materialBase.length;
+			else if (materialBase && texture.includes(materialBase)) {
+				score = 500 + materialBase.length;
+			}
 			if (aliases.includes(texture)) score = Math.max(score, 900 + texture.length);
 			return { fileName, score };
 		})

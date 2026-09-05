@@ -32,7 +32,6 @@ describe('getModelObjectAttributes', () => {
 		expect(attributes._prop_id).toBe('test-component');
 		expect(attributes.category).toBe('child');
 	});
-
 });
 
 describe('getIfcAttributes', () => {

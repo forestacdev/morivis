@@ -1,7 +1,7 @@
 import { getAdjustableRangeValue } from '$routes/map/data/types';
 import type { ColorsExpression, ColorsStyle } from '$routes/map/data/types/vector/style';
-import type { ModelAttributes } from '$routes/map/utils/three/model-attributes';
 import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
+import type { ModelAttributes } from '$routes/map/utils/three/model-attributes';
 
 const parseColor = (value: string) => {
 	const normalized = value.replace('#', '');
@@ -39,7 +39,11 @@ const evaluateExpression = (expression: ColorsExpression, attributes: ModelAttri
 		const [min, max] = Array.isArray(expression.mapping.range)
 			? expression.mapping.range
 			: getAdjustableRangeValue(expression.mapping.range, undefined, undefined);
-		return interpolateColor(expression.mapping.values[0], expression.mapping.values[1], (value - min) / (max - min));
+		return interpolateColor(
+			expression.mapping.values[0],
+			expression.mapping.values[1],
+			(value - min) / (max - min)
+		);
 	}
 };
 

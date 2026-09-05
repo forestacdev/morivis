@@ -38,6 +38,18 @@ export interface IfcPlacementMetadata extends IfcHeaderMetadata {
 export const hasIfcGeographicCoordinates = (metadata: IfcPlacementMetadata | undefined) =>
 	Number.isFinite(metadata?.lng) && Number.isFinite(metadata?.lat);
 
+/** IfcSite の緯度経度だけではモデル座標を厳密に地図へ変換できない。 */
+export const hasIfcExactGeoreference = (metadata: IfcPlacementMetadata | undefined) =>
+	metadata?.placementQuality === 'exact' && hasIfcGeographicCoordinates(metadata);
+
+/** IFC の地理配置を確定できない場合も、地図上の任意位置へ自動登録しない。 */
+export const getIfcPlacementCoordinateMode = (
+	metadata: IfcPlacementMetadata | undefined
+): 'local' | 'projected' => {
+	if (metadata?.requiresEpsg || metadata?.coordinateMode === 'absolute') return 'projected';
+	return 'local';
+};
+
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
 let webIfcModulePromise: Promise<typeof import('web-ifc')> | null = null;
 
@@ -57,7 +69,7 @@ const loadWebIfcModule = async () => {
 
 const unwrapIfcValue = (value: unknown): any => {
 	if (value && typeof value === 'object' && 'value' in value) {
-		return unwrapIfcValue((value as { value: unknown }).value);
+		return unwrapIfcValue((value as { value: unknown; }).value);
 	}
 	return value;
 };
@@ -106,9 +118,6 @@ export const parseIfcHeaderMetadata = (content: string): IfcHeaderMetadata => {
 	};
 };
 
-const readIfcHeaderMetadata = async (file: File) =>
-	parseIfcHeaderMetadata(await file.slice(0, 64 * 1024).text());
-
 export const getIfcCoordinateMode = (content: string): IfcCoordinateMode => {
 	const matches = content.matchAll(
 		/IFCCARTESIANPOINT\s*\(\s*\(\s*([-+\d.E]+)\s*,\s*([-+\d.E]+)/gi
@@ -126,8 +135,67 @@ export const getIfcCoordinateMode = (content: string): IfcCoordinateMode => {
 	return absoluteCount / count >= 0.5 ? 'absolute' : 'local';
 };
 
-const detectIfcCoordinateMode = async (file: File) =>
-	getIfcCoordinateMode(await file.slice(0, 1024 * 1024).text());
+const parseIfcAngleComponents = (value: string | undefined) => {
+	if (!value || value === '$') return undefined;
+	const match = value.trim().match(/^\(([\s\S]*)\)$/);
+	if (!match) return undefined;
+	return parseAngleComponentList(splitIfcHeaderArguments(match[1]));
+};
+
+/** IFC の先頭付近にある IFCSITE は、WASM を初期化せずに位置情報を読める。 */
+export const parseIfcSitePlacementMetadata = (content: string): Pick<
+	IfcPlacementMetadata,
+	'lng' | 'lat' | 'altitude'
+> => {
+	const match = content.match(/IFCSITE\s*\(([\s\S]*?)\)\s*;/i);
+	if (!match) return {};
+
+	const values = splitIfcHeaderArguments(match[1]);
+	const lat = parseIfcAngleComponents(values[9]);
+	const lng = parseIfcAngleComponents(values[10]);
+	const altitude = Number(values[11]);
+	if (!Number.isFinite(lng) || !Number.isFinite(lat)) return {};
+
+	return {
+		lng,
+		lat,
+		...(Number.isFinite(altitude) && { altitude })
+	};
+};
+
+const createIfcFallbackPlacementMetadata = (
+	headerMetadata: IfcHeaderMetadata,
+	coordinateMode: IfcCoordinateMode,
+	sitePlacement: Pick<IfcPlacementMetadata, 'lng' | 'lat' | 'altitude'>
+): IfcPlacementMetadata => ({
+	...headerMetadata,
+	...sitePlacement,
+	coordinateMode,
+	...(hasIfcGeographicCoordinates(sitePlacement)
+		? {
+			placementQuality: 'approximate' as const,
+			missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
+		}
+		: coordinateMode === 'absolute'
+			? {
+				requiresEpsg: true,
+				placementQuality: 'requires_epsg' as const,
+				missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
+			}
+			: {
+				placementQuality: 'normalized' as const,
+				missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
+			})
+});
+
+const readIfcQuickMetadata = async (file: File) => {
+	const content = await file.slice(0, 1024 * 1024).text();
+	return {
+		headerMetadata: parseIfcHeaderMetadata(content),
+		coordinateMode: getIfcCoordinateMode(content),
+		sitePlacement: parseIfcSitePlacementMetadata(content)
+	};
+};
 
 const resolveIfcEntity = async (model: any, value: unknown) => {
 	const unwrapped = unwrapIfcValue(value);
@@ -171,7 +239,9 @@ const parseLengthUnitScale = async (model: any, project: any) => {
 
 		const conversionFactor = await resolveIfcEntity(model, unit?.ConversionFactor);
 		const valueComponent = Number(
-			unwrapIfcValue(conversionFactor?.ValueComponent?.value ?? conversionFactor?.ValueComponent)
+			unwrapIfcValue(
+				conversionFactor?.ValueComponent?.value ?? conversionFactor?.ValueComponent
+			)
 		);
 		if (Number.isFinite(valueComponent) && valueComponent > 0) {
 			return valueComponent;
@@ -236,10 +306,9 @@ const parseMapConversionPlacement = async (model: any, mapConversion: any) => {
 			eastings,
 			northings
 		]) as [number, number];
-		const baseRotationZ =
-			Number.isFinite(xAxisAbscissa) && Number.isFinite(xAxisOrdinate)
-				? (Math.atan2(xAxisOrdinate, xAxisAbscissa) * 180) / Math.PI
-				: undefined;
+		const baseRotationZ = Number.isFinite(xAxisAbscissa) && Number.isFinite(xAxisOrdinate)
+			? (Math.atan2(xAxisOrdinate, xAxisAbscissa) * 180) / Math.PI
+			: undefined;
 
 		return {
 			lng,
@@ -263,10 +332,9 @@ export const resolveIfcPlacementWithEpsg = (
 			metadata.eastings,
 			metadata.northings
 		]) as [number, number];
-		const baseRotationZ =
-			metadata.xAxisAbscissa != null && metadata.xAxisOrdinate != null
-				? (Math.atan2(metadata.xAxisOrdinate, metadata.xAxisAbscissa) * 180) / Math.PI
-				: undefined;
+		const baseRotationZ = metadata.xAxisAbscissa != null && metadata.xAxisOrdinate != null
+			? (Math.atan2(metadata.xAxisOrdinate, metadata.xAxisAbscissa) * 180) / Math.PI
+			: undefined;
 
 		return {
 			...metadata,
@@ -286,18 +354,20 @@ export const resolveIfcPlacementWithEpsg = (
 export const readIfcPlacementMetadata = async (
 	file: File
 ): Promise<IfcPlacementMetadata | undefined> => {
-	const [headerMetadata, coordinateMode] = await Promise.all([
-		readIfcHeaderMetadata(file),
-		detectIfcCoordinateMode(file)
-	]);
-	const [{ IFCLoader }, webIfc] = await Promise.all([loadIfcLoaderModule(), loadWebIfcModule()]);
-	const loader = new IFCLoader();
-	await configureIfcWasmPath(loader.ifcManager);
-
-	const buffer = await file.arrayBuffer();
-	const model = await loader.parse(buffer);
+	const { headerMetadata, coordinateMode, sitePlacement } = await readIfcQuickMetadata(file);
+	const fallbackPlacement = createIfcFallbackPlacementMetadata(
+		headerMetadata,
+		coordinateMode,
+		sitePlacement
+	);
+	let model: any;
 
 	try {
+		const [{ IFCLoader }, webIfc] = await Promise.all([loadIfcLoaderModule(), loadWebIfcModule()]);
+		const loader = new IFCLoader();
+		await configureIfcWasmPath(loader.ifcManager);
+		model = await loader.parse(await file.arrayBuffer());
+
 		const projectIds = await model.getAllItemsOfType(webIfc.IFCPROJECT, false);
 		const projectId = Array.isArray(projectIds) ? projectIds[0] : undefined;
 		const project = projectId != null ? await model.getItemProperties(projectId, false) : null;
@@ -354,17 +424,19 @@ export const readIfcPlacementMetadata = async (
 					missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
 				}
 				: coordinateMode === 'absolute'
-					? {
-						requiresEpsg: true,
-						placementQuality: 'requires_epsg' as const,
-						missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
-					}
-					: {
-						placementQuality: 'normalized' as const,
-						missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
-					})
+				? {
+					requiresEpsg: true,
+					placementQuality: 'requires_epsg' as const,
+					missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
+				}
+				: {
+					placementQuality: 'normalized' as const,
+					missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
+				})
 		};
+	} catch {
+		return fallbackPlacement;
 	} finally {
-		await model.ifcManager?.dispose?.();
+		await model?.ifcManager?.dispose?.();
 	}
 };

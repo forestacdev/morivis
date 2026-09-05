@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
+import { describe, expect, it } from 'vitest';
 
 import { configureFbxFallbackTexture, resolveFbxTextureFile } from './fbx-textures';
 
@@ -11,7 +11,8 @@ describe('resolveFbxTextureFile', () => {
 	});
 
 	it('候補が同順位なら画像を割り当てない', () => {
-		expect(resolveFbxTextureFile('test-part', ['test-part-a.png', 'test-part-b.png'])).toBeUndefined();
+		expect(resolveFbxTextureFile('test-part', ['test-part-a.png', 'test-part-b.png']))
+			.toBeUndefined();
 	});
 
 	it('短い画像名の部分一致では無関係なマテリアルへ割り当てない', () => {

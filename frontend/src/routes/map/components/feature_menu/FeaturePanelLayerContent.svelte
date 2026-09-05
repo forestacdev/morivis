@@ -88,9 +88,9 @@
 		return Object.entries(displayProps).filter(
 			(entry): entry is [string, string | number | true] => {
 				const [key, value] = entry;
-			return (
-				key !== '_prop_id' &&
-				value !== '' &&
+				return (
+					key !== '_prop_id' &&
+					value !== '' &&
 					value !== null &&
 					value !== undefined &&
 					value !== false &&

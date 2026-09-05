@@ -27,9 +27,9 @@ export const getModelCoordinateMode = (
 	const maxPlanarExtent = Math.max(Math.abs(maxX - minX), Math.abs(maxY - minY));
 	const offsetRatio = maxPlanarExtent > 1e-6 ? maxAbsPlanarOffset / maxPlanarExtent : 0;
 
-	return maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS &&
-		maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS &&
-		offsetRatio >= MIN_PROJECTED_OFFSET_RATIO
+	return maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS
+			&& maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS
+			&& offsetRatio >= MIN_PROJECTED_OFFSET_RATIO
 		? 'projected'
 		: 'local';
 };

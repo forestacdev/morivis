@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
+import { describe, expect, it } from 'vitest';
 
 import { applyFbxCurveGeometricScaling, parseFbxModelAttributes } from './fbx-attributes';
 
@@ -110,7 +110,7 @@ describe('parseFbxModelAttributes', () => {
 			new THREE.Vector3(2_000, 0, 0)
 		]);
 		const line = new THREE.Line(geometry, new THREE.LineBasicMaterial());
-		(line as THREE.Object3D & { ID?: number }).ID = 42;
+		(line as THREE.Object3D & { ID?: number; }).ID = 42;
 		const root = new THREE.Group();
 		root.add(line);
 

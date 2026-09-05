@@ -28,13 +28,14 @@ const collectBinaryReferences = (buffer: ArrayBuffer) => {
 	const relativePaths = new Set<string>();
 	const filePaths = new Set<string>();
 	const hasBytes = (offset: number, length: number, limit: number) =>
-		Number.isSafeInteger(offset) &&
-		Number.isSafeInteger(length) &&
-		offset >= 0 &&
-		length >= 0 &&
-		offset + length <= limit &&
-		offset + length <= buffer.byteLength;
-	const readString = (offset: number, length: number) => decoder.decode(bytes.subarray(offset, offset + length));
+		Number.isSafeInteger(offset)
+		&& Number.isSafeInteger(length)
+		&& offset >= 0
+		&& length >= 0
+		&& offset + length <= limit
+		&& offset + length <= buffer.byteLength;
+	const readString = (offset: number, length: number) =>
+		decoder.decode(bytes.subarray(offset, offset + length));
 
 	const skipProperty = (offset: number, limit: number): [string | null, number] => {
 		if (!hasBytes(offset, 1, limit)) return [null, limit];
@@ -54,12 +55,16 @@ const collectBinaryReferences = (buffer: ArrayBuffer) => {
 		if ('fdilb'.includes(type)) {
 			if (!hasBytes(offset, 12, limit)) return [null, limit];
 			const byteLength = view.getUint32(offset + 8, true);
-			return hasBytes(offset + 12, byteLength, limit) ? [null, offset + 12 + byteLength] : [null, limit];
+			return hasBytes(offset + 12, byteLength, limit)
+				? [null, offset + 12 + byteLength]
+				: [null, limit];
 		}
 		if (type === 'R') {
 			if (!hasBytes(offset, 4, limit)) return [null, limit];
 			const byteLength = view.getUint32(offset, true);
-			return hasBytes(offset + 4, byteLength, limit) ? [null, offset + 4 + byteLength] : [null, limit];
+			return hasBytes(offset + 4, byteLength, limit)
+				? [null, offset + 4 + byteLength]
+				: [null, limit];
 		}
 		return [null, limit];
 	};

@@ -7,7 +7,9 @@ interface GaussianSplatWorkerResponse {
 	error?: string;
 }
 
-export const parseGaussianSplatInWorker = async (buffer: ArrayBuffer): Promise<GaussianSplatData> => {
+export const parseGaussianSplatInWorker = async (
+	buffer: ArrayBuffer
+): Promise<GaussianSplatData> => {
 	return await new Promise((resolve, reject) => {
 		const worker = new GaussianSplatWorker();
 		worker.onmessage = (event: MessageEvent<GaussianSplatWorkerResponse>) => {

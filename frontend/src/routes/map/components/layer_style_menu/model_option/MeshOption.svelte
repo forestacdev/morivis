@@ -7,8 +7,8 @@
 	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
-	import ColorScaleDem from '$routes/map/components/layer_style_menu/extension_menu/ColorScaleDem.svelte';
 	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
+	import ColorScaleDem from '$routes/map/components/layer_style_menu/extension_menu/ColorScaleDem.svelte';
 	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
 	import { createAdjustableRange } from '$routes/map/data/types';
 	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
@@ -17,8 +17,8 @@
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
-	import { showModelView } from '$routes/stores/ui';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
+	import { showModelView } from '$routes/stores/ui';
 	interface Props {
 		layerEntry: MeshEntry<MeshStyle>;
 		showColorOption: boolean;
@@ -254,19 +254,19 @@
 
 <DimensionSelector bind:layerEntry bind:showDimensionOption />
 
-	{#if isIfc}
-		{#if isLoadingPartAttributes && partColorAttributeCount === null}
-			<div class="mb-2 text-sm text-base/70">IFC色分け属性を解析中です</div>
-		{:else if layerEntry.style.partColors && (partColorAttributeCount ?? 0) > 0}
-			<ColorOption
-				bind:colorStyle={layerEntry.style.partColors}
-				bind:showColorOption={showPartColorOption}
-				showExpressionWhenDisabled
-			/>
-		{:else}
-			<div class="mb-2 text-sm text-base/70">色分けに使える事前定義属性がありません</div>
-		{/if}
+{#if isIfc}
+	{#if isLoadingPartAttributes && partColorAttributeCount === null}
+		<div class="mb-2 text-sm text-base/70">IFC色分け属性を解析中です</div>
+	{:else if layerEntry.style.partColors && (partColorAttributeCount ?? 0) > 0}
+		<ColorOption
+			bind:colorStyle={layerEntry.style.partColors}
+			bind:showColorOption={showPartColorOption}
+			showExpressionWhenDisabled
+		/>
+	{:else}
+		<div class="mb-2 text-sm text-base/70">色分けに使える事前定義属性がありません</div>
 	{/if}
+{/if}
 
 <Accordion label="マテリアル" icon="mdi:format-color-highlight" bind:value={showMaterialOption}>
 	{#if $isTerrain3d}
