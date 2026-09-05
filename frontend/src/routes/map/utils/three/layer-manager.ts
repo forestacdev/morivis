@@ -8,7 +8,6 @@ import {
 	type MeshEntry,
 	type MeshShadingStyle,
 	type MeshStyle,
-	type ModelLocalBounds,
 	type ModelTransformStyle,
 	type ThreeModelEntry
 } from '$routes/map/data/types/model';
@@ -47,6 +46,12 @@ import {
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
 import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
+import {
+	createPlacementPreviewObject,
+	disposePlacementPreviewObject,
+	getPlacementPreviewBounds,
+	getPlacementPreviewBoundsKey
+} from '$routes/map/utils/three/placement-preview';
 import { type LoadedPmxModel, loadPmxModel } from '$routes/map/utils/three/pmx-loader';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import {
@@ -207,36 +212,6 @@ const isGaussianSplatEntry = (entry: ThreeModelEntry): entry is GaussianSplatEnt
 const getMmdAnimationDurationSeconds = (animation: ThreeMmdAnimation) => {
 	const maxFrame = animation.animation.kind === 'vmd' ? animation.animation.metadata.maxFrame : 0;
 	return maxFrame > 0 ? maxFrame / MMD_ANIMATION_FRAME_RATE : undefined;
-};
-
-// 範囲を未保存の既存entryだけは、従来の仮ボックスと同じZ-upの形状を使う。
-const DEFAULT_PLACEMENT_PREVIEW_BOUNDS: ModelLocalBounds = [-10, -10, 0, 10, 10, 12];
-
-const getPlacementPreviewBounds = (entry: ThreeModelEntry): ModelLocalBounds =>
-	entry.format.localBounds ?? DEFAULT_PLACEMENT_PREVIEW_BOUNDS;
-
-const getPlacementPreviewBoundsKey = (bounds: ModelLocalBounds) => bounds.join(':');
-
-const createPlacementPreviewObject = (bounds: ModelLocalBounds) => {
-	const [minX, minY, minZ, maxX, maxY, maxZ] = bounds;
-	const width = Math.max(maxX - minX, 0.01);
-	const height = Math.max(maxY - minY, 0.01);
-	const depth = Math.max(maxZ - minZ, 0.01);
-	const center = new THREE.Vector3((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
-	const object = new THREE.Group();
-	const geometry = new THREE.BoxGeometry(width, height, depth);
-	const surface = new THREE.Mesh(
-		geometry,
-		new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.18 })
-	);
-	surface.position.copy(center);
-	const edges = new THREE.LineSegments(
-		new THREE.EdgesGeometry(geometry),
-		new THREE.LineBasicMaterial({ color: 0xfef3c7 })
-	);
-	edges.position.copy(center);
-	object.add(surface, edges);
-	return object;
 };
 
 export interface PickedModelFeature {
@@ -1551,7 +1526,7 @@ export class ThreeJsLayerManager {
 		if (!this.placementPreview || this.placementPreview.boundsKey !== boundsKey) {
 			if (this.placementPreview) {
 				this.scene.remove(this.placementPreview.object);
-				this.disposePlacementPreviewObject(this.placementPreview.object);
+				disposePlacementPreviewObject(this.placementPreview.object);
 			}
 			const object = createPlacementPreviewObject(bounds);
 			this.scene.add(object);
@@ -1566,19 +1541,10 @@ export class ThreeJsLayerManager {
 		this.map?.triggerRepaint();
 	}
 
-	private disposePlacementPreviewObject = (object: THREE.Group) => {
-		object.traverse((child) => {
-			if ((child as THREE.Mesh).geometry) (child as THREE.Mesh).geometry.dispose();
-			const material = (child as THREE.Mesh).material;
-			if (Array.isArray(material)) material.forEach((item) => item.dispose());
-			else material?.dispose();
-		});
-	};
-
 	clearPlacementPreview(): void {
 		if (!this.placementPreview) return;
 		this.scene?.remove(this.placementPreview.object);
-		this.disposePlacementPreviewObject(this.placementPreview.object);
+		disposePlacementPreviewObject(this.placementPreview.object);
 		this.placementPreview = null;
 		this.map?.triggerRepaint();
 	}
