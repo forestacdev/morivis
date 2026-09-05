@@ -338,7 +338,8 @@ export interface UploadedModelObject {
 
 const parseGltfObject = async (
 	file: File,
-	resourceUrls?: Record<string, string>
+	resourceUrls?: Record<string, string>,
+	normalizeToLocalOrigin = false
 ): Promise<UploadedModelObject> => {
 	const buffer = await file.arrayBuffer();
 	const manager = resourceUrls ? new THREE.LoadingManager() : undefined;
@@ -356,6 +357,9 @@ const parseGltfObject = async (
 			data,
 			'',
 			(gltf) => {
+				if (normalizeToLocalOrigin) {
+					normalizeObjectToLocalOrigin(gltf.scene, 'y');
+				}
 				resolve({
 					object: gltf.scene,
 					animationNames: gltf.animations.map(
@@ -569,7 +573,7 @@ const parseIfcObject = async (
 	try {
 		const object = (await loader.loadAsync(url)) as THREE.Object3D;
 		if (normalizeToLocalOrigin) {
-			normalizeObjectToLocalOrigin(object);
+			normalizeObjectToLocalOrigin(object, 'y');
 		}
 		return {
 			object,
@@ -622,7 +626,7 @@ export const getUploadedModelObject = async (
 		return parseIfcObject(file, normalizeToLocalOrigin);
 	}
 
-	return parseGltfObject(file, resourceUrls);
+	return parseGltfObject(file, resourceUrls, normalizeToLocalOrigin);
 };
 
 const mercatorXToLng = (x: number) => x * 360 - 180;

@@ -37,6 +37,7 @@ export const finalizeRuntimeModelObject = (
 	}
 
 	if (options.normalizeToLocalOrigin) {
-		normalizeObjectToLocalOrigin(object);
+		// GLB/IFC は Y-up、CAD 系 FBX は Z-up のため、地図の高さ 0 に合う下端軸が異なる。
+		normalizeObjectToLocalOrigin(object, options.formatType === 'fbx' ? 'z' : 'y');
 	}
 };

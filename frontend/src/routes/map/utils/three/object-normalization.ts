@@ -1,14 +1,24 @@
 import * as THREE from 'three';
 
-export const normalizeObjectToLocalOrigin = (object: THREE.Object3D) => {
+export type ModelVerticalAxis = 'y' | 'z';
+
+export const normalizeObjectToLocalOrigin = (
+	object: THREE.Object3D,
+	verticalAxis: ModelVerticalAxis = 'z'
+) => {
 	object.updateMatrixWorld(true);
 	const box = new THREE.Box3().setFromObject(object);
 	if (box.isEmpty()) return;
 
 	const center = box.getCenter(new THREE.Vector3());
 	object.position.x -= center.x;
-	object.position.y -= center.y;
-	object.position.z -= box.min.z;
+	if (verticalAxis === 'y') {
+		object.position.y -= box.min.y;
+		object.position.z -= center.z;
+	} else {
+		object.position.y -= center.y;
+		object.position.z -= box.min.z;
+	}
 	object.updateMatrixWorld(true);
 };
 
