@@ -59,6 +59,7 @@ const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
 const MODEL_VIEW_FPS_MOVEMENT_SPEED_DIVISOR = 5;
 const MODEL_VIEW_FPS_MIN_MOVEMENT_SPEED = 1;
 const MODEL_VIEW_INITIAL_CAMERA_DISTANCE_SCALE = 0.75;
+const MMD_ANIMATION_FRAME_RATE = 30;
 let rhino3dmLoaderModulePromise: Promise<
 	typeof import('three/addons/loaders/3DMLoader.js')
 > | null = null;
@@ -157,12 +158,16 @@ interface LoadedModel {
 	mixer?: THREE.AnimationMixer;
 	actions?: THREE.AnimationAction[];
 	lastClipIndex?: number;
+	lastAnimationLoop?: boolean;
+	lastAnimationPlaying?: boolean;
 	mmd?: {
 		model: LoadedPmxModel;
 		animations: Map<number, ThreeMmdAnimation>;
 		activeClipIndex?: number;
 		loadingClipIndex?: number;
 		elapsedSeconds: number;
+		durationSeconds?: number;
+		lastPlaying?: boolean;
 	};
 	resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>;
 }
@@ -172,6 +177,11 @@ const isMeshModelEntry = (entry: ThreeModelEntry): entry is MeshEntry<MeshStyle>
 
 const isGaussianSplatEntry = (entry: ThreeModelEntry): entry is GaussianSplatEntry =>
 	entry.style.type === 'gaussian-splat';
+
+const getMmdAnimationDurationSeconds = (animation: ThreeMmdAnimation) => {
+	const maxFrame = animation.animation.kind === 'vmd' ? animation.animation.metadata.maxFrame : 0;
+	return maxFrame > 0 ? maxFrame / MMD_ANIMATION_FRAME_RATE : undefined;
+};
 
 // 範囲を未保存の既存entryだけは、従来の仮ボックスと同じZ-upの形状を使う。
 const DEFAULT_PLACEMENT_PREVIEW_BOUNDS: ModelLocalBounds = [-10, -10, 0, 10, 10, 12];
@@ -1154,15 +1164,20 @@ export class ThreeJsLayerManager {
 		);
 		const speed = Math.max(animationState?.speed ?? 1, 0);
 		const playing = animationState?.playing ?? false;
+		const loop = animationState?.loop ?? true;
 
 		loaded.actions.forEach((action, index) => {
 			if (index === clipIndex) {
-				if (loaded.lastClipIndex !== clipIndex) {
+				if (
+					loaded.lastClipIndex !== clipIndex ||
+					loaded.lastAnimationLoop !== loop ||
+					(!loaded.lastAnimationPlaying && playing)
+				) {
 					action.reset();
 				}
 				action.enabled = true;
-				action.setLoop(THREE.LoopRepeat, Infinity);
-				action.clampWhenFinished = false;
+				action.setLoop(loop ? THREE.LoopRepeat : THREE.LoopOnce, loop ? Infinity : 1);
+				action.clampWhenFinished = !loop;
 				action.timeScale = speed;
 				action.paused = !playing;
 				action.play();
@@ -1173,6 +1188,8 @@ export class ThreeJsLayerManager {
 		});
 
 		loaded.lastClipIndex = clipIndex;
+		loaded.lastAnimationLoop = loop;
+		loaded.lastAnimationPlaying = playing;
 		if (playing) {
 			this.map?.triggerRepaint();
 		}
@@ -1187,12 +1204,20 @@ export class ThreeJsLayerManager {
 		const clipIndex = Math.min(Math.max(animationState.currentClipIndex, 0), clips.length - 1);
 		const clip = clips[clipIndex];
 		if (!clip || !isVmdModelAnimationClip(clip)) return;
-		if (mmd.activeClipIndex === clipIndex || mmd.loadingClipIndex === clipIndex) return;
+		if (mmd.activeClipIndex === clipIndex || mmd.loadingClipIndex === clipIndex) {
+			if (!mmd.lastPlaying && animationState.playing && animationState.loop === false) {
+				mmd.elapsedSeconds = 0;
+			}
+			mmd.lastPlaying = animationState.playing;
+			return;
+		}
 		const cachedAnimation = mmd.animations.get(clipIndex);
 		if (cachedAnimation) {
 			mmd.model.model.setAnimation(cachedAnimation);
 			mmd.activeClipIndex = clipIndex;
 			mmd.elapsedSeconds = 0;
+			mmd.durationSeconds = getMmdAnimationDurationSeconds(cachedAnimation);
+			mmd.lastPlaying = animationState.playing;
 			if (animationState.playing) {
 				this.map?.triggerRepaint();
 			}
@@ -1216,6 +1241,8 @@ export class ThreeJsLayerManager {
 				mmd.activeClipIndex = clipIndex;
 				mmd.loadingClipIndex = undefined;
 				mmd.elapsedSeconds = 0;
+				mmd.durationSeconds = getMmdAnimationDurationSeconds(animation);
+				mmd.lastPlaying = loaded.entry.state?.animation?.playing;
 				if (loaded.entry.state?.animation?.playing) {
 					this.map?.triggerRepaint();
 				}
@@ -1298,12 +1325,18 @@ export class ThreeJsLayerManager {
 		};
 	};
 
-	private setOnlyEntryVisible = (entryId: string, visible: boolean) => {
+	private setOnlyEntryVisible = (
+		entryId: string,
+		visible: boolean,
+		targetObject?: THREE.Object3D
+	) => {
 		const applyVisibility = (group: THREE.Group | null) => {
 			if (!group) return;
 			group.traverse((child) => {
 				if (child.userData.entryId) {
-					child.visible = child.userData.entryId === entryId && visible;
+					child.visible = targetObject
+						? child === targetObject && visible
+						: child.userData.entryId === entryId && visible;
 				}
 			});
 		};
@@ -1345,7 +1378,11 @@ export class ThreeJsLayerManager {
 
 		this.restoreModelDepthState(loaded.object);
 		this.camera.projectionMatrix = mapProjectionMatrix.clone().multiply(loaded.transform.matrix);
-		this.setOnlyEntryVisible(loaded.entry.id, loaded.entry.style.visible ?? true);
+		this.setOnlyEntryVisible(
+			loaded.entry.id,
+			loaded.entry.style.visible ?? true,
+			loaded.object
+		);
 
 		this.renderer.resetState();
 		this.renderer.setRenderTarget(this.overlayRenderTarget);
@@ -1409,8 +1446,16 @@ export class ThreeJsLayerManager {
 				hasPlayingAnimation = true;
 			}
 			if (loaded.entry.state?.animation?.playing && loaded.mmd?.activeClipIndex != null) {
-				const speed = Math.max(loaded.entry.state.animation.speed, 0);
+				const animation = loaded.entry.state.animation;
+				const speed = Math.max(animation.speed, 0);
+				const durationSeconds = loaded.mmd.durationSeconds;
+				const loop = animation.loop ?? true;
 				loaded.mmd.elapsedSeconds += deltaSeconds * speed;
+				if (durationSeconds) {
+					loaded.mmd.elapsedSeconds = loop
+						? loaded.mmd.elapsedSeconds % durationSeconds
+						: Math.min(loaded.mmd.elapsedSeconds, durationSeconds);
+				}
 				loaded.mmd.model.model.update(loaded.mmd.elapsedSeconds);
 				hasPlayingAnimation = true;
 			}
@@ -1422,10 +1467,20 @@ export class ThreeJsLayerManager {
 	private renderActiveModelView = () => {
 		if (!this.scene || !this.renderer || !this.activeModelView) return;
 
-		this.loadedModels.forEach((loaded) => {
-			loaded.object.visible =
-				this.activeModelView!.entryIds.has(loaded.entry.id) && (loaded.entry.style.visible ?? true);
-		});
+		const setViewVisibility = (group: THREE.Group | null) => {
+			if (!group) return;
+			group.traverse((child) => {
+				const entryId = child.userData.entryId as string | undefined;
+				if (!entryId) return;
+				const loaded = this.loadedModels.get(entryId);
+				child.visible =
+					loaded?.object === child &&
+					this.activeModelView!.entryIds.has(entryId) &&
+					(loaded.entry.style.visible ?? true);
+			});
+		};
+		setViewVisibility(this.modelGroup);
+		setViewVisibility(this.previewModelGroup);
 		this.renderer.resetState();
 		this.renderer.setRenderTarget(null);
 		this.renderer.setClearColor(0x000000, 0);
@@ -1535,7 +1590,11 @@ export class ThreeJsLayerManager {
 					const projectionMatrix = mapProjectionMatrix.clone();
 					this.camera!.projectionMatrix = projectionMatrix.multiply(modelMatrix);
 
-					this.setOnlyEntryVisible(loaded.entry.id, loaded.entry.style.visible ?? true);
+					this.setOnlyEntryVisible(
+						loaded.entry.id,
+						loaded.entry.style.visible ?? true,
+						loaded.object
+					);
 
 					this.renderer!.resetState();
 					this.renderer!.render(this.scene!, this.camera!);
@@ -2519,6 +2578,7 @@ export class ThreeJsLayerManager {
 		if (this.previewModelGroup) {
 			this.previewModelGroup.visible = activeModelView.previewVisible;
 		}
+		this.setOnlyEntryVisible('', false);
 		this.loadedModels.forEach((loaded) => {
 			loaded.object.visible = loaded.entry.style.visible ?? true;
 		});

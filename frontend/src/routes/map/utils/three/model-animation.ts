@@ -22,6 +22,7 @@ export const getInitialModelAnimationState = (
 	return {
 		currentClipIndex,
 		playing: properties.autoPlay ?? false,
-		speed: Math.max(properties.defaultSpeed ?? 1, 0)
+		speed: Math.max(properties.defaultSpeed ?? 1, 0),
+		loop: properties.defaultLoop ?? true
 	};
 };

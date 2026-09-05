@@ -11,13 +11,15 @@ describe('model animation presets', () => {
 			],
 			defaultClipIndex: 1,
 			autoPlay: true,
-			defaultSpeed: 1.25
+			defaultSpeed: 1.25,
+			defaultLoop: false
 		});
 
 		expect(state).toEqual({
 			currentClipIndex: 1,
 			playing: true,
-			speed: 1.25
+			speed: 1.25,
+			loop: false
 		});
 	});
 
@@ -31,7 +33,8 @@ describe('model animation presets', () => {
 		expect(state).toEqual({
 			currentClipIndex: 0,
 			playing: false,
-			speed: 0
+			speed: 0,
+			loop: true
 		});
 	});
 

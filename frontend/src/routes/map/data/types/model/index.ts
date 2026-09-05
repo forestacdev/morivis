@@ -36,12 +36,15 @@ export interface ModelAnimationProperties {
 	autoPlay?: boolean;
 	/** 初回表示時の再生速度。 */
 	defaultSpeed?: number;
+	/** 初回表示時に繰り返し再生する。未指定時は有効。 */
+	defaultLoop?: boolean;
 }
 
 export interface ModelAnimationState {
 	currentClipIndex: number;
 	playing: boolean;
 	speed: number;
+	loop: boolean;
 }
 
 /** IFC の実体クラスと属性キーを限定して、初期表示用の色分け候補を定義する。 */

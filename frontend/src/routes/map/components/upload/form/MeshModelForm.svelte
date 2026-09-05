@@ -772,7 +772,8 @@
 					animation: {
 						clips,
 						defaultClipIndex: 0,
-						autoPlay: true
+						autoPlay: true,
+						defaultLoop: true
 					}
 				};
 				entry.state = {
@@ -780,7 +781,8 @@
 					animation: {
 						currentClipIndex: 0,
 						playing: true,
-						speed: 1
+						speed: 1,
+						loop: true
 					}
 				};
 			}
@@ -817,7 +819,8 @@
 				entry.properties = {
 					...entry.properties,
 					animation: {
-						clips: uploadedModelMeta.animationNames.map((clipName) => ({ name: clipName }))
+						clips: uploadedModelMeta.animationNames.map((clipName) => ({ name: clipName })),
+						defaultLoop: true
 					}
 				};
 				entry.state = {
@@ -825,7 +828,8 @@
 					animation: {
 						currentClipIndex: 0,
 						playing: false,
-						speed: 1
+						speed: 1,
+						loop: true
 					}
 				};
 			}

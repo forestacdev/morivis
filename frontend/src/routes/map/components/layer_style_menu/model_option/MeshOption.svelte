@@ -96,7 +96,8 @@
 			animation: {
 				currentClipIndex,
 				playing: true,
-				speed: layerEntry.state?.animation?.speed ?? animation?.defaultSpeed ?? 1
+				speed: layerEntry.state?.animation?.speed ?? animation?.defaultSpeed ?? 1,
+				loop: layerEntry.state?.animation?.loop ?? animation?.defaultLoop ?? true
 			}
 		};
 	};
@@ -112,6 +113,9 @@
 				...layerEntry.state,
 				animation: animationState
 			};
+		}
+		if (layerEntry.state?.animation) {
+			layerEntry.state.animation.loop ??= layerEntry.properties?.animation?.defaultLoop ?? true;
 		}
 		if (temporalDimension && !layerEntry.state?.dimension) {
 			layerEntry.state = {
@@ -151,7 +155,8 @@
 		const animationStateKey = [
 			layerEntry.state.animation.currentClipIndex,
 			layerEntry.state.animation.playing,
-			layerEntry.state.animation.speed
+			layerEntry.state.animation.speed,
+			layerEntry.state.animation.loop
 		].join(':');
 		if (!animationStateKey) return;
 		mapStore.setModelAnimationState(layerEntry);
@@ -177,6 +182,9 @@
 		{#if animationClips.length > 0 && layerEntry.state?.animation}
 			<div class:mt-3={isPmx}>
 				<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
+				<div class="mt-2">
+					<Switch label="ループ再生" bind:value={layerEntry.state.animation.loop} />
+				</div>
 			</div>
 
 			{#if layerEntry.state.animation.playing}
