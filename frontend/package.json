@@ -26,6 +26,7 @@
 		"preinstall": "npx only-allow pnpm",
 		"msw:init": "msw init static --save=false",
 		"lod:generate": "tsx ./scripts/generate-model-lods.ts",
+		"texture:optimize": "tsx ./scripts/optimize-glb-textures.ts",
 		"generate-pwa-assets": "pwa-assets-generator",
 		"typedoc": "pnpm exec typedoc",
 		"typedoc:markdown": "pnpm exec typedoc --plugin typedoc-plugin-markdown --out docs-markdown",
