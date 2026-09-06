@@ -3223,6 +3223,21 @@ export class ThreeJsLayerManager {
 		};
 	};
 
+	private isSelectedModelIntersection = (
+		loaded: LoadedModel,
+		intersection: THREE.Intersection<THREE.Object3D>
+	) => {
+		const selectedHighlights = this.selectedModelHighlights.filter(
+			(highlight) => highlight.mesh === intersection.object
+		);
+		if (selectedHighlights.length === 0) return false;
+		if (loaded.entry.format.type !== 'ifc') return true;
+
+		// IFC は複数部材が同じ Mesh を共有するため、選択済みの Express ID だけを除外する。
+		const expressId = this.getIfcExpressId(loaded.object, intersection);
+		return selectedHighlights.some((highlight) => highlight.expressId === expressId);
+	};
+
 	async pickModelInActiveView(point: {
 		clientX: number;
 		clientY: number;
@@ -3253,7 +3268,11 @@ export class ThreeJsLayerManager {
 		for (const loaded of targetEntries) {
 			const hit = raycaster
 				.intersectObject(loaded.object, true)
-				.find((intersection) => !intersection.object.userData.morivisSelectionHighlight);
+				.find(
+					(intersection) =>
+						!intersection.object.userData.morivisSelectionHighlight
+						&& !this.isSelectedModelIntersection(loaded, intersection)
+				);
 			if (hit && (!closest || hit.distance < closest.hit.distance)) {
 				closest = { loaded, hit };
 			}
@@ -3324,7 +3343,9 @@ export class ThreeJsLayerManager {
 			raycaster.ray.set(origin, target.sub(origin).normalize());
 			const wasVisible = loaded.object.visible;
 			loaded.object.visible = true;
-			const hit = raycaster.intersectObject(loaded.object, true)[0];
+			const hit = raycaster
+				.intersectObject(loaded.object, true)
+				.find((intersection) => !this.isSelectedModelIntersection(loaded, intersection));
 			loaded.object.visible = wasVisible;
 			if (!import.meta.env.PROD) {
 				console.info('[モデル pick] 判定結果', {
