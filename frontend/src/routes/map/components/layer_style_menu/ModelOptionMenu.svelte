@@ -17,6 +17,7 @@
 		Tiles3DMeshStyleEntry,
 		PointCloudStyleEntry
 	} from '$routes/map/data/types/model';
+	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import { closeModelView, modelViewRequest, openModelView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 
@@ -48,14 +49,22 @@
 			$modelViewRequest?.entryIds.length === 1 &&
 			$modelViewRequest.entryIds[0] === layerEntry.id
 	);
+	let isOpeningModelView = $state(false);
 
-	const openSingleModelView = () => {
+	const openSingleModelView = async () => {
 		if (!isThreeModelEntry(layerEntry)) return;
 		if (isCurrentModelView) {
 			closeModelView();
 			return;
 		}
-		openModelView(layerEntry.id);
+
+		isOpeningModelView = true;
+		try {
+			await threeJsManager.loadHighestDetailLod(layerEntry.id);
+			openModelView(layerEntry.id);
+		} finally {
+			isOpeningModelView = false;
+		}
 	};
 
 	$effect(() => {
@@ -82,14 +91,19 @@
 	{#if isThreeModelEntry(layerEntry)}
 		<div class="px-4 py-3">
 			<button
-				class="c-btn-confirm flex w-full items-center justify-center gap-2 p-2 text-sm rounded-full"
+				class="c-btn-confirm flex w-full items-center justify-center gap-2 rounded-full p-2 text-sm disabled:cursor-wait disabled:opacity-70"
 				onclick={openSingleModelView}
+				disabled={isOpeningModelView}
 			>
 				<Icon
 					icon={isCurrentModelView ? 'material-symbols:close-rounded' : 'mdi:cube-scan'}
 					class="h-5 w-5"
 				/>
-				{isCurrentModelView ? 'モデルビューを閉じる' : 'モデルビューで開く'}
+				{isOpeningModelView
+					? '高画質モデルを読み込み中...'
+					: isCurrentModelView
+						? 'モデルビューを閉じる'
+						: 'モデルビューで開く'}
 			</button>
 		</div>
 		{#if isThreeMeshEntry(layerEntry)}

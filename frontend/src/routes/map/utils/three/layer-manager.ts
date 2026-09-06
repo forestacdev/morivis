@@ -207,6 +207,7 @@ interface LoadedModel {
 	lod?: {
 		activeUrl: string;
 		failedUrl?: string;
+		pendingLoad?: Promise<void>;
 		pendingUrl?: string;
 	};
 	resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>;
@@ -346,6 +347,7 @@ export class ThreeJsLayerManager {
 	private lastMapProjectionMatrix: THREE.Matrix4 | null = null;
 	private selectedModelHighlights: ModelHighlight[] = [];
 	private ifcPartAttributeLoads = new Map<string, Promise<number>>();
+	private highDetailModelLoads = new Set<string>();
 	private activeModelView: ActiveModelView | null = null;
 	private placementPreview: {
 		object: THREE.Group;
@@ -388,23 +390,22 @@ export class ThreeJsLayerManager {
 		);
 	};
 
-	private requestModelLod = (loaded: LoadedModel & { entry: MeshEntry<MeshStyle>; }) => {
-		if (loaded.entry.format.type !== 'gltf' || !loaded.entry.format.lods?.length) return;
-
-		const nextUrl = this.getModelLodUrl(loaded.entry);
-		if (
-			loaded.lod?.activeUrl === nextUrl || loaded.lod?.pendingUrl === nextUrl
-			|| loaded.lod?.failedUrl === nextUrl
-		) {
-			return;
+	private requestModelLod = (
+		loaded: LoadedModel & { entry: MeshEntry<MeshStyle>; },
+		nextUrl = this.getModelLodUrl(loaded.entry)
+	): Promise<void> => {
+		if (loaded.entry.format.type !== 'gltf' || !loaded.entry.format.lods?.length) {
+			return Promise.resolve();
 		}
 
-		loaded.lod = {
-			...loaded.lod,
-			activeUrl: loaded.lod?.activeUrl ?? loaded.entry.format.url,
-			pendingUrl: nextUrl
-		};
-		void this.loadGltf(nextUrl)
+		if (loaded.lod?.activeUrl === nextUrl || loaded.lod?.failedUrl === nextUrl) {
+			return Promise.resolve();
+		}
+		if (loaded.lod?.pendingUrl === nextUrl) {
+			return loaded.lod.pendingLoad ?? Promise.resolve();
+		}
+
+		const pendingLoad = this.loadGltf(nextUrl)
 			.then(({ animations, scene }) => {
 				const current = this.loadedModels.get(loaded.entry.id);
 				if (current !== loaded || current.lod?.pendingUrl !== nextUrl) {
@@ -416,6 +417,7 @@ export class ThreeJsLayerManager {
 				const parent = previousObject.parent;
 				if (!parent) {
 					this.disposeModelObject(scene);
+					loaded.lod = { activeUrl: loaded.lod?.activeUrl ?? loaded.entry.format.url };
 					return;
 				}
 
@@ -466,13 +468,22 @@ export class ThreeJsLayerManager {
 				};
 				console.error(`LODモデルの読み込みに失敗しました: ${nextUrl}`, error);
 			});
+		loaded.lod = {
+			...loaded.lod,
+			activeUrl: loaded.lod?.activeUrl ?? loaded.entry.format.url,
+			pendingLoad,
+			pendingUrl: nextUrl
+		};
+		return pendingLoad;
 	};
 
 	private updateModelLods = () => {
 		if (this.activeModelView) return;
 		this.loadedModels.forEach((loaded) => {
-			if (!isMeshModelEntry(loaded.entry)) return;
-			this.requestModelLod(loaded as LoadedModel & { entry: MeshEntry<MeshStyle>; });
+			if (!isMeshModelEntry(loaded.entry) || this.highDetailModelLoads.has(loaded.entry.id)) {
+				return;
+			}
+			void this.requestModelLod(loaded as LoadedModel & { entry: MeshEntry<MeshStyle>; });
 		});
 	};
 
@@ -2835,6 +2846,29 @@ export class ThreeJsLayerManager {
 	setGroupVisibility(visible: boolean): void {
 		if (!this.modelGroup) return;
 		this.modelGroup.visible = visible;
+	}
+
+	/** 単体ビューを開く前に、LODモデルを最高詳細へ差し替える。 */
+	async loadHighestDetailLod(entryId: string): Promise<void> {
+		const loaded = this.loadedModels.get(entryId);
+		if (
+			!loaded
+			|| !isMeshModelEntry(loaded.entry)
+			|| loaded.entry.format.type !== 'gltf'
+			|| !loaded.entry.format.lods?.length
+		) {
+			return;
+		}
+
+		this.highDetailModelLoads.add(entryId);
+		try {
+			await this.requestModelLod(
+				loaded as LoadedModel & { entry: MeshEntry<MeshStyle>; },
+				loaded.entry.format.url
+			);
+		} finally {
+			this.highDetailModelLoads.delete(entryId);
+		}
 	}
 
 	/** 既存の MapLibre/Three.js 描画コンテキストで単体ビューを開始する。 */
