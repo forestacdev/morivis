@@ -23,7 +23,7 @@ const entry = {
 	...baseEntry,
 	format: {
 		...baseEntry.format,
-		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.high.glb`,
+		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix5.glb`,
 		lods: [
 			{ maxZoom: 16, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.low.glb` },
 			{ maxZoom: 18, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.medium.glb` }
@@ -37,8 +37,7 @@ const entry = {
 			}
 		},
 		detailsById: {
-			// TODO: 複数オブジェクト
-			'75f72f35-6473-4c21-9ea1-b822c7a9fecb': {
+			v_log: {
 				name: 'V柱',
 				description:
 					'morinosの象徴的なデザインとなっているV柱。見ようによってはWoodのWにも見えます。',
@@ -84,7 +83,6 @@ const entry = {
 					}
 				]
 			},
-			// TODO: 複数オブジェクト
 			'341e0e34-68a2-40b7-91d9-60d0b46d1e63': {
 				name: '格子',
 				description:
@@ -97,7 +95,7 @@ const entry = {
 					}
 				]
 			},
-			'9935c753-0abf-48a1-a5c0-6f502666428a': {
+			floor: {
 				name: '床材',
 				description:
 					'このデッキは岐阜県産スギ材で構成されていますが、製材したままの杉を土足外部デッキに使用すると材質が柔らかいため傷がつきやすかったり、表面が擦り減ってしまいます。',
@@ -113,10 +111,9 @@ const entry = {
 					}
 				]
 			},
-			'd2258ec0-612e-4ffc-ac3a-0c14017979c0': {
+			houtate: {
 				name: '樹皮付き方立',
-				description:
-					'方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
+				description: '方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi3/',
 				medias: [
 					{
@@ -131,8 +128,7 @@ const entry = {
 			},
 			'77164639-4feb-49d5-b86e-af26be2296c0': {
 				name: 'ガラスコーナー',
-				description:
-					'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
+				description: 'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi4/',
 				medias: [
 					{
@@ -141,7 +137,7 @@ const entry = {
 					}
 				]
 			},
-			'6b32906e-178c-4979-88c3-00c39cd9242d': {
+			'd539bb87-d9b4-4c5e-ac10-79bb61e18980': {
 				name: '照明',
 				description:
 					'内部に照明や火災報知器、防犯センサーなど機能的な設備が仕込まれています。スリット内の色は、単純な黒ではなく、照明器具の黒に合わせて調色して目立たないようにそろえています。',
@@ -167,7 +163,7 @@ const entry = {
 			'9d4680c3-95e2-4824-8924-468ad9649879': {
 				name: '大きな豆型テーブル',
 				description:
-					'この【ミズナラ】の豆型テーブルは、morinosのためにデザインした特別なテーブルです。主にスタッフさんが仕事をするためのもので、持ち上げると動かすことが出来ます。だから、この位置にないことも。形は、ふたつの円がくっつこうとしているような、曲線を描いた天板です。',
+					'このミズナラの豆型テーブルは、morinosのためにデザインした特別なテーブルです。主にスタッフさんが仕事をするためのもので、持ち上げると動かすことが出来ます。だから、この位置にないことも。形は、ふたつの円がくっつこうとしているような、曲線を描いた天板です。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi59/',
 				medias: [
 					{
@@ -276,6 +272,22 @@ const entry = {
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_5580-720x480.jpg'
+					}
+				]
+			},
+			bench: {
+				name: 'ベンチ',
+				description:
+					'大きな空間から掘り込まれたところに、宙に浮いたようなベンチが据え付けられています。木材は耳の付いた厚みが６cmもあるカバノキです。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi13/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1276-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1322-720x480.jpg'
 					}
 				]
 			}

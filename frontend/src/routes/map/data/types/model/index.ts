@@ -6,6 +6,7 @@ import type {
 	RasterDiscreteDimension
 } from '$routes/map/data/types/raster';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+import type { AttributeView } from '$routes/map/data/types/vector/properties';
 import type { ColorsStyle } from '$routes/map/data/types/vector/style';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { ModelAttributes } from '$routes/map/utils/three/model-attributes';
@@ -73,6 +74,8 @@ export interface ModelPartData {
 }
 
 export interface ModelEntryProperties {
+	/** 部材属性を外部辞書へ関連付けるための表示設定。 */
+	attributeView?: Pick<AttributeView, 'relations'>;
 	temporal?: {
 		dimension: RasterDiscreteDimension;
 	};
