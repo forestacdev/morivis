@@ -189,6 +189,7 @@ export const createGlbEntry = (
 		preserveSourceOrientation?: boolean;
 		georeference?: ProjectedModelGeoreference;
 		sourceFileName?: string;
+		initialShadingEnabled?: boolean;
 	}
 ): MeshEntry<MeshStyle> => {
 	const baseRotationX = getModelBaseRotationX(formatType, options?.preserveSourceOrientation);
@@ -248,7 +249,10 @@ export const createGlbEntry = (
 			wireframe: false,
 			showThroughTerrain: false,
 			color: '#ffffff',
-			shading: { ...DEFAULT_MESH_SHADING },
+			shading: {
+				...DEFAULT_MESH_SHADING,
+				enabled: options?.initialShadingEnabled ?? DEFAULT_MESH_SHADING.enabled
+			},
 			transform: {
 				lng: transform.lng,
 				lat: transform.lat,

@@ -809,7 +809,8 @@
 			{
 				...(normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : {}),
 				...(isLocalFbx ? { preserveSourceOrientation: true } : {}),
-				sourceFileName: glbFile.name
+				sourceFileName: glbFile.name,
+				initialShadingEnabled: true
 			}
 		);
 		if (activeFormat === 'pmx' && resourceUrls && vmdFiles.length > 0) {
