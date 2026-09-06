@@ -41,7 +41,7 @@ import {
 } from '$routes/map/utils/three/model-attributes';
 import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
 import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
-import { resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
+import { isLowerDetailLodUrl, resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
 import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
 import {
 	calculateModelTransform,
@@ -229,9 +229,15 @@ export interface PickedModelFeature {
 	entryId: string;
 	objectId: string;
 	objectName: string;
+	isLowerDetailLod?: false;
 	propId?: string;
 	attributes: ModelAttributes;
 	part?: ModelPartData;
+}
+
+export interface PickedLowerDetailLod {
+	entryId: string;
+	isLowerDetailLod: true;
 }
 
 interface ModelHighlight {
@@ -352,6 +358,18 @@ export class ThreeJsLayerManager {
 		);
 	};
 
+	private isLowerDetailLod = (loaded: LoadedModel) => {
+		if (
+			!isMeshModelEntry(loaded.entry)
+			|| loaded.entry.format.type !== 'gltf'
+			|| !loaded.entry.format.lods?.length
+		) {
+			return false;
+		}
+
+		return isLowerDetailLodUrl(loaded.lod?.activeUrl, loaded.entry.format.url);
+	};
+
 	private loadGltf = (url: string) => {
 		return new Promise<{ animations: THREE.AnimationClip[]; scene: THREE.Group; }>(
 			(resolve, reject) => {
@@ -467,7 +485,8 @@ export class ThreeJsLayerManager {
 		const material = new THREE.ShaderMaterial({
 			uniforms: {
 				uEdgeColor: { value: edgeUniforms.color },
-				uEdgeThickness: { value: edgeUniforms.thickness }
+				uEdgeThickness: { value: edgeUniforms.thickness },
+				uEdgeOpacity: { value: edgeUniforms.opacity }
 			},
 			vertexShader: `
 				varying vec2 vUv;
@@ -486,6 +505,7 @@ export class ThreeJsLayerManager {
 			fragmentShader: `
 				uniform vec3 uEdgeColor;
 				uniform float uEdgeThickness;
+				uniform float uEdgeOpacity;
 				varying vec2 vUv;
 
 				float edgeFactor(vec2 p) {
@@ -497,7 +517,7 @@ export class ThreeJsLayerManager {
 				void main() {
 					float alpha = 1.0 - clamp(edgeFactor(vUv), 0.0, 1.0);
 					if (alpha <= 0.001) discard;
-					gl_FragColor = vec4(uEdgeColor, alpha);
+					gl_FragColor = vec4(uEdgeColor, alpha * uEdgeOpacity);
 				}
 			`,
 			transparent: true,
@@ -521,6 +541,7 @@ export class ThreeJsLayerManager {
 		const edgeUniforms = resolveMeshEdgeUniforms(style);
 		material.uniforms.uEdgeColor.value.copy(edgeUniforms.color);
 		material.uniforms.uEdgeThickness.value = edgeUniforms.thickness;
+		material.uniforms.uEdgeOpacity.value = edgeUniforms.opacity;
 		return true;
 	};
 
@@ -3361,7 +3382,9 @@ export class ThreeJsLayerManager {
 		return this.createPickedModelFeature(closest.loaded, closest.hit);
 	}
 
-	async pickModel(point: { x: number; y: number; }): Promise<PickedModelFeature | null> {
+	async pickModel(
+		point: { x: number; y: number; }
+	): Promise<PickedModelFeature | PickedLowerDetailLod | null> {
 		if (!import.meta.env.PROD) console.info('[モデル pick] 開始', { point });
 		if (!this.map || !this.lastMapProjectionMatrix) {
 			if (!import.meta.env.PROD) {
@@ -3424,7 +3447,11 @@ export class ThreeJsLayerManager {
 			loaded.object.visible = true;
 			const hit = raycaster
 				.intersectObject(loaded.object, true)
-				.find((intersection) => !this.isSelectedModelIntersection(loaded, intersection));
+				.find(
+					(intersection) =>
+						this.isLowerDetailLod(loaded)
+						|| !this.isSelectedModelIntersection(loaded, intersection)
+				);
 			loaded.object.visible = wasVisible;
 			if (!import.meta.env.PROD) {
 				console.info('[モデル pick] 判定結果', {
@@ -3450,6 +3477,9 @@ export class ThreeJsLayerManager {
 				console.info('[モデル pick] null: レイがメッシュに命中しませんでした');
 			}
 			return null;
+		}
+		if (this.isLowerDetailLod(closest.loaded)) {
+			return { entryId: closest.loaded.entry.id, isLowerDetailLod: true };
 		}
 		return this.createPickedModelFeature(closest.loaded, closest.hit);
 	}

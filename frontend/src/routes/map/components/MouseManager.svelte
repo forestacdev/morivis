@@ -533,6 +533,16 @@
 
 			const pickedModel = await threeJsManager.pickModel(e.point);
 			if (pickedModel) {
+				if (pickedModel.isLowerDetailLod) {
+					// 下位LODには部材属性がないため、最高詳細へ寄せる操作だけにする。
+					clearSearchHighlight();
+					clickedLayerIds = [];
+					featureMenuData = null;
+					setSelectedHighlight(null);
+					threeJsManager.clearModelHighlight();
+					focusLodModel(pickedModel.entryId);
+					return;
+				}
 				focusLodModel(pickedModel.entryId);
 				console.info('[モデル属性]', pickedModel);
 				if (pickedModel.propId) {

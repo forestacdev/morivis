@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getHighDetailLodZoom, resolveModelLodUrl } from './model-lod';
+import { getHighDetailLodZoom, isLowerDetailLodUrl, resolveModelLodUrl } from './model-lod';
 
 describe('resolveModelLodUrl', () => {
 	const lods = [
@@ -23,5 +23,11 @@ describe('resolveModelLodUrl', () => {
 	it('最高詳細モデルが選ばれるズームを返す', () => {
 		expect(getHighDetailLodZoom(lods)).toBe(18.01);
 		expect(getHighDetailLodZoom(undefined)).toBeUndefined();
+	});
+
+	it('最高詳細URLと異なる場合だけ下位LODと判定する', () => {
+		expect(isLowerDetailLodUrl('test-low.glb', 'test-high.glb')).toBe(true);
+		expect(isLowerDetailLodUrl('test-high.glb', 'test-high.glb')).toBe(false);
+		expect(isLowerDetailLodUrl(undefined, 'test-high.glb')).toBe(false);
 	});
 });

@@ -23,10 +23,10 @@ const entry = {
 	...baseEntry,
 	format: {
 		...baseEntry.format,
-		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix6.glb`,
+		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix7.glb`,
 		lods: [
-			{ maxZoom: 16, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.low.glb` },
-			{ maxZoom: 18, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.medium.glb` }
+			{ maxZoom: 16, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix4.webp.low.glb` },
+			{ maxZoom: 18, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix4.webp.medium.glb` }
 		]
 	},
 	style: {
@@ -199,6 +199,10 @@ const entry = {
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/05/IMG_1895-scaled.jpg'
 					},
 					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/05/IMG_1854-scaled.jpg'
+					},
+					{
 						type: 'youtube',
 						id: 'XaWI1wtRbuY'
 					}
@@ -309,7 +313,8 @@ const entry = {
 			},
 			bookshelf: {
 				name: '無垢の可動本棚',
-				description: '本棚は、書籍を整理して収納するための家具です。',
+				description:
+					'本棚は全て可動式になっていて、何段か外せば大きなパネルを展示したりできます。森と人をつなげる名著や、設計原案に携わっていただいた特別招聘教授の隈研吾先生の本、スイスnaef（ネフ）社のカラフルな木のおもちゃなど、外から見ても「へー、おもしろそうなものが並んでる」と思えるようになっています。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi61/',
 				medias: [
 					{
@@ -346,15 +351,35 @@ const entry = {
 					}
 				]
 			},
+			sink: {
+				name: 'シンク',
+				description:
+					'シンクもあるので手洗いや水筒への水分補給もここで。（美濃は水がほんとに美味しい！）',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi30/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/04/IMG_1279-scaled.jpg'
+					}
+				]
+			},
 			wood_stove: {
 				name: '薪ストーブ',
 				description:
 					'暖を取るための薪ストーブです。冬期の暖房のみに使用します。バイオマスを利用した設備で、敷地内で取れる針葉樹にも対応したものです。',
-				url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_4573D-scaled.jpg',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi18/',
 				medias: [
 					{
 						type: 'image',
-						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_XXXX-720x720.jpg'
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_4578-scaled.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1556-scaled.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1068-720x480.jpg'
 					}
 				]
 			}

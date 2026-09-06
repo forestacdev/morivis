@@ -23,3 +23,7 @@ export const getHighDetailLodZoom = (lods: ModelLodLevel[] | undefined) => {
 	// maxZoom は下位 LOD が選ばれる境界値なので、最高詳細へ切り替えるために微小量を加える。
 	return Math.max(...lods.map((lod) => lod.maxZoom)) + HIGH_DETAIL_ZOOM_OFFSET;
 };
+
+/** 現在読み込まれているURLが最高詳細モデルではないかを判定する。 */
+export const isLowerDetailLodUrl = (activeUrl: string | undefined, highDetailUrl: string) =>
+	activeUrl !== undefined && activeUrl !== highDetailUrl;

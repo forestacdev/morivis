@@ -9,6 +9,7 @@ describe('resolveMeshEdgeUniforms', () => {
 		expect(uniforms.enabled).toBe(false);
 		expect(uniforms.color.getHexString()).toBe('000000');
 		expect(uniforms.thickness).toBe(5);
+		expect(uniforms.opacity).toBe(1);
 	});
 
 	it('指定した色と太さをuniform値に変換する', () => {
@@ -19,5 +20,6 @@ describe('resolveMeshEdgeUniforms', () => {
 		expect(uniforms.enabled).toBe(true);
 		expect(uniforms.color.getHexString()).toBe('f43f5e');
 		expect(uniforms.thickness).toBe(2.5);
+		expect(uniforms.opacity).toBe(1);
 	});
 });

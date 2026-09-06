@@ -7,6 +7,8 @@ export const resolveMeshEdgeUniforms = (style: Pick<MeshStyle, 'edge'>) => {
 	return {
 		enabled: Boolean(style.edge?.enabled),
 		color: new THREE.Color(edge.color),
-		thickness: Math.max(edge.thickness, 0.1)
+		thickness: Math.max(edge.thickness, 0.1),
+		// モデル本体の透明度とは独立して、エッジは常に不透明に描く。
+		opacity: 1
 	};
 };
