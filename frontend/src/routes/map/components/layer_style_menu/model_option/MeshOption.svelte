@@ -284,9 +284,9 @@
 			<RangeSlider
 				label="エッジの太さ"
 				bind:value={layerEntry.style.edge!.thickness}
-				min={0.5}
-				max={10}
-				step={0.5}
+				min={0.0001}
+				max={0.05}
+				step={0.0001}
 				icon="mdi:vector-polyline"
 			/>
 		</div>

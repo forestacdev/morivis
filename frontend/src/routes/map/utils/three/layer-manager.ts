@@ -491,6 +491,7 @@ export class ThreeJsLayerManager {
 			},
 			vertexShader: `
 				varying vec2 vUv;
+				varying vec3 vModelPosition;
 				#include <morphtarget_pars_vertex>
 				#include <skinning_pars_vertex>
 
@@ -500,6 +501,7 @@ export class ThreeJsLayerManager {
 					#include <skinbase_vertex>
 					#include <skinning_vertex>
 					vUv = uv;
+					vModelPosition = transformed;
 					gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed, 1.0);
 				}
 			`,
@@ -508,15 +510,35 @@ export class ThreeJsLayerManager {
 				uniform float uEdgeThickness;
 				uniform float uEdgeOpacity;
 				varying vec2 vUv;
+				varying vec3 vModelPosition;
 
-				float edgeFactor(vec2 p) {
-					vec2 derivative = max(fwidth(p), vec2(0.00001));
-					vec2 grid = abs(fract(p - 0.5) - 0.5) / derivative / uEdgeThickness;
-					return min(grid.x, grid.y);
+				float edgeDistanceInModelSpace(vec2 uv, vec3 modelPosition) {
+					vec2 uvDx = dFdx(uv);
+					vec2 uvDy = dFdy(uv);
+					float determinant = uvDx.x * uvDy.y - uvDx.y * uvDy.x;
+					if (abs(determinant) < 0.000001) return 1000000.0;
+
+					// UV 1.0あたりのモデル座標上の長さを、画面微分から接線として復元する。
+					vec3 positionDx = dFdx(modelPosition);
+					vec3 positionDy = dFdy(modelPosition);
+					vec3 tangentU = (positionDx * uvDy.y - positionDy * uvDx.y) / determinant;
+					vec3 tangentV = (positionDy * uvDx.x - positionDx * uvDy.x) / determinant;
+					vec2 edgeDistanceUv = abs(fract(uv - 0.5) - 0.5);
+					return min(
+						edgeDistanceUv.x * length(tangentU),
+						edgeDistanceUv.y * length(tangentV)
+					);
 				}
 
 				void main() {
-					float alpha = 1.0 - clamp(edgeFactor(vUv), 0.0, 1.0);
+					float distanceToEdge = edgeDistanceInModelSpace(vUv, vModelPosition);
+					// fwidthは太さの決定には使わず、境界のアンチエイリアス幅だけに使う。
+					float antialiasWidth = max(fwidth(distanceToEdge), 0.00001);
+					float alpha = 1.0 - smoothstep(
+						uEdgeThickness - antialiasWidth,
+						uEdgeThickness + antialiasWidth,
+						distanceToEdge
+					);
 					if (alpha <= 0.001) discard;
 					gl_FragColor = vec4(uEdgeColor, alpha * uEdgeOpacity);
 				}

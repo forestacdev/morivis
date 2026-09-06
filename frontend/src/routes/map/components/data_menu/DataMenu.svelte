@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
+	import { onMount } from 'svelte';
 	import { scale } from 'svelte/transition';
 	import VirtualList from 'svelte-tiny-virtual-list';
 
@@ -14,11 +15,24 @@
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
 
-	const mobileFileAccept = SUPPORTED_FILE_GROUPS.filter((group) =>
-		['GPX', '画像 (EXIF GPS)', '点群'].includes(group.label)
-	)
-		.flatMap((group) => group.extensions)
-		.join(',');
+	let mobileFileAccept = $state(
+		SUPPORTED_FILE_GROUPS.filter((group) =>
+			['GPX', '画像 (EXIF GPS)', '点群'].includes(group.label)
+		)
+			.flatMap((group) => group.extensions)
+			.join(',')
+	);
+
+	onMount(() => {
+		const isAppleMobile =
+			/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+			(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+		const isAndroid = /Android/i.test(navigator.userAgent);
+		if (isAppleMobile || isAndroid) {
+			// iOS / Android Chromeでは汎用データとして指定し、撮影候補を出さずにファイルを選ぶ。
+			mobileFileAccept = 'application/octet-stream';
+		}
+	});
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
@@ -347,6 +361,7 @@
 		<label
 			transition:scale={{ duration: 200 }}
 			class="absolute bottom-22 right-4 bg-accent grid cursor-pointer place-items-center rounded-full p-2 text-white shadow-2xl"
+			style="padding-bottom: env(safe-area-inset-bottom);"
 		>
 			<Icon icon="material-symbols:add" class=" h-8 w-8" />
 			<span class="sr-only">ファイルをアップロード</span>
