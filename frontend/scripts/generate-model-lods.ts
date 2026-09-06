@@ -3,11 +3,14 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-import { NodeIO } from '@gltf-transform/core';
+import { NodeIO, PropertyType } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import {
 	cloneDocument,
+	dedup,
 	draco,
+	flatten,
+	join,
 	prune,
 	simplify,
 	textureCompress,
@@ -252,6 +255,11 @@ export const generateModelLods = async (options: LodGenerationOptions): Promise<
 				ratio: level.ratio,
 				simplifier: MeshoptSimplifier
 			}),
+			// LODは遠景表示用なので、静的部材を同一マテリアルごとに結合して描画呼び出しを減らす。
+			// 異なるマテリアル、スキニング、アニメーションは互換性を保つため結合しない。
+			dedup({ propertyTypes: [PropertyType.MATERIAL] }),
+			flatten(),
+			join(),
 			textureCompress({
 				encoder: sharp,
 				quality: options.textureQuality,
