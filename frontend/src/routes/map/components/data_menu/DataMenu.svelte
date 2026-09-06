@@ -14,8 +14,8 @@
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
 
-	const mobileFileAccept = SUPPORTED_FILE_GROUPS.filter(
-		(group) => ['GPX', '画像 (EXIF GPS)', '点群'].includes(group.label)
+	const mobileFileAccept = SUPPORTED_FILE_GROUPS.filter((group) =>
+		['GPX', '画像 (EXIF GPS)', '点群'].includes(group.label)
 	)
 		.flatMap((group) => group.extensions)
 		.join(',');
@@ -342,7 +342,7 @@
 		{/if}
 	</div>
 
-    <!-- モバイル用アップロードボタン -->
+	<!-- モバイル用アップロードボタン -->
 	{#if $isMobile}
 		<label
 			transition:scale={{ duration: 200 }}

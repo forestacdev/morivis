@@ -506,16 +506,13 @@
 
 	const focusLodModel = (entryId: string) => {
 		const entry = layerEntries.find((item) => item.id === entryId);
-		if (
-			entry?.type !== 'model' ||
-			entry.style.type !== 'mesh' ||
-			entry.format.type !== 'gltf'
-		)
+		if (entry?.type !== 'model' || entry.style.type !== 'mesh' || entry.format.type !== 'gltf')
 			return;
 
 		const targetZoom = getHighDetailLodZoom(entry.format.lods);
 		const currentZoom = mapStore.getMap()?.getZoom();
-		if (targetZoom === undefined || (currentZoom !== undefined && currentZoom >= targetZoom)) return;
+		if (targetZoom === undefined || (currentZoom !== undefined && currentZoom >= targetZoom))
+			return;
 
 		const [west, south, east, north] = entry.metaData.bounds;
 		if (![west, south, east, north].every(Number.isFinite)) return;

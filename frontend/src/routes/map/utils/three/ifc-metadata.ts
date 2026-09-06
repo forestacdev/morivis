@@ -177,15 +177,15 @@ const createIfcFallbackPlacementMetadata = (
 			missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
 		}
 		: coordinateMode === 'absolute'
-			? {
-				requiresEpsg: true,
-				placementQuality: 'requires_epsg' as const,
-				missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
-			}
-			: {
-				placementQuality: 'normalized' as const,
-				missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
-			})
+		? {
+			requiresEpsg: true,
+			placementQuality: 'requires_epsg' as const,
+			missingRequirements: ['IfcProjectedCRS', 'IfcMapConversion']
+		}
+		: {
+			placementQuality: 'normalized' as const,
+			missingRequirements: ['IfcSite', 'IfcProjectedCRS', 'IfcMapConversion']
+		})
 });
 
 const readIfcQuickMetadata = async (file: File) => {
@@ -363,7 +363,10 @@ export const readIfcPlacementMetadata = async (
 	let model: any;
 
 	try {
-		const [{ IFCLoader }, webIfc] = await Promise.all([loadIfcLoaderModule(), loadWebIfcModule()]);
+		const [{ IFCLoader }, webIfc] = await Promise.all([
+			loadIfcLoaderModule(),
+			loadWebIfcModule()
+		]);
 		const loader = new IFCLoader();
 		await configureIfcWasmPath(loader.ifcManager);
 		model = await loader.parse(await file.arrayBuffer());

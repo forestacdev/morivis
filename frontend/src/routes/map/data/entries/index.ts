@@ -31,13 +31,21 @@ const allModules = import.meta.glob<EntryModule>(
 		'$routes/map/data/entries/**/[!_]*.ts',
 		'!$routes/map/data/entries/lazy/**',
 		'!**/index.ts',
+		'!**/*.spec.ts',
+		'!**/*.test.ts',
 		'!**/_*/**'
 	],
 	{ eager: true }
 );
 
 const lazyEntryModules = import.meta.glob<CatalogModule>(
-	['$routes/map/data/entries/lazy/**/[!_]*.ts', '!**/index.ts', '!**/_*/**'],
+	[
+		'$routes/map/data/entries/lazy/**/[!_]*.ts',
+		'!**/index.ts',
+		'!**/*.spec.ts',
+		'!**/*.test.ts',
+		'!**/_*/**'
+	],
 	{ eager: true }
 );
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-	getIfcPlacementCoordinateMode,
 	getIfcCoordinateMode,
+	getIfcPlacementCoordinateMode,
 	hasIfcExactGeoreference,
 	hasIfcGeographicCoordinates,
 	parseIfcHeaderMetadata,

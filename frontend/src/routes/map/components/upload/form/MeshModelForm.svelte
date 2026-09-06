@@ -283,8 +283,8 @@
 
 		return getModelSpatialIssue({
 			hasEmbeddedEpsg:
-					!!detectedProjectedModelEpsg ||
-					(activeFormat === 'ifc' && hasIfcExactGeoreference(ifcPlacementMetadata)),
+				!!detectedProjectedModelEpsg ||
+				(activeFormat === 'ifc' && hasIfcExactGeoreference(ifcPlacementMetadata)),
 			hasExplicitPlacement: !!modelPlacement,
 			coordinateMode:
 				activeFormat === 'ifc'
