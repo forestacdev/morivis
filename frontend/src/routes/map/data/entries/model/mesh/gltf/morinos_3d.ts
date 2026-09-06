@@ -23,7 +23,7 @@ const entry = {
 	...baseEntry,
 	format: {
 		...baseEntry.format,
-		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix5.glb`,
+		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix6.glb`,
 		lods: [
 			{ maxZoom: 16, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.low.glb` },
 			{ maxZoom: 18, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.medium.glb` }
@@ -38,6 +38,11 @@ const entry = {
 	},
 	properties: {
 		...baseEntry.properties,
+		modelView: {
+			// 地中へ伸びる V柱は残し、単体ビューの床だけをモデル原点に固定する。
+			// TODO: 形状境界とは別に床面を安全に推定できるようになったら、この個別指定を見直す。
+			floorY: 0
+		},
 		attributeView: {
 			relations: {
 				iNaturalistNameKey: '樹種'
@@ -120,8 +125,7 @@ const entry = {
 			},
 			houtate: {
 				name: '樹皮付き方立',
-				description:
-					'方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
+				description: '方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi3/',
 				medias: [
 					{
@@ -136,8 +140,7 @@ const entry = {
 			},
 			'77164639-4feb-49d5-b86e-af26be2296c0': {
 				name: 'ガラスコーナー',
-				description:
-					'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
+				description: 'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi4/',
 				medias: [
 					{
@@ -285,11 +288,15 @@ const entry = {
 				]
 			},
 			bench: {
-				name: 'ベンチ',
+				name: '丸ノコなぐりベンチ',
 				description:
 					'大きな空間から掘り込まれたところに、宙に浮いたようなベンチが据え付けられています。木材は耳の付いた厚みが６cmもあるカバノキです。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi13/',
 				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/03/IMG_1493-scaled.jpeg'
+					},
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1276-720x480.jpg'
@@ -297,6 +304,57 @@ const entry = {
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1322-720x480.jpg'
+					}
+				]
+			},
+			bookshelf: {
+				name: '無垢の可動本棚',
+				description: '本棚は、書籍を整理して収納するための家具です。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi61/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/09/morinos200819_022.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/09/morinos200819_018.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/04/IMG_3109-scaled.jpg'
+					}
+				]
+			},
+			etched_glass: {
+				name: '葉っぱのエッチングガラス',
+				description:
+					'近寄ると、葉っぱが形どられたガラスが土を掘り込んではめてあります。なんとも不思議な質感のガラス。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi15/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1165-720x720.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1371-720x720.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1163-720x720.jpg'
+					}
+				]
+			},
+			wood_stove: {
+				name: '薪ストーブ',
+				description:
+					'暖を取るための薪ストーブです。冬期の暖房のみに使用します。バイオマスを利用した設備で、敷地内で取れる針葉樹にも対応したものです。',
+				url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_4573D-scaled.jpg',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_XXXX-720x720.jpg'
 					}
 				]
 			}
@@ -309,7 +367,7 @@ const entry = {
 		maxZoom: 22,
 		xyzImageTile: { x: 923099, y: 413380, z: 20 },
 		mapImage: `${COVER_IMAGE_BASE_PATH}/morinos_3d.webp`,
-		coverImage: `${COVER_IMAGE_BASE_PATH}/morinos.webp`
+		coverImage: `${COVER_IMAGE_BASE_PATH}/morinos_3d.webp`
 	}
 };
 
