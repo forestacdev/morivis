@@ -2,6 +2,7 @@
 	import { slide } from 'svelte/transition';
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
+	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
 	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
@@ -11,7 +12,7 @@
 	import ColorScaleDem from '$routes/map/components/layer_style_menu/extension_menu/ColorScaleDem.svelte';
 	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
 	import { createAdjustableRange } from '$routes/map/data/types';
-	import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
+	import { DEFAULT_MESH_EDGE, DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
@@ -59,6 +60,7 @@
 	const ensureShading = () => {
 		layerEntry.style.showThroughTerrain ??= false;
 		layerEntry.style.shading ??= { ...DEFAULT_MESH_SHADING };
+		layerEntry.style.edge ??= { ...DEFAULT_MESH_EDGE };
 		if (layerEntry.style.heightColorRamp) {
 			layerEntry.style.heightColorRamp.range ??= createAdjustableRange(
 				layerEntry.style.heightColorRamp.min ?? 0,
@@ -275,6 +277,20 @@
 		</div>
 	{/if}
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
+	<Switch label="エッジ表示" bind:value={layerEntry.style.edge!.enabled} />
+	{#if layerEntry.style.edge!.enabled}
+		<div transition:slide class="mb-4 flex w-full flex-col gap-2">
+			<ColorPicker label="エッジ色" bind:value={layerEntry.style.edge!.color} />
+			<RangeSlider
+				label="エッジの太さ"
+				bind:value={layerEntry.style.edge!.thickness}
+				min={0.5}
+				max={10}
+				step={0.5}
+				icon="mdi:vector-polyline"
+			/>
+		</div>
+	{/if}
 
 	{#if layerEntry.style.heightColorRamp}
 		<Switch label="高さカラーランプ" bind:value={layerEntry.style.heightColorRamp.enabled} />

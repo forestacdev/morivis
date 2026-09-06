@@ -3,7 +3,7 @@ import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attrib
 import { type Bounds, resolveBounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
 import type { Opacity } from '$routes/map/data/types';
 import type { Region } from '$routes/map/data/types/location';
-import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
+import { DEFAULT_MESH_EDGE, DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	MeshEntry,
 	MeshStyle,
@@ -104,6 +104,7 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 			showThroughTerrain,
 			color,
 			shading: { ...DEFAULT_MESH_SHADING },
+			edge: { ...DEFAULT_MESH_EDGE },
 			...(heightColorRamp && {
 				heightColorRamp: {
 					enabled: heightColorRamp.enabled ?? true,

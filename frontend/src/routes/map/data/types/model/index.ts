@@ -74,6 +74,10 @@ export interface ModelPartData {
 }
 
 export interface ModelEntryProperties {
+	/** 単体ビューで床グリッドを置く、モデルローカル座標の Y 値。 */
+	modelView?: {
+		floorY?: number;
+	};
 	/** 部材属性を外部辞書へ関連付けるための表示設定。 */
 	attributeView?: Pick<AttributeView, 'relations'>;
 	temporal?: {
@@ -115,6 +119,19 @@ export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
 	ambientStrength: 0.8,
 	azimuthDeg: 135,
 	elevationDeg: 55
+};
+
+/** UV 座標の境界を描くエッジ表示の設定。 */
+export interface MeshEdgeStyle {
+	enabled: boolean;
+	color: string;
+	thickness: number;
+}
+
+export const DEFAULT_MESH_EDGE: MeshEdgeStyle = {
+	enabled: false,
+	color: '#000000',
+	thickness: 5
 };
 
 export interface MeshHeightColorRampStyle {
@@ -179,6 +196,7 @@ export interface MeshStyle extends ModelTransformStyle {
 	/** IFC など、モデル内パーツの属性を使う色分け設定。 */
 	partColors?: ColorsStyle;
 	shading?: MeshShadingStyle;
+	edge?: MeshEdgeStyle;
 	heightColorRamp?: MeshHeightColorRampStyle;
 	transformOptions?: MeshTransformOptionStyle;
 }

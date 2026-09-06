@@ -1,6 +1,6 @@
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
+import { DEFAULT_MESH_EDGE, DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	AnyTiles3DEntry,
 	GaussianSplatEntry,
@@ -253,6 +253,7 @@ export const createGlbEntry = (
 				...DEFAULT_MESH_SHADING,
 				enabled: options?.initialShadingEnabled ?? DEFAULT_MESH_SHADING.enabled
 			},
+			edge: { ...DEFAULT_MESH_EDGE },
 			transform: {
 				lng: transform.lng,
 				lat: transform.lat,

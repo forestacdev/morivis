@@ -40,12 +40,14 @@ import {
 	type ModelAttributes
 } from '$routes/map/utils/three/model-attributes';
 import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
+import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
 import { resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
 import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
 import {
 	calculateModelTransform,
 	type ModelTransform
 } from '$routes/map/utils/three/model-transform';
+import { resolveModelViewFloorY } from '$routes/map/utils/three/model-view-floor';
 import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
 import {
 	createPlacementPreviewObject,
@@ -460,6 +462,135 @@ export class ThreeJsLayerManager {
 		});
 	};
 
+	private createEdgeOverlayMaterial = (style: MeshStyle): THREE.ShaderMaterial => {
+		const edgeUniforms = resolveMeshEdgeUniforms(style);
+		const material = new THREE.ShaderMaterial({
+			uniforms: {
+				uEdgeColor: { value: edgeUniforms.color },
+				uEdgeThickness: { value: edgeUniforms.thickness }
+			},
+			vertexShader: `
+				varying vec2 vUv;
+				#include <morphtarget_pars_vertex>
+				#include <skinning_pars_vertex>
+
+				void main() {
+					vec3 transformed = vec3(position);
+					#include <morphtarget_vertex>
+					#include <skinbase_vertex>
+					#include <skinning_vertex>
+					vUv = uv;
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed, 1.0);
+				}
+			`,
+			fragmentShader: `
+				uniform vec3 uEdgeColor;
+				uniform float uEdgeThickness;
+				varying vec2 vUv;
+
+				float edgeFactor(vec2 p) {
+					vec2 derivative = max(fwidth(p), vec2(0.00001));
+					vec2 grid = abs(fract(p - 0.5) - 0.5) / derivative / uEdgeThickness;
+					return min(grid.x, grid.y);
+				}
+
+				void main() {
+					float alpha = 1.0 - clamp(edgeFactor(vUv), 0.0, 1.0);
+					if (alpha <= 0.001) discard;
+					gl_FragColor = vec4(uEdgeColor, alpha);
+				}
+			`,
+			transparent: true,
+			// 面や他モデルに隠れない、最前面用の描画パスとして扱う。
+			depthTest: false,
+			depthWrite: false,
+			side: THREE.DoubleSide
+		});
+		material.userData.morivisEdgeOverlayMaterial = true;
+		return material;
+	};
+
+	private updateEdgeOverlayMaterial = (material: THREE.Material, style: MeshStyle) => {
+		if (
+			!(material instanceof THREE.ShaderMaterial)
+			|| material.userData.morivisEdgeOverlayMaterial !== true
+		) {
+			return false;
+		}
+
+		const edgeUniforms = resolveMeshEdgeUniforms(style);
+		material.uniforms.uEdgeColor.value.copy(edgeUniforms.color);
+		material.uniforms.uEdgeThickness.value = edgeUniforms.thickness;
+		return true;
+	};
+
+	private createEdgeOverlay = (mesh: THREE.Mesh, materials: THREE.Material[]) => {
+		const sourceSkinnedMesh = mesh as THREE.SkinnedMesh;
+		const overlayMaterial = Array.isArray(mesh.material) ? materials : materials[0];
+		let overlay: THREE.Mesh;
+		if (sourceSkinnedMesh.isSkinnedMesh) {
+			const skinnedOverlay = new THREE.SkinnedMesh(mesh.geometry, overlayMaterial);
+			skinnedOverlay.bindMode = sourceSkinnedMesh.bindMode;
+			skinnedOverlay.bind(sourceSkinnedMesh.skeleton, sourceSkinnedMesh.bindMatrix);
+			skinnedOverlay.morphTargetInfluences = sourceSkinnedMesh.morphTargetInfluences;
+			skinnedOverlay.morphTargetDictionary = sourceSkinnedMesh.morphTargetDictionary;
+			overlay = skinnedOverlay;
+		} else {
+			overlay = new THREE.Mesh(mesh.geometry, overlayMaterial);
+			overlay.morphTargetInfluences = mesh.morphTargetInfluences;
+			overlay.morphTargetDictionary = mesh.morphTargetDictionary;
+		}
+		overlay.name = 'morivis-uv-edge-overlay';
+		overlay.userData.morivisEdgeOverlay = true;
+		overlay.raycast = () => undefined;
+		overlay.renderOrder = 10_000;
+		mesh.add(overlay);
+		return overlay;
+	};
+
+	private syncEdgeOverlay = (mesh: THREE.Mesh, style: MeshStyle, hasUv: boolean) => {
+		const overlay = mesh.children.find(
+			(child) => child.userData.morivisEdgeOverlay === true
+		) as THREE.Mesh | undefined;
+		const enabled = Boolean(style.edge?.enabled) && hasUv;
+		if (!enabled) {
+			if (!overlay) return;
+			mesh.remove(overlay);
+			const materials = Array.isArray(overlay.material)
+				? overlay.material
+				: [overlay.material];
+			materials.forEach((material) => material.dispose());
+			return;
+		}
+
+		const materialCount = Array.isArray(mesh.material) ? mesh.material.length : 1;
+		if (!overlay) {
+			const materials = Array.from(
+				{ length: materialCount },
+				() => this.createEdgeOverlayMaterial(style)
+			);
+			this.createEdgeOverlay(mesh, materials);
+			return;
+		}
+
+		const currentMaterials = Array.isArray(overlay.material)
+			? overlay.material
+			: [overlay.material];
+		if (
+			currentMaterials.length === materialCount
+			&& currentMaterials.every((material) => this.updateEdgeOverlayMaterial(material, style))
+		) {
+			return;
+		}
+
+		currentMaterials.forEach((material) => material.dispose());
+		const nextMaterials = Array.from(
+			{ length: materialCount },
+			() => this.createEdgeOverlayMaterial(style)
+		);
+		overlay.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
+	};
+
 	private createShaderMaterial = (
 		sourceMaterial: THREE.Material,
 		style: MeshStyle
@@ -726,6 +857,8 @@ export class ThreeJsLayerManager {
 
 		const usePartColorMaterial = Boolean(style.partColors?.show)
 			&& mesh.geometry.getAttribute('morivisPartColorIndex') != null;
+		const hasUv = mesh.geometry.getAttribute('uv') != null;
+		this.syncEdgeOverlay(mesh, style, hasUv);
 		const hasExistingShaderMaterials = currentMaterials.every((material, index) =>
 			this.updateShaderMaterialUniforms(originalMaterials[index], material, style)
 		);
@@ -770,7 +903,11 @@ export class ThreeJsLayerManager {
 		formatType?: MeshEntry<MeshStyle>['format']['type']
 	) => {
 		object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh && !child.userData.morivisSelectionHighlight) {
+			if (
+				(child as THREE.Mesh).isMesh
+				&& !child.userData.morivisSelectionHighlight
+				&& !child.userData.morivisEdgeOverlay
+			) {
 				this.applyStyleToMesh(child as THREE.Mesh, style, formatType);
 			}
 		});
@@ -1017,7 +1154,11 @@ export class ThreeJsLayerManager {
 		if (!partNode) return [mesh];
 		const partMeshes: THREE.Mesh[] = [];
 		partNode.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh && !child.userData.morivisSelectionHighlight) {
+			if (
+				(child as THREE.Mesh).isMesh
+				&& !child.userData.morivisSelectionHighlight
+				&& !child.userData.morivisEdgeOverlay
+			) {
 				partMeshes.push(child as THREE.Mesh);
 			}
 		});
@@ -1462,11 +1603,17 @@ export class ThreeJsLayerManager {
 			material: THREE.Material | THREE.Material[];
 		}> = [];
 		const exportMaterials: THREE.Material[] = [];
+		const originalOverlayVisibility: Array<{ mesh: THREE.Mesh; visible: boolean; }> = [];
 
 		loaded.object.traverse((child) => {
 			if (!(child as THREE.Mesh).isMesh) return;
 
 			const mesh = child as THREE.Mesh;
+			if (mesh.userData.morivisEdgeOverlay) {
+				originalOverlayVisibility.push({ mesh, visible: mesh.visible });
+				mesh.visible = false;
+				return;
+			}
 			originalMaterials.push({ mesh, material: mesh.material });
 			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 			const convertedMaterials = materials.map((material) =>
@@ -1481,6 +1628,9 @@ export class ThreeJsLayerManager {
 		loaded.object.updateMatrixWorld(true);
 
 		return () => {
+			originalOverlayVisibility.forEach(({ mesh, visible }) => {
+				mesh.visible = visible;
+			});
 			originalMaterials.forEach(({ mesh, material }) => {
 				mesh.material = material;
 			});
@@ -2381,7 +2531,7 @@ export class ThreeJsLayerManager {
 			if (!(child as THREE.Mesh).isMesh && !(child as THREE.Points).isPoints) return;
 
 			const drawable = child as THREE.Mesh | THREE.Points;
-			drawable.geometry.dispose();
+			if (!drawable.userData.morivisEdgeOverlay) drawable.geometry.dispose();
 			const materials = Array.isArray(drawable.material)
 				? drawable.material
 				: [drawable.material];
@@ -2712,7 +2862,7 @@ export class ThreeJsLayerManager {
 
 		let updated = false;
 		loaded.object.traverse((child) => {
-			if (!(child as THREE.Mesh).isMesh) return;
+			if (!(child as THREE.Mesh).isMesh || child.userData.morivisEdgeOverlay) return;
 
 			const mesh = child as THREE.Mesh;
 			const positionAttribute = mesh.geometry.getAttribute('position');
@@ -2833,7 +2983,11 @@ export class ThreeJsLayerManager {
 		const floorGrid = new THREE.GridHelper(floorGridSize, 20, '#64748b', '#cbd5e1');
 		const floorOffset = Math.max(largestDimension * 0.0001, 0.00001);
 		const modelCenter = bounds.getCenter(new THREE.Vector3());
-		floorGrid.position.set(modelCenter.x, bounds.min.y - floorOffset, modelCenter.z);
+		const floorY = resolveModelViewFloorY(
+			bounds,
+			loaded.map((model) => model.entry.properties?.modelView?.floorY)
+		);
+		floorGrid.position.set(modelCenter.x, floorY - floorOffset, modelCenter.z);
 		const floorGridMaterials = Array.isArray(floorGrid.material)
 			? floorGrid.material
 			: [floorGrid.material];
