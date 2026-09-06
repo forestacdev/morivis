@@ -151,6 +151,10 @@ export const facPoiSearchDetailsById: DetailsById = {
 				url: `${FEATURE_IMAGE_BASE_PATH}/fac_morinos/01.webp`
 			},
 			{
+				type: 'image',
+				url: `https://www.forest.ac.jp/wp-content/uploads/2020/09/morinos200819_026.jpg`
+			},
+			{
 				type: 'youtube',
 				id: 'FkFaESLWENI'
 			},

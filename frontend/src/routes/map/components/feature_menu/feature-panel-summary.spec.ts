@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { getImageByName } from '$routes/map/api/inaturalist';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 
 vi.mock('es-toolkit', () => ({
@@ -27,7 +28,7 @@ vi.mock('$routes/map/data/forest/timber_species', () => ({
 import { getLayerFeaturePanelSummary } from './feature-panel-summary';
 
 describe('getLayerFeaturePanelSummary', () => {
-	it('モデル部材の関連属性から木材辞書を参照する', async () => {
+	it('モデル部材は木材辞書を参照し、iNaturalistは呼ばない', async () => {
 		const summary = await getLayerFeaturePanelSummary(
 			{
 				layerId: 'test-model',
@@ -50,6 +51,7 @@ describe('getLayerFeaturePanelSummary', () => {
 					properties: {
 						attributeView: {
 							relations: {
+								timberSpeciesNameKey: 'speciesName',
 								iNaturalistNameKey: 'speciesName'
 							}
 						}
@@ -71,6 +73,7 @@ describe('getLayerFeaturePanelSummary', () => {
 				nameEn: 'test species'
 			}
 		});
+		expect(getImageByName).not.toHaveBeenCalled();
 	});
 
 	it('詳細定義がないモデル部材はオブジェクト名をタイトルにする', async () => {

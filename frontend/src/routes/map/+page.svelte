@@ -52,7 +52,6 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
-	import LazyUploadComponent from '$routes/map/components/upload/LazyUploadComponent.svelte';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
@@ -62,6 +61,7 @@
 		GeoRefData,
 		GeoRefPreviewData
 	} from '$routes/map/components/upload/form/transform/georef-types';
+	import LazyUploadComponent from '$routes/map/components/upload/LazyUploadComponent.svelte';
 	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import {
 		findCatalogEntry,

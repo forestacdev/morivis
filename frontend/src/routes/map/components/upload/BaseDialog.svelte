@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, fly, scale } from 'svelte/transition';
 
+	import LazyUploadComponent from './LazyUploadComponent.svelte';
 	import { applyUploadDropDecision, checkLargeDroppedFiles } from './upload-drop-actions';
 
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
@@ -11,7 +12,6 @@
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
-	import LazyUploadComponent from './LazyUploadComponent.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFiles } from '$routes/map/types';

@@ -109,7 +109,9 @@ const getLayerFeatureMedia = async (
 			];
 		}
 
-		const iNaturalistNameKey = getLayerRelations(targetLayer)?.iNaturalistNameKey;
+		const iNaturalistNameKey = targetLayer?.type === 'vector'
+			? getLayerRelations(targetLayer)?.iNaturalistNameKey
+			: undefined;
 
 		if (iNaturalistNameKey && featureMenuData.properties) {
 			const name = featureMenuData.properties[iNaturalistNameKey] as string;
@@ -201,7 +203,9 @@ const getTimberSpeciesSummary = (
 		return undefined;
 	}
 
-	const timberSpeciesNameKey = getLayerRelations(targetLayer)?.iNaturalistNameKey;
+	const relations = getLayerRelations(targetLayer);
+	// TODO: 木材辞書の属性キーとiNaturalistの検索キーを兼用している既存エントリーを、個別のキー設定へ移行する。
+	const timberSpeciesNameKey = relations?.timberSpeciesNameKey ?? relations?.iNaturalistNameKey;
 	if (!timberSpeciesNameKey) {
 		return undefined;
 	}
@@ -255,7 +259,9 @@ export const getLayerFeaturePanelSummary = async (
 		: null;
 	const protectionForestSummary = getProtectionForestDescription(targetLayer, featureMenuData);
 	const timberSpecies = getTimberSpeciesSummary(targetLayer, featureMenuData);
-	const iNaturalistNameKey = getLayerRelations(targetLayer)?.iNaturalistNameKey;
+	const iNaturalistNameKey = targetLayer?.type === 'vector'
+		? getLayerRelations(targetLayer)?.iNaturalistNameKey
+		: undefined;
 	const iNaturalistName = iNaturalistNameKey && featureMenuData.properties
 		? (featureMenuData.properties[iNaturalistNameKey] as string)
 		: null;

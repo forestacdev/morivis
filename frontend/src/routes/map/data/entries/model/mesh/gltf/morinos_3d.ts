@@ -23,7 +23,7 @@ const entry = {
 	...baseEntry,
 	format: {
 		...baseEntry.format,
-		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix7.glb`,
+		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix8.glb`,
 		lods: [
 			{ maxZoom: 16, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix4.webp.low.glb` },
 			{ maxZoom: 18, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix4.webp.medium.glb` }
@@ -36,13 +36,22 @@ const entry = {
 			show: false,
 			expressions: [
 				{
+					type: 'single',
+					key: '単色',
+					name: '単一色',
+					mapping: {
+						value: '#ff7f00',
+						pattern: null
+					}
+				},
+				{
 					type: 'match',
 					key: '樹種',
 					name: '樹種による色分け',
 					mapping: {
-						categories: ['ヒノキ', 'ミズナラ', 'カバノキ'],
-						values: ['#b2df8a', '#e31a1c', '#1f78b4'],
-						patterns: [null, null, null]
+						categories: ['ヒノキ', 'ミズナラ', 'カバノキ', 'スギ', 'ナラ'],
+						values: ['#b2df8a', '#e31a1c', '#1f78b4', '#ff7f00', '#6a3d9a'],
+						patterns: [null, null, null, null, null]
 					},
 					noData: {
 						label: 'その他',
@@ -70,7 +79,7 @@ const entry = {
 		},
 		attributeView: {
 			relations: {
-				iNaturalistNameKey: '樹種'
+				timberSpeciesNameKey: '樹種'
 			}
 		},
 		detailsById: {
@@ -108,7 +117,7 @@ const entry = {
 					}
 				]
 			},
-			'7f5b5c35-2fc7-489c-b63c-cca0235ee462': {
+			dirt_cave: {
 				name: '土の洞窟',
 				description:
 					'ちょっと奥まったスペースがあります。かっこいい薪ストーブがあって、なかなかいい雰囲気でしょう。',
@@ -129,6 +138,10 @@ const entry = {
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1153%E3%81%AE%E3%82%B3%E3%83%94%E3%83%BC-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/%E3%83%A2%E3%83%AA%E3%83%8E%E3%82%B9%E6%9C%A8%E6%A0%BC%E5%AD%90-scaled.jpg'
 					}
 				]
 			},

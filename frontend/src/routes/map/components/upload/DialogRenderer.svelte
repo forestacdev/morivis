@@ -1,7 +1,7 @@
 <script lang="ts">
+	import type { DialogDefinition, DialogProfile } from './dialog-registry';
 	import LazyUploadComponent from './LazyUploadComponent.svelte';
 
-	import type { DialogDefinition, DialogProfile } from './dialog-registry';
 
 	import type {
 		PendingZoneGeoRefData,

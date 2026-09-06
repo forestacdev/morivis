@@ -7,10 +7,10 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { parseGeoPhotos, type GeoPhotoFeature } from '$routes/map/utils/formats/exif';
+	import { requestPhotoLocation } from '$routes/map/utils/photo-location';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isMobile, isProcessing } from '$routes/stores/ui';
-	import { requestPhotoLocation } from '$routes/map/utils/photo-location';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;

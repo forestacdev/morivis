@@ -38,6 +38,8 @@ export interface NationalForestRelations {
 export interface Relations {
 	/** 市町村コード連携用の属性キー */
 	cityCodeKey?: string;
+	/** 木材辞書連携用の樹種名の属性キー。 */
+	timberSpeciesNameKey?: string;
 	/** iNaturalist 連携用の和名の属性キー。 */
 	iNaturalistNameKey?: string;
 	/** 国有林データ連携用の属性キー群 */
