@@ -658,7 +658,10 @@ export class ThreeJsLayerManager {
 		useIndexedPartColors = false
 	): THREE.ShaderMaterial => {
 		const shadingUniforms = resolveMeshShadingUniforms(style);
-		const baseColor = new THREE.Color(objectPartColor ?? style.color);
+		const objectPartIsTransparent = objectPartColor === 'transparent';
+		const baseColor = new THREE.Color(
+			objectPartIsTransparent ? style.color : objectPartColor ?? style.color
+		);
 		if (
 			objectPartColor == null
 			&& 'color' in sourceMaterial
@@ -732,6 +735,7 @@ export class ThreeJsLayerManager {
 				uColorRamp: { value: colorRampTexture },
 				uUseHeightColorRamp: { value: Boolean(colorRampTexture) },
 				uUseObjectPartColor: { value: objectPartColor != null },
+				uObjectPartOpacity: { value: objectPartIsTransparent ? 0 : 1 },
 				uUsePartColors: { value: useIndexedPartColors },
 				uPartColorPalette: { value: partColorTexture },
 				uPartColorPaletteSize: { value: partColorTexture?.image.width ?? 1 },
@@ -770,6 +774,7 @@ export class ThreeJsLayerManager {
 				uniform sampler2D uColorRamp;
 				uniform bool uUseHeightColorRamp;
 				uniform bool uUseObjectPartColor;
+				uniform float uObjectPartOpacity;
 				uniform bool uUsePartColors;
 				uniform sampler2D uPartColorPalette;
 				uniform float uPartColorPaletteSize;
@@ -813,7 +818,8 @@ export class ThreeJsLayerManager {
 					float diffuse = max(dot(normalDir, normalize(uLightDirection)), 0.0);
 					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
 					vec3 shadedColor = surfaceColor * shade;
-					float alpha = texel.a * uOpacity;
+					float objectPartOpacity = uUseObjectPartColor ? uObjectPartOpacity : 1.0;
+					float alpha = texel.a * uOpacity * objectPartOpacity;
 
 					if (alpha <= 0.001) discard;
 
@@ -894,7 +900,10 @@ export class ThreeJsLayerManager {
 		}
 
 		const shadingUniforms = resolveMeshShadingUniforms(style);
-		const baseColor = new THREE.Color(objectPartColor ?? style.color);
+		const objectPartIsTransparent = objectPartColor === 'transparent';
+		const baseColor = new THREE.Color(
+			objectPartIsTransparent ? style.color : objectPartColor ?? style.color
+		);
 		if (
 			objectPartColor == null
 			&& 'color' in sourceMaterial
@@ -913,6 +922,7 @@ export class ThreeJsLayerManager {
 		material.uniforms.uMap.value = map;
 		material.uniforms.uUseMap.value = Boolean(map);
 		material.uniforms.uUseObjectPartColor.value = objectPartColor != null;
+		material.uniforms.uObjectPartOpacity.value = objectPartIsTransparent ? 0 : 1;
 		material.uniforms.uUsePartColors.value = useIndexedPartColors;
 		material.wireframe = style.wireframe;
 		return true;

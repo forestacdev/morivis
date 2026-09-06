@@ -43,6 +43,11 @@ const entry = {
 						categories: ['ヒノキ', 'ミズナラ', 'カバノキ'],
 						values: ['#b2df8a', '#e31a1c', '#1f78b4'],
 						patterns: [null, null, null]
+					},
+					noData: {
+						label: 'その他',
+						value: 'transparent',
+						pattern: null
 					}
 				}
 			]
