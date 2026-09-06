@@ -41,6 +41,7 @@ import {
 } from '$routes/map/utils/three/model-attributes';
 import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
 import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
+import { createEdgeUvGeometry } from '$routes/map/utils/three/model-edge-uv';
 import { isLowerDetailLodUrl, resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
 import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
 import {
@@ -545,52 +546,67 @@ export class ThreeJsLayerManager {
 		return true;
 	};
 
-	private createEdgeOverlay = (mesh: THREE.Mesh, materials: THREE.Material[]) => {
+	private createEdgeOverlay = (
+		mesh: THREE.Mesh,
+		materials: THREE.Material[],
+		edgeGeometry: THREE.BufferGeometry,
+		usesGeneratedUv: boolean
+	) => {
 		const sourceSkinnedMesh = mesh as THREE.SkinnedMesh;
 		const overlayMaterial = Array.isArray(mesh.material) ? materials : materials[0];
 		let overlay: THREE.Mesh;
 		if (sourceSkinnedMesh.isSkinnedMesh) {
-			const skinnedOverlay = new THREE.SkinnedMesh(mesh.geometry, overlayMaterial);
+			const skinnedOverlay = new THREE.SkinnedMesh(edgeGeometry, overlayMaterial);
 			skinnedOverlay.bindMode = sourceSkinnedMesh.bindMode;
 			skinnedOverlay.bind(sourceSkinnedMesh.skeleton, sourceSkinnedMesh.bindMatrix);
 			skinnedOverlay.morphTargetInfluences = sourceSkinnedMesh.morphTargetInfluences;
 			skinnedOverlay.morphTargetDictionary = sourceSkinnedMesh.morphTargetDictionary;
 			overlay = skinnedOverlay;
 		} else {
-			overlay = new THREE.Mesh(mesh.geometry, overlayMaterial);
+			overlay = new THREE.Mesh(edgeGeometry, overlayMaterial);
 			overlay.morphTargetInfluences = mesh.morphTargetInfluences;
 			overlay.morphTargetDictionary = mesh.morphTargetDictionary;
 		}
 		overlay.name = 'morivis-uv-edge-overlay';
 		overlay.userData.morivisEdgeOverlay = true;
+		overlay.userData.morivisGeneratedEdgeUv = usesGeneratedUv;
 		overlay.raycast = () => undefined;
 		overlay.renderOrder = 10_000;
 		mesh.add(overlay);
 		return overlay;
 	};
 
-	private syncEdgeOverlay = (mesh: THREE.Mesh, style: MeshStyle, hasUv: boolean) => {
+	private disposeEdgeOverlay = (mesh: THREE.Mesh, overlay: THREE.Mesh) => {
+		mesh.remove(overlay);
+		const materials = Array.isArray(overlay.material) ? overlay.material : [overlay.material];
+		materials.forEach((material) => material.dispose());
+		if (overlay.userData.morivisGeneratedEdgeUv === true) {
+			overlay.geometry.dispose();
+		}
+	};
+
+	private syncEdgeOverlay = (mesh: THREE.Mesh, style: MeshStyle) => {
 		const overlay = mesh.children.find(
 			(child) => child.userData.morivisEdgeOverlay === true
 		) as THREE.Mesh | undefined;
-		const enabled = Boolean(style.edge?.enabled) && hasUv;
+		const edgeGeometry = !overlay && style.edge?.enabled
+			? createEdgeUvGeometry(mesh.geometry)
+			: null;
+		const enabled = Boolean(style.edge?.enabled) && (overlay != null || edgeGeometry != null);
 		if (!enabled) {
 			if (!overlay) return;
-			mesh.remove(overlay);
-			const materials = Array.isArray(overlay.material)
-				? overlay.material
-				: [overlay.material];
-			materials.forEach((material) => material.dispose());
+			this.disposeEdgeOverlay(mesh, overlay);
 			return;
 		}
 
 		const materialCount = Array.isArray(mesh.material) ? mesh.material.length : 1;
 		if (!overlay) {
+			if (!edgeGeometry) return;
 			const materials = Array.from(
 				{ length: materialCount },
 				() => this.createEdgeOverlayMaterial(style)
 			);
-			this.createEdgeOverlay(mesh, materials);
+			this.createEdgeOverlay(mesh, materials, edgeGeometry.geometry, edgeGeometry.generated);
 			return;
 		}
 
@@ -878,8 +894,7 @@ export class ThreeJsLayerManager {
 
 		const usePartColorMaterial = Boolean(style.partColors?.show)
 			&& mesh.geometry.getAttribute('morivisPartColorIndex') != null;
-		const hasUv = mesh.geometry.getAttribute('uv') != null;
-		this.syncEdgeOverlay(mesh, style, hasUv);
+		this.syncEdgeOverlay(mesh, style);
 		const hasExistingShaderMaterials = currentMaterials.every((material, index) =>
 			this.updateShaderMaterialUniforms(originalMaterials[index], material, style)
 		);
@@ -2552,7 +2567,12 @@ export class ThreeJsLayerManager {
 			if (!(child as THREE.Mesh).isMesh && !(child as THREE.Points).isPoints) return;
 
 			const drawable = child as THREE.Mesh | THREE.Points;
-			if (!drawable.userData.morivisEdgeOverlay) drawable.geometry.dispose();
+			if (
+				!drawable.userData.morivisEdgeOverlay
+				|| drawable.userData.morivisGeneratedEdgeUv === true
+			) {
+				drawable.geometry.dispose();
+			}
 			const materials = Array.isArray(drawable.material)
 				? drawable.material
 				: [drawable.material];

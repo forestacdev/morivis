@@ -34,6 +34,10 @@ const entry = {
 		shading: {
 			...baseEntry.style.shading,
 			enabled: true
+		},
+		edge: {
+			...baseEntry.style.edge,
+			enabled: true
 		}
 	},
 	properties: {

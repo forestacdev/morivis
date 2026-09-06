@@ -130,8 +130,8 @@ export interface MeshEdgeStyle {
 
 export const DEFAULT_MESH_EDGE: MeshEdgeStyle = {
 	enabled: false,
-	color: '#000000',
-	thickness: 5
+	color: '#191919',
+	thickness: 0.5
 };
 
 export interface MeshHeightColorRampStyle {
