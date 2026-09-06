@@ -35,7 +35,7 @@
 	let isLoading = $state(true);
 	let errorMessage = $state<string | null>(null);
 	const MODEL_VIEW_BACKGROUND =
-		'radial-gradient(circle at 50% 44%, rgba(150, 175, 178, 0.62) 0%, rgba(213, 226, 227, 0.78) 30%, transparent 62%), linear-gradient(145deg, #ffffff 0%, #edf3f4 54%, #dce7e8 100%)';
+		'radial-gradient(circle at 50% 42%, #26343d 0%, #151d24 48%, #080c10 100%)';
 	let setFpsMode = (_enabled: boolean) => {};
 	let handleFpsKeyDown = (_event: KeyboardEvent) => false;
 	let handleFpsKeyUp = (_event: KeyboardEvent) => {};

@@ -130,7 +130,7 @@ export interface MeshEdgeStyle {
 
 export const DEFAULT_MESH_EDGE: MeshEdgeStyle = {
 	enabled: false,
-	color: '#191919',
+	color: '#ffffff',
 	thickness: 0.001
 };
 
