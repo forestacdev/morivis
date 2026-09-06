@@ -242,12 +242,6 @@
 		onclick={onModelClick}
 	></button>
 
-	<div class="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center p-4">
-		<p class="rounded-full bg-black/65 px-4 py-2 text-xs text-white/70 backdrop-blur">
-			ドラッグで回転、右ドラッグで移動、ホイールまたはピンチで拡大縮小
-		</p>
-	</div>
-
 	{#if isLoading || errorMessage}
 		<div
 			class="pointer-events-auto absolute inset-0 z-20 grid place-items-center bg-[#101915]/80 p-6 text-center"

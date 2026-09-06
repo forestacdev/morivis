@@ -635,11 +635,6 @@
 			<div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80">
 				<div bind:this={viewport} class="relative h-[720px] w-full">
 					<canvas bind:this={canvas} class="block h-full w-full"></canvas>
-					<div
-						class="pointer-events-none absolute left-4 top-4 rounded-lg bg-slate-950/70 px-3 py-2 text-xs text-slate-300"
-					>
-						OrbitControls: 左ドラッグで回転 / ホイールでズーム / 右ドラッグでパン
-					</div>
 				</div>
 			</div>
 		</section>

@@ -262,6 +262,7 @@ interface ActiveModelView {
 	entryIds: Set<string>;
 	camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
 	target: THREE.Vector3;
+	floorGrid: THREE.GridHelper;
 	highlightVisibility: Map<THREE.Object3D, boolean>;
 	axisWrappers: Array<{
 		object: THREE.Object3D;
@@ -2828,6 +2829,19 @@ export class ThreeJsLayerManager {
 		}
 		const modelSize = bounds.getSize(new THREE.Vector3());
 		const largestDimension = Math.max(modelSize.x, modelSize.y, modelSize.z, 1);
+		const floorGridSize = Math.max(modelSize.x, modelSize.z, 1) * 2;
+		const floorGrid = new THREE.GridHelper(floorGridSize, 20, '#64748b', '#cbd5e1');
+		const floorOffset = Math.max(largestDimension * 0.0001, 0.00001);
+		const modelCenter = bounds.getCenter(new THREE.Vector3());
+		floorGrid.position.set(modelCenter.x, bounds.min.y - floorOffset, modelCenter.z);
+		const floorGridMaterials = Array.isArray(floorGrid.material)
+			? floorGrid.material
+			: [floorGrid.material];
+		floorGridMaterials.forEach((material) => {
+			material.transparent = true;
+			material.opacity = 0.55;
+			material.depthWrite = false;
+		});
 
 		const camera: THREE.PerspectiveCamera | THREE.OrthographicCamera =
 			initialCamera?.type === 'orthographic'
@@ -2837,12 +2851,14 @@ export class ThreeJsLayerManager {
 			entryIds: new Set(loaded.map((model) => model.entry.id)),
 			camera,
 			target: new THREE.Vector3(),
+			floorGrid,
 			highlightVisibility: new Map(),
 			axisWrappers,
 			modelGroupVisible: this.modelGroup.visible,
 			previewVisible: this.previewModelGroup.visible
 		};
 		this.activeModelView = activeModelView;
+		this.scene.add(floorGrid);
 		this.modelGroup.visible = true;
 		this.previewModelGroup.visible = false;
 		loaded.forEach((model) => {
@@ -2942,6 +2958,8 @@ export class ThreeJsLayerManager {
 			parent.add(object);
 			wrapper.parent?.remove(wrapper);
 		});
+		this.scene?.remove(activeModelView.floorGrid);
+		activeModelView.floorGrid.dispose();
 		if (this.modelGroup) {
 			this.modelGroup.visible = activeModelView.modelGroupVisible;
 		}
