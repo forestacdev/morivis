@@ -112,9 +112,9 @@ export interface MeshShadingStyle {
 export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
 	enabled: false,
 	shadeStrength: 0.85,
-	ambientStrength: 0.35,
-	azimuthDeg: 180,
-	elevationDeg: 0
+	ambientStrength: 0.8,
+	azimuthDeg: 135,
+	elevationDeg: 55
 };
 
 export interface MeshHeightColorRampStyle {
