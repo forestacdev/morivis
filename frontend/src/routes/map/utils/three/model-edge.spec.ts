@@ -9,6 +9,7 @@ describe('resolveMeshEdgeUniforms', () => {
 		expect(uniforms.enabled).toBe(false);
 		expect(uniforms.color.getHexString()).toBe('191919');
 		expect(uniforms.thickness).toBe(0.001);
+		expect(uniforms.silhouetteWidthPx).toBe(1.5);
 		expect(uniforms.opacity).toBe(1);
 	});
 
@@ -20,6 +21,15 @@ describe('resolveMeshEdgeUniforms', () => {
 		expect(uniforms.enabled).toBe(true);
 		expect(uniforms.color.getHexString()).toBe('f43f5e');
 		expect(uniforms.thickness).toBe(2.5);
+		expect(uniforms.silhouetteWidthPx).toBe(6);
 		expect(uniforms.opacity).toBe(1);
+	});
+
+	it('細いエッジでも曲面輪郭は1pxを下回らない', () => {
+		const uniforms = resolveMeshEdgeUniforms({
+			edge: { enabled: true, color: '#191919', thickness: 0.0001 }
+		});
+
+		expect(uniforms.silhouetteWidthPx).toBe(1);
 	});
 });

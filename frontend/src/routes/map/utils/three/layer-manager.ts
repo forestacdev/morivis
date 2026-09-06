@@ -488,30 +488,42 @@ export class ThreeJsLayerManager {
 			uniforms: {
 				uEdgeColor: { value: edgeUniforms.color },
 				uEdgeThickness: { value: edgeUniforms.thickness },
+				uSilhouetteWidthPx: { value: edgeUniforms.silhouetteWidthPx },
 				uEdgeOpacity: { value: edgeUniforms.opacity }
 			},
 			vertexShader: `
 				varying vec2 vUv;
 				varying vec3 vModelPosition;
+				varying vec3 vViewNormal;
+				varying vec3 vViewPosition;
 				#include <morphtarget_pars_vertex>
 				#include <skinning_pars_vertex>
 
 				void main() {
+					#include <beginnormal_vertex>
+					#include <morphnormal_vertex>
+					#include <skinbase_vertex>
+					#include <skinnormal_vertex>
 					vec3 transformed = vec3(position);
 					#include <morphtarget_vertex>
-					#include <skinbase_vertex>
 					#include <skinning_vertex>
 					vUv = uv;
 					vModelPosition = transformed;
-					gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed, 1.0);
+					vViewNormal = normalize(normalMatrix * objectNormal);
+					vec4 viewPosition = modelViewMatrix * vec4(transformed, 1.0);
+					vViewPosition = viewPosition.xyz;
+					gl_Position = projectionMatrix * viewPosition;
 				}
 			`,
 			fragmentShader: `
 				uniform vec3 uEdgeColor;
 				uniform float uEdgeThickness;
+				uniform float uSilhouetteWidthPx;
 				uniform float uEdgeOpacity;
 				varying vec2 vUv;
 				varying vec3 vModelPosition;
+				varying vec3 vViewNormal;
+				varying vec3 vViewPosition;
 
 				float edgeDistanceInModelSpace(vec2 uv, vec3 modelPosition) {
 					vec2 uvDx = dFdx(uv);
@@ -531,15 +543,24 @@ export class ThreeJsLayerManager {
 					);
 				}
 
+				float silhouetteAlpha() {
+					vec3 normalDirection = normalize(vViewNormal);
+					vec3 viewDirection = normalize(-vViewPosition);
+					float facing = abs(dot(normalDirection, viewDirection));
+					float pixelWidth = max(fwidth(facing), 0.00001);
+					return 1.0 - smoothstep(0.0, pixelWidth * uSilhouetteWidthPx, facing);
+				}
+
 				void main() {
 					float distanceToEdge = edgeDistanceInModelSpace(vUv, vModelPosition);
 					// fwidthは太さの決定には使わず、境界のアンチエイリアス幅だけに使う。
 					float antialiasWidth = max(fwidth(distanceToEdge), 0.00001);
-					float alpha = 1.0 - smoothstep(
+					float uvEdgeAlpha = 1.0 - smoothstep(
 						uEdgeThickness - antialiasWidth,
 						uEdgeThickness + antialiasWidth,
 						distanceToEdge
 					);
+					float alpha = max(uvEdgeAlpha, silhouetteAlpha());
 					if (alpha <= 0.001) discard;
 					gl_FragColor = vec4(uEdgeColor, alpha * uEdgeOpacity);
 				}
@@ -565,6 +586,7 @@ export class ThreeJsLayerManager {
 		const edgeUniforms = resolveMeshEdgeUniforms(style);
 		material.uniforms.uEdgeColor.value.copy(edgeUniforms.color);
 		material.uniforms.uEdgeThickness.value = edgeUniforms.thickness;
+		material.uniforms.uSilhouetteWidthPx.value = edgeUniforms.silhouetteWidthPx;
 		material.uniforms.uEdgeOpacity.value = edgeUniforms.opacity;
 		return true;
 	};
