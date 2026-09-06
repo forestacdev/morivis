@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import * as THREE from 'three';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$app/paths', () => ({
 	asset: (path: string) => path
@@ -11,6 +11,47 @@ vi.mock('$app/paths', () => ({
 vi.mock('$routes/stores/map', () => ({
 	mapStore: {
 		getTerrain: () => false
+	}
+}));
+
+vi.mock('tinyusdz/TinyUSDZLoader.js', () => ({
+	TinyUSDZLoader: class {
+		async init() {
+			return this;
+		}
+
+		parse(
+			_binary: Uint8Array,
+			_filePath: string,
+			onLoad: (scene: { getDefaultRootNode: () => object; }) => void
+		) {
+			onLoad({ getDefaultRootNode: () => ({}) });
+		}
+	}
+}));
+
+vi.mock('tinyusdz/tinyusdz.js', () => ({
+	default: async () => ({})
+}));
+
+vi.mock('tinyusdz/tinyusdz.wasm?url', () => ({
+	default: 'data:application/wasm;base64,AGFzbQEAAAA='
+}));
+
+vi.mock('tinyusdz/TinyUSDZLoaderUtils.js', () => ({
+	TinyUSDZLoaderUtils: {
+		createDefaultMaterial: () => new THREE.MeshBasicMaterial(),
+		getTextureFromUSD: () => Promise.resolve(new THREE.Texture()),
+		buildThreeNode: () => {
+			const object = new THREE.Group();
+			const geometry = new THREE.BufferGeometry();
+			geometry.setAttribute(
+				'position',
+				new THREE.Float32BufferAttribute([0, 0, 0, 2, 0, 0, 0, 3, 0], 3)
+			);
+			object.add(new THREE.Mesh(geometry));
+			return object;
+		}
 	}
 }));
 
@@ -90,6 +131,10 @@ const createKtx2TextureGltfFile = (): File => {
 };
 
 describe('computeUploadedModelMeta', () => {
+	beforeEach(() => {
+		vi.stubGlobal('fetch', vi.fn(async () => new Response(new Uint8Array([0, 97, 115, 109]))));
+	});
+
 	beforeAll(() => {
 		if (!('self' in globalThis)) {
 			Object.defineProperty(globalThis, 'self', {

@@ -2290,7 +2290,10 @@ export class ThreeJsLayerManager {
 								`USDを取得できません: ${response.status} ${response.statusText}`
 							);
 						}
-						return parseUsdArrayBuffer(await response.arrayBuffer());
+						return parseUsdArrayBuffer(
+							await response.arrayBuffer(),
+							entry.format.url
+						);
 					})
 					.then((object) => finalizeAndLoadModel(object))
 					.catch((error) => reject(error));

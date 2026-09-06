@@ -389,7 +389,7 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: 'USD / USDZ',
 		description:
-			'Pixar USDの3Dシーン形式です。USDZアーカイブとテキスト形式のUSD/USDAモデルを読み込みます。バイナリ形式のUSDCは対象外です。',
+			'Pixar USDの3Dシーン形式です。USDZアーカイブ、テキスト形式のUSD/USDA、バイナリ形式のUSDCモデルを読み込みます。',
 		extensions: ['.usd', '.usda', '.usdz']
 	},
 	{
