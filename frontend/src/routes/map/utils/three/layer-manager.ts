@@ -68,10 +68,12 @@ import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
+const KTX2_TRANSCODER_PATH = resolveStaticAssetPath('/basis/');
 const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
 const MODEL_VIEW_FPS_MOVEMENT_SPEED_DIVISOR = 5;
 const MODEL_VIEW_FPS_MIN_MOVEMENT_SPEED = 1;
@@ -329,6 +331,7 @@ export class ThreeJsLayerManager {
 	private map: MapLibreMap | null = null;
 	private loadedModels: Map<string, LoadedModel> = new Map();
 	private dracoLoader = new DRACOLoader();
+	private ktx2Loader = new KTX2Loader();
 	private loader = new GLTFLoader();
 	private isInitialized = false;
 	private colorMapManager = new ColorMapManager();
@@ -346,12 +349,15 @@ export class ThreeJsLayerManager {
 
 	constructor() {
 		this.dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
+		this.ktx2Loader.setTranscoderPath(KTX2_TRANSCODER_PATH);
 		this.loader.setDRACOLoader(this.dracoLoader);
+		this.loader.setKTX2Loader(this.ktx2Loader);
 	}
 
 	private createGltfLoader = (manager?: THREE.LoadingManager) => {
 		const loader = new GLTFLoader(manager);
 		loader.setDRACOLoader(this.dracoLoader);
+		loader.setKTX2Loader(this.ktx2Loader);
 		return loader;
 	};
 
@@ -1653,6 +1659,7 @@ export class ThreeJsLayerManager {
 						context: gl,
 						antialias: true
 					});
+					this.ktx2Loader.detectSupport(this.renderer);
 					this.renderer.autoClear = false;
 					this.renderer.setClearColor(0x000000, 0);
 					this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -2174,7 +2181,7 @@ export class ThreeJsLayerManager {
 				}
 			} else if (entry.format.type === 'vrm') {
 				const manager = createManagedLoaderContext();
-				createVrmLoader(this.dracoLoader, manager)
+				createVrmLoader(this.dracoLoader, manager, this.ktx2Loader)
 					.then((loader) => {
 						loader.load(
 							entry.format.url,
@@ -2959,6 +2966,7 @@ export class ThreeJsLayerManager {
 			this.renderer.dispose();
 			this.renderer = null;
 		}
+		this.ktx2Loader.dispose();
 		this.modelGroup = null;
 		this.previewModelGroup = null;
 		this.overlayRenderTarget = null;

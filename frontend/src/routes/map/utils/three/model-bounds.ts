@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import type { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
 import type {
@@ -86,9 +87,28 @@ let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoade
 
 dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
 
+const createBoundsKtx2Loader = () =>
+	({
+		// 範囲解析 Worker は描画しないため、KTX2 を復号せず形状解析だけ継続する。
+		load: (_url: string, onLoad: (texture: THREE.Texture) => void) => {
+			const texture = new THREE.DataTexture(
+				new Uint8Array([255, 255, 255, 255]),
+				1,
+				1,
+				THREE.RGBAFormat
+			);
+			texture.needsUpdate = true;
+			queueMicrotask(() => onLoad(texture));
+			return texture;
+		}
+	}) as unknown as KTX2Loader;
+
+const boundsKtx2Loader = createBoundsKtx2Loader();
+
 const createGltfLoader = (manager?: THREE.LoadingManager) => {
 	const loader = new GLTFLoader(manager);
 	loader.setDRACOLoader(dracoLoader);
+	loader.setKTX2Loader(boundsKtx2Loader);
 	return loader;
 };
 
@@ -395,7 +415,7 @@ const parseVrmObject = async (
 	file: File,
 	normalizeToLocalOrigin = false
 ): Promise<UploadedModelObject> => {
-	const loader = await createVrmLoader(dracoLoader);
+	const loader = await createVrmLoader(dracoLoader, undefined, boundsKtx2Loader);
 	const buffer = await file.arrayBuffer();
 
 	return new Promise<UploadedModelObject>((resolve, reject) => {

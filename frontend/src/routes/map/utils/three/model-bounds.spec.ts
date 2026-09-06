@@ -40,8 +40,63 @@ def Xform "Root"
 		{ type: 'model/vnd.usda' }
 	);
 
+const createKtx2TextureGltfFile = (): File => {
+	const binary = new Uint8Array(40);
+	new Float32Array(binary.buffer, 0, 9).set([0, 0, 0, 2, 0, 0, 0, 3, 0]);
+	const json = new TextEncoder().encode(
+		JSON.stringify({
+			asset: { version: '2.0' },
+			extensionsUsed: ['KHR_texture_basisu'],
+			extensionsRequired: ['KHR_texture_basisu'],
+			buffers: [{ byteLength: binary.byteLength }],
+			bufferViews: [
+				{ buffer: 0, byteOffset: 0, byteLength: 36 },
+				{ buffer: 0, byteOffset: 36, byteLength: 1 }
+			],
+			accessors: [
+				{
+					bufferView: 0,
+					componentType: 5126,
+					count: 3,
+					type: 'VEC3',
+					min: [0, 0, 0],
+					max: [2, 3, 0]
+				}
+			],
+			images: [{ bufferView: 1, mimeType: 'image/ktx2' }],
+			textures: [{ extensions: { KHR_texture_basisu: { source: 0 } } }],
+			materials: [{ pbrMetallicRoughness: { baseColorTexture: { index: 0 } } }],
+			meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }],
+			nodes: [{ mesh: 0 }],
+			scenes: [{ nodes: [0] }],
+			scene: 0
+		})
+	);
+	const jsonLength = Math.ceil(json.byteLength / 4) * 4;
+	const glb = new Uint8Array(12 + 8 + jsonLength + 8 + binary.byteLength);
+	const view = new DataView(glb.buffer);
+	view.setUint32(0, 0x46546c67, true);
+	view.setUint32(4, 2, true);
+	view.setUint32(8, glb.byteLength, true);
+	view.setUint32(12, jsonLength, true);
+	view.setUint32(16, 0x4e4f534a, true);
+	glb.fill(0x20, 20, 20 + jsonLength);
+	glb.set(json, 20);
+	view.setUint32(20 + jsonLength, binary.byteLength, true);
+	view.setUint32(24 + jsonLength, 0x004e4942, true);
+	glb.set(binary, 28 + jsonLength);
+
+	return new File([glb], 'synthetic-ktx2.glb', { type: 'model/gltf-binary' });
+};
+
 describe('computeUploadedModelMeta', () => {
 	beforeAll(() => {
+		if (!('self' in globalThis)) {
+			Object.defineProperty(globalThis, 'self', {
+				value: globalThis,
+				configurable: true
+			});
+		}
 		if (!globalThis.URL.createObjectURL) {
 			globalThis.URL.createObjectURL = vi.fn(() => 'blob:mock');
 		}
@@ -93,6 +148,15 @@ describe('computeUploadedModelMeta', () => {
 	it('USD の形状範囲を取得できる', async () => {
 		const { getUploadedModelObject } = await import('./model-bounds');
 		const { object } = await getUploadedModelObject(createSyntheticUsdFile(), 'usd');
+		const box = new THREE.Box3().setFromObject(object);
+
+		expect(box.min.toArray()).toEqual([0, 0, 0]);
+		expect(box.max.toArray()).toEqual([2, 3, 0]);
+	});
+
+	it('KTX2 テクスチャを含む GLTF でも形状範囲を取得できる', async () => {
+		const { getUploadedModelObject } = await import('./model-bounds');
+		const { object } = await getUploadedModelObject(createKtx2TextureGltfFile(), 'gltf');
 		const box = new THREE.Box3().setFromObject(object);
 
 		expect(box.min.toArray()).toEqual([0, 0, 0]);
