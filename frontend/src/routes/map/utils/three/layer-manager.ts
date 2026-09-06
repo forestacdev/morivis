@@ -1,12 +1,10 @@
 import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import {
-	DEFAULT_MESH_SHADING,
 	type GaussianSplatEntry,
 	type GaussianSplatStyle,
 	type IfcPartColorProfile,
 	type MeshEntry,
-	type MeshShadingStyle,
 	type MeshStyle,
 	type ModelTransformStyle,
 	type ThreeModelEntry
@@ -43,6 +41,7 @@ import {
 } from '$routes/map/utils/three/model-attributes';
 import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
 import { resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
+import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
 import {
 	calculateModelTransform,
 	type ModelTransform
@@ -273,21 +272,6 @@ interface ActiveModelView {
 	previewVisible: boolean;
 }
 
-const TEXTURE_SLOT_KEYS = [
-	'map',
-	'alphaMap',
-	'aoMap',
-	'bumpMap',
-	'displacementMap',
-	'emissiveMap',
-	'envMap',
-	'lightMap',
-	'metalnessMap',
-	'normalMap',
-	'roughnessMap',
-	'specularMap'
-] as const;
-
 const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>([
 	'fbx',
 	'obj',
@@ -309,18 +293,6 @@ const getIfcPartColorProfile = (entry: MeshEntry<MeshStyle>): IfcPartColorProfil
 	entry.properties?.ifc?.extractionProfiles.find(
 		(profile): profile is IfcPartColorProfile => profile.type === 'part-colors'
 	);
-
-const materialHasTextureSlots = (material: THREE.Material) => {
-	return TEXTURE_SLOT_KEYS.some((key) => {
-		const candidate = (material as THREE.Material & Record<string, unknown>)[key];
-		return candidate instanceof THREE.Texture;
-	});
-};
-
-const getTextureSlot = (material: THREE.Material, key: string) => {
-	const candidate = (material as THREE.Material & Record<string, unknown>)[key];
-	return candidate instanceof THREE.Texture ? candidate : null;
-};
 
 /**
  * Three.js レイヤーマネージャー
@@ -487,29 +459,11 @@ export class ThreeJsLayerManager {
 		});
 	};
 
-	private resolveShading = (style: MeshStyle): Required<MeshShadingStyle> => ({
-		...DEFAULT_MESH_SHADING,
-		...style.shading
-	});
-
-	private getLightDirection = (shading: Required<MeshShadingStyle>) => {
-		const azimuth = THREE.MathUtils.degToRad(shading.azimuthDeg);
-		const elevation = THREE.MathUtils.degToRad(shading.elevationDeg);
-		const cosElevation = Math.cos(elevation);
-
-		return new THREE.Vector3(
-			Math.cos(azimuth) * cosElevation,
-			Math.sin(elevation),
-			Math.sin(azimuth) * cosElevation
-		).normalize();
-	};
-
 	private createShaderMaterial = (
 		sourceMaterial: THREE.Material,
 		style: MeshStyle
 	): THREE.ShaderMaterial => {
-		const shading = this.resolveShading(style);
-		const shadingEnabled = Boolean(style.shading?.enabled);
+		const shadingUniforms = resolveMeshShadingUniforms(style);
 		const baseColor = new THREE.Color(style.color);
 		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
 			baseColor.multiply(sourceMaterial.color);
@@ -572,9 +526,9 @@ export class ThreeJsLayerManager {
 			uniforms: {
 				uBaseColor: { value: baseColor },
 				uOpacity: { value: style.opacity },
-				uAmbientStrength: { value: shadingEnabled ? shading.ambientStrength : 1 },
-				uShadeStrength: { value: shadingEnabled ? shading.shadeStrength : 0 },
-				uLightDirection: { value: this.getLightDirection(shading) },
+				uAmbientStrength: { value: shadingUniforms.ambientStrength },
+				uShadeStrength: { value: shadingUniforms.shadeStrength },
+				uLightDirection: { value: shadingUniforms.lightDirection },
 				uMap: { value: map },
 				uUseMap: { value: Boolean(map) },
 				uColorRamp: { value: colorRampTexture },
@@ -721,82 +675,41 @@ export class ThreeJsLayerManager {
 		return true;
 	};
 
-	private createFlatMaterial = (
+	private updateShaderMaterialUniforms = (
 		sourceMaterial: THREE.Material,
+		material: THREE.Material,
 		style: MeshStyle
-	): THREE.Material => {
+	) => {
+		if (
+			!(material instanceof THREE.ShaderMaterial)
+			|| material.userData.morivisShaderShading !== true
+		) {
+			return false;
+		}
+
+		const shadingUniforms = resolveMeshShadingUniforms(style);
 		const baseColor = new THREE.Color(style.color);
 		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
 			baseColor.multiply(sourceMaterial.color);
 		}
-
 		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
 			? sourceMaterial.map
 			: null;
-
-		const material = new THREE.MeshBasicMaterial({
-			color: baseColor,
-			map,
-			transparent: true,
-			opacity: style.opacity,
-			wireframe: style.wireframe,
-			side: THREE.DoubleSide
-		});
-		material.transparent = true;
-		material.opacity = style.opacity;
-		return material;
-	};
-
-	private createFbxTexturedMaterial = (
-		sourceMaterial: THREE.Material,
-		style: MeshStyle
-	): THREE.Material => {
-		const map = getTextureSlot(sourceMaterial, 'map')
-			?? getTextureSlot(sourceMaterial, 'emissiveMap');
-		const alphaMap = getTextureSlot(sourceMaterial, 'alphaMap');
-
-		const material = new THREE.MeshBasicMaterial({
-			color: new THREE.Color(style.color),
-			map,
-			alphaMap,
-			transparent: style.opacity < 1
-				|| alphaMap != null
-				|| ('transparent' in sourceMaterial && sourceMaterial.transparent === true),
-			opacity: style.opacity,
-			wireframe: style.wireframe,
-			side: THREE.DoubleSide
-		});
-
-		if ('alphaTest' in sourceMaterial && typeof sourceMaterial.alphaTest === 'number') {
-			material.alphaTest = sourceMaterial.alphaTest;
-		}
-
-		return material;
-	};
-
-	private createStyledSourceMaterial = (
-		sourceMaterial: THREE.Material,
-		style: MeshStyle
-	): THREE.Material => {
-		if (typeof sourceMaterial.clone !== 'function') {
-			return this.createFlatMaterial(new THREE.MeshBasicMaterial(), style);
-		}
-		const material = sourceMaterial.clone();
-		if ('color' in material && material.color instanceof THREE.Color) {
-			material.color = material.color.clone().multiply(new THREE.Color(style.color));
-		}
-		material.opacity *= style.opacity;
-		material.transparent = material.transparent || material.opacity < 1;
-		if ('wireframe' in material) {
-			material.wireframe = style.wireframe;
-		}
-		return material;
+		material.uniforms.uBaseColor.value.copy(baseColor);
+		material.uniforms.uOpacity.value = style.opacity;
+		material.uniforms.uAmbientStrength.value = shadingUniforms.ambientStrength;
+		material.uniforms.uShadeStrength.value = shadingUniforms.shadeStrength;
+		material.uniforms.uLightDirection.value.copy(shadingUniforms.lightDirection);
+		material.uniforms.uMap.value = map;
+		material.uniforms.uUseMap.value = Boolean(map);
+		material.wireframe = style.wireframe;
+		return true;
 	};
 
 	private applyStyleToMesh = (
 		mesh: THREE.Mesh,
 		style: MeshStyle,
-		formatType?: MeshEntry<MeshStyle>['format']['type']
+		_formatType?: MeshEntry<MeshStyle>['format']['type']
 	) => {
 		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
 		const originalMaterials = (mesh.userData.originalMaterials as THREE.Material[] | undefined)
@@ -810,41 +723,35 @@ export class ThreeJsLayerManager {
 			mesh.userData.originalMaterials = originalMaterials;
 		}
 
-		const useShaderMaterial = Boolean(style.shading?.enabled)
-			|| Boolean(style.heightColorRamp?.enabled);
 		const usePartColorMaterial = Boolean(style.partColors?.show)
 			&& mesh.geometry.getAttribute('morivisPartColorIndex') != null;
-		if (
-			usePartColorMaterial
-			&& currentMaterials.every((material) => this.updatePartColorPalette(material, style))
-		) {
-			return;
+		const hasExistingShaderMaterials = currentMaterials.every((material, index) =>
+			this.updateShaderMaterialUniforms(originalMaterials[index], material, style)
+		);
+		if (hasExistingShaderMaterials && !style.heightColorRamp?.enabled) {
+			currentMaterials.forEach((material) => {
+				const shaderMaterial = material as THREE.ShaderMaterial;
+				shaderMaterial.uniforms.uUseHeightColorRamp.value = false;
+			});
+			if (
+				!usePartColorMaterial
+				|| currentMaterials.every((material) =>
+					this.updatePartColorPalette(material, style)
+				)
+			) {
+				currentMaterials.forEach((material) => {
+					const shaderMaterial = material as THREE.ShaderMaterial;
+					shaderMaterial.uniforms.uUsePartColors.value = usePartColorMaterial;
+				});
+				return;
+			}
 		}
-		const isSkinnedMesh = (mesh as THREE.SkinnedMesh).isSkinnedMesh === true;
-		const hasTexturedMaterial = originalMaterials.some(materialHasTextureSlots);
-		const createMaterial = (sourceMaterial: THREE.Material) => {
-			if (usePartColorMaterial || useShaderMaterial) {
-				return this.createShaderMaterial(sourceMaterial, style);
-			}
-			// スキニング済みメッシュはローダーが作った材質を保ち、ボーン変形を引き継ぐ。
-			if (isSkinnedMesh) {
-				return this.createStyledSourceMaterial(sourceMaterial, style);
-			}
-			// VRM の MToon はテクスチャ未使用でも独自の透過・輪郭設定を持つため、そのまま複製する。
-			if (formatType === 'vrm') {
-				return this.createStyledSourceMaterial(sourceMaterial, style);
-			}
-			// FBX などの既存テクスチャは UV 変換や追加スロットを持つので、元マテリアルを保持する。
-			if (hasTexturedMaterial && formatType === 'fbx') {
-				return this.createFbxTexturedMaterial(sourceMaterial, style);
-			}
-			if (hasTexturedMaterial) {
-				return this.createStyledSourceMaterial(sourceMaterial, style);
-			}
-			return this.createFlatMaterial(sourceMaterial, style);
-		};
 
-		const nextMaterials = originalMaterials.map(createMaterial);
+		// 陰影の有無で材質種別を変えると、部材数の多いモデルでGPUプログラムの再構築と切替が増える。
+		// 常に同じシェーダーを使い、通常の陰影切替はuniform値だけを更新する。
+		const nextMaterials = originalMaterials.map((sourceMaterial) =>
+			this.createShaderMaterial(sourceMaterial, style)
+		);
 
 		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
 		currentMaterials.forEach((material) => {
