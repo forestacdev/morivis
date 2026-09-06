@@ -21,6 +21,14 @@ const baseEntry = createMeshModelEntry({
 
 const entry = {
 	...baseEntry,
+	format: {
+		...baseEntry.format,
+		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.high.glb`,
+		lods: [
+			{ maxZoom: 16, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.low.glb` },
+			{ maxZoom: 18, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix3.medium.glb` }
+		]
+	},
 	properties: {
 		...baseEntry.properties,
 		attributeView: {
@@ -107,7 +115,8 @@ const entry = {
 			},
 			'd2258ec0-612e-4ffc-ac3a-0c14017979c0': {
 				name: '樹皮付き方立',
-				description: '方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
+				description:
+					'方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi3/',
 				medias: [
 					{
@@ -122,7 +131,8 @@ const entry = {
 			},
 			'77164639-4feb-49d5-b86e-af26be2296c0': {
 				name: 'ガラスコーナー',
-				description: 'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
+				description:
+					'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi4/',
 				medias: [
 					{

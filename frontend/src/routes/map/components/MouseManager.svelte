@@ -27,6 +27,7 @@
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster/tile-query';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
+	import { getHighDetailLodZoom } from '$routes/map/utils/three/model-lod';
 	import {
 		clickableVectorIds,
 		clickableRasterIds,
@@ -503,6 +504,28 @@
 		return true;
 	};
 
+	const focusLodModel = (entryId: string) => {
+		const entry = layerEntries.find((item) => item.id === entryId);
+		if (
+			entry?.type !== 'model' ||
+			entry.style.type !== 'mesh' ||
+			entry.format.type !== 'gltf'
+		)
+			return;
+
+		const targetZoom = getHighDetailLodZoom(entry.format.lods);
+		const currentZoom = mapStore.getMap()?.getZoom();
+		if (targetZoom === undefined || (currentZoom !== undefined && currentZoom >= targetZoom)) return;
+
+		const [west, south, east, north] = entry.metaData.bounds;
+		if (![west, south, east, north].every(Number.isFinite)) return;
+
+		mapStore.flyTo(new maplibregl.LngLat((west + east) / 2, (south + north) / 2), {
+			zoom: targetZoom,
+			duration: 1000
+		});
+	};
+
 	mapStore.onClick(async (e: MapMouseEvent) => {
 		showMarker = false;
 		// プレブュー中はクリック処理を行わない
@@ -513,6 +536,7 @@
 
 			const pickedModel = await threeJsManager.pickModel(e.point);
 			if (pickedModel) {
+				focusLodModel(pickedModel.entryId);
 				console.info('[モデル属性]', pickedModel);
 				if (pickedModel.propId) {
 					console.info('[_prop_id]', pickedModel.propId);

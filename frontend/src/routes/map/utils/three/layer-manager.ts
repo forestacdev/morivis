@@ -42,6 +42,7 @@ import {
 	type ModelAttributes
 } from '$routes/map/utils/three/model-attributes';
 import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
+import { resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
 import {
 	calculateModelTransform,
 	type ModelTransform
@@ -203,6 +204,11 @@ interface LoadedModel {
 		lastLoop?: boolean;
 		lastPlaying?: boolean;
 	};
+	lod?: {
+		activeUrl: string;
+		failedUrl?: string;
+		pendingUrl?: string;
+	};
 	resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>;
 }
 
@@ -359,6 +365,115 @@ export class ThreeJsLayerManager {
 		loader.setDRACOLoader(this.dracoLoader);
 		loader.setKTX2Loader(this.ktx2Loader);
 		return loader;
+	};
+
+	private getModelLodUrl = (entry: MeshEntry<MeshStyle>) => {
+		return resolveModelLodUrl(
+			entry.format.url,
+			entry.format.lods,
+			this.map?.getZoom() ?? Number.POSITIVE_INFINITY
+		);
+	};
+
+	private loadGltf = (url: string) => {
+		return new Promise<{ animations: THREE.AnimationClip[]; scene: THREE.Group; }>(
+			(resolve, reject) => {
+				this.loader.load(
+					url,
+					(gltf) => resolve({ animations: gltf.animations, scene: gltf.scene }),
+					undefined,
+					(error) => reject(error instanceof Error ? error : new Error(String(error)))
+				);
+			}
+		);
+	};
+
+	private requestModelLod = (loaded: LoadedModel & { entry: MeshEntry<MeshStyle>; }) => {
+		if (loaded.entry.format.type !== 'gltf' || !loaded.entry.format.lods?.length) return;
+
+		const nextUrl = this.getModelLodUrl(loaded.entry);
+		if (
+			loaded.lod?.activeUrl === nextUrl || loaded.lod?.pendingUrl === nextUrl
+			|| loaded.lod?.failedUrl === nextUrl
+		) {
+			return;
+		}
+
+		loaded.lod = {
+			...loaded.lod,
+			activeUrl: loaded.lod?.activeUrl ?? loaded.entry.format.url,
+			pendingUrl: nextUrl
+		};
+		void this.loadGltf(nextUrl)
+			.then(({ animations, scene }) => {
+				const current = this.loadedModels.get(loaded.entry.id);
+				if (current !== loaded || current.lod?.pendingUrl !== nextUrl) {
+					this.disposeModelObject(scene);
+					return;
+				}
+
+				const previousObject = loaded.object;
+				const parent = previousObject.parent;
+				if (!parent) {
+					this.disposeModelObject(scene);
+					return;
+				}
+
+				finalizeRuntimeModelObject(scene, {
+					formatType: loaded.entry.format.type,
+					georeference: loaded.entry.format.georeference,
+					normalizeToLocalOrigin: loaded.entry.format.normalizeToLocalOrigin
+				});
+				this.applyStyleToObject(scene, loaded.entry.style, loaded.entry.format.type);
+				scene.visible = previousObject.visible;
+				scene.userData.entryId = loaded.entry.id;
+
+				if (
+					this.selectedModelHighlights.some(
+						(highlight) =>
+							previousObject.getObjectById(highlight.mesh.id) === highlight.mesh
+					)
+				) {
+					this.clearModelHighlight();
+				}
+
+				parent.add(scene);
+				parent.remove(previousObject);
+				this.disposeModelObject(previousObject);
+				loaded.object = scene;
+				loaded.lod = { activeUrl: nextUrl };
+
+				loaded.mixer?.stopAllAction();
+				if (animations.length > 0) {
+					loaded.mixer = new THREE.AnimationMixer(scene);
+					loaded.actions = animations.map((clip) => loaded.mixer!.clipAction(clip));
+				} else {
+					delete loaded.mixer;
+					delete loaded.actions;
+				}
+				delete loaded.lastAnimationLoop;
+				delete loaded.lastAnimationPlaying;
+				delete loaded.lastClipIndex;
+				this.syncAnimationState(loaded);
+				this.requestRepaintBurst(30);
+			})
+			.catch((error) => {
+				const current = this.loadedModels.get(loaded.entry.id);
+				if (current !== loaded || current.lod?.pendingUrl !== nextUrl) return;
+				loaded.lod = {
+					activeUrl: loaded.lod?.activeUrl ?? loaded.entry.format.url,
+					failedUrl: nextUrl
+				};
+				console.error(`LODモデルの読み込みに失敗しました: ${nextUrl}`, error);
+			});
+	};
+
+	private updateModelLods = () => {
+		if (this.activeModelView) return;
+		this.loadedModels.forEach((loaded) => {
+			if (!isMeshModelEntry(loaded.entry)) return;
+			this.requestModelLod(loaded as LoadedModel & { entry: MeshEntry<MeshStyle>; });
+		});
 	};
 
 	private resolveShading = (style: MeshStyle): Required<MeshShadingStyle> => ({
@@ -1714,6 +1829,7 @@ export class ThreeJsLayerManager {
 					if (hasPlayingAnimation) this.map?.triggerRepaint();
 					return;
 				}
+				this.updateModelLods();
 
 				if (this.placementPreview) {
 					this.setOnlyEntryVisible('', false);
@@ -1807,7 +1923,8 @@ export class ThreeJsLayerManager {
 					hit: THREE.Intersection<THREE.Object3D>
 				) => Promise<ModelAttributes>,
 				mmdModel?: LoadedPmxModel,
-				vrm?: VRM
+				vrm?: VRM,
+				lodUrl?: string
 			) => {
 				if (isMeshModelEntry(entry)) {
 					if (entry.format.type === 'ifc') {
@@ -1832,6 +1949,9 @@ export class ThreeJsLayerManager {
 						}
 					}),
 					...(vrm && { vrm }),
+					...(lodUrl && entry.format.type === 'gltf' && entry.format.lods?.length
+						? { lod: { activeUrl: lodUrl } }
+						: {}),
 					resolveAttributes
 				};
 				if (animations.length > 0) {
@@ -1911,13 +2031,15 @@ export class ThreeJsLayerManager {
 					hit: THREE.Intersection<THREE.Object3D>
 				) => Promise<ModelAttributes>,
 				mmdModel?: LoadedPmxModel,
-				vrm?: VRM
+				vrm?: VRM,
+				lodUrl?: string
 			) => {
 				finalizeLoadedModel(object);
 				vrm?.update(0);
-				void onModelLoaded(object, animations, resolveAttributes, mmdModel, vrm).catch((
-					error
-				) => reject(error instanceof Error ? error : new Error(String(error))));
+				void onModelLoaded(object, animations, resolveAttributes, mmdModel, vrm, lodUrl)
+					.catch((
+						error
+					) => reject(error instanceof Error ? error : new Error(String(error))));
 			};
 
 			const createManagedLoaderContext = () => {
@@ -2141,11 +2263,20 @@ export class ThreeJsLayerManager {
 					})
 					.catch((error) => reject(error));
 			} else if (entry.format.type === 'gltf') {
+				const gltfUrl = this.getModelLodUrl(entry);
 				const resourceUrls = entry.format.resourceUrls;
 				if (!resourceUrls) {
 					this.loader.load(
-						entry.format.url,
-						(gltf) => finalizeAndLoadModel(gltf.scene, gltf.animations),
+						gltfUrl,
+						(gltf) =>
+							finalizeAndLoadModel(
+								gltf.scene,
+								gltf.animations,
+								undefined,
+								undefined,
+								undefined,
+								gltfUrl
+							),
 						undefined,
 						(error) => reject(error)
 					);
@@ -2154,7 +2285,7 @@ export class ThreeJsLayerManager {
 					manager.setURLModifier((url) => resolveResourceUrl(resourceUrls, url));
 					const loader = this.createGltfLoader(manager);
 
-					fetch(entry.format.url)
+					fetch(gltfUrl)
 						.then(async (response) => {
 							if (!response.ok) {
 								throw new Error(
@@ -2170,7 +2301,15 @@ export class ThreeJsLayerManager {
 							loader.parse(
 								data,
 								'',
-								(gltf) => finalizeAndLoadModel(gltf.scene, gltf.animations),
+								(gltf) =>
+									finalizeAndLoadModel(
+										gltf.scene,
+										gltf.animations,
+										undefined,
+										undefined,
+										undefined,
+										gltfUrl
+									),
 								(error) =>
 									reject(
 										error instanceof Error ? error : new Error(String(error))
@@ -2318,6 +2457,23 @@ export class ThreeJsLayerManager {
 		});
 	}
 
+	private disposeModelObject = (object: THREE.Object3D) => {
+		object.traverse((child) => {
+			if (!(child as THREE.Mesh).isMesh && !(child as THREE.Points).isPoints) return;
+
+			const drawable = child as THREE.Mesh | THREE.Points;
+			drawable.geometry.dispose();
+			const materials = Array.isArray(drawable.material)
+				? drawable.material
+				: [drawable.material];
+			materials.forEach((material) => material.dispose());
+			const originalMaterials = drawable.userData.originalMaterials as
+				| THREE.Material[]
+				| undefined;
+			originalMaterials?.forEach((material) => material.dispose());
+		});
+	};
+
 	/** モデルを削除 */
 	removeModel(entryId: string): void {
 		const loaded = this.loadedModels.get(entryId);
@@ -2331,20 +2487,7 @@ export class ThreeJsLayerManager {
 		}
 
 		loaded.object.parent?.remove(loaded.object);
-		loaded.object.traverse((child) => {
-			if ((child as THREE.Mesh).isMesh || (child as THREE.Points).isPoints) {
-				const drawable = child as THREE.Mesh | THREE.Points;
-				drawable.geometry.dispose();
-				const materials = Array.isArray(drawable.material)
-					? drawable.material
-					: [drawable.material];
-				materials.forEach((mat) => mat.dispose());
-				const originalMaterials = drawable.userData.originalMaterials as
-					| THREE.Material[]
-					| undefined;
-				originalMaterials?.forEach((material) => material.dispose());
-			}
-		});
+		this.disposeModelObject(loaded.object);
 
 		this.loadedModels.delete(entryId);
 	}

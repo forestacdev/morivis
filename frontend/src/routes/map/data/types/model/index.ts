@@ -228,10 +228,18 @@ export type MeshFormatType =
 	| 'pmx'
 	| 'usd';
 
+/** 指定ズーム以下で選択する、同一モデルの下位表示解像度。 */
+export interface ModelLodLevel {
+	maxZoom: number;
+	url: string;
+}
+
 export interface MeshEntry<T> extends BaseModelEntry {
 	format: {
 		type: MeshFormatType;
 		url: string;
+		/** glTF / GLB の下位表示解像度。url は最高解像度を表す。 */
+		lods?: ModelLodLevel[];
 		/** 再変換せずに直接ダウンロードするための元ファイル名 */
 		sourceFileName?: string;
 		mtlUrl?: string;
