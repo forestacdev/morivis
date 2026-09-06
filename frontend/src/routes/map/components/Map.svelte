@@ -849,7 +849,8 @@
 								entry.format.type === '3mf' ||
 								entry.format.type === 'amf' ||
 								entry.format.type === 'ifc' ||
-								entry.format.type === 'pmx')
+								entry.format.type === 'pmx' ||
+								entry.format.type === 'usd')
 					) as ThreeModelEntry[]);
 
 		const previewThreeModelEntry =

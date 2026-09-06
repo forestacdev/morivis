@@ -387,6 +387,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.glb', '.gltf']
 	},
 	{
+		label: 'USD / USDZ',
+		description:
+			'Pixar USDの3Dシーン形式です。USDZアーカイブとテキスト形式のUSD/USDAモデルを読み込みます。バイナリ形式のUSDCは対象外です。',
+		extensions: ['.usd', '.usda', '.usdz']
+	},
+	{
 		label: 'VRM',
 		description:
 			'人型アバターのモデル形式です。表情、骨格、揺れ物などを持つVRMモデルを読み込むときに使います。',

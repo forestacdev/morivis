@@ -35,18 +35,13 @@ const getUserDataAttributes = (object: THREE.Object3D): ModelAttributes => {
 	return attributes;
 };
 
-/** 形式を問わず Three.js ノード、geometry、material に付随する識別情報を返す。 */
+/** 形式を問わず Three.js ノードに保存されたファイル由来の属性を返す。 */
 export const getModelObjectAttributes = (object: THREE.Object3D): ModelAttributes => {
-	const attributes: ModelAttributes = {
-		...getUserDataAttributes(object),
-		ノードID: object.uuid
-	};
+	const attributes: ModelAttributes = getUserDataAttributes(object);
 	const mesh = object as THREE.Mesh;
-	if (mesh.geometry) attributes['ジオメトリID'] = mesh.geometry.uuid;
 	const material = mesh.material;
 	const firstMaterial = Array.isArray(material) ? material[0] : material;
 	if (firstMaterial) {
-		attributes['マテリアルID'] = firstMaterial.uuid;
 		if (firstMaterial.name) attributes['マテリアル名'] = firstMaterial.name;
 	}
 	return attributes;

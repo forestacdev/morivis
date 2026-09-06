@@ -22,6 +22,24 @@ const readFixtureFile = (fileName: string): File => {
 	});
 };
 
+const createSyntheticUsdFile = (): File =>
+	new File(
+		[
+			`#usda 1.0
+def Xform "Root"
+{
+	def Mesh "Triangle"
+	{
+		int[] faceVertexCounts = [3]
+		int[] faceVertexIndices = [0, 1, 2]
+		point3f[] points = [(0, 0, 0), (2, 0, 0), (0, 3, 0)]
+	}
+}`
+		],
+		'synthetic.usda',
+		{ type: 'model/vnd.usda' }
+	);
+
 describe('computeUploadedModelMeta', () => {
 	beforeAll(() => {
 		if (!globalThis.URL.createObjectURL) {
@@ -70,6 +88,15 @@ describe('computeUploadedModelMeta', () => {
 		expect(result.bounds[0]).toBeCloseTo(139.6917, 3);
 		expect(result.bounds[1]).toBeCloseTo(35.6895, 3);
 		expect(result.xyzImageTile.z).toBeGreaterThanOrEqual(0);
+	});
+
+	it('USD の形状範囲を取得できる', async () => {
+		const { getUploadedModelObject } = await import('./model-bounds');
+		const { object } = await getUploadedModelObject(createSyntheticUsdFile(), 'usd');
+		const box = new THREE.Box3().setFromObject(object);
+
+		expect(box.min.toArray()).toEqual([0, 0, 0]);
+		expect(box.max.toArray()).toEqual([2, 3, 0]);
 	});
 
 	it('FBX の地理配置用範囲は原点付近のポリラインを除外する', async () => {

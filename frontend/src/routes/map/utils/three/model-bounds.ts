@@ -10,6 +10,7 @@ import type {
 	ProjectedModelGeoreference
 } from '$routes/map/data/types/model';
 import type { TileXYZ } from '$routes/map/data/types/raster';
+import { parseUsdFile } from '$routes/map/utils/formats/usd';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import {
@@ -659,6 +660,20 @@ const parsePmxObject = async (
 	};
 };
 
+const parseUsdObject = async (
+	file: File,
+	normalizeToLocalOrigin = false
+): Promise<UploadedModelObject> => {
+	const object = await parseUsdFile(file);
+	if (normalizeToLocalOrigin) {
+		normalizeObjectToLocalOrigin(object, 'y');
+	}
+	return {
+		object,
+		animationNames: []
+	};
+};
+
 export const getUploadedModelObject = async (
 	file: File,
 	format: MeshFormatType,
@@ -705,6 +720,10 @@ export const getUploadedModelObject = async (
 		return parsePmxObject(file, normalizeToLocalOrigin);
 	}
 
+	if (format === 'usd') {
+		return parseUsdObject(file, normalizeToLocalOrigin);
+	}
+
 	if (format === 'vrm') {
 		return parseVrmObject(file, normalizeToLocalOrigin);
 	}
@@ -741,7 +760,7 @@ export const computeUploadedModelMeta = async ({
 	if (box.isEmpty()) {
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}
-	const coordinateSpace = format === 'gltf' || format === 'vrm'
+	const coordinateSpace = format === 'gltf' || format === 'vrm' || format === 'usd'
 		? 'root-children'
 		: format === 'ifc'
 		? 'ifc-z-up'
@@ -854,7 +873,13 @@ export const computeUploadedModelMeta = async ({
 			displayBox.max.y,
 			displayBox.max.z
 		],
-		...((format === 'fbx' || format === 'gltf' || format === 'vrm' || format === 'ifc') && {
+		...((
+			format === 'fbx'
+			|| format === 'gltf'
+			|| format === 'vrm'
+			|| format === 'ifc'
+			|| format === 'usd'
+		) && {
 			sourceBbox
 		}),
 		xyzImageTile: findCenterTile(bounds),

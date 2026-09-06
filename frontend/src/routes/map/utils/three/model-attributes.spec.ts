@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { getIfcAttributes, getModelObjectAttributes } from './model-attributes';
 
 describe('getModelObjectAttributes', () => {
-	it('ユーザー属性とジオメトリ・マテリアルの識別子を返す', () => {
+	it('ユーザー属性とファイル由来のマテリアル名を返す', () => {
 		const geometry = new THREE.BufferGeometry();
 		const material = new THREE.MeshBasicMaterial({ name: 'concrete' });
 		const mesh = new THREE.Mesh(geometry, material);
@@ -13,9 +13,9 @@ describe('getModelObjectAttributes', () => {
 		const attributes = getModelObjectAttributes(mesh);
 
 		expect(attributes).toMatchObject({ category: 'gate', levels: '1, 2' });
-		expect(attributes['ノードID']).toBe(mesh.uuid);
-		expect(attributes['ジオメトリID']).toBe(geometry.uuid);
-		expect(attributes['マテリアルID']).toBe(material.uuid);
+		expect(attributes).not.toHaveProperty('ノードID');
+		expect(attributes).not.toHaveProperty('ジオメトリID');
+		expect(attributes).not.toHaveProperty('マテリアルID');
 		expect(attributes['マテリアル名']).toBe('concrete');
 		expect(attributes.entryId).toBeUndefined();
 	});

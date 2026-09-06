@@ -90,6 +90,12 @@
 		if (pathLikeName.endsWith('.amf')) return 'amf';
 		if (pathLikeName.endsWith('.ifc')) return 'ifc';
 		if (pathLikeName.endsWith('.pmx')) return 'pmx';
+		if (
+			pathLikeName.endsWith('.usd') ||
+			pathLikeName.endsWith('.usda') ||
+			pathLikeName.endsWith('.usdz')
+		)
+			return 'usd';
 		return 'gltf';
 	};
 
@@ -117,7 +123,8 @@
 		'drc',
 		'3mf',
 		'amf',
-		'ifc'
+		'ifc',
+		'usd'
 	]);
 
 	const inputFiles = $derived.by(() => toUploadFiles(dropFile));
@@ -125,7 +132,9 @@
 	const glbFile = $derived.by(() => {
 		return (
 			inputFiles.find((file) =>
-				/\.(glb|gltf|vrm|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc|pmx)$/i.test(getPathLikeName(file))
+				/\.(glb|gltf|vrm|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc|pmx|usd|usda|usdz)$/i.test(
+					getPathLikeName(file)
+				)
 			) ?? null
 		);
 	});
@@ -164,6 +173,7 @@
 		if (activeFormat === 'gltf') return gltfSupplementaryFiles;
 		if (activeFormat === 'pmx') return [...textureFiles, ...vmdFiles];
 		if (activeFormat === 'vrm') return vrmaFiles;
+		if (activeFormat === 'usd') return [];
 		return textureFiles;
 	});
 
@@ -781,6 +791,7 @@
 				activeFormat === 'gltf' ||
 				activeFormat === 'vrm' ||
 				activeFormat === 'pmx' ||
+				activeFormat === 'usd' ||
 				(activeFormat === 'fbx' && !isLocalFbx)) &&
 			!resolvedProjectedModelEpsg;
 		const entry = createGlbEntry(
@@ -1108,7 +1119,11 @@
 		const center = mapStore.getCenter();
 		const format = getMeshFormat(forms.url.trim().toLowerCase());
 		const normalizeToLocalOrigin =
-			format === 'ifc' || format === 'fbx' || format === 'pmx' || format === 'vrm';
+			format === 'ifc' ||
+			format === 'fbx' ||
+			format === 'pmx' ||
+			format === 'vrm' ||
+			format === 'usd';
 		const entry = createGlbEntry(
 			forms.name,
 			forms.url.trim(),
@@ -1269,7 +1284,7 @@
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
 		<TextForm
 			bind:value={forms.url}
-			label="3Dモデル URL (GLTF / GLB / VRM / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC / PMX)"
+			label="3Dモデル URL (GLTF / GLB / USD / USDZ / VRM / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC / PMX)"
 			error={errors.url}
 		/>
 	</div>

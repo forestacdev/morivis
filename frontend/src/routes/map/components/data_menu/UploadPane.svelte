@@ -285,6 +285,7 @@
 		SVG: 'mdi:svg',
 		GeoPDF: 'mdi:file-pdf-box',
 		'GLB / GLTF': 'mdi:cube-outline',
+		'USD / USDZ': 'mdi:package-variant-closed',
 		VRM: 'mdi:account',
 		'Wavefront OBJ': 'mdi:cube-outline',
 		'Autodesk 3DS': 'mdi:cube-outline',

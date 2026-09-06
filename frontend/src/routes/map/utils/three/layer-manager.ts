@@ -14,6 +14,7 @@ import {
 import type { ModelPartData } from '$routes/map/data/types/model';
 import { takeGaussianSplatData } from '$routes/map/utils/formats/gaussian-splat/cache';
 import { parseGaussianSplatInWorker } from '$routes/map/utils/formats/gaussian-splat/gaussian-splat-parallel';
+import { parseUsdArrayBuffer } from '$routes/map/utils/formats/usd';
 import type { CustomLayerInterface, Map as MapLibreMap } from '$routes/map/utils/maplibre';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
@@ -290,7 +291,8 @@ const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>(
 	'3mf',
 	'amf',
 	'ifc',
-	'pmx'
+	'pmx',
+	'usd'
 ]);
 const IFC_ATTRIBUTE_BATCH_SIZE = 32;
 
@@ -2272,6 +2274,18 @@ export class ThreeJsLayerManager {
 					.then((mmdModel) =>
 						finalizeAndLoadModel(mmdModel.model.root, [], undefined, mmdModel)
 					)
+					.catch((error) => reject(error));
+			} else if (entry.format.type === 'usd') {
+				fetch(entry.format.url)
+					.then(async (response) => {
+						if (!response.ok) {
+							throw new Error(
+								`USDを取得できません: ${response.status} ${response.statusText}`
+							);
+						}
+						return parseUsdArrayBuffer(await response.arrayBuffer());
+					})
+					.then((object) => finalizeAndLoadModel(object))
 					.catch((error) => reject(error));
 			}
 		});

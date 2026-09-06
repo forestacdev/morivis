@@ -132,6 +132,19 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it.each(['model.usd', 'model.usda', 'model.usdz'])(
+		'%s はモデルダイアログ判定になる',
+		async (fileName) => {
+			const result = await resolveDroppedFiles(createFile(fileName, 'usd'));
+
+			expect(result).toEqual({
+				type: 'dialog',
+				dialogType: 'model',
+				dropFiles: undefined
+			});
+		}
+	);
+
 	it('VRM と VRMA を同時にドロップするとモデルダイアログでまとめて扱う', async () => {
 		const vrmFile = createFile('test-avatar.vrm', 'vrm');
 		const vrmaFile = createFile('test-motion.vrma', 'vrma');

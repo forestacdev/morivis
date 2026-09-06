@@ -15,7 +15,10 @@ export const MODEL_FILE_EXTENSIONS = [
 	'.3mf',
 	'.amf',
 	'.ifc',
-	'.pmx'
+	'.pmx',
+	'.usd',
+	'.usda',
+	'.usdz'
 ] as const;
 
 // ディレクトリドロップ時は仮想的な相対パスを優先し、拡張子判定を安定させる。

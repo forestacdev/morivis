@@ -233,6 +233,8 @@ export const createGlbEntry = (
 				? 'IFC'
 				: formatType === 'pmx'
 				? 'PMX'
+				: formatType === 'usd'
+				? 'USD / USDZ'
 				: 'GLB',
 			name,
 			altitude: transform.altitude,
