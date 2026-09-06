@@ -263,7 +263,6 @@
 		<ColorOption
 			bind:colorStyle={layerEntry.style.partColors}
 			bind:showColorOption={showPartColorOption}
-			showExpressionWhenDisabled
 		/>
 	{:else}
 		<div class="mb-2 text-sm text-base/70">色分けに使える事前定義属性がありません</div>
@@ -272,7 +271,6 @@
 	<ColorOption
 		bind:colorStyle={layerEntry.style.partColors}
 		bind:showColorOption={showPartColorOption}
-		showExpressionWhenDisabled
 	/>
 {/if}
 

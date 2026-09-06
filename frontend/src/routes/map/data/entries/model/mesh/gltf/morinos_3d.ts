@@ -1,5 +1,6 @@
 import { COVER_IMAGE_BASE_PATH, ENTRY_GLTF_PATH } from '$routes/constants';
 import { createMeshModelEntry } from '$routes/map/data/entries/_factories/model';
+import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style';
 
 const baseEntry = createMeshModelEntry({
 	id: 'morinos_3d',
@@ -49,9 +50,10 @@ const entry = {
 					key: '樹種',
 					name: '樹種による色分け',
 					mapping: {
-						categories: ['ヒノキ', 'ミズナラ', 'カバノキ', 'スギ', 'ナラ'],
-						values: ['#b2df8a', '#e31a1c', '#1f78b4', '#ff7f00', '#6a3d9a'],
-						patterns: [null, null, null, null, null]
+						...createMatchColorMapping(
+							['ヒノキ', 'ミズナラ', 'カバノキ', 'スギ', 'ナラ'],
+							'treeSpecies'
+						)
 					},
 					noData: {
 						label: 'その他',
@@ -163,8 +165,7 @@ const entry = {
 			},
 			houtate: {
 				name: '樹皮付き方立',
-				description:
-					'方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
+				description: '方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi3/',
 				medias: [
 					{
@@ -179,8 +180,7 @@ const entry = {
 			},
 			'77164639-4feb-49d5-b86e-af26be2296c0': {
 				name: 'ガラスコーナー',
-				description:
-					'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
+				description: 'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi4/',
 				medias: [
 					{
