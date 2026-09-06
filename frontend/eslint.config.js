@@ -12,7 +12,8 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 export default [
 	includeIgnoreFile(gitignorePath),
 	{
-		ignores: ['docs/**']
+		// Basisは外部ライブラリの配布ファイルをそのまま配置する。
+		ignores: ['docs/**', 'static/basis/**']
 	},
 	js.configs.recommended,
 	...ts.configs.recommended,
@@ -77,7 +78,11 @@ export default [
 		},
 		languageOptions: {
 			parserOptions: {
-				parser: ts.parser
+				parser: ts.parser,
+				// svelte-eslint-parser 0.43ではgenerics属性の解析を明示的に有効化する。
+				svelteFeatures: {
+					experimentalGenerics: true
+				}
 			}
 		},
 		rules: {
