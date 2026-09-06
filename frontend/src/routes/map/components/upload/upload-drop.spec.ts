@@ -102,6 +102,34 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it.each(['jpg', 'jpeg', 'heic', 'heif', 'png', 'webp'])(
+		'モバイルの %s は位置情報の有無を写真フォームで確認する',
+		async (extension) => {
+			const file = createFile(`test-photo.${extension}`);
+			expect(await resolveDroppedFiles(file, { mobile: true })).toEqual({
+				type: 'dialog',
+				dialogType: 'geophoto',
+				dropFiles: [file]
+			});
+		}
+	);
+
+	it('モバイルでは写真一式を先頭のGPSの有無で切り捨てない', async () => {
+		const files = [createFile('test-no-gps.jpg'), createFile('test-with-gps.heic')];
+		expect(await resolveDroppedFiles(files, { mobile: true })).toEqual({
+			type: 'dialog',
+			dialogType: 'geophoto',
+			dropFiles: files
+		});
+	});
+
+	it('PCのGPSなし画像は従来の位置合わせへ進む', async () => {
+		expect(await resolveDroppedFiles(createFile('test-no-gps.jpg'))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'geopdf'
+		});
+	});
+
 	it('単一の BCF は bcf ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(createFile('test-issues.bcf', 'bcf'));
 

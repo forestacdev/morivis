@@ -38,4 +38,26 @@ describe('getModelPartColor', () => {
 			)
 		).toBe('#808080');
 	});
+
+	it('match定義にない属性値は元のマテリアル色を維持する', () => {
+		expect(
+			getModelPartColor(
+				{
+					key: '樹種',
+					show: true,
+					expressions: [{
+						type: 'match',
+						key: '樹種',
+						name: '樹種による色分け',
+						mapping: {
+							categories: ['ヒノキ'],
+							values: ['#b2df8a'],
+							patterns: [null]
+						}
+					}]
+				},
+				{ 樹種: 'ミズナラ' }
+			)
+		).toBeUndefined();
+	});
 });

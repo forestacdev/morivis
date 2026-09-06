@@ -31,6 +31,22 @@ const entry = {
 	},
 	style: {
 		...baseEntry.style,
+		partColors: {
+			key: '樹種',
+			show: false,
+			expressions: [
+				{
+					type: 'match',
+					key: '樹種',
+					name: '樹種による色分け',
+					mapping: {
+						categories: ['ヒノキ', 'ミズナラ', 'カバノキ'],
+						values: ['#b2df8a', '#e31a1c', '#1f78b4'],
+						patterns: [null, null, null]
+					}
+				}
+			]
+		},
 		shading: {
 			...baseEntry.style.shading,
 			enabled: true

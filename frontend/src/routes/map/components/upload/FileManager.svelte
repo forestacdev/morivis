@@ -8,6 +8,7 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFiles } from '$routes/map/types';
 	import type maplibregl from '$routes/map/utils/maplibre';
+	import { isMobile } from '$routes/stores/ui';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -35,7 +36,7 @@
 		// 大きなファイルの確認
 		if (!(await checkLargeDroppedFiles(file))) return;
 
-		const decision = await resolveDroppedFiles(file);
+		const decision = await resolveDroppedFiles(file, { mobile: $isMobile });
 		applyUploadDropDecision(decision, {
 			map,
 			setDropFile: (files) => {

@@ -61,6 +61,22 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveOpenDialogDrop', () => {
+	it('モバイルで開いているフォームに写真を追加すると写真フォームへ移る', async () => {
+		const files = [createFile('test-photo.png')];
+		expect(await resolveOpenDialogDrop('gpx', [], files, { mobile: true })).toEqual({
+			type: 'delegate',
+			decision: { type: 'dialog', dialogType: 'geophoto', dropFiles: files }
+		});
+	});
+
+	it('モバイルでもモデルへの画像追加はテクスチャとして扱う', async () => {
+		const model = createFile('test-model.obj');
+		const texture = createFile('test-texture.png');
+		expect(await resolveOpenDialogDrop('model', [model], [texture], { mobile: true })).toEqual({
+			type: 'stay',
+			dropFiles: [model, texture]
+		});
+	});
 	it('SXFフォームで .saf を追加ドロップしたときは同一フォームにファイルをマージする', async () => {
 		const currentFiles = [createFile('plan.sfc')];
 		const incomingFiles = [createFile('plan.saf')];

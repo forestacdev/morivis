@@ -3,7 +3,11 @@ import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 import { isRasterImageSidecarFile } from '$routes/map/utils/formats/raster/sidecar';
 import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
-import { resolveDroppedFiles, type UploadDropDecision } from './upload-drop';
+import {
+	resolveDroppedFiles,
+	type UploadDropDecision,
+	type UploadDropOptions
+} from './upload-drop';
 import { getPathLikeName, hasExtension } from './upload-drop-matchers';
 
 type PathLikeFile = File & { morivisRelativePath?: string; };
@@ -138,12 +142,13 @@ const supplementaryDropMatchers: Partial<
 export const resolveOpenDialogDrop = async (
 	dialogType: DialogType,
 	currentFiles: UploadFiles,
-	incomingFiles: File[]
+	incomingFiles: File[],
+	options: UploadDropOptions = {}
 ): Promise<OpenDialogDropDecision> => {
 	if (!dialogType) {
 		return {
 			type: 'delegate',
-			decision: await resolveDroppedFiles(incomingFiles)
+			decision: await resolveDroppedFiles(incomingFiles, options)
 		};
 	}
 
@@ -155,7 +160,7 @@ export const resolveOpenDialogDrop = async (
 		};
 	}
 
-	const decision = await resolveDroppedFiles(incomingFiles);
+	const decision = await resolveDroppedFiles(incomingFiles, options);
 	if (decision.type === 'dialog' && decision.dialogType === dialogType) {
 		return {
 			type: 'stay',

@@ -43,6 +43,7 @@ import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
 import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
 import { createEdgeUvGeometry } from '$routes/map/utils/three/model-edge-uv';
 import { isLowerDetailLodUrl, resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
+import { getModelPartColor } from '$routes/map/utils/three/model-part-style';
 import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
 import {
 	calculateModelTransform,
@@ -652,11 +653,17 @@ export class ThreeJsLayerManager {
 
 	private createShaderMaterial = (
 		sourceMaterial: THREE.Material,
-		style: MeshStyle
+		style: MeshStyle,
+		objectPartColor?: string,
+		useIndexedPartColors = false
 	): THREE.ShaderMaterial => {
 		const shadingUniforms = resolveMeshShadingUniforms(style);
-		const baseColor = new THREE.Color(style.color);
-		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
+		const baseColor = new THREE.Color(objectPartColor ?? style.color);
+		if (
+			objectPartColor == null
+			&& 'color' in sourceMaterial
+			&& sourceMaterial.color instanceof THREE.Color
+		) {
 			baseColor.multiply(sourceMaterial.color);
 		}
 
@@ -700,7 +707,7 @@ export class ThreeJsLayerManager {
 				THREE.UnsignedByteType
 			)
 			: null;
-		const partColorTexture = this.createPartColorTexture(style);
+		const partColorTexture = useIndexedPartColors ? this.createPartColorTexture(style) : null;
 		if (colorRampTexture) {
 			colorRampTexture.colorSpace = THREE.SRGBColorSpace;
 			colorRampTexture.minFilter = THREE.LinearFilter;
@@ -724,7 +731,8 @@ export class ThreeJsLayerManager {
 				uUseMap: { value: Boolean(map) },
 				uColorRamp: { value: colorRampTexture },
 				uUseHeightColorRamp: { value: Boolean(colorRampTexture) },
-				uUsePartColors: { value: Boolean(style.partColors?.show) },
+				uUseObjectPartColor: { value: objectPartColor != null },
+				uUsePartColors: { value: useIndexedPartColors },
 				uPartColorPalette: { value: partColorTexture },
 				uPartColorPaletteSize: { value: partColorTexture?.image.width ?? 1 },
 				uHeightRampMin: { value: colorRampMin },
@@ -761,6 +769,7 @@ export class ThreeJsLayerManager {
 				uniform bool uUseMap;
 				uniform sampler2D uColorRamp;
 				uniform bool uUseHeightColorRamp;
+				uniform bool uUseObjectPartColor;
 				uniform bool uUsePartColors;
 				uniform sampler2D uPartColorPalette;
 				uniform float uPartColorPaletteSize;
@@ -795,7 +804,11 @@ export class ThreeJsLayerManager {
 					).rgb;
 					vec3 surfaceColor = uUsePartColors
 						? partColor
-						: (uUseHeightColorRamp ? rampColor : (uBaseColor * texel.rgb));
+						: (
+							uUseObjectPartColor
+								? uBaseColor
+								: (uUseHeightColorRamp ? rampColor : (uBaseColor * texel.rgb))
+						);
 					vec3 normalDir = normalize(vNormal);
 					float diffuse = max(dot(normalDir, normalize(uLightDirection)), 0.0);
 					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
@@ -869,7 +882,9 @@ export class ThreeJsLayerManager {
 	private updateShaderMaterialUniforms = (
 		sourceMaterial: THREE.Material,
 		material: THREE.Material,
-		style: MeshStyle
+		style: MeshStyle,
+		objectPartColor?: string,
+		useIndexedPartColors = false
 	) => {
 		if (
 			!(material instanceof THREE.ShaderMaterial)
@@ -879,8 +894,12 @@ export class ThreeJsLayerManager {
 		}
 
 		const shadingUniforms = resolveMeshShadingUniforms(style);
-		const baseColor = new THREE.Color(style.color);
-		if ('color' in sourceMaterial && sourceMaterial.color instanceof THREE.Color) {
+		const baseColor = new THREE.Color(objectPartColor ?? style.color);
+		if (
+			objectPartColor == null
+			&& 'color' in sourceMaterial
+			&& sourceMaterial.color instanceof THREE.Color
+		) {
 			baseColor.multiply(sourceMaterial.color);
 		}
 		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
@@ -893,6 +912,8 @@ export class ThreeJsLayerManager {
 		material.uniforms.uLightDirection.value.copy(shadingUniforms.lightDirection);
 		material.uniforms.uMap.value = map;
 		material.uniforms.uUseMap.value = Boolean(map);
+		material.uniforms.uUseObjectPartColor.value = objectPartColor != null;
+		material.uniforms.uUsePartColors.value = useIndexedPartColors;
 		material.wireframe = style.wireframe;
 		return true;
 	};
@@ -916,9 +937,18 @@ export class ThreeJsLayerManager {
 
 		const usePartColorMaterial = Boolean(style.partColors?.show)
 			&& mesh.geometry.getAttribute('morivisPartColorIndex') != null;
+		const objectPartColor = usePartColorMaterial
+			? undefined
+			: getModelPartColor(style.partColors, getModelObjectAttributes(mesh));
 		this.syncEdgeOverlay(mesh, style);
 		const hasExistingShaderMaterials = currentMaterials.every((material, index) =>
-			this.updateShaderMaterialUniforms(originalMaterials[index], material, style)
+			this.updateShaderMaterialUniforms(
+				originalMaterials[index],
+				material,
+				style,
+				objectPartColor,
+				usePartColorMaterial
+			)
 		);
 		if (hasExistingShaderMaterials && !style.heightColorRamp?.enabled) {
 			currentMaterials.forEach((material) => {
@@ -942,7 +972,12 @@ export class ThreeJsLayerManager {
 		// 陰影の有無で材質種別を変えると、部材数の多いモデルでGPUプログラムの再構築と切替が増える。
 		// 常に同じシェーダーを使い、通常の陰影切替はuniform値だけを更新する。
 		const nextMaterials = originalMaterials.map((sourceMaterial) =>
-			this.createShaderMaterial(sourceMaterial, style)
+			this.createShaderMaterial(
+				sourceMaterial,
+				style,
+				objectPartColor,
+				usePartColorMaterial
+			)
 		);
 
 		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];

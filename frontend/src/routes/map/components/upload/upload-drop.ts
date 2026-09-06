@@ -59,8 +59,10 @@ export type UploadDropDecision =
 type UploadDropRule = {
 	id: string;
 	match: (files: File[]) => boolean;
-	resolve: (files: File[]) => Promise<UploadDropDecision>;
+	resolve: (files: File[], options: UploadDropOptions) => Promise<UploadDropDecision>;
 };
+
+export type UploadDropOptions = { mobile?: boolean; };
 
 // FileManager 側で state 更新しやすいよう、判定結果を UI 遷移の形にそろえる。
 const createDialogDecision = (
@@ -280,13 +282,13 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
 		id: 'photo-set',
 		match: (files) => areAllPhotoFiles(files),
-		resolve: async (files) => {
+		resolve: async (files, options) => {
 			const firstFile = files[0];
 			if (!firstFile) return createNotificationDecision('対応していないファイル形式です');
 			if (await hasExifGps(firstFile)) {
 				return createDialogDecision('geophoto');
 			}
-			return await resolveDroppedFiles(firstFile);
+			return await resolveDroppedFiles(firstFile, options);
 		}
 	},
 	{
@@ -355,7 +357,7 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
 		id: 'hrit-extensionless',
 		match: () => true,
-		resolve: async (files) => {
+		resolve: async (files, options) => {
 			const hritMatches = await Promise.all(
 				files.map(async (file) => ({
 					file,
@@ -369,7 +371,7 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 
 			const supportedFile = findFirstSupportedFile(files);
 			if (supportedFile) {
-				return await resolveDroppedFiles(supportedFile);
+				return await resolveDroppedFiles(supportedFile, options);
 			}
 
 			return createNotificationDecision('対応していないファイル形式です');
@@ -378,7 +380,10 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 ];
 
 // 単体ドロップ用の本体。特殊判定だけ if に残し、それ以外は拡張子表へ落とす。
-const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
+const resolveSingleFile = async (
+	file: File,
+	options: UploadDropOptions
+): Promise<UploadDropDecision> => {
 	const ext = file.name.split('.').pop()?.toLowerCase();
 
 	if (ext === 'zip') {
@@ -389,7 +394,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 		try {
 			const extracted = await unzipFiles(file);
 			if (extracted.length > 0) {
-				return await resolveDroppedFiles(extracted);
+				return await resolveDroppedFiles(extracted, options);
 			}
 		} catch {
 			return createNotificationDecision('ZIP内に対応するファイルが見つかりません');
@@ -514,10 +519,13 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 };
 
 // 複数ドロップ用の本体。KML+モデル、Shapefile 一式、GeoTIFF+sidecar などをここで扱う。
-const resolveMultipleFiles = async (files: File[]): Promise<UploadDropDecision> => {
+const resolveMultipleFiles = async (
+	files: File[],
+	options: UploadDropOptions
+): Promise<UploadDropDecision> => {
 	for (const rule of MULTI_FILE_RULES) {
 		if (!rule.match(files)) continue;
-		return await rule.resolve(files);
+		return await rule.resolve(files, options);
 	}
 
 	return createNotificationDecision('対応していないファイル形式です');
@@ -525,14 +533,24 @@ const resolveMultipleFiles = async (files: File[]): Promise<UploadDropDecision> 
 
 // FileManager から呼ぶ公開入口。単体と複数の分岐だけをここで吸収する。
 export const resolveDroppedFiles = async (
-	input: File | File[]
+	input: File | File[],
+	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
+	const files = Array.isArray(input) ? input : [input];
+	// モバイルの写真はGPSの有無にかかわらず写真フォームへ渡す。
+	// ワールドファイル付き画像やモデルのテクスチャは従来の組み合わせ判定を優先する。
+	if (
+		options.mobile && files.length > 0
+		&& files.every((file) => /\.(jpe?g|heic|heif|png|webp)$/i.test(file.name))
+	) {
+		return createDialogDecision('geophoto', files);
+	}
 	if (Array.isArray(input)) {
 		if (input.length === 0) {
 			return createNotificationDecision('対応していないファイル形式です');
 		}
-		return await resolveMultipleFiles(input);
+		return await resolveMultipleFiles(input, options);
 	}
 
-	return await resolveSingleFile(input);
+	return await resolveSingleFile(input, options);
 };

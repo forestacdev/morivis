@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { onMount } from 'svelte';
 	import { scale } from 'svelte/transition';
 	import VirtualList from 'svelte-tiny-virtual-list';
 
@@ -15,24 +14,11 @@
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
 
-	let mobileFileAccept = $state(
-		SUPPORTED_FILE_GROUPS.filter((group) =>
-			['GPX', '画像 (EXIF GPS)', '点群'].includes(group.label)
-		)
-			.flatMap((group) => group.extensions)
-			.join(',')
-	);
-
-	onMount(() => {
-		const isAppleMobile =
-			/iPad|iPhone|iPod/.test(navigator.userAgent) ||
-			(navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-		const isAndroid = /Android/i.test(navigator.userAgent);
-		if (isAppleMobile || isAndroid) {
-			// iOS / Android Chromeでは汎用データとして指定し、撮影候補を出さずにファイルを選ぶ。
-			mobileFileAccept = 'application/octet-stream';
-		}
-	});
+	const mobileFileAccept = SUPPORTED_FILE_GROUPS.filter((group) =>
+		['GPX', '画像 (EXIF GPS)', '点群'].includes(group.label)
+	)
+		.flatMap((group) => group.extensions)
+		.join(',');
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;

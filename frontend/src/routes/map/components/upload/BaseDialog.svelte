@@ -17,7 +17,7 @@
 	import type { DialogType, UploadFiles } from '$routes/map/types';
 	import type maplibregl from '$routes/map/utils/maplibre';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
-	import { isProcessing } from '$routes/stores/ui';
+	import { isMobile, isProcessing } from '$routes/stores/ui';
 
 	const loadShapeFileForm = () => import('./form/ShapeFileForm.svelte');
 
@@ -77,7 +77,9 @@
 		if (!showDialogType) return;
 		if (!(await checkLargeDroppedFiles(files))) return;
 
-		const decision = await resolveOpenDialogDrop(showDialogType, dropFile, files);
+		const decision = await resolveOpenDialogDrop(showDialogType, dropFile, files, {
+			mobile: $isMobile
+		});
 		if (decision.type === 'stay') {
 			dropFile = decision.dropFiles;
 			return;
