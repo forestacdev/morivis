@@ -124,7 +124,7 @@ export default defineConfig(({ mode }) => {
 			proxy: buildViteProxyConfig(env)
 		},
 		test: {
-			include: ['src/**/*.{test,spec}.{js,ts}'],
+			include: ['src/**/*.{test,spec}.{js,ts}', 'scripts/**/*.{test,spec}.{js,ts}'],
 			setupFiles: ['./vitest.setup.ts']
 		}
 	};

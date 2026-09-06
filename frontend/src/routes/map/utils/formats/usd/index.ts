@@ -9,6 +9,11 @@ interface TinyUsdScene {
 	delete?: () => void;
 }
 
+interface TinyUsdTexturedScene extends TinyUsdScene {
+	getTexture: (textureId: number) => { textureImageId: number; } | undefined;
+	getImage: (imageId: number) => { uri?: string; } | undefined;
+}
+
 interface TinyUsdLoader {
 	native_: unknown;
 	parse: (
@@ -157,7 +162,7 @@ const createUsdzTextureResolver = (assets: Map<string, Uint8Array>) => {
 			return null;
 		}
 
-		const usdScene = scene as TinyUsdScene;
+		const usdScene = scene as TinyUsdTexturedScene;
 		const imageId = usdScene.getTexture(textureId)?.textureImageId;
 		const uri = imageId === undefined ? undefined : usdScene.getImage(imageId)?.uri;
 		if (!uri) return null;
@@ -167,7 +172,11 @@ const createUsdzTextureResolver = (assets: Map<string, Uint8Array>) => {
 
 		const cacheKey = normalizeArchivePath(uri);
 		if (!textureCache.has(cacheKey)) {
-			const blobUrl = URL.createObjectURL(new Blob([asset], { type: getImageMimeType(uri) }));
+			const data = new Uint8Array(asset.byteLength);
+			data.set(asset);
+			const blobUrl = URL.createObjectURL(
+				new Blob([data.buffer], { type: getImageMimeType(uri) })
+			);
 			const texture = new TextureLoader().loadAsync(blobUrl).finally(() =>
 				URL.revokeObjectURL(blobUrl)
 			);
