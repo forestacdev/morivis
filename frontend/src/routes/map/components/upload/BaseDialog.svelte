@@ -11,13 +11,15 @@
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
-	import ShapeFileForm from '$routes/map/components/upload/form/ShapeFileForm.svelte';
+	import LazyUploadComponent from './LazyUploadComponent.svelte';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFiles } from '$routes/map/types';
 	import type maplibregl from '$routes/map/utils/maplibre';
 	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { isProcessing } from '$routes/stores/ui';
+
+	const loadShapeFileForm = () => import('./form/ShapeFileForm.svelte');
 
 	interface Props {
 		map: maplibregl.Map | null;
@@ -110,7 +112,7 @@
 					: ''}"
 			>
 				<DialogRenderer
-					component={activeDialogDefinition.component}
+					load={activeDialogDefinition.load}
 					profile={activeDialogDefinition.profile}
 					bind:showDataEntry
 					bind:showDialogType
@@ -155,7 +157,7 @@
 						: 'max-h-[700px]'} {isDragover ? 'ring-main/40 ring-2' : ''}"
 				>
 					<DialogRenderer
-						component={activeDialogDefinition.component}
+						load={activeDialogDefinition.load}
 						profile={activeDialogDefinition.profile}
 						bind:showDataEntry
 						bind:showDialogType
@@ -182,18 +184,28 @@
 	{/if}
 {/if}
 
-{#if !$isProcessing}
-	<ShapeFileForm
-		bind:showDataEntry
-		bind:showDialogType
-		bind:dropFile
-		bind:isDragover
-		bind:transformOptionMode
-		bind:focusBbox
-		bind:zoneConfirmedEpsg
-		bind:pendingZoneGeoRefData
-		{selectedEpsgCode}
-	/>
+{#if showDialogType === 'shp' && !$isProcessing}
+	<LazyUploadComponent
+		load={loadShapeFileForm}
+		onclose={() => {
+			showDialogType = null;
+			dropFile = null;
+		}}
+	>
+		{#snippet children(ShapeFileForm)}
+			<ShapeFileForm
+				bind:showDataEntry
+				bind:showDialogType
+				bind:dropFile
+				bind:isDragover
+				bind:transformOptionMode
+				bind:focusBbox
+				bind:zoneConfirmedEpsg
+				bind:pendingZoneGeoRefData
+				{selectedEpsgCode}
+			/>
+		{/snippet}
+	</LazyUploadComponent>
 {/if}
 
 <style>

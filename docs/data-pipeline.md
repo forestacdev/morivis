@@ -44,9 +44,22 @@ flowchart LR
 | --- | --- |
 | `types/index.ts` | `DialogType` と `SUPPORTED_FILE_GROUPS`。UI に見せる対応拡張子の定義元。 |
 | `upload-drop.ts` | ファイルや URL をどの `DialogType` に振り分けるかの定義元。OBJ の軽量事前検査結果のような形式別メタデータもここで `File` に一時付与する。 |
-| `dialog-registry.ts` | `DialogType -> Form / profile` の対応表。 |
+| `dialog-registry.ts` | `DialogType -> Form の動的 import / profile` の対応表。 |
 | `transform-policy.ts` | 形式ごとの `zone` / `georef` 許可方針。 |
 | `components/upload/form/*.svelte` | 各形式の preview / final entry 作成の実装本体。 |
+
+## 読み込みのタイミング
+
+PC・モバイルとも、`showDialogType` が設定されたときに `BaseDialog` を読み込む。
+`dialog-registry.ts` の `load` は対象フォームだけを動的 import し、Shapefile の専用画面も同様に必要時に読み込む。
+`GeoRefForm` は `transformOptionMode` が設定されたときに読み込む。
+`LazyUploadComponent` が読み込み中のキャンセル、失敗時の再試行を扱う。
+
+写真の GPS 判定では HEIC デコーダーを読み込まない。画像の先頭 12 バイトで HEIC を判定し、GPS 付き HEIC を表示用に変換するときだけ `heic-to` を読み込む。
+
+PWA は `scripts/pwa-precache.ts` で起動エントリの静的依存をたどり、遅延 JS と変換用 Worker・WASM を事前キャッシュから除外する。
+ハッシュ付きの遅延モジュールは、Service Worker の制御下で使用した時点でキャッシュする。
+未使用の形式を初めて開くときは通信が必要になる。
 
 ## 中間状態
 

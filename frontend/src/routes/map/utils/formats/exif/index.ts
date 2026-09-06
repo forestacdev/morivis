@@ -5,7 +5,6 @@
  * - https://github.com/hoppergee/heic-to
  */
 import * as exifr from 'exifr';
-import { heicTo, isHeic } from 'heic-to';
 
 export interface GeoPhotoFeature {
 	type: 'Feature';
@@ -31,13 +30,19 @@ export interface GeoPhotoResult {
 
 const createDisplayImageUrl = async (file: File): Promise<string> => {
 	const originalUrl = URL.createObjectURL(file);
-	const isHeicFile = await isHeic(file);
-
-	if (!isHeicFile) {
-		return originalUrl;
-	}
 
 	try {
+		// 形式判定に変換ライブラリを使うと、JPEGでもデコーダー全体を読み込んでしまう。
+		const header = new TextDecoder().decode(await file.slice(0, 12).arrayBuffer());
+		const brand = header.slice(8, 12);
+		if (
+			header.slice(4, 8) !== 'ftyp'
+			|| !['mif1', 'msf1', 'heic', 'heix', 'hevc', 'hevx'].includes(brand)
+		) {
+			return originalUrl;
+		}
+
+		const { heicTo } = await import('heic-to');
 		const pngBlob = await heicTo({
 			blob: file,
 			type: 'image/png',

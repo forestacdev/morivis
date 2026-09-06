@@ -52,6 +52,7 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
+	import LazyUploadComponent from '$routes/map/components/upload/LazyUploadComponent.svelte';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
@@ -155,19 +156,9 @@
 	} from '$routes/stores/ui';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
-	// アップロード関連コンポーネントは、端末を問わずブラウザで動的ロードする。
-	let UploadDialog = $state.raw<any>(null);
-	let GeoRefForm = $state.raw<any>(null);
-
-	onMount(() => {
-		Promise.all([
-			import('$routes/map/components/upload/BaseDialog.svelte'),
-			import('$routes/map/components/upload/form/transform/GeoRefForm.svelte')
-		]).then(([uploadMod, geoRefMod]) => {
-			UploadDialog = uploadMod.default;
-			GeoRefForm = geoRefMod.default;
-		});
-	});
+	const loadUploadDialog = () => import('$routes/map/components/upload/BaseDialog.svelte');
+	const loadGeoRefForm = () =>
+		import('$routes/map/components/upload/form/transform/GeoRefForm.svelte');
 
 	let tempLayerEntries = $state<MorivisLayerEntry[]>([]); // 一時レイヤーデータ
 
@@ -1422,67 +1413,76 @@
 		</div>
 	{/if}
 {/if}
-{#if UploadDialog}
-	<UploadDialog
-		{map}
-		bind:showDialogType
-		bind:showDataEntry
-		bind:tempLayerEntries
-		bind:dropFile
-		bind:remoteGeoZarrUrl
-		bind:remotePmtilesUrl
-		bind:remoteRasterUrl
-		bind:remoteVectorUrl
-		bind:remoteTiles3dUrl
-		bind:remoteWmtsUrl
-		bind:remoteFeatureServiceUrl
-		bind:pendingTileUrl
-		bind:transformOptionMode
-		bind:focusBbox
-		bind:isDragover
-		bind:zoneConfirmedEpsg
-		bind:pendingZoneGeoRefData
-		bind:geoRefData
-		{selectedEpsgCode}
-	/>
+{#if showDialogType}
+	<LazyUploadComponent load={loadUploadDialog} onclose={closeGeoRefUi}>
+		{#snippet children(UploadDialog)}
+			<UploadDialog
+				{map}
+				bind:showDialogType
+				bind:showDataEntry
+				bind:tempLayerEntries
+				bind:dropFile
+				bind:remoteGeoZarrUrl
+				bind:remotePmtilesUrl
+				bind:remoteRasterUrl
+				bind:remoteVectorUrl
+				bind:remoteTiles3dUrl
+				bind:remoteWmtsUrl
+				bind:remoteFeatureServiceUrl
+				bind:pendingTileUrl
+				bind:transformOptionMode
+				bind:focusBbox
+				bind:isDragover
+				bind:zoneConfirmedEpsg
+				bind:pendingZoneGeoRefData
+				bind:geoRefData
+				{selectedEpsgCode}
+			/>
+		{/snippet}
+	</LazyUploadComponent>
 {/if}
 
 <ImagePreviewDialog bind:imagePreviewUrl bind:imageBounds />
 
-{#if map && transformOptionMode && GeoRefForm}
-	<GeoRefForm
-		{map}
-		{allowedTransformModes}
-		bind:selectedEpsgCode
-		bind:focusBbox
-		bind:zoneBboxGeojsonData
-		bind:geoRefData
-		bind:geoRefPreviewData
-		bind:previewOpacity={geoRefPreviewOpacity}
-		bind:showDialogType
-		bind:showDataEntry
-		bind:dropFile
-		bind:transformOptionMode
-		onZoneConfirm={(epsgCode: EpsgCode) => {
-			geoRefData = null;
-			geoRefPreviewData = null;
-			geoRefPreviewOpacity = 0.6;
-			transformOptionMode = null;
-			zoneConfirmedEpsg = epsgCode;
-			debugLog.info(`Zone確定: epsg=${epsgCode}`);
-		}}
-		onZoneGeoRef={(epsgCode: EpsgCode) => {
-			geoRefPreviewData = null;
-			geoRefPreviewOpacity = 0.6;
-			selectedEpsgCode = epsgCode;
-			transformOptionMode = 'georef';
-			debugLog.info(`GeoRef切替: epsg=${epsgCode}`);
-		}}
-		onGeoRefConfirm={(payload: GeoRefConfirmPayload) => {
-			debugLog.info(`GeoRef確定値受信: bbox=${payload.bbox.join(',')}`);
-			return finalizeGeoRefEntry(payload);
-		}}
-	/>
+{#if map && transformOptionMode}
+	{@const geoRefMap = map}
+	<LazyUploadComponent load={loadGeoRefForm} onclose={closeGeoRefUi}>
+		{#snippet children(GeoRefForm)}
+			<GeoRefForm
+				map={geoRefMap}
+				{allowedTransformModes}
+				bind:selectedEpsgCode
+				bind:focusBbox
+				bind:zoneBboxGeojsonData
+				bind:geoRefData
+				bind:geoRefPreviewData
+				bind:previewOpacity={geoRefPreviewOpacity}
+				bind:showDialogType
+				bind:showDataEntry
+				bind:dropFile
+				bind:transformOptionMode
+				onZoneConfirm={(epsgCode: EpsgCode) => {
+					geoRefData = null;
+					geoRefPreviewData = null;
+					geoRefPreviewOpacity = 0.6;
+					transformOptionMode = null;
+					zoneConfirmedEpsg = epsgCode;
+					debugLog.info(`Zone確定: epsg=${epsgCode}`);
+				}}
+				onZoneGeoRef={(epsgCode: EpsgCode) => {
+					geoRefPreviewData = null;
+					geoRefPreviewOpacity = 0.6;
+					selectedEpsgCode = epsgCode;
+					transformOptionMode = 'georef';
+					debugLog.info(`GeoRef切替: epsg=${epsgCode}`);
+				}}
+				onGeoRefConfirm={(payload: GeoRefConfirmPayload) => {
+					debugLog.info(`GeoRef確定値受信: bbox=${payload.bbox.join(',')}`);
+					return finalizeGeoRefEntry(payload);
+				}}
+			/>
+		{/snippet}
+	</LazyUploadComponent>
 {/if}
 
 {#if contextMenuState}
