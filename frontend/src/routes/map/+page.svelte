@@ -155,12 +155,11 @@
 	} from '$routes/stores/ui';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
-	// アップロード関連コンポーネント（PC時のみ動的ロード）
+	// アップロード関連コンポーネントは、端末を問わずブラウザで動的ロードする。
 	let UploadDialog = $state.raw<any>(null);
 	let GeoRefForm = $state.raw<any>(null);
 
-	const isPc = typeof window !== 'undefined' && checkPc();
-	if (isPc) {
+	onMount(() => {
 		Promise.all([
 			import('$routes/map/components/upload/BaseDialog.svelte'),
 			import('$routes/map/components/upload/form/transform/GeoRefForm.svelte')
@@ -168,7 +167,7 @@
 			UploadDialog = uploadMod.default;
 			GeoRefForm = geoRefMod.default;
 		});
-	}
+	});
 
 	let tempLayerEntries = $state<MorivisLayerEntry[]>([]); // 一時レイヤーデータ
 
