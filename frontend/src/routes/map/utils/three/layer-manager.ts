@@ -262,6 +262,7 @@ export interface ModelViewCameraOptions {
 export interface ModelViewSession {
 	camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
 	canvas: HTMLCanvasElement;
+	container: HTMLElement;
 	movementSpeed: number;
 	getTarget: () => THREE.Vector3;
 	resetView: () => void;
@@ -3197,6 +3198,7 @@ export class ThreeJsLayerManager {
 		return {
 			camera,
 			canvas,
+			container: this.map.getContainer(),
 			movementSpeed: Math.max(
 				largestDimension / MODEL_VIEW_FPS_MOVEMENT_SPEED_DIVISOR,
 				MODEL_VIEW_FPS_MIN_MOVEMENT_SPEED
@@ -3209,13 +3211,19 @@ export class ThreeJsLayerManager {
 
 	private resizeModelView = () => {
 		const activeModelView = this.activeModelView;
-		const canvas = this.map?.getCanvas();
-		if (!activeModelView || !canvas || canvas.clientWidth === 0 || canvas.clientHeight === 0) {
+		const map = this.map;
+		if (!activeModelView || !map) return;
+
+		const container = map.getContainer();
+		if (container.clientWidth === 0 || container.clientHeight === 0) {
 			return;
 		}
 
+		// WebGLキャンバスはMapLibreと共有しているため、描画バッファのサイズ変更もMapLibreに任せる。
+		map.resize();
+
 		const { camera } = activeModelView;
-		const aspect = canvas.clientWidth / canvas.clientHeight;
+		const aspect = container.clientWidth / container.clientHeight;
 		if (camera instanceof THREE.PerspectiveCamera) {
 			camera.aspect = aspect;
 		} else {
@@ -3224,6 +3232,7 @@ export class ThreeJsLayerManager {
 			camera.right = halfHeight * aspect;
 		}
 		camera.updateProjectionMatrix();
+		map.triggerRepaint();
 	};
 
 	requestModelViewRepaint(): void {

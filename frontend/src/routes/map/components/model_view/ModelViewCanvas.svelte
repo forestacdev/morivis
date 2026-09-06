@@ -199,7 +199,7 @@
 			zoomControls.handleResize();
 			requestRender();
 		});
-		resizeObserver.observe(target);
+		resizeObserver.observe(session.container);
 
 		return () => {
 			resizeObserver.disconnect();
