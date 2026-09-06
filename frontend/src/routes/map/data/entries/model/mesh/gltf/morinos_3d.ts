@@ -193,7 +193,7 @@ const entry = {
 				]
 			},
 			'0fcfa9bc-972a-499b-badb-21a1de3b003e': {
-				name: 'ソファ',
+				name: '節ありソファ',
 				description:
 					'ソファで足を伸ばして仕事をしてもいいですね。スタッフもここでお弁当を食べてもいいかもしれません。来館者と一緒にすごせる憩いの場です。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi30/',
