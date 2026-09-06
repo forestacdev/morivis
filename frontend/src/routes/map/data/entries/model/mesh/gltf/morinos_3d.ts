@@ -4,7 +4,7 @@ import { createMeshModelEntry } from '$routes/map/data/entries/_factories/model'
 const baseEntry = createMeshModelEntry({
 	id: 'morinos_3d',
 	name: 'morinos 3Dモデル',
-	url: `${ENTRY_GLTF_PATH}/morinos_fix2.glb`,
+	url: `${ENTRY_GLTF_PATH}/morinos_fix3.glb`,
 	attribution: '森林文化アカデミー',
 	location: '森林文化アカデミー',
 	bounds: [136.919310634999988, 35.5537624600000015, 136.9200659429999973, 35.5544524530000032],
@@ -23,6 +23,11 @@ const entry = {
 	...baseEntry,
 	properties: {
 		...baseEntry.properties,
+		attributeView: {
+			relations: {
+				iNaturalistNameKey: '樹種'
+			}
+		},
 		detailsById: {
 			// TODO: 複数オブジェクト
 			'75f72f35-6473-4c21-9ea1-b822c7a9fecb': {
@@ -102,9 +107,8 @@ const entry = {
 			},
 			'd2258ec0-612e-4ffc-ac3a-0c14017979c0': {
 				name: '樹皮付き方立',
-				description:
-					'方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
-				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi25/',
+				description: '方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi3/',
 				medias: [
 					{
 						type: 'image',
@@ -118,8 +122,7 @@ const entry = {
 			},
 			'77164639-4feb-49d5-b86e-af26be2296c0': {
 				name: 'ガラスコーナー',
-				description:
-					'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
+				description: 'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi4/',
 				medias: [
 					{
@@ -252,6 +255,17 @@ const entry = {
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/04/IMG_1504D.jpg'
+					}
+				]
+			},
+			'7ede2c2e-7255-4833-8dc6-ab5d73f3ac5f': {
+				name: '屋根',
+				description: '屋根は、建物を雨や日差しから守る重要な部分です。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi25/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_5580-720x480.jpg'
 					}
 				]
 			}
