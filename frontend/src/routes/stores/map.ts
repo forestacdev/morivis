@@ -97,6 +97,7 @@ import {
 	warmupGeneratedPoiIconWorker
 } from '$routes/map/utils/icon';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
+import { getSinglePointFocus } from '$routes/map/utils/map/focus-layer';
 import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { LayersList } from '@deck.gl/core';
@@ -1307,6 +1308,7 @@ const createMapStore = () => {
 		// 現在の中心とターゲットの距離に応じてdurationを調整
 		const currentCenter = map.getCenter();
 		const bounds = _entry.metaData.bounds;
+		const singlePointFocus = getSinglePointFocus(_entry);
 		const targetLng = _entry.metaData.center
 			? _entry.metaData.center[0]
 			: (bounds[0] + bounds[2]) / 2;
@@ -1337,6 +1339,18 @@ const createMapStore = () => {
 			300,
 			Math.min(MAP_ANIMATION_DURATION, Math.max(distDuration, scaleDuration))
 		);
+
+		if (singlePointFocus) {
+			map.flyTo({
+				center: singlePointFocus.center,
+				zoom: singlePointFocus.zoom,
+				bearing: map.getBearing(),
+				pitch: map.getPitch(),
+				duration: 1000,
+				easing: MAP_EASING
+			});
+			return;
+		}
 
 		if (_entry.metaData.center) {
 			map.flyTo({
