@@ -847,6 +847,7 @@ export class ThreeJsLayerManager {
 					if (alpha <= 0.001) discard;
 
 					gl_FragColor = vec4(shadedColor, alpha);
+					#include <colorspace_fragment>
 				}
 			`,
 			transparent: true,
@@ -882,7 +883,8 @@ export class ThreeJsLayerManager {
 			data.set([value.r * 255, value.g * 255, value.b * 255, 255], index * 4);
 		});
 		const texture = new THREE.DataTexture(data, colors.length, 1, THREE.RGBAFormat);
-		texture.colorSpace = THREE.SRGBColorSpace;
+		// THREE.Colorでリニア化した値を格納しているため、サンプリング時のsRGB再変換を避ける。
+		texture.colorSpace = THREE.NoColorSpace;
 		texture.minFilter = THREE.NearestFilter;
 		texture.magFilter = THREE.NearestFilter;
 		texture.generateMipmaps = false;
