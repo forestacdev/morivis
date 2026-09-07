@@ -81,6 +81,23 @@ def Xform "Root"
 		{ type: 'model/vnd.usda' }
 	);
 
+const createSyntheticStlFile = (): File =>
+	new File(
+		[
+			`solid test-shape
+facet normal 0 0 1
+	outer loop
+		vertex 0 0 0
+		vertex 2 0 0
+		vertex 0 3 0
+	endloop
+endfacet
+endsolid test-shape`
+		],
+		'test-shape.stl',
+		{ type: 'model/stl' }
+	);
+
 const createKtx2TextureGltfFile = (): File => {
 	const binary = new Uint8Array(40);
 	new Float32Array(binary.buffer, 0, 9).set([0, 0, 0, 2, 0, 0, 0, 3, 0]);
@@ -197,6 +214,35 @@ describe('computeUploadedModelMeta', () => {
 
 		expect(box.min.toArray()).toEqual([0, 0, 0]);
 		expect(box.max.toArray()).toEqual([2, 3, 0]);
+	});
+
+	it('STLの形状範囲と座標系判定用のXY範囲を取得できる', async () => {
+		const { computeUploadedModelMeta } = await import('./model-bounds');
+		const result = await computeUploadedModelMeta({
+			file: createSyntheticStlFile(),
+			format: 'stl',
+			style: {
+				transform: {
+					lng: 0,
+					lat: 0,
+					altitude: 0,
+					heightOffset: 0,
+					heightScale: 1,
+					baseScale: 1,
+					baseRotationX: 0,
+					baseRotationY: 0,
+					baseRotationZ: 0,
+					scale: 1,
+					rotationX: 0,
+					rotationY: 0,
+					rotationZ: 0
+				}
+			}
+		});
+
+		expect(result.localBounds).toEqual([0, 0, 0, 2, 3, 0]);
+		expect(result.sourceBbox).toEqual([0, 0, 2, 3]);
+		expect(result.animationNames).toEqual([]);
 	});
 
 	it('KTX2 テクスチャを含む GLTF でも形状範囲を取得できる', async () => {

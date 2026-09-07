@@ -88,6 +88,7 @@
 		if (pathLikeName.endsWith('.drc')) return 'drc';
 		if (pathLikeName.endsWith('.3mf')) return '3mf';
 		if (pathLikeName.endsWith('.amf')) return 'amf';
+		if (pathLikeName.endsWith('.stl')) return 'stl';
 		if (pathLikeName.endsWith('.ifc')) return 'ifc';
 		if (pathLikeName.endsWith('.pmx')) return 'pmx';
 		if (
@@ -123,6 +124,7 @@
 		'drc',
 		'3mf',
 		'amf',
+		'stl',
 		'ifc',
 		'usd'
 	]);
@@ -132,7 +134,7 @@
 	const glbFile = $derived.by(() => {
 		return (
 			inputFiles.find((file) =>
-				/\.(glb|gltf|vrm|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc|pmx|usd|usda|usdz)$/i.test(
+				/\.(glb|gltf|vrm|obj|3ds|dae|3dm|fbx|drc|3mf|amf|stl|ifc|pmx|usd|usda|usdz)$/i.test(
 					getPathLikeName(file)
 				)
 			) ?? null
@@ -791,6 +793,7 @@
 				activeFormat === 'gltf' ||
 				activeFormat === 'vrm' ||
 				activeFormat === 'pmx' ||
+				activeFormat === 'stl' ||
 				activeFormat === 'usd' ||
 				(activeFormat === 'fbx' && !isLocalFbx)) &&
 			!resolvedProjectedModelEpsg;
@@ -1124,6 +1127,7 @@
 			format === 'fbx' ||
 			format === 'pmx' ||
 			format === 'vrm' ||
+			format === 'stl' ||
 			format === 'usd';
 		const entry = createGlbEntry(
 			forms.name,

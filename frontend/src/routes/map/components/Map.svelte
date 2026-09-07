@@ -848,6 +848,7 @@
 								entry.format.type === 'drc' ||
 								entry.format.type === '3mf' ||
 								entry.format.type === 'amf' ||
+								entry.format.type === 'stl' ||
 								entry.format.type === 'ifc' ||
 								entry.format.type === 'pmx' ||
 								entry.format.type === 'usd')

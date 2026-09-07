@@ -14,6 +14,7 @@ export const MODEL_FILE_EXTENSIONS = [
 	'.drc',
 	'.3mf',
 	'.amf',
+	'.stl',
 	'.ifc',
 	'.pmx',
 	'.usd',

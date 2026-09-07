@@ -14,6 +14,10 @@ describe('getModelBaseRotationX', () => {
 	it('投影座標を持つFBXはCAD向けの軸回転を維持する', () => {
 		expect(getModelBaseRotationX('fbx')).toBe(90);
 	});
+
+	it('STLはZ-upモデルとして扱う', () => {
+		expect(getModelBaseRotationX('stl')).toBe(90);
+	});
 });
 
 describe('applyProjectedModelAxisOverride', () => {
@@ -69,5 +73,9 @@ describe('getModelViewAxisRotationX', () => {
 
 	it('ソースの向きを維持するFBXには追加回転を適用しない', () => {
 		expect(getModelViewAxisRotationX('fbx', -180)).toBe(0);
+	});
+
+	it('STLをモデルビューのY-up座標へ変換する', () => {
+		expect(getModelViewAxisRotationX('stl', 90)).toBe(-90);
 	});
 });

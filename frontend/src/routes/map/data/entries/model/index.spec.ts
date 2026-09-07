@@ -28,4 +28,23 @@ describe('createGlbEntry', () => {
 
 		expect(entry.style.shading?.enabled).toBe(false);
 	});
+
+	it('STLをmesh entryへ正規化する', () => {
+		const entry = createGlbEntry(
+			'test-stl',
+			'blob:test-stl',
+			transform,
+			'stl',
+			undefined,
+			undefined,
+			{ normalizeToLocalOrigin: true }
+		);
+
+		expect(entry.format).toMatchObject({
+			type: 'stl',
+			normalizeToLocalOrigin: true
+		});
+		expect(entry.metaData.attribution).toBe('STL');
+		expect(entry.style.transform.baseRotationX).toBe(90);
+	});
 });

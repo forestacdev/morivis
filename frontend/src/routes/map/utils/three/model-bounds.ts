@@ -11,6 +11,7 @@ import type {
 	ProjectedModelGeoreference
 } from '$routes/map/data/types/model';
 import type { TileXYZ } from '$routes/map/data/types/raster';
+import { parseStlFile } from '$routes/map/utils/formats/stl';
 import { parseUsdFile } from '$routes/map/utils/formats/usd';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
@@ -643,6 +644,20 @@ const parseAmfObject = async (file: File): Promise<UploadedModelObject> => {
 	}
 };
 
+const parseStlObject = async (
+	file: File,
+	normalizeToLocalOrigin = false
+): Promise<UploadedModelObject> => {
+	const object = await parseStlFile(file);
+	if (normalizeToLocalOrigin) {
+		normalizeObjectToLocalOrigin(object, 'z');
+	}
+	return {
+		object,
+		animationNames: []
+	};
+};
+
 const parseIfcObject = async (
 	file: File,
 	normalizeToLocalOrigin = false
@@ -730,6 +745,10 @@ export const getUploadedModelObject = async (
 
 	if (format === 'amf') {
 		return parseAmfObject(file);
+	}
+
+	if (format === 'stl') {
+		return parseStlObject(file, normalizeToLocalOrigin);
 	}
 
 	if (format === 'ifc') {
@@ -898,6 +917,7 @@ export const computeUploadedModelMeta = async ({
 			|| format === 'gltf'
 			|| format === 'vrm'
 			|| format === 'ifc'
+			|| format === 'stl'
 			|| format === 'usd'
 		) && {
 			sourceBbox

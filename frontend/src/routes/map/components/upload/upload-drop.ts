@@ -203,6 +203,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	drc: 'model',
 	'3mf': 'model',
 	amf: 'model',
+	stl: 'model',
 	ifc: 'model',
 	pmx: 'model',
 	usd: 'model',

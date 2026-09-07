@@ -103,6 +103,7 @@ let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFL
 	null;
 let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null =
 	null;
+let stlFormatModulePromise: Promise<typeof import('$routes/map/utils/formats/stl')> | null = null;
 
 const isBinaryGltfBuffer = (buffer: ArrayBuffer) => {
 	if (buffer.byteLength < 4) return false;
@@ -176,6 +177,13 @@ const loadAmfLoaderModule = async () => {
 		amfLoaderModulePromise = import('three/addons/loaders/AMFLoader.js');
 	}
 	return amfLoaderModulePromise;
+};
+
+const loadStlFormatModule = async () => {
+	if (!stlFormatModulePromise) {
+		stlFormatModulePromise = import('$routes/map/utils/formats/stl');
+	}
+	return stlFormatModulePromise;
 };
 
 interface LoadedModel {
@@ -295,6 +303,7 @@ const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>(
 	'drc',
 	'3mf',
 	'amf',
+	'stl',
 	'ifc',
 	'pmx',
 	'usd'
@@ -2593,6 +2602,20 @@ export class ThreeJsLayerManager {
 						);
 					})
 					.catch((error) => reject(error));
+			} else if (entry.format.type === 'stl') {
+				Promise.all([fetch(entry.format.url), loadStlFormatModule()])
+					.then(async ([response, { parseStlArrayBuffer }]) => {
+						if (!response.ok) {
+							throw new Error(
+								`STLを取得できません: ${response.status} ${response.statusText}`
+							);
+						}
+						return parseStlArrayBuffer(await response.arrayBuffer());
+					})
+					.then((object) => finalizeAndLoadModel(object))
+					.catch((error) =>
+						reject(error instanceof Error ? error : new Error(String(error)))
+					);
 			} else if (entry.format.type === 'ifc') {
 				loadIfcLoaderModule()
 					.then(({ IFCLoader }) => {

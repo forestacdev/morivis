@@ -245,6 +245,7 @@ export type MeshFormatType =
 	| 'drc'
 	| '3mf'
 	| 'amf'
+	| 'stl'
 	| 'ifc'
 	| 'pmx'
 	| 'usd';

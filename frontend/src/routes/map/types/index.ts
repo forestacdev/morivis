@@ -447,6 +447,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.amf']
 	},
 	{
+		label: 'STL',
+		description:
+			'三角形メッシュで形状を表す3Dモデル形式です。ASCII形式とバイナリ形式の造形データを読み込むときに使います。',
+		extensions: ['.stl']
+	},
+	{
 		label: 'Industry Foundation Classes',
 		description:
 			'BIMで使う建築モデル形式です。建物の部材や属性を含む3Dデータを読み込むときに使います。',

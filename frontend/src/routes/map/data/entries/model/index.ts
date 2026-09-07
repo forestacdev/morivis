@@ -230,6 +230,8 @@ export const createGlbEntry = (
 				? '3MF'
 				: formatType === 'amf'
 				? 'AMF'
+				: formatType === 'stl'
+				? 'STL'
 				: formatType === 'ifc'
 				? 'IFC'
 				: formatType === 'pmx'

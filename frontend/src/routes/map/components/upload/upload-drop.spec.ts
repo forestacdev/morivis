@@ -160,6 +160,16 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it('単一の STL はモデルダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('test-shape.stl', 'solid test-shape'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: undefined
+		});
+	});
+
 	it.each(['model.usd', 'model.usda', 'model.usdz'])(
 		'%s はモデルダイアログ判定になる',
 		async (fileName) => {
