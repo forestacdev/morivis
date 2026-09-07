@@ -245,6 +245,36 @@ describe('computeUploadedModelMeta', () => {
 		expect(result.animationNames).toEqual([]);
 	});
 
+	it('Y-up指定のSTLはY軸の最下端を原点へ合わせる', async () => {
+		const { getUploadedModelObject } = await import('./model-bounds');
+		const yOffsetStlFile = new File(
+			[
+				`solid y-offset
+facet normal 0 0 1
+	outer loop
+		vertex 0 10 0
+		vertex 2 10 0
+		vertex 0 13 0
+	endloop
+endfacet
+endsolid y-offset`
+			],
+			'y-offset.stl',
+			{ type: 'model/stl' }
+		);
+		const { object } = await getUploadedModelObject(
+			yOffsetStlFile,
+			'stl',
+			undefined,
+			true,
+			'y'
+		);
+		const box = new THREE.Box3().setFromObject(object);
+
+		expect(box.min.y).toBeCloseTo(0, 6);
+		expect(box.max.y).toBeCloseTo(3, 6);
+	});
+
 	it('KTX2 テクスチャを含む GLTF でも形状範囲を取得できる', async () => {
 		const { getUploadedModelObject } = await import('./model-bounds');
 		const { object } = await getUploadedModelObject(createKtx2TextureGltfFile(), 'gltf');

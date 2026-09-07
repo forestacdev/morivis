@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import * as yup from 'yup';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
@@ -10,7 +11,7 @@
 	} from '$routes/map/components/upload/transform-policy';
 	import { createGlbEntry } from '$routes/map/data/entries/model';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { MeshFormatType } from '$routes/map/data/types/model';
+	import type { MeshFormatType, MeshUpAxis } from '$routes/map/data/types/model';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
@@ -142,6 +143,11 @@
 	});
 
 	const activeFormat = $derived(glbFile ? getMeshFormat(getPathLikeName(glbFile)) : null);
+	let stlUpAxis = $state<MeshUpAxis>('z');
+	const stlUpAxisOptions = [
+		{ key: 'z', name: 'Z-up（CAD・3Dプリント）' },
+		{ key: 'y', name: 'Y-up（CG・3Dモデル）' }
+	];
 	const modelPlacement = $derived(glbFile ? getModelPlacement(glbFile) : undefined);
 	const detectedProjectedModelEpsg = $derived(glbFile ? getProjectedModelEpsg(glbFile) : undefined);
 
@@ -360,10 +366,12 @@
 			requiresFbxTextureResolution ||
 			requiresGltfSupplementaryResolution
 	);
+	const requiresStlAxisSelection = $derived(activeFormat === 'stl');
 	const requiresManualRegistration = $derived(
 		requiresProjectedCandidateZoneSelection ||
 			requiresIfcZoneSelection ||
-			requiresModelSupplementaryResolution
+			requiresModelSupplementaryResolution ||
+			requiresStlAxisSelection
 	);
 	const shouldShowDroppedModelPanel = $derived(
 		!!glbFile && (requiresManualRegistration || isWaitingForModelSupplementaryInspection)
@@ -660,9 +668,11 @@
 		}
 
 		const resourceFiles = modelSupplementaryFiles;
-		const nextFileKey = [getPathLikeName(glbFile), ...resourceFiles.map(getPathLikeName)].join(
-			'::'
-		);
+		const nextFileKey = [
+			getPathLikeName(glbFile),
+			...resourceFiles.map(getPathLikeName),
+			...(activeFormat === 'stl' ? [stlUpAxis] : [])
+		].join('::');
 		if (analyzedProjectedCandidateFileKey === nextFileKey) return;
 
 		analyzedProjectedCandidateFileKey = nextFileKey;
@@ -670,6 +680,7 @@
 		isInspectingProjectedCandidateCoordinates = true;
 
 		const inspectCoordinates = async () => {
+			const inspectionKey = nextFileKey;
 			const center = mapStore.getCenter();
 			const resourceUrls = resourceFiles.length > 0 ? buildResourceUrls(resourceFiles) : undefined;
 			const entry = createGlbEntry(
@@ -678,7 +689,8 @@
 				{ lng: center?.lng ?? 0, lat: center?.lat ?? 0, altitude: 0 },
 				activeFormat,
 				undefined,
-				resourceUrls
+				resourceUrls,
+				activeFormat === 'stl' ? { upAxis: stlUpAxis } : undefined
 			);
 
 			try {
@@ -688,15 +700,22 @@
 					format: activeFormat,
 					style: entry.style,
 					resourceUrls,
-					normalizeToLocalOrigin: false
+					normalizeToLocalOrigin: false,
+					upAxis: activeFormat === 'stl' ? stlUpAxis : undefined
 				});
+				if (analyzedProjectedCandidateFileKey !== inspectionKey) return;
 				projectedCandidateSourceBbox = uploadedModelMeta.sourceBbox ?? null;
 			} catch (error) {
+				if (analyzedProjectedCandidateFileKey !== inspectionKey) return;
 				projectedCandidateSourceBbox = null;
 				console.warn(`${activeFormat} の座標範囲解析に失敗しました`, error);
 			} finally {
-				isInspectingProjectedCandidateCoordinates = false;
-				isProcessing.set(false);
+				if (analyzedProjectedCandidateFileKey === inspectionKey) {
+					isInspectingProjectedCandidateCoordinates = false;
+					isProcessing.set(false);
+				} else if (!analyzedProjectedCandidateFileKey) {
+					isProcessing.set(false);
+				}
 			}
 		};
 
@@ -713,6 +732,7 @@
 			return;
 		if (activeFormat === 'ifc' && (isPreparingIfcZoneSelection || !ifcSourceBbox)) return;
 		if (activeFormat !== 'ifc' && !projectedCandidateSourceBbox) return;
+		if (activeFormat === 'stl') return;
 
 		const fileKey = getPathLikeName(glbFile);
 		if (autoOpenedZoneFileKey === fileKey) return;
@@ -812,6 +832,7 @@
 			{
 				...(normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : {}),
 				...(isLocalFbx ? { preserveSourceOrientation: true } : {}),
+				...(activeFormat === 'stl' ? { upAxis: stlUpAxis } : {}),
 				sourceFileName: glbFile.name,
 				initialShadingEnabled: activeFormat !== 'vrm' && activeFormat !== 'pmx'
 			}
@@ -899,6 +920,7 @@
 				style: entry.style,
 				resourceUrls,
 				normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
+				upAxis: entry.format.upAxis,
 				projectedModelEpsg: resolvedProjectedModelEpsg
 			});
 
@@ -1140,7 +1162,10 @@
 			format,
 			undefined,
 			undefined,
-			normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : undefined
+			{
+				...(normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : {}),
+				...(format === 'stl' ? { upAxis: stlUpAxis } : {})
+			}
 		);
 		if (entry) {
 			showDataEntry = entry;
@@ -1164,6 +1189,10 @@
 		if (!entry) return;
 
 		showDataEntry = entry;
+		if (requiresStlAxisSelection && requiresModelPlacement) {
+			transformOptionMode = getDefaultTransformModeForIssue('model', 'placement-missing');
+			return;
+		}
 		showDialogType = null;
 		dropFile = null;
 	};
@@ -1252,6 +1281,18 @@
 			{/if}
 		</div>
 		<TextForm bind:value={droppedForms.name} label="データ名" error={droppedErrors.name} />
+		{#if activeFormat === 'stl'}
+			<div class="w-full p-2">
+				<HorizontalSelectBox
+					label="モデルの上方向"
+					bind:group={stlUpAxis}
+					options={stlUpAxisOptions}
+				/>
+				<p class="mt-2 px-1 text-xs text-gray-400">
+					STLには上方向の情報がないため、書き出し元に合わせて選択してください。
+				</p>
+			</div>
+		{/if}
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
@@ -1266,7 +1307,7 @@
 			>
 				座標系を選択
 			</button>
-		{:else if requiresModelSupplementaryResolution}
+		{:else if requiresModelSupplementaryResolution || requiresStlAxisSelection}
 			<button
 				onclick={registerDroppedModelWithoutSupplementaryFiles}
 				disabled={isDroppedRegistrationDisabled}
@@ -1274,7 +1315,7 @@
 					? 'cursor-not-allowed opacity-50'
 					: 'cursor-pointer'}"
 			>
-				このまま登録
+				{requiresStlAxisSelection ? 'この向きで登録' : 'このまま登録'}
 			</button>
 		{/if}
 	</div>
@@ -1289,9 +1330,21 @@
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
 		<TextForm
 			bind:value={forms.url}
-			label="3Dモデル URL (GLTF / GLB / USD / USDZ / VRM / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC / PMX)"
+			label="3Dモデル URL (GLTF / GLB / USD / USDZ / VRM / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / STL / IFC / PMX)"
 			error={errors.url}
 		/>
+		{#if forms.url.trim().toLowerCase().endsWith('.stl')}
+			<div class="w-full p-2">
+				<HorizontalSelectBox
+					label="モデルの上方向"
+					bind:group={stlUpAxis}
+					options={stlUpAxisOptions}
+				/>
+				<p class="mt-2 px-1 text-xs text-gray-400">
+					STLには上方向の情報がないため、書き出し元に合わせて選択してください。
+				</p>
+			</div>
+		{/if}
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">

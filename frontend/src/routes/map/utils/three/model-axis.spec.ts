@@ -15,8 +15,12 @@ describe('getModelBaseRotationX', () => {
 		expect(getModelBaseRotationX('fbx')).toBe(90);
 	});
 
-	it('STLはZ-upモデルとして扱う', () => {
+	it('軸指定のないSTLはZ-upを既定値にする', () => {
 		expect(getModelBaseRotationX('stl')).toBe(90);
+	});
+
+	it('Y-up指定のSTLは汎用モデルと同じ軸回転にする', () => {
+		expect(getModelBaseRotationX('stl', false, 'y')).toBe(-180);
 	});
 });
 
@@ -77,5 +81,9 @@ describe('getModelViewAxisRotationX', () => {
 
 	it('STLをモデルビューのY-up座標へ変換する', () => {
 		expect(getModelViewAxisRotationX('stl', 90)).toBe(-90);
+	});
+
+	it('Y-up指定のSTLにはモデルビューの追加回転を適用しない', () => {
+		expect(getModelViewAxisRotationX('stl', -180)).toBe(0);
 	});
 });

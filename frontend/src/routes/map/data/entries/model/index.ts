@@ -9,6 +9,7 @@ import type {
 	MeshEntry,
 	MeshFormatType,
 	MeshStyle,
+	MeshUpAxis,
 	PointCloudEntry,
 	PointCloudStyle,
 	ProjectedModelGeoreference,
@@ -187,12 +188,17 @@ export const createGlbEntry = (
 	options?: {
 		normalizeToLocalOrigin?: boolean;
 		preserveSourceOrientation?: boolean;
+		upAxis?: MeshUpAxis;
 		georeference?: ProjectedModelGeoreference;
 		sourceFileName?: string;
 		initialShadingEnabled?: boolean;
 	}
 ): MeshEntry<MeshStyle> => {
-	const baseRotationX = getModelBaseRotationX(formatType, options?.preserveSourceOrientation);
+	const baseRotationX = getModelBaseRotationX(
+		formatType,
+		options?.preserveSourceOrientation,
+		options?.upAxis
+	);
 
 	return {
 		id: 'glb_' + crypto.randomUUID(),
@@ -206,6 +212,7 @@ export const createGlbEntry = (
 			...(options?.normalizeToLocalOrigin != null && {
 				normalizeToLocalOrigin: options.normalizeToLocalOrigin
 			}),
+			...(options?.upAxis && { upAxis: options.upAxis }),
 			...(options?.georeference && {
 				georeference: options.georeference
 			})

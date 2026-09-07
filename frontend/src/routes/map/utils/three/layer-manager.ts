@@ -429,7 +429,8 @@ export class ThreeJsLayerManager {
 				finalizeRuntimeModelObject(scene, {
 					formatType: loaded.entry.format.type,
 					georeference: loaded.entry.format.georeference,
-					normalizeToLocalOrigin: loaded.entry.format.normalizeToLocalOrigin
+					normalizeToLocalOrigin: loaded.entry.format.normalizeToLocalOrigin,
+					upAxis: loaded.entry.format.upAxis
 				});
 				this.applyStyleToObject(scene, loaded.entry.style, loaded.entry.format.type);
 				scene.visible = previousObject.visible;
@@ -2226,7 +2227,8 @@ export class ThreeJsLayerManager {
 				finalizeRuntimeModelObject(object, {
 					formatType: entry.format.type,
 					georeference: entry.format.georeference,
-					normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin
+					normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
+					upAxis: entry.format.upAxis
 				});
 			};
 

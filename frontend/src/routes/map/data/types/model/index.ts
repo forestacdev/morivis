@@ -250,6 +250,9 @@ export type MeshFormatType =
 	| 'pmx'
 	| 'usd';
 
+/** 上方向のメタデータを持たないmesh形式に対して、利用者が指定する入力座標軸。 */
+export type MeshUpAxis = 'y' | 'z';
+
 /** 指定ズーム以下で選択する、同一モデルの下位表示解像度。 */
 export interface ModelLodLevel {
 	maxZoom: number;
@@ -267,6 +270,7 @@ export interface MeshEntry<T> extends BaseModelEntry {
 		mtlUrl?: string;
 		resourceUrls?: Record<string, string>;
 		normalizeToLocalOrigin?: boolean;
+		upAxis?: MeshUpAxis;
 		georeference?: ProjectedModelGeoreference;
 		localBounds?: ModelLocalBounds;
 	};

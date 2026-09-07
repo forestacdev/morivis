@@ -77,6 +77,21 @@ describe('finalizeRuntimeModelObject', () => {
 		expect(box.max.z).toBeCloseTo(30, 6);
 	});
 
+	it('Y-up指定のSTLはY軸の最下端を地図の高さ0に合わせる', () => {
+		const mesh = new THREE.Mesh(new THREE.BoxGeometry(10, 20, 30));
+		mesh.position.set(100, 200, 300);
+
+		finalizeRuntimeModelObject(mesh, {
+			formatType: 'stl',
+			normalizeToLocalOrigin: true,
+			upAxis: 'y'
+		});
+
+		const box = new THREE.Box3().setFromObject(mesh);
+		expect(box.min.y).toBeCloseTo(0, 6);
+		expect(box.max.y).toBeCloseTo(20, 6);
+	});
+
 	it('PMX は Y-up のローカルモデルとして最下端を地図の高さ 0 に合わせる', () => {
 		const geometry = new THREE.BoxGeometry(10, 20, 30);
 		const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial());

@@ -7,6 +7,7 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import type {
 	MeshFormatType,
 	MeshStyle,
+	MeshUpAxis,
 	ModelLocalBounds,
 	ProjectedModelGeoreference
 } from '$routes/map/data/types/model';
@@ -43,6 +44,7 @@ export interface ComputeUploadedModelMetaParams {
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 	normalizeToLocalOrigin?: boolean;
+	upAxis?: MeshUpAxis;
 	georeference?: ProjectedModelGeoreference;
 	projectedModelEpsg?: string;
 	terrainEnabled?: boolean;
@@ -646,11 +648,12 @@ const parseAmfObject = async (file: File): Promise<UploadedModelObject> => {
 
 const parseStlObject = async (
 	file: File,
-	normalizeToLocalOrigin = false
+	normalizeToLocalOrigin = false,
+	upAxis: MeshUpAxis = 'z'
 ): Promise<UploadedModelObject> => {
 	const object = await parseStlFile(file);
 	if (normalizeToLocalOrigin) {
-		normalizeObjectToLocalOrigin(object, 'z');
+		normalizeObjectToLocalOrigin(object, upAxis);
 	}
 	return {
 		object,
@@ -713,7 +716,8 @@ export const getUploadedModelObject = async (
 	file: File,
 	format: MeshFormatType,
 	resourceUrls?: Record<string, string>,
-	normalizeToLocalOrigin = false
+	normalizeToLocalOrigin = false,
+	upAxis?: MeshUpAxis
 ) => {
 	if (format === 'obj') {
 		return parseObjObject(file);
@@ -748,7 +752,7 @@ export const getUploadedModelObject = async (
 	}
 
 	if (format === 'stl') {
-		return parseStlObject(file, normalizeToLocalOrigin);
+		return parseStlObject(file, normalizeToLocalOrigin, upAxis);
 	}
 
 	if (format === 'ifc') {
@@ -783,6 +787,7 @@ export const computeUploadedModelMeta = async ({
 	style,
 	resourceUrls,
 	normalizeToLocalOrigin,
+	upAxis,
 	georeference,
 	projectedModelEpsg,
 	terrainEnabled = false
@@ -791,7 +796,8 @@ export const computeUploadedModelMeta = async ({
 		file,
 		format,
 		resourceUrls,
-		normalizeToLocalOrigin
+		normalizeToLocalOrigin,
+		upAxis
 	);
 	object.updateMatrixWorld(true);
 

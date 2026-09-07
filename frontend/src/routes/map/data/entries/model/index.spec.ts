@@ -37,14 +37,30 @@ describe('createGlbEntry', () => {
 			'stl',
 			undefined,
 			undefined,
-			{ normalizeToLocalOrigin: true }
+			{ normalizeToLocalOrigin: true, upAxis: 'z' }
 		);
 
 		expect(entry.format).toMatchObject({
 			type: 'stl',
-			normalizeToLocalOrigin: true
+			normalizeToLocalOrigin: true,
+			upAxis: 'z'
 		});
 		expect(entry.metaData.attribution).toBe('STL');
 		expect(entry.style.transform.baseRotationX).toBe(90);
+	});
+
+	it('Y-upのSTL指定をentryと軸回転へ反映する', () => {
+		const entry = createGlbEntry(
+			'test-y-up-stl',
+			'blob:test-y-up-stl',
+			transform,
+			'stl',
+			undefined,
+			undefined,
+			{ normalizeToLocalOrigin: true, upAxis: 'y' }
+		);
+
+		expect(entry.format.upAxis).toBe('y');
+		expect(entry.style.transform.baseRotationX).toBe(-180);
 	});
 });

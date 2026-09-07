@@ -1,11 +1,12 @@
-import type { MeshFormatType, MeshStyle } from '$routes/map/data/types/model';
+import type { MeshFormatType, MeshStyle, MeshUpAxis } from '$routes/map/data/types/model';
 import type { EpsgCode } from '$routes/map/utils/proj/dict';
 
 export const getModelBaseRotationX = (
 	format: MeshFormatType,
-	preserveSourceOrientation = false
+	preserveSourceOrientation = false,
+	upAxis?: MeshUpAxis
 ) => {
-	if (format === '3mf' || format === 'stl') return 90;
+	if (format === '3mf' || (format === 'stl' && upAxis !== 'y')) return 90;
 	// CAD 系 FBX だけは Z-up を補正する。ゲーム系など Y-up の FBX は汎用モデルと同じ基準を使う。
 	if (format === 'fbx' && !preserveSourceOrientation) return 90;
 	return -180;
