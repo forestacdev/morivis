@@ -55,7 +55,8 @@ import {
 	createPlacementPreviewObject,
 	disposePlacementPreviewObject,
 	getPlacementPreviewBounds,
-	getPlacementPreviewBoundsKey
+	getPlacementPreviewBoundsKey,
+	renderPlacementPreviewPass
 } from '$routes/map/utils/three/placement-preview';
 import { type LoadedPmxModel, loadPmxModel } from '$routes/map/utils/three/pmx-loader';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
@@ -2040,12 +2041,15 @@ export class ThreeJsLayerManager {
 
 				if (this.placementPreview) {
 					this.setOnlyEntryVisible('', false);
-					this.placementPreview.object.visible = true;
-					this.camera.projectionMatrix = mapProjectionMatrix
-						.clone()
-						.multiply(this.placementPreview.transform.matrix);
-					this.renderer.resetState();
-					this.renderer.render(this.scene, this.camera);
+					renderPlacementPreviewPass({
+						camera: this.camera,
+						object: this.placementPreview.object,
+						projectionMatrix: mapProjectionMatrix
+							.clone()
+							.multiply(this.placementPreview.transform.matrix),
+						renderer: this.renderer,
+						scene: this.scene
+					});
 				}
 
 				this.loadedModels.forEach((loaded) => {

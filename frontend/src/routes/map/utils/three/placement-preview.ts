@@ -64,6 +64,30 @@ export const createPlacementPreviewObject = (bounds: ModelLocalBounds) => {
 	return object;
 };
 
+export const renderPlacementPreviewPass = ({
+	camera,
+	object,
+	projectionMatrix,
+	renderer,
+	scene
+}: {
+	camera: THREE.Camera;
+	object: THREE.Group;
+	projectionMatrix: THREE.Matrix4;
+	renderer: Pick<THREE.WebGLRenderer, 'render' | 'resetState'>;
+	scene: THREE.Scene;
+}) => {
+	object.visible = true;
+	camera.projectionMatrix = projectionMatrix;
+	renderer.resetState();
+	try {
+		renderer.render(scene, camera);
+	} finally {
+		// 後続のモデル別描画で同じボックスを各モデルの変換行列へ重ねない。
+		object.visible = false;
+	}
+};
+
 export const disposePlacementPreviewObject = (object: THREE.Group) => {
 	object.traverse((child) => {
 		if ((child as THREE.Mesh).geometry) (child as THREE.Mesh).geometry.dispose();
