@@ -205,9 +205,7 @@
 			位置情報のない写真を、撮影場所ではなく今いる場所に配置します。「いいえ」を選ぶと、その写真は読み込みません。
 		</p>
 		<div class="flex justify-center gap-4">
-			<button onclick={() => answerLocation(false)} class="c-btn-sub cursor-pointer p-4"
-				>いいえ</button
-			>
+			<button onclick={cancel} class="c-btn-sub cursor-pointer p-4">キャンセル</button>
 			<button onclick={() => answerLocation(true)} class="c-btn-confirm cursor-pointer p-4"
 				>はい</button
 			>
@@ -215,8 +213,4 @@
 	{:else}
 		<p class="text-sm text-gray-400">{status}</p>
 	{/if}
-</div>
-
-<div class="flex shrink-0 justify-center gap-4 pt-4">
-	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
 </div>
