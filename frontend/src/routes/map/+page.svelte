@@ -1398,6 +1398,7 @@
 						includeHighlights={$modelViewRequest?.includeHighlights ?? false}
 						fpsMode={modelViewFpsMode}
 						onModelPicked={showModelAttributes}
+						onModelMiss={closeFeaturePanel}
 						onResetViewChange={setModelViewReset}
 						onFpsModeChange={setModelViewFpsMode}
 					/>

@@ -18,6 +18,7 @@
 		includeHighlights?: boolean;
 		fpsMode?: boolean;
 		onModelPicked?: (picked: PickedModelFeature) => void;
+		onModelMiss?: () => void;
 		onResetViewChange?: (resetView: (() => void) | null) => void;
 		onFpsModeChange?: (enabled: boolean) => void;
 	}
@@ -28,6 +29,7 @@
 		includeHighlights = false,
 		fpsMode = false,
 		onModelPicked,
+		onModelMiss,
 		onResetViewChange,
 		onFpsModeChange
 	}: Props = $props();
@@ -73,7 +75,12 @@
 		if (picked) {
 			onModelPicked?.(picked);
 			threeJsManager.requestModelViewRepaint();
+			return;
 		}
+
+		threeJsManager.clearModelHighlight();
+		onModelMiss?.();
+		threeJsManager.requestModelViewRepaint();
 	};
 	onMount(() => {
 		if (!interactionTarget) return;
@@ -139,6 +146,9 @@
 			requestRender();
 		};
 		controls.addEventListener('change', onControlsChange);
+		// TrackballControlsのホイール入力はupdate()で初めてカメラへ反映されるため、
+		// 静止中でもstartイベントから描画フレームを起動する。
+		zoomControls.addEventListener('start', onControlsChange);
 		zoomControls.addEventListener('change', onControlsChange);
 		setFpsMode = (enabled) => {
 			fpsModeEnabled = enabled;
@@ -207,6 +217,7 @@
 			target.removeEventListener('click', lockPointer);
 			pointerLockControls.removeEventListener('unlock', unlockPointer);
 			controls.removeEventListener('change', onControlsChange);
+			zoomControls.removeEventListener('start', onControlsChange);
 			zoomControls.removeEventListener('change', onControlsChange);
 			controls.dispose();
 			zoomControls.dispose();
