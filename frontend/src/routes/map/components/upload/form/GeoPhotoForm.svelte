@@ -6,7 +6,12 @@
 	import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { parseGeoPhotos, type GeoPhotoFeature } from '$routes/map/utils/formats/exif';
+	import {
+		GEO_PHOTO_ATTRIBUTE_FIELDS,
+		GEO_PHOTO_ATTRIBUTE_KEYS,
+		parseGeoPhotos,
+		type GeoPhotoFeature
+	} from '$routes/map/utils/formats/exif';
 	import { requestPhotoLocation } from '$routes/map/utils/photo-location';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
@@ -113,6 +118,11 @@
 
 			if (entry) {
 				const pointEntry = entry as PointEntry<GeoJsonMetaData>;
+				entry.properties.attributeView.popupKeys = [...GEO_PHOTO_ATTRIBUTE_KEYS];
+				entry.properties.fields = entry.properties.fields.map((field) => {
+					const photoField = GEO_PHOTO_ATTRIBUTE_FIELDS.find(({ key }) => key === field.key);
+					return photoField ? { ...field, ...photoField } : field;
+				});
 				entry.properties.attributeView.titles = [
 					{
 						conditions: ['fileName'],

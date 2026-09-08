@@ -6,6 +6,8 @@
  */
 import * as exifr from 'exifr';
 
+import type { FieldDef } from '$routes/map/data/types/vector/properties';
+
 export interface GeoPhotoFeature {
 	type: 'Feature';
 	geometry: {
@@ -23,6 +25,21 @@ export interface GeoPhotoFeature {
 		altitude: number | null;
 	};
 }
+
+/** 属性パネルに表示する写真メタデータ。画像描画用のBlob URLは含めない。 */
+export const GEO_PHOTO_ATTRIBUTE_FIELDS: readonly FieldDef[] = [
+	{ key: 'fileName', label: 'ファイル名' },
+	{
+		key: 'locationSource',
+		label: '位置情報の取得元',
+		valueDict: { exif: 'EXIF GPS', device: '端末の現在地' }
+	},
+	{ key: 'datetime', label: '撮影日時' },
+	{ key: 'bearing', label: '撮影方位', unit: '°' },
+	{ key: 'altitude', label: '高度', unit: 'm' }
+];
+
+export const GEO_PHOTO_ATTRIBUTE_KEYS = GEO_PHOTO_ATTRIBUTE_FIELDS.map(({ key }) => key);
 
 export interface PhotoLocation {
 	lat: number;

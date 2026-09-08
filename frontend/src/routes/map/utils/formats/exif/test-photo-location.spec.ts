@@ -3,7 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('exifr', () => ({ gps: vi.fn(), parse: vi.fn(async () => ({})) }));
 
 import { gps } from 'exifr';
-import { hasExifGps, parseGeoPhotos } from '.';
+import {
+	GEO_PHOTO_ATTRIBUTE_FIELDS,
+	GEO_PHOTO_ATTRIBUTE_KEYS,
+	hasExifGps,
+	parseGeoPhotos
+} from '.';
 
 const photo = (name: string) => new File(['test-photo'], name);
 
@@ -15,6 +20,30 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('写真の現在地補完', () => {
+	it('属性表示に画像描画用URLを含めない', () => {
+		expect(GEO_PHOTO_ATTRIBUTE_KEYS).toEqual([
+			'fileName',
+			'locationSource',
+			'datetime',
+			'bearing',
+			'altitude'
+		]);
+		expect(GEO_PHOTO_ATTRIBUTE_KEYS).not.toContain('imageUrl');
+		expect(GEO_PHOTO_ATTRIBUTE_KEYS).not.toContain('iconImageUrl');
+		expect(GEO_PHOTO_ATTRIBUTE_KEYS).not.toContain('coverImageUrl');
+		expect(GEO_PHOTO_ATTRIBUTE_FIELDS).toEqual([
+			{ key: 'fileName', label: 'ファイル名' },
+			{
+				key: 'locationSource',
+				label: '位置情報の取得元',
+				valueDict: { exif: 'EXIF GPS', device: '端末の現在地' }
+			},
+			{ key: 'datetime', label: '撮影日時' },
+			{ key: 'bearing', label: '撮影方位', unit: '°' },
+			{ key: 'altitude', label: '高度', unit: 'm' }
+		]);
+	});
+
 	it('GPS付き写真を保持し、GPSなしの複数枚に一度だけ確認した現在地を使う', async () => {
 		vi.mocked(gps).mockResolvedValueOnce({ latitude: 1, longitude: 2 });
 		const resolveMissingLocation = vi.fn(async () => ({ lat: 3, lng: 4 }));
