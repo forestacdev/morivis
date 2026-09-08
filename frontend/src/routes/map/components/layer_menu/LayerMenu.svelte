@@ -248,8 +248,8 @@
 {#if $showLayerMenu && !$showModelView}
 	<div
 		transition:fly={{
-			duration: 300,
-			y: !$isMobile ? 100 : 0,
+			duration: 200,
+			x: !$isMobile ? -100 : 0,
 			opacity: 0,
 			delay: !$isMobile ? 100 : 0
 		}}
