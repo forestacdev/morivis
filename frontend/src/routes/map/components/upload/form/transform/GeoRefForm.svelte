@@ -47,6 +47,7 @@
 	} from '$routes/map/utils/proj/dict';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
+	import { normalizeModelTransformScale } from '$routes/map/utils/three/model-scale';
 	import { getPlacementPreviewBounds } from '$routes/map/utils/three/placement-preview';
 	import {
 		applyAspectLockedGeoRefDrag,
@@ -128,6 +129,7 @@
 	let modelAltitude = $state(0);
 	let modelHeightOffset = $state(0);
 	let modelScale = $state(1);
+	let modelScaleUnit = $state(0);
 	let modelRotationX = $state(0);
 	let modelRotationY = $state(0);
 	let modelRotationZ = $state(0);
@@ -149,7 +151,9 @@
 		modelLat = transform.lat;
 		modelAltitude = transform.altitude;
 		modelHeightOffset = transform.heightOffset ?? 0;
-		modelScale = transform.scale;
+		const normalizedScale = normalizeModelTransformScale(transform);
+		modelScale = normalizedScale.scale;
+		modelScaleUnit = normalizedScale.scaleUnit;
 		modelRotationX = transform.rotationX;
 		modelRotationY = transform.rotationY;
 		modelRotationZ = transform.rotationZ;
@@ -168,6 +172,7 @@
 			altitude: modelAltitude,
 			heightOffset: modelHeightOffset,
 			scale: modelScale,
+			scaleUnit: modelScaleUnit,
 			rotationX: modelRotationX,
 			rotationY: modelRotationY,
 			rotationZ: modelRotationZ
@@ -192,7 +197,9 @@
 			modelLat = transform.lat;
 			modelAltitude = transform.altitude;
 			modelHeightOffset = transform.heightOffset ?? 0;
-			modelScale = transform.scale;
+			const normalizedScale = normalizeModelTransformScale(transform);
+			modelScale = normalizedScale.scale;
+			modelScaleUnit = normalizedScale.scaleUnit;
 			modelRotationX = transform.rotationX;
 			modelRotationY = transform.rotationY;
 			modelRotationZ = transform.rotationZ;
@@ -747,6 +754,7 @@
 				bind:lat={modelLat}
 				bind:altitude={modelAltitude}
 				bind:scale={modelScale}
+				bind:scaleUnit={modelScaleUnit}
 				bind:rotationX={modelRotationX}
 				bind:rotationY={modelRotationY}
 				bind:rotationZ={modelRotationZ}

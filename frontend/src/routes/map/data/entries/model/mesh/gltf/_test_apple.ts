@@ -35,7 +35,8 @@ const entry: MeshEntry<MeshStyle> = {
 		showThroughTerrain: false,
 		color: '#ffffff',
 		transform: {
-			scale: 600,
+			scale: 6,
+			scaleUnit: 2,
 			lng: 136.919315,
 			lat: 35.552991,
 			altitude: 0,

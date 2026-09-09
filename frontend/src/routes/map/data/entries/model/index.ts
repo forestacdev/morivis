@@ -19,6 +19,7 @@ import type {
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import { getModelBaseRotationX } from '$routes/map/utils/three/model-axis';
+import { normalizeModelScale } from '$routes/map/utils/three/model-scale';
 import type { Table } from 'apache-arrow';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
@@ -181,6 +182,7 @@ export const createGlbEntry = (
 		/** モデル固有の単位・寸法補正。利用者が操作する scale とは分離する。 */
 		baseScale?: number;
 		scale?: number;
+		scaleUnit?: number;
 		rotationX?: number;
 		rotationY?: number;
 	},
@@ -200,6 +202,9 @@ export const createGlbEntry = (
 		formatType,
 		options?.preserveSourceOrientation,
 		options?.upAxis
+	);
+	const normalizedScale = normalizeModelScale(
+		(transform.scale ?? 1) * 10 ** (transform.scaleUnit ?? 0)
 	);
 
 	return {
@@ -273,7 +278,8 @@ export const createGlbEntry = (
 				heightScale: 1,
 				baseScale: transform.baseScale ?? 1,
 				baseRotationX,
-				scale: transform.scale ?? 1,
+				scale: normalizedScale.scale,
+				scaleUnit: normalizedScale.scaleUnit,
 				rotationX: transform.rotationX ?? 0,
 				rotationY: transform.rotationY ?? 0,
 				rotationZ: 0
@@ -322,6 +328,7 @@ export const createGaussianSplatEntry = (
 			heightScale: 1,
 			baseRotationX: 0,
 			scale: 1,
+			scaleUnit: 0,
 			rotationX: 0,
 			rotationY: 0,
 			rotationZ: 0

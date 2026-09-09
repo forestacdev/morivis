@@ -175,6 +175,8 @@ export interface ModelTransformStyle {
 		baseRotationX?: number;
 		baseRotationY?: number;
 		baseRotationZ?: number;
+		/** 利用者が操作する倍率の10進指数。未指定は0として扱う。 */
+		scaleUnit?: number;
 		scale: number;
 		rotationX: number;
 		rotationY: number;

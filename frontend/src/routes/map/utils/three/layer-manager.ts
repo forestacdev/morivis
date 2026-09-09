@@ -49,10 +49,12 @@ import {
 	getModelScaleHandles,
 	getOppositeModelScaleHandle,
 	isModelPlacementBoundsHit,
+	keepModelPlacementAboveGround,
 	type ModelPlacementTransform,
 	type ModelScaleHandleKey,
 	preserveModelLocalPointPosition
 } from '$routes/map/utils/three/model-placement-scale';
+import { getEffectiveModelScale, normalizeModelScale } from '$routes/map/utils/three/model-scale';
 import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
 import {
 	calculateModelTransform,
@@ -2094,6 +2096,7 @@ export class ThreeJsLayerManager {
 			startTransform
 		});
 		const terrainEnabled = Boolean(this.map?.getTerrain());
+		const startEffectiveScale = getEffectiveModelScale(startTransform);
 		const handlePointerMove = (moveEvent: PointerEvent) => {
 			if (moveEvent.pointerId !== pointerId) return;
 			moveEvent.preventDefault();
@@ -2104,21 +2107,31 @@ export class ThreeJsLayerManager {
 			];
 			const currentDistance = Math.hypot(currentVector[0], currentVector[1]);
 			const currentAngle = Math.atan2(currentVector[1], currentVector[0]);
-			const nextTransform = {
-				...startTransform,
-				scale: getModelScaleFromHandleDrag({
+			const nextScale = normalizeModelScale(
+				getModelScaleFromHandleDrag({
 					currentDistance,
 					startDistance,
-					startScale: startTransform.scale
-				}),
+					startScale: startEffectiveScale
+				})
+			);
+			const nextTransform = {
+				...startTransform,
+				...nextScale,
 				rotationY: startTransform.rotationY
 					+ normalizeRadians(currentAngle - startAngle) * degreesPerScreenRadian
 			};
+			const anchoredTransform = preserveModelLocalPointPosition({
+				fixedLocalPosition: oppositeHandle.position,
+				nextTransform,
+				startTransform,
+				terrainEnabled
+			});
 			this.placementTransformChangeHandler?.(
-				preserveModelLocalPointPosition({
-					fixedLocalPosition: oppositeHandle.position,
-					nextTransform,
-					startTransform,
+				keepModelPlacementAboveGround({
+					groundAltitudeAt: (lng, lat) =>
+						terrainEnabled ? (this.map?.queryTerrainElevation([lng, lat]) ?? 0) : 0,
+					localBounds,
+					transform: anchoredTransform,
 					terrainEnabled
 				})
 			);

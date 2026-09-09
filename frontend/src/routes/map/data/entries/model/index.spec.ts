@@ -38,6 +38,17 @@ describe('createGlbEntry', () => {
 
 		expect(entry.style.transform.baseScale).toBe(250);
 		expect(entry.style.transform.scale).toBe(1.5);
+		expect(entry.style.transform.scaleUnit).toBe(0);
+	});
+
+	it('大きな倍率をスライダー値と倍率単位へ分解する', () => {
+		const entry = createGlbEntry('test-scale-unit', 'blob:test-scale-unit', {
+			...transform,
+			scale: 600
+		});
+
+		expect(entry.style.transform.scale).toBe(6);
+		expect(entry.style.transform.scaleUnit).toBe(2);
 	});
 
 	it('STLをmesh entryへ正規化する', () => {

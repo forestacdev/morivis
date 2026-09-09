@@ -11,6 +11,7 @@ import type {
 	Tiles3DEntry
 } from '$routes/map/data/types/model';
 import type { Tag } from '$routes/map/data/types/tags';
+import { normalizeModelScale } from '$routes/map/utils/three/model-scale';
 
 type XYZPresetKey = keyof typeof IMAGE_TILE_XYZ_SETS;
 
@@ -42,6 +43,7 @@ export interface MeshModelEntryConfig extends BaseModelConfig {
 		/** モデル固有の単位・寸法補正。利用者が操作する scale とは分離する。 */
 		baseScale?: number;
 		scale?: number;
+		scaleUnit?: number;
 		rotationX?: number;
 		rotationY?: number;
 	};
@@ -77,6 +79,9 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 		color = '#ffffff',
 		heightColorRamp
 	} = config;
+	const normalizedScale = normalizeModelScale(
+		(transform.scale ?? 1) * 10 ** (transform.scaleUnit ?? 0)
+	);
 
 	return {
 		id,
@@ -133,7 +138,8 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 				heightScale: 1,
 				baseScale: transform.baseScale ?? 1,
 				baseRotationX: -180,
-				scale: transform.scale ?? 1,
+				scale: normalizedScale.scale,
+				scaleUnit: normalizedScale.scaleUnit,
 				rotationX: transform.rotationX ?? 0,
 				rotationY: transform.rotationY ?? 0,
 				rotationZ: 0

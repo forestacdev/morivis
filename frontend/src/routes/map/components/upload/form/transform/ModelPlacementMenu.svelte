@@ -1,9 +1,12 @@
 <script lang="ts">
+	import ModelScaleControl from '$routes/map/components/atoms/ModelScaleControl.svelte';
+
 	interface Props {
 		lng: number;
 		lat: number;
 		altitude: number;
 		scale: number;
+		scaleUnit: number;
 		rotationX: number;
 		rotationY: number;
 		rotationZ: number;
@@ -14,6 +17,7 @@
 		lat = $bindable(),
 		altitude = $bindable(),
 		scale = $bindable(),
+		scaleUnit = $bindable(),
 		rotationX = $bindable(),
 		rotationY = $bindable(),
 		rotationZ = $bindable()
@@ -38,10 +42,14 @@
 		<span>高さ (m)</span>
 		<input class="c-input w-full" type="number" step="0.1" bind:value={altitude} />
 	</label>
-	<label class="flex w-full flex-col gap-1 text-sm">
-		<span>スケール倍率</span>
-		<input class="c-input w-full" type="number" step="0.01" bind:value={scale} />
-	</label>
+	<ModelScaleControl
+		{scale}
+		{scaleUnit}
+		onChange={(value) => {
+			scale = value.scale;
+			scaleUnit = value.scaleUnit;
+		}}
+	/>
 	<label class="flex w-full flex-col gap-1 text-sm">
 		<span>Y回転 (°)</span>
 		<input class="c-input w-full" type="number" step="1" bind:value={rotationY} />

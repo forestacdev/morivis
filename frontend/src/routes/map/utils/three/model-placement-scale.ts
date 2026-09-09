@@ -176,3 +176,39 @@ export const preserveModelLocalPointPosition = ({
 
 	return result;
 };
+
+export const keepModelPlacementAboveGround = ({
+	groundAltitudeAt,
+	localBounds,
+	transform,
+	terrainEnabled
+}: {
+	groundAltitudeAt: (lng: number, lat: number) => number;
+	localBounds: ModelLocalBounds;
+	transform: ModelPlacementTransform;
+	terrainEnabled: boolean;
+}): ModelPlacementTransform => {
+	let result = { ...transform };
+
+	// 緯度によって Mercator のメートル換算が変わるため、持ち上げ量を数回収束させる。
+	for (let index = 0; index < 4; index += 1) {
+		const matrix = buildMercatorModelMatrix(result, terrainEnabled);
+		let requiredLift = 0;
+
+		getModelScaleHandles(localBounds).forEach(({ position }) => {
+			const world = new THREE.Vector3(...position).applyMatrix4(matrix);
+			const coordinate = new MercatorCoordinate(world.x, world.y, world.z);
+			const lngLat = coordinate.toLngLat();
+			const groundAltitude = groundAltitudeAt(lngLat.lng, lngLat.lat);
+			if (!Number.isFinite(groundAltitude)) return;
+			requiredLift = Math.max(requiredLift, groundAltitude - coordinate.toAltitude());
+		});
+
+		if (requiredLift <= 1e-6) break;
+		result = terrainEnabled
+			? { ...result, altitude: result.altitude + requiredLift }
+			: { ...result, heightOffset: (result.heightOffset ?? 0) + requiredLift };
+	}
+
+	return result;
+};

@@ -3,6 +3,7 @@
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
+	import ModelScaleControl from '$routes/map/components/atoms/ModelScaleControl.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import RangeSliderDouble from '$routes/map/components/atoms/RangeSliderDouble.svelte';
 	import BaseSelectMenu from '$routes/map/components/atoms/select/BaseSelectMenu.svelte';
@@ -373,15 +374,14 @@
 {#if !$showModelView}
 	<Accordion label="変形・移動" icon="gis:cube-3d" bind:value={showTransformOption}>
 		{#if canEditScale}
-			<label class="flex flex-col gap-2 pb-4 text-base">
-				<span>スケール</span>
-				<input
-					class="c-input w-full"
-					type="number"
-					step="0.01"
-					bind:value={layerEntry.style.transform.scale}
-				/>
-			</label>
+			<ModelScaleControl
+				scale={layerEntry.style.transform.scale}
+				scaleUnit={layerEntry.style.transform.scaleUnit}
+				onChange={(value) => {
+					layerEntry.style.transform.scale = value.scale;
+					layerEntry.style.transform.scaleUnit = value.scaleUnit;
+				}}
+			/>
 		{/if}
 
 		{#if canEditHeightScale && layerEntry.style.transform.heightScale != null}

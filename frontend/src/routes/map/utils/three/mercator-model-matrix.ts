@@ -1,4 +1,5 @@
 import type { ModelTransformStyle } from '$routes/map/data/types/model';
+import { getEffectiveModelScale } from '$routes/map/utils/three/model-scale';
 import * as THREE from 'three';
 
 const EARTH_CIRCUMFERENCE = 40075016.68557849;
@@ -51,13 +52,13 @@ export const buildMercatorModelMatrix = (
 		baseRotationX,
 		baseRotationY,
 		baseRotationZ,
-		scale,
 		rotationX,
 		rotationY,
 		rotationZ
 	} = transform;
 
 	const effectiveAltitude = (terrainEnabled ? altitude : 0) + (heightOffset ?? 0);
+	const effectiveScale = getEffectiveModelScale(transform);
 	const rotationXMatrix = new THREE.Matrix4().makeRotationAxis(
 		new THREE.Vector3(1, 0, 0),
 		((baseRotationX ?? 0) + rotationX) * (Math.PI / 180)
@@ -71,9 +72,9 @@ export const buildMercatorModelMatrix = (
 		((baseRotationZ ?? 0) + rotationZ) * (Math.PI / 180)
 	);
 	const scaleMatrix = new THREE.Matrix4().makeScale(
-		(baseScale ?? 1) * scale,
-		-(baseScale ?? 1) * scale * (heightScale ?? 1),
-		-(baseScale ?? 1) * scale
+		(baseScale ?? 1) * effectiveScale,
+		-(baseScale ?? 1) * effectiveScale * (heightScale ?? 1),
+		-(baseScale ?? 1) * effectiveScale
 	);
 
 	return buildMercatorAnchorMatrix(lng, lat, effectiveAltitude)

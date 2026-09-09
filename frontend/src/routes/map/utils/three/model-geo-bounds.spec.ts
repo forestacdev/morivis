@@ -26,4 +26,14 @@ describe('getModelGeoBoundsFromLocalBounds', () => {
 		expect(bounds[2]).toBeCloseTo(0.0000449158, 8);
 		expect(bounds[3]).toBeCloseTo(0.0000898315, 8);
 	});
+
+	it('scaleUnit を10進倍率としてモデル範囲へ反映する', () => {
+		const bounds = getModelGeoBoundsFromLocalBounds([-5, 0, -10, 5, 10, 10], {
+			...style,
+			transform: { ...style.transform, scale: 1, scaleUnit: 1 }
+		});
+
+		expect(bounds[0]).toBeCloseTo(-0.000449158, 8);
+		expect(bounds[2]).toBeCloseTo(0.000449158, 8);
+	});
 });

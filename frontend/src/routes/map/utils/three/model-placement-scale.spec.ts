@@ -1,10 +1,12 @@
-import type { ModelLocalBounds } from '$routes/map/data/types/model';
+import type { ModelLocalBounds, ModelTransformStyle } from '$routes/map/data/types/model';
+import { MercatorCoordinate } from '$routes/map/utils/maplibre';
 import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import {
 	getModelScaleFromHandleDrag,
 	getModelScaleHandles,
 	getOppositeModelScaleHandle,
 	isModelPlacementBoundsHit,
+	keepModelPlacementAboveGround,
 	preserveModelLocalPointPosition
 } from '$routes/map/utils/three/model-placement-scale';
 import * as THREE from 'three';
@@ -24,6 +26,20 @@ const startTransform = {
 };
 
 describe('model placement scale', () => {
+	const getMinimumAltitude = (
+		bounds: ModelLocalBounds,
+		transform: ModelTransformStyle['transform'],
+		terrainEnabled: boolean
+	) => {
+		const matrix = buildMercatorModelMatrix(transform, terrainEnabled);
+		return Math.min(
+			...getModelScaleHandles(bounds).map(({ position }) => {
+				const world = new THREE.Vector3(...position).applyMatrix4(matrix);
+				return new MercatorCoordinate(world.x, world.y, world.z).toAltitude();
+			})
+		);
+	};
+
 	it('立体範囲の8頂点にハンドルを作る', () => {
 		const handles = getModelScaleHandles([...localBounds]);
 
@@ -80,6 +96,34 @@ describe('model placement scale', () => {
 
 		expect(nextWorld.distanceTo(startWorld)).toBeLessThan(1e-12);
 		expect(nextTransform.heightOffset).not.toBe(0);
+	});
+
+	it('上側の頂点を支点に拡大しても底面を地面より下へ沈めない', () => {
+		const bounds: ModelLocalBounds = [-5, 0, -5, 5, 10, 5];
+		const groundedTransform = {
+			...startTransform,
+			altitude: 0,
+			baseRotationX: -180,
+			heightOffset: 0
+		};
+		const anchoredTransform = preserveModelLocalPointPosition({
+			fixedLocalPosition: [5, 10, 5],
+			nextTransform: { ...groundedTransform, scale: 2 },
+			startTransform: groundedTransform,
+			terrainEnabled: false
+		});
+		const nextTransform = keepModelPlacementAboveGround({
+			groundAltitudeAt: () => 0,
+			localBounds: bounds,
+			transform: anchoredTransform,
+			terrainEnabled: false
+		});
+
+		expect(getMinimumAltitude(bounds, anchoredTransform, false)).toBeLessThan(-9.9);
+		expect(getMinimumAltitude(bounds, nextTransform, false)).toBeGreaterThanOrEqual(-1e-6);
+		expect(
+			(nextTransform.heightOffset ?? 0) - (anchoredTransform.heightOffset ?? 0)
+		).toBeGreaterThan(9.9);
 	});
 
 	it('画面上のドラッグ距離に応じた一様スケールを返す', () => {
