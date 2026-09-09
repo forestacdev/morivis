@@ -131,7 +131,6 @@
 	let modelRotationX = $state(0);
 	let modelRotationY = $state(0);
 	let modelRotationZ = $state(0);
-	let modelMarkerLngLat = $state(new maplibregl.LngLat(0, 0));
 	const isModelPlacementActive = $derived(
 		transformOptionMode === 'georef' &&
 			showDataEntry?.type === 'model' &&
@@ -154,7 +153,6 @@
 		modelRotationX = transform.rotationX;
 		modelRotationY = transform.rotationY;
 		modelRotationZ = transform.rotationZ;
-		modelMarkerLngLat = new maplibregl.LngLat(transform.lng, transform.lat);
 		modelPlacementInitialized = true;
 		mapStore.ensureThreeLayer();
 		threeJsManager.setPlacementPreview(showDataEntry as ThreeModelEntry);
@@ -184,9 +182,6 @@
 		)
 			return;
 		const entry = showDataEntry as ThreeModelEntry;
-		if (modelMarkerLngLat.lng !== modelLng || modelMarkerLngLat.lat !== modelLat) {
-			modelMarkerLngLat = new maplibregl.LngLat(modelLng, modelLat);
-		}
 		threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry));
 	});
 
@@ -817,16 +812,6 @@
 			label="SW"
 			onDrag={(lngLat) => {
 				handleGeoRefCornerDrag('sw', lngLat);
-			}}
-		/>
-	{:else if isModelPlacementActive}
-		<GeoRefMarker
-			{map}
-			bind:lngLat={modelMarkerLngLat}
-			label="3D"
-			onDrag={(lngLat) => {
-				modelLng = lngLat.lng;
-				modelLat = lngLat.lat;
 			}}
 		/>
 	{/if}

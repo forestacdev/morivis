@@ -55,6 +55,44 @@ export const getOppositeModelScaleHandle = (
 	return opposite;
 };
 
+export const isModelPlacementBoundsHit = ({
+	canvasHeight,
+	canvasWidth,
+	clientX,
+	clientY,
+	localBounds,
+	localToClipMatrix
+}: {
+	canvasHeight: number;
+	canvasWidth: number;
+	clientX: number;
+	clientY: number;
+	localBounds: ModelLocalBounds;
+	localToClipMatrix: THREE.Matrix4;
+}): boolean => {
+	if (canvasWidth <= 0 || canvasHeight <= 0) return false;
+	const ndcX = (clientX / canvasWidth) * 2 - 1;
+	const ndcY = 1 - (clientY / canvasHeight) * 2;
+	const clipToLocalMatrix = localToClipMatrix.clone().invert();
+	const near = new THREE.Vector3(ndcX, ndcY, -1).applyMatrix4(clipToLocalMatrix);
+	const far = new THREE.Vector3(ndcX, ndcY, 1).applyMatrix4(clipToLocalMatrix);
+	if (![...near.toArray(), ...far.toArray()].every(Number.isFinite)) return false;
+
+	const rayLength = near.distanceTo(far);
+	if (rayLength <= Number.EPSILON) return false;
+	const ray = new THREE.Ray(near, far.clone().sub(near).normalize());
+	const [minX, minY, minZ, maxX, maxY, maxZ] = localBounds;
+	const hit = ray.intersectBox(
+		new THREE.Box3(
+			new THREE.Vector3(minX, minY, minZ),
+			new THREE.Vector3(maxX, maxY, maxZ)
+		),
+		new THREE.Vector3()
+	);
+
+	return hit !== null && hit.distanceTo(near) <= rayLength + 1e-6;
+};
+
 export const getModelScaleFromHandleDrag = ({
 	currentDistance,
 	startDistance,

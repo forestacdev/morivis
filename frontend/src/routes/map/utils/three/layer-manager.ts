@@ -48,6 +48,7 @@ import {
 	getModelScaleFromHandleDrag,
 	getModelScaleHandles,
 	getOppositeModelScaleHandle,
+	isModelPlacementBoundsHit,
 	type ModelPlacementTransform,
 	type ModelScaleHandleKey,
 	preserveModelLocalPointPosition
@@ -340,6 +341,16 @@ export class ThreeJsLayerManager {
 	private placementLabelSize = { width: 0, height: 0 };
 	private placementTransformChangeHandler: ((transform: ModelPlacementTransform) => void) | null =
 		null;
+	private placementMoveDrag: {
+		pointerId: number;
+		startClientX: number;
+		startClientY: number;
+		startAnchorX: number;
+		startAnchorY: number;
+		startTransform: ModelPlacementTransform;
+		dragPanWasEnabled: boolean;
+		previousCursor: string;
+	} | null = null;
 	private overlayRenderTarget: THREE.WebGLRenderTarget | null = null;
 	private overlayScene: THREE.Scene | null = null;
 	private overlayCamera: THREE.OrthographicCamera | null = null;
@@ -360,6 +371,7 @@ export class ThreeJsLayerManager {
 	private placementPreview: {
 		object: THREE.Group;
 		handles: THREE.Group;
+		localBounds: ReturnType<typeof getPlacementPreviewBounds>;
 		transform: ModelTransform;
 		boundsKey: string;
 		styleTransform: ModelPlacementTransform;
@@ -1906,6 +1918,107 @@ export class ThreeJsLayerManager {
 		];
 	};
 
+	private isPlacementPreviewHit = (event: PointerEvent) => {
+		if (!this.map || !this.lastMapProjectionMatrix || !this.placementPreview) return false;
+		const canvasRect = this.map.getCanvas().getBoundingClientRect();
+		return isModelPlacementBoundsHit({
+			canvasHeight: canvasRect.height,
+			canvasWidth: canvasRect.width,
+			clientX: event.clientX - canvasRect.left,
+			clientY: event.clientY - canvasRect.top,
+			localBounds: this.placementPreview.localBounds,
+			localToClipMatrix: this.lastMapProjectionMatrix
+				.clone()
+				.multiply(this.placementPreview.transform.matrix)
+		});
+	};
+
+	private finishPlacementMoveDrag = () => {
+		const drag = this.placementMoveDrag;
+		if (!drag) return;
+		const canvas = this.map?.getCanvas();
+		if (canvas?.hasPointerCapture(drag.pointerId)) canvas.releasePointerCapture(drag.pointerId);
+		if (canvas) canvas.style.cursor = drag.previousCursor;
+		if (drag.dragPanWasEnabled) this.map?.dragPan.enable();
+		this.placementMoveDrag = null;
+	};
+
+	private handlePlacementPointerDown = (event: PointerEvent) => {
+		if (
+			event.button !== 0
+			|| this.activeModelView
+			|| !this.map
+			|| !this.placementPreview
+			|| !this.isPlacementPreviewHit(event)
+		) {
+			return;
+		}
+
+		const canvas = this.map.getCanvas();
+		const startAnchor = this.map.project([
+			this.placementPreview.styleTransform.lng,
+			this.placementPreview.styleTransform.lat
+		]);
+		const dragPanWasEnabled = this.map.dragPan.isEnabled();
+		if (dragPanWasEnabled) this.map.dragPan.disable();
+		this.placementMoveDrag = {
+			pointerId: event.pointerId,
+			startClientX: event.clientX,
+			startClientY: event.clientY,
+			startAnchorX: startAnchor.x,
+			startAnchorY: startAnchor.y,
+			startTransform: { ...this.placementPreview.styleTransform },
+			dragPanWasEnabled,
+			previousCursor: canvas.style.cursor
+		};
+		canvas.style.cursor = 'grabbing';
+		canvas.setPointerCapture(event.pointerId);
+		event.preventDefault();
+		event.stopImmediatePropagation();
+	};
+
+	private handlePlacementPointerMove = (event: PointerEvent) => {
+		const drag = this.placementMoveDrag;
+		if (!drag || drag.pointerId !== event.pointerId || !this.map) return;
+		const lngLat = this.map.unproject([
+			drag.startAnchorX + event.clientX - drag.startClientX,
+			drag.startAnchorY + event.clientY - drag.startClientY
+		]);
+		this.placementTransformChangeHandler?.({
+			...drag.startTransform,
+			lng: lngLat.lng,
+			lat: lngLat.lat
+		});
+		event.preventDefault();
+		event.stopImmediatePropagation();
+	};
+
+	private handlePlacementPointerEnd = (event: PointerEvent) => {
+		if (this.placementMoveDrag?.pointerId !== event.pointerId) return;
+		event.preventDefault();
+		event.stopImmediatePropagation();
+		this.finishPlacementMoveDrag();
+	};
+
+	private addPlacementPointerListeners = () => {
+		const canvas = this.map?.getCanvas();
+		if (!canvas) return;
+		canvas.addEventListener('pointerdown', this.handlePlacementPointerDown, true);
+		canvas.addEventListener('pointermove', this.handlePlacementPointerMove, true);
+		canvas.addEventListener('pointerup', this.handlePlacementPointerEnd, true);
+		canvas.addEventListener('pointercancel', this.handlePlacementPointerEnd, true);
+	};
+
+	private removePlacementPointerListeners = () => {
+		const canvas = this.map?.getCanvas();
+		if (!canvas) return;
+		this.finishPlacementMoveDrag();
+		canvas.removeEventListener('pointerdown', this.handlePlacementPointerDown, true);
+		canvas.removeEventListener('pointermove', this.handlePlacementPointerMove, true);
+		canvas.removeEventListener('pointerup', this.handlePlacementPointerEnd, true);
+		canvas.removeEventListener('pointercancel', this.handlePlacementPointerEnd, true);
+	};
+
 	private resolvePlacementYRotation = ({
 		draggedLocalPosition,
 		fixedClientPosition,
@@ -2117,6 +2230,7 @@ export class ThreeJsLayerManager {
 			this.placementPreview = {
 				object,
 				handles,
+				localBounds: bounds,
 				transform: calculateModelTransform(style),
 				boundsKey,
 				styleTransform: { ...style.transform }
@@ -2129,6 +2243,7 @@ export class ThreeJsLayerManager {
 	}
 
 	clearPlacementPreview(): void {
+		this.finishPlacementMoveDrag();
 		const preview = this.placementPreview;
 		if (preview) {
 			this.scene?.remove(preview.object);
@@ -2286,6 +2401,8 @@ export class ThreeJsLayerManager {
 					this.isInitialized = true;
 				}
 				this.ensurePlacementLabelRenderer();
+				this.removePlacementPointerListeners();
+				this.addPlacementPointerListeners();
 			},
 
 			render: (_gl, args) => {
@@ -2368,6 +2485,7 @@ export class ThreeJsLayerManager {
 			},
 
 			onRemove: () => {
+				this.removePlacementPointerListeners();
 				this.removePlacementLabelRenderer();
 				this.clearAllModels();
 			}
@@ -3659,6 +3777,7 @@ export class ThreeJsLayerManager {
 	/** 完全に破棄（ページ離脱時など） */
 	dispose(): void {
 		this.clearModelHighlight();
+		this.removePlacementPointerListeners();
 		this.clearPlacementPreview();
 		this.removePlacementLabelRenderer();
 		this.placementTransformChangeHandler = null;

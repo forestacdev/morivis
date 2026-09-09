@@ -24,7 +24,7 @@
 
 <div class="c-scroll flex h-full w-full grow flex-col gap-4 overflow-x-hidden overflow-y-auto px-2">
 	<div class="rounded-md bg-black/15 p-3 text-sm text-gray-200">
-		中央の「3D」で配置位置を動かせます。立体ボックスの頂点を動かすと、対角点を固定してY回転と大きさを調整します。
+		赤い立体ボックスをドラッグすると配置位置を動かせます。頂点を動かすと、対角点を固定してY回転と大きさを調整します。
 	</div>
 	<label class="flex w-full flex-col gap-1 text-sm">
 		<span>経度</span>

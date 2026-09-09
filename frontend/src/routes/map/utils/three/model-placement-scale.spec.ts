@@ -1,8 +1,10 @@
+import type { ModelLocalBounds } from '$routes/map/data/types/model';
 import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import {
 	getModelScaleFromHandleDrag,
 	getModelScaleHandles,
 	getOppositeModelScaleHandle,
+	isModelPlacementBoundsHit,
 	preserveModelLocalPointPosition
 } from '$routes/map/utils/three/model-placement-scale';
 import * as THREE from 'three';
@@ -88,6 +90,18 @@ describe('model placement scale', () => {
 				startScale: 1
 			})
 		).toBe(2);
+	});
+
+	it('ボックス内のポインター位置だけを移動操作の対象にする', () => {
+		const params = {
+			canvasHeight: 100,
+			canvasWidth: 100,
+			localBounds: [-0.5, -0.5, -0.5, 0.5, 0.5, 0.5] as ModelLocalBounds,
+			localToClipMatrix: new THREE.Matrix4()
+		};
+
+		expect(isModelPlacementBoundsHit({ ...params, clientX: 50, clientY: 50 })).toBe(true);
+		expect(isModelPlacementBoundsHit({ ...params, clientX: 95, clientY: 50 })).toBe(false);
 	});
 
 	it('倍率へ上下限を設けない', () => {
