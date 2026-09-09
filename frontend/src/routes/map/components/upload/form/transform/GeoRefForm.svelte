@@ -133,6 +133,7 @@
 	let modelRotationX = $state(0);
 	let modelRotationY = $state(0);
 	let modelRotationZ = $state(0);
+	let modelPlacementLoadId = 0;
 	const isModelPlacementActive = $derived(
 		transformOptionMode === 'georef' &&
 			showDataEntry?.type === 'model' &&
@@ -140,13 +141,16 @@
 	);
 
 	$effect(() => {
-		if (!isModelPlacementActive || !showDataEntry || modelPlacementInitialized) return;
+		if (!isModelPlacementActive || !showDataEntry) return;
 		if (
 			showDataEntry.type !== 'model' ||
 			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
 		)
 			return;
-		const transform = (showDataEntry as ThreeModelEntry).style.transform;
+
+		const entry = showDataEntry as ThreeModelEntry;
+		const transform = entry.style.transform;
+		const loadId = ++modelPlacementLoadId;
 		modelLng = transform.lng;
 		modelLat = transform.lat;
 		modelAltitude = transform.altitude;
@@ -157,10 +161,41 @@
 		modelRotationX = transform.rotationX;
 		modelRotationY = transform.rotationY;
 		modelRotationZ = transform.rotationZ;
-		modelPlacementInitialized = true;
-		mapStore.ensureThreeLayer();
-		threeJsManager.setPlacementPreview(showDataEntry as ThreeModelEntry);
+		modelPlacementInitialized = false;
 		showDataMenu.set(false);
+		isProcessing.set(true);
+
+		void mapStore
+			.setThreeLayer([entry], 'preview')
+			.then(() => {
+				if (
+					loadId !== modelPlacementLoadId ||
+					!isModelPlacementActive ||
+					showDataEntry?.id !== entry.id
+				) {
+					threeJsManager.clearPreview(entry.id);
+					return;
+				}
+				modelPlacementInitialized = true;
+				threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry));
+			})
+			.catch((error) => {
+				if (loadId !== modelPlacementLoadId) return;
+				console.error('配置用3Dモデルの読み込みに失敗しました', error);
+				threeJsManager.clearPreview(entry.id);
+				showNotification('実モデルを読み込めなかったため、範囲のみ表示します', 'error');
+				modelPlacementInitialized = true;
+				threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry));
+			})
+			.finally(() => {
+				if (loadId === modelPlacementLoadId) isProcessing.set(false);
+			});
+
+		return () => {
+			if (loadId !== modelPlacementLoadId) return;
+			modelPlacementLoadId += 1;
+			isProcessing.set(false);
+		};
 	});
 
 	const getCurrentModelPlacementStyle = (entry: ThreeModelEntry): ThreeModelEntry['style'] => ({
@@ -180,7 +215,7 @@
 	});
 
 	$effect(() => {
-		if (!isModelPlacementActive || !showDataEntry) return;
+		if (!isModelPlacementActive || !showDataEntry || !modelPlacementInitialized) return;
 		if (
 			showDataEntry.type !== 'model' ||
 			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
@@ -343,11 +378,15 @@
 
 	const handleCancel = () => {
 		if (isModelPlacementActive) {
+			const entryId = showDataEntry?.id;
 			if (showDataEntry?.style.type === 'gaussian-splat') {
 				removeGaussianSplatData(showDataEntry.id);
 			}
+			modelPlacementLoadId += 1;
+			isProcessing.set(false);
 			modelPlacementInitialized = false;
 			threeJsManager.clearPlacementPreview();
+			if (entryId) threeJsManager.clearPreview(entryId);
 			showDataEntry = null;
 			transformOptionMode = null;
 			showDialogType = null;
@@ -366,6 +405,7 @@
 			const placedEntry = createPlacedModelEntry();
 			if (!placedEntry) return;
 
+			threeJsManager.setModelTransform(placedEntry.id, placedEntry.style);
 			showDataEntry = placedEntry;
 			modelPlacementInitialized = false;
 			threeJsManager.clearPlacementPreview();

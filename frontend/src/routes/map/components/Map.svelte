@@ -856,7 +856,6 @@
 
 		const previewThreeModelEntry =
 			showDataEntry &&
-			!isModelPlacementActive &&
 			showDataEntry.type === 'model' &&
 			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat') &&
 			showDataEntry.format.type !== '3d-tiles'
@@ -865,11 +864,15 @@
 
 		// setThreeLayerの直前にも確認して、古いモデル状態の上書きを防ぐ。
 		if (updateId !== styleUpdateId) return;
-		await (previewThreeModelEntry
-			? mapStore.setThreeLayer([previewThreeModelEntry], 'preview')
-			: showDataEntry
-				? mapStore.setThreeLayer([], 'preview')
-				: mapStore.setThreeLayer(threeModelEntries, 'main'));
+		// 配置中の実モデルは GeoRefForm が読み込み完了まで待ってから表示する。
+		// ここでは同じプレビューを重複ロードせず、通常プレビューだけを同期する。
+		if (!isModelPlacementActive) {
+			await (previewThreeModelEntry
+				? mapStore.setThreeLayer([previewThreeModelEntry], 'preview')
+				: showDataEntry
+					? mapStore.setThreeLayer([], 'preview')
+					: mapStore.setThreeLayer(threeModelEntries, 'main'));
+		}
 
 		mapStore.terrainReload();
 

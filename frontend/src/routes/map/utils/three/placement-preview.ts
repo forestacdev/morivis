@@ -25,7 +25,7 @@ const createPlacementPreviewTexture = () => {
 			data[index] = PATTERN_COLOR.r;
 			data[index + 1] = PATTERN_COLOR.g;
 			data[index + 2] = PATTERN_COLOR.b;
-			data[index + 3] = distanceToStripe <= PATTERN_STRIPE_WIDTH ? 196 : 88;
+			data[index + 3] = distanceToStripe <= PATTERN_STRIPE_WIDTH ? 128 : 36;
 		}
 	}
 

@@ -371,6 +371,7 @@ export class ThreeJsLayerManager {
 	private highDetailModelLoads = new Set<string>();
 	private activeModelView: ActiveModelView | null = null;
 	private placementPreview: {
+		entryId: string;
 		object: THREE.Group;
 		handles: THREE.Group;
 		localBounds: ReturnType<typeof getPlacementPreviewBounds>;
@@ -2231,7 +2232,11 @@ export class ThreeJsLayerManager {
 		if (!this.scene) return;
 		const bounds = getPlacementPreviewBounds(entry);
 		const boundsKey = getPlacementPreviewBoundsKey(bounds);
-		if (!this.placementPreview || this.placementPreview.boundsKey !== boundsKey) {
+		if (
+			!this.placementPreview
+			|| this.placementPreview.entryId !== entry.id
+			|| this.placementPreview.boundsKey !== boundsKey
+		) {
 			if (this.placementPreview) {
 				this.scene.remove(this.placementPreview.object);
 				this.disposePlacementScaleHandles(this.placementPreview.handles);
@@ -2241,6 +2246,7 @@ export class ThreeJsLayerManager {
 			const handles = this.createPlacementScaleHandles(bounds);
 			this.scene.add(object, handles);
 			this.placementPreview = {
+				entryId: entry.id,
 				object,
 				handles,
 				localBounds: bounds,
@@ -2252,6 +2258,7 @@ export class ThreeJsLayerManager {
 			this.placementPreview.transform = calculateModelTransform(style);
 			this.placementPreview.styleTransform = { ...style.transform };
 		}
+		this.setModelTransform(entry.id, style);
 		this.map?.triggerRepaint();
 	}
 
@@ -2520,8 +2527,10 @@ export class ThreeJsLayerManager {
 				if (existing && existing.object.parent === this.previewModelGroup) {
 					this.previewModelGroup.remove(existing.object);
 					this.modelGroup.add(existing.object);
-					existing.transform = transform;
-					resolve();
+					void this.setModelStyle(entry).then(() => {
+						this.requestRepaintBurst(30);
+						resolve();
+					}).catch(reject);
 					return;
 				}
 			}
@@ -2531,7 +2540,11 @@ export class ThreeJsLayerManager {
 				const isInPreview = existing.object.parent === this.previewModelGroup;
 				const isInMain = existing.object.parent === this.modelGroup;
 				if ((_type === 'preview' && isInPreview) || (_type === 'main' && isInMain)) {
-					this.removeModel(entry.id);
+					void this.setModelStyle(entry).then(() => {
+						this.requestRepaintBurst(30);
+						resolve();
+					}).catch(reject);
+					return;
 				}
 			}
 
