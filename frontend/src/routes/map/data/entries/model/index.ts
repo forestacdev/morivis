@@ -263,6 +263,7 @@ export const createGlbEntry = (
 			type: 'mesh',
 			opacity: 1,
 			wireframe: false,
+			...(formatType === 'fbx' && { showFbxCurves: true, showFbxText: true }),
 			showThroughTerrain: false,
 			color: '#ffffff',
 			shading: {

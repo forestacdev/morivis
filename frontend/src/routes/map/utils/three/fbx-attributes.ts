@@ -30,7 +30,7 @@ const getFbxEulerOrder = (value: FbxAttributeValue | undefined): THREE.EulerOrde
 		: DEFAULT_FBX_EULER_ORDER;
 };
 
-const getFbxGeometricTransform = (attributes: FbxModelAttributes | undefined) => {
+export const getFbxGeometricTransform = (attributes: FbxModelAttributes | undefined) => {
 	const translation = getFbxVector3(attributes?.GeometricTranslation) ?? ZERO_VECTOR;
 	const rotation = getFbxVector3(attributes?.GeometricRotation) ?? ZERO_VECTOR;
 	const scaling = getFbxVector3(attributes?.GeometricScaling) ?? IDENTITY_SCALE;
@@ -59,10 +59,13 @@ export const applyFbxCurveGeometricTransform = (
 	object: THREE.Object3D,
 	attributesByModelId: Record<string, FbxModelAttributes>
 ) => {
-	// FBXLoader は Mesh には GeometricTransform を適用するが、NurbsCurve の Line には適用しない。
+	// FBXLoader はNurbsCurveのマテリアルを取得できず、全曲線を固定色 #3300ff で生成する。
+	// この青線はmorivisのエッジではなく、CADの線分や文字輪郭を含むFBX由来の曲線要素。
+	// またMeshとは異なりGeometricTransformも適用されないため、ここで両方を識別・補正する。
 	const geometryUseCounts = new Map<THREE.BufferGeometry, number>();
 	object.traverse((child) => {
 		if (!(child as THREE.Line).isLine) return;
+		child.userData.morivisFbxCurve = true;
 		const geometry = (child as THREE.Line).geometry;
 		geometryUseCounts.set(geometry, (geometryUseCounts.get(geometry) ?? 0) + 1);
 	});
@@ -92,6 +95,14 @@ export const applyFbxCurveGeometricTransform = (
 	});
 
 	return appliedCount;
+};
+
+export const setFbxCurveVisibility = (object: THREE.Object3D, visible: boolean) => {
+	object.traverse((child) => {
+		if (child.userData.morivisFbxCurve === true) {
+			child.visible = visible;
+		}
+	});
 };
 
 export const parseFbxModelAttributes = (

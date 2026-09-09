@@ -54,6 +54,7 @@
 	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? true);
 	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
 	const isIfc = $derived(layerEntry.format.type === 'ifc');
+	const isFbx = $derived(layerEntry.format.type === 'fbx');
 	const hasPartColorProfile = $derived(
 		layerEntry.properties?.ifc?.extractionProfiles.some((profile) => profile.type === 'part-colors')
 	);
@@ -288,6 +289,26 @@
 		</div>
 	{/if}
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
+	{#if isFbx}
+		<Switch
+			label="FBXテキストを表示"
+			bind:value={() => layerEntry.style.showFbxText !== false, (value) => {
+				layerEntry.style.showFbxText = value;
+			}}
+		/>
+		<p class="mb-2 text-xs text-base/70">
+			文字属性が残っている場合、モデル上に3Dテキストとして表示します。
+		</p>
+		<Switch
+			label="FBX曲線を表示"
+			bind:value={() => layerEntry.style.showFbxCurves !== false, (value) => {
+				layerEntry.style.showFbxCurves = value;
+			}}
+		/>
+		<p class="mb-2 text-xs text-base/70">
+			線分・ポリライン・円や、CAD文字の輪郭として書き出された曲線を切り替えます。
+		</p>
+	{/if}
 	<Switch label="エッジ表示" bind:value={layerEntry.style.edge!.enabled} />
 	{#if layerEntry.style.edge!.enabled}
 		<div transition:slide class="mb-4 flex w-full flex-col gap-2">

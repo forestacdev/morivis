@@ -1,7 +1,11 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { applyFbxCurveGeometricTransform, parseFbxModelAttributes } from './fbx-attributes';
+import {
+	applyFbxCurveGeometricTransform,
+	parseFbxModelAttributes,
+	setFbxCurveVisibility
+} from './fbx-attributes';
 
 describe('parseFbxModelAttributes', () => {
 	const encodeString = (value: string) => {
@@ -144,5 +148,32 @@ describe('parseFbxModelAttributes', () => {
 		expect(position.getX(0)).toBeCloseTo(10);
 		expect(position.getY(0)).toBeCloseTo(22);
 		expect(position.getZ(0)).toBeCloseTo(30);
+	});
+
+	it('FBX曲線だけを表示切替し、後から追加されたエッジ線は変更しない', () => {
+		const sourceCurve = new THREE.Line(
+			new THREE.BufferGeometry().setFromPoints([
+				new THREE.Vector3(),
+				new THREE.Vector3(1, 0, 0)
+			]),
+			new THREE.LineBasicMaterial()
+		);
+		(sourceCurve as THREE.Object3D & { ID?: number; }).ID = 126;
+		const generatedEdge = new THREE.LineSegments(
+			new THREE.BufferGeometry().setFromPoints([
+				new THREE.Vector3(),
+				new THREE.Vector3(0, 1, 0)
+			]),
+			new THREE.LineBasicMaterial()
+		);
+		const root = new THREE.Group();
+		root.add(sourceCurve);
+
+		applyFbxCurveGeometricTransform(root, {});
+		root.add(generatedEdge);
+		setFbxCurveVisibility(root, false);
+
+		expect(sourceCurve.visible).toBe(false);
+		expect(generatedEdge.visible).toBe(true);
 	});
 });

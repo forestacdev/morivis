@@ -20,8 +20,14 @@ import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping
 import {
 	applyFbxCurveGeometricTransform,
 	type FbxModelAttributes,
-	parseFbxModelAttributes
+	parseFbxModelAttributes,
+	setFbxCurveVisibility
 } from '$routes/map/utils/three/fbx-attributes';
+import {
+	createFbxTextMeshes,
+	isGeneratedFbxTextTexture,
+	setFbxTextStyle
+} from '$routes/map/utils/three/fbx-text';
 import { applyFbxTextureFallback } from '$routes/map/utils/three/fbx-textures';
 import {
 	applyGaussianSplatStyle,
@@ -1072,11 +1078,16 @@ export class ThreeJsLayerManager {
 		style: MeshStyle,
 		formatType?: MeshEntry<MeshStyle>['format']['type']
 	) => {
+		if (formatType === 'fbx') {
+			setFbxCurveVisibility(object, style.showFbxCurves !== false);
+			setFbxTextStyle(object, style.showFbxText !== false, style.opacity);
+		}
 		object.traverse((child) => {
 			if (
 				(child as THREE.Mesh).isMesh
 				&& !child.userData.morivisSelectionHighlight
 				&& !child.userData.morivisEdgeOverlay
+				&& !child.userData.morivisFbxText
 			) {
 				this.applyStyleToMesh(child as THREE.Mesh, style, formatType);
 			}
@@ -2859,6 +2870,7 @@ export class ThreeJsLayerManager {
 							object,
 							attributesByModelId
 						);
+						const generatedTextCount = createFbxTextMeshes(object, attributesByModelId);
 						let modelIdCount = 0;
 						let matchedAttributeCount = 0;
 						object.traverse((child) => {
@@ -2877,6 +2889,7 @@ export class ThreeJsLayerManager {
 								modelIdCount,
 								matchedAttributeCount,
 								geometricTransformCurveCount,
+								generatedTextCount,
 								fallbackTextureMaterialCount:
 									fallbackTextureResult.mappedMaterialCount,
 								fallbackTextureMappings: fallbackTextureResult.mappings,
@@ -3105,6 +3118,7 @@ export class ThreeJsLayerManager {
 	}
 
 	private disposeModelObject = (object: THREE.Object3D) => {
+		const disposedTextures = new Set<THREE.Texture>();
 		object.traverse((child) => {
 			if (!(child as THREE.Mesh).isMesh && !(child as THREE.Points).isPoints) return;
 
@@ -3118,7 +3132,16 @@ export class ThreeJsLayerManager {
 			const materials = Array.isArray(drawable.material)
 				? drawable.material
 				: [drawable.material];
-			materials.forEach((material) => material.dispose());
+			materials.forEach((material) => {
+				const map = (material as THREE.MeshBasicMaterial).map;
+				if (
+					map && isGeneratedFbxTextTexture(map) && !disposedTextures.has(map)
+				) {
+					map.dispose();
+					disposedTextures.add(map);
+				}
+				material.dispose();
+			});
 			const originalMaterials = drawable.userData.originalMaterials as
 				| THREE.Material[]
 				| undefined;
