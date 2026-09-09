@@ -11,6 +11,38 @@ const MIN_PROJECTED_OFFSET_RATIO = 20;
 
 export type ModelCoordinateMode = 'local' | 'projected';
 
+const getDistanceFromPlanarBoundsToOrigin = (
+	minX: number,
+	minY: number,
+	maxX: number,
+	maxY: number
+) => {
+	const distanceX = minX <= 0 && maxX >= 0 ? 0 : Math.min(Math.abs(minX), Math.abs(maxX));
+	const distanceY = minY <= 0 && maxY >= 0 ? 0 : Math.min(Math.abs(minY), Math.abs(maxY));
+	return Math.hypot(distanceX, distanceY);
+};
+
+const looksLikeProjectedCoordinates = (
+	minX: number,
+	minY: number,
+	maxX: number,
+	maxY: number
+) => {
+	const centerX = (minX + maxX) / 2;
+	const centerY = (minY + maxY) / 2;
+	const maxAbsPlanarOffset = Math.max(Math.abs(centerX), Math.abs(centerY));
+	const maxPlanarExtent = Math.max(Math.abs(maxX - minX), Math.abs(maxY - minY));
+	const offsetRatio = maxPlanarExtent > 1e-6 ? maxAbsPlanarOffset / maxPlanarExtent : 0;
+	const distanceFromOrigin = getDistanceFromPlanarBoundsToOrigin(minX, minY, maxX, maxY);
+
+	return maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS
+		&& maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS
+		&& (
+			offsetRatio >= MIN_PROJECTED_OFFSET_RATIO
+			|| distanceFromOrigin >= MIN_PROJECTED_WORLD_OFFSET_METERS
+		);
+};
+
 /**
  * Mago 3D Tiler に CRS を渡すべき、平面直角座標らしい入力範囲かを判定する。
  * EPSG 自体はファイルから確定できないため、この結果はゾーン選択の表示にだけ使う。
@@ -21,15 +53,7 @@ export const getModelCoordinateMode = (
 	if (!bbox || bbox.some((value) => !Number.isFinite(value))) return 'local';
 
 	const [minX, minY, maxX, maxY] = bbox;
-	const centerX = (minX + maxX) / 2;
-	const centerY = (minY + maxY) / 2;
-	const maxAbsPlanarOffset = Math.max(Math.abs(centerX), Math.abs(centerY));
-	const maxPlanarExtent = Math.max(Math.abs(maxX - minX), Math.abs(maxY - minY));
-	const offsetRatio = maxPlanarExtent > 1e-6 ? maxAbsPlanarOffset / maxPlanarExtent : 0;
-
-	return maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS
-			&& maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS
-			&& offsetRatio >= MIN_PROJECTED_OFFSET_RATIO
+	return looksLikeProjectedCoordinates(minX, minY, maxX, maxY)
 		? 'projected'
 		: 'local';
 };
@@ -102,18 +126,10 @@ export const resolveFbxUnitScaleMeters = (box: THREE.Box3, unitScaleFactor?: num
 		return metadataUnitScaleMeters;
 	}
 
-	const center = box.getCenter(new THREE.Vector3());
-	const size = box.getSize(new THREE.Vector3());
-	const maxAbsPlanarOffset = Math.max(Math.abs(center.x), Math.abs(center.y));
-	const maxPlanarExtent = Math.max(size.x, size.y);
-	const offsetRatio = maxPlanarExtent > 1e-6 ? maxAbsPlanarOffset / maxPlanarExtent : 0;
-
 	// 一部のFBXは unitScaleFactor=1 を持ちながら、座標値自体はすでに meter の
 	// 平面直角座標になっている。大きな世界座標オフセットを持つ場合は縮尺を上書きする。
 	const looksLikeProjectedMeterCoordinates = metadataUnitScaleMeters < 1
-		&& maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS
-		&& maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS
-		&& offsetRatio >= MIN_PROJECTED_OFFSET_RATIO;
+		&& looksLikeProjectedCoordinates(box.min.x, box.min.y, box.max.x, box.max.y);
 
 	return looksLikeProjectedMeterCoordinates ? 1 : metadataUnitScaleMeters;
 };

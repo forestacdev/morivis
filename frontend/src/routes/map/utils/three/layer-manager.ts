@@ -18,7 +18,7 @@ import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
 import {
-	applyFbxCurveGeometricScaling,
+	applyFbxCurveGeometricTransform,
 	type FbxModelAttributes,
 	parseFbxModelAttributes
 } from '$routes/map/utils/three/fbx-attributes';
@@ -2855,7 +2855,7 @@ export class ThreeJsLayerManager {
 						const object = fbxLoader.parse(buffer, resourcePath);
 						const fallbackTextureResult = applyFbxTextureFallback(object, resourceUrls);
 						const attributesByModelId = parseFbxModelAttributes(buffer);
-						const geometricScalingCurveCount = applyFbxCurveGeometricScaling(
+						const geometricTransformCurveCount = applyFbxCurveGeometricTransform(
 							object,
 							attributesByModelId
 						);
@@ -2876,7 +2876,7 @@ export class ThreeJsLayerManager {
 								attributeModelCount: Object.keys(attributesByModelId).length,
 								modelIdCount,
 								matchedAttributeCount,
-								geometricScalingCurveCount,
+								geometricTransformCurveCount,
 								fallbackTextureMaterialCount:
 									fallbackTextureResult.mappedMaterialCount,
 								fallbackTextureMappings: fallbackTextureResult.mappings,

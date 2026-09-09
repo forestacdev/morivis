@@ -17,7 +17,7 @@ import { parseUsdFile } from '$routes/map/utils/formats/usd';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import {
-	applyFbxCurveGeometricScaling,
+	applyFbxCurveGeometricTransform,
 	parseFbxModelAttributes
 } from '$routes/map/utils/three/fbx-attributes';
 import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
@@ -588,7 +588,7 @@ const parseFbxObject = async (
 	const loader = new FBXLoader(manager);
 	const buffer = await file.arrayBuffer();
 	const object = loader.parse(buffer, '');
-	applyFbxCurveGeometricScaling(object, parseFbxModelAttributes(buffer));
+	applyFbxCurveGeometricTransform(object, parseFbxModelAttributes(buffer));
 	if (normalizeToLocalOrigin) {
 		normalizeObjectToLocalOrigin(object);
 	}

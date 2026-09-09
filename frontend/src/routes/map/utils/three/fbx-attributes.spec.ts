@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { applyFbxCurveGeometricScaling, parseFbxModelAttributes } from './fbx-attributes';
+import { applyFbxCurveGeometricTransform, parseFbxModelAttributes } from './fbx-attributes';
 
 describe('parseFbxModelAttributes', () => {
 	const encodeString = (value: string) => {
@@ -114,12 +114,35 @@ describe('parseFbxModelAttributes', () => {
 		const root = new THREE.Group();
 		root.add(line);
 
-		const appliedCount = applyFbxCurveGeometricScaling(root, {
+		const appliedCount = applyFbxCurveGeometricTransform(root, {
 			42: { GeometricScaling: '0.0005, 0.0005, 0.0005' }
 		});
 
 		expect(appliedCount).toBe(1);
 		expect((line.geometry.getAttribute('position') as THREE.BufferAttribute).getX(1)).toBe(1);
-		expect(applyFbxCurveGeometricScaling(root, {})).toBe(0);
+		expect(applyFbxCurveGeometricTransform(root, {})).toBe(0);
+	});
+
+	it('NurbsCurveの移動・回転・縮尺をFBXと同じ順序で頂点座標へ適用する', () => {
+		const geometry = new THREE.BufferGeometry().setFromPoints([
+			new THREE.Vector3(1, 0, 0)
+		]);
+		const line = new THREE.Line(geometry, new THREE.LineBasicMaterial());
+		(line as THREE.Object3D & { ID?: number; }).ID = 84;
+		const root = new THREE.Group();
+		root.add(line);
+
+		expect(applyFbxCurveGeometricTransform(root, {
+			84: {
+				GeometricTranslation: '10, 20, 30',
+				GeometricRotation: '0, 0, 90',
+				GeometricScaling: '2, 3, 4'
+			}
+		})).toBe(1);
+
+		const position = line.geometry.getAttribute('position') as THREE.BufferAttribute;
+		expect(position.getX(0)).toBeCloseTo(10);
+		expect(position.getY(0)).toBeCloseTo(22);
+		expect(position.getZ(0)).toBeCloseTo(30);
 	});
 });

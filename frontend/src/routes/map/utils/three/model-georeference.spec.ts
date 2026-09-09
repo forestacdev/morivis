@@ -30,6 +30,14 @@ describe('model-georeference', () => {
 		expect(getModelCoordinateMode([120_000, -240_000, 120_100, -239_900])).toBe('projected');
 	});
 
+	it('原点から離れた長い線形モデルも投影座標としてゾーン選択する', () => {
+		expect(getModelCoordinateMode([20_000, 50_000, 23_000, 51_000])).toBe('projected');
+	});
+
+	it('大きくても原点を含むモデルはローカル座標として扱う', () => {
+		expect(getModelCoordinateMode([-20_000, -20_000, 20_000, 20_000])).toBe('local');
+	});
+
 	it('FBX unitScaleFactor から meter scale を解決する', () => {
 		expect(getModelUnitScaleMeters(100)).toBeCloseTo(1);
 		expect(getModelUnitScaleMeters(1)).toBeCloseTo(0.01);
@@ -39,6 +47,15 @@ describe('model-georeference', () => {
 	it('world座標を持つFBXは unitScaleFactor=1 でも meter 扱いに補正する', () => {
 		expect(resolveFbxUnitScaleMeters(misleadingMeterBox, 1)).toBe(1);
 		expect(resolveFbxUnitScaleMeters(meterBox, 100)).toBe(1);
+		expect(
+			resolveFbxUnitScaleMeters(
+				new THREE.Box3(
+					new THREE.Vector3(20_000, 50_000, 0),
+					new THREE.Vector3(23_000, 51_000, 100)
+				),
+				1
+			)
+		).toBe(1);
 		expect(
 			resolveFbxUnitScaleMeters(
 				new THREE.Box3(

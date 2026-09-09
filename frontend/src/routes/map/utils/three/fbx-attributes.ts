@@ -4,6 +4,9 @@ export type FbxAttributeValue = string | number | boolean | Array<string | numbe
 export type FbxModelAttributes = Record<string, FbxAttributeValue>;
 
 const BINARY_HEADER_PREFIX = 'Kaydara FBX Binary  ';
+const DEFAULT_FBX_EULER_ORDER = 'ZYX';
+const IDENTITY_SCALE = new THREE.Vector3(1, 1, 1);
+const ZERO_VECTOR = new THREE.Vector3();
 
 const getFbxVector3 = (value: FbxAttributeValue | undefined) => {
 	const values = Array.isArray(value)
@@ -19,11 +22,44 @@ const getFbxVector3 = (value: FbxAttributeValue | undefined) => {
 		: undefined;
 };
 
-export const applyFbxCurveGeometricScaling = (
+const getFbxEulerOrder = (value: FbxAttributeValue | undefined): THREE.EulerOrder => {
+	const order = Number(Array.isArray(value) ? value[0] : value);
+	const orders: THREE.EulerOrder[] = ['ZYX', 'YZX', 'XZY', 'ZXY', 'YXZ', 'XYZ'];
+	return Number.isInteger(order) && order >= 0 && order < orders.length
+		? orders[order]
+		: DEFAULT_FBX_EULER_ORDER;
+};
+
+const getFbxGeometricTransform = (attributes: FbxModelAttributes | undefined) => {
+	const translation = getFbxVector3(attributes?.GeometricTranslation) ?? ZERO_VECTOR;
+	const rotation = getFbxVector3(attributes?.GeometricRotation) ?? ZERO_VECTOR;
+	const scaling = getFbxVector3(attributes?.GeometricScaling) ?? IDENTITY_SCALE;
+	if (
+		translation.equals(ZERO_VECTOR) && rotation.equals(ZERO_VECTOR)
+		&& scaling.equals(IDENTITY_SCALE)
+	) {
+		return undefined;
+	}
+
+	const rotationMatrix = new THREE.Matrix4().makeRotationFromEuler(
+		new THREE.Euler(
+			THREE.MathUtils.degToRad(rotation.x),
+			THREE.MathUtils.degToRad(rotation.y),
+			THREE.MathUtils.degToRad(rotation.z),
+			getFbxEulerOrder(attributes?.RotationOrder)
+		)
+	);
+	return new THREE.Matrix4()
+		.makeTranslation(translation.x, translation.y, translation.z)
+		.multiply(rotationMatrix)
+		.scale(scaling);
+};
+
+export const applyFbxCurveGeometricTransform = (
 	object: THREE.Object3D,
 	attributesByModelId: Record<string, FbxModelAttributes>
 ) => {
-	// FBXLoader は Mesh には GeometricScaling を適用するが、NurbsCurve を作る Line には適用しない。
+	// FBXLoader は Mesh には GeometricTransform を適用するが、NurbsCurve の Line には適用しない。
 	const geometryUseCounts = new Map<THREE.BufferGeometry, number>();
 	object.traverse((child) => {
 		if (!(child as THREE.Line).isLine) return;
@@ -33,25 +69,25 @@ export const applyFbxCurveGeometricScaling = (
 
 	let appliedCount = 0;
 	object.traverse((child) => {
-		if (!(child as THREE.Line).isLine || child.userData.morivisFbxGeometricScalingApplied) {
+		if (!(child as THREE.Line).isLine || child.userData.morivisFbxGeometricTransformApplied) {
 			return;
 		}
 		const modelId = (child as THREE.Object3D & { ID?: number; }).ID;
 		if (modelId == null) return;
-		const scaling = getFbxVector3(attributesByModelId[String(modelId)]?.GeometricScaling);
-		if (!scaling || scaling.equals(new THREE.Vector3(1, 1, 1))) return;
+		const transform = getFbxGeometricTransform(attributesByModelId[String(modelId)]);
+		if (!transform) return;
 
 		const line = child as THREE.Line;
 		const geometry = line.geometry;
-		// 同じ曲線ジオメトリを複数の Model が共有する場合、Model ごとの縮尺を分離する。
-		const scaledGeometry = (geometryUseCounts.get(geometry) ?? 0) > 1
+		// 同じ曲線ジオメトリを複数の Model が共有する場合、Model ごとの変換を分離する。
+		const transformedGeometry = (geometryUseCounts.get(geometry) ?? 0) > 1
 			? geometry.clone()
 			: geometry;
-		scaledGeometry.scale(scaling.x, scaling.y, scaling.z);
-		scaledGeometry.computeBoundingBox();
-		scaledGeometry.computeBoundingSphere();
-		line.geometry = scaledGeometry;
-		line.userData.morivisFbxGeometricScalingApplied = true;
+		transformedGeometry.applyMatrix4(transform);
+		transformedGeometry.computeBoundingBox();
+		transformedGeometry.computeBoundingSphere();
+		line.geometry = transformedGeometry;
+		line.userData.morivisFbxGeometricTransformApplied = true;
 		appliedCount += 1;
 	});
 
