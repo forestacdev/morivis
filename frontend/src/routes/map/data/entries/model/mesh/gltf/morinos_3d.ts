@@ -10,7 +10,7 @@ const baseEntry = createMeshModelEntry({
 	location: '森林文化アカデミー',
 	bounds: [136.919310634999988, 35.5537624600000015, 136.9200659429999973, 35.5544524530000032],
 	transform: {
-		scale: 0.83,
+		baseScale: 0.83,
 		lng: 136.919515,
 		lat: 35.553991,
 		altitude: 116,

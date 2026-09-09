@@ -781,6 +781,18 @@ const mercatorYToLat = (y: number) => {
 	return THREE.MathUtils.radToDeg(Math.atan(Math.sinh(n)));
 };
 
+export const getRuntimeModelLocalBounds = (
+	box: THREE.Box3,
+	unitScaleMeters = 1
+): ModelLocalBounds => [
+	box.min.x * unitScaleMeters,
+	box.min.y * unitScaleMeters,
+	box.min.z * unitScaleMeters,
+	box.max.x * unitScaleMeters,
+	box.max.y * unitScaleMeters,
+	box.max.z * unitScaleMeters
+];
+
 export const computeUploadedModelMeta = async ({
 	file,
 	format,
@@ -910,14 +922,9 @@ export const computeUploadedModelMeta = async ({
 	];
 	return {
 		bounds,
-		localBounds: [
-			displayBox.min.x,
-			displayBox.min.y,
-			displayBox.min.z,
-			displayBox.max.x,
-			displayBox.max.y,
-			displayBox.max.z
-		],
+		// FBX は実描画時に cm などのファイル単位を meter へ変換する。
+		// 配置ボックスも同じ単位へ揃え、実モデルとの寸法差を防ぐ。
+		localBounds: getRuntimeModelLocalBounds(displayBox, localRenderUnitScale),
 		...((
 			format === 'fbx'
 			|| format === 'gltf'

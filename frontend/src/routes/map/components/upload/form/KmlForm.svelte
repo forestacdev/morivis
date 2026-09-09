@@ -3,17 +3,16 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import { createGeoJsonEntryWithMode } from '$routes/map/components/upload/form/geojson-entry';
+	import GeoJsonRenderModeForm from '$routes/map/components/upload/form/GeoJsonRenderModeForm.svelte';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
+	import { createRenderModeState } from '$routes/map/components/upload/form/render-mode-state.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
-	import {
-		createGeoJsonEntry,
-		getGeometryTypes,
-		filterByGeometryType
-	} from '$routes/map/data/entries/vector';
+	import { getGeometryTypes, filterByGeometryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/raster';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
@@ -77,6 +76,7 @@
 	let kmlResult: KmlParseResult | null = null;
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
+	const renderModeState = createRenderModeState();
 
 	const kmlFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -306,7 +306,9 @@
 						if (types.length === 1) {
 							selectedGeometryType = types[0];
 							geometryTypeOptions = [];
-							processGeojson();
+							if (!renderModeState.open(rawGeojson, types[0])) {
+								processGeojson();
+							}
 						} else {
 							geometryTypeOptions = types.map((t) => ({
 								key: t,
@@ -349,18 +351,20 @@
 			const defaultColor = kmlResult
 				? (getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined)
 				: undefined;
-			const entry = await createGeoJsonEntry(
-				filtered,
-				selectedGeometryType as VectorEntryGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				undefined,
-				{ attribution: 'KML', defaultColor }
-			);
+			const entry = await createGeoJsonEntryWithMode({
+				geojson: filtered,
+				geometryType: selectedGeometryType as VectorEntryGeometryType,
+				name: entryName,
+				bbox: bbox as [number, number, number, number],
+				attribution: 'KML',
+				defaultColor,
+				renderMode: renderModeState.selected
+			});
 
 			if (entry) {
 				applyKmlTemporalProperties(entry);
 				showDataEntry = entry;
+				renderModeState.reset();
 				showDialogType = null;
 				showNotification('ファイルを読み込みました', 'success');
 			} else {
@@ -399,18 +403,20 @@
 			const defaultColor = kmlResult
 				? (getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined)
 				: undefined;
-			const entry = await createGeoJsonEntry(
-				geojsonData,
-				selectedGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				undefined,
-				{ attribution: 'KML', defaultColor }
-			);
+			const entry = await createGeoJsonEntryWithMode({
+				geojson: geojsonData,
+				geometryType: selectedGeometryType,
+				name: entryName,
+				bbox: bbox as [number, number, number, number],
+				attribution: 'KML',
+				defaultColor,
+				renderMode: renderModeState.selected
+			});
 
 			if (entry) {
 				applyKmlTemporalProperties(entry);
 				showDataEntry = entry;
+				renderModeState.reset();
 				showDialogType = null;
 				showNotification('ファイルを読み込みました', 'success');
 			}
@@ -422,8 +428,27 @@
 		}
 	};
 
+	/** ジオメトリ選択後に描画方式選択が必要なら挟み、不要ならそのまま登録する。 */
+	const submit = async () => {
+		if (renderModeState.showDialog) {
+			await processGeojson();
+			return;
+		}
+
+		if (
+			rawGeojson &&
+			selectedGeometryType &&
+			renderModeState.open(rawGeojson, selectedGeometryType)
+		) {
+			return;
+		}
+
+		await processGeojson();
+	};
+
 	const cancel = () => {
 		dropFile = null;
+		renderModeState.reset();
 		showDialogType = null;
 	};
 
@@ -438,34 +463,45 @@
 	});
 </script>
 
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">KMLファイルの登録</span>
-</div>
+{#if renderModeState.showDialog}
+	<GeoJsonRenderModeForm
+		{entryName}
+		{selectedGeometryType}
+		formatLabel="KML"
+		bind:selectedRenderMode={renderModeState.selected}
+		onCancel={cancel}
+		onConfirm={submit}
+	/>
+{:else}
+	<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
+		<span class="text-2xl font-bold">KMLファイルの登録</span>
+	</div>
 
-<div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
->
-	{#if geometryTypeOptions.length > 1}
-		<div class="w-full p-2">
-			<HorizontalSelectBox
-				label="ジオメトリタイプを選択"
-				bind:group={selectedGeometryType}
-				bind:options={geometryTypeOptions}
-			/>
-		</div>
-	{/if}
-</div>
-
-<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
-	<button
-		onclick={processGeojson}
-		disabled={$isProcessing || !selectedGeometryType}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		!selectedGeometryType
-			? 'cursor-not-allowed opacity-50'
-			: ''}"
+	<div
+		class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
 	>
-		決定
-	</button>
-</div>
+		{#if geometryTypeOptions.length > 1}
+			<div class="w-full p-2">
+				<HorizontalSelectBox
+					label="ジオメトリタイプを選択"
+					bind:group={selectedGeometryType}
+					bind:options={geometryTypeOptions}
+				/>
+			</div>
+		{/if}
+	</div>
+
+	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+		<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
+		<button
+			onclick={submit}
+			disabled={$isProcessing || !selectedGeometryType}
+			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
+			!selectedGeometryType
+				? 'cursor-not-allowed opacity-50'
+				: ''}"
+		>
+			決定
+		</button>
+	</div>
+{/if}

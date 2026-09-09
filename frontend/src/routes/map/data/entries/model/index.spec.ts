@@ -29,6 +29,17 @@ describe('createGlbEntry', () => {
 		expect(entry.style.shading?.enabled).toBe(false);
 	});
 
+	it('モデル固有の固定倍率と利用者が操作する倍率を分離する', () => {
+		const entry = createGlbEntry('test-fixed-scale', 'blob:test-fixed-scale', {
+			...transform,
+			baseScale: 250,
+			scale: 1.5
+		});
+
+		expect(entry.style.transform.baseScale).toBe(250);
+		expect(entry.style.transform.scale).toBe(1.5);
+	});
+
 	it('STLをmesh entryへ正規化する', () => {
 		const entry = createGlbEntry(
 			'test-stl',

@@ -2,7 +2,7 @@
 	import turfBbox from '@turf/bbox';
 	import turfCenter from '@turf/center';
 	import turfNearestPoint from '@turf/nearest-point';
-	import { tick, untrack } from 'svelte';
+	import { onDestroy, tick, untrack } from 'svelte';
 	import { fly } from 'svelte/transition';
 
 	import { MAP_ANIMATION_DURATION, MAP_EASING } from '$routes/constants';
@@ -46,6 +46,8 @@
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
+	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
+	import { getPlacementPreviewBounds } from '$routes/map/utils/three/placement-preview';
 	import {
 		applyAspectLockedGeoRefDrag,
 		getGeoRefAspectRatio,
@@ -124,8 +126,11 @@
 	let modelLng = $state(0);
 	let modelLat = $state(0);
 	let modelAltitude = $state(0);
-	let initialModelLng = $state(0);
-	let initialModelLat = $state(0);
+	let modelHeightOffset = $state(0);
+	let modelScale = $state(1);
+	let modelRotationX = $state(0);
+	let modelRotationY = $state(0);
+	let modelRotationZ = $state(0);
 	let modelMarkerLngLat = $state(new maplibregl.LngLat(0, 0));
 	const isModelPlacementActive = $derived(
 		transformOptionMode === 'georef' &&
@@ -144,13 +149,31 @@
 		modelLng = transform.lng;
 		modelLat = transform.lat;
 		modelAltitude = transform.altitude;
-		initialModelLng = transform.lng;
-		initialModelLat = transform.lat;
+		modelHeightOffset = transform.heightOffset ?? 0;
+		modelScale = transform.scale;
+		modelRotationX = transform.rotationX;
+		modelRotationY = transform.rotationY;
+		modelRotationZ = transform.rotationZ;
 		modelMarkerLngLat = new maplibregl.LngLat(transform.lng, transform.lat);
 		modelPlacementInitialized = true;
 		mapStore.ensureThreeLayer();
 		threeJsManager.setPlacementPreview(showDataEntry as ThreeModelEntry);
 		showDataMenu.set(false);
+	});
+
+	const getCurrentModelPlacementStyle = (entry: ThreeModelEntry): ThreeModelEntry['style'] => ({
+		...entry.style,
+		transform: {
+			...entry.style.transform,
+			lng: modelLng,
+			lat: modelLat,
+			altitude: modelAltitude,
+			heightOffset: modelHeightOffset,
+			scale: modelScale,
+			rotationX: modelRotationX,
+			rotationY: modelRotationY,
+			rotationZ: modelRotationZ
+		}
 	});
 
 	$effect(() => {
@@ -161,14 +184,32 @@
 		)
 			return;
 		const entry = showDataEntry as ThreeModelEntry;
-		const transform = entry.style.transform;
 		if (modelMarkerLngLat.lng !== modelLng || modelMarkerLngLat.lat !== modelLat) {
 			modelMarkerLngLat = new maplibregl.LngLat(modelLng, modelLat);
 		}
-		threeJsManager.setPlacementPreview(entry, {
-			...entry.style,
-			transform: { ...transform, lng: modelLng, lat: modelLat, altitude: modelAltitude }
+		threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry));
+	});
+
+	$effect(() => {
+		if (!isModelPlacementActive) return;
+		threeJsManager.setPlacementTransformChangeHandler((transform) => {
+			modelLng = transform.lng;
+			modelLat = transform.lat;
+			modelAltitude = transform.altitude;
+			modelHeightOffset = transform.heightOffset ?? 0;
+			modelScale = transform.scale;
+			modelRotationX = transform.rotationX;
+			modelRotationY = transform.rotationY;
+			modelRotationZ = transform.rotationZ;
 		});
+		return () => {
+			threeJsManager.setPlacementTransformChangeHandler(null);
+		};
+	});
+
+	onDestroy(() => {
+		threeJsManager.setPlacementTransformChangeHandler(null);
+		threeJsManager.clearPlacementPreview();
 	});
 
 	let nw = $state<maplibregl.LngLat>(new maplibregl.LngLat(0, 0));
@@ -284,27 +325,17 @@
 			return null;
 
 		const entry = showDataEntry as ThreeModelEntry;
-		const transform = entry.style.transform;
-		const lngDelta = modelLng - initialModelLng;
-		const latDelta = modelLat - initialModelLat;
-		const bounds = entry.metaData.bounds;
+		const style = getCurrentModelPlacementStyle(entry);
+		const bounds = getModelGeoBoundsFromLocalBounds(getPlacementPreviewBounds(entry), style);
 
 		return {
 			...entry,
 			metaData: {
 				...entry.metaData,
 				altitude: modelAltitude,
-				bounds: [
-					bounds[0] + lngDelta,
-					bounds[1] + latDelta,
-					bounds[2] + lngDelta,
-					bounds[3] + latDelta
-				]
+				bounds
 			},
-			style: {
-				...entry.style,
-				transform: { ...transform, lng: modelLng, lat: modelLat, altitude: modelAltitude }
-			}
+			style
 		} as ThreeModelEntry;
 	};
 
@@ -716,7 +747,15 @@
 				}}
 			/>
 		{:else if isModelPlacementActive}
-			<ModelPlacementMenu bind:lng={modelLng} bind:lat={modelLat} bind:altitude={modelAltitude} />
+			<ModelPlacementMenu
+				bind:lng={modelLng}
+				bind:lat={modelLat}
+				bind:altitude={modelAltitude}
+				bind:scale={modelScale}
+				bind:rotationX={modelRotationX}
+				bind:rotationY={modelRotationY}
+				bind:rotationZ={modelRotationZ}
+			/>
 		{/if}
 
 		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2 pb-2">

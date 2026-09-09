@@ -178,6 +178,8 @@ export const createGlbEntry = (
 		lng: number;
 		lat: number;
 		altitude: number;
+		/** モデル固有の単位・寸法補正。利用者が操作する scale とは分離する。 */
+		baseScale?: number;
 		scale?: number;
 		rotationX?: number;
 		rotationY?: number;
@@ -269,6 +271,7 @@ export const createGlbEntry = (
 				altitude: transform.altitude,
 				heightOffset: 0,
 				heightScale: 1,
+				baseScale: transform.baseScale ?? 1,
 				baseRotationX,
 				scale: transform.scale ?? 1,
 				rotationX: transform.rotationX ?? 0,

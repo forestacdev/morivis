@@ -1,14 +1,14 @@
 <script lang="ts">
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import type { GeoJsonRenderMode } from '$routes/map/components/upload/form/geojson-entry';
 	import { isProcessing } from '$routes/stores/ui';
-
-	export type GeoJsonRenderMode = 'deck' | 'geojson';
 
 	interface Props {
 		entryName: string;
 		selectedGeometryType: string;
 		selectedRenderMode: GeoJsonRenderMode;
-		onBack: () => void;
+		/** 表示に使う形式名。KMLなど他形式から使うときに差し替える。 */
+		formatLabel?: string;
 		onConfirm: () => void;
 		onCancel: () => void;
 	}
@@ -17,7 +17,7 @@
 		entryName,
 		selectedGeometryType,
 		selectedRenderMode = $bindable(),
-		onBack,
+		formatLabel = 'GeoJSON',
 		onConfirm,
 		onCancel
 	}: Props = $props();
@@ -29,12 +29,12 @@
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">GeoJSONの描画方式</span>
+	<span class="text-2xl font-bold">{formatLabel}の描画方式</span>
 </div>
 
 <div class="c-scroll flex h-full w-full grow flex-col gap-4 overflow-auto p-2">
 	<p class="text-sm text-gray-300">
-		3次元座標を含むGeoJSONです。平面レイヤーとして読むか、3D表示として読むかを選択してください。
+		3次元座標を含む{formatLabel}です。平面レイヤーとして読むか、3D表示として読むかを選択してください。
 	</p>
 
 	<div class="text-sm text-gray-300">
@@ -50,7 +50,6 @@
 </div>
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-	<!-- <button onclick={onBack} class="c-btn-sub cursor-pointer p-4 text-lg"> 戻る </button> -->
 	<button onclick={onCancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={onConfirm}

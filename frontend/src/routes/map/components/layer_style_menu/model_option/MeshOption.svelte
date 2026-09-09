@@ -373,14 +373,15 @@
 {#if !$showModelView}
 	<Accordion label="変形・移動" icon="gis:cube-3d" bind:value={showTransformOption}>
 		{#if canEditScale}
-			<RangeSlider
-				label="スケール"
-				bind:value={layerEntry.style.transform.scale}
-				min={0.01}
-				max={100}
-				step={0.01}
-				icon="mdi:resize"
-			/>
+			<label class="flex flex-col gap-2 pb-4 text-base">
+				<span>スケール</span>
+				<input
+					class="c-input w-full"
+					type="number"
+					step="0.01"
+					bind:value={layerEntry.style.transform.scale}
+				/>
+			</label>
 		{/if}
 
 		{#if canEditHeightScale && layerEntry.style.transform.heightScale != null}

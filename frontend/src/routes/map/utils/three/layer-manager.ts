@@ -44,6 +44,14 @@ import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
 import { createEdgeUvGeometry } from '$routes/map/utils/three/model-edge-uv';
 import { isLowerDetailLodUrl, resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
 import { getModelPartColor } from '$routes/map/utils/three/model-part-style';
+import {
+	getModelScaleFromHandleDrag,
+	getModelScaleHandles,
+	getOppositeModelScaleHandle,
+	type ModelPlacementTransform,
+	type ModelScaleHandleKey,
+	preserveModelLocalPointPosition
+} from '$routes/map/utils/three/model-placement-scale';
 import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
 import {
 	calculateModelTransform,
@@ -76,6 +84,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
 
 const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
 const KTX2_TRANSCODER_PATH = resolveStaticAssetPath('/basis/');
@@ -84,6 +93,7 @@ const MODEL_VIEW_FPS_MOVEMENT_SPEED_DIVISOR = 5;
 const MODEL_VIEW_FPS_MIN_MOVEMENT_SPEED = 1;
 const MODEL_VIEW_INITIAL_CAMERA_DISTANCE_SCALE = 0.75;
 const MMD_ANIMATION_FRAME_RATE = 30;
+const normalizeRadians = (angle: number) => Math.atan2(Math.sin(angle), Math.cos(angle));
 let rhino3dmLoaderModulePromise:
 	| Promise<
 		typeof import('three/addons/loaders/3DMLoader.js')
@@ -326,6 +336,10 @@ export class ThreeJsLayerManager {
 	private modelGroup: THREE.Group | null = null;
 	private previewModelGroup: THREE.Group | null = null;
 	private renderer: THREE.WebGLRenderer | null = null;
+	private placementLabelRenderer: CSS2DRenderer | null = null;
+	private placementLabelSize = { width: 0, height: 0 };
+	private placementTransformChangeHandler: ((transform: ModelPlacementTransform) => void) | null =
+		null;
 	private overlayRenderTarget: THREE.WebGLRenderTarget | null = null;
 	private overlayScene: THREE.Scene | null = null;
 	private overlayCamera: THREE.OrthographicCamera | null = null;
@@ -345,8 +359,10 @@ export class ThreeJsLayerManager {
 	private activeModelView: ActiveModelView | null = null;
 	private placementPreview: {
 		object: THREE.Group;
+		handles: THREE.Group;
 		transform: ModelTransform;
 		boundsKey: string;
+		styleTransform: ModelPlacementTransform;
 	} | null = null;
 
 	constructor() {
@@ -1850,6 +1866,241 @@ export class ThreeJsLayerManager {
 		this.renderer.render(this.overlayScene, this.overlayCamera);
 	};
 
+	private ensurePlacementLabelRenderer = () => {
+		if (!this.map || this.placementLabelRenderer) return;
+
+		const renderer = new CSS2DRenderer();
+		const element = renderer.domElement;
+		element.style.position = 'absolute';
+		element.style.inset = '0';
+		element.style.pointerEvents = 'none';
+		element.style.zIndex = '3';
+		element.style.display = 'none';
+		this.map.getCanvasContainer().appendChild(element);
+		this.placementLabelRenderer = renderer;
+	};
+
+	private removePlacementLabelRenderer = () => {
+		this.placementLabelRenderer?.domElement.remove();
+		this.placementLabelRenderer = null;
+		this.placementLabelSize = { width: 0, height: 0 };
+	};
+
+	private getPlacementClientPoint = (
+		localPosition: [number, number, number],
+		modelTransform = this.placementPreview?.transform
+	): [number, number] | null => {
+		if (!this.map || !this.lastMapProjectionMatrix || !this.placementPreview) return null;
+		if (!modelTransform) return null;
+
+		const canvasRect = this.map.getCanvas().getBoundingClientRect();
+		const projectionMatrix = this.lastMapProjectionMatrix
+			.clone()
+			.multiply(modelTransform.matrix);
+		const projected = new THREE.Vector3(...localPosition).applyMatrix4(projectionMatrix);
+		if (![projected.x, projected.y].every(Number.isFinite)) return null;
+
+		return [
+			canvasRect.left + ((projected.x + 1) / 2) * canvasRect.width,
+			canvasRect.top + ((1 - projected.y) / 2) * canvasRect.height
+		];
+	};
+
+	private resolvePlacementYRotation = ({
+		draggedLocalPosition,
+		fixedClientPosition,
+		fixedLocalPosition,
+		startAngle,
+		startTransform
+	}: {
+		draggedLocalPosition: [number, number, number];
+		fixedClientPosition: [number, number];
+		fixedLocalPosition: [number, number, number];
+		startAngle: number;
+		startTransform: ModelPlacementTransform;
+	}): number => {
+		const terrainEnabled = Boolean(this.map?.getTerrain());
+		const rotatedTransform = preserveModelLocalPointPosition({
+			fixedLocalPosition,
+			startTransform,
+			nextTransform: { ...startTransform, rotationY: startTransform.rotationY + 1 },
+			terrainEnabled
+		});
+		const draggedClientPosition = this.getPlacementClientPoint(
+			draggedLocalPosition,
+			calculateModelTransform({ transform: rotatedTransform })
+		);
+		if (!draggedClientPosition) {
+			return THREE.MathUtils.RAD2DEG;
+		}
+
+		const angle = Math.atan2(
+			draggedClientPosition[1] - fixedClientPosition[1],
+			draggedClientPosition[0] - fixedClientPosition[0]
+		);
+		const screenRadiansPerDegree = normalizeRadians(angle - startAngle);
+		if (Math.abs(screenRadiansPerDegree) <= 1e-6) {
+			return THREE.MathUtils.RAD2DEG;
+		}
+
+		return 1 / screenRadiansPerDegree;
+	};
+
+	private startPlacementTransformDrag = (
+		event: PointerEvent,
+		element: HTMLButtonElement,
+		handleKey: ModelScaleHandleKey,
+		draggedLocalPosition: [number, number, number],
+		localBounds: ReturnType<typeof getPlacementPreviewBounds>
+	) => {
+		if (event.button !== 0 || !this.placementPreview) return;
+		const oppositeHandle = getOppositeModelScaleHandle(localBounds, handleKey);
+		const fixedClientPosition = this.getPlacementClientPoint(oppositeHandle.position);
+		if (!fixedClientPosition) return;
+
+		const elementRect = element.getBoundingClientRect();
+		const handleCenterX = elementRect.left + elementRect.width / 2;
+		const handleCenterY = elementRect.top + elementRect.height / 2;
+		const pointerOffsetX = event.clientX - handleCenterX;
+		const pointerOffsetY = event.clientY - handleCenterY;
+		const startVector: [number, number] = [
+			handleCenterX - fixedClientPosition[0],
+			handleCenterY - fixedClientPosition[1]
+		];
+		const startDistance = Math.hypot(startVector[0], startVector[1]);
+		if (startDistance <= Number.EPSILON) return;
+
+		const pointerId = event.pointerId;
+		const startTransform = { ...this.placementPreview.styleTransform };
+		const startAngle = Math.atan2(startVector[1], startVector[0]);
+		const degreesPerScreenRadian = this.resolvePlacementYRotation({
+			draggedLocalPosition,
+			fixedClientPosition,
+			fixedLocalPosition: oppositeHandle.position,
+			startAngle,
+			startTransform
+		});
+		const terrainEnabled = Boolean(this.map?.getTerrain());
+		const handlePointerMove = (moveEvent: PointerEvent) => {
+			if (moveEvent.pointerId !== pointerId) return;
+			moveEvent.preventDefault();
+			moveEvent.stopPropagation();
+			const currentVector: [number, number] = [
+				moveEvent.clientX - pointerOffsetX - fixedClientPosition[0],
+				moveEvent.clientY - pointerOffsetY - fixedClientPosition[1]
+			];
+			const currentDistance = Math.hypot(currentVector[0], currentVector[1]);
+			const currentAngle = Math.atan2(currentVector[1], currentVector[0]);
+			const nextTransform = {
+				...startTransform,
+				scale: getModelScaleFromHandleDrag({
+					currentDistance,
+					startDistance,
+					startScale: startTransform.scale
+				}),
+				rotationY: startTransform.rotationY
+					+ normalizeRadians(currentAngle - startAngle) * degreesPerScreenRadian
+			};
+			this.placementTransformChangeHandler?.(
+				preserveModelLocalPointPosition({
+					fixedLocalPosition: oppositeHandle.position,
+					nextTransform,
+					startTransform,
+					terrainEnabled
+				})
+			);
+		};
+		const finishPointerDrag = (finishEvent: PointerEvent) => {
+			if (finishEvent.pointerId !== pointerId) return;
+			finishEvent.preventDefault();
+			finishEvent.stopPropagation();
+			element.removeEventListener('pointermove', handlePointerMove);
+			element.removeEventListener('pointerup', finishPointerDrag);
+			element.removeEventListener('pointercancel', finishPointerDrag);
+			if (element.hasPointerCapture(pointerId)) element.releasePointerCapture(pointerId);
+		};
+
+		event.preventDefault();
+		event.stopPropagation();
+		element.setPointerCapture(pointerId);
+		element.addEventListener('pointermove', handlePointerMove);
+		element.addEventListener('pointerup', finishPointerDrag);
+		element.addEventListener('pointercancel', finishPointerDrag);
+	};
+
+	private createPlacementScaleHandles = (
+		bounds: ReturnType<typeof getPlacementPreviewBounds>
+	) => {
+		const group = new THREE.Group();
+		getModelScaleHandles(bounds).forEach(({ key, position }) => {
+			const element = document.createElement('button');
+			element.type = 'button';
+			element.ariaLabel = `モデル範囲の頂点 ${key}`;
+			element.title = 'ドラッグしてモデル全体を拡大・縮小';
+			element.style.width = '18px';
+			element.style.height = '18px';
+			element.style.padding = '0';
+			element.style.border = '2px solid white';
+			element.style.borderRadius = '50%';
+			element.style.background = '#45a17f';
+			element.style.boxShadow = '0 1px 5px rgb(0 0 0 / 65%)';
+			element.style.cursor = 'nwse-resize';
+			element.style.pointerEvents = 'auto';
+			element.style.touchAction = 'none';
+			element.addEventListener('pointerdown', (event) => {
+				this.startPlacementTransformDrag(event, element, key, position, bounds);
+			});
+
+			const handle = new CSS2DObject(element);
+			handle.name = `model-placement-scale-${key}`;
+			handle.position.set(position[0], position[1], position[2]);
+			group.add(handle);
+		});
+		return group;
+	};
+
+	private disposePlacementScaleHandles = (handles: THREE.Group) => {
+		// Group を Scene から外すだけでは、子の CSS2DObject に removed が通知されず
+		// DOM 要素が CSS2DRenderer 内に残るため、先に子要素を明示的に外す。
+		handles.clear();
+		handles.removeFromParent();
+	};
+
+	private renderPlacementScaleHandles = (mapProjectionMatrix: THREE.Matrix4) => {
+		if (
+			!this.map
+			|| !this.scene
+			|| !this.camera
+			|| !this.placementPreview
+			|| !this.placementLabelRenderer
+		) {
+			if (this.placementLabelRenderer) {
+				this.placementLabelRenderer.domElement.style.display = 'none';
+			}
+			return;
+		}
+
+		const canvas = this.map.getCanvas();
+		const width = canvas.clientWidth;
+		const height = canvas.clientHeight;
+		if (width !== this.placementLabelSize.width || height !== this.placementLabelSize.height) {
+			this.placementLabelRenderer.setSize(width, height);
+			this.placementLabelSize = { width, height };
+		}
+
+		this.placementLabelRenderer.domElement.style.display = 'block';
+		this.camera.projectionMatrix = mapProjectionMatrix
+			.clone()
+			.multiply(this.placementPreview.transform.matrix);
+		this.placementLabelRenderer.render(this.scene, this.camera);
+	};
+
+	setPlacementTransformChangeHandler = (
+		handler: ((transform: ModelPlacementTransform) => void) | null
+	): void => {
+		this.placementTransformChangeHandler = handler;
+	};
+
 	setPlacementPreview(entry: ThreeModelEntry, style = entry.style): void {
 		if (!this.scene) return;
 		const bounds = getPlacementPreviewBounds(entry);
@@ -1857,27 +2108,40 @@ export class ThreeJsLayerManager {
 		if (!this.placementPreview || this.placementPreview.boundsKey !== boundsKey) {
 			if (this.placementPreview) {
 				this.scene.remove(this.placementPreview.object);
+				this.disposePlacementScaleHandles(this.placementPreview.handles);
 				disposePlacementPreviewObject(this.placementPreview.object);
 			}
 			const object = createPlacementPreviewObject(bounds);
-			this.scene.add(object);
+			const handles = this.createPlacementScaleHandles(bounds);
+			this.scene.add(object, handles);
 			this.placementPreview = {
 				object,
+				handles,
 				transform: calculateModelTransform(style),
-				boundsKey
+				boundsKey,
+				styleTransform: { ...style.transform }
 			};
 		} else {
 			this.placementPreview.transform = calculateModelTransform(style);
+			this.placementPreview.styleTransform = { ...style.transform };
 		}
 		this.map?.triggerRepaint();
 	}
 
 	clearPlacementPreview(): void {
-		if (!this.placementPreview) return;
-		this.scene?.remove(this.placementPreview.object);
-		disposePlacementPreviewObject(this.placementPreview.object);
-		this.placementPreview = null;
-		this.map?.triggerRepaint();
+		const preview = this.placementPreview;
+		if (preview) {
+			this.scene?.remove(preview.object);
+			this.disposePlacementScaleHandles(preview.handles);
+			disposePlacementPreviewObject(preview.object);
+			this.placementPreview = null;
+		}
+		if (this.placementLabelRenderer) {
+			// 過去のプレビューなどから残留した CSS2D 要素も確実に破棄する。
+			this.placementLabelRenderer.domElement.replaceChildren();
+			this.placementLabelRenderer.domElement.style.display = 'none';
+		}
+		if (preview) this.map?.triggerRepaint();
 	}
 
 	private updateAnimations = () => {
@@ -2021,11 +2285,17 @@ export class ThreeJsLayerManager {
 
 					this.isInitialized = true;
 				}
+				this.ensurePlacementLabelRenderer();
 			},
 
 			render: (_gl, args) => {
 				if (!this.scene || !this.camera || !this.renderer) return;
-				if (this.loadedModels.size === 0 && !this.placementPreview) return;
+				if (this.loadedModels.size === 0 && !this.placementPreview) {
+					if (this.placementLabelRenderer) {
+						this.placementLabelRenderer.domElement.style.display = 'none';
+					}
+					return;
+				}
 				if (this.placementPreview) this.placementPreview.object.visible = false;
 				this.lastMapProjectionMatrix = new THREE.Matrix4().fromArray(
 					args.defaultProjectionData.mainMatrix
@@ -2033,6 +2303,9 @@ export class ThreeJsLayerManager {
 				const mapProjectionMatrix = this.lastMapProjectionMatrix;
 				const hasPlayingAnimation = this.updateAnimations();
 				if (this.activeModelView) {
+					if (this.placementLabelRenderer) {
+						this.placementLabelRenderer.domElement.style.display = 'none';
+					}
 					this.renderActiveModelView();
 					if (hasPlayingAnimation) this.map?.triggerRepaint();
 					return;
@@ -2050,6 +2323,9 @@ export class ThreeJsLayerManager {
 						renderer: this.renderer,
 						scene: this.scene
 					});
+					this.renderPlacementScaleHandles(mapProjectionMatrix);
+				} else if (this.placementLabelRenderer) {
+					this.placementLabelRenderer.domElement.style.display = 'none';
 				}
 
 				this.loadedModels.forEach((loaded) => {
@@ -2092,6 +2368,7 @@ export class ThreeJsLayerManager {
 			},
 
 			onRemove: () => {
+				this.removePlacementLabelRenderer();
 				this.clearAllModels();
 			}
 		};
@@ -3382,6 +3659,9 @@ export class ThreeJsLayerManager {
 	/** 完全に破棄（ページ離脱時など） */
 	dispose(): void {
 		this.clearModelHighlight();
+		this.clearPlacementPreview();
+		this.removePlacementLabelRenderer();
+		this.placementTransformChangeHandler = null;
 		this.clearAllModels();
 		this.overlayRenderTarget?.dispose();
 		this.overlayScene?.traverse((child) => {

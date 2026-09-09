@@ -824,7 +824,7 @@
 				lng: modelPlacement?.lng ?? center?.lng ?? 0,
 				lat: modelPlacement?.lat ?? center?.lat ?? 0,
 				altitude: modelPlacement?.altitude ?? 0,
-				scale: modelPlacement?.scale
+				baseScale: modelPlacement?.scale
 			},
 			activeFormat,
 			resolvedMtlUrl,

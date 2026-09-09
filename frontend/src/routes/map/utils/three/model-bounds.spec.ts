@@ -207,6 +207,16 @@ describe('computeUploadedModelMeta', () => {
 		expect(result.xyzImageTile.z).toBeGreaterThanOrEqual(0);
 	});
 
+	it('FBXの配置範囲を実描画と同じmeter単位へ変換する', async () => {
+		const { getRuntimeModelLocalBounds } = await import('./model-bounds');
+		const box = new THREE.Box3(
+			new THREE.Vector3(-200, -100, 0),
+			new THREE.Vector3(300, 400, 600)
+		);
+
+		expect(getRuntimeModelLocalBounds(box, 0.01)).toEqual([-2, -1, 0, 3, 4, 6]);
+	});
+
 	it('USD の形状範囲を取得できる', async () => {
 		const { getUploadedModelObject } = await import('./model-bounds');
 		const { object } = await getUploadedModelObject(createSyntheticUsdFile(), 'usd');

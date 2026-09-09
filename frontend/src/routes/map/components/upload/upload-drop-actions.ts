@@ -69,7 +69,7 @@ const registerRemoteKmlModel = (
 				lng: placement?.lng ?? center.lng,
 				lat: placement?.lat ?? center.lat,
 				altitude: placement?.altitude ?? 0,
-				scale: placement?.scale
+				baseScale: placement?.scale
 			},
 			getMeshFormatType(modelUrl)
 		)
