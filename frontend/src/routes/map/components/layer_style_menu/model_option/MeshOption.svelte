@@ -19,6 +19,7 @@
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
+	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showModelView } from '$routes/stores/ui';
 	interface Props {
@@ -58,6 +59,11 @@
 	);
 	let isLoadingPartAttributes = $state(false);
 	let partColorAttributeCount = $state<number | null>(null);
+	const updateModelGeoBounds = () => {
+		const localBounds = layerEntry.format.localBounds;
+		if (!localBounds) return;
+		layerEntry.metaData.bounds = getModelGeoBoundsFromLocalBounds(localBounds, layerEntry.style);
+	};
 	const ensureShading = () => {
 		layerEntry.style.showThroughTerrain ??= false;
 		layerEntry.style.shading ??= { ...DEFAULT_MESH_SHADING };
@@ -380,6 +386,7 @@
 				onChange={(value) => {
 					layerEntry.style.transform.scale = value.scale;
 					layerEntry.style.transform.scaleUnit = value.scaleUnit;
+					updateModelGeoBounds();
 				}}
 			/>
 		{/if}
@@ -392,6 +399,7 @@
 				max={100}
 				step={0.01}
 				icon="mdi:image-filter-hdr"
+				onInput={updateModelGeoBounds}
 			/>
 		{/if}
 
@@ -418,6 +426,7 @@
 				step={1}
 				isInt
 				icon="mdi:rotate-right"
+				onInput={updateModelGeoBounds}
 			/>
 
 			<RangeSlider
@@ -428,6 +437,7 @@
 				step={1}
 				isInt
 				icon="mdi:rotate-right"
+				onInput={updateModelGeoBounds}
 			/>
 
 			<RangeSlider
@@ -438,6 +448,7 @@
 				step={1}
 				isInt
 				icon="mdi:rotate-right"
+				onInput={updateModelGeoBounds}
 			/>
 		</Accordion>
 	{/if}
