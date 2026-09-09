@@ -52,8 +52,10 @@
 	};
 
 	$effect(() => {
-		// エントリー作成後に残った入力を再解析して同じフォームを開き直さない。
-		if (showDataEntry) {
+		// ダイアログと位置合わせが閉じた後だけ、登録済みの入力を破棄する。
+		// 3Dモデルの座標系選択中も showDataEntry に実モデルのプレビューが入るため、
+		// ここで消すとフォームがURL登録へ戻り、プレビューも解除されてしまう。
+		if (showDataEntry && !showDialogType && !transformOptionMode) {
 			dropFile = null;
 			return;
 		}

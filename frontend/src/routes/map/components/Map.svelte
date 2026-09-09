@@ -864,9 +864,11 @@
 
 		// setThreeLayerの直前にも確認して、古いモデル状態の上書きを防ぐ。
 		if (updateId !== styleUpdateId) return;
-		// 配置中の実モデルは GeoRefForm が読み込み完了まで待ってから表示する。
+		// 座標系選択・配置中の実モデルは各フォーム側で読み込み完了まで待って表示する。
 		// ここでは同じプレビューを重複ロードせず、通常プレビューだけを同期する。
-		if (!isModelPlacementActive) {
+		const isThreeModelTransformPreviewActive =
+			isModelPlacementActive || (isZoneRegistrationActive && !!previewThreeModelEntry);
+		if (!isThreeModelTransformPreviewActive) {
 			await (previewThreeModelEntry
 				? mapStore.setThreeLayer([previewThreeModelEntry], 'preview')
 				: showDataEntry

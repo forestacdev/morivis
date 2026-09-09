@@ -56,6 +56,33 @@ export interface ResolvedProjectedModelPlacement {
 	georeference: ProjectedModelGeoreference;
 }
 
+export const resolveProjectedModelPlacementFromOrigin = async (
+	projectedOrigin: [number, number, number],
+	epsg: string,
+	unitScaleMeters = 1,
+	coordinateSpace: ProjectedModelGeoreference['coordinateSpace'] = 'object'
+): Promise<ResolvedProjectedModelPlacement> => {
+	const { epsgName, projContext } = ensureProjDefinition(epsg);
+	await ensureProjNadgridsReady(projContext);
+	const [lng, lat] = proj4(epsgName, 'EPSG:4326', [
+		projectedOrigin[0] * unitScaleMeters,
+		projectedOrigin[1] * unitScaleMeters
+	]) as [number, number];
+
+	return {
+		lng,
+		lat,
+		altitude: projectedOrigin[2] * unitScaleMeters,
+		georeference: {
+			type: 'projected',
+			epsg: epsgName.replace(/^EPSG:/i, ''),
+			projectedOrigin,
+			unitScaleMeters,
+			coordinateSpace
+		}
+	};
+};
+
 export const getModelUnitScaleMeters = (unitScaleFactor?: number) => {
 	const resolvedUnitScaleFactor =
 		typeof unitScaleFactor === 'number' && Number.isFinite(unitScaleFactor)
@@ -103,25 +130,12 @@ export const resolveProjectedModelPlacementFromBox = async (
 
 	const center = box.getCenter(new THREE.Vector3());
 	const projectedOrigin: [number, number, number] = [center.x, center.y, box.min.z];
-	const { epsgName, projContext } = ensureProjDefinition(epsg);
-	await ensureProjNadgridsReady(projContext);
-	const [lng, lat] = proj4(epsgName, 'EPSG:4326', [
-		projectedOrigin[0] * unitScaleMeters,
-		projectedOrigin[1] * unitScaleMeters
-	]) as [number, number];
-
-	return {
-		lng,
-		lat,
-		altitude: projectedOrigin[2] * unitScaleMeters,
-		georeference: {
-			type: 'projected',
-			epsg: epsgName.replace(/^EPSG:/i, ''),
-			projectedOrigin,
-			unitScaleMeters,
-			coordinateSpace
-		}
-	};
+	return resolveProjectedModelPlacementFromOrigin(
+		projectedOrigin,
+		epsg,
+		unitScaleMeters,
+		coordinateSpace
+	);
 };
 
 export const applyProjectedModelGeoreference = (

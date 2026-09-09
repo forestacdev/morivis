@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 	import * as yup from 'yup';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
@@ -11,10 +11,16 @@
 	} from '$routes/map/components/upload/transform-policy';
 	import { createGlbEntry } from '$routes/map/data/entries/model';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { MeshFormatType, MeshUpAxis } from '$routes/map/data/types/model';
+	import type {
+		MeshEntry,
+		MeshFormatType,
+		MeshStyle,
+		MeshUpAxis
+	} from '$routes/map/data/types/model';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { inspectFbxTextureReferences } from '$routes/map/utils/three/fbx-references';
 	import {
@@ -26,7 +32,11 @@
 	} from '$routes/map/utils/three/ifc-metadata';
 	import { applyProjectedModelAxisOverride } from '$routes/map/utils/three/model-axis';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
-	import { getModelCoordinateMode } from '$routes/map/utils/three/model-georeference';
+	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
+	import {
+		getModelCoordinateMode,
+		resolveProjectedModelPlacementFromOrigin
+	} from '$routes/map/utils/three/model-georeference';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -59,6 +69,8 @@
 		altitude: number;
 		scale?: number;
 	}
+
+	const ZONE_MODEL_PREVIEW_OPACITY = 0.3;
 
 	const getPathLikeName = (file: File) => {
 		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
@@ -278,6 +290,11 @@
 	let analyzedIfcFileKey = $state<string | null>(null);
 	let ifcSourceBbox = $state<[number, number, number, number] | null>(null);
 	let isPreparingIfcZoneSelection = $state(false);
+	let zoneModelPreviewEntry: MeshEntry<MeshStyle> | null = null;
+	let zoneModelPreviewBuildPromise: Promise<MeshEntry<MeshStyle> | null> | null = null;
+	let zoneModelPreviewSourceKey: string | null = null;
+	let zoneModelPreviewSyncId = 0;
+	let zoneModelPreviewFinalizing = false;
 
 	const requiresProjectedCandidateCoordinateInspection = $derived(
 		!!activeFormat &&
@@ -986,6 +1003,129 @@
 		return entry;
 	};
 
+	const createProjectedModelEntryForEpsg = async (
+		entry: MeshEntry<MeshStyle>,
+		epsg: EpsgCode,
+		opacity: MeshStyle['opacity']
+	): Promise<MeshEntry<MeshStyle>> => {
+		const georeference = entry.format.georeference;
+		if (!georeference) {
+			throw new Error('3Dモデルの投影原点を取得できませんでした');
+		}
+
+		const placement = await resolveProjectedModelPlacementFromOrigin(
+			georeference.projectedOrigin,
+			epsg,
+			georeference.unitScaleMeters,
+			georeference.coordinateSpace
+		);
+		const style: MeshStyle = {
+			...entry.style,
+			opacity,
+			transform: {
+				...entry.style.transform,
+				lng: placement.lng,
+				lat: placement.lat,
+				altitude: placement.altitude
+			}
+		};
+		const bounds = entry.format.localBounds
+			? getModelGeoBoundsFromLocalBounds(entry.format.localBounds, style)
+			: entry.metaData.bounds;
+
+		return {
+			...entry,
+			format: {
+				...entry.format,
+				georeference: placement.georeference
+			},
+			metaData: {
+				...entry.metaData,
+				altitude: placement.altitude,
+				bounds,
+				xyzImageTile: findCenterTile(bounds)
+			},
+			style
+		};
+	};
+
+	const getZoneModelPreviewEntry = async (epsg: EpsgCode) => {
+		if (zoneModelPreviewEntry) return zoneModelPreviewEntry;
+		zoneModelPreviewBuildPromise ??= buildDroppedEntry({
+			name: droppedForms.name,
+			projectedModelEpsg: epsg
+		});
+		const pendingBuild = zoneModelPreviewBuildPromise;
+		const entry = await pendingBuild;
+		if (zoneModelPreviewBuildPromise !== pendingBuild) return null;
+		if (entry) zoneModelPreviewEntry = entry;
+		return entry;
+	};
+
+	const syncZoneModelPreview = async (epsg: EpsgCode, syncId: number) => {
+		try {
+			const entry = await getZoneModelPreviewEntry(epsg);
+			if (!entry) return;
+			const previewEntry = await createProjectedModelEntryForEpsg(
+				entry,
+				epsg,
+				ZONE_MODEL_PREVIEW_OPACITY
+			);
+			if (syncId !== zoneModelPreviewSyncId || transformOptionMode !== 'zone' || !glbFile) return;
+
+			showDataEntry = previewEntry;
+			// 座標系候補の計算が終わった時点で操作を戻す。
+			// Three.js 側のモデル読込は画面を塞がず、完了次第プレビューへ反映する。
+			isProcessing.set(false);
+			await mapStore.setThreeLayer([previewEntry], 'preview');
+		} catch (error) {
+			if (syncId !== zoneModelPreviewSyncId) return;
+			console.error('座標系選択用3Dモデルの表示に失敗しました', error);
+			showNotification('3Dモデルの候補位置を表示できませんでした', 'error');
+		} finally {
+			if (syncId === zoneModelPreviewSyncId) isProcessing.set(false);
+		}
+	};
+
+	const clearZoneModelPreview = () => {
+		const entryId = zoneModelPreviewEntry?.id;
+		zoneModelPreviewSyncId += 1;
+		zoneModelPreviewEntry = null;
+		zoneModelPreviewBuildPromise = null;
+		zoneModelPreviewSourceKey = null;
+		if (entryId && showDataEntry?.id === entryId) showDataEntry = null;
+		void mapStore.setThreeLayer([], 'preview');
+	};
+
+	$effect(() => {
+		const isActive =
+			transformOptionMode === 'zone' &&
+			!!glbFile &&
+			(requiresProjectedCandidateZoneSelection || requiresIfcZoneSelection);
+		if (!isActive) {
+			if (
+				!zoneConfirmedEpsg &&
+				!zoneModelPreviewFinalizing &&
+				(zoneModelPreviewEntry || zoneModelPreviewBuildPromise)
+			) {
+				untrack(clearZoneModelPreview);
+			}
+			return;
+		}
+
+		const sourceKey = getPathLikeName(glbFile);
+		if (zoneModelPreviewSourceKey && zoneModelPreviewSourceKey !== sourceKey) {
+			untrack(clearZoneModelPreview);
+		}
+		zoneModelPreviewSourceKey = sourceKey;
+		const syncId = ++zoneModelPreviewSyncId;
+		void syncZoneModelPreview(selectedEpsgCode, syncId);
+	});
+
+	onDestroy(() => {
+		if (zoneModelPreviewEntry || zoneModelPreviewBuildPromise) clearZoneModelPreview();
+	});
+
 	$effect(() => {
 		if (activeFormat === 'ifc') {
 			logIfcUpload('registration-gate', {
@@ -1047,19 +1187,43 @@
 	});
 
 	const registerDroppedProjectedModel = async (projectedModelEpsg: EpsgCode) => {
-		if (!validateDroppedForms()) return;
+		if (!validateDroppedForms()) {
+			zoneModelPreviewFinalizing = false;
+			transformOptionMode = null;
+			return;
+		}
 
-		const entry = await buildDroppedEntry({
-			name: droppedForms.name,
-			projectedModelEpsg
-		});
-		if (!entry) return;
+		try {
+			isProcessing.set(true);
+			const entry = zoneModelPreviewEntry
+				? await createProjectedModelEntryForEpsg(
+						zoneModelPreviewEntry,
+						projectedModelEpsg,
+						zoneModelPreviewEntry.style.opacity
+					)
+				: await buildDroppedEntry({
+						name: droppedForms.name,
+						projectedModelEpsg
+					});
+			if (!entry) return;
 
-		showDataEntry = entry;
-		transformOptionMode = null;
-		focusBbox = null;
-		showDialogType = null;
-		dropFile = null;
+			zoneModelPreviewEntry = null;
+			zoneModelPreviewBuildPromise = null;
+			zoneModelPreviewSourceKey = null;
+			showDataEntry = entry;
+			transformOptionMode = null;
+			focusBbox = null;
+			showDialogType = null;
+			dropFile = null;
+		} catch (error) {
+			console.error('3Dモデルの座標系確定に失敗しました', error);
+			showNotification('3Dモデルの座標系を確定できませんでした', 'error');
+			clearZoneModelPreview();
+			transformOptionMode = null;
+		} finally {
+			zoneModelPreviewFinalizing = false;
+			isProcessing.set(false);
+		}
 	};
 
 	const openZoneSelection = () => {
@@ -1102,6 +1266,7 @@
 
 		const epsg = zoneConfirmedEpsg;
 		untrack(() => {
+			zoneModelPreviewFinalizing = true;
 			zoneConfirmedEpsg = null;
 			void registerDroppedProjectedModel(epsg);
 		});

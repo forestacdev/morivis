@@ -317,8 +317,7 @@
 		setCornerCoordinates(getDefaultGeoRefCorners(map, data.imageWidth, data.imageHeight));
 	};
 
-	const resetZone = () => {
-		transformOptionMode = null;
+	const clearZoneState = () => {
 		focusBbox = null;
 		zoneBboxGeojsonData = {
 			type: 'FeatureCollection',
@@ -329,6 +328,11 @@
 			features: []
 		};
 		poiData = [];
+	};
+
+	const resetZone = () => {
+		transformOptionMode = null;
+		clearZoneState();
 	};
 
 	const removePreview = () => {
@@ -417,7 +421,11 @@
 		}
 		if (transformOptionMode === 'zone') {
 			const code = selectedEpsgCode;
-			resetZone();
+			const isModelZoneSelection =
+				showDataEntry?.type === 'model' &&
+				(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat');
+			if (isModelZoneSelection) clearZoneState();
+			else resetZone();
 			onZoneConfirm(code);
 			return;
 		}

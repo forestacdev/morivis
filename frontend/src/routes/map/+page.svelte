@@ -1356,7 +1356,7 @@
 				{/await}
 			</MobileFeatureMenuCard>
 
-			{#if !isModelPlacementActive}
+			{#if !transformOptionMode}
 				<PreviewMenu bind:showDataEntry />
 			{/if}
 
@@ -1375,7 +1375,7 @@
 					bind:pendingTileUrl
 				/>
 			{/if}
-			{#if showDataEntry && !isModelPlacementActive}
+			{#if showDataEntry && !transformOptionMode}
 				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
 			{/if}
 
@@ -1466,7 +1466,7 @@
 					geoRefData = null;
 					geoRefPreviewData = null;
 					geoRefPreviewOpacity = 0.6;
-					transformOptionMode = null;
+					if (!showDataEntry || !isThreeModelEntry(showDataEntry)) transformOptionMode = null;
 					zoneConfirmedEpsg = epsgCode;
 					debugLog.info(`Zone確定: epsg=${epsgCode}`);
 				}}

@@ -4,7 +4,8 @@ import {
 	getModelCoordinateMode,
 	getModelUnitScaleMeters,
 	resolveFbxUnitScaleMeters,
-	resolveProjectedModelPlacementFromBox
+	resolveProjectedModelPlacementFromBox,
+	resolveProjectedModelPlacementFromOrigin
 } from '$routes/map/utils/three/model-georeference';
 import proj4 from 'proj4';
 import * as THREE from 'three';
@@ -94,6 +95,23 @@ describe('model-georeference', () => {
 		expect(placement.lng).toBeCloseTo(expected[0], 10);
 		expect(placement.lat).toBeCloseTo(expected[1], 10);
 		expect(placement.altitude).toBe(2);
+	});
+
+	it('保持した投影原点から座標系候補だけを切り替える', async () => {
+		const projectedOrigin: [number, number, number] = [12_050, -33_950, 2];
+		const placement = await resolveProjectedModelPlacementFromOrigin(
+			projectedOrigin,
+			'6674'
+		);
+		const expected = proj4('EPSG:6674', 'EPSG:4326', projectedOrigin.slice(0, 2)) as [
+			number,
+			number
+		];
+
+		expect(placement.lng).toBeCloseTo(expected[0], 10);
+		expect(placement.lat).toBeCloseTo(expected[1], 10);
+		expect(placement.georeference.projectedOrigin).toEqual(projectedOrigin);
+		expect(placement.georeference.epsg).toBe('6674');
 	});
 
 	it('projected georeference を object に反映する', () => {

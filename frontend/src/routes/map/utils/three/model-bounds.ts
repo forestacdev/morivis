@@ -856,6 +856,12 @@ export const computeUploadedModelMeta = async ({
 		object.updateMatrixWorld(true);
 	}
 	const displayBox = usesLocalCoordinateGeoreference ? getModelBounds(object, format) : box;
+	const runtimeLocalBox = resolvedGeoreference && !usesLocalCoordinateGeoreference
+		? new THREE.Box3(
+			georeferenceCornerToLocal(box.min, resolvedGeoreference),
+			georeferenceCornerToLocal(box.max, resolvedGeoreference)
+		)
+		: displayBox;
 
 	let hasSkinnedMesh = false;
 	object.traverse((child) => {
@@ -924,7 +930,9 @@ export const computeUploadedModelMeta = async ({
 		bounds,
 		// FBX は実描画時に cm などのファイル単位を meter へ変換する。
 		// 配置ボックスも同じ単位へ揃え、実モデルとの寸法差を防ぐ。
-		localBounds: getRuntimeModelLocalBounds(displayBox, localRenderUnitScale),
+		// object座標の投影モデルも、実描画時と同じく投影原点を引いた範囲を保持する。
+		// 元の大きな座標を残すと、EPSG切替・確定時のbounds再計算でオフセットが二重になる。
+		localBounds: getRuntimeModelLocalBounds(runtimeLocalBox, localRenderUnitScale),
 		...((
 			format === 'fbx'
 			|| format === 'gltf'

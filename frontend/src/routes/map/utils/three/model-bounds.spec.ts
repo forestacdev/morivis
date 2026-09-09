@@ -98,6 +98,23 @@ endsolid test-shape`
 		{ type: 'model/stl' }
 	);
 
+const createSyntheticProjectedStlFile = (): File =>
+	new File(
+		[
+			`solid test-projected-shape
+facet normal 0 0 1
+	outer loop
+		vertex 120000 -240000 5
+		vertex 120002 -240000 5
+		vertex 120000 -239997 5
+	endloop
+endfacet
+endsolid test-projected-shape`
+		],
+		'test-projected-shape.stl',
+		{ type: 'model/stl' }
+	);
+
 const createKtx2TextureGltfFile = (): File => {
 	const binary = new Uint8Array(40);
 	new Float32Array(binary.buffer, 0, 9).set([0, 0, 0, 2, 0, 0, 0, 3, 0]);
@@ -253,6 +270,47 @@ describe('computeUploadedModelMeta', () => {
 		expect(result.localBounds).toEqual([0, 0, 0, 2, 3, 0]);
 		expect(result.sourceBbox).toEqual([0, 0, 2, 3]);
 		expect(result.animationNames).toEqual([]);
+	});
+
+	it('投影座標モデルのlocalBoundsは投影原点を引いた実描画座標で保持する', async () => {
+		const { computeUploadedModelMeta } = await import('./model-bounds');
+		const { getModelGeoBoundsFromLocalBounds } = await import('./model-geo-bounds');
+		const transform = {
+			lng: 0,
+			lat: 0,
+			altitude: 0,
+			heightOffset: 0,
+			heightScale: 1,
+			baseScale: 1,
+			baseRotationX: 0,
+			baseRotationY: 0,
+			baseRotationZ: 0,
+			scale: 1,
+			rotationX: 0,
+			rotationY: 0,
+			rotationZ: 0
+		};
+		const result = await computeUploadedModelMeta({
+			file: createSyntheticProjectedStlFile(),
+			format: 'stl',
+			style: { transform },
+			projectedModelEpsg: '6673'
+		});
+		const placement = result.resolvedPlacement;
+		expect(placement).toBeDefined();
+		expect(result.localBounds).toEqual([-1, -1.5, 0, 1, 1.5, 0]);
+
+		const recalculatedBounds = getModelGeoBoundsFromLocalBounds(result.localBounds, {
+			transform: {
+				...transform,
+				lng: placement!.lng,
+				lat: placement!.lat,
+				altitude: placement!.altitude
+			}
+		});
+		recalculatedBounds.forEach((value, index) => {
+			expect(value).toBeCloseTo(result.bounds[index], 10);
+		});
 	});
 
 	it('Y-up指定のSTLはY軸の最下端を原点へ合わせる', async () => {
