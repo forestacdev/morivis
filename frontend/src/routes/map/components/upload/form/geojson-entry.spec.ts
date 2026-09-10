@@ -75,11 +75,15 @@ describe('canRenderGeoJsonAs3d', () => {
 
 describe('resolveGeoJsonRenderMode', () => {
 	it('3D描画できないデータに deck を指定しても geojson に落とす', () => {
-		expect(resolveGeoJsonRenderMode(createFlatLineString(), 'LineString', 'deck')).toBe('geojson');
+		expect(resolveGeoJsonRenderMode(createFlatLineString(), 'LineString', 'deck')).toBe(
+			'geojson'
+		);
 	});
 
 	it('3D描画できるデータで deck を指定すれば deck を返す', () => {
-		expect(resolveGeoJsonRenderMode(createLineStringWithZ(), 'LineString', 'deck')).toBe('deck');
+		expect(resolveGeoJsonRenderMode(createLineStringWithZ(), 'LineString', 'deck')).toBe(
+			'deck'
+		);
 	});
 
 	it('geojson 指定は Z座標があっても geojson のまま', () => {

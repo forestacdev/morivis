@@ -23,7 +23,7 @@
 		rotationZ = $bindable()
 	}: Props = $props();
 
-	const rotateQuarterTurn = (rotation: number) => ((rotation + 90) % 360 + 360) % 360;
+	const rotateQuarterTurn = (rotation: number) => (((rotation + 90) % 360) + 360) % 360;
 </script>
 
 <div class="c-scroll flex h-full w-full grow flex-col gap-4 overflow-x-hidden overflow-y-auto px-2">

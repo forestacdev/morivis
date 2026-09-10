@@ -2,7 +2,6 @@
 	import type { DialogDefinition, DialogProfile } from './dialog-registry';
 	import LazyUploadComponent from './LazyUploadComponent.svelte';
 
-
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode

@@ -47,7 +47,9 @@ const stripGeometryZ = (
 		return {
 			...geometry,
 			coordinates: geometry.coordinates.map((polygon) =>
-				polygon.map((line) => line.map((position) => to2dPosition(position as unknown as number[])))
+				polygon.map((line) =>
+					line.map((position) => to2dPosition(position as unknown as number[]))
+				)
 			)
 		};
 	}
@@ -63,7 +65,9 @@ export const stripGeojsonZ = (geojson: FeatureCollection): FeatureCollection =>
 		...geojson,
 		features: geojson.features.map((feature) => ({
 			...feature,
-			geometry: stripGeometryZ(feature.geometry as unknown as AnyGeometry | GeometryCollection)
+			geometry: stripGeometryZ(
+				feature.geometry as unknown as AnyGeometry | GeometryCollection
+			)
 		}))
 	}) as unknown as FeatureCollection;
 

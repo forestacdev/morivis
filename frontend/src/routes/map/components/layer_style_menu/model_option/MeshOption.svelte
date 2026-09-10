@@ -292,18 +292,24 @@
 	{#if isFbx}
 		<Switch
 			label="FBXテキストを表示"
-			bind:value={() => layerEntry.style.showFbxText !== false, (value) => {
-				layerEntry.style.showFbxText = value;
-			}}
+			bind:value={
+				() => layerEntry.style.showFbxText !== false,
+				(value) => {
+					layerEntry.style.showFbxText = value;
+				}
+			}
 		/>
 		<p class="mb-2 text-xs text-base/70">
 			文字属性が残っている場合、モデル上に3Dテキストとして表示します。
 		</p>
 		<Switch
 			label="FBX曲線を表示"
-			bind:value={() => layerEntry.style.showFbxCurves !== false, (value) => {
-				layerEntry.style.showFbxCurves = value;
-			}}
+			bind:value={
+				() => layerEntry.style.showFbxCurves !== false,
+				(value) => {
+					layerEntry.style.showFbxCurves = value;
+				}
+			}
 		/>
 		<p class="mb-2 text-xs text-base/70">
 			線分・ポリライン・円や、CAD文字の輪郭として書き出された曲線を切り替えます。
