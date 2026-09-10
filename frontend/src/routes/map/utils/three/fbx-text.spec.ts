@@ -17,12 +17,14 @@ describe('FBX text', () => {
 
 		const [descriptor] = getFbxTextDescriptors(root, {
 			101: {
-				'項目 - タイプ': 'テキスト',
 				'Text - 内容': 'test-label',
 				'Text - 高さ': 2,
 				'Text - 幅係数': 0.75,
 				'Text - 位置合わせ': '上中心(TC)',
 				'Text - 回転角度': 15,
+				'Text - 傾斜角度': 10,
+				'General - 色': 'BYLAYER',
+				'項目 - マテリアル': 'AutoCAD カラーインデックス 140',
 				GeometricTranslation: '10, 20, 30'
 			}
 		});
@@ -32,6 +34,8 @@ describe('FBX text', () => {
 		expect(descriptor.widthFactor).toBe(0.75);
 		expect(descriptor.alignment).toBe('top-center');
 		expect(descriptor.rotation).toBe(15);
+		expect(descriptor.oblique).toBe(10);
+		expect(descriptor.color).toBe('#00bfff');
 		expect(new THREE.Vector3().applyMatrix4(descriptor.geometricTransform!))
 			.toEqual(new THREE.Vector3(10, 20, 30));
 	});
@@ -70,13 +74,16 @@ describe('FBX text', () => {
 		expect(regularMesh.visible).toBe(true);
 	});
 
-	it('通常グループと空文字は描画対象にしない', () => {
+	it('項目タイプではなく文字内容の有無で描画対象を判定する', () => {
 		const root = new THREE.Group();
 		root.add(createTextGroup(303), createTextGroup(404));
 
-		expect(getFbxTextDescriptors(root, {
+		const descriptors = getFbxTextDescriptors(root, {
 			303: { '項目 - タイプ': 'メッシュ', 'Text - 内容': 'not-text' },
 			404: { '項目 - タイプ': 'テキスト', 'Text - 内容': '   ' }
-		})).toEqual([]);
+		});
+
+		expect(descriptors).toHaveLength(1);
+		expect(descriptors[0].text).toBe('not-text');
 	});
 });

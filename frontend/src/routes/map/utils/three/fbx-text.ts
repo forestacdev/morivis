@@ -6,14 +6,20 @@ import {
 	getFbxGeometricTransform
 } from './fbx-attributes';
 
-const TEXT_TYPE_KEY = '項目 - タイプ';
+// 以下はNavisworksから書き出された調査対象FBXのProperties70で確認した属性キー。
+// FBX標準のキーではなく、元CADの属性をNavisworksが書き出したカスタムプロパティと考えられる。
+// 元データ形式、Navisworksの言語・バージョンによって名前が変わる可能性があるため、
+// 別の出力パターンが確認された場合は候補キーとして追加する。
 const TEXT_CONTENT_KEYS = ['Text - 内容', 'テキスト - テキスト'] as const;
 const TEXT_HEIGHT_KEY = 'Text - 高さ';
 const TEXT_ALIGNMENT_KEY = 'Text - 位置合わせ';
 const TEXT_ROTATION_KEY = 'Text - 回転角度';
+const TEXT_OBLIQUE_KEY = 'Text - 傾斜角度';
 const TEXT_WIDTH_FACTOR_KEY = 'Text - 幅係数';
 const TEXT_COLOR_KEY = 'General - 色';
 const TEXT_MATERIAL_KEY = '項目 - マテリアル';
+
+// 以下はFBX内の属性ではなく、属性から文字面を再構築するためのmorivis内部設定。
 const TEXT_TEXTURE_FONT_SIZE = 96;
 const TEXT_TEXTURE_PADDING = 8;
 const TEXT_LINE_HEIGHT = 1.2;
@@ -30,6 +36,7 @@ export interface FbxTextDescriptor {
 	widthFactor: number;
 	alignment: FbxTextAlignment;
 	rotation: number;
+	oblique: number;
 	color: string;
 	geometricTransform?: THREE.Matrix4;
 }
@@ -63,14 +70,73 @@ const getTextAlignment = (value: FbxAttributeValue | undefined): FbxTextAlignmen
 	return 'left';
 };
 
-const AUTOCAD_TEXT_COLORS: Record<number, string> = {
+const AUTOCAD_BASE_COLORS: Record<number, string> = {
 	1: '#ff0000',
 	2: '#ffff00',
 	3: '#00ff00',
 	4: '#00ffff',
 	5: '#0000ff',
 	6: '#ff00ff',
-	7: '#ffffff'
+	7: '#ffffff',
+	8: '#808080',
+	9: '#c0c0c0'
+};
+
+const AUTOCAD_HUE_COLORS = [
+	[255, 0, 0],
+	[255, 63, 0],
+	[255, 127, 0],
+	[255, 191, 0],
+	[255, 255, 0],
+	[191, 255, 0],
+	[127, 255, 0],
+	[63, 255, 0],
+	[0, 255, 0],
+	[0, 255, 63],
+	[0, 255, 127],
+	[0, 255, 191],
+	[0, 255, 255],
+	[0, 191, 255],
+	[0, 127, 255],
+	[0, 63, 255],
+	[0, 0, 255],
+	[63, 0, 255],
+	[127, 0, 255],
+	[191, 0, 255],
+	[255, 0, 255],
+	[255, 0, 191],
+	[255, 0, 127],
+	[255, 0, 63]
+] as const;
+const AUTOCAD_SHADE_VALUES = [1, 0.65, 0.5, 0.3, 0.15] as const;
+const AUTOCAD_GRAY_VALUES = [51, 80, 105, 130, 190, 255] as const;
+
+const rgbToHex = (rgb: readonly number[]) =>
+	`#${
+		rgb.map((value) =>
+			Math.max(0, Math.min(255, Math.round(value)))
+				.toString(16).padStart(2, '0')
+		).join('')
+	}`;
+
+const getAutocadColor = (index: number) => {
+	if (!Number.isInteger(index)) return undefined;
+	const baseColor = AUTOCAD_BASE_COLORS[index];
+	if (baseColor) return baseColor;
+	if (index >= 250 && index <= 255) {
+		const value = AUTOCAD_GRAY_VALUES[index - 250];
+		return rgbToHex([value, value, value]);
+	}
+	if (index < 10 || index > 249) return undefined;
+
+	const offset = index - 10;
+	const hue = AUTOCAD_HUE_COLORS[Math.floor(offset / 10)];
+	const shadeIndex = Math.floor((offset % 10) / 2);
+	const value = AUTOCAD_SHADE_VALUES[shadeIndex];
+	const saturation = offset % 2 === 0 ? 1 : 0.5;
+	return rgbToHex(
+		hue.map((channel) => 255 * value * ((channel / 255) * saturation + 1 - saturation))
+	);
 };
 
 const getFbxTextColor = (attributes: FbxModelAttributes) => {
@@ -78,12 +144,7 @@ const getFbxTextColor = (attributes: FbxModelAttributes) => {
 	if (rawColor) {
 		const rgb = rawColor.split(',').map(Number);
 		if (rgb.length === 3 && rgb.every((value) => Number.isFinite(value))) {
-			return `#${
-				rgb.map((value) =>
-					Math.max(0, Math.min(255, Math.round(value)))
-						.toString(16).padStart(2, '0')
-				).join('')
-			}`;
+			return rgbToHex(rgb);
 		}
 		const namedColors: Record<string, string> = {
 			black: '#000000',
@@ -98,12 +159,15 @@ const getFbxTextColor = (attributes: FbxModelAttributes) => {
 		const namedColor = namedColors[rawColor.toLowerCase()];
 		if (namedColor) return namedColor;
 		const colorIndex = Number(rawColor);
-		if (AUTOCAD_TEXT_COLORS[colorIndex]) return AUTOCAD_TEXT_COLORS[colorIndex];
+		const indexedColor = getAutocadColor(colorIndex);
+		if (indexedColor) return indexedColor;
 	}
 
 	const material = getStringAttribute(attributes[TEXT_MATERIAL_KEY]);
-	const colorIndex = Number(material?.match(/AutoCAD Color Index\s+(\d+)/i)?.[1]);
-	return AUTOCAD_TEXT_COLORS[colorIndex] ?? DEFAULT_TEXT_COLOR;
+	const colorIndex = Number(
+		material?.match(/(?:AutoCAD\s+)?(?:カラーインデックス|Color Index)\s*(\d+)/i)?.[1]
+	);
+	return getAutocadColor(colorIndex) ?? DEFAULT_TEXT_COLOR;
 };
 
 const getFbxTextContent = (attributes: FbxModelAttributes) => {
@@ -126,8 +190,7 @@ export const getFbxTextDescriptors = (
 		if (modelId == null) return;
 		const attributes = attributesByModelId[String(modelId)];
 		if (!attributes) return;
-		const itemType = getStringAttribute(attributes[TEXT_TYPE_KEY])?.trim();
-		if (itemType !== 'テキスト') return;
+		// 「項目 - タイプ」だけでは判定せず、実際に文字内容を持つModelを対象にする。
 		const text = getFbxTextContent(attributes);
 		if (!text) return;
 
@@ -140,6 +203,7 @@ export const getFbxTextDescriptors = (
 			widthFactor: widthFactor > 0 ? widthFactor : 1,
 			alignment: getTextAlignment(attributes[TEXT_ALIGNMENT_KEY]),
 			rotation: getNumberAttribute(attributes[TEXT_ROTATION_KEY], 0),
+			oblique: getNumberAttribute(attributes[TEXT_OBLIQUE_KEY], 0),
 			color: getFbxTextColor(attributes),
 			geometricTransform: getFbxGeometricTransform(attributes)
 		});
@@ -220,6 +284,27 @@ export const createFbxTextMeshes = (
 		const width = descriptor.height * rendered.widthInTextHeights * descriptor.widthFactor;
 		const height = descriptor.height * rendered.heightInTextHeights;
 		const geometry = new THREE.PlaneGeometry(width, height);
+		const obliqueShear = Math.tan(THREE.MathUtils.degToRad(descriptor.oblique));
+		if (descriptor.oblique !== 0 && Number.isFinite(obliqueShear)) {
+			geometry.applyMatrix4(new THREE.Matrix4().set(
+				1,
+				obliqueShear,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1,
+				0,
+				0,
+				0,
+				0,
+				1
+			));
+		}
 		const anchor = getTextAnchorOffset(descriptor.alignment, width, height);
 		geometry.translate(anchor.x, anchor.y, 0);
 		if (descriptor.rotation !== 0) {
