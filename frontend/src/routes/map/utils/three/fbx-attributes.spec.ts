@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	applyFbxCurveGeometricTransform,
 	parseFbxModelAttributes,
+	resolveFbxModelAttributes,
 	setFbxCurveVisibility
 } from './fbx-attributes';
 
@@ -175,5 +176,50 @@ describe('parseFbxModelAttributes', () => {
 
 		expect(sourceCurve.visible).toBe(false);
 		expect(generatedEdge.visible).toBe(true);
+	});
+
+	it('曲線ノードの属性へ親AlignmentのCivil3D属性を継承する', () => {
+		const root = new THREE.Group();
+		const alignment = new THREE.Group();
+		alignment.userData.morivisFbxAttributes = {
+			'項目 - タイプ': 'Alignment',
+			'General - 画層': 'test-alignment-layer',
+			'Civil3D - Geometry:Start Station': 100,
+			'Civil3D - Geometry:End Station': 900,
+			'Civil3D - Segment 1 Data - Line:Segment Length': 800,
+			'Civil3D - Sub-entity 1 Data - Line:Start Station': 100,
+			shared: 'parent'
+		};
+		const curve = new THREE.Line(
+			new THREE.BufferGeometry().setFromPoints([
+				new THREE.Vector3(),
+				new THREE.Vector3(1, 0, 0)
+			]),
+			new THREE.LineBasicMaterial()
+		);
+		curve.userData.morivisFbxAttributes = {
+			ScalingMax: 1,
+			DefaultAttributeIndex: 0,
+			shared: 'child'
+		};
+		root.add(alignment);
+		alignment.add(curve);
+
+		const resolved = resolveFbxModelAttributes(curve, root);
+
+		expect(resolved.object).toBe(curve);
+		expect(resolved.attributes).toMatchObject({
+			'項目 - タイプ': 'Alignment',
+			'General - 画層': 'test-alignment-layer',
+			'Civil3D - Geometry:Start Station': 100,
+			'Civil3D - Geometry:End Station': 900,
+			'Civil3D - Sub-entity 1 Data - Line:Start Station': 100,
+			'Civil3D - Segment Data:省略属性数': 1,
+			ScalingMax: 1,
+			DefaultAttributeIndex: 0,
+			shared: 'child'
+		});
+		expect(resolved.attributes)
+			.not.toHaveProperty('Civil3D - Segment 1 Data - Line:Segment Length');
 	});
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { inspectFbxTextureReferences } from './fbx-references';
+import { inspectFbxFile, inspectFbxTextureReferences } from './fbx-references';
 
 const createBinaryFbxWithRelativeTexturePath = (path: string) => {
 	const encoder = new TextEncoder();
@@ -37,10 +37,12 @@ describe('inspectFbxTextureReferences', () => {
 	});
 
 	it('Binary FBX の相対テクスチャ参照を取得する', async () => {
-		await expect(
-			inspectFbxTextureReferences(createBinaryFbxWithRelativeTexturePath('test.png'))
-		).resolves.toEqual([
-			'test.png'
-		]);
+		const file = createBinaryFbxWithRelativeTexturePath('test.png');
+
+		await expect(inspectFbxTextureReferences(file)).resolves.toEqual(['test.png']);
+		await expect(inspectFbxFile(file)).resolves.toMatchObject({
+			referencedTexturePaths: ['test.png'],
+			description: expect.stringMatching(/^Binary FBX 7400、/)
+		});
 	});
 });

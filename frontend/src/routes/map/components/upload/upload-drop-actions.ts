@@ -107,6 +107,7 @@ export const applyUploadDropDecision = (
 			return;
 		}
 
+		setDropFile(decision.sourceFiles);
 		registerRemoteKmlModel(
 			map,
 			decision.name,

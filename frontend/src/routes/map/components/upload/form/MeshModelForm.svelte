@@ -22,7 +22,7 @@
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
-	import { inspectFbxTextureReferences } from '$routes/map/utils/three/fbx-references';
+	import { inspectFbxFile } from '$routes/map/utils/three/fbx-references';
 	import {
 		hasIfcExactGeoreference,
 		getIfcPlacementCoordinateMode,
@@ -280,6 +280,7 @@
 	let fbxInspectionFileKey = $state<string | null>(null);
 	let isInspectingFbxReferences = $state(false);
 	let referencedFbxTexturePaths = $state<string[]>([]);
+	let fbxDescription = $state<string | undefined>(undefined);
 	let gltfInspectionFileKey = $state<string | null>(null);
 	let isInspectingGltfReferences = $state(false);
 	let referencedGltfBufferUris = $state<string[]>([]);
@@ -485,6 +486,7 @@
 			fbxInspectionFileKey = null;
 			isInspectingFbxReferences = false;
 			referencedFbxTexturePaths = [];
+			fbxDescription = undefined;
 			return;
 		}
 
@@ -494,16 +496,19 @@
 		fbxInspectionFileKey = nextFileKey;
 		isInspectingFbxReferences = true;
 		referencedFbxTexturePaths = [];
+		fbxDescription = undefined;
 
 		const inspectReferences = async () => {
 			const inspectionKey = nextFileKey;
 			try {
-				const paths = await inspectFbxTextureReferences(glbFile);
+				const inspection = await inspectFbxFile(glbFile);
 				if (fbxInspectionFileKey !== inspectionKey) return;
-				referencedFbxTexturePaths = paths;
+				referencedFbxTexturePaths = inspection.referencedTexturePaths;
+				fbxDescription = inspection.description;
 			} catch (error) {
 				if (fbxInspectionFileKey !== inspectionKey) return;
 				referencedFbxTexturePaths = [];
+				fbxDescription = undefined;
 				console.warn('FBX の参照画像判定に失敗しました', error);
 			} finally {
 				if (fbxInspectionFileKey === inspectionKey) {
@@ -854,6 +859,9 @@
 				initialShadingEnabled: activeFormat !== 'vrm' && activeFormat !== 'pmx'
 			}
 		);
+		if (activeFormat === 'fbx' && fbxDescription) {
+			entry.metaData.description = fbxDescription;
+		}
 		if (activeFormat === 'pmx' && resourceUrls && vmdFiles.length > 0) {
 			const clips = vmdFiles.flatMap((file) => {
 				const url = resourceUrls?.[file.name.toLowerCase()];

@@ -64,6 +64,10 @@
 	import LazyUploadComponent from '$routes/map/components/upload/LazyUploadComponent.svelte';
 	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import {
+		mergeUploadFiles,
+		withUploadFileDescription
+	} from '$routes/map/components/upload/upload-file-description';
+	import {
 		findCatalogEntry,
 		geoDataEntries,
 		isLazyCatalogEntry,
@@ -130,6 +134,7 @@
 		warpGeoJSONByCornersParallel,
 		warpPointCloudByCornersParallel
 	} from '$routes/map/utils/transform/georef';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import {
 		isStreetView,
 		mapMode,
@@ -189,6 +194,20 @@
 	});
 	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<UploadFiles>(null); // ドロップしたファイル
+	let pendingUploadFiles: File[] = [];
+	let isStartingUploadSession = false;
+
+	const setUploadedDataEntry = (entry: MorivisLayerEntry | null) => {
+		if (!entry) {
+			showDataEntry = null;
+			return;
+		}
+
+		const uploadFiles = mergeUploadFiles(pendingUploadFiles, toUploadFiles(dropFile));
+		showDataEntry = withUploadFileDescription(entry, uploadFiles);
+		pendingUploadFiles = [];
+	};
+
 	let remoteGeoZarrUrl = $state<string | null>(null);
 	let remotePmtilesUrl = $state<string | null>(null);
 	let remoteRasterUrl = $state<string | null>(null);
@@ -273,6 +292,28 @@
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
 	let pendingZoneGeoRefData = $state.raw<PendingZoneGeoRefData | null>(null);
 	let transformOptionMode = $state<TransformOptionMode>(null);
+
+	const setUploadDialogType = (dialogType: DialogType) => {
+		if (dialogType && !showDialogType) {
+			const hasAlreadyReceivedFiles = toUploadFiles(dropFile).length > 0;
+			if (!hasAlreadyReceivedFiles) pendingUploadFiles = [];
+			isStartingUploadSession = !hasAlreadyReceivedFiles;
+		}
+		showDialogType = dialogType;
+	};
+
+	const setUploadDropFile = (files: UploadFiles) => {
+		const nextFiles = toUploadFiles(files);
+		if (nextFiles.length > 0) {
+			pendingUploadFiles =
+				!showDialogType || isStartingUploadSession
+					? nextFiles
+					: mergeUploadFiles(pendingUploadFiles, nextFiles);
+			isStartingUploadSession = false;
+		}
+		dropFile = files;
+	};
+
 	let isPreparingGeoRefData = $state(false);
 	let isModelPlacementActive = $derived(
 		transformOptionMode === 'georef' && !!showDataEntry && isThreeModelEntry(showDataEntry)
@@ -307,6 +348,8 @@
 		geoRefData = null;
 		showDialogType = null;
 		dropFile = null;
+		pendingUploadFiles = [];
+		isStartingUploadSession = false;
 	};
 
 	const finalizeGeoRefEntry = async (payload: GeoRefConfirmPayload) => {
@@ -359,8 +402,8 @@
 				debugLog.info(
 					`+page finalizeGeoRefEntry ベクター生成: id=${warpedEntry.id}, bounds=${warpedBbox.join(',')}`
 				);
+				setUploadedDataEntry(warpedEntry);
 				closeGeoRefUi();
-				showDataEntry = warpedEntry;
 				showNotification('ベクターの位置を設定しました', 'success');
 				return;
 			}
@@ -392,8 +435,8 @@
 				debugLog.info(
 					`+page finalizeGeoRefEntry 点群生成: id=${pointCloudEntry.id}, bounds=${bbox.join(',')}`
 				);
+				setUploadedDataEntry(pointCloudEntry);
 				closeGeoRefUi();
-				showDataEntry = pointCloudEntry;
 				showNotification('点群の位置を設定しました', 'success');
 				return;
 			}
@@ -467,8 +510,8 @@
 				}
 
 				debugLog.info(`+page finalizeGeoRefEntry メッシュ生成: id=${entry.id}`);
+				setUploadedDataEntry(entry);
 				closeGeoRefUi();
-				showDataEntry = entry;
 				showNotification('3Dメッシュを生成しました', 'success');
 				return;
 			}
@@ -542,8 +585,8 @@
 			debugLog.info(
 				`+page finalizeGeoRefEntry ラスター生成: id=${entry.id}, bounds=${bbox.join(',')}`
 			);
+			setUploadedDataEntry(entry);
 			closeGeoRefUi();
-			showDataEntry = entry;
 			showNotification('画像の位置を設定しました', 'success');
 		} catch (error) {
 			debugLog.error(
@@ -1191,7 +1234,7 @@
 				bind:maplibreMap={map}
 				bind:layerEntries
 				bind:tempLayerEntries
-				bind:showDataEntry
+				bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
 				bind:featureMenuData
 				bind:highlightMarkerState
 				bind:showSelectionMarker
@@ -1199,8 +1242,8 @@
 				bind:showAngleMarker
 				bind:angleMarkerLngLat
 				bind:cameraBearing
-				bind:dropFile
-				bind:showDialogType
+				bind:dropFile={() => dropFile, setUploadDropFile}
+				bind:showDialogType={() => showDialogType, setUploadDialogType}
 				bind:drawGeojsonData
 				{transformOptionMode}
 				bind:focusBbox
@@ -1278,7 +1321,7 @@
 							bind:maplibreMap={map}
 							bind:layerEntries
 							bind:tempLayerEntries
-							bind:showDataEntry
+							bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
 							bind:featureMenuData
 							bind:highlightMarkerState
 							bind:showSelectionMarker
@@ -1286,8 +1329,8 @@
 							bind:showAngleMarker
 							bind:angleMarkerLngLat
 							bind:cameraBearing
-							bind:dropFile
-							bind:showDialogType
+							bind:dropFile={() => dropFile, setUploadDropFile}
+							bind:showDialogType={() => showDialogType, setUploadDialogType}
 							bind:drawGeojsonData
 							{transformOptionMode}
 							bind:focusBbox
@@ -1363,8 +1406,8 @@
 			{#if !transformOptionMode}
 				<DataMenu
 					bind:showDataEntry
-					bind:dropFile
-					bind:showDialogType
+					bind:dropFile={() => dropFile, setUploadDropFile}
+					bind:showDialogType={() => showDialogType, setUploadDialogType}
 					bind:remoteGeoZarrUrl
 					bind:remotePmtilesUrl
 					bind:remoteRasterUrl
@@ -1419,10 +1462,10 @@
 		{#snippet children(UploadDialog)}
 			<UploadDialog
 				{map}
-				bind:showDialogType
-				bind:showDataEntry
+				bind:showDialogType={() => showDialogType, setUploadDialogType}
+				bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
 				bind:tempLayerEntries
-				bind:dropFile
+				bind:dropFile={() => dropFile, setUploadDropFile}
 				bind:remoteGeoZarrUrl
 				bind:remotePmtilesUrl
 				bind:remoteRasterUrl
@@ -1458,9 +1501,9 @@
 				bind:geoRefData
 				bind:geoRefPreviewData
 				bind:previewOpacity={geoRefPreviewOpacity}
-				bind:showDialogType
-				bind:showDataEntry
-				bind:dropFile
+				bind:showDialogType={() => showDialogType, setUploadDialogType}
+				bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
+				bind:dropFile={() => dropFile, setUploadDropFile}
 				bind:transformOptionMode
 				onZoneConfirm={(epsgCode: EpsgCode) => {
 					geoRefData = null;

@@ -787,14 +787,16 @@ describe('resolveDroppedFiles', () => {
 			}
 		});
 
-		const result = await resolveDroppedFiles([
-			createFile('model.kml', '<kml></kml>', 'application/vnd.google-earth.kml+xml')
-		]);
+		const files = [
+			createFile('test-model.kml', '<kml></kml>', 'application/vnd.google-earth.kml+xml')
+		];
+		const result = await resolveDroppedFiles(files);
 
 		expect(result).toEqual({
 			type: 'remote-kml-model',
 			name: 'Remote Model',
 			modelUrl: 'https://example.com/model.glb',
+			sourceFiles: files,
 			placement: {
 				name: 'Remote Model',
 				lng: 136.9,

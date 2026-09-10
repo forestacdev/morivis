@@ -12,6 +12,7 @@
 	import ShapeFileFormInput from './ShapeFileFormInput.svelte';
 
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
+	import { withUploadFileDescription } from '$routes/map/components/upload/upload-file-description';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
@@ -111,6 +112,10 @@
 	};
 
 	const toFiles = (value: UploadFilesInput): File[] => toUploadFiles(value);
+	const getSelectedFiles = (): File[] =>
+		[forms.shpFile, forms.dbfFile, forms.shxFile, forms.prjFile, cpgFile].filter(
+			(file): file is File => file instanceof File
+		);
 
 	const setFiles = (dropFile: UploadFilesInput) => {
 		const nextState = mergeShapeRelatedFiles(
@@ -205,7 +210,7 @@
 			{ attribution: 'Shapefile' }
 		);
 		if (entry) {
-			showDataEntry = entry;
+			showDataEntry = withUploadFileDescription(entry, getSelectedFiles());
 			showDialogType = null;
 		}
 		isProcessing.set(false);

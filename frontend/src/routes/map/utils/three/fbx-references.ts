@@ -1,3 +1,5 @@
+import { formatFbxMetadataDescription, parseFbxFileMetadata } from './fbx-metadata';
+
 const BINARY_HEADER_PREFIX = 'Kaydara FBX Binary  ';
 const PATH_PROPERTY_NAMES = new Set(['RelativeFilename', 'FileName', 'Filename']);
 
@@ -117,7 +119,12 @@ const collectBinaryReferences = (buffer: ArrayBuffer) => {
 	return relativePaths.size > 0 ? relativePaths : filePaths;
 };
 
-export const inspectFbxTextureReferences = async (file: File) => {
+export interface FbxFileInspection {
+	referencedTexturePaths: string[];
+	description: string;
+}
+
+export const inspectFbxFile = async (file: File): Promise<FbxFileInspection> => {
 	const buffer = await file.arrayBuffer();
 	const header = new TextDecoder().decode(
 		new Uint8Array(buffer).subarray(0, BINARY_HEADER_PREFIX.length)
@@ -125,5 +132,11 @@ export const inspectFbxTextureReferences = async (file: File) => {
 	const paths = header === BINARY_HEADER_PREFIX
 		? collectBinaryReferences(buffer)
 		: collectTextReferences(new TextDecoder().decode(buffer));
-	return [...paths];
+	return {
+		referencedTexturePaths: [...paths],
+		description: formatFbxMetadataDescription(parseFbxFileMetadata(buffer), file.size)
+	};
 };
+
+export const inspectFbxTextureReferences = async (file: File) =>
+	(await inspectFbxFile(file)).referencedTexturePaths;

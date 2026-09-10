@@ -48,6 +48,7 @@ export type UploadDropDecision =
 		type: 'remote-kml-model';
 		name: string;
 		modelUrl: string;
+		sourceFiles: File[];
 		placement?: {
 			lng: number;
 			lat: number;
@@ -252,6 +253,7 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 					type: 'remote-kml-model',
 					name: kmlModel.placement?.name?.trim() || kmlFile.name.replace(/\.[^.]+$/, ''),
 					modelUrl: kmlModel.modelUrl,
+					sourceFiles: files,
 					placement: kmlModel.placement
 				};
 			}
@@ -421,6 +423,7 @@ const resolveSingleFile = async (
 				type: 'remote-kml-model',
 				name: kmlModel.placement?.name?.trim() || file.name.replace(/\.[^.]+$/, ''),
 				modelUrl: kmlModel.modelUrl,
+				sourceFiles: [file],
 				placement: kmlModel.placement
 			};
 		}

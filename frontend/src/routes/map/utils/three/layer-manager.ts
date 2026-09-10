@@ -2,7 +2,6 @@ import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
 import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
 import {
 	type GaussianSplatEntry,
-	type GaussianSplatStyle,
 	type IfcPartColorProfile,
 	type MeshEntry,
 	type MeshStyle,
@@ -19,8 +18,8 @@ import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
 import {
 	applyFbxCurveGeometricTransform,
-	type FbxModelAttributes,
 	parseFbxModelAttributes,
+	resolveFbxModelAttributes,
 	setFbxCurveVisibility
 } from '$routes/map/utils/three/fbx-attributes';
 import {
@@ -1430,18 +1429,6 @@ export class ThreeJsLayerManager {
 		}
 
 		return '名称なし';
-	};
-
-	private getFbxAttributeObject = (object: THREE.Object3D) => {
-		let current: THREE.Object3D | null = object;
-		while (current) {
-			const attributes = current.userData.morivisFbxAttributes as
-				| FbxModelAttributes
-				| undefined;
-			if (attributes) return { object: current, attributes };
-			current = current.parent;
-		}
-		return { object, attributes: undefined };
 	};
 
 	private getIfcExpressId = (
@@ -3872,7 +3859,7 @@ export class ThreeJsLayerManager {
 		loaded: LoadedModel,
 		hit: THREE.Intersection<THREE.Object3D>
 	): Promise<PickedModelFeature> => {
-		const fbxAttributeObject = this.getFbxAttributeObject(hit.object);
+		const fbxAttributeObject = resolveFbxModelAttributes(hit.object, loaded.object);
 		const expressId = loaded.entry.format.type === 'ifc'
 			? this.getIfcExpressId(loaded.object, hit)
 			: undefined;

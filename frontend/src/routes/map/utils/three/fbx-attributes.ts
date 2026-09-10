@@ -3,10 +3,17 @@ import * as THREE from 'three';
 export type FbxAttributeValue = string | number | boolean | Array<string | number | boolean>;
 export type FbxModelAttributes = Record<string, FbxAttributeValue>;
 
+export interface ResolvedFbxModelAttributes {
+	object: THREE.Object3D;
+	attributes?: FbxModelAttributes;
+}
+
 const BINARY_HEADER_PREFIX = 'Kaydara FBX Binary  ';
 const DEFAULT_FBX_EULER_ORDER = 'ZYX';
 const IDENTITY_SCALE = new THREE.Vector3(1, 1, 1);
 const ZERO_VECTOR = new THREE.Vector3();
+const CIVIL3D_SEGMENT_ATTRIBUTE_PATTERN = /^Civil3D - Segment \d+ Data\b/i;
+const CIVIL3D_OMITTED_SEGMENT_COUNT_KEY = 'Civil3D - Segment Data:省略属性数';
 
 const getFbxVector3 = (value: FbxAttributeValue | undefined) => {
 	const values = Array.isArray(value)
@@ -103,6 +110,53 @@ export const setFbxCurveVisibility = (object: THREE.Object3D, visible: boolean) 
 			child.visible = visible;
 		}
 	});
+};
+
+/**
+ * 選択ノードから親方向へFBX属性を合成する。
+ *
+ * Civil 3D由来のFBXでは、描画される `curve N` Modelには管理属性しかなく、
+ * Alignment/Profile本体のCivil3D属性や画層は親Modelに付く。子側を優先しつつ
+ * 親属性を継承しないと、曲線を選択したときに測点範囲などが欠落する。
+ */
+export const resolveFbxModelAttributes = (
+	object: THREE.Object3D,
+	root?: THREE.Object3D
+): ResolvedFbxModelAttributes => {
+	const attributes: FbxModelAttributes = {};
+	let omittedCivil3dSegmentCount = 0;
+	let attributeObject = object;
+	let hasAttributes = false;
+	let current: THREE.Object3D | null = object;
+	while (current) {
+		const currentAttributes = current.userData.morivisFbxAttributes as
+			| FbxModelAttributes
+			| undefined;
+		if (currentAttributes) {
+			if (!hasAttributes) attributeObject = current;
+			Object.entries(currentAttributes).forEach(([key, value]) => {
+				// Alignmentには数千区間分の同型属性が付くことがある。全件をDOMへ渡すと
+				// 属性パネルが実用にならないため、概要・Geometry・Sub-entityは残し、
+				// 反復するSegment属性だけを件数へ畳む。生属性は各ノードのuserDataに残る。
+				if (CIVIL3D_SEGMENT_ATTRIBUTE_PATTERN.test(key)) {
+					omittedCivil3dSegmentCount += 1;
+					return;
+				}
+				if (!(key in attributes)) attributes[key] = value;
+			});
+			hasAttributes = true;
+		}
+		if (current === root) break;
+		current = current.parent;
+	}
+	if (omittedCivil3dSegmentCount > 0) {
+		attributes[CIVIL3D_OMITTED_SEGMENT_COUNT_KEY] = omittedCivil3dSegmentCount;
+	}
+
+	return {
+		object: attributeObject,
+		attributes: hasAttributes ? attributes : undefined
+	};
 };
 
 export const parseFbxModelAttributes = (
