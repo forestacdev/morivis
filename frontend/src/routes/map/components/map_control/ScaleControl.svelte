@@ -5,7 +5,13 @@
 	import { type Map as MapLibreMap } from '$routes/map/utils/maplibre';
 	import { checkMobileWidth } from '$routes/map/utils/platform/viewport';
 	import { mapStore } from '$routes/stores/map';
-	import { isMobile, showDataMenu, showLayerMenu, showOtherMenu } from '$routes/stores/ui';
+	import {
+		isMobile,
+		showDataMenu,
+		showLayerMenu,
+		showOtherMenu,
+		showModelView
+	} from '$routes/stores/ui';
 
 	let controlContainer = $state<HTMLDivElement | null>(null);
 	let scaleElement = $state<HTMLDivElement | null>(null);
@@ -130,7 +136,11 @@
 			: 'left-[15px]'}"
 		bind:this={controlContainer}
 	>
-		<div class="bg-opacity-80 px-2 font-mono text-[0.6rem] shadow-sm">
+		<div
+			class="bg-opacity-80 px-2 font-mono text-[0.6rem] shadow-sm {$showModelView
+				? 'hidden'
+				: 'block'}"
+		>
 			<div
 				bind:this={scaleElement}
 				class="border-base border-r-2 border-b-2 border-l-2 pl-2 text-left leading-none"

@@ -1,0 +1,214 @@
+import type { ModelLocalBounds, ModelTransformStyle } from '$routes/map/data/types/model';
+import { MercatorCoordinate } from '$routes/map/utils/maplibre';
+import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
+import * as THREE from 'three';
+
+export type ModelScaleHandleKey =
+	| 'min-min-min'
+	| 'min-min-max'
+	| 'min-max-min'
+	| 'min-max-max'
+	| 'max-min-min'
+	| 'max-min-max'
+	| 'max-max-min'
+	| 'max-max-max';
+
+export interface ModelScaleHandle {
+	key: ModelScaleHandleKey;
+	position: [number, number, number];
+}
+
+export type ModelPlacementTransform = ModelTransformStyle['transform'];
+
+const OPPOSITE_HANDLE: Record<ModelScaleHandleKey, ModelScaleHandleKey> = {
+	'min-min-min': 'max-max-max',
+	'min-min-max': 'max-max-min',
+	'min-max-min': 'max-min-max',
+	'min-max-max': 'max-min-min',
+	'max-min-min': 'min-max-max',
+	'max-min-max': 'min-max-min',
+	'max-max-min': 'min-min-max',
+	'max-max-max': 'min-min-min'
+};
+
+export const getModelScaleHandles = (localBounds: ModelLocalBounds): ModelScaleHandle[] => {
+	const [minX, minY, minZ, maxX, maxY, maxZ] = localBounds;
+	return [
+		{ key: 'min-min-min', position: [minX, minY, minZ] },
+		{ key: 'min-min-max', position: [minX, minY, maxZ] },
+		{ key: 'min-max-min', position: [minX, maxY, minZ] },
+		{ key: 'min-max-max', position: [minX, maxY, maxZ] },
+		{ key: 'max-min-min', position: [maxX, minY, minZ] },
+		{ key: 'max-min-max', position: [maxX, minY, maxZ] },
+		{ key: 'max-max-min', position: [maxX, maxY, minZ] },
+		{ key: 'max-max-max', position: [maxX, maxY, maxZ] }
+	] as ModelScaleHandle[];
+};
+
+export const getOppositeModelScaleHandle = (
+	localBounds: ModelLocalBounds,
+	handleKey: ModelScaleHandleKey
+): ModelScaleHandle => {
+	const oppositeKey = OPPOSITE_HANDLE[handleKey];
+	const opposite = getModelScaleHandles(localBounds).find(({ key }) => key === oppositeKey);
+	if (!opposite) throw new Error(`Opposite model scale handle not found: ${handleKey}`);
+	return opposite;
+};
+
+export const isModelPlacementBoundsHit = ({
+	canvasHeight,
+	canvasWidth,
+	clientX,
+	clientY,
+	localBounds,
+	localToClipMatrix
+}: {
+	canvasHeight: number;
+	canvasWidth: number;
+	clientX: number;
+	clientY: number;
+	localBounds: ModelLocalBounds;
+	localToClipMatrix: THREE.Matrix4;
+}): boolean => {
+	if (canvasWidth <= 0 || canvasHeight <= 0) return false;
+	const ndcX = (clientX / canvasWidth) * 2 - 1;
+	const ndcY = 1 - (clientY / canvasHeight) * 2;
+	const clipToLocalMatrix = localToClipMatrix.clone().invert();
+	const near = new THREE.Vector3(ndcX, ndcY, -1).applyMatrix4(clipToLocalMatrix);
+	const far = new THREE.Vector3(ndcX, ndcY, 1).applyMatrix4(clipToLocalMatrix);
+	if (![...near.toArray(), ...far.toArray()].every(Number.isFinite)) return false;
+
+	const rayLength = near.distanceTo(far);
+	if (rayLength <= Number.EPSILON) return false;
+	const ray = new THREE.Ray(near, far.clone().sub(near).normalize());
+	const [minX, minY, minZ, maxX, maxY, maxZ] = localBounds;
+	const hit = ray.intersectBox(
+		new THREE.Box3(
+			new THREE.Vector3(minX, minY, minZ),
+			new THREE.Vector3(maxX, maxY, maxZ)
+		),
+		new THREE.Vector3()
+	);
+
+	return hit !== null && hit.distanceTo(near) <= rayLength + 1e-6;
+};
+
+export const getModelScaleFromHandleDrag = ({
+	currentDistance,
+	startDistance,
+	startScale
+}: {
+	currentDistance: number;
+	startDistance: number;
+	startScale: number;
+}): number => {
+	if (
+		!Number.isFinite(currentDistance)
+		|| !Number.isFinite(startDistance)
+		|| !Number.isFinite(startScale)
+		|| startDistance <= Number.EPSILON
+	) {
+		return startScale;
+	}
+
+	const scale = startScale * (currentDistance / startDistance);
+	return Number.isFinite(scale) ? scale : startScale;
+};
+
+const getEffectiveAltitude = (transform: ModelPlacementTransform, terrainEnabled: boolean) =>
+	(terrainEnabled ? transform.altitude : 0) + (transform.heightOffset ?? 0);
+
+const offsetTransformAnchor = (
+	transform: ModelPlacementTransform,
+	offset: THREE.Vector3,
+	terrainEnabled: boolean
+): ModelPlacementTransform => {
+	const anchor = MercatorCoordinate.fromLngLat(
+		{ lng: transform.lng, lat: transform.lat },
+		getEffectiveAltitude(transform, terrainEnabled)
+	);
+	const movedAnchor = new MercatorCoordinate(
+		anchor.x + offset.x,
+		anchor.y + offset.y,
+		anchor.z + offset.z
+	);
+	const lngLat = movedAnchor.toLngLat();
+	const effectiveAltitude = movedAnchor.toAltitude();
+
+	return {
+		...transform,
+		lng: lngLat.lng,
+		lat: lngLat.lat,
+		...(terrainEnabled
+			? { altitude: effectiveAltitude - (transform.heightOffset ?? 0) }
+			: { heightOffset: effectiveAltitude })
+	};
+};
+
+export const preserveModelLocalPointPosition = ({
+	fixedLocalPosition,
+	nextTransform,
+	startTransform,
+	terrainEnabled
+}: {
+	fixedLocalPosition: [number, number, number];
+	nextTransform: ModelPlacementTransform;
+	startTransform: ModelPlacementTransform;
+	terrainEnabled: boolean;
+}): ModelPlacementTransform => {
+	const localPoint = new THREE.Vector3(...fixedLocalPosition);
+	const fixedWorldPosition = localPoint
+		.clone()
+		.applyMatrix4(buildMercatorModelMatrix(startTransform, terrainEnabled));
+	let result = { ...nextTransform };
+
+	// 緯度が変わるとメートル換算係数も変わるため、支点誤差を数回収束させる。
+	for (let index = 0; index < 4; index += 1) {
+		const nextWorldPosition = localPoint
+			.clone()
+			.applyMatrix4(buildMercatorModelMatrix(result, terrainEnabled));
+		result = offsetTransformAnchor(
+			result,
+			fixedWorldPosition.clone().sub(nextWorldPosition),
+			terrainEnabled
+		);
+	}
+
+	return result;
+};
+
+export const keepModelPlacementAboveGround = ({
+	groundAltitudeAt,
+	localBounds,
+	transform,
+	terrainEnabled
+}: {
+	groundAltitudeAt: (lng: number, lat: number) => number;
+	localBounds: ModelLocalBounds;
+	transform: ModelPlacementTransform;
+	terrainEnabled: boolean;
+}): ModelPlacementTransform => {
+	let result = { ...transform };
+
+	// 緯度によって Mercator のメートル換算が変わるため、持ち上げ量を数回収束させる。
+	for (let index = 0; index < 4; index += 1) {
+		const matrix = buildMercatorModelMatrix(result, terrainEnabled);
+		let requiredLift = 0;
+
+		getModelScaleHandles(localBounds).forEach(({ position }) => {
+			const world = new THREE.Vector3(...position).applyMatrix4(matrix);
+			const coordinate = new MercatorCoordinate(world.x, world.y, world.z);
+			const lngLat = coordinate.toLngLat();
+			const groundAltitude = groundAltitudeAt(lngLat.lng, lngLat.lat);
+			if (!Number.isFinite(groundAltitude)) return;
+			requiredLift = Math.max(requiredLift, groundAltitude - coordinate.toAltitude());
+		});
+
+		if (requiredLift <= 1e-6) break;
+		result = terrainEnabled
+			? { ...result, altitude: result.altitude + requiredLift }
+			: { ...result, heightOffset: (result.heightOffset ?? 0) + requiredLift };
+	}
+
+	return result;
+};

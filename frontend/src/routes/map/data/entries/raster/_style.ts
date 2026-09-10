@@ -1,7 +1,8 @@
-import type {
-	RasterBaseMapStyle,
-	RasterCategoricalStyle,
-	RasterDemStyle
+import {
+	DEFAULT_DEM_SHADOW_STYLE,
+	type RasterBaseMapStyle,
+	type RasterCategoricalStyle,
+	type RasterDemStyle
 } from '$routes/map/data/types/raster';
 
 export const DEFAULT_RASTER_BASEMAP_STYLE: RasterBaseMapStyle = {
@@ -52,6 +53,7 @@ export const DEFAULT_RASTER_DEM_STYLE: RasterDemStyle = {
 			aspect: {
 				colorMap: 'rainbow-soft'
 			},
+			shadow: { ...DEFAULT_DEM_SHADOW_STYLE },
 			curvature: {
 				colorMap: 'rdbu'
 			}

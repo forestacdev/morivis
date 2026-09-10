@@ -1,9 +1,9 @@
 import { enhancedImages } from '@sveltejs/enhanced-img';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import path from 'path';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { qrcode } from 'vite-plugin-qrcode';
+import { lazySvelteKitPWA } from './scripts/pwa-precache';
 import { buildViteProxyConfig } from './src/routes/map/utils/platform/proxy';
 
 // @devantic/diaper の自動CSSインジェクトを無効化するプラグイン
@@ -21,6 +21,11 @@ const diaperCssOverridePlugin: Plugin = {
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
+	const lazyPrecacheIgnores = [
+		'**/*.wasm',
+		'client/_app/immutable/workers/**',
+		'client/{draco,basis,rhino3dm,web-ifc,vendor}/**'
+	];
 
 	return {
 		plugins: [
@@ -28,7 +33,7 @@ export default defineConfig(({ mode }) => {
 			sveltekit(),
 			qrcode(),
 			enhancedImages(),
-			SvelteKitPWA({
+			lazySvelteKitPWA({
 				// PWA用の設定
 				includeAssets: [
 					'favicon.ico',
@@ -103,7 +108,20 @@ export default defineConfig(({ mode }) => {
 					enabled: true
 				},
 				workbox: {
-					maximumFileSizeToCacheInBytes: 10 * 1024 * 1024 // 10MB に拡張
+					globIgnores: lazyPrecacheIgnores,
+					maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+					// ハッシュ付きの追加モジュールは、実際に使用したものだけキャッシュする。
+					runtimeCaching: [{
+						urlPattern: ({ url, sameOrigin }) =>
+							sameOrigin && url.pathname.includes('/_app/immutable/')
+							&& /\.(?:[cm]?js|wasm)$/.test(url.pathname),
+						handler: 'CacheFirst',
+						options: {
+							cacheName: 'morivis-lazy-modules',
+							expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 },
+							cacheableResponse: { statuses: [200] }
+						}
+					}]
 				}
 			})
 		],
@@ -124,7 +142,7 @@ export default defineConfig(({ mode }) => {
 			proxy: buildViteProxyConfig(env)
 		},
 		test: {
-			include: ['src/**/*.{test,spec}.{js,ts}'],
+			include: ['src/**/*.{test,spec}.{js,ts}', 'scripts/**/*.{test,spec}.{js,ts}'],
 			setupFiles: ['./vitest.setup.ts']
 		}
 	};

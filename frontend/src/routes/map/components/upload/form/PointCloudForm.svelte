@@ -24,7 +24,18 @@
 		getMinMax,
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
+	import { getLasProjection } from '$routes/map/utils/formats/las';
 	import { parseObjPointCloudFile } from '$routes/map/utils/formats/obj';
+	import {
+		getPointCloudBbox,
+		normalizePointCloudUpAxis,
+		type PointCloudUpAxis
+	} from '$routes/map/utils/formats/pointcloud/axis';
+	import {
+		createPointCloudMeterOffsets,
+		type PointCloudMeterOffsets,
+		type PointCloudSourcePositions
+	} from '$routes/map/utils/formats/pointcloud/coordinate-offsets';
 	import { rasterizePointCloudToDemInWorker } from '$routes/map/utils/formats/pointcloud/rasterize';
 	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { parseXyzFile } from '$routes/map/utils/formats/xyz';
@@ -75,10 +86,16 @@
 	let registrationMode = $state<'pointcloud' | 'raster'>('pointcloud');
 	let rasterResolution = $state(1024);
 	let pendingRegistrationAfterTransform = $state(false);
+	let projectedPointCloud: PointCloudMeterOffsets | null = null;
+	let plyUpAxis = $state<PointCloudUpAxis>('z-up');
 
 	const registrationModeOptions = [
 		{ key: 'pointcloud', name: '点群' },
 		{ key: 'raster', name: 'DEMラスター' }
+	];
+	const plyUpAxisOptions = [
+		{ key: 'z-up', name: 'Z-up（測量・点群）' },
+		{ key: 'y-up', name: 'Y-up（3Dモデル系）' }
 	];
 
 	const pointCloudFile = $derived.by(() => {
@@ -105,12 +122,58 @@
 	$effect(() => {
 		if (pointCloudFile) {
 			entryName = getPointCloudEntryName(pointCloudFile.name);
-			analyzePointCloud(pointCloudFile);
+			analyzePointCloud(
+				pointCloudFile,
+				isPlyPointCloudFile(pointCloudFile.name) ? plyUpAxis : 'z-up'
+			);
 		}
 	});
 
 	const isTextPointCloudFile = (fileName: string) => /\.(xyz|txt)$/i.test(fileName);
 	const isObjPointCloudFile = (fileName: string) => /\.obj$/i.test(fileName);
+	const isPlyPointCloudFile = (fileName: string) => /\.ply$/i.test(fileName);
+	const isLasPointCloudFile = (fileName: string) => /\.(las|laz)$/i.test(fileName);
+	const transformPositions = transformPointCloudParallel;
+	const transformPointCloudData = async (
+		sourceBbox: [number, number, number, number],
+		positions: Float32Array,
+		projectionDefinition: string
+	) => {
+		const bbox = await transformBbox(sourceBbox, projectionDefinition);
+		if (!isBboxValid(bbox)) {
+			throw new Error('座標変換に失敗しました。座標系を確認してください');
+		}
+
+		return {
+			bbox,
+			positions: await transformPositions(positions, projectionDefinition)
+		};
+	};
+	const createProjectedPointCloud = async (
+		sourceBbox: [number, number, number, number],
+		positions: PointCloudSourcePositions,
+		projectionDefinition: string
+	) => {
+		const bbox = await transformBbox(sourceBbox, projectionDefinition);
+		if (!isBboxValid(bbox)) {
+			throw new Error('座標変換に失敗しました。座標系を確認してください');
+		}
+
+		const projectedOrigin: [number, number] = [
+			(sourceBbox[0] + sourceBbox[2]) / 2,
+			(sourceBbox[1] + sourceBbox[3]) / 2
+		];
+		const coordinateOrigin: [number, number, number] = [
+			(bbox[0] + bbox[2]) / 2,
+			(bbox[1] + bbox[3]) / 2,
+			0
+		];
+
+		return {
+			bbox,
+			pointCloud: createPointCloudMeterOffsets(positions, projectedOrigin, coordinateOrigin)
+		};
+	};
 	const getPointCloudErrorMessage = (error: unknown) => {
 		if (!(error instanceof Error)) {
 			return '点群ファイルの解析に失敗しました';
@@ -123,7 +186,7 @@
 		return error.message;
 	};
 
-	const analyzePointCloud = async (file: File) => {
+	const analyzePointCloud = async (file: File, upAxis: PointCloudUpAxis) => {
 		isProcessing.set(true);
 		analyzed = false;
 		pointCount = null;
@@ -134,11 +197,13 @@
 		resolvedColors = undefined;
 		needsTransform = false;
 		pendingRegistrationAfterTransform = false;
+		projectedPointCloud = null;
 
 		try {
-			let positions: Float32Array | null = null;
+			let positions: PointCloudSourcePositions | null = null;
 			let colors: Uint8Array | undefined = undefined;
 			let bbox: [number, number, number, number] | null = null;
+			let detectedProjection: ReturnType<typeof getLasProjection> = null;
 
 			if (isCopcFileName(file.name)) {
 				const result = await parseCopcFile(file);
@@ -147,6 +212,7 @@
 				pointCount = result.pointCount;
 				sourcePointCount = result.sourcePointCount;
 				bbox = result.bbox;
+				detectedProjection = result.projection;
 			} else if (isTextPointCloudFile(file.name)) {
 				// XYZ テキスト形式
 				const result = await parseXyzFile(file);
@@ -194,13 +260,22 @@
 				// LAS/LAZ/PLY/PCD (loaders.gl)
 				const arrayBuffer = await file.arrayBuffer();
 				parsedArrayBuffer = arrayBuffer.slice(0);
+				if (isLasPointCloudFile(file.name)) {
+					detectedProjection = getLasProjection(arrayBuffer);
+				}
 
-				const loader = getLoader(file.name);
-				const data = await parse(arrayBuffer, loader);
+				const data = isLasPointCloudFile(file.name)
+					? await parse(arrayBuffer, LASLoader, { las: { fp64: true } })
+					: await parse(arrayBuffer, getLoader(file.name));
 
 				const pos = data.attributes?.POSITION?.value;
 				if (pos) {
-					positions = pos instanceof Float32Array ? pos : new Float32Array(pos);
+					positions =
+						pos instanceof Float64Array
+							? pos
+							: pos instanceof Float32Array
+								? pos
+								: new Float32Array(pos);
 					pointCount = positions.length / 3;
 				}
 
@@ -211,10 +286,65 @@
 					const [mins, maxs] = data.header.boundingBox;
 					bbox = [mins[0], mins[1], maxs[0], maxs[1]];
 				}
+
+				if (isPlyPointCloudFile(file.name) && positions) {
+					positions = normalizePointCloudUpAxis(positions, upAxis);
+					bbox = getPointCloudBbox(positions);
+				}
 			}
 
 			rawBbox = bbox;
 			analyzed = true;
+
+			if (
+				rawBbox &&
+				positions &&
+				detectedProjection?.coordinateType === 'projected' &&
+				detectedProjection.definition.includes('+units=m')
+			) {
+				try {
+					const transformed = await createProjectedPointCloud(
+						rawBbox,
+						positions,
+						detectedProjection.definition
+					);
+					resolvedBbox = transformed.bbox;
+					projectedPointCloud = transformed.pointCloud;
+					resolvedColors = colors;
+					showNotification(
+						detectedProjection.epsg
+							? `埋め込み座標系 EPSG:${detectedProjection.epsg} を認識して自動配置しました`
+							: '埋め込み座標系を認識して自動配置しました',
+						'success'
+					);
+					return;
+				} catch (error) {
+					console.warn('LAS の埋め込み座標系による自動配置に失敗しました', error);
+				}
+			}
+			if (positions instanceof Float64Array) positions = new Float32Array(positions);
+
+			if (rawBbox && positions && detectedProjection) {
+				try {
+					const transformed = await transformPointCloudData(
+						rawBbox,
+						positions,
+						detectedProjection.definition
+					);
+					resolvedBbox = transformed.bbox;
+					resolvedPositions = transformed.positions;
+					resolvedColors = colors;
+					showNotification(
+						detectedProjection.epsg
+							? `埋め込み座標系 EPSG:${detectedProjection.epsg} を認識して自動配置しました`
+							: '埋め込み座標系を認識して自動配置しました',
+						'success'
+					);
+					return;
+				} catch (error) {
+					console.warn('LAS の埋め込み座標系による自動配置に失敗しました', error);
+				}
+			}
 
 			if (rawBbox && isBboxValid(rawBbox)) {
 				resolvedBbox = rawBbox;
@@ -252,18 +382,7 @@
 		isProcessing.set(true);
 
 		try {
-			// bbox変換
 			const prjContent = getProjContext(epsgCode);
-			const transformed = await transformBbox(rawBbox, prjContent);
-
-			if (!isBboxValid(transformed)) {
-				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
-				return;
-			}
-
-			resolvedBbox = transformed;
-
-			// 点群座標を取得（XYZの場合は既にresolvedPositionsにある）
 			let positions: Float32Array | null = resolvedPositions;
 
 			if (!positions && parsedArrayBuffer) {
@@ -280,9 +399,10 @@
 				return;
 			}
 
-			const transformedPositions = await transformPositions(positions, prjContent);
-
-			resolvedPositions = transformedPositions;
+			const transformed = await transformPointCloudData(rawBbox, positions, prjContent);
+			resolvedBbox = transformed.bbox;
+			resolvedPositions = transformed.positions;
+			needsTransform = false;
 
 			showNotification(
 				`EPSG:${epsgCode} で座標変換しました（${pointCount?.toLocaleString()}点）`,
@@ -301,8 +421,6 @@
 			isProcessing.set(false);
 		}
 	};
-
-	const transformPositions = transformPointCloudParallel;
 
 	const preparePointCloudRasterGeoRef = async () => {
 		if (!resolvedPositions || !pointCloudFile) return false;
@@ -374,7 +492,7 @@
 	};
 
 	const registration = async () => {
-		if (!analyzed || !resolvedPositions || !pointCount) return;
+		if (!analyzed || (!resolvedPositions && !projectedPointCloud) || !pointCount) return;
 
 		if (!resolvedBbox) {
 			if (!rawBbox || !needsTransform) return;
@@ -386,6 +504,10 @@
 		}
 
 		if (registrationMode === 'raster') {
+			if (!resolvedPositions) {
+				showNotification('自動配置した点群は DEM ラスター化に未対応です', 'warning');
+				return;
+			}
 			isProcessing.set(true);
 
 			try {
@@ -479,12 +601,14 @@
 			}
 		}
 
+		const pointCloudData = projectedPointCloud ?? { positions: resolvedPositions! };
 		const entry = createPointCloudEntry(
 			entryName || '点群データ',
 			{
-				positions: resolvedPositions,
+				positions: pointCloudData.positions,
 				colors: resolvedColors,
-				pointCount
+				pointCount,
+				coordinateOrigin: projectedPointCloud?.coordinateOrigin
 			},
 			resolvedBbox
 		);
@@ -532,6 +656,7 @@
 	const cancel = () => {
 		resolvedPositions = null;
 		resolvedColors = undefined;
+		projectedPointCloud = null;
 		parsedArrayBuffer = null;
 		showDialogType = null;
 		dropFile = null;
@@ -554,6 +679,12 @@
 	{/if}
 
 	{#if analyzed}
+		{#if pointCloudFile && isPlyPointCloudFile(pointCloudFile.name)}
+			<div class="w-full p-2">
+				<HorizontalSelectBox label="上方向" bind:group={plyUpAxis} options={plyUpAxisOptions} />
+			</div>
+		{/if}
+
 		<div class="flex w-full flex-col gap-1 px-2 text-sm text-gray-300">
 			{#if pointCount !== null}
 				<div>点数: {pointCount.toLocaleString()}</div>

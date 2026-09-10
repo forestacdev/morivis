@@ -1,19 +1,15 @@
 import { delay } from 'es-toolkit';
 
-import {
-	getImageByName,
-	getTaxonomyByJapaneseName,
-	RANK_NAMES_JA,
-	type TaxonomicRank
-} from '$routes/map/api/inaturalist';
+import { getImageByName } from '$routes/map/api/inaturalist';
 import { getWikipediaArticle, type WikiArticle } from '$routes/map/api/wikipedia';
-import { type MediaData, propData } from '$routes/map/data/entries/_prop_data';
 import {
 	ProtectionForestNameToCodeDict,
 	ProtectionForestTypes
 } from '$routes/map/data/forest/protection_forest';
 import { getTimberSpeciesData } from '$routes/map/data/forest/timber_species';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
+import type { MediaData } from '$routes/map/data/types/details';
+import type { Relations } from '$routes/map/data/types/vector/properties';
 import { formatFieldValue } from '$routes/map/data/types/vector/properties';
 import type {
 	FeatureMenuData,
@@ -28,22 +24,28 @@ export const hasFeaturePanelSummaryContent = (summary: FeaturePanelSummaryData):
 		summary.description?.linkUrl
 			|| summary.description?.text.trim()
 			|| summary.timberSpecies
-			|| summary.taxonomy?.length
 		// summary.protectionForestDescription?.trim()
 		// summary.point ||
 	);
 };
 
+const getLayerRelations = (targetLayer: MorivisLayerEntry | null): Relations | undefined => {
+	if (targetLayer?.type === 'vector') return targetLayer.properties.attributeView.relations;
+	if (targetLayer?.type === 'model') return targetLayer.properties?.attributeView?.relations;
+	return undefined;
+};
+
 // _prop_data.ts の静的メディア定義を FeaturePanel 用メディア形式に変換する。
 const convertMediaData = (
 	media: MediaData,
-	targetLayer: MorivisLayerEntry | null
+	targetLayer: MorivisLayerEntry | null,
+	title = targetLayer?.metaData.name
 ): FeaturePanelMedia => {
 	if (media.type === 'image') {
 		return {
 			type: 'image',
 			url: media.url,
-			alt: targetLayer?.metaData.name ?? '画像',
+			alt: title ?? '画像',
 			source: 'static',
 			fit: 'cover'
 		};
@@ -53,7 +55,7 @@ const convertMediaData = (
 		return {
 			type: 'youtube',
 			url: `https://www.youtube.com/embed/${media.id}`,
-			title: targetLayer?.metaData.name ?? 'YouTube video'
+			title: title ?? 'YouTube video'
 		};
 	}
 
@@ -61,14 +63,14 @@ const convertMediaData = (
 		return {
 			type: 'video',
 			url: media.url,
-			title: targetLayer?.metaData.name ?? '動画'
+			title: title ?? '動画'
 		};
 	}
 
 	return {
 		type: 'audio',
 		url: media.url,
-		title: targetLayer?.metaData.name ?? '音声',
+		title: title ?? '音声',
 		source: 'static'
 	};
 };
@@ -77,15 +79,18 @@ const convertMediaData = (
 const getLayerFeatureMedia = async (
 	featureMenuData: FeatureMenuData,
 	targetLayer: MorivisLayerEntry | null,
-	iNaturalistData?: Awaited<ReturnType<typeof getImageByName>> | null
+	iNaturalistData?: Awaited<ReturnType<typeof getImageByName>> | null,
+	modelPart?: FeatureMenuData['modelPart']
 ): Promise<FeaturePanelMedia[]> => {
-	const data = featureMenuData.properties
-		? propData[featureMenuData.properties._prop_id as string]
-		: null;
+	const propId = featureMenuData.properties?._prop_id;
+	const data = targetLayer?.type === 'vector' && typeof propId === 'string'
+		? targetLayer.properties.detailsById?.[propId]
+		: undefined;
 
 	const fetchMedia = async (): Promise<FeaturePanelMedia[]> => {
-		if (data?.medias && data.medias.length > 0) {
-			return data.medias.map((media) => convertMediaData(media, targetLayer));
+		const medias = modelPart?.medias ?? data?.medias;
+		if (medias && medias.length > 0) {
+			return medias.map((media) => convertMediaData(media, targetLayer, modelPart?.name));
 		}
 
 		const url = targetLayer && targetLayer.type === 'vector'
@@ -104,9 +109,9 @@ const getLayerFeatureMedia = async (
 			];
 		}
 
-		const iNaturalistNameKey = targetLayer && targetLayer.type === 'vector'
-			? targetLayer.properties.attributeView.relations?.iNaturalistNameKey
-			: null;
+		const iNaturalistNameKey = targetLayer?.type === 'vector'
+			? getLayerRelations(targetLayer)?.iNaturalistNameKey
+			: undefined;
 
 		if (iNaturalistNameKey && featureMenuData.properties) {
 			const name = featureMenuData.properties[iNaturalistNameKey] as string;
@@ -140,39 +145,6 @@ const getWikipediaArticleForINaturalist = async (
 	if (!commonName?.trim()) return null;
 
 	return getWikipediaArticle(commonName);
-};
-
-// iNaturalist の和名から、概要欄に出すリンネ分類を整形する。
-const getTaxonomyItemsForINaturalist = async (
-	commonName?: string
-): Promise<Array<{ label: string; value: string; }> | undefined> => {
-	if (!commonName?.trim()) return undefined;
-
-	const taxonomy = await getTaxonomyByJapaneseName(commonName);
-	if (!taxonomy) return undefined;
-
-	const ranks: TaxonomicRank[] = [
-		'kingdom',
-		'phylum',
-		'class',
-		'order',
-		'family',
-		'genus',
-		'species'
-	];
-	const items = ranks
-		.map((rank) => {
-			const info = taxonomy[rank];
-			if (!info) return null;
-
-			return {
-				label: RANK_NAMES_JA[rank],
-				value: info.commonName || info.name
-			};
-		})
-		.filter((item): item is { label: string; value: string; } => item !== null);
-
-	return items.length > 0 ? items : undefined;
 };
 
 // 国有林レイヤーでは、保安林種別名から保安林説明辞書を引けるようにする。
@@ -223,11 +195,17 @@ const getTimberSpeciesSummary = (
 	}
 	| undefined =>
 {
-	if (!targetLayer || targetLayer.type !== 'vector' || !featureMenuData.properties) {
+	if (
+		!targetLayer
+		|| (targetLayer.type !== 'vector' && targetLayer.type !== 'model')
+		|| !featureMenuData.properties
+	) {
 		return undefined;
 	}
 
-	const timberSpeciesNameKey = targetLayer.properties.attributeView.relations?.iNaturalistNameKey;
+	const relations = getLayerRelations(targetLayer);
+	// TODO: 木材辞書の属性キーとiNaturalistの検索キーを兼用している既存エントリーを、個別のキー設定へ移行する。
+	const timberSpeciesNameKey = relations?.timberSpeciesNameKey ?? relations?.iNaturalistNameKey;
 	if (!timberSpeciesNameKey) {
 		return undefined;
 	}
@@ -259,11 +237,17 @@ export const getLayerFeaturePanelSummary = async (
 	featureMenuData: FeatureMenuData,
 	layerEntries: MorivisLayerEntry[]
 ): Promise<FeaturePanelSummaryData | null> => {
+	const modelPart = featureMenuData.modelPart;
 	const targetLayer = layerEntries.find((entry) => entry.id === featureMenuData.layerId) ?? null;
-	const data = featureMenuData.properties
-		? propData[featureMenuData.properties._prop_id as string]
-		: null;
 	const propId = featureMenuData.properties?._prop_id;
+	const modelObjectName = targetLayer?.type === 'model'
+			&& typeof featureMenuData.properties?.['オブジェクト名'] === 'string'
+		? featureMenuData.properties['オブジェクト名']
+		: undefined;
+	const modelPartTitle = modelPart?.name ?? modelObjectName;
+	const data = targetLayer?.type === 'vector' && typeof propId === 'string'
+		? targetLayer.properties.detailsById?.[propId]
+		: undefined;
 	const descriptionKey = targetLayer && targetLayer.type === 'vector'
 		? targetLayer.properties.attributeView.descriptionKey
 		: null;
@@ -275,31 +259,40 @@ export const getLayerFeaturePanelSummary = async (
 		: null;
 	const protectionForestSummary = getProtectionForestDescription(targetLayer, featureMenuData);
 	const timberSpecies = getTimberSpeciesSummary(targetLayer, featureMenuData);
-	const iNaturalistNameKey = targetLayer && targetLayer.type === 'vector'
-		? targetLayer.properties.attributeView.relations?.iNaturalistNameKey
-		: null;
+	const iNaturalistNameKey = targetLayer?.type === 'vector'
+		? getLayerRelations(targetLayer)?.iNaturalistNameKey
+		: undefined;
 	const iNaturalistName = iNaturalistNameKey && featureMenuData.properties
 		? (featureMenuData.properties[iNaturalistNameKey] as string)
 		: null;
 
 	// 外部連携で取るものは並列で取得する。
-	const [iNaturalistData, wikipediaArticle, taxonomy] = await Promise.all([
+	const [iNaturalistData, wikipediaArticle] = await Promise.all([
 		iNaturalistName ? getImageByName(iNaturalistName) : Promise.resolve(null),
-		!data?.description && iNaturalistName
+		!modelPart?.description && !data?.description && iNaturalistName
 			? getWikipediaArticleForINaturalist(iNaturalistName)
-			: Promise.resolve(null),
-		iNaturalistName
-			? getTaxonomyItemsForINaturalist(iNaturalistName)
-			: Promise.resolve(undefined)
+			: Promise.resolve(null)
 	]);
 
-	const media = await getLayerFeatureMedia(featureMenuData, targetLayer, iNaturalistData);
+	const media = await getLayerFeatureMedia(
+		featureMenuData,
+		targetLayer,
+		iNaturalistData,
+		modelPart
+	);
 
 	// 説明文は 属性 descriptionKey -> _prop_data.ts -> Wikipedia の順で補完する。
 	const description = typeof attributeDescription === 'string' && attributeDescription !== ''
 		? {
 			text: attributeDescription,
 			source: 'attribute' as const
+		}
+		: modelPart?.description
+		? {
+			text: modelPart.description,
+			source: 'static' as const,
+			linkUrl: modelPart.url,
+			linkLabel: modelPart.url ? '詳細を見る' : undefined
 		}
 		: data?.description
 		? {
@@ -319,14 +312,16 @@ export const getLayerFeaturePanelSummary = async (
 
 	if (propId && featureMenuData.properties) {
 		return {
-			title: String(featureMenuData.properties.name ?? targetLayer?.metaData.name ?? ''),
+			title: modelPartTitle
+				?? String(featureMenuData.properties.name ?? targetLayer?.metaData.name ?? ''),
 			subtitle: typeof featureMenuData.properties.category === 'string'
 				? featureMenuData.properties.category
+				: targetLayer?.type === 'model'
+				? targetLayer.metaData.name
 				: undefined,
 			media,
 			protectionForestName: protectionForestSummary?.name,
 			protectionForestDescription: protectionForestSummary?.description,
-			taxonomy,
 			timberSpecies,
 			description
 		};
@@ -340,7 +335,7 @@ export const getLayerFeaturePanelSummary = async (
 			featureMenuData.properties,
 			targetLayer.properties.attributeView.titles
 		)
-		: targetLayer?.metaData.name;
+		: modelPartTitle ?? targetLayer?.metaData.name;
 
 	return {
 		title: title ?? '',
@@ -348,7 +343,6 @@ export const getLayerFeaturePanelSummary = async (
 		media,
 		protectionForestName: protectionForestSummary?.name,
 		protectionForestDescription: protectionForestSummary?.description,
-		taxonomy,
 		timberSpecies,
 		description
 	};

@@ -153,6 +153,23 @@ export interface DemStepColorStyle {
 
 export type DemRangeColorStyle = DemLinearColorStyle | DemStepColorStyle;
 
+export type DemSlopeColorStyle = DemRangeColorStyle & {
+	/** 未指定の場合、既定の0–90度だけ自動調整し、既存の独自範囲は維持する。 */
+	rangeMode?: 'auto' | 'manual';
+};
+
+export interface DemShadowStyle {
+	/** 光源の方位角（度）。北が0、東が90。 */
+	azimuth: number;
+	/** 光源の高度角（度）。水平が0、真上が90。 */
+	altitude: number;
+}
+
+export const DEFAULT_DEM_SHADOW_STYLE: Readonly<DemShadowStyle> = {
+	azimuth: 315,
+	altitude: 45
+};
+
 export interface RasterDemStyle extends BaseRasterStyle {
 	type: 'dem';
 	visualization: {
@@ -160,15 +177,11 @@ export interface RasterDemStyle extends BaseRasterStyle {
 		mode: DemStyleMode;
 		uniformsData: {
 			relief: DemRangeColorStyle;
-			slope?: DemRangeColorStyle;
+			slope?: DemSlopeColorStyle;
 			aspect?: {
 				colorMap: ColorMapType;
 			};
-			// shadow: {
-			// 	azimuth: number;
-			// 	altitude: number;
-			// };
-
+			shadow?: DemShadowStyle;
 			curvature?: {
 				colorMap: ColorMapType;
 			};

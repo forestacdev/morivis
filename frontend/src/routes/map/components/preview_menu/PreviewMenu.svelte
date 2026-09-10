@@ -156,7 +156,6 @@
 							{#if showDataEntry?.metaData.sourceDataName}
 								元データ名:「{showDataEntry?.metaData.sourceDataName}」<br />
 							{/if}
-
 							{#if showDataEntry?.metaData.description}
 								<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 								{@html formatDescription(showDataEntry?.metaData.description)}

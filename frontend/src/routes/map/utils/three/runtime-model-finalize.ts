@@ -1,4 +1,8 @@
-import type { MeshFormatType, ProjectedModelGeoreference } from '$routes/map/data/types/model';
+import type {
+	MeshFormatType,
+	MeshUpAxis,
+	ProjectedModelGeoreference
+} from '$routes/map/data/types/model';
 import {
 	applyProjectedModelGeoreference,
 	resolveFbxUnitScaleMeters
@@ -10,6 +14,7 @@ interface FinalizeRuntimeModelOptions {
 	formatType: MeshFormatType;
 	georeference?: ProjectedModelGeoreference;
 	normalizeToLocalOrigin?: boolean;
+	upAxis?: MeshUpAxis;
 }
 
 export const finalizeRuntimeModelObject = (
@@ -37,6 +42,9 @@ export const finalizeRuntimeModelObject = (
 	}
 
 	if (options.normalizeToLocalOrigin) {
-		normalizeObjectToLocalOrigin(object);
+		// STLは軸情報を持たないため選択値を使う。FBXは既存のCAD向け既定値を維持する。
+		const verticalAxis = options.upAxis
+			?? (options.formatType === 'fbx' || options.formatType === 'stl' ? 'z' : 'y');
+		normalizeObjectToLocalOrigin(object, verticalAxis);
 	}
 };

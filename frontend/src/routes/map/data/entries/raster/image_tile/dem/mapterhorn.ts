@@ -1,25 +1,26 @@
+import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterDemStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
-	id: '512',
+	id: 'mapterhorn',
 	type: 'raster',
 	format: {
 		type: 'image',
 		url: 'https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'
 	},
 	metaData: {
-		name: '512',
-		sourceDataName: '512',
-		downloadUrl: 'https://tiles.gsj.jp/tiles/elev/tiles.html#gsigeoid',
-		attribution: '産総研シームレス標高タイル',
-		tags: ['DEM', '地形', 'ジオイド高'],
-		location: '全国',
+		name: '全世界標高データ',
+		sourceDataName: 'mapterhorn',
+		downloadUrl: 'https://github.com/mapterhorn/mapterhorn',
+		attribution: 'mapterhorn',
+		tags: ['DEM', '地形'],
+		location: '世界',
 		minZoom: 0,
 		maxZoom: 16,
 		tileSize: 512,
-		bounds: [120, 20, 150, 50],
-		xyzImageTile: { x: 28846, y: 12917, z: 15 } // 画像タイルのXYZ座標
+		bounds: WEB_MERCATOR_WORLD_BBOX,
+		xyzImageTile: { x: 3, y: 1, z: 2 }
 	},
 	interaction: {
 		clickable: true

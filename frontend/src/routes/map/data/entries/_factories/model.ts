@@ -3,7 +3,7 @@ import type { AttributionKey } from '$routes/map/data/entries/_meta_data/_attrib
 import { type Bounds, resolveBounds } from '$routes/map/data/entries/_meta_data/_bounds_map';
 import type { Opacity } from '$routes/map/data/types';
 import type { Region } from '$routes/map/data/types/location';
-import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
+import { DEFAULT_MESH_EDGE, DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	MeshEntry,
 	MeshStyle,
@@ -11,6 +11,7 @@ import type {
 	Tiles3DEntry
 } from '$routes/map/data/types/model';
 import type { Tag } from '$routes/map/data/types/tags';
+import { normalizeModelScale } from '$routes/map/utils/three/model-scale';
 
 type XYZPresetKey = keyof typeof IMAGE_TILE_XYZ_SETS;
 
@@ -39,7 +40,10 @@ export interface MeshModelEntryConfig extends BaseModelConfig {
 		lng: number;
 		lat: number;
 		altitude: number;
+		/** モデル固有の単位・寸法補正。利用者が操作する scale とは分離する。 */
+		baseScale?: number;
 		scale?: number;
+		scaleUnit?: number;
 		rotationX?: number;
 		rotationY?: number;
 	};
@@ -75,6 +79,9 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 		color = '#ffffff',
 		heightColorRamp
 	} = config;
+	const normalizedScale = normalizeModelScale(
+		(transform.scale ?? 1) * 10 ** (transform.scaleUnit ?? 0)
+	);
 
 	return {
 		id,
@@ -104,6 +111,7 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 			showThroughTerrain,
 			color,
 			shading: { ...DEFAULT_MESH_SHADING },
+			edge: { ...DEFAULT_MESH_EDGE },
 			...(heightColorRamp && {
 				heightColorRamp: {
 					enabled: heightColorRamp.enabled ?? true,
@@ -128,8 +136,10 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 				altitude: transform.altitude,
 				heightOffset: 0,
 				heightScale: 1,
+				baseScale: transform.baseScale ?? 1,
 				baseRotationX: -180,
-				scale: transform.scale ?? 1,
+				scale: normalizedScale.scale,
+				scaleUnit: normalizedScale.scaleUnit,
 				rotationX: transform.rotationX ?? 0,
 				rotationY: transform.rotationY ?? 0,
 				rotationZ: 0

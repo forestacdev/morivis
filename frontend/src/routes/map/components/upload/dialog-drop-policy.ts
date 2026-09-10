@@ -3,7 +3,11 @@ import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 import { isRasterImageSidecarFile } from '$routes/map/utils/formats/raster/sidecar';
 import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
-import { resolveDroppedFiles, type UploadDropDecision } from './upload-drop';
+import {
+	resolveDroppedFiles,
+	type UploadDropDecision,
+	type UploadDropOptions
+} from './upload-drop';
 import { getPathLikeName, hasExtension } from './upload-drop-matchers';
 
 type PathLikeFile = File & { morivisRelativePath?: string; };
@@ -13,7 +17,7 @@ type SupplementaryDropMatcher = (
 	incomingFiles: File[]
 ) => boolean | Promise<boolean>;
 
-const OBJ_SUPPLEMENTARY_EXTENSIONS = [
+const MODEL_TEXTURE_EXTENSIONS = [
 	'.mtl',
 	'.png',
 	'.jpg',
@@ -21,8 +25,12 @@ const OBJ_SUPPLEMENTARY_EXTENSIONS = [
 	'.bmp',
 	'.tga',
 	'.gif',
-	'.webp'
+	'.webp',
+	'.dds',
+	'.spa',
+	'.sph'
 ] as const;
+const VRMA_EXTENSION = '.vrma';
 
 const getPathCandidates = (value: string): string[] => {
 	const normalizedValue = value.replace(/\\/g, '/').trim().toLowerCase();
@@ -107,11 +115,15 @@ const supplementaryDropMatchers: Partial<
 				hasExtension(file, '.saf') || hasExtension(file, '.tif')
 				|| hasExtension(file, '.tiff')
 		),
-	glb: async (currentFiles, files) => {
+	model: async (currentFiles, files) => {
 		if (files.length === 0) return false;
+		const hasVrmModel = toUploadFiles(currentFiles).some((file) => hasExtension(file, '.vrm'));
+		if (hasVrmModel && files.every((file) => hasExtension(file, VRMA_EXTENSION))) {
+			return true;
+		}
 		if (
 			files.every((file) =>
-				OBJ_SUPPLEMENTARY_EXTENSIONS.some((extension) => hasExtension(file, extension))
+				MODEL_TEXTURE_EXTENSIONS.some((extension) => hasExtension(file, extension))
 			)
 		) {
 			return true;
@@ -130,12 +142,13 @@ const supplementaryDropMatchers: Partial<
 export const resolveOpenDialogDrop = async (
 	dialogType: DialogType,
 	currentFiles: UploadFiles,
-	incomingFiles: File[]
+	incomingFiles: File[],
+	options: UploadDropOptions = {}
 ): Promise<OpenDialogDropDecision> => {
 	if (!dialogType) {
 		return {
 			type: 'delegate',
-			decision: await resolveDroppedFiles(incomingFiles)
+			decision: await resolveDroppedFiles(incomingFiles, options)
 		};
 	}
 
@@ -147,7 +160,7 @@ export const resolveOpenDialogDrop = async (
 		};
 	}
 
-	const decision = await resolveDroppedFiles(incomingFiles);
+	const decision = await resolveDroppedFiles(incomingFiles, options);
 	if (decision.type === 'dialog' && decision.dialogType === dialogType) {
 		return {
 			type: 'stay',

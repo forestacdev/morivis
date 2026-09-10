@@ -9,6 +9,55 @@ const MIN_PROJECTED_WORLD_OFFSET_METERS = 10_000;
 const MAX_PROJECTED_WORLD_OFFSET_METERS = 1_000_000;
 const MIN_PROJECTED_OFFSET_RATIO = 20;
 
+export type ModelCoordinateMode = 'local' | 'projected';
+
+const getDistanceFromPlanarBoundsToOrigin = (
+	minX: number,
+	minY: number,
+	maxX: number,
+	maxY: number
+) => {
+	const distanceX = minX <= 0 && maxX >= 0 ? 0 : Math.min(Math.abs(minX), Math.abs(maxX));
+	const distanceY = minY <= 0 && maxY >= 0 ? 0 : Math.min(Math.abs(minY), Math.abs(maxY));
+	return Math.hypot(distanceX, distanceY);
+};
+
+const looksLikeProjectedCoordinates = (
+	minX: number,
+	minY: number,
+	maxX: number,
+	maxY: number
+) => {
+	const centerX = (minX + maxX) / 2;
+	const centerY = (minY + maxY) / 2;
+	const maxAbsPlanarOffset = Math.max(Math.abs(centerX), Math.abs(centerY));
+	const maxPlanarExtent = Math.max(Math.abs(maxX - minX), Math.abs(maxY - minY));
+	const offsetRatio = maxPlanarExtent > 1e-6 ? maxAbsPlanarOffset / maxPlanarExtent : 0;
+	const distanceFromOrigin = getDistanceFromPlanarBoundsToOrigin(minX, minY, maxX, maxY);
+
+	return maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS
+		&& maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS
+		&& (
+			offsetRatio >= MIN_PROJECTED_OFFSET_RATIO
+			|| distanceFromOrigin >= MIN_PROJECTED_WORLD_OFFSET_METERS
+		);
+};
+
+/**
+ * Mago 3D Tiler に CRS を渡すべき、平面直角座標らしい入力範囲かを判定する。
+ * EPSG 自体はファイルから確定できないため、この結果はゾーン選択の表示にだけ使う。
+ */
+export const getModelCoordinateMode = (
+	bbox: [number, number, number, number] | null
+): ModelCoordinateMode => {
+	if (!bbox || bbox.some((value) => !Number.isFinite(value))) return 'local';
+
+	const [minX, minY, maxX, maxY] = bbox;
+	return looksLikeProjectedCoordinates(minX, minY, maxX, maxY)
+		? 'projected'
+		: 'local';
+};
+
 const ensureProjDefinition = (epsg: string) => {
 	const normalized = epsg.replace(/^EPSG:/i, '');
 	if (!isValidEpsg(normalized)) {
@@ -31,53 +80,12 @@ export interface ResolvedProjectedModelPlacement {
 	georeference: ProjectedModelGeoreference;
 }
 
-export const getModelUnitScaleMeters = (unitScaleFactor?: number) => {
-	const resolvedUnitScaleFactor =
-		typeof unitScaleFactor === 'number' && Number.isFinite(unitScaleFactor)
-			? unitScaleFactor
-			: null;
-
-	if (resolvedUnitScaleFactor == null || resolvedUnitScaleFactor === 0) {
-		return 1;
-	}
-
-	return Math.abs(resolvedUnitScaleFactor) / CENTIMETERS_PER_METER;
-};
-
-export const resolveFbxUnitScaleMeters = (box: THREE.Box3, unitScaleFactor?: number) => {
-	const metadataUnitScaleMeters = getModelUnitScaleMeters(unitScaleFactor);
-	if (box.isEmpty()) {
-		return metadataUnitScaleMeters;
-	}
-
-	const center = box.getCenter(new THREE.Vector3());
-	const size = box.getSize(new THREE.Vector3());
-	const maxAbsPlanarOffset = Math.max(Math.abs(center.x), Math.abs(center.y));
-	const maxPlanarExtent = Math.max(size.x, size.y);
-	const offsetRatio = maxPlanarExtent > 1e-6 ? maxAbsPlanarOffset / maxPlanarExtent : 0;
-
-	// 一部のFBXは unitScaleFactor=1 を持ちながら、座標値自体はすでに meter の
-	// 平面直角座標になっている。大きな世界座標オフセットを持つ場合は縮尺を上書きする。
-	const looksLikeProjectedMeterCoordinates = metadataUnitScaleMeters < 1
-		&& maxAbsPlanarOffset >= MIN_PROJECTED_WORLD_OFFSET_METERS
-		&& maxAbsPlanarOffset <= MAX_PROJECTED_WORLD_OFFSET_METERS
-		&& offsetRatio >= MIN_PROJECTED_OFFSET_RATIO;
-
-	return looksLikeProjectedMeterCoordinates ? 1 : metadataUnitScaleMeters;
-};
-
-export const resolveProjectedModelPlacementFromBox = async (
-	box: THREE.Box3,
+export const resolveProjectedModelPlacementFromOrigin = async (
+	projectedOrigin: [number, number, number],
 	epsg: string,
 	unitScaleMeters = 1,
 	coordinateSpace: ProjectedModelGeoreference['coordinateSpace'] = 'object'
 ): Promise<ResolvedProjectedModelPlacement> => {
-	if (box.isEmpty()) {
-		throw new Error('3Dモデルの範囲を取得できませんでした');
-	}
-
-	const center = box.getCenter(new THREE.Vector3());
-	const projectedOrigin: [number, number, number] = [center.x, center.y, box.min.z];
 	const { epsgName, projContext } = ensureProjDefinition(epsg);
 	await ensureProjNadgridsReady(projContext);
 	const [lng, lat] = proj4(epsgName, 'EPSG:4326', [
@@ -97,6 +105,53 @@ export const resolveProjectedModelPlacementFromBox = async (
 			coordinateSpace
 		}
 	};
+};
+
+export const getModelUnitScaleMeters = (unitScaleFactor?: number) => {
+	const resolvedUnitScaleFactor =
+		typeof unitScaleFactor === 'number' && Number.isFinite(unitScaleFactor)
+			? unitScaleFactor
+			: null;
+
+	if (resolvedUnitScaleFactor == null || resolvedUnitScaleFactor === 0) {
+		return 1;
+	}
+
+	return Math.abs(resolvedUnitScaleFactor) / CENTIMETERS_PER_METER;
+};
+
+export const resolveFbxUnitScaleMeters = (box: THREE.Box3, unitScaleFactor?: number) => {
+	const metadataUnitScaleMeters = getModelUnitScaleMeters(unitScaleFactor);
+	if (box.isEmpty()) {
+		return metadataUnitScaleMeters;
+	}
+
+	// 一部のFBXは unitScaleFactor=1 を持ちながら、座標値自体はすでに meter の
+	// 平面直角座標になっている。大きな世界座標オフセットを持つ場合は縮尺を上書きする。
+	const looksLikeProjectedMeterCoordinates = metadataUnitScaleMeters < 1
+		&& looksLikeProjectedCoordinates(box.min.x, box.min.y, box.max.x, box.max.y);
+
+	return looksLikeProjectedMeterCoordinates ? 1 : metadataUnitScaleMeters;
+};
+
+export const resolveProjectedModelPlacementFromBox = async (
+	box: THREE.Box3,
+	epsg: string,
+	unitScaleMeters = 1,
+	coordinateSpace: ProjectedModelGeoreference['coordinateSpace'] = 'object'
+): Promise<ResolvedProjectedModelPlacement> => {
+	if (box.isEmpty()) {
+		throw new Error('3Dモデルの範囲を取得できませんでした');
+	}
+
+	const center = box.getCenter(new THREE.Vector3());
+	const projectedOrigin: [number, number, number] = [center.x, center.y, box.min.z];
+	return resolveProjectedModelPlacementFromOrigin(
+		projectedOrigin,
+		epsg,
+		unitScaleMeters,
+		coordinateSpace
+	);
 };
 
 export const applyProjectedModelGeoreference = (

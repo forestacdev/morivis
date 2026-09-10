@@ -1,23 +1,42 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 	import * as yup from 'yup';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+	import {
+		getDefaultTransformModeForIssue,
+		getModelSpatialIssue
+	} from '$routes/map/components/upload/transform-policy';
 	import { createGlbEntry } from '$routes/map/data/entries/model';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { MeshFormatType } from '$routes/map/data/types/model';
+	import type {
+		MeshEntry,
+		MeshFormatType,
+		MeshStyle,
+		MeshUpAxis
+	} from '$routes/map/data/types/model';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
+	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
+	import { inspectFbxFile } from '$routes/map/utils/three/fbx-references';
 	import {
+		hasIfcExactGeoreference,
+		getIfcPlacementCoordinateMode,
 		hasIfcGeographicCoordinates,
 		readIfcPlacementMetadata,
 		type IfcPlacementMetadata
 	} from '$routes/map/utils/three/ifc-metadata';
 	import { applyProjectedModelAxisOverride } from '$routes/map/utils/three/model-axis';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
+	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
+	import {
+		getModelCoordinateMode,
+		resolveProjectedModelPlacementFromOrigin
+	} from '$routes/map/utils/three/model-georeference';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -51,9 +70,16 @@
 		scale?: number;
 	}
 
+	const ZONE_MODEL_PREVIEW_OPACITY = 0.3;
+
 	const getPathLikeName = (file: File) => {
 		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
 		return (relativePath ?? file.name).toLowerCase();
+	};
+
+	const logIfcUpload = (event: string, details: Record<string, unknown>) => {
+		if (import.meta.env.PROD) return;
+		console.info(`[IFC upload] ${event}`, details);
 	};
 
 	const getModelPlacement = (file: File): ModelPlacement | undefined => {
@@ -65,6 +91,7 @@
 	};
 
 	const getMeshFormat = (pathLikeName: string): MeshFormatType => {
+		if (pathLikeName.endsWith('.vrm')) return 'vrm';
 		if (pathLikeName.endsWith('.gltf')) return 'gltf';
 		if (pathLikeName.endsWith('.obj')) return 'obj';
 		if (pathLikeName.endsWith('.3ds')) return '3ds';
@@ -74,32 +101,65 @@
 		if (pathLikeName.endsWith('.drc')) return 'drc';
 		if (pathLikeName.endsWith('.3mf')) return '3mf';
 		if (pathLikeName.endsWith('.amf')) return 'amf';
+		if (pathLikeName.endsWith('.stl')) return 'stl';
 		if (pathLikeName.endsWith('.ifc')) return 'ifc';
+		if (pathLikeName.endsWith('.pmx')) return 'pmx';
+		if (
+			pathLikeName.endsWith('.usd') ||
+			pathLikeName.endsWith('.usda') ||
+			pathLikeName.endsWith('.usdz')
+		)
+			return 'usd';
 		return 'gltf';
 	};
 
 	const supportsResourceUrls = (format: MeshFormatType) => {
 		return (
 			format === 'gltf' ||
+			format === 'vrm' ||
 			format === 'obj' ||
 			format === '3ds' ||
 			format === 'dae' ||
 			format === '3dm' ||
-			format === 'fbx'
+			format === 'fbx' ||
+			format === 'pmx'
 		);
 	};
+
+	// CRS を標準で保持しないが、平面直角座標で出力されることがある形式。
+	const PROJECTED_COORDINATE_CANDIDATE_FORMATS = new Set<MeshFormatType>([
+		'gltf',
+		'obj',
+		'3ds',
+		'dae',
+		'3dm',
+		'fbx',
+		'drc',
+		'3mf',
+		'amf',
+		'stl',
+		'ifc',
+		'usd'
+	]);
 
 	const inputFiles = $derived.by(() => toUploadFiles(dropFile));
 
 	const glbFile = $derived.by(() => {
 		return (
 			inputFiles.find((file) =>
-				/\.(glb|gltf|obj|3ds|dae|3dm|fbx|drc|3mf|amf|ifc)$/i.test(getPathLikeName(file))
+				/\.(glb|gltf|vrm|obj|3ds|dae|3dm|fbx|drc|3mf|amf|stl|ifc|pmx|usd|usda|usdz)$/i.test(
+					getPathLikeName(file)
+				)
 			) ?? null
 		);
 	});
 
 	const activeFormat = $derived(glbFile ? getMeshFormat(getPathLikeName(glbFile)) : null);
+	let stlUpAxis = $state<MeshUpAxis>('z');
+	const stlUpAxisOptions = [
+		{ key: 'z', name: 'Z-up（CAD・3Dプリント）' },
+		{ key: 'y', name: 'Y-up（CG・3Dモデル）' }
+	];
 	const modelPlacement = $derived(glbFile ? getModelPlacement(glbFile) : undefined);
 	const detectedProjectedModelEpsg = $derived(glbFile ? getProjectedModelEpsg(glbFile) : undefined);
 
@@ -108,7 +168,16 @@
 	});
 
 	const textureFiles = $derived.by(() => {
-		return inputFiles.filter((file) => /\.(png|jpe?g|bmp|tga|gif|webp)$/i.test(file.name));
+		return inputFiles.filter((file) =>
+			/\.(png|jpe?g|bmp|tga|gif|webp|dds|spa|sph)$/i.test(file.name)
+		);
+	});
+
+	const vmdFiles = $derived.by(() => {
+		return inputFiles.filter((file) => /\.vmd$/i.test(getPathLikeName(file)));
+	});
+	const vrmaFiles = $derived.by(() => {
+		return inputFiles.filter((file) => /\.vrma$/i.test(getPathLikeName(file)));
 	});
 
 	const isJsonGltfFile = $derived(
@@ -118,6 +187,14 @@
 	const gltfSupplementaryFiles = $derived.by(() => {
 		if (!glbFile || !isJsonGltfFile) return [];
 		return inputFiles.filter((file) => file !== glbFile);
+	});
+
+	const modelSupplementaryFiles = $derived.by(() => {
+		if (activeFormat === 'gltf') return gltfSupplementaryFiles;
+		if (activeFormat === 'pmx') return [...textureFiles, ...vmdFiles];
+		if (activeFormat === 'vrm') return vrmaFiles;
+		if (activeFormat === 'usd') return [];
+		return textureFiles;
 	});
 
 	const getRelativePath = (file: File) => {
@@ -190,12 +267,9 @@
 	});
 	let droppedErrors = $state<Partial<Record<'name', string>>>({});
 	let preparedDropFileKey = $state<string | null>(null);
-	let analyzedDropFileKey = $state<string | null>(null);
-	let fbxSourceBbox = $state<[number, number, number, number] | null>(null);
-	let isPreparingZoneSelection = $state(false);
-	let analyzedGltfFileKey = $state<string | null>(null);
-	let gltfSourceBbox = $state<[number, number, number, number] | null>(null);
-	let isPreparingGltfZoneSelection = $state(false);
+	let analyzedProjectedCandidateFileKey = $state<string | null>(null);
+	let projectedCandidateSourceBbox = $state<[number, number, number, number] | null>(null);
+	let isInspectingProjectedCandidateCoordinates = $state(false);
 	let autoOpenedZoneFileKey = $state<string | null>(null);
 	let objInspectionFileKey = $state<string | null>(null);
 	let isInspectingObjReferences = $state(false);
@@ -203,6 +277,10 @@
 	let mtlInspectionFileKey = $state<string | null>(null);
 	let isInspectingMtlReferences = $state(false);
 	let referencedMtlTexturePaths = $state<string[]>([]);
+	let fbxInspectionFileKey = $state<string | null>(null);
+	let isInspectingFbxReferences = $state(false);
+	let referencedFbxTexturePaths = $state<string[]>([]);
+	let fbxDescription = $state<string | undefined>(undefined);
 	let gltfInspectionFileKey = $state<string | null>(null);
 	let isInspectingGltfReferences = $state(false);
 	let referencedGltfBufferUris = $state<string[]>([]);
@@ -213,14 +291,40 @@
 	let analyzedIfcFileKey = $state<string | null>(null);
 	let ifcSourceBbox = $state<[number, number, number, number] | null>(null);
 	let isPreparingIfcZoneSelection = $state(false);
+	let zoneModelPreviewEntry: MeshEntry<MeshStyle> | null = null;
+	let zoneModelPreviewBuildPromise: Promise<MeshEntry<MeshStyle> | null> | null = null;
+	let zoneModelPreviewSourceKey: string | null = null;
+	let zoneModelPreviewSyncId = 0;
+	let zoneModelPreviewFinalizing = false;
 
-	const requiresFbxManualRegistration = $derived(activeFormat === 'fbx' && !modelPlacement);
-	const requiresGltfZoneSelection = $derived(activeFormat === 'gltf' && !modelPlacement);
-	const requiresIfcZoneSelection = $derived(
-		activeFormat === 'ifc' &&
-			!isInspectingIfcPlacement &&
-			!hasIfcGeographicCoordinates(ifcPlacementMetadata)
+	const requiresProjectedCandidateCoordinateInspection = $derived(
+		!!activeFormat &&
+			activeFormat !== 'ifc' &&
+			PROJECTED_COORDINATE_CANDIDATE_FORMATS.has(activeFormat) &&
+			!modelPlacement &&
+			!detectedProjectedModelEpsg
 	);
+	const modelSpatialIssue = $derived.by(() => {
+		if (!activeFormat) return null;
+
+		return getModelSpatialIssue({
+			hasEmbeddedEpsg:
+				!!detectedProjectedModelEpsg ||
+				(activeFormat === 'ifc' && hasIfcExactGeoreference(ifcPlacementMetadata)),
+			hasExplicitPlacement: !!modelPlacement,
+			coordinateMode:
+				activeFormat === 'ifc'
+					? getIfcPlacementCoordinateMode(ifcPlacementMetadata)
+					: getModelCoordinateMode(projectedCandidateSourceBbox)
+		});
+	});
+	const requiresProjectedCandidateZoneSelection = $derived(
+		requiresProjectedCandidateCoordinateInspection && modelSpatialIssue === 'crs-missing'
+	);
+	const requiresIfcZoneSelection = $derived(
+		activeFormat === 'ifc' && !isInspectingIfcPlacement && modelSpatialIssue === 'crs-missing'
+	);
+	const requiresModelPlacement = $derived(modelSpatialIssue === 'placement-missing');
 	const textureResourceKeys = $derived.by(() => buildResourceKeySet(textureFiles));
 	const gltfResourceKeys = $derived.by(() => buildResourceKeySet(gltfSupplementaryFiles));
 	const requiresObjMtlResolution = $derived(
@@ -237,6 +341,15 @@
 	);
 	const requiresObjSupplementaryResolution = $derived(
 		requiresObjMtlResolution || requiresObjTextureResolution
+	);
+	const missingFbxTexturePaths = $derived.by(() => {
+		if (activeFormat !== 'fbx' || referencedFbxTexturePaths.length === 0) return [];
+		return referencedFbxTexturePaths.filter(
+			(pathLikeValue) => !hasMatchingResourceFile(textureResourceKeys, pathLikeValue)
+		);
+	});
+	const requiresFbxTextureResolution = $derived(
+		activeFormat === 'fbx' && missingFbxTexturePaths.length > 0
 	);
 	const missingGltfBufferUris = $derived.by(() => {
 		if (!isJsonGltfFile || referencedGltfBufferUris.length === 0) return [];
@@ -261,17 +374,22 @@
 		(!!glbFile &&
 			activeFormat === 'obj' &&
 			(isInspectingObjReferences || isInspectingMtlReferences)) ||
+			(!!glbFile && activeFormat === 'fbx' && isInspectingFbxReferences) ||
 			(!!glbFile && isJsonGltfFile && isInspectingGltfReferences) ||
+			isInspectingProjectedCandidateCoordinates ||
 			(!!glbFile && activeFormat === 'ifc' && isInspectingIfcPlacement)
 	);
 	const requiresModelSupplementaryResolution = $derived(
-		requiresObjSupplementaryResolution || requiresGltfSupplementaryResolution
+		requiresObjSupplementaryResolution ||
+			requiresFbxTextureResolution ||
+			requiresGltfSupplementaryResolution
 	);
+	const requiresStlAxisSelection = $derived(activeFormat === 'stl');
 	const requiresManualRegistration = $derived(
-		requiresFbxManualRegistration ||
-			requiresGltfZoneSelection ||
+		requiresProjectedCandidateZoneSelection ||
 			requiresIfcZoneSelection ||
-			requiresModelSupplementaryResolution
+			requiresModelSupplementaryResolution ||
+			requiresStlAxisSelection
 	);
 	const shouldShowDroppedModelPanel = $derived(
 		!!glbFile && (requiresManualRegistration || isWaitingForModelSupplementaryInspection)
@@ -364,6 +482,45 @@
 	});
 
 	$effect(() => {
+		if (!glbFile || activeFormat !== 'fbx') {
+			fbxInspectionFileKey = null;
+			isInspectingFbxReferences = false;
+			referencedFbxTexturePaths = [];
+			fbxDescription = undefined;
+			return;
+		}
+
+		const nextFileKey = getPathLikeName(glbFile);
+		if (fbxInspectionFileKey === nextFileKey) return;
+
+		fbxInspectionFileKey = nextFileKey;
+		isInspectingFbxReferences = true;
+		referencedFbxTexturePaths = [];
+		fbxDescription = undefined;
+
+		const inspectReferences = async () => {
+			const inspectionKey = nextFileKey;
+			try {
+				const inspection = await inspectFbxFile(glbFile);
+				if (fbxInspectionFileKey !== inspectionKey) return;
+				referencedFbxTexturePaths = inspection.referencedTexturePaths;
+				fbxDescription = inspection.description;
+			} catch (error) {
+				if (fbxInspectionFileKey !== inspectionKey) return;
+				referencedFbxTexturePaths = [];
+				fbxDescription = undefined;
+				console.warn('FBX の参照画像判定に失敗しました', error);
+			} finally {
+				if (fbxInspectionFileKey === inspectionKey) {
+					isInspectingFbxReferences = false;
+				}
+			}
+		};
+
+		void inspectReferences();
+	});
+
+	$effect(() => {
 		if (!glbFile || !isJsonGltfFile) {
 			gltfInspectionFileKey = null;
 			isInspectingGltfReferences = false;
@@ -416,6 +573,11 @@
 		ifcInspectionFileKey = nextFileKey;
 		isInspectingIfcPlacement = true;
 		ifcPlacementMetadata = undefined;
+		logIfcUpload('inspection-start', {
+			fileName: glbFile.name,
+			fileKey: nextFileKey,
+			fileSize: glbFile.size
+		});
 
 		const inspectPlacement = async () => {
 			const inspectionKey = nextFileKey;
@@ -423,9 +585,22 @@
 				const metadata = await readIfcPlacementMetadata(glbFile);
 				if (ifcInspectionFileKey !== inspectionKey) return;
 				ifcPlacementMetadata = metadata;
+				logIfcUpload('inspection-complete', {
+					fileName: glbFile.name,
+					fileKey: inspectionKey,
+					metadata,
+					hasGeographicCoordinates: hasIfcGeographicCoordinates(metadata),
+					hasExactGeoreference: hasIfcExactGeoreference(metadata),
+					coordinateMode: getIfcPlacementCoordinateMode(metadata)
+				});
 			} catch (error) {
 				if (ifcInspectionFileKey !== inspectionKey) return;
 				ifcPlacementMetadata = undefined;
+				logIfcUpload('inspection-failed', {
+					fileName: glbFile.name,
+					fileKey: inspectionKey,
+					error
+				});
 				console.warn('IFC の地理座標判定に失敗しました', error);
 			} finally {
 				if (ifcInspectionFileKey === inspectionKey) {
@@ -435,6 +610,21 @@
 		};
 
 		void inspectPlacement();
+	});
+
+	$effect(() => {
+		if (!glbFile || activeFormat !== 'ifc') return;
+		logIfcUpload('spatial-decision', {
+			fileName: glbFile.name,
+			fileKey: getPathLikeName(glbFile),
+			isInspectingIfcPlacement,
+			metadata: ifcPlacementMetadata,
+			modelSpatialIssue,
+			requiresIfcZoneSelection,
+			requiresModelPlacement,
+			isWaitingForModelSupplementaryInspection,
+			transformOptionMode
+		});
 	});
 
 	$effect(() => {
@@ -491,163 +681,118 @@
 	});
 
 	$effect(() => {
-		if (!glbFile || !requiresFbxManualRegistration || activeFormat !== 'fbx') {
-			analyzedDropFileKey = null;
-			fbxSourceBbox = null;
-			isPreparingZoneSelection = false;
+		if (!glbFile || !activeFormat || !requiresProjectedCandidateCoordinateInspection) {
+			analyzedProjectedCandidateFileKey = null;
+			projectedCandidateSourceBbox = null;
+			isInspectingProjectedCandidateCoordinates = false;
 			autoOpenedZoneFileKey = null;
 			return;
 		}
 
-		const nextFileKey = getPathLikeName(glbFile);
-		if (analyzedDropFileKey === nextFileKey) return;
+		const resourceFiles = modelSupplementaryFiles;
+		const nextFileKey = [
+			getPathLikeName(glbFile),
+			...resourceFiles.map(getPathLikeName),
+			...(activeFormat === 'stl' ? [stlUpAxis] : [])
+		].join('::');
+		if (analyzedProjectedCandidateFileKey === nextFileKey) return;
 
-		analyzedDropFileKey = nextFileKey;
-		fbxSourceBbox = null;
-		isPreparingZoneSelection = true;
+		analyzedProjectedCandidateFileKey = nextFileKey;
+		projectedCandidateSourceBbox = null;
+		isInspectingProjectedCandidateCoordinates = true;
 
-		const analyzeSourceBbox = async () => {
+		const inspectCoordinates = async () => {
+			const inspectionKey = nextFileKey;
 			const center = mapStore.getCenter();
-			const resourceUrls = textureFiles.length > 0 ? buildResourceUrls(textureFiles) : undefined;
+			const resourceUrls = resourceFiles.length > 0 ? buildResourceUrls(resourceFiles) : undefined;
 			const entry = createGlbEntry(
 				glbFile.name.replace(/\.[^.]+$/, ''),
 				'',
-				{
-					lng: center?.lng ?? 0,
-					lat: center?.lat ?? 0,
-					altitude: 0
-				},
-				'fbx',
+				{ lng: center?.lng ?? 0, lat: center?.lat ?? 0, altitude: 0 },
+				activeFormat,
 				undefined,
 				resourceUrls,
-				undefined
+				activeFormat === 'stl' ? { upAxis: stlUpAxis } : undefined
 			);
 
 			try {
 				isProcessing.set(true);
 				const uploadedModelMeta = await computeUploadedModelMetaInWorker({
 					file: glbFile,
-					format: 'fbx',
+					format: activeFormat,
 					style: entry.style,
 					resourceUrls,
-					normalizeToLocalOrigin: false
+					normalizeToLocalOrigin: false,
+					upAxis: activeFormat === 'stl' ? stlUpAxis : undefined
 				});
-
-				fbxSourceBbox = uploadedModelMeta.sourceBbox ?? null;
-				if (!uploadedModelMeta.sourceBbox) {
-					showNotification('FBXの範囲を取得できませんでした', 'error');
-				}
+				if (analyzedProjectedCandidateFileKey !== inspectionKey) return;
+				projectedCandidateSourceBbox = uploadedModelMeta.sourceBbox ?? null;
 			} catch (error) {
-				fbxSourceBbox = null;
-				console.warn('FBXの範囲解析に失敗しました', error);
-				showNotification('FBXの範囲解析に失敗しました', 'error');
+				if (analyzedProjectedCandidateFileKey !== inspectionKey) return;
+				projectedCandidateSourceBbox = null;
+				console.warn(`${activeFormat} の座標範囲解析に失敗しました`, error);
 			} finally {
-				isPreparingZoneSelection = false;
-				isProcessing.set(false);
+				if (analyzedProjectedCandidateFileKey === inspectionKey) {
+					isInspectingProjectedCandidateCoordinates = false;
+					isProcessing.set(false);
+				} else if (!analyzedProjectedCandidateFileKey) {
+					isProcessing.set(false);
+				}
 			}
 		};
 
-		analyzeSourceBbox();
-	});
-
-	$effect(() => {
-		if (!glbFile || !requiresGltfZoneSelection || activeFormat !== 'gltf') {
-			analyzedGltfFileKey = null;
-			gltfSourceBbox = null;
-			isPreparingGltfZoneSelection = false;
-			return;
-		}
-
-		const nextFileKey = getPathLikeName(glbFile);
-		if (analyzedGltfFileKey === nextFileKey) return;
-
-		analyzedGltfFileKey = nextFileKey;
-		gltfSourceBbox = null;
-		isPreparingGltfZoneSelection = true;
-
-		const analyzeSourceBbox = async () => {
-			const center = mapStore.getCenter();
-			const resourceUrls =
-				gltfSupplementaryFiles.length > 0 ? buildResourceUrls(gltfSupplementaryFiles) : undefined;
-			const entry = createGlbEntry(
-				glbFile.name.replace(/\.[^.]+$/, ''),
-				'',
-				{
-					lng: center?.lng ?? 0,
-					lat: center?.lat ?? 0,
-					altitude: 0
-				},
-				'gltf',
-				undefined,
-				resourceUrls
-			);
-
-			try {
-				isProcessing.set(true);
-				const uploadedModelMeta = await computeUploadedModelMetaInWorker({
-					file: glbFile,
-					format: 'gltf',
-					style: entry.style,
-					resourceUrls,
-					normalizeToLocalOrigin: false
-				});
-
-				gltfSourceBbox = uploadedModelMeta.sourceBbox ?? null;
-				if (!uploadedModelMeta.sourceBbox) {
-					showNotification('glTFの範囲を取得できませんでした', 'error');
-				}
-			} catch (error) {
-				gltfSourceBbox = null;
-				console.warn('glTFの範囲解析に失敗しました', error);
-				showNotification('glTFの範囲解析に失敗しました', 'error');
-			} finally {
-				isPreparingGltfZoneSelection = false;
-				isProcessing.set(false);
-			}
-		};
-
-		void analyzeSourceBbox();
+		void inspectCoordinates();
 	});
 
 	$effect(() => {
 		if (
 			!glbFile ||
-			(!requiresFbxManualRegistration && !requiresGltfZoneSelection && !requiresIfcZoneSelection) ||
-			(activeFormat !== 'fbx' && activeFormat !== 'gltf' && activeFormat !== 'ifc')
+			(!requiresProjectedCandidateZoneSelection && !requiresIfcZoneSelection) ||
+			(activeFormat !== 'ifc' &&
+				!PROJECTED_COORDINATE_CANDIDATE_FORMATS.has(activeFormat ?? 'gltf'))
 		)
 			return;
 		if (activeFormat === 'ifc' && (isPreparingIfcZoneSelection || !ifcSourceBbox)) return;
-		if (activeFormat === 'gltf' && (isPreparingGltfZoneSelection || !gltfSourceBbox)) return;
+		if (activeFormat !== 'ifc' && !projectedCandidateSourceBbox) return;
+		if (activeFormat === 'stl') return;
 
 		const fileKey = getPathLikeName(glbFile);
 		if (autoOpenedZoneFileKey === fileKey) return;
 
 		autoOpenedZoneFileKey = fileKey;
+		if (activeFormat === 'ifc') {
+			logIfcUpload('open-zone-selection', {
+				fileName: glbFile.name,
+				fileKey,
+				metadata: ifcPlacementMetadata,
+				sourceBbox: ifcSourceBbox
+			});
+		}
 		focusBbox = null;
 		transformOptionMode = 'zone';
 		showNotification(
 			activeFormat === 'ifc'
 				? 'IFC に地理座標がないため、座標系を選択してください'
-				: activeFormat === 'gltf'
-					? 'glTF は座標系不明として扱います。座標系を選択してください'
-					: 'FBXは座標系不明として扱います。座標系を選択してください',
+				: `${activeFormat?.toUpperCase()} は平面直角座標として扱います。座標系を選択してください`,
 			'info'
 		);
 	});
 
 	const isDroppedRegistrationDisabled = $derived.by(() => {
 		if (!droppedForms.name.trim()) return true;
-		if (requiresFbxManualRegistration) {
-			return isPreparingZoneSelection || !fbxSourceBbox;
-		}
-		if (requiresGltfZoneSelection) {
-			return isPreparingGltfZoneSelection || !gltfSourceBbox;
+		if (requiresProjectedCandidateZoneSelection) {
+			return isInspectingProjectedCandidateCoordinates || !projectedCandidateSourceBbox;
 		}
 		if (requiresIfcZoneSelection) {
 			return isPreparingIfcZoneSelection || !ifcSourceBbox;
 		}
 		if (requiresModelSupplementaryResolution) {
-			return isInspectingObjReferences || isInspectingMtlReferences || isInspectingGltfReferences;
+			return (
+				isInspectingObjReferences ||
+				isInspectingMtlReferences ||
+				isInspectingFbxReferences ||
+				isInspectingGltfReferences
+			);
 		}
 		return false;
 	});
@@ -674,7 +819,9 @@
 		const center = mapStore.getCenter();
 		let resolvedMtlUrl: string | undefined;
 		let resourceUrls: Record<string, string> | undefined;
-		const resourceFiles = activeFormat === 'gltf' ? gltfSupplementaryFiles : textureFiles;
+		const resourceFiles = modelSupplementaryFiles;
+		const isLocalFbx =
+			activeFormat === 'fbx' && getModelCoordinateMode(projectedCandidateSourceBbox) === 'local';
 
 		if (resourceFiles.length > 0) {
 			resourceUrls = buildResourceUrls(resourceFiles);
@@ -684,7 +831,13 @@
 		}
 
 		const normalizeToLocalOrigin =
-			(activeFormat === 'ifc' || activeFormat === 'fbx' || activeFormat === 'gltf') &&
+			(activeFormat === 'ifc' ||
+				activeFormat === 'gltf' ||
+				activeFormat === 'vrm' ||
+				activeFormat === 'pmx' ||
+				activeFormat === 'stl' ||
+				activeFormat === 'usd' ||
+				(activeFormat === 'fbx' && !isLocalFbx)) &&
 			!resolvedProjectedModelEpsg;
 		const entry = createGlbEntry(
 			name,
@@ -693,25 +846,96 @@
 				lng: modelPlacement?.lng ?? center?.lng ?? 0,
 				lat: modelPlacement?.lat ?? center?.lat ?? 0,
 				altitude: modelPlacement?.altitude ?? 0,
-				scale: modelPlacement?.scale
+				baseScale: modelPlacement?.scale
 			},
 			activeFormat,
 			resolvedMtlUrl,
 			supportsResourceUrls(activeFormat) ? resourceUrls : undefined,
 			{
 				...(normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : {}),
-				sourceFileName: glbFile.name
+				...(isLocalFbx ? { preserveSourceOrientation: true } : {}),
+				...(activeFormat === 'stl' ? { upAxis: stlUpAxis } : {}),
+				sourceFileName: glbFile.name,
+				initialShadingEnabled: activeFormat !== 'vrm' && activeFormat !== 'pmx'
 			}
 		);
+		if (activeFormat === 'fbx' && fbxDescription) {
+			entry.metaData.description = fbxDescription;
+		}
+		if (activeFormat === 'pmx' && resourceUrls && vmdFiles.length > 0) {
+			const clips = vmdFiles.flatMap((file) => {
+				const url = resourceUrls?.[file.name.toLowerCase()];
+				if (!url) return [];
+				return [
+					{
+						name: file.name.replace(/\.vmd$/i, ''),
+						type: 'vmd' as const,
+						url
+					}
+				];
+			});
+			if (clips.length > 0) {
+				entry.properties = {
+					...entry.properties,
+					animation: {
+						clips,
+						defaultClipIndex: 0,
+						autoPlay: true,
+						defaultLoop: true
+					}
+				};
+				entry.state = {
+					...entry.state,
+					animation: {
+						currentClipIndex: 0,
+						playing: true,
+						speed: 1,
+						loop: true
+					}
+				};
+			}
+		}
+		if (activeFormat === 'vrm' && resourceUrls && vrmaFiles.length > 0) {
+			const clips = vrmaFiles.flatMap((file) => {
+				const url = resourceUrls?.[file.name.toLowerCase()];
+				if (!url) return [];
+				return [
+					{
+						name: file.name.replace(/\.vrma$/i, ''),
+						type: 'vrma' as const,
+						url
+					}
+				];
+			});
+			if (clips.length > 0) {
+				entry.properties = {
+					...entry.properties,
+					animation: {
+						clips,
+						defaultClipIndex: 0,
+						autoPlay: true,
+						defaultLoop: true
+					}
+				};
+				entry.state = {
+					...entry.state,
+					animation: {
+						currentClipIndex: 0,
+						playing: true,
+						speed: 1,
+						loop: true
+					}
+				};
+			}
+		}
+		if (activeFormat === 'ifc' && ifcPlacementMetadata?.description) {
+			entry.metaData.description = ifcPlacementMetadata.description;
+		}
 		applyProjectedModelAxisOverride(
 			entry.style.transform,
 			activeFormat,
 			resolvedProjectedModelEpsg
 		);
-
-		if (activeFormat === 'ifc' && !resolvedProjectedModelEpsg) {
-			showNotification('IFCの地理配置は行わず、ローカル原点に寄せて表示します', 'info');
-		}
 
 		try {
 			isProcessing.set(true);
@@ -721,6 +945,7 @@
 				style: entry.style,
 				resourceUrls,
 				normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
+				upAxis: entry.format.upAxis,
 				projectedModelEpsg: resolvedProjectedModelEpsg
 			});
 
@@ -732,29 +957,30 @@
 				entry.format.georeference = uploadedModelMeta.resolvedPlacement.georeference;
 			}
 
-			if (uploadedModelMeta.hasSkinnedMesh) {
-				entry.style.shadingOptions = {
-					enabled: false
-				};
-				if (entry.style.shading) {
-					entry.style.shading.enabled = false;
-				}
-			}
 			if (uploadedModelMeta.animationNames.length > 0) {
+				const configuredAnimation = entry.properties?.animation;
 				entry.properties = {
 					...entry.properties,
 					animation: {
-						clips: uploadedModelMeta.animationNames.map((clipName) => ({ name: clipName }))
+						...configuredAnimation,
+						clips: [
+							...(configuredAnimation?.clips ?? []),
+							...uploadedModelMeta.animationNames.map((clipName) => ({ name: clipName }))
+						],
+						defaultLoop: configuredAnimation?.defaultLoop ?? true
 					}
 				};
-				entry.state = {
-					...entry.state,
-					animation: {
-						currentClipIndex: 0,
-						playing: false,
-						speed: 1
-					}
-				};
+				if (!entry.state?.animation) {
+					entry.state = {
+						...entry.state,
+						animation: {
+							currentClipIndex: 0,
+							playing: false,
+							speed: 1,
+							loop: true
+						}
+					};
+				}
 			}
 			if (uploadedModelMeta.scaleMultiplier !== 1) {
 				entry.style.transform.baseScale =
@@ -763,6 +989,7 @@
 			}
 			entry.metaData.bounds = uploadedModelMeta.bounds;
 			entry.metaData.xyzImageTile = uploadedModelMeta.xyzImageTile;
+			entry.format.localBounds = uploadedModelMeta.localBounds;
 
 			if (!import.meta.env.PROD) {
 				console.info('[model-entry] created', {
@@ -784,16 +1011,182 @@
 		return entry;
 	};
 
+	const createProjectedModelEntryForEpsg = async (
+		entry: MeshEntry<MeshStyle>,
+		epsg: EpsgCode,
+		opacity: MeshStyle['opacity']
+	): Promise<MeshEntry<MeshStyle>> => {
+		const georeference = entry.format.georeference;
+		if (!georeference) {
+			throw new Error('3Dモデルの投影原点を取得できませんでした');
+		}
+
+		const placement = await resolveProjectedModelPlacementFromOrigin(
+			georeference.projectedOrigin,
+			epsg,
+			georeference.unitScaleMeters,
+			georeference.coordinateSpace
+		);
+		const style: MeshStyle = {
+			...entry.style,
+			opacity,
+			transform: {
+				...entry.style.transform,
+				lng: placement.lng,
+				lat: placement.lat,
+				altitude: placement.altitude
+			}
+		};
+		const bounds = entry.format.localBounds
+			? getModelGeoBoundsFromLocalBounds(entry.format.localBounds, style)
+			: entry.metaData.bounds;
+
+		return {
+			...entry,
+			format: {
+				...entry.format,
+				georeference: placement.georeference
+			},
+			metaData: {
+				...entry.metaData,
+				altitude: placement.altitude,
+				bounds,
+				xyzImageTile: findCenterTile(bounds)
+			},
+			style
+		};
+	};
+
+	const getZoneModelPreviewEntry = async (epsg: EpsgCode) => {
+		if (zoneModelPreviewEntry) return zoneModelPreviewEntry;
+		zoneModelPreviewBuildPromise ??= buildDroppedEntry({
+			name: droppedForms.name,
+			projectedModelEpsg: epsg
+		});
+		const pendingBuild = zoneModelPreviewBuildPromise;
+		const entry = await pendingBuild;
+		if (zoneModelPreviewBuildPromise !== pendingBuild) return null;
+		if (entry) zoneModelPreviewEntry = entry;
+		return entry;
+	};
+
+	const syncZoneModelPreview = async (epsg: EpsgCode, syncId: number) => {
+		try {
+			const entry = await getZoneModelPreviewEntry(epsg);
+			if (!entry) return;
+			const previewEntry = await createProjectedModelEntryForEpsg(
+				entry,
+				epsg,
+				ZONE_MODEL_PREVIEW_OPACITY
+			);
+			if (syncId !== zoneModelPreviewSyncId || transformOptionMode !== 'zone' || !glbFile) return;
+
+			showDataEntry = previewEntry;
+			// 座標系候補の計算が終わった時点で操作を戻す。
+			// Three.js 側のモデル読込は画面を塞がず、完了次第プレビューへ反映する。
+			isProcessing.set(false);
+			await mapStore.setThreeLayer([previewEntry], 'preview');
+		} catch (error) {
+			if (syncId !== zoneModelPreviewSyncId) return;
+			console.error('座標系選択用3Dモデルの表示に失敗しました', error);
+			showNotification('3Dモデルの候補位置を表示できませんでした', 'error');
+		} finally {
+			if (syncId === zoneModelPreviewSyncId) isProcessing.set(false);
+		}
+	};
+
+	const clearZoneModelPreview = () => {
+		const entryId = zoneModelPreviewEntry?.id;
+		zoneModelPreviewSyncId += 1;
+		zoneModelPreviewEntry = null;
+		zoneModelPreviewBuildPromise = null;
+		zoneModelPreviewSourceKey = null;
+		if (entryId && showDataEntry?.id === entryId) showDataEntry = null;
+		void mapStore.setThreeLayer([], 'preview');
+	};
+
 	$effect(() => {
+		const isActive =
+			transformOptionMode === 'zone' &&
+			!!glbFile &&
+			(requiresProjectedCandidateZoneSelection || requiresIfcZoneSelection);
+		if (!isActive) {
+			if (
+				!zoneConfirmedEpsg &&
+				!zoneModelPreviewFinalizing &&
+				(zoneModelPreviewEntry || zoneModelPreviewBuildPromise)
+			) {
+				untrack(clearZoneModelPreview);
+			}
+			return;
+		}
+
+		const sourceKey = getPathLikeName(glbFile);
+		if (zoneModelPreviewSourceKey && zoneModelPreviewSourceKey !== sourceKey) {
+			untrack(clearZoneModelPreview);
+		}
+		zoneModelPreviewSourceKey = sourceKey;
+		const syncId = ++zoneModelPreviewSyncId;
+		void syncZoneModelPreview(selectedEpsgCode, syncId);
+	});
+
+	onDestroy(() => {
+		if (zoneModelPreviewEntry || zoneModelPreviewBuildPromise) clearZoneModelPreview();
+	});
+
+	$effect(() => {
+		if (activeFormat === 'ifc') {
+			logIfcUpload('registration-gate', {
+				fileName: glbFile?.name,
+				fileKey: glbFile ? getPathLikeName(glbFile) : null,
+				requiresManualRegistration,
+				isWaitingForModelSupplementaryInspection,
+				isInspectingIfcPlacement,
+				requiresIfcZoneSelection,
+				requiresModelPlacement,
+				transformOptionMode
+			});
+		}
 		if (!glbFile || requiresManualRegistration || isWaitingForModelSupplementaryInspection) return;
 		if (activeFormat === 'obj' && (isInspectingObjReferences || isInspectingMtlReferences)) return;
+		if (activeFormat === 'fbx' && isInspectingFbxReferences) return;
 		if (activeFormat === 'gltf' && isInspectingGltfReferences) return;
 
 		const register = async () => {
+			if (activeFormat === 'ifc') {
+				logIfcUpload('auto-registration-start', {
+					fileName: glbFile.name,
+					fileKey: getPathLikeName(glbFile),
+					metadata: ifcPlacementMetadata,
+					modelSpatialIssue,
+					requiresModelPlacement
+				});
+			}
 			const entry = await buildDroppedEntry();
 			if (!entry) return;
 
 			showDataEntry = entry;
+			if (requiresModelPlacement) {
+				const transformMode = getDefaultTransformModeForIssue('model', 'placement-missing');
+				if (activeFormat === 'ifc') {
+					logIfcUpload('open-model-placement', {
+						fileName: glbFile.name,
+						fileKey: getPathLikeName(glbFile),
+						entryId: entry.id,
+						transformMode
+					});
+				}
+				transformOptionMode = transformMode;
+				return;
+			}
+			if (activeFormat === 'ifc') {
+				logIfcUpload('skip-model-placement', {
+					fileName: glbFile.name,
+					fileKey: getPathLikeName(glbFile),
+					entryId: entry.id,
+					metadata: ifcPlacementMetadata
+				});
+			}
 			showDialogType = null;
 			dropFile = null;
 		};
@@ -802,29 +1195,49 @@
 	});
 
 	const registerDroppedProjectedModel = async (projectedModelEpsg: EpsgCode) => {
-		if (!validateDroppedForms()) return;
+		if (!validateDroppedForms()) {
+			zoneModelPreviewFinalizing = false;
+			transformOptionMode = null;
+			return;
+		}
 
-		const entry = await buildDroppedEntry({
-			name: droppedForms.name,
-			projectedModelEpsg
-		});
-		if (!entry) return;
+		try {
+			isProcessing.set(true);
+			const entry = zoneModelPreviewEntry
+				? await createProjectedModelEntryForEpsg(
+						zoneModelPreviewEntry,
+						projectedModelEpsg,
+						zoneModelPreviewEntry.style.opacity
+					)
+				: await buildDroppedEntry({
+						name: droppedForms.name,
+						projectedModelEpsg
+					});
+			if (!entry) return;
 
-		showDataEntry = entry;
-		transformOptionMode = null;
-		focusBbox = null;
-		showDialogType = null;
-		dropFile = null;
+			zoneModelPreviewEntry = null;
+			zoneModelPreviewBuildPromise = null;
+			zoneModelPreviewSourceKey = null;
+			showDataEntry = entry;
+			transformOptionMode = null;
+			focusBbox = null;
+			showDialogType = null;
+			dropFile = null;
+		} catch (error) {
+			console.error('3Dモデルの座標系確定に失敗しました', error);
+			showNotification('3Dモデルの座標系を確定できませんでした', 'error');
+			clearZoneModelPreview();
+			transformOptionMode = null;
+		} finally {
+			zoneModelPreviewFinalizing = false;
+			isProcessing.set(false);
+		}
 	};
 
 	const openZoneSelection = () => {
 		if (!validateDroppedForms()) return;
-		if (requiresFbxManualRegistration && !fbxSourceBbox) {
-			showNotification('FBXの範囲を取得できませんでした', 'error');
-			return;
-		}
-		if (requiresGltfZoneSelection && !gltfSourceBbox) {
-			showNotification('glTFの範囲を取得できませんでした', 'error');
+		if (requiresProjectedCandidateZoneSelection && !projectedCandidateSourceBbox) {
+			showNotification('3Dモデルの範囲を取得できませんでした', 'error');
 			return;
 		}
 		if (requiresIfcZoneSelection && !ifcSourceBbox) {
@@ -832,22 +1245,16 @@
 			return;
 		}
 
-		focusBbox = fbxSourceBbox ?? gltfSourceBbox ?? ifcSourceBbox;
+		focusBbox = projectedCandidateSourceBbox ?? ifcSourceBbox;
 		transformOptionMode = 'zone';
 	};
 
 	$effect(() => {
-		if (!glbFile || !requiresFbxManualRegistration || !fbxSourceBbox) return;
-		if (isSameBbox(focusBbox, fbxSourceBbox)) return;
+		if (!glbFile || !requiresProjectedCandidateZoneSelection || !projectedCandidateSourceBbox)
+			return;
+		if (isSameBbox(focusBbox, projectedCandidateSourceBbox)) return;
 
-		focusBbox = fbxSourceBbox;
-	});
-
-	$effect(() => {
-		if (!glbFile || !requiresGltfZoneSelection || !gltfSourceBbox) return;
-		if (isSameBbox(focusBbox, gltfSourceBbox)) return;
-
-		focusBbox = gltfSourceBbox;
+		focusBbox = projectedCandidateSourceBbox;
 	});
 
 	$effect(() => {
@@ -860,13 +1267,14 @@
 	$effect(() => {
 		if (
 			!zoneConfirmedEpsg ||
-			showDialogType !== 'glb' ||
-			(!requiresFbxManualRegistration && !requiresGltfZoneSelection && !requiresIfcZoneSelection)
+			showDialogType !== 'model' ||
+			(!requiresProjectedCandidateZoneSelection && !requiresIfcZoneSelection)
 		)
 			return;
 
 		const epsg = zoneConfirmedEpsg;
 		untrack(() => {
+			zoneModelPreviewFinalizing = true;
 			zoneConfirmedEpsg = null;
 			void registerDroppedProjectedModel(epsg);
 		});
@@ -909,7 +1317,13 @@
 	const registrationFromUrl = () => {
 		const center = mapStore.getCenter();
 		const format = getMeshFormat(forms.url.trim().toLowerCase());
-		const normalizeToLocalOrigin = format === 'ifc' || format === 'fbx';
+		const normalizeToLocalOrigin =
+			format === 'ifc' ||
+			format === 'fbx' ||
+			format === 'pmx' ||
+			format === 'vrm' ||
+			format === 'stl' ||
+			format === 'usd';
 		const entry = createGlbEntry(
 			forms.name,
 			forms.url.trim(),
@@ -921,7 +1335,10 @@
 			format,
 			undefined,
 			undefined,
-			normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : undefined
+			{
+				...(normalizeToLocalOrigin ? { normalizeToLocalOrigin: true } : {}),
+				...(format === 'stl' ? { upAxis: stlUpAxis } : {})
+			}
 		);
 		if (entry) {
 			showDataEntry = entry;
@@ -945,6 +1362,10 @@
 		if (!entry) return;
 
 		showDataEntry = entry;
+		if (requiresStlAxisSelection && requiresModelPlacement) {
+			transformOptionMode = getDefaultTransformModeForIssue('model', 'placement-missing');
+			return;
+		}
 		showDialogType = null;
 		dropFile = null;
 	};
@@ -957,9 +1378,7 @@
 				? 'FBXファイルの登録'
 				: activeFormat === 'ifc'
 					? 'IFCファイルの登録'
-					: activeFormat === 'gltf'
-						? 'glTFファイルの登録'
-						: 'OBJファイルの登録'}</span
+					: `${activeFormat?.toUpperCase() ?? '3Dモデル'}ファイルの登録`}</span
 		>
 	</div>
 
@@ -968,21 +1387,23 @@
 	>
 		<div class="w-full rounded-md bg-black/15 p-3 text-sm text-gray-200">
 			<p>{glbFile.name}</p>
-			{#if requiresFbxManualRegistration || requiresGltfZoneSelection}
+			{#if requiresProjectedCandidateZoneSelection}
 				<p class="mt-2">
-					{activeFormat === 'gltf' ? 'glTF' : 'FBX'} は座標系を持たない前提で扱います。ZoneMenu で投影座標系を選択して配置します。
+					{activeFormat?.toUpperCase()} は平面直角座標らしい座標値を持ちます。ZoneMenu で投影座標系を選択して配置します。
 				</p>
 				<p class="mt-2">現在の選択: EPSG:{selectedEpsgCode}</p>
-				{#if isPreparingZoneSelection || isPreparingGltfZoneSelection}
-					<p class="mt-2">{activeFormat === 'gltf' ? 'glTF' : 'FBX'}の範囲を解析しています。</p>
-				{:else if fbxSourceBbox || gltfSourceBbox}
-					{@const sourceBbox = fbxSourceBbox ?? gltfSourceBbox}
+				{#if isInspectingProjectedCandidateCoordinates}
+					<p class="mt-2">モデルの座標範囲を解析しています。</p>
+				{:else if projectedCandidateSourceBbox}
+					{@const sourceBbox = projectedCandidateSourceBbox}
 					<p class="mt-2">
 						範囲: X {sourceBbox?.[0].toFixed(3)} - {sourceBbox?.[2].toFixed(3)}, Y {sourceBbox?.[1].toFixed(
 							3
 						)} - {sourceBbox?.[3].toFixed(3)}
 					</p>
 				{/if}
+			{:else if isInspectingProjectedCandidateCoordinates}
+				<p class="mt-2">モデルの座標範囲を解析しています。</p>
 			{:else if requiresIfcZoneSelection}
 				<p class="mt-2">
 					IFC に地理座標が含まれていません。入力座標の投影座標系を選択して配置します。
@@ -1002,6 +1423,20 @@
 				<p class="mt-2">参照MTL: {mtlFile?.name}</p>
 				<p class="mt-2">未追加画像: {missingObjTexturePaths.join(', ')}</p>
 				<p class="mt-2">画像なしのまま登録することもできます。</p>
+			{:else if requiresFbxTextureResolution}
+				<p class="mt-2">
+					この FBX はテクスチャ画像を参照しています。画像を追加ドロップするとそのまま続行できます。
+				</p>
+				<p class="mt-2">未追加画像: {missingFbxTexturePaths.join(', ')}</p>
+				<p class="mt-2">画像なしのまま登録することもできます。</p>
+			{:else if activeFormat === 'pmx' && vmdFiles.length > 0}
+				<p class="mt-2">
+					VMDモーションを{vmdFiles.length}件追加します。先頭のモーションを既定で再生します。
+				</p>
+			{:else if activeFormat === 'vrm' && vrmaFiles.length > 0}
+				<p class="mt-2">
+					VRMAモーションを{vrmaFiles.length}件追加します。先頭のモーションを既定で再生します。
+				</p>
 			{:else if requiresGltfSupplementaryResolution}
 				<p class="mt-2">
 					この glTF は外部ファイルを参照しています。`.bin`
@@ -1019,11 +1454,23 @@
 			{/if}
 		</div>
 		<TextForm bind:value={droppedForms.name} label="データ名" error={droppedErrors.name} />
+		{#if activeFormat === 'stl'}
+			<div class="w-full p-2">
+				<HorizontalSelectBox
+					label="モデルの上方向"
+					bind:group={stlUpAxis}
+					options={stlUpAxisOptions}
+				/>
+				<p class="mt-2 px-1 text-xs text-gray-400">
+					STLには上方向の情報がないため、書き出し元に合わせて選択してください。
+				</p>
+			</div>
+		{/if}
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 		<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
-		{#if requiresFbxManualRegistration || requiresGltfZoneSelection || requiresIfcZoneSelection}
+		{#if requiresProjectedCandidateZoneSelection || requiresIfcZoneSelection}
 			<button
 				onclick={openZoneSelection}
 				disabled={isDroppedRegistrationDisabled}
@@ -1033,7 +1480,7 @@
 			>
 				座標系を選択
 			</button>
-		{:else if requiresModelSupplementaryResolution}
+		{:else if requiresModelSupplementaryResolution || requiresStlAxisSelection}
 			<button
 				onclick={registerDroppedModelWithoutSupplementaryFiles}
 				disabled={isDroppedRegistrationDisabled}
@@ -1041,7 +1488,7 @@
 					? 'cursor-not-allowed opacity-50'
 					: 'cursor-pointer'}"
 			>
-				このまま登録
+				{requiresStlAxisSelection ? 'この向きで登録' : 'このまま登録'}
 			</button>
 		{/if}
 	</div>
@@ -1056,9 +1503,21 @@
 		<TextForm bind:value={forms.name} label="データ名" error={errors.name} />
 		<TextForm
 			bind:value={forms.url}
-			label="3Dモデル URL (GLTF / GLB / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / IFC)"
+			label="3Dモデル URL (GLTF / GLB / USD / USDZ / VRM / OBJ / 3DS / DAE / 3DM / FBX / DRC / 3MF / AMF / STL / IFC / PMX)"
 			error={errors.url}
 		/>
+		{#if forms.url.trim().toLowerCase().endsWith('.stl')}
+			<div class="w-full p-2">
+				<HorizontalSelectBox
+					label="モデルの上方向"
+					bind:group={stlUpAxis}
+					options={stlUpAxisOptions}
+				/>
+				<p class="mt-2 px-1 text-xs text-gray-400">
+					STLには上方向の情報がないため、書き出し元に合わせて選択してください。
+				</p>
+			</div>
+		{/if}
 	</div>
 
 	<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">

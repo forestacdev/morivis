@@ -1,11 +1,15 @@
 import type { AdjustableRange, BaseMetaData, Opacity } from '$routes/map/data/types';
+import type { MediaData } from '$routes/map/data/types/details';
 import type {
 	ColorMapType,
 	RasterDimensionState,
 	RasterDiscreteDimension
 } from '$routes/map/data/types/raster';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
+import type { AttributeView } from '$routes/map/data/types/vector/properties';
+import type { ColorsStyle } from '$routes/map/data/types/vector/style';
 import type { FeatureCollection } from '$routes/map/types/geojson';
+import type { ModelAttributes } from '$routes/map/utils/three/model-attributes';
 import type { Table } from 'apache-arrow';
 
 interface ModelMetaData extends BaseMetaData {
@@ -14,28 +18,84 @@ interface ModelMetaData extends BaseMetaData {
 
 export interface ModelAnimationClip {
 	name: string;
+	/** モデルファイル内に含まれる Three.js のアニメーション。 */
+	type?: 'embedded';
+}
+
+/** PMX/PMD に適用する MikuMikuDance モーション。 */
+export interface VmdModelAnimationClip {
+	name: string;
+	type: 'vmd';
+	url: string;
+}
+
+/** VRM に適用する VRM Animation モーション。 */
+export interface VrmaModelAnimationClip {
+	name: string;
+	type: 'vrma';
+	url: string;
 }
 
 export interface ModelAnimationProperties {
-	clips: ModelAnimationClip[];
+	clips: Array<ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip>;
+	/** 初期選択するプリセット。未指定時は先頭。 */
+	defaultClipIndex?: number;
+	/** 初回表示時に既定プリセットを再生する。 */
+	autoPlay?: boolean;
+	/** 初回表示時の再生速度。 */
+	defaultSpeed?: number;
+	/** 初回表示時に繰り返し再生する。未指定時は有効。 */
+	defaultLoop?: boolean;
 }
 
 export interface ModelAnimationState {
 	currentClipIndex: number;
 	playing: boolean;
 	speed: number;
+	loop: boolean;
+}
+
+/** IFC の実体クラスと属性キーを限定して、初期表示用の色分け候補を定義する。 */
+export interface IfcPartColorProfile {
+	type: 'part-colors';
+	elementTypes: string[];
+	attributeKeys: string[];
+}
+
+export type IfcExtractionProfile = IfcPartColorProfile;
+
+/** GLB の _prop_id で参照する、モデルentry内の部材詳細。 */
+export interface ModelPartData {
+	name: string;
+	description?: string;
+	url?: string;
+	medias?: MediaData[];
+	attributes?: ModelAttributes;
+}
+
+export interface ModelEntryProperties {
+	/** 単体ビューで床グリッドを置く、モデルローカル座標の Y 値。 */
+	modelView?: {
+		floorY?: number;
+	};
+	/** 部材属性を外部辞書へ関連付けるための表示設定。 */
+	attributeView?: Pick<AttributeView, 'relations'>;
+	temporal?: {
+		dimension: RasterDiscreteDimension;
+	};
+	animation?: ModelAnimationProperties;
+	ifc?: {
+		extractionProfiles: IfcExtractionProfile[];
+	};
+	/** GLB のノードに付与した _prop_id ごとの詳細情報。 */
+	detailsById?: Record<string, ModelPartData>;
 }
 
 interface BaseModelEntry {
 	id: string;
 	type: 'model';
 	metaData: ModelMetaData;
-	properties?: {
-		temporal?: {
-			dimension: RasterDiscreteDimension;
-		};
-		animation?: ModelAnimationProperties;
-	};
+	properties?: ModelEntryProperties;
 	interaction: {
 		clickable: boolean;
 	};
@@ -54,11 +114,24 @@ export interface MeshShadingStyle {
 }
 
 export const DEFAULT_MESH_SHADING: MeshShadingStyle = {
-	enabled: true,
+	enabled: false,
 	shadeStrength: 0.85,
-	ambientStrength: 0.35,
-	azimuthDeg: 180,
-	elevationDeg: 0
+	ambientStrength: 0.8,
+	azimuthDeg: 135,
+	elevationDeg: 55
+};
+
+/** UV 座標の境界を描くエッジ表示の設定。 */
+export interface MeshEdgeStyle {
+	enabled: boolean;
+	color: string;
+	thickness: number;
+}
+
+export const DEFAULT_MESH_EDGE: MeshEdgeStyle = {
+	enabled: false,
+	color: '#cecece',
+	thickness: 0.001
 };
 
 export interface MeshHeightColorRampStyle {
@@ -87,22 +160,7 @@ export interface ProjectedModelGeoreference {
 	coordinateSpace?: 'object' | 'root-children' | 'ifc-z-up';
 }
 
-export interface MeshShadingOptionStyle {
-	enabled?: boolean;
-}
-
-export interface MeshStyle {
-	type: 'mesh';
-	opacity: Opacity;
-	visible?: boolean;
-	wireframe: boolean;
-	/** true のとき地形の地下にある部分も前面に表示する。 */
-	showThroughTerrain: boolean;
-	color: string;
-	shading?: MeshShadingStyle;
-	shadingOptions?: MeshShadingOptionStyle;
-	heightColorRamp?: MeshHeightColorRampStyle;
-	transformOptions?: MeshTransformOptionStyle;
+export interface ModelTransformStyle {
 	transform: {
 		lng: number;
 		lat: number;
@@ -117,11 +175,45 @@ export interface MeshStyle {
 		baseRotationX?: number;
 		baseRotationY?: number;
 		baseRotationZ?: number;
+		/** 利用者が操作する倍率の10進指数。未指定は0として扱う。 */
+		scaleUnit?: number;
 		scale: number;
 		rotationX: number;
 		rotationY: number;
 		rotationZ: number;
 	};
+}
+
+/** 描画時のローカル座標におけるモデル範囲 [minX, minY, minZ, maxX, maxY, maxZ]。 */
+export type ModelLocalBounds = [number, number, number, number, number, number];
+
+export interface MeshStyle extends ModelTransformStyle {
+	type: 'mesh';
+	opacity: Opacity;
+	visible?: boolean;
+	wireframe: boolean;
+	/** FBXに含まれるNURBS曲線を表示する。未指定時は表示する。 */
+	showFbxCurves?: boolean;
+	/** FBXに残された文字属性を3Dテキストとして表示する。未指定時は表示する。 */
+	showFbxText?: boolean;
+	/** true のとき地形の地下にある部分も前面に表示する。 */
+	showThroughTerrain: boolean;
+	color: string;
+	/** IFC など、モデル内パーツの属性を使う色分け設定。 */
+	partColors?: ColorsStyle;
+	shading?: MeshShadingStyle;
+	edge?: MeshEdgeStyle;
+	heightColorRamp?: MeshHeightColorRampStyle;
+	transformOptions?: MeshTransformOptionStyle;
+}
+
+/** 通常 PLY の 3D Gaussian Splatting 向けスタイル。 */
+export interface GaussianSplatStyle extends ModelTransformStyle {
+	type: 'gaussian-splat';
+	opacity: Opacity;
+	visible?: boolean;
+	/** 元データのスプラット半径に掛ける表示倍率。 */
+	splatScale: number;
 }
 
 export interface Tiles3DMeshStyle {
@@ -150,6 +242,7 @@ export interface GeoArrowStyle {
 /** mesh 系 model entry の入力形式。主に three.js 側で読む 3D モデル形式を表す。 */
 export type MeshFormatType =
 	| 'gltf'
+	| 'vrm'
 	| 'obj'
 	| '3ds'
 	| 'dae'
@@ -158,18 +251,34 @@ export type MeshFormatType =
 	| 'drc'
 	| '3mf'
 	| 'amf'
-	| 'ifc';
+	| 'stl'
+	| 'ifc'
+	| 'pmx'
+	| 'usd';
+
+/** 上方向のメタデータを持たないmesh形式に対して、利用者が指定する入力座標軸。 */
+export type MeshUpAxis = 'y' | 'z';
+
+/** 指定ズーム以下で選択する、同一モデルの下位表示解像度。 */
+export interface ModelLodLevel {
+	maxZoom: number;
+	url: string;
+}
 
 export interface MeshEntry<T> extends BaseModelEntry {
 	format: {
 		type: MeshFormatType;
 		url: string;
-		/** アップロード元が GLB のとき、再変換せずに直接ダウンロードするための元ファイル名 */
+		/** glTF / GLB の下位表示解像度。url は最高解像度を表す。 */
+		lods?: ModelLodLevel[];
+		/** 再変換せずに直接ダウンロードするための元ファイル名 */
 		sourceFileName?: string;
 		mtlUrl?: string;
 		resourceUrls?: Record<string, string>;
 		normalizeToLocalOrigin?: boolean;
+		upAxis?: MeshUpAxis;
 		georeference?: ProjectedModelGeoreference;
+		localBounds?: ModelLocalBounds;
 	};
 	style: T;
 }
@@ -189,12 +298,32 @@ export interface PointCloudEntry extends BaseModelEntry {
 		url?: string;
 		/** 変換済みの位置データ [x,y,z, x,y,z, ...] */
 		positions?: Float32Array;
+		/** METER_OFFSETS で描画する場合の地理座標原点 [経度, 緯度, 高さ] */
+		coordinateOrigin?: [number, number, number];
 		/** 色データ [r,g,b, r,g,b, ...] (0-255) */
 		colors?: Uint8Array;
 		/** 点数 */
 		pointCount: number;
 	};
 	style: PointCloudStyle;
+}
+
+/** Three.js で描画する通常 PLY の 3D Gaussian Splatting entry。 */
+export interface GaussianSplatEntry extends BaseModelEntry {
+	format: {
+		type: 'gaussian-splat';
+		url: string;
+		sourceFileName?: string;
+		encoding: 'ply';
+		localBounds?: ModelLocalBounds;
+	};
+	properties?: ModelEntryProperties & {
+		gaussianSplat: {
+			splatCount: number;
+			shDegree: number;
+		};
+	};
+	style: GaussianSplatStyle;
 }
 
 export interface GeoArrowEntry extends BaseModelEntry {
@@ -219,6 +348,8 @@ export interface GeoJson3DEntry extends BaseModelEntry {
 export type DeckVectorEntry = GeoArrowEntry | GeoJson3DEntry;
 
 export type AnyMeshEntry = MeshEntry<MeshStyle>;
+export type ThreeModelEntry = AnyMeshEntry | GaussianSplatEntry;
+export type ThreeModelStyle = MeshStyle | GaussianSplatStyle;
 
 export type AnyTiles3DEntry = Tiles3DEntry<Tiles3DMeshStyle> | Tiles3DEntry<PointCloudStyle>;
 
@@ -230,4 +361,8 @@ export type PointCloudStyleEntry = Tiles3DEntry<PointCloudStyle> | PointCloudEnt
  * morivis の model 系内部モデル。
  * object / runtime を主分類軸とし、three.js 系と deck.gl 系の分岐元になる。
  */
-export type MorivisModelEntry = AnyMeshEntry | AnyTiles3DEntry | PointCloudEntry | DeckVectorEntry;
+export type MorivisModelEntry =
+	| ThreeModelEntry
+	| AnyTiles3DEntry
+	| PointCloudEntry
+	| DeckVectorEntry;

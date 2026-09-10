@@ -1,9 +1,11 @@
 import type { ProjectedModelGeoreference } from '$routes/map/data/types/model';
 import {
 	applyProjectedModelGeoreference,
+	getModelCoordinateMode,
 	getModelUnitScaleMeters,
 	resolveFbxUnitScaleMeters,
-	resolveProjectedModelPlacementFromBox
+	resolveProjectedModelPlacementFromBox,
+	resolveProjectedModelPlacementFromOrigin
 } from '$routes/map/utils/three/model-georeference';
 import proj4 from 'proj4';
 import * as THREE from 'three';
@@ -20,6 +22,22 @@ const misleadingMeterBox = new THREE.Box3(
 );
 
 describe('model-georeference', () => {
+	it('原点近傍のモデルはローカル座標として扱う', () => {
+		expect(getModelCoordinateMode([-40, -25, 40, 25])).toBe('local');
+	});
+
+	it('大きなオフセットを持つモデルは投影座標としてゾーン選択する', () => {
+		expect(getModelCoordinateMode([120_000, -240_000, 120_100, -239_900])).toBe('projected');
+	});
+
+	it('原点から離れた長い線形モデルも投影座標としてゾーン選択する', () => {
+		expect(getModelCoordinateMode([20_000, 50_000, 23_000, 51_000])).toBe('projected');
+	});
+
+	it('大きくても原点を含むモデルはローカル座標として扱う', () => {
+		expect(getModelCoordinateMode([-20_000, -20_000, 20_000, 20_000])).toBe('local');
+	});
+
 	it('FBX unitScaleFactor から meter scale を解決する', () => {
 		expect(getModelUnitScaleMeters(100)).toBeCloseTo(1);
 		expect(getModelUnitScaleMeters(1)).toBeCloseTo(0.01);
@@ -29,6 +47,15 @@ describe('model-georeference', () => {
 	it('world座標を持つFBXは unitScaleFactor=1 でも meter 扱いに補正する', () => {
 		expect(resolveFbxUnitScaleMeters(misleadingMeterBox, 1)).toBe(1);
 		expect(resolveFbxUnitScaleMeters(meterBox, 100)).toBe(1);
+		expect(
+			resolveFbxUnitScaleMeters(
+				new THREE.Box3(
+					new THREE.Vector3(20_000, 50_000, 0),
+					new THREE.Vector3(23_000, 51_000, 100)
+				),
+				1
+			)
+		).toBe(1);
 		expect(
 			resolveFbxUnitScaleMeters(
 				new THREE.Box3(
@@ -85,6 +112,23 @@ describe('model-georeference', () => {
 		expect(placement.lng).toBeCloseTo(expected[0], 10);
 		expect(placement.lat).toBeCloseTo(expected[1], 10);
 		expect(placement.altitude).toBe(2);
+	});
+
+	it('保持した投影原点から座標系候補だけを切り替える', async () => {
+		const projectedOrigin: [number, number, number] = [12_050, -33_950, 2];
+		const placement = await resolveProjectedModelPlacementFromOrigin(
+			projectedOrigin,
+			'6674'
+		);
+		const expected = proj4('EPSG:6674', 'EPSG:4326', projectedOrigin.slice(0, 2)) as [
+			number,
+			number
+		];
+
+		expect(placement.lng).toBeCloseTo(expected[0], 10);
+		expect(placement.lat).toBeCloseTo(expected[1], 10);
+		expect(placement.georeference.projectedOrigin).toEqual(projectedOrigin);
+		expect(placement.georeference.epsg).toBe('6674');
 	});
 
 	it('projected georeference を object に反映する', () => {

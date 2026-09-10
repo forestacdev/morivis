@@ -10,6 +10,9 @@ import {
 	has3dGeometryForType
 } from '$routes/map/utils/formats/geojson/3d';
 
+/** 2D（MapLibreベクター）か3D（deck.gl）のどちらで描画するか。 */
+export type GeoJsonRenderMode = 'geojson' | 'deck';
+
 const to2dPosition = (position: number[]): [number, number] => [position[0], position[1]];
 
 const stripGeometryZ = (
@@ -68,14 +71,40 @@ export const stripGeojsonZ = (geojson: FeatureCollection): FeatureCollection =>
 		}))
 	}) as unknown as FeatureCollection;
 
-export const createAutoGeoJsonEntry = async ({
+/**
+ * 3D（deck.gl）で描画できるデータかを判定する。
+ * 描画方式の選択UIを出すかどうかの判断にも使う。
+ */
+export const canRenderGeoJsonAs3d = (
+	geojson: FeatureCollection,
+	geometryType: VectorEntryGeometryType
+): boolean =>
+	canRender3dGeoJsonWithDeck(geometryType) && has3dGeometryForType(geojson, geometryType);
+
+/**
+ * 描画方式を解決する。
+ * 3D描画できないデータに 'deck' を指定した場合は 'geojson' に落とす。
+ */
+export const resolveGeoJsonRenderMode = (
+	geojson: FeatureCollection,
+	geometryType: VectorEntryGeometryType,
+	requestedMode: GeoJsonRenderMode
+): GeoJsonRenderMode =>
+	requestedMode === 'deck' && canRenderGeoJsonAs3d(geojson, geometryType) ? 'deck' : 'geojson';
+
+/**
+ * 描画方式を明示して entry を生成する。
+ * 'deck' でも3D描画できないデータは自動的に2Dベクターになる。
+ */
+export const createGeoJsonEntryWithMode = async ({
 	geojson,
 	geometryType,
 	name,
 	bbox,
 	style,
 	attribution,
-	allow3d = true
+	defaultColor,
+	renderMode
 }: {
 	geojson: FeatureCollection;
 	geometryType: VectorEntryGeometryType;
@@ -83,13 +112,10 @@ export const createAutoGeoJsonEntry = async ({
 	bbox: [number, number, number, number];
 	style?: VectorStyle;
 	attribution: string;
-	allow3d?: boolean;
+	defaultColor?: string;
+	renderMode: GeoJsonRenderMode;
 }): Promise<MorivisLayerEntry | undefined> => {
-	if (
-		allow3d
-		&& canRender3dGeoJsonWithDeck(geometryType)
-		&& has3dGeometryForType(geojson, geometryType)
-	) {
+	if (resolveGeoJsonRenderMode(geojson, geometryType, renderMode) === 'deck') {
 		const entry = createGeoJson3DEntry(name, geojson, geometryType, bbox);
 
 		return {
@@ -102,6 +128,41 @@ export const createAutoGeoJsonEntry = async ({
 	}
 
 	return createGeoJsonEntry(stripGeojsonZ(geojson), geometryType, name, bbox, style, {
-		attribution
+		attribution,
+		defaultColor
 	});
 };
+
+/**
+ * Z座標があれば自動的に3D entry を生成する。
+ * 描画方式をユーザーに選ばせないフォーム（DXF/DWG/SXF等）向け。
+ */
+export const createAutoGeoJsonEntry = async ({
+	geojson,
+	geometryType,
+	name,
+	bbox,
+	style,
+	attribution,
+	defaultColor,
+	allow3d = true
+}: {
+	geojson: FeatureCollection;
+	geometryType: VectorEntryGeometryType;
+	name: string;
+	bbox: [number, number, number, number];
+	style?: VectorStyle;
+	attribution: string;
+	defaultColor?: string;
+	allow3d?: boolean;
+}): Promise<MorivisLayerEntry | undefined> =>
+	createGeoJsonEntryWithMode({
+		geojson,
+		geometryType,
+		name,
+		bbox,
+		style,
+		attribution,
+		defaultColor,
+		renderMode: allow3d ? 'deck' : 'geojson'
+	});

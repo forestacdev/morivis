@@ -102,7 +102,8 @@ export type DialogType =
 	| 'mfjson'
 	| '3dtiles'
 	| 'pmtiles'
-	| 'glb'
+	| 'model'
+	| 'gaussian-splat'
 	| 'arcgis'
 	| 'pointcloud'
 	| 'mbtiles'
@@ -124,6 +125,7 @@ export type DialogType =
 	| 'locationhistory'
 	| 'gtfs'
 	| 'hrit'
+	| 'bcf'
 	| null;
 
 export interface SupportedFileGroup {
@@ -381,8 +383,20 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 	{
 		label: 'GLB / GLTF',
 		description:
-			'3Dシーンや3Dモデルを記述する形式です。GLTFはJSONと外部ファイルの組み合わせ、GLBはそれを1ファイルにまとめた3Dモデルを読み込むときに使います。',
+			'3Dモデルの形状、材質、テクスチャ、アニメーションなどを記録するファイルです。GLTFはJSONと外部リソースで構成され、GLBは同じ内容を単一のバイナリファイルにまとめます。',
 		extensions: ['.glb', '.gltf']
+	},
+	{
+		label: 'USD / USDZ',
+		description:
+			'Pixar USDの3Dシーン形式です。USDZアーカイブ、テキスト形式のUSD/USDA、バイナリ形式のUSDCモデルを読み込みます。',
+		extensions: ['.usd', '.usda', '.usdz']
+	},
+	{
+		label: 'VRM',
+		description:
+			'人型アバターのモデル形式です。表情、骨格、揺れ物などを持つVRMモデルを読み込むときに使います。',
+		extensions: ['.vrm']
 	},
 	{
 		label: 'Wavefront OBJ',
@@ -412,6 +426,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.fbx']
 	},
 	{
+		label: 'MikuMikuDance PMX',
+		description:
+			'MikuMikuDanceで使う3Dモデル形式です。キャラクターなどのスキニング済みモデルを読み込むときに使います。',
+		extensions: ['.pmx']
+	},
+	{
 		label: 'Draco DRC',
 		description: '圧縮された3Dメッシュ形式です。軽量化された3D形状を表示するときに使います。',
 		extensions: ['.drc']
@@ -427,15 +447,27 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.amf']
 	},
 	{
+		label: 'STL',
+		description:
+			'三角形メッシュで形状を表す3Dモデル形式です。ASCII形式とバイナリ形式の造形データを読み込むときに使います。',
+		extensions: ['.stl']
+	},
+	{
 		label: 'Industry Foundation Classes',
 		description:
 			'BIMで使う建築モデル形式です。建物の部材や属性を含む3Dデータを読み込むときに使います。',
 		extensions: ['.ifc']
 	},
 	{
+		label: 'BIM Collaboration Format',
+		description:
+			'IFCモデルに対する課題、コメント、視点を共有するBIM協議ファイルです。読み込み済みIFCの対象部材を確認するときに使います。',
+		extensions: ['.bcf']
+	},
+	{
 		label: '点群',
 		description:
-			'多数の座標点で構成された3Dデータです。LAS/LAZ や COPC、各種点群テキストを表示するときに使います。',
+			'多数の座標点で構成された3Dデータです。LAS/LAZ や COPC、各種点群テキストを表示するときに使います。3D Gaussian Splatting の通常PLYは自動判別します。',
 		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
 	}
 ];
@@ -453,7 +485,14 @@ export const SUPPORTED_FILE_ACCEPT = [
 	'.jgw',
 	'.wld', // ワールドファイル
 	'.aux.xml',
-	'.mtl'
+	'.mtl',
+	'.bmp',
+	'.dds',
+	'.gif',
+	'.spa',
+	'.sph',
+	'.tga',
+	'.vmd' // PMX に紐づける MikuMikuDance モーション
 ].join(',');
 
 export interface ClickedLayerFeaturesData {

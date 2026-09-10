@@ -6,6 +6,7 @@ import {
 } from '$routes/constants';
 import { DEFAULT_POINT_LABEL_STYLE } from '$routes/map/data/entries/vector/_style';
 import type { PointEntry, TileMetaData } from '$routes/map/data/types/vector/index';
+import { facPoiSearchDetailsById } from './_fac_poi_search.details';
 
 const entry: PointEntry<TileMetaData> = {
 	id: 'fac_poi_search',
@@ -30,6 +31,7 @@ const entry: PointEntry<TileMetaData> = {
 		xyzImageTile: { x: 14423, y: 6458, z: 14 }
 	},
 	properties: {
+		detailsById: facPoiSearchDetailsById,
 		fields: [
 			{
 				key: 'name',

@@ -11,7 +11,7 @@
 	import { getInitialEntryStyle } from '$routes/map/data/entries';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { getLayerImage } from '$routes/map/utils/image';
-	import { selectedLayerId, isStyleEdit } from '$routes/stores';
+	import { closeModelView, selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { resetLayerStyleConfirm } from '$routes/stores/confirmation';
 
 	interface Props {
@@ -90,6 +90,7 @@
 					</button>
 					<button
 						onclick={() => {
+							closeModelView();
 							isStyleEdit.set(false);
 							selectedLayerId.set('');
 						}}

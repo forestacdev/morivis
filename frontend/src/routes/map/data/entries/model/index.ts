@@ -1,13 +1,15 @@
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
-import { DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
+import { DEFAULT_MESH_EDGE, DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 import type {
 	AnyTiles3DEntry,
+	GaussianSplatEntry,
 	GeoArrowEntry,
 	GeoJson3DEntry,
 	MeshEntry,
 	MeshFormatType,
 	MeshStyle,
+	MeshUpAxis,
 	PointCloudEntry,
 	PointCloudStyle,
 	ProjectedModelGeoreference,
@@ -16,6 +18,8 @@ import type {
 } from '$routes/map/data/types/model';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';
+import { getModelBaseRotationX } from '$routes/map/utils/three/model-axis';
+import { normalizeModelScale } from '$routes/map/utils/three/model-scale';
 import type { Table } from 'apache-arrow';
 
 import { getRandomColor } from '$routes/map/utils/color/color-brewer';
@@ -84,6 +88,7 @@ export const createPointCloudEntry = (
 		positions: Float32Array;
 		colors?: Uint8Array;
 		pointCount: number;
+		coordinateOrigin?: [number, number, number];
 	},
 	bounds?: [number, number, number, number]
 ): PointCloudEntry => ({
@@ -93,7 +98,8 @@ export const createPointCloudEntry = (
 		type: 'point-cloud',
 		positions: config.positions,
 		colors: config.colors,
-		pointCount: config.pointCount
+		pointCount: config.pointCount,
+		coordinateOrigin: config.coordinateOrigin
 	},
 	metaData: {
 		...DEFAULT_CUSTOM_META_DATA,
@@ -173,7 +179,10 @@ export const createGlbEntry = (
 		lng: number;
 		lat: number;
 		altitude: number;
+		/** モデル固有の単位・寸法補正。利用者が操作する scale とは分離する。 */
+		baseScale?: number;
 		scale?: number;
+		scaleUnit?: number;
 		rotationX?: number;
 		rotationY?: number;
 	},
@@ -182,14 +191,21 @@ export const createGlbEntry = (
 	resourceUrls?: Record<string, string>,
 	options?: {
 		normalizeToLocalOrigin?: boolean;
+		preserveSourceOrientation?: boolean;
+		upAxis?: MeshUpAxis;
 		georeference?: ProjectedModelGeoreference;
 		sourceFileName?: string;
+		initialShadingEnabled?: boolean;
 	}
 ): MeshEntry<MeshStyle> => {
-	// 形式ごとにローカルの up 軸が違うため、読み込み基準回転を分ける。
-	// FBX は今回の変換元では Z-up で出てくるが、描画時に Y/Z を反転しているため
-	// 基準回転は +90 度側に寄せないと上下が逆転する。
-	const baseRotationX = formatType === '3mf' ? 90 : formatType === 'fbx' ? 90 : -180;
+	const baseRotationX = getModelBaseRotationX(
+		formatType,
+		options?.preserveSourceOrientation,
+		options?.upAxis
+	);
+	const normalizedScale = normalizeModelScale(
+		(transform.scale ?? 1) * 10 ** (transform.scaleUnit ?? 0)
+	);
 
 	return {
 		id: 'glb_' + crypto.randomUUID(),
@@ -203,6 +219,7 @@ export const createGlbEntry = (
 			...(options?.normalizeToLocalOrigin != null && {
 				normalizeToLocalOrigin: options.normalizeToLocalOrigin
 			}),
+			...(options?.upAxis && { upAxis: options.upAxis }),
 			...(options?.georeference && {
 				georeference: options.georeference
 			})
@@ -211,6 +228,8 @@ export const createGlbEntry = (
 			...DEFAULT_CUSTOM_META_DATA,
 			attribution: formatType === 'obj'
 				? 'OBJ'
+				: formatType === 'vrm'
+				? 'VRM'
 				: formatType === '3ds'
 				? '3DS'
 				: formatType === 'dae'
@@ -225,8 +244,14 @@ export const createGlbEntry = (
 				? '3MF'
 				: formatType === 'amf'
 				? 'AMF'
+				: formatType === 'stl'
+				? 'STL'
 				: formatType === 'ifc'
 				? 'IFC'
+				: formatType === 'pmx'
+				? 'PMX'
+				: formatType === 'usd'
+				? 'USD / USDZ'
 				: 'GLB',
 			name,
 			altitude: transform.altitude,
@@ -238,17 +263,24 @@ export const createGlbEntry = (
 			type: 'mesh',
 			opacity: 1,
 			wireframe: false,
+			...(formatType === 'fbx' && { showFbxCurves: true, showFbxText: true }),
 			showThroughTerrain: false,
 			color: '#ffffff',
-			shading: { ...DEFAULT_MESH_SHADING },
+			shading: {
+				...DEFAULT_MESH_SHADING,
+				enabled: options?.initialShadingEnabled ?? DEFAULT_MESH_SHADING.enabled
+			},
+			edge: { ...DEFAULT_MESH_EDGE },
 			transform: {
 				lng: transform.lng,
 				lat: transform.lat,
 				altitude: transform.altitude,
 				heightOffset: 0,
 				heightScale: 1,
+				baseScale: transform.baseScale ?? 1,
 				baseRotationX,
-				scale: transform.scale ?? 1,
+				scale: normalizedScale.scale,
+				scaleUnit: normalizedScale.scaleUnit,
 				rotationX: transform.rotationX ?? 0,
 				rotationY: transform.rotationY ?? 0,
 				rotationZ: 0
@@ -256,3 +288,51 @@ export const createGlbEntry = (
 		}
 	};
 };
+
+export const createGaussianSplatEntry = (
+	name: string,
+	url: string,
+	transform: {
+		lng: number;
+		lat: number;
+		altitude: number;
+	},
+	properties: GaussianSplatEntry['properties']
+): GaussianSplatEntry => ({
+	id: 'gaussian_splat_' + crypto.randomUUID(),
+	type: 'model',
+	format: {
+		type: 'gaussian-splat',
+		url,
+		encoding: 'ply',
+		sourceFileName: name
+	},
+	metaData: {
+		...DEFAULT_CUSTOM_META_DATA,
+		attribution: '3D Gaussian Splatting',
+		name,
+		altitude: transform.altitude,
+		bounds: pointToBbox(transform.lng, transform.lat)
+	},
+	properties,
+	interaction: { clickable: false },
+	style: {
+		visible: true,
+		type: 'gaussian-splat',
+		opacity: 1,
+		splatScale: 1,
+		transform: {
+			lng: transform.lng,
+			lat: transform.lat,
+			altitude: transform.altitude,
+			heightOffset: 0,
+			heightScale: 1,
+			baseRotationX: 0,
+			scale: 1,
+			scaleUnit: 0,
+			rotationX: 0,
+			rotationY: 0,
+			rotationZ: 0
+		}
+	}
+});

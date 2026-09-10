@@ -13,7 +13,8 @@ uniform sampler2D u_height_map_top;
 uniform sampler2D u_height_map_bottom;
 
 uniform float u_dem_type; // 0.0:mapbox, 1.0:gsi, 2.0:terrarium
-uniform float u_mode; // 0.0:default, 1.0:elevation, 2.0:slope, 3:aspect 4.0:curvature
+uniform float u_mode; // 0:default, 1:elevation, 2:slope, 3:aspect, 4:curvature, 5:shadow
+uniform vec3 u_light_direction; // X=東、Y=上、Z=南
 
 uniform sampler2D u_color_map;
 
@@ -26,6 +27,7 @@ uniform float u_tile_z;
 uniform float u_tile_y;
 uniform float u_max_slope;
 uniform float u_min_slope;
+uniform float u_slope_auto_range;
 
 // aspect
 uniform float u_max_aspect;
@@ -61,6 +63,38 @@ float convertToHeight(vec4 color) {
         // https://github.com/tilezen/joerd/blob/master/docs/formats.md
         return (rgb.r * 256.0 + rgb.g + rgb.b / 256.0) - 32768.0;
     }
+}
+
+// 陰影用。透明ピクセルと地理院の欠損値を標高として扱わない。
+bool isShadowHeightValid(vec4 color) {
+    return color.a > 0.0 && !(u_dem_type == 1.0 && convertToHeight(color) == -9999.0);
+}
+
+// 上下左右だけを参照するため、斜めの隣接タイルは不要。
+vec4 sampleShadowHeight(vec2 uv) {
+    if (uv.x < 0.0) return texture(u_height_map_left, uv + vec2(1.0, 0.0));
+    if (uv.x > 1.0) return texture(u_height_map_right, uv - vec2(1.0, 0.0));
+    if (uv.y < 0.0) return texture(u_height_map_top, uv + vec2(0.0, 1.0));
+    if (uv.y > 1.0) return texture(u_height_map_bottom, uv - vec2(0.0, 1.0));
+    return texture(u_height_map_center, uv);
+}
+
+// 中央差分。片側が欠損している場合は片側差分、両側欠損なら平坦とする。
+float shadowGradient(vec4 before, vec4 after, float centerHeight, float cellSize) {
+    float beforeValid = isShadowHeightValid(before) ? 1.0 : 0.0;
+    float afterValid = isShadowHeightValid(after) ? 1.0 : 0.0;
+    float beforeHeight = beforeValid > 0.0 ? convertToHeight(before) : centerHeight;
+    float afterHeight = afterValid > 0.0 ? convertToHeight(after) : centerHeight;
+    return (afterHeight - beforeHeight) / (max(1.0, beforeValid + afterValid) * cellSize);
+}
+
+// MapLibre hillshade_prepare の低ズーム補正を陰影の勾配に適用する。
+// https://github.com/maplibre/maplibre-gl-js/blob/main/src/shaders/glsl/hillshade_prepare.fragment.glsl
+// z15以上は1倍、z10は約2.8倍、z5は8倍、z0は64倍。
+float shadowZoomExaggeration(float tileZoom) {
+    float zoom = clamp(tileZoom, 0.0, 15.0);
+    float factor = zoom < 2.0 ? 0.4 : (zoom < 4.5 ? 0.35 : 0.3);
+    return exp2((15.0 - zoom) * factor);
 }
 
 // カラーマップテクスチャから色を取得する関数
@@ -309,6 +343,29 @@ void main() {
         fragColor = terrain_color;
         return;
     }
+    // 陰影起伏図。Web Mercator の地上解像度は南北・東西とも緯度で補正する。
+    if (u_mode == 5.0) {
+        if (!isShadowHeightValid(color)) {
+            fragColor = vec4(0.0);
+            return;
+        }
+        float centerHeight = convertToHeight(color);
+        float latitude = getLatitudeFromTileUV(u_tile_y, uv.y, u_tile_z);
+        float cellSize = max(getEwRes(u_tile_z, latitude), 0.000001);
+        float pixelSize = 1.0 / u_tile_size;
+        float dx = shadowGradient(
+            sampleShadowHeight(uv - vec2(pixelSize, 0.0)),
+            sampleShadowHeight(uv + vec2(pixelSize, 0.0)), centerHeight, cellSize);
+        float dz = shadowGradient(
+            sampleShadowHeight(uv - vec2(0.0, pixelSize)),
+            sampleShadowHeight(uv + vec2(0.0, pixelSize)), centerHeight, cellSize);
+        float exaggeration = shadowZoomExaggeration(u_tile_z);
+        vec3 normal = normalize(vec3(-dx * exaggeration, 1.0, -dz * exaggeration));
+        float intensity = clamp(dot(normal, u_light_direction), 0.0, 1.0);
+        fragColor = vec4(vec3(intensity), color.a);
+        return;
+    }
+
     // slope
     if(u_mode == 2.0) {
 
@@ -320,19 +377,25 @@ void main() {
         }
         mat3 h_mat = calculateTerrainData(v_tex_coord, center_h);
 
-        // 南北方向の地上解像度（nsres）
-        float nsres = getResolution(u_tile_z);
-
         // タイルのY座標とuv座標からから緯度を取得
         float lat = getLatitudeFromTileUV(u_tile_y, uv.y, u_tile_z);
 
         // 東西方向の地上解像度（ewres）
         float ewres = getEwRes(u_tile_z, lat);
+        // Web Mercator の地上解像度は南北方向も同じ緯度補正が必要。
+        float nsres = ewres;
 
         // 傾斜量を計算
         float slope = computeSlopeHorn(h_mat, ewres, nsres, 1.0, true);
-        // 傾斜量を正規化
-        float normalized_slope = clamp((slope - u_min_slope) / (u_max_slope - u_min_slope), 0.0, 1.0);
+        // 自動配色はタイルのズームから決める。傾斜角自体には倍率を掛けない。
+        // z5以下は0–15度、z15以上は0–90度、その間はズームごとに補間する。
+        float color_min = u_min_slope;
+        float color_max = u_max_slope;
+        if (u_slope_auto_range > 0.5) {
+            color_min = 0.0;
+            color_max = mix(15.0, 90.0, clamp((u_tile_z - 5.0) / 10.0, 0.0, 1.0));
+        }
+        float normalized_slope = clamp((slope - color_min) / max(color_max - color_min, 0.0001), 0.0, 1.0);
 
         vec4 slope_color = getColorFromMap(u_color_map, normalized_slope);
 
@@ -505,5 +568,3 @@ void main() {
 
     }
 }
-
-

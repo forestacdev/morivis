@@ -18,6 +18,7 @@ const LARGE_FILE_THRESHOLD = 100 * 1024 * 1024;
 
 const getMeshFormatType = (path: string): MeshFormatType => {
 	const normalizedPath = path.toLowerCase();
+	if (normalizedPath.endsWith('.vrm')) return 'vrm';
 	if (normalizedPath.endsWith('.obj')) return 'obj';
 	if (normalizedPath.endsWith('.3ds')) return '3ds';
 	if (normalizedPath.endsWith('.dae')) return 'dae';
@@ -26,7 +27,16 @@ const getMeshFormatType = (path: string): MeshFormatType => {
 	if (normalizedPath.endsWith('.drc')) return 'drc';
 	if (normalizedPath.endsWith('.3mf')) return '3mf';
 	if (normalizedPath.endsWith('.amf')) return 'amf';
+	if (normalizedPath.endsWith('.stl')) return 'stl';
 	if (normalizedPath.endsWith('.ifc')) return 'ifc';
+	if (normalizedPath.endsWith('.pmx')) return 'pmx';
+	if (
+		normalizedPath.endsWith('.usd')
+		|| normalizedPath.endsWith('.usda')
+		|| normalizedPath.endsWith('.usdz')
+	) {
+		return 'usd';
+	}
 	return 'gltf';
 };
 
@@ -59,7 +69,7 @@ const registerRemoteKmlModel = (
 				lng: placement?.lng ?? center.lng,
 				lat: placement?.lat ?? center.lat,
 				altitude: placement?.altitude ?? 0,
-				scale: placement?.scale
+				baseScale: placement?.scale
 			},
 			getMeshFormatType(modelUrl)
 		)
@@ -97,6 +107,7 @@ export const applyUploadDropDecision = (
 			return;
 		}
 
+		setDropFile(decision.sourceFiles);
 		registerRemoteKmlModel(
 			map,
 			decision.name,

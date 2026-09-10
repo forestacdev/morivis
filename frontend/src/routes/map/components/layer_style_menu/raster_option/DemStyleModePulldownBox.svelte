@@ -26,6 +26,7 @@
 		{ key: 'relief', name: '段彩図' },
 		{ key: 'slope', name: '傾斜量' },
 		{ key: 'aspect', name: '傾斜方位' },
+		{ key: 'shadow', name: '陰影起伏図' },
 		{ key: 'curvature', name: '曲率' }
 	];
 
@@ -46,8 +47,8 @@
 					return uniformsData.aspect !== undefined;
 				case 'curvature':
 					return uniformsData.curvature !== undefined;
-				// case 'shadow':
-				//     return uniformsData.shadow !== undefined;
+				case 'shadow':
+					return true;
 				// case 'default':
 				//     return true; // defaultは常に利用可能
 				default:

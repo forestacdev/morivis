@@ -17,6 +17,8 @@
 		toDemLinearColorStyle,
 		toDemStepColorStyle
 	} from '$routes/map/utils/style/color-mapping';
+	import { normalizeDemShadowStyle } from '$routes/map/utils/style/dem-shadow';
+	import { getDemSlopeRangeMode } from '$routes/map/utils/style/dem-slope';
 
 	const colorMapManager = new ColorMapManager();
 	const linearColorMapOptions = [...COLORMAP_PRESET_NAMES];
@@ -28,6 +30,31 @@
 	}
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
+	const shadowStyle = $derived(
+		normalizeDemShadowStyle(layerEntry.style.visualization.uniformsData.shadow)
+	);
+	const setShadowAngle = (key: 'azimuth' | 'altitude', value: number) => {
+		layerEntry.style.visualization.uniformsData.shadow = { ...shadowStyle, [key]: value };
+	};
+	const slopeStyle = $derived(layerEntry.style.visualization.uniformsData.slope);
+	const slopeRangeMode = $derived(slopeStyle ? getDemSlopeRangeMode(slopeStyle) : 'manual');
+	const setSlopeRangeMode = (rangeMode: 'auto' | 'manual') => {
+		if (slopeStyle)
+			layerEntry.style.visualization.uniformsData.slope = { ...slopeStyle, rangeMode };
+	};
+	const setSlopeRange = (min: number, max: number) => {
+		if (!slopeStyle) return;
+		layerEntry.style.visualization.uniformsData.slope = {
+			...slopeStyle,
+			rangeMode: 'manual',
+			range: createAdjustableRange(
+				min,
+				max,
+				slopeStyle.range?.domain[0] ?? 0,
+				slopeStyle.range?.domain[1] ?? 90
+			)
+		};
+	};
 
 	$effect(() => {
 		const relief = layerEntry.style.visualization.uniformsData.relief;
@@ -46,10 +73,18 @@
 		const currentStyle = layerEntry.style.visualization.uniformsData[key];
 		if (!currentStyle) return;
 
-		layerEntry.style.visualization.uniformsData[key] =
+		const convertedStyle =
 			type === 'step'
 				? toDemStepColorStyle(currentStyle, defaultDivisions)
 				: toDemLinearColorStyle(currentStyle);
+		if (key === 'slope') {
+			layerEntry.style.visualization.uniformsData.slope = {
+				...convertedStyle,
+				rangeMode: getDemSlopeRangeMode(currentStyle)
+			};
+		} else {
+			layerEntry.style.visualization.uniformsData.relief = convertedStyle;
+		}
 	};
 
 	const getTypeButtonClass = (style: DemRangeColorStyle, type: 'linear' | 'step'): string => {
@@ -154,96 +189,107 @@
 			{/if}
 		{/if}
 
-		{#if layerEntry.style?.visualization.uniformsData.slope && layerEntry.style.visualization.mode === 'slope'}
+		{#if slopeStyle && layerEntry.style.visualization.mode === 'slope'}
 			<div class="flex items-center justify-between">
 				<div class="text-base select-none">カラーランプ</div>
 				<div class="flex gap-2">
 					<button
 						onclick={() => setRangeStyleType('slope', 'linear')}
-						class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'linear')}`}
+						class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(slopeStyle, 'linear')}`}
+						>連続</button
 					>
-						連続
-					</button>
 					<button
 						onclick={() => setRangeStyleType('slope', 'step')}
-						class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(layerEntry.style.visualization.uniformsData.slope, 'step')}`}
+						class={`cursor-pointer rounded-full px-4 py-1 text-sm transition-colors ${getTypeButtonClass(slopeStyle, 'step')}`}
+						>段階</button
 					>
-						段階
-					</button>
 				</div>
 			</div>
-			{#if isDemStepColorStyle(layerEntry.style.visualization.uniformsData.slope)}
+			{#if isDemStepColorStyle(slopeStyle)}
 				<ColorMapSelect
 					showLabel={false}
-					bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
+					bind:isColorMap={slopeStyle.colorMap}
 					mutableColorMapType={stepColorMapOptions}
 				>
-					{#snippet children(_isColorMap)}
-						<ColorScaleDem isColorMap={_isColorMap} />
-					{/snippet}
+					{#snippet children(_isColorMap)}<ColorScaleDem isColorMap={_isColorMap} />{/snippet}
 				</ColorMapSelect>
-
-				{#if layerEntry.style.visualization.uniformsData.slope.range}
-					<RangeSliderDouble
-						label="傾斜量数値範囲"
-						bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.range.value[0]}
-						bind:upperValue={layerEntry.style.visualization.uniformsData.slope.range.value[1]}
-						max={layerEntry.style.visualization.uniformsData.slope.range.domain[1]}
-						min={layerEntry.style.visualization.uniformsData.slope.range.domain[0]}
-						step={0.01}
-						primaryColor={colorMapManager.createDemCSSGradient(
-							layerEntry.style.visualization.uniformsData.slope
-						)}
-						minRangeColor={colorMapManager.getDemMinColor(
-							layerEntry.style.visualization.uniformsData.slope
-						)}
-						maxRangeColor={colorMapManager.getDemMaxColor(
-							layerEntry.style.visualization.uniformsData.slope
-						)}
-					/>
-				{/if}
-				<div class="my-3">
-					<RangeSlider
-						label="分類数"
-						bind:value={layerEntry.style.visualization.uniformsData.slope.divisions}
-						min={3}
-						max={9}
-						step={1}
-						isInt={true}
-					/>
-				</div>
-				<DemColorLegend style={layerEntry.style.visualization.uniformsData.slope} />
+				<RangeSlider
+					label="分類数"
+					bind:value={slopeStyle.divisions}
+					min={3}
+					max={9}
+					step={1}
+					isInt={true}
+				/>
 			{:else}
 				<ColorMapSelect
 					showLabel={false}
-					bind:isColorMap={layerEntry.style.visualization.uniformsData.slope.colorMap}
+					bind:isColorMap={slopeStyle.colorMap}
 					mutableColorMapType={linearColorMapOptions}
 				>
-					{#snippet children(_isColorMap)}
-						<ColorScaleDem isColorMap={_isColorMap} />
-					{/snippet}
+					{#snippet children(_isColorMap)}<ColorScaleDem isColorMap={_isColorMap} />{/snippet}
 				</ColorMapSelect>
-
-				{#if layerEntry.style.visualization.uniformsData.slope.range}
-					<RangeSliderDouble
-						label="傾斜量数値範囲"
-						bind:lowerValue={layerEntry.style.visualization.uniformsData.slope.range.value[0]}
-						bind:upperValue={layerEntry.style.visualization.uniformsData.slope.range.value[1]}
-						max={layerEntry.style.visualization.uniformsData.slope.range.domain[1]}
-						min={layerEntry.style.visualization.uniformsData.slope.range.domain[0]}
-						step={0.01}
-						primaryColor={colorMapManager.createDemCSSGradient(
-							layerEntry.style.visualization.uniformsData.slope
-						)}
-						minRangeColor={colorMapManager.getDemMinColor(
-							layerEntry.style.visualization.uniformsData.slope
-						)}
-						maxRangeColor={colorMapManager.getDemMaxColor(
-							layerEntry.style.visualization.uniformsData.slope
-						)}
-					/>
-				{/if}
 			{/if}
+			<div class="flex items-center justify-between">
+				<span class="text-base">配色範囲</span>
+				<div class="flex gap-2">
+					{#each ['auto', 'manual'] as mode (mode)}
+						<button
+							aria-pressed={slopeRangeMode === mode}
+							onclick={() => setSlopeRangeMode(mode as 'auto' | 'manual')}
+							class="cursor-pointer rounded-full px-4 py-1 text-sm {slopeRangeMode === mode
+								? 'bg-main-accent text-white'
+								: 'bg-sub text-sub-text'}">{mode === 'auto' ? '自動' : '手動'}</button
+						>
+					{/each}
+				</div>
+			</div>
+
+			{#if slopeStyle.range && slopeRangeMode === 'manual'}
+				<RangeSliderDouble
+					label="傾斜量の配色範囲（°）"
+					lowerValue={slopeStyle.range.value[0]}
+					upperValue={slopeStyle.range.value[1]}
+					min={slopeStyle.range.domain[0]}
+					max={slopeStyle.range.domain[1]}
+					step={0.01}
+					onChange={setSlopeRange}
+					primaryColor={colorMapManager.createDemCSSGradient(slopeStyle)}
+					minRangeColor={colorMapManager.getDemMinColor(slopeStyle)}
+					maxRangeColor={colorMapManager.getDemMaxColor(slopeStyle)}
+				/>
+			{/if}
+			{#if slopeRangeMode === 'manual'}
+				<DemColorLegend style={slopeStyle} />
+			{:else}
+				<div class="flex flex-col gap-1 text-sm text-sub-text">
+					<div
+						class="h-3 w-full rounded"
+						style:background={colorMapManager.createDemCSSGradient(slopeStyle)}
+					></div>
+					<div class="flex justify-between text-base"><span>緩やか</span><span>急</span></div>
+				</div>
+			{/if}
+		{/if}
+
+		{#if layerEntry.style.visualization.mode === 'shadow'}
+			<RangeSlider
+				label="光源の方位角（°）"
+				bind:value={() => shadowStyle.azimuth, (value) => setShadowAngle('azimuth', value)}
+				min={0}
+				max={360}
+				step={1}
+				isInt={true}
+			/>
+			<div class="text-sub-text text-sm">北 0° / 東 90° / 南 180° / 西 270°</div>
+			<RangeSlider
+				label="光源の高度角（°）"
+				bind:value={() => shadowStyle.altitude, (value) => setShadowAngle('altitude', value)}
+				min={0}
+				max={90}
+				step={1}
+				isInt={true}
+			/>
 		{/if}
 
 		{#if layerEntry.style?.visualization.uniformsData.aspect && layerEntry.style.visualization.mode === 'aspect'}

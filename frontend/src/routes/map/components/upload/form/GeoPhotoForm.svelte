@@ -6,10 +6,16 @@
 	import type { GeoJsonMetaData, PointEntry } from '$routes/map/data/types/vector';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { parseGeoPhotos } from '$routes/map/utils/formats/exif';
-	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
+	import {
+		GEO_PHOTO_ATTRIBUTE_FIELDS,
+		GEO_PHOTO_ATTRIBUTE_KEYS,
+		parseGeoPhotos,
+		type GeoPhotoFeature
+	} from '$routes/map/utils/formats/exif';
+	import { requestPhotoLocation } from '$routes/map/utils/photo-location';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing } from '$routes/stores/ui';
+	import { isMobile, isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
@@ -23,42 +29,70 @@
 		dropFile = $bindable()
 	}: Props = $props();
 
-	let photoCount = $state(0);
-	let skippedCount = $state(0);
-	let thumbnails = $state<{ url: string; name: string }[]>([]);
+	let confirmLocation = $state<((accepted: boolean) => void) | null>(null);
+	let missingPhotoCount = $state(0);
+	let status = $state('写真を読み込み中...');
+	let activeController: AbortController | undefined;
 
 	const photoFiles = $derived.by(() => {
 		if (!dropFile) return [];
 		const files = toUploadFiles(dropFile);
-		return files.filter((f) => /\.(jpe?g|heic|heif)$/i.test(f.name));
+		return files.filter((f) => /\.(jpe?g|heic|heif|png|webp)$/i.test(f.name));
 	});
 
 	$effect(() => {
-		if (photoFiles.length > 0) {
-			processPhotos();
-		}
+		const files = photoFiles;
+		const mobile = $isMobile;
+		if (files.length === 0) return;
+		const controller = new AbortController();
+		activeController = controller;
+		void processPhotos(files, mobile, controller.signal);
+		return () => {
+			controller.abort();
+			confirmLocation?.(false);
+			confirmLocation = null;
+			isProcessing.set(false);
+		};
 	});
 
-	const processPhotos = async () => {
+	const processPhotos = async (files: File[], mobile: boolean, signal: AbortSignal) => {
 		isProcessing.set(true);
+		status = '写真の位置情報を確認中...';
+		let features: GeoPhotoFeature[] = [];
+		let registered = false;
 
 		try {
-			const result = await parseGeoPhotos(photoFiles);
-			photoCount = result.features.length;
-			skippedCount = result.skippedCount;
+			const result = await parseGeoPhotos(files, {
+				signal,
+				resolveMissingLocation: mobile
+					? async (count) => {
+							isProcessing.set(false);
+							missingPhotoCount = count;
+							const location = await requestPhotoLocation(async () => {
+								const accepted = await new Promise<boolean>((resolve) => {
+									confirmLocation = resolve;
+								});
+								if (accepted) status = '現在地を取得中...';
+								return accepted;
+							}, signal);
+							signal.throwIfAborted();
+							isProcessing.set(true);
+							status = '写真を読み込み中...';
+							return location;
+						}
+					: undefined
+			});
+			features = result.features;
+			signal.throwIfAborted();
+			const photoCount = result.features.length;
+			const skippedCount = result.skippedCount;
 
-			if (result.features.length === 0) {
-				showNotification('位置情報付きの写真が見つかりませんでした', 'error');
+			if (photoCount === 0) {
+				if (!mobile) showNotification('位置情報付きの写真が見つかりませんでした', 'error');
 				dropFile = null;
 				showDialogType = null;
 				return;
 			}
-
-			// サムネイル表示用
-			thumbnails = result.features.map((f) => ({
-				url: f.properties.imageUrl,
-				name: f.properties.fileName
-			}));
 
 			// GeoJSON FeatureCollection作成
 			const geojson = {
@@ -79,8 +113,16 @@
 				}
 			);
 
+			signal.throwIfAborted();
+			if (!entry) throw new Error('写真の登録に失敗しました');
+
 			if (entry) {
 				const pointEntry = entry as PointEntry<GeoJsonMetaData>;
+				entry.properties.attributeView.popupKeys = [...GEO_PHOTO_ATTRIBUTE_KEYS];
+				entry.properties.fields = entry.properties.fields.map((field) => {
+					const photoField = GEO_PHOTO_ATTRIBUTE_FIELDS.find(({ key }) => key === field.key);
+					return photoField ? { ...field, ...photoField } : field;
+				});
 				entry.properties.attributeView.titles = [
 					{
 						conditions: ['fileName'],
@@ -105,6 +147,7 @@
 				pointEntry.style.opacity = 1;
 
 				showDataEntry = entry;
+				registered = true;
 				showDialogType = null;
 				dropFile = null;
 
@@ -118,51 +161,56 @@
 				}
 			}
 		} catch (e) {
-			showNotification('写真の読み込みに失敗しました', 'error');
-			console.error(e);
+			if (signal.aborted) return;
+			showNotification(e instanceof Error ? e.message : '写真の読み込みに失敗しました', 'error');
+			dropFile = null;
+			showDialogType = null;
 		} finally {
-			isProcessing.set(false);
+			if (!registered) {
+				const urls = new Set(
+					features.flatMap(({ properties }) => [
+						properties.imageUrl,
+						properties.iconImageUrl,
+						properties.coverImageUrl
+					])
+				);
+				for (const url of urls) URL.revokeObjectURL(url);
+			}
+			if (!signal.aborted) isProcessing.set(false);
 		}
 	};
 
+	const answerLocation = (accepted: boolean) => {
+		const resolve = confirmLocation;
+		confirmLocation = null;
+		resolve?.(accepted);
+	};
+
 	const cancel = () => {
+		activeController?.abort();
+		answerLocation(false);
 		dropFile = null;
 		showDialogType = null;
 	};
 </script>
 
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">位置情報付き写真の登録</span>
+<div class="flex shrink-0 items-center justify-between pb-4">
+	<span class="text-2xl font-bold">写真の登録</span>
 </div>
 
-<div
-	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
->
-	{#if $isProcessing}
-		<div class="w-full p-2 text-sm text-gray-400">EXIF情報を読み取り中...</div>
-	{:else if thumbnails.length > 0}
-		<div class="w-full p-2 text-sm text-gray-300">
-			{photoCount}枚の写真を検出{skippedCount > 0 ? `（${skippedCount}枚はGPS情報なし）` : ''}
-		</div>
-		<div class="grid w-full grid-cols-4 gap-1 p-2">
-			{#each thumbnails.slice(0, 12) as thumb}
-				<div class="aspect-square overflow-hidden rounded">
-					<img src={thumb.url} alt={thumb.name} class="h-full w-full object-cover" />
-				</div>
-			{/each}
-			{#if thumbnails.length > 12}
-				<div
-					class="flex aspect-square items-center justify-center rounded bg-gray-700 text-sm text-gray-300"
-				>
-					+{thumbnails.length - 12}
-				</div>
-			{/if}
+<div class="flex w-full grow flex-col gap-4 overflow-y-auto" aria-live="polite">
+	{#if confirmLocation}
+		<p>{missingPhotoCount}枚の写真に位置情報がありません。端末の現在地を使いますか？</p>
+		<p class="text-sm text-gray-400">
+			位置情報のない写真を、撮影場所ではなく今いる場所に配置します。
+		</p>
+		<div class="flex justify-center gap-4">
+			<button onclick={cancel} class="c-btn-sub cursor-pointer p-4">キャンセル</button>
+			<button onclick={() => answerLocation(true)} class="c-btn-confirm cursor-pointer p-4"
+				>はい</button
+			>
 		</div>
 	{:else}
-		<div class="w-full p-2 text-sm text-gray-400">写真を読み込み中...</div>
+		<p class="text-sm text-gray-400">{status}</p>
 	{/if}
-</div>
-
-<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
-	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
 </div>

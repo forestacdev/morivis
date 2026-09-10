@@ -27,6 +27,7 @@ trustPolicyExclude:
 overrides:
   sharp: 0.34.5
   '@sveltejs/enhanced-img>sharp': 0.34.5
+  '@yohawing/three-mmd-loader>@types/three': 0.177.0
   '@xmldom/xmldom': 0.8.13
   thrift: 0.23.0
   tmp: 0.2.6

@@ -1,6 +1,7 @@
-const basePath = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 
-export const IFC_WASM_PATH = `${basePath}web-ifc/`;
+// Worker の BASE_URL は './' になるため、Worker URL からアプリの base path を復元する。
+export const IFC_WASM_PATH = resolveStaticAssetPath('/web-ifc/');
 
 interface IfcManagerWithWasmPath {
 	setWasmPath: (path: string) => Promise<void>;

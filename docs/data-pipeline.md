@@ -44,9 +44,22 @@ flowchart LR
 | --- | --- |
 | `types/index.ts` | `DialogType` と `SUPPORTED_FILE_GROUPS`。UI に見せる対応拡張子の定義元。 |
 | `upload-drop.ts` | ファイルや URL をどの `DialogType` に振り分けるかの定義元。OBJ の軽量事前検査結果のような形式別メタデータもここで `File` に一時付与する。 |
-| `dialog-registry.ts` | `DialogType -> Form / profile` の対応表。 |
+| `dialog-registry.ts` | `DialogType -> Form の動的 import / profile` の対応表。 |
 | `transform-policy.ts` | 形式ごとの `zone` / `georef` 許可方針。 |
 | `components/upload/form/*.svelte` | 各形式の preview / final entry 作成の実装本体。 |
+
+## 読み込みのタイミング
+
+PC・モバイルとも、`showDialogType` が設定されたときに `BaseDialog` を読み込む。
+`dialog-registry.ts` の `load` は対象フォームだけを動的 import し、Shapefile の専用画面も同様に必要時に読み込む。
+`GeoRefForm` は `transformOptionMode` が設定されたときに読み込む。
+`LazyUploadComponent` が読み込み中のキャンセル、失敗時の再試行を扱う。
+
+写真の GPS 判定では HEIC デコーダーを読み込まない。画像の先頭 12 バイトで HEIC を判定し、GPS 付き HEIC を表示用に変換するときだけ `heic-to` を読み込む。
+
+PWA は `scripts/pwa-precache.ts` で起動エントリの静的依存をたどり、遅延 JS と変換用 Worker・WASM を事前キャッシュから除外する。
+ハッシュ付きの遅延モジュールは、Service Worker の制御下で使用した時点でキャッシュする。
+未使用の形式を初めて開くときは通信が必要になる。
 
 ## 中間状態
 
@@ -96,7 +109,7 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 | 科学技術・衛星ラスタ | DEM XML, NetCDF, GRIB2, HDF5, HRIT/LRIT | バンド配列や観測画像へ展開 | 形式ごとに自動、または GeoRef / Zone | `createRasterGeoRefData()` | 各 Form または `+page.svelte finalizeGeoRefEntry()` | 解析 worker、Terrarium 変換、3Dメッシュ化 |
 | 点群 | LAS, LAZ, COPC, PLY, PCD, XYZ, OBJ 点群 | positions / colors / pointCount を生成 | bbox が不正なら Zone。登録方法で raster / pointcloud に分岐 | 点群 GeoRef は pointcloud 用 `geoRefData`。DEM 化は raster 用 `geoRefData` | `PointCloudForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | 点群解析、DEM ラスタライズ、GeoRef 点群変形 |
 | TIN / サーフェス | LandXML | TIN, breakline, point 群を解析。必要に応じて DEM 化 | Zone または GeoRef | ラスター preview または mesh 準備 | `LandXmlForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | rasterize worker、3Dメッシュ化 |
-| 3D モデル | GLB, OBJ, 3DS, DAE, 3DM, FBX, DRC, 3MF, AMF, IFC | three.js 系が扱える URL / Blob に正規化。OBJ は `# COORDINATE_SYSTEM` コメントから投影 EPSG を先読みできる | 埋め込み配置が解ければ自動。無ければ Zone または手動配置 | なし | 各 3D Form がモデル entry を直接作る | `model-bounds-parallel` 系で bounds / resolvedPlacement を算出し、runtime では `three/layer-manager.ts` が georeference と正規化を適用 |
+| 3D モデル | GLB, OBJ, 3DS, DAE, 3DM, FBX, DRC, 3MF, AMF, STL, IFC | three.js 系が扱える URL / Blob に正規化。OBJ は `# COORDINATE_SYSTEM` コメントから投影 EPSG を先読みできる。STL はアップロード時に Z-up / Y-up を指定する | 埋め込み配置が解ければ自動。無ければ Zone または手動配置 | なし | 各 3D Form がモデル entry を直接作る | `model-bounds-parallel` 系で bounds / resolvedPlacement を算出し、runtime では `three/layer-manager.ts` が georeference と正規化を適用 |
 | 3D Tiles / タイルデータ | 3D Tiles, PMTiles, MBTiles | URL / ファイルから source metadata を構築 | 通常は CRS 解決不要。PMTiles / MBTiles は source 種別の分岐あり | なし | source / model entry を直接作る | PMTiles protocol, MBTiles reader |
 | リモート配信 / カタログ | WMTS, WCS, GeoZarr, FeatureService, WFS, OGC API Features, STAC, ArcGIS WebMap / service, Raster URL, Vector URL | メタデータ問い合わせや capabilities 解析 | 形式ごとのポリシーに従う | WCS / STAC / vector は必要に応じて preview | 各 Form または `+page.svelte finalizeGeoRefEntry()` | capabilities fetch、STAC / WCS / ArcGIS 解析 |
 

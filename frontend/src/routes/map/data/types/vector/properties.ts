@@ -3,6 +3,7 @@ import type {
 	SharedDiscreteDimension,
 	TemporalBehavior
 } from '$routes/map/data/types';
+import type { DetailsById } from '$routes/map/data/types/details';
 import type { FeatureProp } from '$routes/map/types/properties';
 
 /**
@@ -37,6 +38,8 @@ export interface NationalForestRelations {
 export interface Relations {
 	/** 市町村コード連携用の属性キー */
 	cityCodeKey?: string;
+	/** 木材辞書連携用の樹種名の属性キー。 */
+	timberSpeciesNameKey?: string;
 	/** iNaturalist 連携用の和名の属性キー。 */
 	iNaturalistNameKey?: string;
 	/** 国有林データ連携用の属性キー群 */
@@ -512,6 +515,8 @@ export interface FieldDef {
 export interface VectorProperties {
 	fields: FieldDef[];
 	attributeView: AttributeView;
+	/** 地物の _prop_id ごとの詳細情報。 */
+	detailsById?: DetailsById;
 	images?: VectorImages;
 	temporal?: VectorTemporal;
 	/**

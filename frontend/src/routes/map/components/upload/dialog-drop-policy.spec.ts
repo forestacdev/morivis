@@ -61,6 +61,22 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveOpenDialogDrop', () => {
+	it('モバイルで開いているフォームに写真を追加すると写真フォームへ移る', async () => {
+		const files = [createFile('test-photo.png')];
+		expect(await resolveOpenDialogDrop('gpx', [], files, { mobile: true })).toEqual({
+			type: 'delegate',
+			decision: { type: 'dialog', dialogType: 'geophoto', dropFiles: files }
+		});
+	});
+
+	it('モバイルでもモデルへの画像追加はテクスチャとして扱う', async () => {
+		const model = createFile('test-model.obj');
+		const texture = createFile('test-texture.png');
+		expect(await resolveOpenDialogDrop('model', [model], [texture], { mobile: true })).toEqual({
+			type: 'stay',
+			dropFiles: [model, texture]
+		});
+	});
 	it('SXFフォームで .saf を追加ドロップしたときは同一フォームにファイルをマージする', async () => {
 		const currentFiles = [createFile('plan.sfc')];
 		const incomingFiles = [createFile('plan.saf')];
@@ -89,11 +105,35 @@ describe('resolveOpenDialogDrop', () => {
 		const currentFiles = [createFile('house.obj')];
 		const incomingFiles = [createFile('house.mtl'), createFile('wall.webp')];
 
-		const result = await resolveOpenDialogDrop('glb', currentFiles, incomingFiles);
+		const result = await resolveOpenDialogDrop('model', currentFiles, incomingFiles);
 
 		expect(result).toEqual({
 			type: 'stay',
 			dropFiles: expect.arrayContaining([currentFiles[0], ...incomingFiles])
+		});
+	});
+
+	it('PMXフォームで DDS テクスチャを追加ドロップしたときは同一フォームにファイルをマージする', async () => {
+		const currentFiles = [createFile('test-model.pmx')];
+		const incomingFiles = [createFile('test-texture.dds')];
+
+		const result = await resolveOpenDialogDrop('model', currentFiles, incomingFiles);
+
+		expect(result).toEqual({
+			type: 'stay',
+			dropFiles: expect.arrayContaining([currentFiles[0], incomingFiles[0]])
+		});
+	});
+
+	it('VRMフォームで VRMA モーションを追加ドロップしたときは同一フォームにファイルをマージする', async () => {
+		const currentFiles = [createFile('test-avatar.vrm')];
+		const incomingFiles = [createFile('test-motion.vrma')];
+
+		const result = await resolveOpenDialogDrop('model', currentFiles, incomingFiles);
+
+		expect(result).toEqual({
+			type: 'stay',
+			dropFiles: expect.arrayContaining([currentFiles[0], incomingFiles[0]])
 		});
 	});
 
@@ -113,7 +153,7 @@ describe('resolveOpenDialogDrop', () => {
 			createPathLikeFile('wall.png', 'textures/wall.png')
 		];
 
-		const result = await resolveOpenDialogDrop('glb', currentFiles, incomingFiles);
+		const result = await resolveOpenDialogDrop('model', currentFiles, incomingFiles);
 
 		expect(result).toEqual({
 			type: 'stay',

@@ -1,7 +1,6 @@
 import { browser } from '$app/environment';
 import { MOBILE_WIDTH } from '$routes/constants';
 import { checkMobile, checkPc, type MobileActiveMenu } from '$routes/map/utils/platform/viewport';
-import { isStreetView, isStyleEdit } from '$routes/stores';
 import { get, readable, writable } from 'svelte/store';
 
 /** 処理中の状態 */
@@ -33,6 +32,15 @@ export const showSearchSuggest = writable<boolean>(false);
 
 /** モバイルフッターの状態 */
 export const isActiveMobileMenu = writable<MobileActiveMenu>('map');
+
+/** スタイル編集モード */
+export const isStyleEdit = writable<boolean>(false);
+
+/** ストリートビュー */
+export const isStreetView = writable<boolean>(false);
+
+/** 単体3Dモデルビューの表示状態 */
+export const showModelView = writable<boolean>(false);
 
 /** PWAのインストール手順 */
 export const showPwaManuelDialog = writable<boolean>(false);

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import * as THREE from 'three';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$app/paths', () => ({
 	asset: (path: string) => path
@@ -14,6 +14,47 @@ vi.mock('$routes/stores/map', () => ({
 	}
 }));
 
+vi.mock('tinyusdz/TinyUSDZLoader.js', () => ({
+	TinyUSDZLoader: class {
+		async init() {
+			return this;
+		}
+
+		parse(
+			_binary: Uint8Array,
+			_filePath: string,
+			onLoad: (scene: { getDefaultRootNode: () => object; }) => void
+		) {
+			onLoad({ getDefaultRootNode: () => ({}) });
+		}
+	}
+}));
+
+vi.mock('tinyusdz/tinyusdz.js', () => ({
+	default: async () => ({})
+}));
+
+vi.mock('tinyusdz/tinyusdz.wasm?url', () => ({
+	default: 'data:application/wasm;base64,AGFzbQEAAAA='
+}));
+
+vi.mock('tinyusdz/TinyUSDZLoaderUtils.js', () => ({
+	TinyUSDZLoaderUtils: {
+		createDefaultMaterial: () => new THREE.MeshBasicMaterial(),
+		getTextureFromUSD: () => Promise.resolve(new THREE.Texture()),
+		buildThreeNode: () => {
+			const object = new THREE.Group();
+			const geometry = new THREE.BufferGeometry();
+			geometry.setAttribute(
+				'position',
+				new THREE.Float32BufferAttribute([0, 0, 0, 2, 0, 0, 0, 3, 0], 3)
+			);
+			object.add(new THREE.Mesh(geometry));
+			return object;
+		}
+	}
+}));
+
 const readFixtureFile = (fileName: string): File => {
 	const absolutePath = resolve(import.meta.dirname, '__fixtures__', fileName);
 	const bytes = readFileSync(absolutePath);
@@ -22,8 +63,119 @@ const readFixtureFile = (fileName: string): File => {
 	});
 };
 
+const createSyntheticUsdFile = (): File =>
+	new File(
+		[
+			`#usda 1.0
+def Xform "Root"
+{
+	def Mesh "Triangle"
+	{
+		int[] faceVertexCounts = [3]
+		int[] faceVertexIndices = [0, 1, 2]
+		point3f[] points = [(0, 0, 0), (2, 0, 0), (0, 3, 0)]
+	}
+}`
+		],
+		'synthetic.usda',
+		{ type: 'model/vnd.usda' }
+	);
+
+const createSyntheticStlFile = (): File =>
+	new File(
+		[
+			`solid test-shape
+facet normal 0 0 1
+	outer loop
+		vertex 0 0 0
+		vertex 2 0 0
+		vertex 0 3 0
+	endloop
+endfacet
+endsolid test-shape`
+		],
+		'test-shape.stl',
+		{ type: 'model/stl' }
+	);
+
+const createSyntheticProjectedStlFile = (): File =>
+	new File(
+		[
+			`solid test-projected-shape
+facet normal 0 0 1
+	outer loop
+		vertex 120000 -240000 5
+		vertex 120002 -240000 5
+		vertex 120000 -239997 5
+	endloop
+endfacet
+endsolid test-projected-shape`
+		],
+		'test-projected-shape.stl',
+		{ type: 'model/stl' }
+	);
+
+const createKtx2TextureGltfFile = (): File => {
+	const binary = new Uint8Array(40);
+	new Float32Array(binary.buffer, 0, 9).set([0, 0, 0, 2, 0, 0, 0, 3, 0]);
+	const json = new TextEncoder().encode(
+		JSON.stringify({
+			asset: { version: '2.0' },
+			extensionsUsed: ['KHR_texture_basisu'],
+			extensionsRequired: ['KHR_texture_basisu'],
+			buffers: [{ byteLength: binary.byteLength }],
+			bufferViews: [
+				{ buffer: 0, byteOffset: 0, byteLength: 36 },
+				{ buffer: 0, byteOffset: 36, byteLength: 1 }
+			],
+			accessors: [
+				{
+					bufferView: 0,
+					componentType: 5126,
+					count: 3,
+					type: 'VEC3',
+					min: [0, 0, 0],
+					max: [2, 3, 0]
+				}
+			],
+			images: [{ bufferView: 1, mimeType: 'image/ktx2' }],
+			textures: [{ extensions: { KHR_texture_basisu: { source: 0 } } }],
+			materials: [{ pbrMetallicRoughness: { baseColorTexture: { index: 0 } } }],
+			meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }],
+			nodes: [{ mesh: 0 }],
+			scenes: [{ nodes: [0] }],
+			scene: 0
+		})
+	);
+	const jsonLength = Math.ceil(json.byteLength / 4) * 4;
+	const glb = new Uint8Array(12 + 8 + jsonLength + 8 + binary.byteLength);
+	const view = new DataView(glb.buffer);
+	view.setUint32(0, 0x46546c67, true);
+	view.setUint32(4, 2, true);
+	view.setUint32(8, glb.byteLength, true);
+	view.setUint32(12, jsonLength, true);
+	view.setUint32(16, 0x4e4f534a, true);
+	glb.fill(0x20, 20, 20 + jsonLength);
+	glb.set(json, 20);
+	view.setUint32(20 + jsonLength, binary.byteLength, true);
+	view.setUint32(24 + jsonLength, 0x004e4942, true);
+	glb.set(binary, 28 + jsonLength);
+
+	return new File([glb], 'synthetic-ktx2.glb', { type: 'model/gltf-binary' });
+};
+
 describe('computeUploadedModelMeta', () => {
+	beforeEach(() => {
+		vi.stubGlobal('fetch', vi.fn(async () => new Response(new Uint8Array([0, 97, 115, 109]))));
+	});
+
 	beforeAll(() => {
+		if (!('self' in globalThis)) {
+			Object.defineProperty(globalThis, 'self', {
+				value: globalThis,
+				configurable: true
+			});
+		}
 		if (!globalThis.URL.createObjectURL) {
 			globalThis.URL.createObjectURL = vi.fn(() => 'blob:mock');
 		}
@@ -64,9 +216,140 @@ describe('computeUploadedModelMeta', () => {
 		expect(result.animationNames).toEqual([]);
 		expect(result.bounds[0]).toBeLessThan(result.bounds[2]);
 		expect(result.bounds[1]).toBeLessThan(result.bounds[3]);
+		expect(result.localBounds[0]).toBeLessThan(result.localBounds[3]);
+		expect(result.localBounds[1]).toBeLessThan(result.localBounds[4]);
+		expect(result.localBounds[2]).toBeLessThan(result.localBounds[5]);
 		expect(result.bounds[0]).toBeCloseTo(139.6917, 3);
 		expect(result.bounds[1]).toBeCloseTo(35.6895, 3);
 		expect(result.xyzImageTile.z).toBeGreaterThanOrEqual(0);
+	});
+
+	it('FBXの配置範囲を実描画と同じmeter単位へ変換する', async () => {
+		const { getRuntimeModelLocalBounds } = await import('./model-bounds');
+		const box = new THREE.Box3(
+			new THREE.Vector3(-200, -100, 0),
+			new THREE.Vector3(300, 400, 600)
+		);
+
+		expect(getRuntimeModelLocalBounds(box, 0.01)).toEqual([-2, -1, 0, 3, 4, 6]);
+	});
+
+	it('USD の形状範囲を取得できる', async () => {
+		const { getUploadedModelObject } = await import('./model-bounds');
+		const { object } = await getUploadedModelObject(createSyntheticUsdFile(), 'usd');
+		const box = new THREE.Box3().setFromObject(object);
+
+		expect(box.min.toArray()).toEqual([0, 0, 0]);
+		expect(box.max.toArray()).toEqual([2, 3, 0]);
+	});
+
+	it('STLの形状範囲と座標系判定用のXY範囲を取得できる', async () => {
+		const { computeUploadedModelMeta } = await import('./model-bounds');
+		const result = await computeUploadedModelMeta({
+			file: createSyntheticStlFile(),
+			format: 'stl',
+			style: {
+				transform: {
+					lng: 0,
+					lat: 0,
+					altitude: 0,
+					heightOffset: 0,
+					heightScale: 1,
+					baseScale: 1,
+					baseRotationX: 0,
+					baseRotationY: 0,
+					baseRotationZ: 0,
+					scale: 1,
+					rotationX: 0,
+					rotationY: 0,
+					rotationZ: 0
+				}
+			}
+		});
+
+		expect(result.localBounds).toEqual([0, 0, 0, 2, 3, 0]);
+		expect(result.sourceBbox).toEqual([0, 0, 2, 3]);
+		expect(result.animationNames).toEqual([]);
+	});
+
+	it('投影座標モデルのlocalBoundsは投影原点を引いた実描画座標で保持する', async () => {
+		const { computeUploadedModelMeta } = await import('./model-bounds');
+		const { getModelGeoBoundsFromLocalBounds } = await import('./model-geo-bounds');
+		const transform = {
+			lng: 0,
+			lat: 0,
+			altitude: 0,
+			heightOffset: 0,
+			heightScale: 1,
+			baseScale: 1,
+			baseRotationX: 0,
+			baseRotationY: 0,
+			baseRotationZ: 0,
+			scale: 1,
+			rotationX: 0,
+			rotationY: 0,
+			rotationZ: 0
+		};
+		const result = await computeUploadedModelMeta({
+			file: createSyntheticProjectedStlFile(),
+			format: 'stl',
+			style: { transform },
+			projectedModelEpsg: '6673'
+		});
+		const placement = result.resolvedPlacement;
+		expect(placement).toBeDefined();
+		expect(result.localBounds).toEqual([-1, -1.5, 0, 1, 1.5, 0]);
+
+		const recalculatedBounds = getModelGeoBoundsFromLocalBounds(result.localBounds, {
+			transform: {
+				...transform,
+				lng: placement!.lng,
+				lat: placement!.lat,
+				altitude: placement!.altitude
+			}
+		});
+		recalculatedBounds.forEach((value, index) => {
+			expect(value).toBeCloseTo(result.bounds[index], 10);
+		});
+	});
+
+	it('Y-up指定のSTLはY軸の最下端を原点へ合わせる', async () => {
+		const { getUploadedModelObject } = await import('./model-bounds');
+		const yOffsetStlFile = new File(
+			[
+				`solid y-offset
+facet normal 0 0 1
+	outer loop
+		vertex 0 10 0
+		vertex 2 10 0
+		vertex 0 13 0
+	endloop
+endfacet
+endsolid y-offset`
+			],
+			'y-offset.stl',
+			{ type: 'model/stl' }
+		);
+		const { object } = await getUploadedModelObject(
+			yOffsetStlFile,
+			'stl',
+			undefined,
+			true,
+			'y'
+		);
+		const box = new THREE.Box3().setFromObject(object);
+
+		expect(box.min.y).toBeCloseTo(0, 6);
+		expect(box.max.y).toBeCloseTo(3, 6);
+	});
+
+	it('KTX2 テクスチャを含む GLTF でも形状範囲を取得できる', async () => {
+		const { getUploadedModelObject } = await import('./model-bounds');
+		const { object } = await getUploadedModelObject(createKtx2TextureGltfFile(), 'gltf');
+		const box = new THREE.Box3().setFromObject(object);
+
+		expect(box.min.toArray()).toEqual([0, 0, 0]);
+		expect(box.max.toArray()).toEqual([2, 3, 0]);
 	});
 
 	it('FBX の地理配置用範囲は原点付近のポリラインを除外する', async () => {

@@ -19,27 +19,29 @@ const toAttributeValue = (value: unknown): ModelAttributeValue | undefined => {
 	return undefined;
 };
 
-const getUserDataAttributes = (object: THREE.Object3D): ModelAttributes =>
-	Object.fromEntries(
-		Object.entries(object.userData).flatMap(([key, value]) => {
-			if (key === 'entryId' || key === 'originalName' || key.startsWith('morivis')) return [];
+const getUserDataAttributes = (object: THREE.Object3D): ModelAttributes => {
+	const attributes: ModelAttributes = {};
+	let current: THREE.Object3D | null = object;
+	while (current) {
+		Object.entries(current.userData).forEach(([key, value]) => {
+			if (key === 'entryId' || key === 'originalName' || key.startsWith('morivis')) return;
 			const attributeValue = toAttributeValue(value);
-			return attributeValue === undefined ? [] : [[key, attributeValue]];
-		})
-	);
+			if (attributeValue !== undefined && !(key in attributes)) {
+				attributes[key] = attributeValue;
+			}
+		});
+		current = current.parent;
+	}
+	return attributes;
+};
 
-/** 形式を問わず Three.js ノード、geometry、material に付随する識別情報を返す。 */
+/** 形式を問わず Three.js ノードに保存されたファイル由来の属性を返す。 */
 export const getModelObjectAttributes = (object: THREE.Object3D): ModelAttributes => {
-	const attributes: ModelAttributes = {
-		...getUserDataAttributes(object),
-		ノードID: object.uuid
-	};
+	const attributes: ModelAttributes = getUserDataAttributes(object);
 	const mesh = object as THREE.Mesh;
-	if (mesh.geometry) attributes['ジオメトリID'] = mesh.geometry.uuid;
 	const material = mesh.material;
 	const firstMaterial = Array.isArray(material) ? material[0] : material;
 	if (firstMaterial) {
-		attributes['マテリアルID'] = firstMaterial.uuid;
 		if (firstMaterial.name) attributes['マテリアル名'] = firstMaterial.name;
 	}
 	return attributes;
@@ -72,14 +74,20 @@ export const getIfcAttributes = (
 	if (typeof item.type === 'string') attributes['IFC クラス'] = item.type;
 	propertySets.forEach((propertySet) => {
 		const propertySetName = getIfcName(propertySet);
-		const properties = propertySet.HasProperties;
+		const properties = propertySet.HasProperties ?? propertySet.Quantities;
 		if (!Array.isArray(properties)) return;
 		properties.forEach((property) => {
 			if (!property || typeof property !== 'object') return;
 			const typedProperty = property as Record<string, unknown>;
 			const name = unwrapIfcValue(typedProperty.Name);
 			const value = unwrapIfcValue(typedProperty.NominalValue)
-				?? unwrapIfcValue(typedProperty.ListValues);
+				?? unwrapIfcValue(typedProperty.ListValues)
+				?? unwrapIfcValue(typedProperty.LengthValue)
+				?? unwrapIfcValue(typedProperty.AreaValue)
+				?? unwrapIfcValue(typedProperty.VolumeValue)
+				?? unwrapIfcValue(typedProperty.CountValue)
+				?? unwrapIfcValue(typedProperty.WeightValue)
+				?? unwrapIfcValue(typedProperty.TimeValue);
 			if (name !== undefined && value !== undefined) {
 				attributes[`${propertySetName}.${name}`] = value;
 			}

@@ -35,6 +35,7 @@
 	} from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
 	import { showLayerAddedNotification } from '$routes/stores/notification';
+	import { showModelView } from '$routes/stores/ui';
 	import { showLayerMenu, showDataMenu, isMobile, isActiveMobileMenu } from '$routes/stores/ui';
 
 	interface Props {
@@ -244,11 +245,11 @@
 </script>
 
 <!-- レイヤーメニュー -->
-{#if $showLayerMenu}
+{#if $showLayerMenu && !$showModelView}
 	<div
 		transition:fly={{
-			duration: 300,
-			y: !$isMobile ? 100 : 0,
+			duration: 200,
+			x: !$isMobile ? -100 : 0,
 			opacity: 0,
 			delay: !$isMobile ? 100 : 0
 		}}

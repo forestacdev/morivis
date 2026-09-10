@@ -1,12 +1,25 @@
 import * as THREE from 'three';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import type { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 
-import type { MeshStyle, ProjectedModelGeoreference } from '$routes/map/data/types/model';
+import type {
+	MeshFormatType,
+	MeshStyle,
+	MeshUpAxis,
+	ModelLocalBounds,
+	ProjectedModelGeoreference
+} from '$routes/map/data/types/model';
 import type { TileXYZ } from '$routes/map/data/types/raster';
+import { parseStlFile } from '$routes/map/utils/formats/stl';
+import { parseUsdFile } from '$routes/map/utils/formats/usd';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import {
+	applyFbxCurveGeometricTransform,
+	parseFbxModelAttributes
+} from '$routes/map/utils/three/fbx-attributes';
 import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
 import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import {
@@ -18,13 +31,20 @@ import {
 	resolveProjectedModelPlacementFromBox
 } from '$routes/map/utils/three/model-georeference';
 import { normalizeObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
+import { loadPmxObject } from '$routes/map/utils/three/pmx-loader';
+import {
+	createVrmLoader,
+	getVrmFromGltf,
+	rotateVrm0IfNeeded
+} from '$routes/map/utils/three/vrm-loader';
 
 export interface ComputeUploadedModelMetaParams {
 	file: File;
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc';
+	format: MeshFormatType;
 	style: Pick<MeshStyle, 'transform'>;
 	resourceUrls?: Record<string, string>;
 	normalizeToLocalOrigin?: boolean;
+	upAxis?: MeshUpAxis;
 	georeference?: ProjectedModelGeoreference;
 	projectedModelEpsg?: string;
 	terrainEnabled?: boolean;
@@ -32,6 +52,7 @@ export interface ComputeUploadedModelMetaParams {
 
 export interface UploadedModelMeta {
 	bounds: [number, number, number, number];
+	localBounds: ModelLocalBounds;
 	sourceBbox?: [number, number, number, number];
 	xyzImageTile: TileXYZ;
 	scaleMultiplier: number;
@@ -69,9 +90,28 @@ let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoade
 
 dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
 
+const createBoundsKtx2Loader = () =>
+	({
+		// 範囲解析 Worker は描画しないため、KTX2 を復号せず形状解析だけ継続する。
+		load: (_url: string, onLoad: (texture: THREE.Texture) => void) => {
+			const texture = new THREE.DataTexture(
+				new Uint8Array([255, 255, 255, 255]),
+				1,
+				1,
+				THREE.RGBAFormat
+			);
+			texture.needsUpdate = true;
+			queueMicrotask(() => onLoad(texture));
+			return texture;
+		}
+	}) as unknown as KTX2Loader;
+
+const boundsKtx2Loader = createBoundsKtx2Loader();
+
 const createGltfLoader = (manager?: THREE.LoadingManager) => {
 	const loader = new GLTFLoader(manager);
 	loader.setDRACOLoader(dracoLoader);
+	loader.setKTX2Loader(boundsKtx2Loader);
 	return loader;
 };
 
@@ -338,7 +378,8 @@ export interface UploadedModelObject {
 
 const parseGltfObject = async (
 	file: File,
-	resourceUrls?: Record<string, string>
+	resourceUrls?: Record<string, string>,
+	normalizeToLocalOrigin = false
 ): Promise<UploadedModelObject> => {
 	const buffer = await file.arrayBuffer();
 	const manager = resourceUrls ? new THREE.LoadingManager() : undefined;
@@ -356,6 +397,9 @@ const parseGltfObject = async (
 			data,
 			'',
 			(gltf) => {
+				if (normalizeToLocalOrigin) {
+					normalizeObjectToLocalOrigin(gltf.scene, 'y');
+				}
 				resolve({
 					object: gltf.scene,
 					animationNames: gltf.animations.map(
@@ -366,6 +410,49 @@ const parseGltfObject = async (
 			(error) => {
 				reject(error instanceof Error ? error : new Error(String(error)));
 			}
+		);
+	});
+};
+
+const parseVrmObject = async (
+	file: File,
+	normalizeToLocalOrigin = false
+): Promise<UploadedModelObject> => {
+	const loader = await createVrmLoader(dracoLoader, undefined, boundsKtx2Loader);
+	const buffer = await file.arrayBuffer();
+
+	return new Promise<UploadedModelObject>((resolve, reject) => {
+		loader.parse(
+			buffer,
+			'',
+			(gltf) => {
+				const vrm = (() => {
+					try {
+						return getVrmFromGltf(gltf);
+					} catch (error) {
+						reject(error instanceof Error ? error : new Error(String(error)));
+						return null;
+					}
+				})();
+				if (!vrm) return;
+
+				void rotateVrm0IfNeeded(vrm)
+					.then(() => {
+						if (normalizeToLocalOrigin) {
+							normalizeObjectToLocalOrigin(vrm.scene, 'y');
+						}
+						resolve({
+							object: vrm.scene,
+							animationNames: gltf.animations.map(
+								(clip, index) => clip.name || `Animation ${index + 1}`
+							)
+						});
+					})
+					.catch((error) =>
+						reject(error instanceof Error ? error : new Error(String(error)))
+					);
+			},
+			(error) => reject(error instanceof Error ? error : new Error(String(error)))
 		);
 	});
 };
@@ -501,6 +588,7 @@ const parseFbxObject = async (
 	const loader = new FBXLoader(manager);
 	const buffer = await file.arrayBuffer();
 	const object = loader.parse(buffer, '');
+	applyFbxCurveGeometricTransform(object, parseFbxModelAttributes(buffer));
 	if (normalizeToLocalOrigin) {
 		normalizeObjectToLocalOrigin(object);
 	}
@@ -558,6 +646,21 @@ const parseAmfObject = async (file: File): Promise<UploadedModelObject> => {
 	}
 };
 
+const parseStlObject = async (
+	file: File,
+	normalizeToLocalOrigin = false,
+	upAxis: MeshUpAxis = 'z'
+): Promise<UploadedModelObject> => {
+	const object = await parseStlFile(file);
+	if (normalizeToLocalOrigin) {
+		normalizeObjectToLocalOrigin(object, upAxis);
+	}
+	return {
+		object,
+		animationNames: []
+	};
+};
+
 const parseIfcObject = async (
 	file: File,
 	normalizeToLocalOrigin = false
@@ -569,7 +672,7 @@ const parseIfcObject = async (
 	try {
 		const object = (await loader.loadAsync(url)) as THREE.Object3D;
 		if (normalizeToLocalOrigin) {
-			normalizeObjectToLocalOrigin(object);
+			normalizeObjectToLocalOrigin(object, 'y');
 		}
 		return {
 			object,
@@ -580,11 +683,41 @@ const parseIfcObject = async (
 	}
 };
 
+const parsePmxObject = async (
+	file: File,
+	normalizeToLocalOrigin = false
+): Promise<UploadedModelObject> => {
+	// Worker では画像を読み込まず、形状範囲の算出だけを行う。
+	const object = await loadPmxObject(file);
+	if (normalizeToLocalOrigin) {
+		normalizeObjectToLocalOrigin(object, 'y');
+	}
+	return {
+		object,
+		animationNames: []
+	};
+};
+
+const parseUsdObject = async (
+	file: File,
+	normalizeToLocalOrigin = false
+): Promise<UploadedModelObject> => {
+	const object = await parseUsdFile(file);
+	if (normalizeToLocalOrigin) {
+		normalizeObjectToLocalOrigin(object, 'y');
+	}
+	return {
+		object,
+		animationNames: []
+	};
+};
+
 export const getUploadedModelObject = async (
 	file: File,
-	format: 'gltf' | 'obj' | '3ds' | 'dae' | '3dm' | 'fbx' | 'drc' | '3mf' | 'amf' | 'ifc',
+	format: MeshFormatType,
 	resourceUrls?: Record<string, string>,
-	normalizeToLocalOrigin = false
+	normalizeToLocalOrigin = false,
+	upAxis?: MeshUpAxis
 ) => {
 	if (format === 'obj') {
 		return parseObjObject(file);
@@ -618,11 +751,27 @@ export const getUploadedModelObject = async (
 		return parseAmfObject(file);
 	}
 
+	if (format === 'stl') {
+		return parseStlObject(file, normalizeToLocalOrigin, upAxis);
+	}
+
 	if (format === 'ifc') {
 		return parseIfcObject(file, normalizeToLocalOrigin);
 	}
 
-	return parseGltfObject(file, resourceUrls);
+	if (format === 'pmx') {
+		return parsePmxObject(file, normalizeToLocalOrigin);
+	}
+
+	if (format === 'usd') {
+		return parseUsdObject(file, normalizeToLocalOrigin);
+	}
+
+	if (format === 'vrm') {
+		return parseVrmObject(file, normalizeToLocalOrigin);
+	}
+
+	return parseGltfObject(file, resourceUrls, normalizeToLocalOrigin);
 };
 
 const mercatorXToLng = (x: number) => x * 360 - 180;
@@ -632,12 +781,25 @@ const mercatorYToLat = (y: number) => {
 	return THREE.MathUtils.radToDeg(Math.atan(Math.sinh(n)));
 };
 
+export const getRuntimeModelLocalBounds = (
+	box: THREE.Box3,
+	unitScaleMeters = 1
+): ModelLocalBounds => [
+	box.min.x * unitScaleMeters,
+	box.min.y * unitScaleMeters,
+	box.min.z * unitScaleMeters,
+	box.max.x * unitScaleMeters,
+	box.max.y * unitScaleMeters,
+	box.max.z * unitScaleMeters
+];
+
 export const computeUploadedModelMeta = async ({
 	file,
 	format,
 	style,
 	resourceUrls,
 	normalizeToLocalOrigin,
+	upAxis,
 	georeference,
 	projectedModelEpsg,
 	terrainEnabled = false
@@ -646,7 +808,8 @@ export const computeUploadedModelMeta = async ({
 		file,
 		format,
 		resourceUrls,
-		normalizeToLocalOrigin
+		normalizeToLocalOrigin,
+		upAxis
 	);
 	object.updateMatrixWorld(true);
 
@@ -654,7 +817,7 @@ export const computeUploadedModelMeta = async ({
 	if (box.isEmpty()) {
 		throw new Error('3Dモデルの範囲を取得できませんでした');
 	}
-	const coordinateSpace = format === 'gltf'
+	const coordinateSpace = format === 'gltf' || format === 'vrm' || format === 'usd'
 		? 'root-children'
 		: format === 'ifc'
 		? 'ifc-z-up'
@@ -693,6 +856,12 @@ export const computeUploadedModelMeta = async ({
 		object.updateMatrixWorld(true);
 	}
 	const displayBox = usesLocalCoordinateGeoreference ? getModelBounds(object, format) : box;
+	const runtimeLocalBox = resolvedGeoreference && !usesLocalCoordinateGeoreference
+		? new THREE.Box3(
+			georeferenceCornerToLocal(box.min, resolvedGeoreference),
+			georeferenceCornerToLocal(box.max, resolvedGeoreference)
+		)
+		: displayBox;
 
 	let hasSkinnedMesh = false;
 	object.traverse((child) => {
@@ -759,7 +928,21 @@ export const computeUploadedModelMeta = async ({
 	];
 	return {
 		bounds,
-		...((format === 'fbx' || format === 'gltf' || format === 'ifc') && { sourceBbox }),
+		// FBX は実描画時に cm などのファイル単位を meter へ変換する。
+		// 配置ボックスも同じ単位へ揃え、実モデルとの寸法差を防ぐ。
+		// object座標の投影モデルも、実描画時と同じく投影原点を引いた範囲を保持する。
+		// 元の大きな座標を残すと、EPSG切替・確定時のbounds再計算でオフセットが二重になる。
+		localBounds: getRuntimeModelLocalBounds(runtimeLocalBox, localRenderUnitScale),
+		...((
+			format === 'fbx'
+			|| format === 'gltf'
+			|| format === 'vrm'
+			|| format === 'ifc'
+			|| format === 'stl'
+			|| format === 'usd'
+		) && {
+			sourceBbox
+		}),
 		xyzImageTile: findCenterTile(bounds),
 		scaleMultiplier,
 		localMaxDimension,

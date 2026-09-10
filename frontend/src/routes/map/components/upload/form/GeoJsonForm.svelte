@@ -3,35 +3,25 @@
 	import { untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
-	import GeoJsonRenderModeForm, {
-		type GeoJsonRenderMode
-	} from '$routes/map/components/upload/form/GeoJsonRenderModeForm.svelte';
+	import { createGeoJsonEntryWithMode } from '$routes/map/components/upload/form/geojson-entry';
+	import GeoJsonRenderModeForm from '$routes/map/components/upload/form/GeoJsonRenderModeForm.svelte';
 	import GeometryTypeForm from '$routes/map/components/upload/form/GeometryTypeForm.svelte';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
-	import { createGeoJson3DEntry } from '$routes/map/data/entries/model';
-	import {
-		createGeoJsonEntry,
-		filterByGeometryType,
-		getGeometryTypes
-	} from '$routes/map/data/entries/vector';
+	import { createRenderModeState } from '$routes/map/components/upload/form/render-mode-state.svelte';
+	import { filterByGeometryType, getGeometryTypes } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import type { AnyGeometry, GeometryCollection } from '$routes/map/types/geometry';
 	import { fgbFileToGeojson } from '$routes/map/utils/formats/fgb';
 	import {
 		GeoJsonParseError,
 		geoJsonFileToGeoJson,
 		geoJsonTextToGeoJson
 	} from '$routes/map/utils/formats/geojson';
-	import {
-		canRender3dGeoJsonWithDeck,
-		has3dGeometryForType
-	} from '$routes/map/utils/formats/geojson/3d';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -67,65 +57,6 @@
 		Polygon: 'ポリゴン'
 	};
 
-	const to2dPosition = (position: number[]): [number, number] => {
-		return [position[0], position[1]];
-	};
-
-	const stripGeometryZ = (
-		geometry: AnyGeometry | GeometryCollection
-	): AnyGeometry | GeometryCollection => {
-		if (geometry.type === 'Point') {
-			return {
-				...geometry,
-				coordinates: to2dPosition(geometry.coordinates as unknown as number[])
-			};
-		}
-
-		if (geometry.type === 'MultiPoint' || geometry.type === 'LineString') {
-			return {
-				...geometry,
-				coordinates: geometry.coordinates.map((position) =>
-					to2dPosition(position as unknown as number[])
-				)
-			};
-		}
-
-		if (geometry.type === 'MultiLineString' || geometry.type === 'Polygon') {
-			return {
-				...geometry,
-				coordinates: geometry.coordinates.map((line) =>
-					line.map((position) => to2dPosition(position as unknown as number[]))
-				)
-			};
-		}
-
-		if (geometry.type === 'MultiPolygon') {
-			return {
-				...geometry,
-				coordinates: geometry.coordinates.map((polygon) =>
-					polygon.map((line) =>
-						line.map((position) => to2dPosition(position as unknown as number[]))
-					)
-				)
-			};
-		}
-
-		return {
-			type: 'GeometryCollection',
-			geometries: geometry.geometries.map((child) => stripGeometryZ(child))
-		} as unknown as GeometryCollection;
-	};
-
-	const stripGeojsonZ = (geojson: FeatureCollection): FeatureCollection => {
-		return {
-			...geojson,
-			features: geojson.features.map((feature) => ({
-				...feature,
-				geometry: stripGeometryZ(feature.geometry as unknown as AnyGeometry | GeometryCollection)
-			}))
-		} as unknown as FeatureCollection;
-	};
-
 	let rawGeojson = $state.raw<FeatureCollection | null>(null);
 	let sourceMode = $state<'file' | 'text'>('file');
 	let inputText = $state('');
@@ -133,10 +64,9 @@
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let isDragover = $state(false);
 	let showGeometryTypeDialog = $state(false);
-	let showRenderModeDialog = $state(false);
 	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
 	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
-	let selectedRenderMode = $state<GeoJsonRenderMode>('geojson');
+	const renderModeState = createRenderModeState();
 
 	const geojsonFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -150,13 +80,9 @@
 			? manualEntryName.trim() || 'GeoJSONデータ'
 			: (geojsonFile?.name.replace(/\.[^.]+$/, '') ?? 'GeoJSONデータ')
 	);
-	const selectedGeometryHasZ = $derived.by(() => {
-		if (!rawGeojson || !selectedGeometryType) return false;
-		return has3dGeometryForType(rawGeojson, selectedGeometryType);
-	});
 	const canUseDeckRender = $derived.by(() => {
-		if (!selectedGeometryType || !selectedGeometryHasZ) return false;
-		return canRender3dGeoJsonWithDeck(selectedGeometryType);
+		if (!rawGeojson || !selectedGeometryType) return false;
+		return renderModeState.needsSelection(rawGeojson, selectedGeometryType);
 	});
 
 	const readFile = (file: File): Promise<FeatureCollection> =>
@@ -170,29 +96,24 @@
 		dropFile = file;
 		rawGeojson = null;
 		showGeometryTypeDialog = false;
-		showRenderModeDialog = false;
+		renderModeState.reset();
 		geometryTypeOptions = [];
 		selectedGeometryType = '';
 	};
-
-	const shouldUseDeckRender = (geojson: FeatureCollection, geometryType: VectorEntryGeometryType) =>
-		selectedRenderMode === 'deck' &&
-		canRender3dGeoJsonWithDeck(geometryType) &&
-		has3dGeometryForType(geojson, geometryType);
 
 	const createEntry = async (
 		geojson: FeatureCollection,
 		geometryType: VectorEntryGeometryType,
 		bbox: [number, number, number, number]
-	) => {
-		if (shouldUseDeckRender(geojson, geometryType)) {
-			return createGeoJson3DEntry(entryName, geojson, geometryType, bbox);
-		}
-
-		return createGeoJsonEntry(stripGeojsonZ(geojson), geometryType, entryName, bbox, undefined, {
-			attribution: 'GeoJSON'
+	) =>
+		createGeoJsonEntryWithMode({
+			geojson,
+			geometryType,
+			name: entryName,
+			bbox,
+			attribution: 'GeoJSON',
+			renderMode: renderModeState.selected
 		});
-	};
 
 	const prepareGeojson = async (geojson: FeatureCollection) => {
 		rawGeojson = geojson;
@@ -204,7 +125,7 @@
 		}));
 		selectedGeometryType = types[0] ?? '';
 		showGeometryTypeDialog = false;
-		showRenderModeDialog = false;
+		renderModeState.reset();
 
 		const primaryGeometryType = types[0];
 		if (types.length > 1) {
@@ -212,12 +133,7 @@
 			return;
 		}
 
-		if (
-			primaryGeometryType &&
-			has3dGeometryForType(rawGeojson, primaryGeometryType) &&
-			canRender3dGeoJsonWithDeck(primaryGeometryType)
-		) {
-			showRenderModeDialog = true;
+		if (primaryGeometryType && renderModeState.open(rawGeojson, primaryGeometryType)) {
 			return;
 		}
 
@@ -247,8 +163,8 @@
 	});
 
 	$effect(() => {
-		if (!canUseDeckRender && selectedRenderMode !== 'geojson') {
-			selectedRenderMode = 'geojson';
+		if (!canUseDeckRender && renderModeState.selected !== 'geojson') {
+			renderModeState.selected = 'geojson';
 		}
 	});
 
@@ -288,7 +204,7 @@
 		showDataEntry = entry;
 		dropFile = null;
 		showGeometryTypeDialog = false;
-		showRenderModeDialog = false;
+		renderModeState.reset();
 		showDialogType = null;
 		showNotification('ファイルを読み込みました', 'success');
 	};
@@ -330,7 +246,7 @@
 			showDataEntry = entry;
 			dropFile = null;
 			showGeometryTypeDialog = false;
-			showRenderModeDialog = false;
+			renderModeState.reset();
 			showDialogType = null;
 			showNotification('ファイルを読み込みました', 'success');
 		} catch (error) {
@@ -344,18 +260,8 @@
 	const cancel = () => {
 		dropFile = null;
 		showGeometryTypeDialog = false;
-		showRenderModeDialog = false;
+		renderModeState.reset();
 		showDialogType = null;
-	};
-
-	const backToGeoJsonInput = () => {
-		showGeometryTypeDialog = false;
-		showRenderModeDialog = false;
-	};
-
-	const backToGeometryTypeSelection = () => {
-		showRenderModeDialog = false;
-		showGeometryTypeDialog = geometryTypeOptions.length > 1;
 	};
 
 	const loadFromText = async () => {
@@ -383,8 +289,11 @@
 	const submit = async () => {
 		if (showGeometryTypeDialog) {
 			showGeometryTypeDialog = false;
-			if (canUseDeckRender) {
-				showRenderModeDialog = true;
+			if (
+				rawGeojson &&
+				selectedGeometryType &&
+				renderModeState.open(rawGeojson, selectedGeometryType)
+			) {
 				return;
 			}
 
@@ -392,7 +301,7 @@
 			return;
 		}
 
-		if (showRenderModeDialog) {
+		if (renderModeState.showDialog) {
 			await processGeojson();
 			return;
 		}
@@ -403,8 +312,7 @@
 
 		if (!rawGeojson || !selectedGeometryType) return;
 
-		if (canUseDeckRender) {
-			showRenderModeDialog = true;
+		if (renderModeState.open(rawGeojson, selectedGeometryType)) {
 			return;
 		}
 
@@ -449,12 +357,12 @@
 		onCancel={cancel}
 		onConfirm={submit}
 	/>
-{:else if showRenderModeDialog}
+{:else if renderModeState.showDialog}
 	<GeoJsonRenderModeForm
 		{entryName}
 		{selectedGeometryType}
-		bind:selectedRenderMode
-		onBack={backToGeometryTypeSelection}
+		formatLabel={isFgb ? 'FlatGeobuf' : 'GeoJSON'}
+		bind:selectedRenderMode={renderModeState.selected}
 		onCancel={cancel}
 		onConfirm={submit}
 	/>
@@ -531,7 +439,7 @@
 						oninput={() => {
 							rawGeojson = null;
 							showGeometryTypeDialog = false;
-							showRenderModeDialog = false;
+							renderModeState.reset();
 							geometryTypeOptions = [];
 							selectedGeometryType = '';
 						}}

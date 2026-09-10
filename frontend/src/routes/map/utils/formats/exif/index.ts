@@ -5,7 +5,8 @@
  * - https://github.com/hoppergee/heic-to
  */
 import * as exifr from 'exifr';
-import { heicTo, isHeic } from 'heic-to';
+
+import type { FieldDef } from '$routes/map/data/types/vector/properties';
 
 export interface GeoPhotoFeature {
 	type: 'Feature';
@@ -15,6 +16,7 @@ export interface GeoPhotoFeature {
 	};
 	properties: {
 		fileName: string;
+		locationSource: 'exif' | 'device';
 		imageUrl: string;
 		iconImageUrl: string;
 		coverImageUrl: string;
@@ -24,6 +26,37 @@ export interface GeoPhotoFeature {
 	};
 }
 
+/** 属性パネルに表示する写真メタデータ。画像描画用のBlob URLは含めない。 */
+export const GEO_PHOTO_ATTRIBUTE_FIELDS: readonly FieldDef[] = [
+	{ key: 'fileName', label: 'ファイル名' },
+	{
+		key: 'locationSource',
+		label: '位置情報の取得元',
+		valueDict: { exif: 'EXIF GPS', device: '端末の現在地' }
+	},
+	{ key: 'datetime', label: '撮影日時' },
+	{ key: 'bearing', label: '撮影方位', unit: '°' },
+	{ key: 'altitude', label: '高度', unit: 'm' }
+];
+
+export const GEO_PHOTO_ATTRIBUTE_KEYS = GEO_PHOTO_ATTRIBUTE_FIELDS.map(({ key }) => key);
+
+export interface PhotoLocation {
+	lat: number;
+	lng: number;
+}
+
+interface GeoPhotoOptions {
+	resolveMissingLocation?: (count: number) => Promise<PhotoLocation | null>;
+	signal?: AbortSignal;
+}
+
+const isValidGps = (gps: { latitude?: number; longitude?: number; } | undefined): boolean =>
+	typeof gps?.latitude === 'number' && Number.isFinite(gps.latitude)
+	&& Math.abs(gps.latitude) <= 90
+	&& typeof gps.longitude === 'number' && Number.isFinite(gps.longitude)
+	&& Math.abs(gps.longitude) <= 180;
+
 export interface GeoPhotoResult {
 	features: GeoPhotoFeature[];
 	skippedCount: number;
@@ -31,13 +64,19 @@ export interface GeoPhotoResult {
 
 const createDisplayImageUrl = async (file: File): Promise<string> => {
 	const originalUrl = URL.createObjectURL(file);
-	const isHeicFile = await isHeic(file);
-
-	if (!isHeicFile) {
-		return originalUrl;
-	}
 
 	try {
+		// 形式判定に変換ライブラリを使うと、JPEGでもデコーダー全体を読み込んでしまう。
+		const header = new TextDecoder().decode(await file.slice(0, 12).arrayBuffer());
+		const brand = header.slice(8, 12);
+		if (
+			header.slice(4, 8) !== 'ftyp'
+			|| !['mif1', 'msf1', 'heic', 'heix', 'hevc', 'hevx'].includes(brand)
+		) {
+			return originalUrl;
+		}
+
+		const { heicTo } = await import('heic-to');
 		const pngBlob = await heicTo({
 			blob: file,
 			type: 'image/png',
@@ -107,7 +146,7 @@ const parseExifGps = async (
 	try {
 		// GPS座標を取得
 		const gps = await exifr.gps(file);
-		if (!gps?.latitude || !gps?.longitude) return null;
+		if (!isValidGps(gps)) return null;
 
 		// 追加メタデータを取得
 		let datetime: string | undefined;
@@ -149,45 +188,70 @@ const parseExifGps = async (
 export const hasExifGps = async (file: File): Promise<boolean> => {
 	try {
 		const gps = await exifr.gps(file);
-		return gps?.latitude != null && gps?.longitude != null;
+		return isValidGps(gps);
 	} catch {
 		return false;
 	}
 };
 
-/** 複数ファイルからGPS付き写真をGeoJSON FeatureCollectionに変換 */
-export const parseGeoPhotos = async (files: File[]): Promise<GeoPhotoResult> => {
+/** GPSを優先し、位置情報のない写真だけ呼び出し元が承認した座標で補う。 */
+export const parseGeoPhotos = async (
+	files: File[],
+	{ resolveMissingLocation, signal }: GeoPhotoOptions = {}
+): Promise<GeoPhotoResult> => {
 	const features: GeoPhotoFeature[] = [];
+	const urls = new Set<string>();
 	let skippedCount = 0;
 
-	for (const file of files) {
-		const gps = await parseExifGps(file);
-		if (!gps) {
-			skippedCount++;
-			continue;
+	try {
+		signal?.throwIfAborted();
+		const photos = await Promise.all(
+			files.map(async (file) => ({ file, gps: await parseExifGps(file) }))
+		);
+		signal?.throwIfAborted();
+		const missingCount = photos.filter(({ gps }) => !gps).length;
+		// 画像変換より先に確認する。辞退・位置取得失敗時に不要なデコーダーをロードしない。
+		const fallback = missingCount > 0 ? await resolveMissingLocation?.(missingCount) : null;
+		signal?.throwIfAborted();
+
+		for (const { file, gps } of photos) {
+			signal?.throwIfAborted();
+			const location = gps ?? fallback;
+			if (!location) {
+				skippedCount++;
+				continue;
+			}
+
+			const imageUrl = await createDisplayImageUrl(file);
+			urls.add(imageUrl);
+			const iconImageUrl = await createSquareThumbnailImageUrl(imageUrl, 192);
+			urls.add(iconImageUrl);
+			const coverImageUrl = await createSquareThumbnailImageUrl(imageUrl, 512);
+			urls.add(coverImageUrl);
+			signal?.throwIfAborted();
+
+			features.push({
+				type: 'Feature',
+				geometry: {
+					type: 'Point',
+					coordinates: [location.lng, location.lat]
+				},
+				properties: {
+					fileName: file.name,
+					locationSource: gps ? 'exif' : 'device',
+					imageUrl,
+					iconImageUrl,
+					coverImageUrl,
+					datetime: gps?.datetime ?? null,
+					bearing: gps?.bearing ?? null,
+					altitude: gps?.altitude ?? null
+				}
+			});
 		}
 
-		const imageUrl = await createDisplayImageUrl(file);
-		const iconImageUrl = await createSquareThumbnailImageUrl(imageUrl, 192);
-		const coverImageUrl = await createSquareThumbnailImageUrl(imageUrl, 512);
-
-		features.push({
-			type: 'Feature',
-			geometry: {
-				type: 'Point',
-				coordinates: [gps.lng, gps.lat]
-			},
-			properties: {
-				fileName: file.name,
-				imageUrl,
-				iconImageUrl,
-				coverImageUrl,
-				datetime: gps.datetime ?? null,
-				bearing: gps.bearing ?? null,
-				altitude: gps.altitude ?? null
-			}
-		});
+		return { features, skippedCount };
+	} catch (error) {
+		for (const url of urls) URL.revokeObjectURL(url);
+		throw error;
 	}
-
-	return { features, skippedCount };
 };

@@ -37,10 +37,11 @@
 	};
 
 	const MODEL_FILE_ACCEPT =
-		'.glb,.gltf,.obj,.3ds,.dae,.3dm,.fbx,.drc,.3mf,.amf,.ifc,.mtl,.bin,.png,.jpg,.jpeg,.bmp,.tga,.gif,.webp';
+		'.glb,.gltf,.vrm,.obj,.3ds,.dae,.3dm,.fbx,.drc,.3mf,.amf,.ifc,.mtl,.bin,.png,.jpg,.jpeg,.bmp,.tga,.gif,.webp';
 
 	const FORMAT_EXTENSIONS: Array<{ format: MeshFormatType; extensions: string[] }> = [
 		{ format: 'gltf', extensions: ['.glb', '.gltf'] },
+		{ format: 'vrm', extensions: ['.vrm'] },
 		{ format: 'obj', extensions: ['.obj'] },
 		{ format: '3ds', extensions: ['.3ds'] },
 		{ format: 'dae', extensions: ['.dae'] },
@@ -634,11 +635,6 @@
 			<div class="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80">
 				<div bind:this={viewport} class="relative h-[720px] w-full">
 					<canvas bind:this={canvas} class="block h-full w-full"></canvas>
-					<div
-						class="pointer-events-none absolute left-4 top-4 rounded-lg bg-slate-950/70 px-3 py-2 text-xs text-slate-300"
-					>
-						OrbitControls: 左ドラッグで回転 / ホイールでズーム / 右ドラッグでパン
-					</div>
 				</div>
 			</div>
 		</section>

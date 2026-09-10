@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
+
+	import GaussianSplatOption from './model_option/GaussianSplatOption.svelte';
 	import GeoArrowOption from './model_option/GeoArrowOption.svelte';
 	import MeshOption from './model_option/MeshOption.svelte';
 	import PointCloudOption from './model_option/PoinbtCloudOption..svelte';
@@ -7,11 +10,15 @@
 	import type {
 		MorivisModelEntry,
 		DeckVectorEntry,
+		GaussianSplatEntry,
 		MeshEntry,
 		MeshStyle,
+		ThreeModelEntry,
 		Tiles3DMeshStyleEntry,
 		PointCloudStyleEntry
 	} from '$routes/map/data/types/model';
+	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
+	import { closeModelView, modelViewRequest, openModelView } from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
@@ -30,8 +37,34 @@
 		return entry.style.type === 'mesh' && entry.format.type !== '3d-tiles';
 	};
 
+	const isThreeModelEntry = (entry: MorivisModelEntry): entry is ThreeModelEntry => {
+		return isThreeMeshEntry(entry) || entry.style.type === 'gaussian-splat';
+	};
+
 	const isTiles3DMeshEntry = (entry: MorivisModelEntry): entry is Tiles3DMeshStyleEntry => {
 		return entry.style.type === '3d-tiles-mesh';
+	};
+	const isCurrentModelView = $derived(
+		isThreeModelEntry(layerEntry) &&
+			$modelViewRequest?.entryIds.length === 1 &&
+			$modelViewRequest.entryIds[0] === layerEntry.id
+	);
+	let isOpeningModelView = $state(false);
+
+	const openSingleModelView = async () => {
+		if (!isThreeModelEntry(layerEntry)) return;
+		if (isCurrentModelView) {
+			closeModelView();
+			return;
+		}
+
+		isOpeningModelView = true;
+		try {
+			await threeJsManager.loadHighestDetailLod(layerEntry.id);
+			openModelView(layerEntry.id);
+		} finally {
+			isOpeningModelView = false;
+		}
 	};
 
 	$effect(() => {
@@ -55,9 +88,32 @@
 		<Tiles3DMeshOption bind:layerEntry bind:showColorOption />
 	{/if}
 
-	{#if isThreeMeshEntry(layerEntry)}
-		<!-- Model options go here -->
-		<MeshOption bind:layerEntry bind:showColorOption bind:showDimensionOption />
+	{#if isThreeModelEntry(layerEntry)}
+		<div class="px-4 py-3">
+			<button
+				class="c-btn-confirm flex w-full items-center justify-center gap-2 rounded-full p-2 text-sm disabled:cursor-wait disabled:opacity-70"
+				onclick={openSingleModelView}
+				disabled={isOpeningModelView}
+			>
+				<Icon
+					icon={isCurrentModelView ? 'material-symbols:close-rounded' : 'mdi:cube-scan'}
+					class="h-5 w-5"
+				/>
+				{isOpeningModelView
+					? '高画質モデルを読み込み中...'
+					: isCurrentModelView
+						? 'モデルビューを閉じる'
+						: 'モデルビューで開く'}
+			</button>
+		</div>
+		{#if isThreeMeshEntry(layerEntry)}
+			<MeshOption bind:layerEntry bind:showColorOption bind:showDimensionOption />
+		{:else}
+			<GaussianSplatOption
+				bind:layerEntry={layerEntry as GaussianSplatEntry}
+				bind:showColorOption
+			/>
+		{/if}
 	{/if}
 {/if}
 

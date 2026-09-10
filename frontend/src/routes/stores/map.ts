@@ -66,6 +66,7 @@ import {
 	type MeshEntry,
 	type MeshStyle,
 	type PointCloudEntry,
+	type ThreeModelEntry,
 	type Tiles3DMeshStyleEntry
 } from '$routes/map/data/types/model';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
@@ -96,6 +97,7 @@ import {
 	warmupGeneratedPoiIconWorker
 } from '$routes/map/utils/icon';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
+import { getSinglePointFocus } from '$routes/map/utils/map/focus-layer';
 import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { LayersList } from '@deck.gl/core';
@@ -896,12 +898,16 @@ const createMapStore = () => {
 
 	// Three.js モデルを設定（差分更新）
 	const setThreeLayer = async (
-		newEntries: MeshEntry<MeshStyle>[],
+		newEntries: ThreeModelEntry[],
 		_type: 'main' | 'preview' = 'main'
 	): Promise<void> => {
-		if (_type === 'preview' && newEntries.length > 0) {
-			ensureThreeLayer();
-			await threeJsManager.addModel(newEntries[0], 'preview'); // プレビュー用に最初のモデルを追加
+		if (_type === 'preview') {
+			if (newEntries.length > 0) {
+				ensureThreeLayer();
+				await threeJsManager.addModel(newEntries[0], 'preview');
+			} else {
+				threeJsManager.clearPreview();
+			}
 			return;
 		}
 
@@ -923,8 +929,8 @@ const createMapStore = () => {
 		for (const entry of entriesToAdd) {
 			await threeJsManager.addModel(entry);
 			const currentIndex = entry.state?.dimension?.currentIndex;
-			if (currentIndex != null && currentIndex > 0) {
-				applyTemporalModelMeshTimeStep(entry, currentIndex);
+			if (entry.style.type === 'mesh' && currentIndex != null && currentIndex > 0) {
+				applyTemporalModelMeshTimeStep(entry as MeshEntry<MeshStyle>, currentIndex);
 			}
 		}
 
@@ -933,7 +939,9 @@ const createMapStore = () => {
 			if (currentIds.has(entry.id)) {
 				threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
 				threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
-				threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
+				if (entry.style.type === 'mesh') {
+					threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
+				}
 				threeJsManager.setModelTransform(entry.id, entry.style);
 			}
 		}
@@ -982,16 +990,17 @@ const createMapStore = () => {
 		}
 	};
 
-	const setModelStyle = (entry: MeshEntry<MeshStyle>) => {
-		threeJsManager.setModelVisibility(entry.id, entry.style.visible ?? true);
-		threeJsManager.setModelOpacity(entry.id, entry.style.opacity);
-		threeJsManager.setModelWireframe(entry.id, entry.style.wireframe);
-		threeJsManager.setModelColor(entry.id, entry.style.color);
-		threeJsManager.setModelTransform(entry.id, entry.style);
-		threeJsManager.setModelAnimationState(entry);
+	const setModelStyle = (entry: ThreeModelEntry) => {
+		void threeJsManager.setModelStyle(entry);
 		if (map && isMapValid(map)) {
 			map.triggerRepaint();
 		}
+	};
+
+	const loadIfcPartColorAttributes = async (entry: MeshEntry<MeshStyle>) => {
+		const attributeCount = await threeJsManager.loadIfcPartColorAttributes(entry);
+		setModelStyle(entry);
+		return attributeCount;
 	};
 
 	const exportModelAsGlb = async (entry: MeshEntry<MeshStyle>) => {
@@ -1299,6 +1308,7 @@ const createMapStore = () => {
 		// 現在の中心とターゲットの距離に応じてdurationを調整
 		const currentCenter = map.getCenter();
 		const bounds = _entry.metaData.bounds;
+		const singlePointFocus = getSinglePointFocus(_entry);
 		const targetLng = _entry.metaData.center
 			? _entry.metaData.center[0]
 			: (bounds[0] + bounds[2]) / 2;
@@ -1329,6 +1339,18 @@ const createMapStore = () => {
 			300,
 			Math.min(MAP_ANIMATION_DURATION, Math.max(distDuration, scaleDuration))
 		);
+
+		if (singlePointFocus) {
+			map.flyTo({
+				center: singlePointFocus.center,
+				zoom: singlePointFocus.zoom,
+				bearing: map.getBearing(),
+				pitch: map.getPitch(),
+				duration: 1000,
+				easing: MAP_EASING
+			});
+			return;
+		}
 
 		if (_entry.metaData.center) {
 			map.flyTo({
@@ -1675,6 +1697,7 @@ const createMapStore = () => {
 		setThreeLayer,
 		setTemporalModelTimeStep,
 		setModelStyle,
+		loadIfcPartColorAttributes,
 		exportModelAsGlb,
 		setDeckModelStyleEntries,
 		setDeckModelVisibility,

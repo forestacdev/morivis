@@ -1,6 +1,28 @@
 import { describe, expect, it } from 'vitest';
 
-import { applyProjectedModelAxisOverride } from './model-axis';
+import {
+	applyProjectedModelAxisOverride,
+	getModelBaseRotationX,
+	getModelViewAxisRotationX
+} from './model-axis';
+
+describe('getModelBaseRotationX', () => {
+	it('ローカルFBXではCAD向けの軸回転を適用しない', () => {
+		expect(getModelBaseRotationX('fbx', true)).toBe(-180);
+	});
+
+	it('投影座標を持つFBXはCAD向けの軸回転を維持する', () => {
+		expect(getModelBaseRotationX('fbx')).toBe(90);
+	});
+
+	it('軸指定のないSTLはZ-upを既定値にする', () => {
+		expect(getModelBaseRotationX('stl')).toBe(90);
+	});
+
+	it('Y-up指定のSTLは汎用モデルと同じ軸回転にする', () => {
+		expect(getModelBaseRotationX('stl', false, 'y')).toBe(-180);
+	});
+});
 
 describe('applyProjectedModelAxisOverride', () => {
 	it('投影座標系を持つ OBJ は FBX と同じ軸補正に合わせる', () => {
@@ -45,5 +67,23 @@ describe('applyProjectedModelAxisOverride', () => {
 		applyProjectedModelAxisOverride(transform, 'obj');
 
 		expect(transform.baseRotationX).toBe(-180);
+	});
+});
+
+describe('getModelViewAxisRotationX', () => {
+	it('CAD系FBXをモデルビューのY-up座標へ変換する', () => {
+		expect(getModelViewAxisRotationX('fbx', 90)).toBe(-90);
+	});
+
+	it('ソースの向きを維持するFBXには追加回転を適用しない', () => {
+		expect(getModelViewAxisRotationX('fbx', -180)).toBe(0);
+	});
+
+	it('STLをモデルビューのY-up座標へ変換する', () => {
+		expect(getModelViewAxisRotationX('stl', 90)).toBe(-90);
+	});
+
+	it('Y-up指定のSTLにはモデルビューの追加回転を適用しない', () => {
+		expect(getModelViewAxisRotationX('stl', -180)).toBe(0);
 	});
 });

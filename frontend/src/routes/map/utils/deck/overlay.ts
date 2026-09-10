@@ -2,6 +2,7 @@ import {
 	sanitizeScenegraphGltfForDeck,
 	type ScenegraphGltfLike
 } from '$routes/map/utils/tiles3d/sanitize-scenegraph-gltf';
+import { COORDINATE_SYSTEM } from '@deck.gl/core';
 import { Tile3DLayer } from '@deck.gl/geo-layers';
 import { GeoJsonLayer, PointCloudLayer } from '@deck.gl/layers';
 import {
@@ -209,6 +210,7 @@ export const clearPointCloudDataCache = (entryId?: string) => {
 export const createPointCloudLayer = (dataEntry: PointCloudEntry) => {
 	const data = getPointCloudData(dataEntry);
 	if (!data) return null;
+	const coordinateOrigin = dataEntry.format.coordinateOrigin;
 
 	return new PointCloudLayer({
 		id: `point-cloud-layer-${dataEntry.id}`,
@@ -220,7 +222,13 @@ export const createPointCloudLayer = (dataEntry: PointCloudEntry) => {
 		visible: dataEntry.style.visible ?? true,
 		pointSize: dataEntry.style.pointSize ?? 1,
 		parameters: { depthTest: false },
-		beforeId: 'deck-reference-layer'
+		beforeId: 'deck-reference-layer',
+		...(coordinateOrigin
+			? {
+				coordinateSystem: COORDINATE_SYSTEM.METER_OFFSETS,
+				coordinateOrigin
+			}
+			: {})
 	});
 };
 

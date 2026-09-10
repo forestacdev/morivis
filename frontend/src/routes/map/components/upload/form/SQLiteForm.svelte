@@ -27,7 +27,7 @@
 	import { tabularRowsToGeojson } from '$routes/map/utils/formats/tabular';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
-	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { getProjContext, isValidEpsg, type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -117,6 +117,9 @@
 		if (geometryType === 3 || geometryType === 6) return 'Polygon';
 		return null;
 	};
+
+	const getSridLabel = (srid: number): string =>
+		isValidEpsg(String(srid)) ? `EPSG:${srid}` : `SRID:${srid}`;
 
 	const snapPreviewToAutoSelectedColumn = async (
 		headerNames: string[],
@@ -306,6 +309,15 @@
 		return { entry, bbox };
 	};
 
+	const requestCoordinateSystemSelection = (geojson: FeatureCollection) => {
+		pendingZoneGeoRefData = {
+			featureCollection: geojson,
+			entryName
+		};
+		transformOptionMode = 'zone';
+		focusBbox = turfBbox(geojson) as [number, number, number, number];
+	};
+
 	const processGeometryTable = async (
 		tableName: string,
 		geometryColumn: string,
@@ -317,24 +329,26 @@
 
 		let workingGeojson = selected.geojson;
 		if (srid && srid !== 4326) {
+			const epsgCode = String(srid);
+			if (!isValidEpsg(epsgCode)) {
+				requestCoordinateSystemSelection(selected.geojson);
+				return;
+			}
 			try {
-				const prjContent = getProjContext(String(srid) as EpsgCode);
+				const prjContent = getProjContext(epsgCode);
 				workingGeojson = (await transformGeoJSONParallel(
 					workingGeojson,
 					prjContent
 				)) as FeatureCollection;
 			} catch {
-				workingGeojson = selected.geojson;
+				requestCoordinateSystemSelection(selected.geojson);
+				return;
 			}
 		}
 
 		const { entry, bbox } = await createEntryFromGeojson(workingGeojson, selected.geometryType);
 		if (!entry) {
-			pendingZoneGeoRefData = {
-				featureCollection: selected.geojson,
-				entryName
-			};
-			transformOptionMode = 'zone';
+			requestCoordinateSystemSelection(selected.geojson);
 			focusBbox = bbox as [number, number, number, number];
 			return;
 		}
@@ -574,7 +588,7 @@
 								{#if column.geometryFormat}
 									[{column.geometryFormat}]{/if}
 								{#if column.srid}
-									(EPSG:{column.srid}){/if}
+									({getSridLabel(column.srid)}){/if}
 							</option>
 						{/each}
 					</select>

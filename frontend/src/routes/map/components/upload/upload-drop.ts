@@ -3,6 +3,7 @@ import JSZip from 'jszip';
 import type { DialogType } from '$routes/map/types';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
+import { inspectGaussianSplatPlyFile } from '$routes/map/utils/formats/gaussian-splat';
 import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
 import { isLikelyHritFile } from '$routes/map/utils/formats/hrit';
@@ -47,6 +48,7 @@ export type UploadDropDecision =
 		type: 'remote-kml-model';
 		name: string;
 		modelUrl: string;
+		sourceFiles: File[];
 		placement?: {
 			lng: number;
 			lat: number;
@@ -58,8 +60,10 @@ export type UploadDropDecision =
 type UploadDropRule = {
 	id: string;
 	match: (files: File[]) => boolean;
-	resolve: (files: File[]) => Promise<UploadDropDecision>;
+	resolve: (files: File[], options: UploadDropOptions) => Promise<UploadDropDecision>;
 };
+
+export type UploadDropOptions = { mobile?: boolean; };
 
 // FileManager 側で state 更新しやすいよう、判定結果を UI 遷移の形にそろえる。
 const createDialogDecision = (
@@ -190,16 +194,22 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	sql: 'sqlite',
 	gdb: 'gdb',
 	pmtiles: 'pmtiles',
-	glb: 'glb',
-	gltf: 'glb',
-	'3ds': 'glb',
-	dae: 'glb',
-	'3dm': 'glb',
-	fbx: 'glb',
-	drc: 'glb',
-	'3mf': 'glb',
-	amf: 'glb',
-	ifc: 'glb',
+	glb: 'model',
+	gltf: 'model',
+	vrm: 'model',
+	'3ds': 'model',
+	dae: 'model',
+	'3dm': 'model',
+	fbx: 'model',
+	drc: 'model',
+	'3mf': 'model',
+	amf: 'model',
+	stl: 'model',
+	ifc: 'model',
+	pmx: 'model',
+	usd: 'model',
+	usda: 'model',
+	usdz: 'model',
 	h5: 'hdf5',
 	tiff: 'geotiff',
 	tif: 'geotiff',
@@ -218,7 +228,8 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	bin: 'grib2',
 	grib2: 'grib2',
 	grb2: 'grib2',
-	grb: 'grib2'
+	grb: 'grib2',
+	bcf: 'bcf'
 };
 
 const SXF_PRIMARY_EXTENSION = '.sfc';
@@ -242,12 +253,13 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 					type: 'remote-kml-model',
 					name: kmlModel.placement?.name?.trim() || kmlFile.name.replace(/\.[^.]+$/, ''),
 					modelUrl: kmlModel.modelUrl,
+					sourceFiles: files,
 					placement: kmlModel.placement
 				};
 			}
 
 			if (kmlModel && kmlModel.modelFiles.length > 0) {
-				return createDialogDecision('glb', kmlModel.modelFiles);
+				return createDialogDecision('model', kmlModel.modelFiles);
 			}
 
 			return createDialogDecision('kml');
@@ -258,11 +270,11 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 		match: (files) => !!findFirstByExtensions(files, MODEL_FILE_EXTENSIONS),
 		resolve: async (files) => {
 			const objFile = files.find((file) => hasExtension(file, '.obj'));
-			if (!objFile) return createDialogDecision('glb', files);
+			if (!objFile) return createDialogDecision('model', files);
 
 			const inspection = await inspectObjFile(objFile);
 			attachProjectedModelEpsg(objFile, inspection.projectedModelEpsg);
-			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb', files);
+			return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'model', files);
 		}
 	},
 	{
@@ -273,13 +285,13 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
 		id: 'photo-set',
 		match: (files) => areAllPhotoFiles(files),
-		resolve: async (files) => {
+		resolve: async (files, options) => {
 			const firstFile = files[0];
 			if (!firstFile) return createNotificationDecision('対応していないファイル形式です');
 			if (await hasExifGps(firstFile)) {
 				return createDialogDecision('geophoto');
 			}
-			return await resolveDroppedFiles(firstFile);
+			return await resolveDroppedFiles(firstFile, options);
 		}
 	},
 	{
@@ -348,7 +360,7 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
 		id: 'hrit-extensionless',
 		match: () => true,
-		resolve: async (files) => {
+		resolve: async (files, options) => {
 			const hritMatches = await Promise.all(
 				files.map(async (file) => ({
 					file,
@@ -362,7 +374,7 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 
 			const supportedFile = findFirstSupportedFile(files);
 			if (supportedFile) {
-				return await resolveDroppedFiles(supportedFile);
+				return await resolveDroppedFiles(supportedFile, options);
 			}
 
 			return createNotificationDecision('対応していないファイル形式です');
@@ -371,7 +383,10 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 ];
 
 // 単体ドロップ用の本体。特殊判定だけ if に残し、それ以外は拡張子表へ落とす。
-const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
+const resolveSingleFile = async (
+	file: File,
+	options: UploadDropOptions
+): Promise<UploadDropDecision> => {
 	const ext = file.name.split('.').pop()?.toLowerCase();
 
 	if (ext === 'zip') {
@@ -382,7 +397,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 		try {
 			const extracted = await unzipFiles(file);
 			if (extracted.length > 0) {
-				return await resolveDroppedFiles(extracted);
+				return await resolveDroppedFiles(extracted, options);
 			}
 		} catch {
 			return createNotificationDecision('ZIP内に対応するファイルが見つかりません');
@@ -408,6 +423,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 				type: 'remote-kml-model',
 				name: kmlModel.placement?.name?.trim() || file.name.replace(/\.[^.]+$/, ''),
 				modelUrl: kmlModel.modelUrl,
+				sourceFiles: [file],
 				placement: kmlModel.placement
 			};
 		}
@@ -417,7 +433,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 	if (ext === 'kmz') {
 		const kmzModel = await extractModelFromKmz(file).catch(() => null);
 		if (kmzModel && kmzModel.modelFiles.length > 0) {
-			return createDialogDecision('glb', kmzModel.modelFiles);
+			return createDialogDecision('model', kmzModel.modelFiles);
 		}
 		return createDialogDecision('kml');
 	}
@@ -425,7 +441,7 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 	if (ext === 'obj') {
 		const inspection = await inspectObjFile(file);
 		attachProjectedModelEpsg(file, inspection.projectedModelEpsg);
-		return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'glb');
+		return createDialogDecision(inspection.isPointCloud ? 'pointcloud' : 'model');
 	}
 
 	if (ext === 'jpg' || ext === 'jpeg' || ext === 'heic' || ext === 'heif') {
@@ -440,6 +456,18 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 			return createDialogDecision('pointcloud');
 		}
 		return createNotificationDecision('対応していないTXTファイルです');
+	}
+
+	if (ext === 'ply') {
+		const inspection = await inspectGaussianSplatPlyFile(file);
+		if (inspection.kind === 'gaussian-splat') {
+			return createDialogDecision('gaussian-splat');
+		}
+		if (inspection.kind === 'super-splat') {
+			return createNotificationDecision(
+				'SuperSplat 圧縮 PLY は未対応です。通常 PLY に書き出してから読み込んでください。'
+			);
+		}
 	}
 
 	if (ext === 'p21') {
@@ -461,6 +489,10 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 
 	if (ext === 'rss' || ext === 'atom' || ext === 'georss') {
 		return await resolveXmlFiles([file]);
+	}
+
+	if (ext === 'vmd') {
+		return createNotificationDecision('PMXファイル(.pmx)と一緒にドロップしてください');
 	}
 
 	if (
@@ -491,10 +523,13 @@ const resolveSingleFile = async (file: File): Promise<UploadDropDecision> => {
 };
 
 // 複数ドロップ用の本体。KML+モデル、Shapefile 一式、GeoTIFF+sidecar などをここで扱う。
-const resolveMultipleFiles = async (files: File[]): Promise<UploadDropDecision> => {
+const resolveMultipleFiles = async (
+	files: File[],
+	options: UploadDropOptions
+): Promise<UploadDropDecision> => {
 	for (const rule of MULTI_FILE_RULES) {
 		if (!rule.match(files)) continue;
-		return await rule.resolve(files);
+		return await rule.resolve(files, options);
 	}
 
 	return createNotificationDecision('対応していないファイル形式です');
@@ -502,14 +537,24 @@ const resolveMultipleFiles = async (files: File[]): Promise<UploadDropDecision> 
 
 // FileManager から呼ぶ公開入口。単体と複数の分岐だけをここで吸収する。
 export const resolveDroppedFiles = async (
-	input: File | File[]
+	input: File | File[],
+	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
+	const files = Array.isArray(input) ? input : [input];
+	// モバイルの写真はGPSの有無にかかわらず写真フォームへ渡す。
+	// ワールドファイル付き画像やモデルのテクスチャは従来の組み合わせ判定を優先する。
+	if (
+		options.mobile && files.length > 0
+		&& files.every((file) => /\.(jpe?g|heic|heif|png|webp)$/i.test(file.name))
+	) {
+		return createDialogDecision('geophoto', files);
+	}
 	if (Array.isArray(input)) {
 		if (input.length === 0) {
 			return createNotificationDecision('対応していないファイル形式です');
 		}
-		return await resolveMultipleFiles(input);
+		return await resolveMultipleFiles(input, options);
 	}
 
-	return await resolveSingleFile(input);
+	return await resolveSingleFile(input, options);
 };

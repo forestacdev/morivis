@@ -44,6 +44,7 @@
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
+	import ModelViewCanvas from '$routes/map/components/model_view/ModelViewCanvas.svelte';
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
@@ -51,13 +52,21 @@
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
 	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
-	import type { PendingZoneGeoRefData } from '$routes/map/components/upload/form/pending-zone-vector';
+	import type {
+		PendingZoneGeoRefData,
+		TransformOptionMode
+	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import type {
 		GeoRefConfirmPayload,
 		GeoRefData,
 		GeoRefPreviewData
 	} from '$routes/map/components/upload/form/transform/georef-types';
+	import LazyUploadComponent from '$routes/map/components/upload/LazyUploadComponent.svelte';
 	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
+	import {
+		mergeUploadFiles,
+		withUploadFileDescription
+	} from '$routes/map/components/upload/upload-file-description';
 	import {
 		findCatalogEntry,
 		geoDataEntries,
@@ -70,6 +79,7 @@
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import type { MeshEntry, MeshStyle, ThreeModelEntry } from '$routes/map/data/types/model';
 	import type {
 		MorivisRasterEntry,
 		RasterDemStyle,
@@ -119,11 +129,20 @@
 		type EpsgCode,
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
+	import type { PickedModelFeature } from '$routes/map/utils/three/layer-manager';
 	import {
 		warpGeoJSONByCornersParallel,
 		warpPointCloudByCornersParallel
 	} from '$routes/map/utils/transform/georef';
-	import { isStreetView, mapMode, selectedLayerId, isStyleEdit, isDebugMode } from '$routes/stores';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
+	import {
+		isStreetView,
+		mapMode,
+		modelViewRequest,
+		selectedLayerId,
+		isStyleEdit,
+		isDebugMode
+	} from '$routes/stores';
 	import { debugLog } from '$routes/stores/debug';
 	import { activeLayerIdsStore, showStreetViewLayer } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
@@ -137,24 +156,14 @@
 		showInfoDialog,
 		showSearchMenu,
 		showTermsDialog,
-		isProcessing
+		isProcessing,
+		showModelView
 	} from '$routes/stores/ui';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
-	// アップロード関連コンポーネント（PC時のみ動的ロード）
-	let UploadDialog = $state.raw<any>(null);
-	let TransformOptionForm = $state.raw<any>(null);
-
-	const isPc = typeof window !== 'undefined' && checkPc();
-	if (isPc) {
-		Promise.all([
-			import('$routes/map/components/upload/BaseDialog.svelte'),
-			import('$routes/map/components/upload/form/transform/TransformOptionForm.svelte')
-		]).then(([uploadMod, transformOptionMod]) => {
-			UploadDialog = uploadMod.default;
-			TransformOptionForm = transformOptionMod.default;
-		});
-	}
+	const loadUploadDialog = () => import('$routes/map/components/upload/BaseDialog.svelte');
+	const loadGeoRefForm = () =>
+		import('$routes/map/components/upload/form/transform/GeoRefForm.svelte');
 
 	let tempLayerEntries = $state<MorivisLayerEntry[]>([]); // 一時レイヤーデータ
 
@@ -167,8 +176,38 @@
 	};
 
 	let layerEntries = $state<MorivisLayerEntry[]>([]); // アクティブなレイヤーデータ
+	const isMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
+		return entry.type === 'model' && entry.style.type === 'mesh';
+	};
+	const isThreeModelEntry = (entry: MorivisLayerEntry): entry is ThreeModelEntry => {
+		return (
+			entry.type === 'model' &&
+			(entry.style.type === 'mesh' || entry.style.type === 'gaussian-splat')
+		);
+	};
+	let modelViewEntries = $derived.by(() => {
+		const request = $modelViewRequest;
+		if (!request) return [];
+		return request.entryIds
+			.map((entryId) => layerEntries.find((candidate) => candidate.id === entryId))
+			.filter((entry): entry is ThreeModelEntry => Boolean(entry && isThreeModelEntry(entry)));
+	});
 	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
 	let dropFile = $state<UploadFiles>(null); // ドロップしたファイル
+	let pendingUploadFiles: File[] = [];
+	let isStartingUploadSession = false;
+
+	const setUploadedDataEntry = (entry: MorivisLayerEntry | null) => {
+		if (!entry) {
+			showDataEntry = null;
+			return;
+		}
+
+		const uploadFiles = mergeUploadFiles(pendingUploadFiles, toUploadFiles(dropFile));
+		showDataEntry = withUploadFileDescription(entry, uploadFiles);
+		pendingUploadFiles = [];
+	};
+
 	let remoteGeoZarrUrl = $state<string | null>(null);
 	let remotePmtilesUrl = $state<string | null>(null);
 	let remoteRasterUrl = $state<string | null>(null);
@@ -228,6 +267,8 @@
 	// 地物情報のデータ
 	let featureMenuData = $state<FeatureMenuData | null>(null);
 	let highlightMarkerState = $state<HighlightMarkerState | null>(null);
+	let resetModelView = $state<(() => void) | null>(null);
+	let modelViewFpsMode = $state(false);
 
 	// 選択マーカー
 	let showSelectionMarker = $state<boolean>(false); // マーカーの表示
@@ -250,8 +291,33 @@
 
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
 	let pendingZoneGeoRefData = $state.raw<PendingZoneGeoRefData | null>(null);
-	let transformOptionMode = $state<'zone' | 'georef' | null>(null);
+	let transformOptionMode = $state<TransformOptionMode>(null);
+
+	const setUploadDialogType = (dialogType: DialogType) => {
+		if (dialogType && !showDialogType) {
+			const hasAlreadyReceivedFiles = toUploadFiles(dropFile).length > 0;
+			if (!hasAlreadyReceivedFiles) pendingUploadFiles = [];
+			isStartingUploadSession = !hasAlreadyReceivedFiles;
+		}
+		showDialogType = dialogType;
+	};
+
+	const setUploadDropFile = (files: UploadFiles) => {
+		const nextFiles = toUploadFiles(files);
+		if (nextFiles.length > 0) {
+			pendingUploadFiles =
+				!showDialogType || isStartingUploadSession
+					? nextFiles
+					: mergeUploadFiles(pendingUploadFiles, nextFiles);
+			isStartingUploadSession = false;
+		}
+		dropFile = files;
+	};
+
 	let isPreparingGeoRefData = $state(false);
+	let isModelPlacementActive = $derived(
+		transformOptionMode === 'georef' && !!showDataEntry && isThreeModelEntry(showDataEntry)
+	);
 
 	let geoRefData = $state.raw<GeoRefData | null>(null);
 	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
@@ -259,6 +325,10 @@
 	let allowedTransformModes = $derived.by(() => {
 		if (geoRefData?.allowedTransformModes?.length) {
 			return geoRefData.allowedTransformModes;
+		}
+
+		if (showDialogType && isModelPlacementActive) {
+			return getAllowedTransformModesForIssue(showDialogType, 'placement-missing');
 		}
 
 		if (showDialogType && (transformOptionMode === 'zone' || pendingZoneGeoRefData)) {
@@ -278,6 +348,8 @@
 		geoRefData = null;
 		showDialogType = null;
 		dropFile = null;
+		pendingUploadFiles = [];
+		isStartingUploadSession = false;
 	};
 
 	const finalizeGeoRefEntry = async (payload: GeoRefConfirmPayload) => {
@@ -330,8 +402,8 @@
 				debugLog.info(
 					`+page finalizeGeoRefEntry ベクター生成: id=${warpedEntry.id}, bounds=${warpedBbox.join(',')}`
 				);
+				setUploadedDataEntry(warpedEntry);
 				closeGeoRefUi();
-				showDataEntry = warpedEntry;
 				showNotification('ベクターの位置を設定しました', 'success');
 				return;
 			}
@@ -363,8 +435,8 @@
 				debugLog.info(
 					`+page finalizeGeoRefEntry 点群生成: id=${pointCloudEntry.id}, bounds=${bbox.join(',')}`
 				);
+				setUploadedDataEntry(pointCloudEntry);
 				closeGeoRefUi();
-				showDataEntry = pointCloudEntry;
 				showNotification('点群の位置を設定しました', 'success');
 				return;
 			}
@@ -438,8 +510,8 @@
 				}
 
 				debugLog.info(`+page finalizeGeoRefEntry メッシュ生成: id=${entry.id}`);
+				setUploadedDataEntry(entry);
 				closeGeoRefUi();
-				showDataEntry = entry;
 				showNotification('3Dメッシュを生成しました', 'success');
 				return;
 			}
@@ -513,8 +585,8 @@
 			debugLog.info(
 				`+page finalizeGeoRefEntry ラスター生成: id=${entry.id}, bounds=${bbox.join(',')}`
 			);
+			setUploadedDataEntry(entry);
 			closeGeoRefUi();
-			showDataEntry = entry;
 			showNotification('画像の位置を設定しました', 'success');
 		} catch (error) {
 			debugLog.error(
@@ -840,6 +912,31 @@
 		showSelectionMarker = false;
 	};
 
+	const showModelAttributes = (picked: PickedModelFeature) => {
+		const center = mapStore.getMap()?.getCenter();
+		featureMenuData = {
+			layerId: picked.entryId,
+			featureId: picked.objectId,
+			point: center ? [center.lng, center.lat] : [0, 0],
+			properties: {
+				オブジェクト名: picked.objectName,
+				モデルID: picked.objectId,
+				...picked.attributes
+			},
+			modelPart: picked.part
+		};
+	};
+
+	const setModelViewReset = (resetView: (() => void) | null) => {
+		resetModelView = resetView;
+	};
+	const toggleModelViewFps = () => {
+		modelViewFpsMode = !modelViewFpsMode;
+	};
+	const setModelViewFpsMode = (enabled: boolean) => {
+		modelViewFpsMode = enabled;
+	};
+
 	// streetビューの表示切り替え時
 	isStreetView.subscribe(async (value) => {
 		if (!streetViewPoint) return;
@@ -1137,7 +1234,7 @@
 				bind:maplibreMap={map}
 				bind:layerEntries
 				bind:tempLayerEntries
-				bind:showDataEntry
+				bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
 				bind:featureMenuData
 				bind:highlightMarkerState
 				bind:showSelectionMarker
@@ -1145,8 +1242,8 @@
 				bind:showAngleMarker
 				bind:angleMarkerLngLat
 				bind:cameraBearing
-				bind:dropFile
-				bind:showDialogType
+				bind:dropFile={() => dropFile, setUploadDropFile}
+				bind:showDialogType={() => showDialogType, setUploadDialogType}
 				bind:drawGeojsonData
 				{transformOptionMode}
 				bind:focusBbox
@@ -1213,41 +1310,47 @@
 						bind:selectionMarkerLngLat
 						bind:showDataEntry
 						{focusFeature}
+						hideControls={$showModelView}
+						onResetModelView={resetModelView ?? undefined}
+						{modelViewFpsMode}
+						onToggleModelViewFps={toggleModelViewFps}
 					/>
 
-					<MapLibreMap
-						bind:maplibreMap={map}
-						bind:layerEntries
-						bind:tempLayerEntries
-						bind:showDataEntry
-						bind:featureMenuData
-						bind:highlightMarkerState
-						bind:showSelectionMarker
-						bind:selectionMarkerLngLat
-						bind:showAngleMarker
-						bind:angleMarkerLngLat
-						bind:cameraBearing
-						bind:dropFile
-						bind:showDialogType
-						bind:drawGeojsonData
-						{transformOptionMode}
-						bind:focusBbox
-						bind:isExternalCameraUpdate
-						bind:selectedSearchId
-						bind:selectedSearchResultData
-						bind:contextMenuState
-						bind:isDragover
-						{geoRefPreviewData}
-						previewOpacity={geoRefPreviewOpacity}
-						{searchResults}
-						{selectedEpsgCode}
-						{zoneBboxGeojsonData}
-						{streetViewLineData}
-						{streetViewPointData}
-						{showMapCanvas}
-						{searchGeojsonData}
-						{focusFeature}
-					/>
+					<div class="min-h-0 flex-1">
+						<MapLibreMap
+							bind:maplibreMap={map}
+							bind:layerEntries
+							bind:tempLayerEntries
+							bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
+							bind:featureMenuData
+							bind:highlightMarkerState
+							bind:showSelectionMarker
+							bind:selectionMarkerLngLat
+							bind:showAngleMarker
+							bind:angleMarkerLngLat
+							bind:cameraBearing
+							bind:dropFile={() => dropFile, setUploadDropFile}
+							bind:showDialogType={() => showDialogType, setUploadDialogType}
+							bind:drawGeojsonData
+							{transformOptionMode}
+							bind:focusBbox
+							bind:isExternalCameraUpdate
+							bind:selectedSearchId
+							bind:selectedSearchResultData
+							bind:contextMenuState
+							bind:isDragover
+							{geoRefPreviewData}
+							previewOpacity={geoRefPreviewOpacity}
+							{searchResults}
+							{selectedEpsgCode}
+							{zoneBboxGeojsonData}
+							{streetViewLineData}
+							{streetViewPointData}
+							{showMapCanvas}
+							{searchGeojsonData}
+							{focusFeature}
+						/>
+					</div>
 				</div>
 				<!-- 右側余白 -->
 				<div class="bg-main p-2 max-lg:hidden"></div>
@@ -1296,13 +1399,15 @@
 				{/await}
 			</MobileFeatureMenuCard>
 
-			<PreviewMenu bind:showDataEntry />
+			{#if !transformOptionMode}
+				<PreviewMenu bind:showDataEntry />
+			{/if}
 
 			{#if !transformOptionMode}
 				<DataMenu
 					bind:showDataEntry
-					bind:dropFile
-					bind:showDialogType
+					bind:dropFile={() => dropFile, setUploadDropFile}
+					bind:showDialogType={() => showDialogType, setUploadDialogType}
 					bind:remoteGeoZarrUrl
 					bind:remotePmtilesUrl
 					bind:remoteRasterUrl
@@ -1313,7 +1418,7 @@
 					bind:pendingTileUrl
 				/>
 			{/if}
-			{#if showDataEntry}
+			{#if showDataEntry && !transformOptionMode}
 				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
 			{/if}
 
@@ -1328,6 +1433,21 @@
 				/>
 			{/if}
 
+			{#if modelViewEntries.length > 0}
+				{#key $modelViewRequest?.entryIds.join(':')}
+					<ModelViewCanvas
+						entries={modelViewEntries}
+						initialCamera={$modelViewRequest?.camera}
+						includeHighlights={$modelViewRequest?.includeHighlights ?? false}
+						fpsMode={modelViewFpsMode}
+						onModelPicked={showModelAttributes}
+						onModelMiss={closeFeaturePanel}
+						onResetViewChange={setModelViewReset}
+						onFpsModeChange={setModelViewFpsMode}
+					/>
+				{/key}
+			{/if}
+
 			{#if !$isStreetView && !showDataEntry}
 				<!-- スマホ用地図コントロール -->
 				<MobileMapControl />
@@ -1337,66 +1457,76 @@
 		</div>
 	{/if}
 {/if}
-{#if UploadDialog}
-	<UploadDialog
-		{map}
-		bind:showDialogType
-		bind:showDataEntry
-		bind:tempLayerEntries
-		bind:dropFile
-		bind:remoteGeoZarrUrl
-		bind:remotePmtilesUrl
-		bind:remoteRasterUrl
-		bind:remoteVectorUrl
-		bind:remoteTiles3dUrl
-		bind:remoteWmtsUrl
-		bind:remoteFeatureServiceUrl
-		bind:pendingTileUrl
-		bind:transformOptionMode
-		bind:focusBbox
-		bind:isDragover
-		bind:zoneConfirmedEpsg
-		bind:pendingZoneGeoRefData
-		bind:geoRefData
-		{selectedEpsgCode}
-	/>
+{#if showDialogType}
+	<LazyUploadComponent load={loadUploadDialog} onclose={closeGeoRefUi}>
+		{#snippet children(UploadDialog)}
+			<UploadDialog
+				{map}
+				bind:showDialogType={() => showDialogType, setUploadDialogType}
+				bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
+				bind:tempLayerEntries
+				bind:dropFile={() => dropFile, setUploadDropFile}
+				bind:remoteGeoZarrUrl
+				bind:remotePmtilesUrl
+				bind:remoteRasterUrl
+				bind:remoteVectorUrl
+				bind:remoteTiles3dUrl
+				bind:remoteWmtsUrl
+				bind:remoteFeatureServiceUrl
+				bind:pendingTileUrl
+				bind:transformOptionMode
+				bind:focusBbox
+				bind:isDragover
+				bind:zoneConfirmedEpsg
+				bind:pendingZoneGeoRefData
+				bind:geoRefData
+				{selectedEpsgCode}
+			/>
+		{/snippet}
+	</LazyUploadComponent>
 {/if}
 
 <ImagePreviewDialog bind:imagePreviewUrl bind:imageBounds />
 
-{#if map && transformOptionMode && TransformOptionForm}
-	<TransformOptionForm
-		{map}
-		{allowedTransformModes}
-		bind:selectedEpsgCode
-		bind:focusBbox
-		bind:zoneBboxGeojsonData
-		bind:geoRefData
-		bind:geoRefPreviewData
-		bind:previewOpacity={geoRefPreviewOpacity}
-		bind:showDialogType
-		bind:dropFile
-		bind:transformOptionMode
-		onZoneConfirm={(epsgCode: EpsgCode) => {
-			geoRefData = null;
-			geoRefPreviewData = null;
-			geoRefPreviewOpacity = 0.6;
-			transformOptionMode = null;
-			zoneConfirmedEpsg = epsgCode;
-			debugLog.info(`Zone確定: epsg=${epsgCode}`);
-		}}
-		onZoneGeoRef={(epsgCode: EpsgCode) => {
-			geoRefPreviewData = null;
-			geoRefPreviewOpacity = 0.6;
-			selectedEpsgCode = epsgCode;
-			transformOptionMode = 'georef';
-			debugLog.info(`GeoRef切替: epsg=${epsgCode}`);
-		}}
-		onGeoRefConfirm={(payload: GeoRefConfirmPayload) => {
-			debugLog.info(`GeoRef確定値受信: bbox=${payload.bbox.join(',')}`);
-			return finalizeGeoRefEntry(payload);
-		}}
-	/>
+{#if map && transformOptionMode}
+	{@const geoRefMap = map}
+	<LazyUploadComponent load={loadGeoRefForm} onclose={closeGeoRefUi}>
+		{#snippet children(GeoRefForm)}
+			<GeoRefForm
+				map={geoRefMap}
+				{allowedTransformModes}
+				bind:selectedEpsgCode
+				bind:focusBbox
+				bind:zoneBboxGeojsonData
+				bind:geoRefData
+				bind:geoRefPreviewData
+				bind:previewOpacity={geoRefPreviewOpacity}
+				bind:showDialogType={() => showDialogType, setUploadDialogType}
+				bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
+				bind:dropFile={() => dropFile, setUploadDropFile}
+				bind:transformOptionMode
+				onZoneConfirm={(epsgCode: EpsgCode) => {
+					geoRefData = null;
+					geoRefPreviewData = null;
+					geoRefPreviewOpacity = 0.6;
+					if (!showDataEntry || !isThreeModelEntry(showDataEntry)) transformOptionMode = null;
+					zoneConfirmedEpsg = epsgCode;
+					debugLog.info(`Zone確定: epsg=${epsgCode}`);
+				}}
+				onZoneGeoRef={(epsgCode: EpsgCode) => {
+					geoRefPreviewData = null;
+					geoRefPreviewOpacity = 0.6;
+					selectedEpsgCode = epsgCode;
+					transformOptionMode = 'georef';
+					debugLog.info(`GeoRef切替: epsg=${epsgCode}`);
+				}}
+				onGeoRefConfirm={(payload: GeoRefConfirmPayload) => {
+					debugLog.info(`GeoRef確定値受信: bbox=${payload.bbox.join(',')}`);
+					return finalizeGeoRefEntry(payload);
+				}}
+			/>
+		{/snippet}
+	</LazyUploadComponent>
 {/if}
 
 {#if contextMenuState}

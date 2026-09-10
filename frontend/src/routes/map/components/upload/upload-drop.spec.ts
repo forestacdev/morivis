@@ -102,6 +102,132 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it.each(['jpg', 'jpeg', 'heic', 'heif', 'png', 'webp'])(
+		'モバイルの %s は位置情報の有無を写真フォームで確認する',
+		async (extension) => {
+			const file = createFile(`test-photo.${extension}`);
+			expect(await resolveDroppedFiles(file, { mobile: true })).toEqual({
+				type: 'dialog',
+				dialogType: 'geophoto',
+				dropFiles: [file]
+			});
+		}
+	);
+
+	it('モバイルでは写真一式を先頭のGPSの有無で切り捨てない', async () => {
+		const files = [createFile('test-no-gps.jpg'), createFile('test-with-gps.heic')];
+		expect(await resolveDroppedFiles(files, { mobile: true })).toEqual({
+			type: 'dialog',
+			dialogType: 'geophoto',
+			dropFiles: files
+		});
+	});
+
+	it('PCのGPSなし画像は従来の位置合わせへ進む', async () => {
+		expect(await resolveDroppedFiles(createFile('test-no-gps.jpg'))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'geopdf'
+		});
+	});
+
+	it('単一の BCF は bcf ダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('test-issues.bcf', 'bcf'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'bcf',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の PMX はモデルダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('test-model.pmx', 'pmx'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の VRM はモデルダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('test-avatar.vrm', 'vrm'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: undefined
+		});
+	});
+
+	it('単一の STL はモデルダイアログ判定になる', async () => {
+		const result = await resolveDroppedFiles(createFile('test-shape.stl', 'solid test-shape'));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: undefined
+		});
+	});
+
+	it.each(['model.usd', 'model.usda', 'model.usdz'])(
+		'%s はモデルダイアログ判定になる',
+		async (fileName) => {
+			const result = await resolveDroppedFiles(createFile(fileName, 'usd'));
+
+			expect(result).toEqual({
+				type: 'dialog',
+				dialogType: 'model',
+				dropFiles: undefined
+			});
+		}
+	);
+
+	it('VRM と VRMA を同時にドロップするとモデルダイアログでまとめて扱う', async () => {
+		const vrmFile = createFile('test-avatar.vrm', 'vrm');
+		const vrmaFile = createFile('test-motion.vrma', 'vrma');
+
+		const result = await resolveDroppedFiles([vrmFile, vrmaFile]);
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: [vrmFile, vrmaFile]
+		});
+	});
+
+	it('通常の3D Gaussian Splatting PLYは専用ダイアログ判定になる', async () => {
+		const header = [
+			'ply',
+			'format binary_little_endian 1.0',
+			'element vertex 1',
+			'property float x',
+			'property float y',
+			'property float z',
+			'property float f_dc_0',
+			'property float f_dc_1',
+			'property float f_dc_2',
+			'property float opacity',
+			'property float scale_0',
+			'property float scale_1',
+			'property float scale_2',
+			'property float rot_0',
+			'property float rot_1',
+			'property float rot_2',
+			'property float rot_3',
+			'end_header',
+			''
+		].join('\n');
+
+		const result = await resolveDroppedFiles(createFile('synthetic-splats.ply', header));
+
+		expect(result).toEqual({
+			type: 'dialog',
+			dialogType: 'gaussian-splat',
+			dropFiles: undefined
+		});
+	});
+
 	it('単一の XLSX は xlsx ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(
 			createFile(
@@ -393,7 +519,7 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
-	it('KMZ からモデル群が抽出できると glb ダイアログへ進む', async () => {
+	it('KMZ からモデル群が抽出できるとモデルダイアログへ進む', async () => {
 		const modelFiles = [createFile('building.glb', 'glb', 'model/gltf-binary')];
 		vi.mocked(extractModelFromKmz).mockResolvedValue({
 			modelFiles,
@@ -404,7 +530,7 @@ describe('resolveDroppedFiles', () => {
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: modelFiles
 		});
 	});
@@ -468,7 +594,7 @@ describe('resolveDroppedFiles', () => {
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: undefined
 		});
 		expect((file as File & { morivisProjectedModelEpsg?: string; }).morivisProjectedModelEpsg)
@@ -477,17 +603,17 @@ describe('resolveDroppedFiles', () => {
 			);
 	});
 
-	it('glTF 単体ドロップは glb 判定になる', async () => {
+	it('glTF 単体ドロップはモデル判定になる', async () => {
 		const result = await resolveDroppedFiles(createFile('scene.gltf'));
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: undefined
 		});
 	});
 
-	it('glTF と補助ファイルを同時ドロップしたときはファイル群を保持したまま glb 判定になる', async () => {
+	it('glTF と補助ファイルを同時ドロップしたときはファイル群を保持したままモデル判定になる', async () => {
 		const gltfFile = createFile('scene.gltf');
 		const binFile = createFile('scene.bin');
 		const textureFile = createFile('wall.png');
@@ -496,7 +622,7 @@ describe('resolveDroppedFiles', () => {
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: [gltfFile, binFile, textureFile]
 		});
 	});
@@ -593,7 +719,7 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
-	it('複数 KML でローカルモデル群が解決できると glb 判定になる', async () => {
+	it('複数 KML でローカルモデル群が解決できるとモデル判定になる', async () => {
 		const modelFiles = [createFile('building.glb', 'glb', 'model/gltf-binary')];
 		vi.mocked(extractModelFromKml).mockResolvedValue({
 			modelFiles
@@ -606,7 +732,7 @@ describe('resolveDroppedFiles', () => {
 
 		expect(result).toEqual({
 			type: 'dialog',
-			dialogType: 'glb',
+			dialogType: 'model',
 			dropFiles: modelFiles
 		});
 	});
@@ -661,14 +787,16 @@ describe('resolveDroppedFiles', () => {
 			}
 		});
 
-		const result = await resolveDroppedFiles([
-			createFile('model.kml', '<kml></kml>', 'application/vnd.google-earth.kml+xml')
-		]);
+		const files = [
+			createFile('test-model.kml', '<kml></kml>', 'application/vnd.google-earth.kml+xml')
+		];
+		const result = await resolveDroppedFiles(files);
 
 		expect(result).toEqual({
 			type: 'remote-kml-model',
 			name: 'Remote Model',
 			modelUrl: 'https://example.com/model.glb',
+			sourceFiles: files,
 			placement: {
 				name: 'Remote Model',
 				lng: 136.9,

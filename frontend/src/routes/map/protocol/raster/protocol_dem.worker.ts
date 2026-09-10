@@ -1,4 +1,4 @@
-import type { image } from 'html2canvas/dist/types/css/types/image';
+import { getDemLightDirection } from '$routes/map/utils/style/dem-shadow';
 import { convertCanvasToResult } from '../farbling';
 import fsSource from './shader/fragment.glsl?raw';
 import vsSource from './shader/vertex.glsl?raw';
@@ -164,19 +164,6 @@ const setUniforms = (
 	}
 };
 
-const calculateLightDirection = (azimuth: number, altitude: number) => {
-	// 方位角と高度をラジアンに変換
-	const azimuthRad = (azimuth * Math.PI) / 180;
-	const altitudeRad = (altitude * Math.PI) / 180;
-
-	// 光の方向ベクトルを計算
-	const x = Math.cos(altitudeRad) * Math.sin(azimuthRad);
-	const y = Math.sin(altitudeRad);
-	const z = -Math.cos(altitudeRad) * Math.cos(azimuthRad); // 北がZ軸の負の方向
-
-	return [x, y, z];
-};
-
 // リクエストキュー: async onmessage のレースコンディション防止
 // onmessageはawait中に次のメッセージで再入するため、
 // WebGLコンテキスト（テクスチャ・uniforms）が上書きされる。
@@ -201,6 +188,8 @@ async function processMessage(e: MessageEvent) {
 		max,
 		min,
 		elevationColorArray,
+		shadow,
+		slopeAutoRange = false,
 		tile,
 		tileSize = 256,
 		encodeType
@@ -231,12 +220,29 @@ async function processMessage(e: MessageEvent) {
 				u_height_map_center: { image: center, type: 'height' },
 				u_color_map: { image: elevationColorArray, type: 'colormap' }
 			});
+		} else if (mode === 'shadow') {
+			setUniforms(gl, program, {
+				u_dem_type: { type: '1f', value: demTypeNumber },
+				u_mode: { type: '1f', value: modeNumber },
+				u_tile_y: { type: '1f', value: tile.y },
+				u_tile_z: { type: '1f', value: tile.z },
+				u_tile_size: { type: '1f', value: tileSize },
+				u_light_direction: { type: '3fv', value: getDemLightDirection(shadow) }
+			});
+			bindTextures(ctx, {
+				u_height_map_center: { image: center, type: 'height' },
+				u_height_map_left: { image: left, type: 'height' },
+				u_height_map_right: { image: right, type: 'height' },
+				u_height_map_top: { image: top, type: 'height' },
+				u_height_map_bottom: { image: bottom, type: 'height' }
+			});
 		} else if (mode === 'slope' || mode === 'curvature') {
 			const uniforms: Uniforms = {
 				u_dem_type: { type: '1f', value: demTypeNumber },
 				u_mode: { type: '1f', value: modeNumber },
 				u_max_slope: { type: '1f', value: max },
 				u_min_slope: { type: '1f', value: min },
+				u_slope_auto_range: { type: '1f', value: slopeAutoRange ? 1 : 0 },
 				u_tile_y: { type: '1f', value: tile.y },
 				u_tile_z: { type: '1f', value: tile.z },
 				u_tile_size: { type: '1f', value: tileSize }

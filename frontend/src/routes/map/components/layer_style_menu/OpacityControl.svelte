@@ -4,7 +4,7 @@
 	import { getVisibilityIconName } from '$lib/icons';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { Opacity } from '$routes/map/data/types';
-	import type { MeshStyle, MeshEntry } from '$routes/map/data/types/model';
+	import type { ThreeModelEntry } from '$routes/map/data/types/model';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
 	import { mapStore } from '$routes/stores/map';
 
@@ -39,16 +39,18 @@
 		}
 	];
 
-	const isThreeMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
+	const isThreeModelEntry = (entry: MorivisLayerEntry): entry is ThreeModelEntry => {
 		return (
-			entry.type === 'model' && entry.style.type === 'mesh' && entry.format.type !== '3d-tiles'
+			entry.type === 'model' &&
+			((entry.style.type === 'mesh' && entry.format.type !== '3d-tiles') ||
+				entry.style.type === 'gaussian-splat')
 		);
 	};
 
 	const hideLayer = () => {
 		layerEntry.style.visible = false;
 		if (layerEntry.type !== 'model') return;
-		if (isThreeMeshEntry(layerEntry)) {
+		if (isThreeModelEntry(layerEntry)) {
 			mapStore.setModelStyle(layerEntry);
 			return;
 		}
@@ -59,7 +61,7 @@
 		layerEntry.style.visible = true;
 		layerEntry.style.opacity = opacity;
 		if (layerEntry.type !== 'model') return;
-		if (isThreeMeshEntry(layerEntry)) {
+		if (isThreeModelEntry(layerEntry)) {
 			mapStore.setModelStyle(layerEntry);
 			return;
 		}

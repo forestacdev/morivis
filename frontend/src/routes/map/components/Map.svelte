@@ -26,9 +26,9 @@
 	import type {
 		AnyTiles3DEntry,
 		DeckVectorEntry,
-		PointCloudEntry
+		PointCloudEntry,
+		ThreeModelEntry
 	} from '$routes/map/data/types/model';
-	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 	import type {
 		RasterBaseMapStyle,
 		RasterCogEntry,
@@ -166,6 +166,11 @@
 
 	const isZoneRegistrationActive = $derived(transformOptionMode === 'zone');
 	const isGeoRefRegistrationActive = $derived(transformOptionMode === 'georef');
+	const isModelPlacementActive = $derived(
+		transformOptionMode === 'georef' &&
+			showDataEntry?.type === 'model' &&
+			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat')
+	);
 
 	// 監視用のデータを保持
 	let layerWatchTargets = $derived.by(() => {
@@ -826,13 +831,15 @@
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
 
-		const meshEntries =
+		const threeModelEntries =
 			showDataEntry || isZoneRegistrationActive
 				? []
 				: (entries.filter(
 						(entry) =>
 							entry.type === 'model' &&
-							(entry.format.type === 'gltf' ||
+							(entry.format.type === 'gaussian-splat' ||
+								entry.format.type === 'gltf' ||
+								entry.format.type === 'vrm' ||
 								entry.format.type === 'obj' ||
 								entry.format.type === '3ds' ||
 								entry.format.type === 'dae' ||
@@ -841,22 +848,33 @@
 								entry.format.type === 'drc' ||
 								entry.format.type === '3mf' ||
 								entry.format.type === 'amf' ||
-								entry.format.type === 'ifc')
-					) as MeshEntry<MeshStyle>[]);
+								entry.format.type === 'stl' ||
+								entry.format.type === 'ifc' ||
+								entry.format.type === 'pmx' ||
+								entry.format.type === 'usd')
+					) as ThreeModelEntry[]);
 
-		const previewMeshEntry =
+		const previewThreeModelEntry =
 			showDataEntry &&
 			showDataEntry.type === 'model' &&
-			showDataEntry.style.type === 'mesh' &&
+			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat') &&
 			showDataEntry.format.type !== '3d-tiles'
-				? (showDataEntry as MeshEntry<MeshStyle>)
+				? (showDataEntry as ThreeModelEntry)
 				: null;
 
 		// setThreeLayerの直前にも確認して、古いモデル状態の上書きを防ぐ。
 		if (updateId !== styleUpdateId) return;
-		await (previewMeshEntry
-			? mapStore.setThreeLayer([previewMeshEntry], 'preview')
-			: mapStore.setThreeLayer(meshEntries, 'main'));
+		// 座標系選択・配置中の実モデルは各フォーム側で読み込み完了まで待って表示する。
+		// ここでは同じプレビューを重複ロードせず、通常プレビューだけを同期する。
+		const isThreeModelTransformPreviewActive =
+			isModelPlacementActive || (isZoneRegistrationActive && !!previewThreeModelEntry);
+		if (!isThreeModelTransformPreviewActive) {
+			await (previewThreeModelEntry
+				? mapStore.setThreeLayer([previewThreeModelEntry], 'preview')
+				: showDataEntry
+					? mapStore.setThreeLayer([], 'preview')
+					: mapStore.setThreeLayer(threeModelEntries, 'main'));
+		}
 
 		mapStore.terrainReload();
 
@@ -1125,6 +1143,7 @@
 		bind:tempLayerEntries
 		bind:showDataEntry
 		bind:showDialogType
+		{transformOptionMode}
 		bind:focusBbox
 	/>
 

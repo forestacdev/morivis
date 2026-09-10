@@ -4,9 +4,11 @@
 	import { resolveDroppedFiles } from './upload-drop';
 	import { applyUploadDropDecision, checkLargeDroppedFiles } from './upload-drop-actions';
 
+	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFiles } from '$routes/map/types';
 	import type maplibregl from '$routes/map/utils/maplibre';
+	import { isMobile } from '$routes/stores/ui';
 
 	interface Props {
 		map: maplibregl.Map;
@@ -15,6 +17,7 @@
 		tempLayerEntries: MorivisLayerEntry[];
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
+		transformOptionMode: TransformOptionMode;
 		focusBbox: [number, number, number, number] | null;
 	}
 
@@ -25,6 +28,7 @@
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
+		transformOptionMode,
 		focusBbox = $bindable()
 	}: Props = $props();
 
@@ -32,7 +36,7 @@
 		// 大きなファイルの確認
 		if (!(await checkLargeDroppedFiles(file))) return;
 
-		const decision = await resolveDroppedFiles(file);
+		const decision = await resolveDroppedFiles(file, { mobile: $isMobile });
 		applyUploadDropDecision(decision, {
 			map,
 			setDropFile: (files) => {
@@ -48,8 +52,18 @@
 	};
 
 	$effect(() => {
-		if (dropFile && !showDialogType) {
-			setFile(dropFile);
+		// ダイアログと位置合わせが閉じた後だけ、登録済みの入力を破棄する。
+		// 3Dモデルの座標系選択中も showDataEntry に実モデルのプレビューが入るため、
+		// ここで消すとフォームがURL登録へ戻り、プレビューも解除されてしまう。
+		if (showDataEntry && !showDialogType && !transformOptionMode) {
+			dropFile = null;
+			return;
+		}
+
+		// 位置合わせ中は入力を保持する。ここで同じ画像フォームを開き直すと、
+		// GeoRef用のBlob URL生成が繰り返される。
+		if (dropFile && !showDialogType && !transformOptionMode) {
+			void setFile(dropFile);
 		}
 	});
 </script>

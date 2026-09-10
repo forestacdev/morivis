@@ -5,6 +5,7 @@ const XML_EXTENSION = '.xml';
 
 export const MODEL_FILE_EXTENSIONS = [
 	'.gltf',
+	'.vrm',
 	'.obj',
 	'.3ds',
 	'.dae',
@@ -13,7 +14,12 @@ export const MODEL_FILE_EXTENSIONS = [
 	'.drc',
 	'.3mf',
 	'.amf',
-	'.ifc'
+	'.stl',
+	'.ifc',
+	'.pmx',
+	'.usd',
+	'.usda',
+	'.usdz'
 ] as const;
 
 // ディレクトリドロップ時は仮想的な相対パスを優先し、拡張子判定を安定させる。

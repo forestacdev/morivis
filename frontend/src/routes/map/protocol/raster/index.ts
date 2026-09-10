@@ -1,6 +1,7 @@
 import { DEM_DATA_TYPE, type DemDataTypeKey } from '$routes/map/data/types/raster';
 import { DEM_STYLE_TYPE } from '$routes/map/data/types/raster';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+import { normalizeDemShadowStyle } from '$routes/map/utils/style/dem-shadow';
 import { TileImageManager } from '../image';
 
 const createAbortError = () => new Error('Request aborted');
@@ -114,7 +115,9 @@ class WorkerProtocol {
 				});
 				controller.signal.addEventListener('abort', handleAbort, { once: true });
 			});
-		} else if (mode === 'slope' || mode === 'aspect' || mode === 'curvature') {
+		} else if (
+			mode === 'slope' || mode === 'aspect' || mode === 'curvature' || mode === 'shadow'
+		) {
 			const images = await this.tileCache.getAdjacentTilesWithImages(
 				entryId,
 				x,
@@ -170,6 +173,14 @@ class WorkerProtocol {
 					elevationColorArray,
 					max,
 					min,
+					slopeAutoRange: mode === 'slope'
+						&& url.searchParams.get('slopeAutoRange') === 'true',
+					shadow: mode === 'shadow'
+						? normalizeDemShadowStyle({
+							azimuth: Number(url.searchParams.get('azimuth') ?? NaN),
+							altitude: Number(url.searchParams.get('altitude') ?? NaN)
+						})
+						: undefined,
 					tile: { x, y, z },
 					tileSize,
 					encodeType
