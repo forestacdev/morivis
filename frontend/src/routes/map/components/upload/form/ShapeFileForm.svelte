@@ -12,11 +12,11 @@
 	import ShapeFileFormInput from './ShapeFileFormInput.svelte';
 
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
-	import { withUploadFileDescription } from '$routes/map/components/upload/upload-file-description';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
+	import { withUploadFileDescription } from '$routes/map/components/upload/upload-file-description';
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import { geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
