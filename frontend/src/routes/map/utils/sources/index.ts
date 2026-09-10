@@ -71,6 +71,7 @@ import {
 	getRasterDimensionValue
 } from '$routes/map/utils/raster/dimension-runtime';
 import { getDemStyleRange, isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
+import { normalizeDemShadowStyle } from '$routes/map/utils/style/dem-shadow';
 
 const EMPTY_IMAGE_DATA_URL =
 	'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -313,12 +314,19 @@ export const createSourcesItems = async (
 								|| mode === 'slope'
 								|| mode === 'aspect'
 								|| mode === 'curvature'
+								|| mode === 'shadow'
 							) {
 								const demType = visualization.demType;
 								const uniformsDataParam = mode === 'relief'
 									? toDemStyleUrlParams(visualization.uniformsData.relief)
 									: mode === 'slope' && visualization.uniformsData.slope
 									? toDemStyleUrlParams(visualization.uniformsData.slope)
+									: mode === 'shadow'
+									? objectToUrlParams({
+										...normalizeDemShadowStyle(
+											visualization.uniformsData.shadow
+										)
+									})
 									: objectToUrlParams(
 										(mode === 'aspect'
 											? visualization.uniformsData.aspect
@@ -380,12 +388,19 @@ export const createSourcesItems = async (
 								|| mode === 'slope'
 								|| mode === 'aspect'
 								|| mode === 'curvature'
+								|| mode === 'shadow'
 							) {
 								const demType = visualization.demType;
 								const uniformsDataParam = mode === 'relief'
 									? toDemStyleUrlParams(visualization.uniformsData.relief)
 									: mode === 'slope' && visualization.uniformsData.slope
 									? toDemStyleUrlParams(visualization.uniformsData.slope)
+									: mode === 'shadow'
+									? objectToUrlParams({
+										...normalizeDemShadowStyle(
+											visualization.uniformsData.shadow
+										)
+									})
 									: objectToUrlParams(
 										(mode === 'aspect'
 											? visualization.uniformsData.aspect

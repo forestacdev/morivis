@@ -20,7 +20,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		maxZoom: 16,
 		tileSize: 512,
 		bounds: WEB_MERCATOR_WORLD_BBOX,
-		xyzImageTile: { x: 0, y: 0, z: 0 }
+		xyzImageTile: { x: 3, y: 1, z: 2 }
 	},
 	interaction: {
 		clickable: true

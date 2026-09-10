@@ -22,6 +22,7 @@ import { resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { getDemStyleRange, isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
+import { normalizeDemShadowStyle } from '$routes/map/utils/style/dem-shadow';
 import { createClientId } from '$routes/utils/id';
 import { PMTiles } from 'pmtiles';
 import { CoverImageManager } from '../index';
@@ -424,7 +425,12 @@ export const generateDemCoverImage = async (
 					}
 				};
 				worker.addEventListener('message', handler);
-				worker.postMessage(message);
+				try {
+					worker.postMessage(message);
+				} catch (error) {
+					worker.removeEventListener('message', handler);
+					reject(error);
+				}
 			});
 		};
 
@@ -444,7 +450,9 @@ export const generateDemCoverImage = async (
 				tileSize,
 				encodeType
 			});
-		} else if (mode === 'slope' || mode === 'aspect' || mode === 'curvature') {
+		} else if (
+			mode === 'slope' || mode === 'aspect' || mode === 'curvature' || mode === 'shadow'
+		) {
 			const elevationColorArray = mode === 'slope' && visualization.uniformsData.slope
 				? colorMapCache.createDemColorArray(visualization.uniformsData.slope)
 				: colorMapCache.createColorArray(
@@ -475,6 +483,9 @@ export const generateDemCoverImage = async (
 				elevationColorArray,
 				max,
 				min,
+				shadow: mode === 'shadow'
+					? normalizeDemShadowStyle(visualization.uniformsData.shadow)
+					: undefined,
 				tile: { x, y, z },
 				tileSize,
 				encodeType

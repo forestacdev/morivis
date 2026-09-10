@@ -17,6 +17,7 @@
 		toDemLinearColorStyle,
 		toDemStepColorStyle
 	} from '$routes/map/utils/style/color-mapping';
+	import { normalizeDemShadowStyle } from '$routes/map/utils/style/dem-shadow';
 
 	const colorMapManager = new ColorMapManager();
 	const linearColorMapOptions = [...COLORMAP_PRESET_NAMES];
@@ -28,6 +29,12 @@
 	}
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
+	const shadowStyle = $derived(
+		normalizeDemShadowStyle(layerEntry.style.visualization.uniformsData.shadow)
+	);
+	const setShadowAngle = (key: 'azimuth' | 'altitude', value: number) => {
+		layerEntry.style.visualization.uniformsData.shadow = { ...shadowStyle, [key]: value };
+	};
 
 	$effect(() => {
 		const relief = layerEntry.style.visualization.uniformsData.relief;
@@ -244,6 +251,26 @@
 					/>
 				{/if}
 			{/if}
+		{/if}
+
+		{#if layerEntry.style.visualization.mode === 'shadow'}
+			<RangeSlider
+				label="光源の方位角（°）"
+				bind:value={() => shadowStyle.azimuth, (value) => setShadowAngle('azimuth', value)}
+				min={0}
+				max={360}
+				step={1}
+				isInt={true}
+			/>
+			<div class="text-sub-text text-sm">北 0° / 東 90° / 南 180° / 西 270°</div>
+			<RangeSlider
+				label="光源の高度角（°）"
+				bind:value={() => shadowStyle.altitude, (value) => setShadowAngle('altitude', value)}
+				min={0}
+				max={90}
+				step={1}
+				isInt={true}
+			/>
 		{/if}
 
 		{#if layerEntry.style?.visualization.uniformsData.aspect && layerEntry.style.visualization.mode === 'aspect'}
