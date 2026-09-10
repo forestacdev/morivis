@@ -91,6 +91,36 @@ afterEach(() => {
 });
 
 describe('DEM プレビューの Worker 送信', () => {
+	it('傾斜量のプレビューは元の配色範囲とズームを送りシェーダーで自動補正する', async () => {
+		const entry = createEntry('slope');
+		const url = await generateDemCoverImage('none', entry);
+		URL.revokeObjectURL(url);
+		expect(postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				min: 0,
+				max: 90,
+				slopeAutoRange: true,
+				tile: { x: 1, y: 1, z: 2 }
+			})
+		);
+		expect(entry.style.visualization.uniformsData.slope?.max).toBe(90);
+	});
+
+	it('プレビューでも手動指定の配色範囲を保持する', async () => {
+		const entry = createEntry('slope');
+		entry.style.visualization.uniformsData.slope = {
+			type: 'linear',
+			colorMap: 'bone',
+			min: 5,
+			max: 35
+		};
+		const url = await generateDemCoverImage('none', entry);
+		URL.revokeObjectURL(url);
+		expect(postMessage).toHaveBeenCalledWith(
+			expect.objectContaining({ min: 5, max: 35, slopeAutoRange: false })
+		);
+	});
+
 	it.each<DemStyleMode>(['shadow', 'slope', 'aspect', 'curvature'])(
 		'%s は Proxy の陰影設定があっても生成できる',
 		async (mode) => {

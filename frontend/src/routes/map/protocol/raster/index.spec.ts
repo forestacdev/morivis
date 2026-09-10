@@ -22,10 +22,15 @@ afterEach(() => {
 	vi.clearAllMocks();
 });
 
-describe('陰影起伏図のタイル要求', () => {
-	it.each(['image', 'pmtiles'])(
-		'%s の隣接タイルと 0° の光源を Worker に渡す',
-		async (formatType) => {
+describe('DEM のタイル要求', () => {
+	it.each(['image', 'pmtiles'].flatMap((formatType) => [
+		{ formatType, mode: 'shadow', slopeAutoRange: undefined },
+		{ formatType, mode: 'slope', slopeAutoRange: 'true' },
+		{ formatType, mode: 'slope', slopeAutoRange: 'false' },
+		{ formatType, mode: 'slope', slopeAutoRange: undefined }
+	]))(
+		'$formatType $mode 自動補正=$slopeAutoRange の隣接タイルと設定を Worker に渡す',
+		async ({ formatType, mode, slopeAutoRange }) => {
 			vi.stubGlobal('window', { location: { origin: 'https://test.invalid' } });
 			vi.stubGlobal(
 				'Worker',
@@ -55,7 +60,7 @@ describe('陰影起伏図のタイル要求', () => {
 				entryId: 'test-dem',
 				formatType,
 				demType: 'terrarium',
-				mode: 'shadow',
+				mode,
 				azimuth: '0',
 				altitude: '0',
 				x: '1',
@@ -64,6 +69,7 @@ describe('陰影起伏図のタイル要求', () => {
 				tileSize: '512',
 				baseUrl: 'https://test.invalid/{z}/{x}/{y}.png'
 			});
+			if (slopeAutoRange !== undefined) params.set('slopeAutoRange', slopeAutoRange);
 			const result = await demProtocol('webgl').request({
 				url: `webgl://https://test.invalid/tile?${params}`
 			}, new AbortController());
@@ -78,10 +84,14 @@ describe('陰影起伏図のタイル要求', () => {
 				expect.any(AbortController)
 			);
 			expect(postMessage).toHaveBeenCalledWith(expect.objectContaining({
-				mode: 'shadow',
-				modeNumber: 5,
+				mode,
+				modeNumber: mode === 'shadow' ? 5 : 2,
+				slopeAutoRange: slopeAutoRange === 'true',
+				min: 0,
+				max: 90,
+				tile: { x: 1, y: 1, z: 2 },
 				demTypeNumber: 2,
-				shadow: { azimuth: 0, altitude: 0 },
+				shadow: mode === 'shadow' ? { azimuth: 0, altitude: 0 } : undefined,
 				tileSize: 512,
 				...Object.fromEntries(
 					Object.entries(images).map(([side, item]) => [side, item.image])

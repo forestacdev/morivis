@@ -10,6 +10,7 @@ const vertex = readFileSync(new URL('vertex.glsl', shaderRoot), 'utf8');
 const fragment = readFileSync(new URL('fragment.glsl', shaderRoot), 'utf8');
 
 type Terrain = {
+	baseHeight?: number;
 	dx?: number;
 	dy?: number;
 	azimuth?: number;
@@ -19,6 +20,9 @@ type Terrain = {
 	tileSize?: number;
 	missing?: 'center' | 'left' | 'neighbors';
 	demType?: number;
+	mode?: 'shadow' | 'slope';
+	slopeRange?: [number, number];
+	slopeAutoRange?: boolean;
 };
 
 // 実際の GLSL を WebGL2 で描画し、人工 DEM のピクセル値を検証する。
@@ -63,7 +67,8 @@ const render = async (page: Page, terrain: Terrain = {}) =>
 				const pixels = new Uint8Array(size * size * 4);
 				for (let y = 0; y < size; y++) {
 					for (let x = 0; x < size; x++) {
-						const height = 1000 + (x + offsets[unit][0]) * (terrain.dx ?? 0)
+						const height = (terrain.baseHeight ?? 1000)
+							+ (x + offsets[unit][0]) * (terrain.dx ?? 0)
 							+ (y + offsets[unit][1]) * (terrain.dy ?? 0);
 						const encoded = demType === 2
 							? (height + 32768) * 256
@@ -103,12 +108,26 @@ const render = async (page: Page, terrain: Terrain = {}) =>
 				gl.uniform1i(gl.getUniformLocation(program, `u_height_map_${side}`), unit);
 			});
 			const uniforms = {
-				u_mode: 5,
+				u_mode: terrain.mode === 'slope' ? 2 : 5,
+				u_slope_auto_range: terrain.slopeAutoRange ? 1 : 0,
+				u_min_slope: terrain.slopeRange?.[0] ?? 0,
+				u_max_slope: terrain.slopeRange?.[1] ?? 90,
 				u_dem_type: demType,
 				u_tile_size: size,
 				u_tile_z: zoom,
 				u_tile_y: terrain.tileY ?? Math.floor(2 ** zoom / 2)
 			};
+			// 傾斜量を8bitのグレースケールで読み取り、角度と配色を検証する。
+			const ramp = new Uint8Array(256 * 4);
+			for (let i = 0; i < 256; i++) ramp.set([i, i, i, 255], i * 4);
+			gl.activeTexture(gl.TEXTURE5);
+			gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, ramp);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.uniform1i(gl.getUniformLocation(program, 'u_color_map'), 5);
 			Object.entries(uniforms).forEach(([name, value]) =>
 				gl.uniform1f(gl.getUniformLocation(program, name), value)
 			);
@@ -223,4 +242,59 @@ test('低ズームの平地と欠損値に補正由来の陰影を作らない',
 		const empty = await render(page, { zoom: 0, demType, missing: 'center' });
 		expect(empty.filter((_, i) => i % 4 === 3).every((alpha) => alpha === 0)).toBe(true);
 	}
+});
+
+test('高緯度の南北斜面も東西斜面と同じ傾斜角になる', async ({ page }) => {
+	const tileY = 2 ** 17;
+	const east = await render(page, { mode: 'slope', dx: 5, tileY });
+	const north = await render(page, { mode: 'slope', dy: 5, tileY });
+	const sample = 4 * 27;
+	const latitude = Math.atan(Math.sinh(Math.PI * (1 - 2 * (tileY + 0.5625) / 2 ** 20)));
+	const cellSize = 40075016.68557849 / (8 * 2 ** 20) * Math.cos(latitude);
+	const expectedGray = Math.atan(5 / cellSize) * 180 / Math.PI / 90 * 255;
+	for (const pixels of [east, north]) {
+		expect(Math.abs(pixels[sample] - expectedGray)).toBeLessThanOrEqual(1);
+	}
+});
+
+test('シェーダー内のズーム補正が低・中・高ズームの配色を決める', async ({ page }) => {
+	for (const [zoom, upperAngle] of [[2, 15], [5, 15], [10, 52.5], [15, 90], [18, 90]]) {
+		// 各ズームで同じ傾斜角になる人工DEMを作り、補正による色の変化を比較する。
+		const tileSize = 8;
+		const cellSize = 40075016.68557849 / (tileSize * 2 ** zoom);
+		const terrain = {
+			mode: 'slope',
+			demType: 0,
+			baseHeight: 500000,
+			dx: cellSize * Math.tan(Math.PI / 180),
+			zoom,
+			tileSize
+		} as const;
+		const automatic = await render(page, { ...terrain, slopeAutoRange: true });
+		const expected = await render(page, { ...terrain, slopeRange: [0, upperAngle] });
+		const manual = await render(page, { ...terrain, slopeRange: [0, 90] });
+		const center = 4 * (tileSize * 4 + 4);
+		expect(automatic[center], `zoom ${zoom} の補正色`).toBe(expected[center]);
+		if (zoom < 15) expect(automatic[center]).toBeGreaterThan(manual[center]);
+		else expect(automatic[center]).toBe(manual[center]);
+		// 明示的な自動モードでは保存された手動範囲を使わない。
+		const custom = await render(page, {
+			...terrain,
+			slopeAutoRange: true,
+			slopeRange: [5, 35]
+		});
+		expect(custom[center]).toBe(automatic[center]);
+	}
+});
+
+test('傾斜量の自動配色は平地を強調せず、欠損を透明にする', async ({ page }) => {
+	const flat = await render(page, { mode: 'slope', zoom: 2, slopeAutoRange: true });
+	expect(flat.filter((_, i) => i % 4 === 0).every((gray) => gray === 0)).toBe(true);
+	const empty = await render(page, {
+		mode: 'slope',
+		zoom: 2,
+		slopeAutoRange: true,
+		missing: 'center'
+	});
+	expect(empty.filter((_, i) => i % 4 === 3).every((alpha) => alpha === 0)).toBe(true);
 });

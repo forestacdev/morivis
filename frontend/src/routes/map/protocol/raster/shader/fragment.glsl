@@ -27,6 +27,7 @@ uniform float u_tile_z;
 uniform float u_tile_y;
 uniform float u_max_slope;
 uniform float u_min_slope;
+uniform float u_slope_auto_range;
 
 // aspect
 uniform float u_max_aspect;
@@ -376,19 +377,25 @@ void main() {
         }
         mat3 h_mat = calculateTerrainData(v_tex_coord, center_h);
 
-        // 南北方向の地上解像度（nsres）
-        float nsres = getResolution(u_tile_z);
-
         // タイルのY座標とuv座標からから緯度を取得
         float lat = getLatitudeFromTileUV(u_tile_y, uv.y, u_tile_z);
 
         // 東西方向の地上解像度（ewres）
         float ewres = getEwRes(u_tile_z, lat);
+        // Web Mercator の地上解像度は南北方向も同じ緯度補正が必要。
+        float nsres = ewres;
 
         // 傾斜量を計算
         float slope = computeSlopeHorn(h_mat, ewres, nsres, 1.0, true);
-        // 傾斜量を正規化
-        float normalized_slope = clamp((slope - u_min_slope) / (u_max_slope - u_min_slope), 0.0, 1.0);
+        // 自動配色はタイルのズームから決める。傾斜角自体には倍率を掛けない。
+        // z5以下は0–15度、z15以上は0–90度、その間はズームごとに補間する。
+        float color_min = u_min_slope;
+        float color_max = u_max_slope;
+        if (u_slope_auto_range > 0.5) {
+            color_min = 0.0;
+            color_max = mix(15.0, 90.0, clamp((u_tile_z - 5.0) / 10.0, 0.0, 1.0));
+        }
+        float normalized_slope = clamp((slope - color_min) / max(color_max - color_min, 0.0001), 0.0, 1.0);
 
         vec4 slope_color = getColorFromMap(u_color_map, normalized_slope);
 

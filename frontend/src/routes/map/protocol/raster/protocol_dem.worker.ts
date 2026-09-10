@@ -189,6 +189,7 @@ async function processMessage(e: MessageEvent) {
 		min,
 		elevationColorArray,
 		shadow,
+		slopeAutoRange = false,
 		tile,
 		tileSize = 256,
 		encodeType
@@ -241,6 +242,7 @@ async function processMessage(e: MessageEvent) {
 				u_mode: { type: '1f', value: modeNumber },
 				u_max_slope: { type: '1f', value: max },
 				u_min_slope: { type: '1f', value: min },
+				u_slope_auto_range: { type: '1f', value: slopeAutoRange ? 1 : 0 },
 				u_tile_y: { type: '1f', value: tile.y },
 				u_tile_z: { type: '1f', value: tile.z },
 				u_tile_size: { type: '1f', value: tileSize }

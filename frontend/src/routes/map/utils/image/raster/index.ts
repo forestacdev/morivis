@@ -23,6 +23,7 @@ import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runt
 import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 import { getDemStyleRange, isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 import { normalizeDemShadowStyle } from '$routes/map/utils/style/dem-shadow';
+import { getDemSlopeRangeMode } from '$routes/map/utils/style/dem-slope';
 import { createClientId } from '$routes/utils/id';
 import { PMTiles } from 'pmtiles';
 import { CoverImageManager } from '../index';
@@ -483,6 +484,8 @@ export const generateDemCoverImage = async (
 				elevationColorArray,
 				max,
 				min,
+				slopeAutoRange: mode === 'slope' && !!visualization.uniformsData.slope
+					&& getDemSlopeRangeMode(visualization.uniformsData.slope) === 'auto',
 				shadow: mode === 'shadow'
 					? normalizeDemShadowStyle(visualization.uniformsData.shadow)
 					: undefined,

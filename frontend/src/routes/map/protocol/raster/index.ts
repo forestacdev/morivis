@@ -173,6 +173,8 @@ class WorkerProtocol {
 					elevationColorArray,
 					max,
 					min,
+					slopeAutoRange: mode === 'slope'
+						&& url.searchParams.get('slopeAutoRange') === 'true',
 					shadow: mode === 'shadow'
 						? normalizeDemShadowStyle({
 							azimuth: Number(url.searchParams.get('azimuth') ?? NaN),
