@@ -1,9 +1,27 @@
 import type { Geometry } from '$routes/map/types/geometry';
 import type { TabularCellValue } from '$routes/map/utils/formats/tabular';
+import { geometryToGeoJSON } from '$routes/map/utils/formats/transformers/geometry';
+import WKT from 'ol/format/WKT.js';
 
 type ParsedGeometryResult = {
 	geometry: Geometry;
 	bytesRead: number;
+};
+
+const wktFormat = new WKT();
+const EWKT_PREFIX_PATTERN = /^\s*SRID\s*=\s*\d+\s*;\s*/i;
+const WKT_GEOMETRY_PATTERN =
+	/^\s*(?:POINT|LINESTRING|POLYGON|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON)\b/i;
+
+const parseWkt = (value: string): Geometry | null => {
+	const wkt = value.replace(EWKT_PREFIX_PATTERN, '').trim();
+	if (!WKT_GEOMETRY_PATTERN.test(wkt)) return null;
+
+	try {
+		return geometryToGeoJSON(wktFormat.readGeometry(wkt));
+	} catch {
+		return null;
+	}
 };
 
 const readFloat64 = (buf: Uint8Array, offset: number, littleEndian: boolean): number => {
@@ -633,6 +651,7 @@ const parseSpatiaLiteBinary = (buf: Uint8Array): Geometry | null => {
 };
 
 export const parseGeometryBlob = (value: TabularCellValue): Geometry | null => {
+	if (typeof value === 'string') return parseWkt(value);
 	if (!(value instanceof Uint8Array)) return null;
 	return parseGpkgBinary(value) ?? parseSpatiaLiteBinary(value) ?? parseEwkb(value)
 		?? parseWkb(value);

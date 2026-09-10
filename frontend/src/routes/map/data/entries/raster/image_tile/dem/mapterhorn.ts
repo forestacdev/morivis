@@ -1,6 +1,6 @@
+import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_RASTER_DEM_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterDemStyle, RasterImageEntry } from '$routes/map/data/types/raster';
-import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 
 const entry: RasterImageEntry<RasterDemStyle> = {
 	id: 'mapterhorn',

@@ -7,7 +7,7 @@ describe('resolveMeshEdgeUniforms', () => {
 		const uniforms = resolveMeshEdgeUniforms({});
 
 		expect(uniforms.enabled).toBe(false);
-		expect(uniforms.color.getHexString()).toBe('ffffff');
+		expect(uniforms.color.getHexString()).toBe('cecece');
 		expect(uniforms.thickness).toBe(0.001);
 		expect(uniforms.silhouetteWidthPx).toBe(1.5);
 		expect(uniforms.opacity).toBe(1);

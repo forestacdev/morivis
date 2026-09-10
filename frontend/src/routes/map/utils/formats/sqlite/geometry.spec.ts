@@ -2,23 +2,27 @@ import { describe, expect, it } from 'vitest';
 
 import { parseGeometryBlob } from './geometry';
 
-const hexToBytes = (hex: string): Uint8Array => {
-	const normalized = hex.replace(/\s+/g, '');
-	const bytes = new Uint8Array(normalized.length / 2);
-
-	for (let index = 0; index < normalized.length; index += 2) {
-		bytes[index / 2] = Number.parseInt(normalized.slice(index, index + 2), 16);
-	}
-
-	return bytes;
-};
-
 const createPointPayload = (x: number, y: number): Uint8Array => {
 	const payload = new Uint8Array(16);
 	const view = new DataView(payload.buffer);
 	view.setFloat64(0, x, true);
 	view.setFloat64(8, y, true);
 	return payload;
+};
+
+const createWkbPoint = (x: number, y: number, srid?: number): Uint8Array => {
+	const bytes = new Uint8Array(srid == null ? 21 : 25);
+	const view = new DataView(bytes.buffer);
+	bytes[0] = 0x01;
+	view.setUint32(1, srid == null ? 1 : 0x20000001, true);
+	let offset = 5;
+	if (srid != null) {
+		view.setUint32(offset, srid, true);
+		offset += 4;
+	}
+	view.setFloat64(offset, x, true);
+	view.setFloat64(offset + 8, y, true);
+	return bytes;
 };
 
 const createCollectionEntity = (typeCode: number, payload: Uint8Array): Uint8Array => {
@@ -89,48 +93,42 @@ const createTinyPointBlob = (x: number, y: number, srid = 4326): Uint8Array => {
 
 describe('parseGeometryBlob', () => {
 	it('plain WKB を読める', () => {
-		const geometry = parseGeometryBlob(
-			hexToBytes('0101000000617DB1E4173B5DC0E0E589FA37F24040')
-		);
+		const geometry = parseGeometryBlob(createWkbPoint(1, 2));
 
 		expect(geometry).toEqual({
 			type: 'Point',
-			coordinates: [-116.92333333333, 33.892333333333]
+			coordinates: [1, 2]
 		});
 	});
 
 	it('SpatiaLite classic BLOB を読める', () => {
 		const geometry = parseGeometryBlob(
-			hexToBytes(
-				'0001E6100000617DB1E4173B5DC0E0E589FA37F24040617DB1E4173B5DC0E0E589FA37F240407C01000000617DB1E4173B5DC0E0E589FA37F24040FE'
-			)
+			createClassicSpatiaLiteBlob(1, createPointPayload(1, 2), [1, 2, 1, 2])
 		);
 
 		expect(geometry).toEqual({
 			type: 'Point',
-			coordinates: [-116.92333333333, 33.892333333333]
+			coordinates: [1, 2]
 		});
 	});
 
 	it('PostGIS EWKB を読める', () => {
-		const geometry = parseGeometryBlob(
-			hexToBytes('0101000020E6100000617DB1E4173B5DC0E0E589FA37F24040')
-		);
+		const geometry = parseGeometryBlob(createWkbPoint(1, 2, 4326));
 
 		expect(geometry).toEqual({
 			type: 'Point',
-			coordinates: [-116.92333333333, 33.892333333333]
+			coordinates: [1, 2]
 		});
 	});
 
 	it('SpatiaLite multi geometry を読める', () => {
 		const points: [number, number][] = [
-			[139.6917, 35.6895],
-			[135.5023, 34.6937]
+			[1, 2],
+			[3, 4]
 		];
 		const payload = createMultiPointPayload(points);
 		const geometry = parseGeometryBlob(
-			createClassicSpatiaLiteBlob(4, payload, [135.5023, 34.6937, 139.6917, 35.6895])
+			createClassicSpatiaLiteBlob(4, payload, [1, 2, 3, 4])
 		);
 
 		expect(geometry).toEqual({
@@ -140,11 +138,29 @@ describe('parseGeometryBlob', () => {
 	});
 
 	it('SpatiaLite TinyPoint を読める', () => {
-		const geometry = parseGeometryBlob(createTinyPointBlob(139.6917, 35.6895));
+		const geometry = parseGeometryBlob(createTinyPointBlob(1, 2));
 
 		expect(geometry).toEqual({
 			type: 'Point',
-			coordinates: [139.6917, 35.6895]
+			coordinates: [1, 2]
+		});
+	});
+
+	it('PostGIS EWKT 文字列を読める', () => {
+		const geometry = parseGeometryBlob('SRID=4612;POINT (1 2)');
+
+		expect(geometry).toEqual({
+			type: 'Point',
+			coordinates: [1, 2]
+		});
+	});
+
+	it('WKT の Z 値を無視して2次元ジオメトリとして読める', () => {
+		const geometry = parseGeometryBlob('LINESTRING Z (1 2 3, 4 5 6)');
+
+		expect(geometry).toEqual({
+			type: 'LineString',
+			coordinates: [[1, 2], [4, 5]]
 		});
 	});
 });
