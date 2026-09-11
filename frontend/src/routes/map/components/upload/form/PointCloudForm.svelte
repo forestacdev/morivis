@@ -3,7 +3,7 @@
 	import { LASLoader } from '@loaders.gl/las';
 	import { PCDLoader } from '@loaders.gl/pcd';
 	import { PLYLoader } from '@loaders.gl/ply';
-	import { untrack } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
@@ -31,12 +31,14 @@
 		normalizePointCloudUpAxis,
 		type PointCloudUpAxis
 	} from '$routes/map/utils/formats/pointcloud/axis';
+	import { normalizePointCloudColors } from '$routes/map/utils/formats/pointcloud/colors';
 	import {
 		createPointCloudMeterOffsets,
 		type PointCloudMeterOffsets,
 		type PointCloudSourcePositions
 	} from '$routes/map/utils/formats/pointcloud/coordinate-offsets';
 	import { rasterizePointCloudToDemInWorker } from '$routes/map/utils/formats/pointcloud/rasterize';
+	import { createPointCloudSurfaceEntry } from '$routes/map/utils/formats/pointcloud/surface';
 	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
 	import { parseXyzFile } from '$routes/map/utils/formats/xyz';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
@@ -83,7 +85,14 @@
 	let resolvedPositions = $state<Float32Array | null>(null);
 	let resolvedColors = $state<Uint8Array | undefined>(undefined);
 	let needsTransform = $state(false);
-	let registrationMode = $state<'pointcloud' | 'raster'>('pointcloud');
+	let registrationMode = $state<'pointcloud' | 'raster' | 'surface'>('pointcloud');
+	let surfaceResolution = $state(128);
+	let surfaceMethod = $state<'terrain' | 'buildings' | 'reconstruct'>('buildings');
+	let surfaceRadius = $state(2);
+	let surfaceProcessing = $state(false);
+	let surfaceProgress = $state('');
+	let surfaceAbort: AbortController | null = null;
+	onDestroy(() => surfaceAbort?.abort());
 	let rasterResolution = $state(1024);
 	let pendingRegistrationAfterTransform = $state(false);
 	let projectedPointCloud: PointCloudMeterOffsets | null = null;
@@ -91,7 +100,8 @@
 
 	const registrationModeOptions = [
 		{ key: 'pointcloud', name: '点群' },
-		{ key: 'raster', name: 'DEMラスター' }
+		{ key: 'raster', name: 'DEMラスター' },
+		{ key: 'surface', name: '3Dメッシュ' }
 	];
 	const plyUpAxisOptions = [
 		{ key: 'z-up', name: 'Z-up（測量・点群）' },
@@ -187,6 +197,7 @@
 	};
 
 	const analyzePointCloud = async (file: File, upAxis: PointCloudUpAxis) => {
+		surfaceAbort?.abort();
 		isProcessing.set(true);
 		analyzed = false;
 		pointCount = null;
@@ -279,8 +290,8 @@
 					pointCount = positions.length / 3;
 				}
 
-				const col = data.attributes?.COLOR_0?.value;
-				if (col) colors = col instanceof Uint8Array ? col : new Uint8Array(col);
+				const col = data.attributes?.COLOR_0;
+				if (col) colors = normalizePointCloudColors(col.value, col.size);
 
 				if (data.header?.boundingBox) {
 					const [mins, maxs] = data.header.boundingBox;
@@ -390,8 +401,8 @@
 				const loader = pointCloudFile ? getLoader(pointCloudFile.name) : LASLoader;
 				const data = await parse(parsedArrayBuffer.slice(0), loader);
 				positions = data.attributes?.POSITION?.value as Float32Array;
-				const col = data.attributes?.COLOR_0?.value;
-				if (col) resolvedColors = col instanceof Uint8Array ? col : new Uint8Array(col);
+				const col = data.attributes?.COLOR_0;
+				if (col) resolvedColors = normalizePointCloudColors(col.value, col.size);
 			}
 
 			if (!positions) {
@@ -484,7 +495,11 @@
 				positions: resolvedPositions,
 				colors: resolvedColors,
 				pointCount: pointCount ?? resolvedPositions.length / 3,
-				sourceBbox
+				sourceBbox,
+				surface:
+					registrationMode === 'surface'
+						? { resolution: surfaceResolution, radius: surfaceRadius, method: surfaceMethod }
+						: undefined
 			}
 		};
 		showDialogType = null;
@@ -492,6 +507,7 @@
 	};
 
 	const registration = async () => {
+		if (surfaceProcessing) return;
 		if (!analyzed || (!resolvedPositions && !projectedPointCloud) || !pointCount) return;
 
 		if (!resolvedBbox) {
@@ -500,6 +516,51 @@
 			transformOptionMode = 'zone';
 			focusBbox = rawBbox;
 			showNotification('投影法を選択してください', 'warning');
+			return;
+		}
+
+		if (registrationMode === 'surface') {
+			const controller = new AbortController();
+			surfaceAbort = controller;
+			surfaceProcessing = true;
+			surfaceProgress = '点群を準備しています';
+			try {
+				const points = projectedPointCloud ?? { positions: resolvedPositions! };
+				const { entry, triangleCount } = await createPointCloudSurfaceEntry(
+					`${entryName || '点群データ'}_mesh`,
+					{
+						positions: points.positions,
+						colors: resolvedColors,
+						coordinateOrigin: projectedPointCloud?.coordinateOrigin,
+						bounds: resolvedBbox,
+						resolution: surfaceResolution,
+						radius: surfaceRadius,
+						method: surfaceMethod
+					},
+					controller.signal,
+					(message) => {
+						surfaceProgress = message;
+					}
+				);
+				showDataEntry = entry;
+				showDialogType = null;
+				dropFile = null;
+				parsedArrayBuffer = null;
+				showNotification(
+					`メッシュを生成しました（${triangleCount.toLocaleString()} 面）`,
+					'success'
+				);
+			} catch (error) {
+				if (!controller.signal.aborted) {
+					showNotification(
+						error instanceof Error ? error.message : 'メッシュ生成に失敗しました',
+						'error'
+					);
+				}
+			} finally {
+				surfaceProcessing = false;
+				surfaceAbort = null;
+			}
 			return;
 		}
 
@@ -654,6 +715,7 @@
 	});
 
 	const cancel = () => {
+		surfaceAbort?.abort();
 		resolvedPositions = null;
 		resolvedColors = undefined;
 		projectedPointCloud = null;
@@ -667,7 +729,8 @@
 	<span class="text-2xl font-bold">点群ファイルの登録</span>
 </div>
 
-<div
+<fieldset
+	disabled={surfaceProcessing}
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 >
 	<TextForm bind:value={entryName} label="データ名" />
@@ -734,20 +797,68 @@
 				各セルの最大標高で 1 バンド DEM を生成します。
 			</div>
 		{/if}
+		{#if registrationMode === 'surface'}
+			<div class="w-full px-2">
+				<HorizontalSelectBox
+					label="面の作り方"
+					bind:group={surfaceMethod}
+					options={[
+						{ key: 'terrain', name: '地形（最高点）' },
+						{ key: 'buildings', name: '建物・広域' },
+						{ key: 'reconstruct', name: '表面を復元' }
+					]}
+				/>
+				<RangeSlider
+					label="細かさ"
+					bind:value={surfaceResolution}
+					min={32}
+					max={192}
+					step={16}
+					isInt={true}
+				/>
+				{#if surfaceMethod !== 'terrain'}
+					<RangeSlider
+						label="つながりの強さ"
+						bind:value={surfaceRadius}
+						min={1}
+						max={3}
+						step={0.25}
+					/>
+				{/if}
+			</div>
+			<p class="w-full px-2 text-xs text-gray-400">
+				{#if surfaceMethod === 'terrain'}
+					XY格子ごとの一番高い点の標高を、隣の格子と三角形でつなぎます。建物や樹木の上面も含まれます。点のない格子は穴として残します。穴が多い場合は「細かさ」を下げてください。
+				{:else if surfaceMethod === 'buildings'}
+					細かい面で壁や屋根を復元し、一つのGLBにまとめます。向きの違う面を混ぜにくくし、建物の角を残します。隙間は「つながりの強さ」で調整できます。
+				{:else if surfaceMethod === 'reconstruct'}
+					近くの点から面の向きを推定し、壁や曲面をつなぎます。細かさを上げると小さな形を残せます。隙間は「つながりの強さ」で調整できますが、強めると角や細部も丸くなります。
+				{/if}
+				{resolvedColors ? '点群のRGBを面の色に使います。' : 'RGBがないため、単色の面を作ります。'}
+				未計測の裏面を復元するものではありません。
+			</p>
+		{/if}
 	{/if}
-</div>
+</fieldset>
+
+{#if surfaceProcessing}
+	<p role="status" class="px-2 pt-3 text-sm text-gray-300">
+		{surfaceProgress}。この端末内で処理します。
+	</p>
+{/if}
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
 	<button
 		onclick={registration}
-		disabled={!analyzed || (!resolvedBbox && !rawBbox) || $isProcessing}
+		disabled={!analyzed || (!resolvedBbox && !rawBbox) || $isProcessing || surfaceProcessing}
 		class="c-btn-confirm min-w-[200px] p-4 text-lg {!analyzed ||
 		(!resolvedBbox && !rawBbox) ||
-		$isProcessing
+		$isProcessing ||
+		surfaceProcessing
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>
-		決定
+		{registrationMode === 'surface' ? 'メッシュを作成' : '決定'}
 	</button>
 </div>

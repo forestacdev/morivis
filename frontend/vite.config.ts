@@ -28,6 +28,9 @@ export default defineConfig(({ mode }) => {
 	];
 
 	return {
+		// Worker-only dependencies must be ready before the first conversion, or Vite
+		// reloads the page on discovery and discards the user's uploaded point cloud.
+		optimizeDeps: { include: ['three/addons/objects/MarchingCubes.js'] },
 		plugins: [
 			diaperCssOverridePlugin,
 			sveltekit(),

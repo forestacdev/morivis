@@ -106,6 +106,7 @@
 	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
 	import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
 	import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
+	import { createPointCloudSurfaceEntry } from '$routes/map/utils/formats/pointcloud/surface';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import {
@@ -422,15 +423,24 @@
 					sourceCorners,
 					plainCorners
 				);
-				const pointCloudEntry = createPointCloudEntry(
-					data.entryName || '点群データ',
-					{
-						positions: warpedPositions,
-						colors: data.pointCloudConfig.colors,
-						pointCount: data.pointCloudConfig.pointCount
-					},
-					bbox
-				);
+				const pointCloudEntry = data.pointCloudConfig.surface
+					? (
+							await createPointCloudSurfaceEntry(`${data.entryName || '点群データ'}_mesh`, {
+								positions: warpedPositions,
+								colors: data.pointCloudConfig.colors,
+								bounds: bbox,
+								...data.pointCloudConfig.surface
+							})
+						).entry
+					: createPointCloudEntry(
+							data.entryName || '点群データ',
+							{
+								positions: warpedPositions,
+								colors: data.pointCloudConfig.colors,
+								pointCount: data.pointCloudConfig.pointCount
+							},
+							bbox
+						);
 
 				debugLog.info(
 					`+page finalizeGeoRefEntry 点群生成: id=${pointCloudEntry.id}, bounds=${bbox.join(',')}`
