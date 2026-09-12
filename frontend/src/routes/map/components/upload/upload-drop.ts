@@ -130,6 +130,7 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 
 	try {
 		const header = await targetFile.slice(0, 2000).text();
+		if (/<CADIF(?:\s|>)/.test(header)) return createDialogDecision('cedxm');
 
 		if (hasGeoRssMarker(header)) {
 			return createDialogDecision('georss');
@@ -189,6 +190,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	dwg: 'dwg',
 	dxf: 'dxf',
 	jww: 'jww',
+	jwc: 'jww',
 	sfc: 'sxf',
 	sim: 'sima',
 	shp: 'shp',

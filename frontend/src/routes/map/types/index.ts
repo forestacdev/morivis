@@ -90,6 +90,7 @@ export type DialogType =
 	| 'dwg'
 	| 'dxf'
 	| 'jww'
+	| 'cedxm'
 	| 'sxf'
 	| 'sima'
 	| 'hdf5'
@@ -356,9 +357,15 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		extensions: ['.dxf', '.dwg']
 	},
 	{
-		label: 'Jw_cad (JWW)',
+		label: 'Jw_cad (JWW / JWC)',
 		description: 'Jw_cadの図面データです。線・文字・塗りつぶしを地図上に配置して利用します。',
-		extensions: ['.jww']
+		extensions: ['.jww', '.jwc']
+	},
+	{
+		label: 'CEDXM',
+		description:
+			'木造建築の部材・間取りのXMLデータです。建物の簡易3Dモデルや2D図面を地図上に配置して利用します。',
+		extensions: ['.xml']
 	},
 	{
 		label: 'SIMA',

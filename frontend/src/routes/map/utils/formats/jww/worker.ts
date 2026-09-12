@@ -1,10 +1,18 @@
+import { parseJwc } from '../jwc';
 import { type JwwParseResult, parseJww } from '.';
 
 export type JwwWorkerResponse = { result: JwwParseResult; } | { error: string; };
 
 self.onmessage = ({ data }: MessageEvent<ArrayBuffer>) => {
 	try {
-		postMessage({ result: parseJww(data) } satisfies JwwWorkerResponse);
+		const signature = new TextDecoder().decode(
+			new Uint8Array(data, 0, Math.min(13, data.byteLength))
+		);
+		postMessage(
+			{
+				result: signature.startsWith('jw_cad(c)data') ? parseJwc(data) : parseJww(data)
+			} satisfies JwwWorkerResponse
+		);
 	} catch (error) {
 		postMessage(
 			{

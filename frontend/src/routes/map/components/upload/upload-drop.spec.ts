@@ -3,11 +3,30 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('Jw_cadのドロップ', () => {
-	it.each(['test-drawing.jww', 'test-drawing.JWW'])('JWWを専用フォームへ渡す: %s', async name => {
-		const file = new File(['test'], name);
-		expect(await resolveDroppedFiles(file)).toEqual({
+	it.each(['test-drawing.jww', 'test-drawing.JWW', 'test-drawing.jwc', 'test-drawing.JWC'])(
+		'Jw_cadを専用フォームへ渡す: %s',
+		async name => {
+			const file = new File(['test'], name);
+			expect(await resolveDroppedFiles(file)).toEqual({
+				type: 'dialog',
+				dialogType: 'jww',
+				dropFiles: undefined
+			});
+		}
+	);
+});
+
+describe('CEDXMのドロップ', () => {
+	it.each([false, true])('XML本体とフォルダ入力を判定する: folder=%s', async folder => {
+		const file = new File([
+			'<?xml version="1.0" encoding="Shift_JIS"?><CADIF Version="1.0"></CADIF>'
+		], 'test-building.xml');
+		Object.defineProperty(file, 'morivisRelativePath', {
+			value: 'test-building/test-building.xml'
+		});
+		expect(await resolveDroppedFiles(folder ? [file] : file)).toEqual({
 			type: 'dialog',
-			dialogType: 'jww',
+			dialogType: 'cedxm',
 			dropFiles: undefined
 		});
 	});

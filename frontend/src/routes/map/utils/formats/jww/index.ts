@@ -19,7 +19,7 @@ const isDocumentSetting = (e: JwwEntity) =>
 
 export interface JwwParseResult {
 	geojson: FeatureCollection;
-	version: number;
+	version: number | null;
 	warnings: string[];
 	layers: {
 		key: string;
@@ -92,8 +92,9 @@ const arcPoints = (
 };
 
 /** Returns 2D CAD geometry in local METRES. Placement/CRS selection is always required. */
-export const parseJww = (buffer: ArrayBuffer): JwwParseResult => {
-	const { header, entities, definitions, imageCount } = readJww(buffer);
+export const convertJwCadDocument = (
+	{ header, entities, definitions, imageCount }: ReturnType<typeof readJww>
+): JwwParseResult => {
 	const warnings = new Set<string>();
 	const blocks = new Map<number, JwwEntity>();
 	for (const block of definitions) {
@@ -301,3 +302,6 @@ export const parseJww = (buffer: ArrayBuffer): JwwParseResult => {
 		layers: [...layers.values()]
 	};
 };
+
+export const parseJww = (buffer: ArrayBuffer): JwwParseResult =>
+	convertJwCadDocument(readJww(buffer));

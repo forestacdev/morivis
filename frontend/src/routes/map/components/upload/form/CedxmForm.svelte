@@ -15,8 +15,11 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import type { JwwParseResult } from '$routes/map/utils/formats/jww';
-	import { analyzeJwwFileInWorker } from '$routes/map/utils/formats/jww/analyze';
+	import type { CedxmResult } from '$routes/map/utils/formats/cedxm';
+	import {
+		analyzeCedxmFileInWorker,
+		cedxmModelToGlbInWorker
+	} from '$routes/map/utils/formats/cedxm/analyze';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -44,13 +47,29 @@
 		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 	const file = $derived(dropFile ? getFirstUploadFile(dropFile) : null);
-	const formatLabel = $derived(/\.jwc$/i.test(file?.name ?? '') ? 'JWC' : 'JWW');
-	let parsed = $state.raw<JwwParseResult | null>(null);
+	let parsed = $state.raw<CedxmResult | null>(null);
+	let renderMode = $state<'2d' | '3d'>('3d');
+	let modelConversion: AbortController | null = null;
 	let errorMessage = $state('');
 	let geometryType = $state<VectorEntryGeometryType>('LineString');
 	let selectedLayers = $state<string[]>([]);
-	const labels = { LineString: '線・円弧・寸法線', Point: '点・文字', Polygon: '塗りつぶし' };
+	const labels = {
+		LineString: '壁・梁・開口など（ライン）',
+		Point: '点',
+		Polygon: '柱・部屋・屋根など（ポリゴン）'
+	};
 	const geometryTypes = $derived(parsed ? getGeometryTypes(parsed.geojson) : []);
+	const modelSelected = $derived.by((): FeatureCollection | null => {
+		if (!parsed) return null;
+		const keys = new Set(selectedLayers);
+		return {
+			type: 'FeatureCollection',
+			features: parsed.model.features.filter((feature) =>
+				keys.has(String(feature.properties.layer))
+			)
+		};
+	});
+	const useModel = $derived(renderMode === '3d');
 	const selected = $derived.by((): FeatureCollection | null => {
 		if (!parsed) return null;
 		const keys = new Set(selectedLayers);
@@ -61,7 +80,7 @@
 			)
 		};
 	});
-	const selectedData = $derived(selected);
+	const selectedData = $derived(useModel ? modelSelected : selected);
 	const dimensions = $derived.by(() => {
 		if (!selectedData?.features.length) return '';
 		const b = turfBbox(selectedData);
@@ -80,16 +99,17 @@
 	// The dropped File is external input. Cancel the worker on replacement or dialog close.
 	$effect(() => {
 		const currentFile = file;
-		if (!currentFile || showDialogType !== 'jww') return;
+		if (!currentFile || showDialogType !== 'cedxm') return;
 		const controller = new AbortController();
 		parsed = null;
 		errorMessage = '';
 		pending = null;
 		isProcessing.set(true);
-		void analyzeJwwFileInWorker(currentFile, controller.signal)
+		void analyzeCedxmFileInWorker(currentFile, controller.signal)
 			.then((result) => {
 				if (controller.signal.aborted) return;
 				parsed = result;
+				renderMode = '3d';
 				const types = getGeometryTypes(result.geojson);
 				geometryType = types.includes('LineString') ? 'LineString' : types[0];
 				selectedLayers = result.layers.filter((layer) => layer.visible).map((layer) => layer.key);
@@ -103,6 +123,7 @@
 			});
 		return () => {
 			controller.abort();
+			modelConversion?.abort();
 			pending = null;
 			isProcessing.set(false);
 		};
@@ -112,24 +133,50 @@
 		const style = buildDxfStyle(data, type, [
 			...new Set(data.features.flatMap((feature) => Object.keys(feature.properties)))
 		]);
-		if (type === 'Point' && data.features.some((feature) => feature.properties.type === 'TEXT')) {
-			style.labels.key = 'text';
-			style.labels.show = true;
-		}
 		return style;
 	};
 	const openPlacement = () => {
+		if (useModel) {
+			void openModel();
+			return;
+		}
 		if (!selected?.features.length || !file || $isProcessing) return;
 		pending = { data: selected, geometryType, file };
 		pendingZoneGeoRefData = {
 			featureCollection: selected,
 			entryName: file.name.replace(/\.[^.]+$/, ''),
 			vectorStyle: getStyle(selected, geometryType),
-			attribution: 'Jw_cad'
+			attribution: 'CEDXM'
 		};
 		zoneConfirmedEpsg = null;
 		focusBbox = turfBbox(selected) as [number, number, number, number];
 		transformOptionMode = 'zone';
+	};
+	const openModel = async () => {
+		if (!file || !modelSelected?.features.length || $isProcessing) return;
+		const input = modelSelected,
+			source = file;
+		const controller = new AbortController();
+		modelConversion?.abort();
+		modelConversion = controller;
+		isProcessing.set(true);
+		try {
+			const glb = await cedxmModelToGlbInWorker(input, controller.signal);
+			if (controller.signal.aborted || input !== modelSelected) return;
+			pendingZoneGeoRefData = null;
+			transformOptionMode = null;
+			zoneConfirmedEpsg = null;
+			focusBbox = null;
+			dropFile = [
+				new File([glb], source.name.replace(/\.[^.]+$/, '') + '.glb', { type: 'model/gltf-binary' })
+			];
+			showDialogType = 'model';
+		} catch (error) {
+			if (!controller.signal.aborted)
+				showNotification(error instanceof Error ? error.message : String(error), 'error');
+		} finally {
+			if (modelConversion === controller) isProcessing.set(false);
+		}
 	};
 	const register = async (epsg: EpsgCode) => {
 		const input = pending;
@@ -149,7 +196,7 @@
 				input.file.name.replace(/\.[^.]+$/, ''),
 				bbox,
 				getStyle(data, input.geometryType),
-				{ attribution: 'Jw_cad' }
+				{ attribution: 'CEDXM' }
 			);
 			if (input !== pending || !entry) return;
 			showDataEntry = entry;
@@ -166,7 +213,7 @@
 		}
 	};
 	$effect(() => {
-		if (zoneConfirmedEpsg && showDialogType === 'jww') {
+		if (zoneConfirmedEpsg && showDialogType === 'cedxm') {
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
@@ -175,6 +222,7 @@
 		}
 	});
 	const cancel = () => {
+		modelConversion?.abort();
 		pending = null;
 		pendingZoneGeoRefData = null;
 		zoneConfirmedEpsg = null;
@@ -186,28 +234,39 @@
 
 <div class="flex min-h-0 w-full flex-col gap-4">
 	<div>
-		<h2 class="text-xl font-bold">{formatLabel}の取り込み</h2>
+		<h2 class="text-xl font-bold">CEDXMの取り込み</h2>
 		<p class="mt-1 break-all text-sm text-gray-400">{file?.name ?? ''}</p>
 	</div>
 	{#if errorMessage}<p role="alert" class="text-sm text-red-400">{errorMessage}</p>{/if}
 	{#if parsed}
-		<label class="flex flex-col gap-2 text-sm">
-			<span>登録する図形</span>
+		<label class="flex flex-col gap-2 text-sm"
+			><span>読み込み方式</span>
 			<select
-				bind:value={geometryType}
+				bind:value={renderMode}
 				disabled={$isProcessing}
 				class="rounded border border-white/20 bg-[#252525] px-3 py-2"
 			>
-				{#each geometryTypes as type (type)}<option value={type}>{labels[type]}</option>{/each}
+				<option value="3d">3Dモデル（部材ごとの簡易形状）</option><option value="2d">2D図面</option>
 			</select>
 		</label>
+		{#if !useModel}
+			<label class="flex flex-col gap-2 text-sm">
+				<span>登録する図形</span>
+				<select
+					bind:value={geometryType}
+					disabled={$isProcessing}
+					class="rounded border border-white/20 bg-[#252525] px-3 py-2"
+				>
+					{#each geometryTypes as type (type)}<option value={type}>{labels[type]}</option>{/each}
+				</select>
+			</label>
+		{/if}
 		<CadLayerSelect
-			label="レイヤーグループ / レイヤー"
+			label="階 / 部材種別"
 			items={parsed.layers.map((layer) => ({
 				key: layer.key,
 				name: layer.name,
-				code: layer.key,
-				detail: `1/${layer.scale} · ${layer.count.toLocaleString()}図形${layer.visible ? '' : ' · 元図面で非表示'}`
+				detail: `${layer.count.toLocaleString()}図形`
 			}))}
 			bind:selected={selectedLayers}
 			disabled={$isProcessing}
@@ -218,7 +277,7 @@
 				: ''}
 		</p>
 		<p class="text-xs leading-relaxed text-gray-400">
-			図面座標に各グループの縮尺を適用してメートルに換算します。次の画面で座標系を指定するか、地図上で位置を合わせて登録します。文字は注記付きのポイントになります。
+			座標・寸法をmmからmへ換算します。3Dは部材ごとのモデル、2Dは選択した図形種別のGeoJSONとして登録します。次の画面で地図上の位置を指定してください。
 		</p>
 		{#if parsed.warnings.length}
 			<ul class="list-inside list-disc text-xs text-amber-300">

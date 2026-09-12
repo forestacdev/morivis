@@ -1,7 +1,7 @@
 # Jw_cad / JWW
 
 `.jww` → WorkerでMFC CArchiveを解析 → ローカルの2D GeoJSON → 座標系指定または位置合わせ → `MorivisVectorEntry` → MapLibre。
-旧DOS形式の `.jwc`、図形ファイル `.jws` は対象外。
+旧DOS形式の `.jwc` は [JWCパーサー](../jwc/README.md)で解析し、図形変換と `JwwForm.svelte` を共有する。図形ファイル `.jws` は対象外。
 
 ## 取り込み
 
