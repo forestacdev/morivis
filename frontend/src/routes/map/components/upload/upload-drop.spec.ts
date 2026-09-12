@@ -2,6 +2,17 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('Jw_cadのドロップ', () => {
+	it.each(['test-drawing.jww', 'test-drawing.JWW'])('JWWを専用フォームへ渡す: %s', async name => {
+		const file = new File(['test'], name);
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'jww',
+			dropFiles: undefined
+		});
+	});
+});
+
 describe('ローカルMVTのドロップ', () => {
 	it('TileJSONとタイル一式をフォームに渡す', async () => {
 		const files = [new File(['{}'], 'tilejson.json'), new File(['test'], '1.mvt')];

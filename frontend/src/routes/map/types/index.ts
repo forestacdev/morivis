@@ -89,6 +89,7 @@ export type DialogType =
 	| 'drm'
 	| 'dwg'
 	| 'dxf'
+	| 'jww'
 	| 'sxf'
 	| 'sima'
 	| 'hdf5'
@@ -353,6 +354,11 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		label: 'DXF / DWG',
 		description: 'CAD図面を表す形式です。図面上の線や注記を地図上で確認するときに使います。',
 		extensions: ['.dxf', '.dwg']
+	},
+	{
+		label: 'Jw_cad (JWW)',
+		description: 'Jw_cadの図面データです。線・文字・塗りつぶしを地図上に配置して利用します。',
+		extensions: ['.jww']
 	},
 	{
 		label: 'SIMA',

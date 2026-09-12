@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { getAllowedTransformModesForIssue, getModelSpatialIssue } from './transform-policy';
 
+it('JWWは座標系の指定と地図上の位置合わせを選べる', () => {
+	expect(getAllowedTransformModesForIssue('jww', 'crs-missing')).toEqual(['zone', 'georef']);
+});
+
 describe('3Dモデルの座標処理ポリシー', () => {
 	it('内蔵EPSGまたは明示配置があるモデルは操作を要求しない', () => {
 		expect(

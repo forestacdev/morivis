@@ -1,6 +1,7 @@
 import type { ActiveTransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 import type { Opacity } from '$routes/map/data/types';
 import type { RasterDiscreteDimension } from '$routes/map/data/types/raster';
+import type { VectorStyle } from '$routes/map/data/types/vector/style';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import type { RasterBands } from '$routes/map/utils/formats/geotiff';
 import type { PointCloudSurfaceOptions } from '$routes/map/utils/formats/pointcloud/surface-core';
@@ -51,6 +52,8 @@ export interface GeoRefData {
 	initialCorners?: GeoRefCorners;
 	sourceCorners?: GeoRefCorners;
 	sourceFeatureCollectionId?: string;
+	vectorStyle?: VectorStyle;
+	vectorAttribution?: string;
 	allowedTransformModes?: ActiveTransformOptionMode[];
 	registrationMode: RasterRegistrationMode;
 	allowRegistrationModeChange?: boolean;

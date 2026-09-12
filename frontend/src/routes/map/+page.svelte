@@ -393,7 +393,9 @@
 					warpedGeojson as AppFeatureCollection,
 					warpedType,
 					data.entryName,
-					warpedBbox
+					warpedBbox,
+					data.vectorStyle,
+					{ attribution: data.vectorAttribution }
 				);
 
 				if (!warpedEntry) {
@@ -641,6 +643,8 @@
 			});
 			geoRefData = {
 				...nextGeoRefData,
+				vectorStyle: pendingData.vectorStyle,
+				vectorAttribution: pendingData.attribution,
 				allowedTransformModes: nextAllowedTransformModes
 			};
 			debugLog.info(

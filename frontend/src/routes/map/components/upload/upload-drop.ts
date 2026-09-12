@@ -188,6 +188,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	dm: 'dm',
 	dwg: 'dwg',
 	dxf: 'dxf',
+	jww: 'jww',
 	sfc: 'sxf',
 	sim: 'sima',
 	shp: 'shp',
