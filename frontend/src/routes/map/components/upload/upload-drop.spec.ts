@@ -1,5 +1,42 @@
+import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+describe('ローカルMVTのドロップ', () => {
+	it('TileJSONとタイル一式をフォームに渡す', async () => {
+		const files = [new File(['{}'], 'tilejson.json'), new File(['test'], '1.mvt')];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-mvt',
+			dropFiles: files
+		});
+	});
+	it('単体MVTとTileJSONにも専用フォームで入力方法を案内する', async () => {
+		for (const name of ['1.mvt', '1.pbf', 'tilejson.json']) {
+			const file = new File(['test'], name);
+			expect(await resolveDroppedFiles(file)).toEqual({
+				type: 'dialog',
+				dialogType: 'local-mvt',
+				dropFiles: [file]
+			});
+		}
+	});
+	it('ZIPを展開してタイルの相対パスを保持する', async () => {
+		const zip = new JSZip();
+		zip.file('test-set/tilejson.json', '{}');
+		zip.file('test-set/2/1/1.mvt', 'test');
+		const file = new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-set.zip');
+		const result = await resolveDroppedFiles(file);
+		expect(result.type).toBe('dialog');
+		if (result.type !== 'dialog') throw new Error('test dialog required');
+		expect(result.dialogType).toBe('local-mvt');
+		expect(
+			result.dropFiles?.map(item =>
+				(item as File & { morivisRelativePath: string; }).morivisRelativePath
+			)
+		).toEqual(['test-set/tilejson.json', 'test-set/2/1/1.mvt']);
+	});
+});
 
 vi.mock('$routes/map/utils/formats/exif', () => ({
 	hasExifGps: vi.fn()

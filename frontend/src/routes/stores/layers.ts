@@ -5,6 +5,7 @@ import {
 	unregisterInitialEntryStyle
 } from '$routes/map/data/entries';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
+import { releaseLocalMvtEntry } from '$routes/map/protocol/vector/local-mvt';
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 import { JoinDataCache } from '$routes/map/utils/cache/join-data-cache';
 import { rotationalVibration } from '$routes/map/utils/camera/effects/shake';
@@ -41,7 +42,12 @@ const createLayerStore = () => {
 	const { subscribe, update, set } = store;
 	const releaseRemovedLocalTilesets = (previous: string[], next: string[]) => {
 		const retained = new Set(next);
-		for (const id of previous) if (!retained.has(id)) releaseLocalTilesetEntry(id);
+		for (const id of previous) {
+			if (!retained.has(id)) {
+				releaseLocalTilesetEntry(id);
+				releaseLocalMvtEntry(id);
+			}
+		}
 	};
 
 	const hasMissingRequiredUrl = (id: string) => {
@@ -98,6 +104,7 @@ const createLayerStore = () => {
 			update((layers) => {
 				const newLayers = layers.filter((layerId) => layerId !== id);
 				releaseLocalTilesetEntry(id);
+				releaseLocalMvtEntry(id);
 				// GeojsonCacheからも削除
 				if (GeojsonCache.has(id)) GeojsonCache.remove(id);
 

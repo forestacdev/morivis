@@ -102,6 +102,7 @@ export type DialogType =
 	| 'mfjson'
 	| '3dtiles'
 	| 'local-3dtiles'
+	| 'local-mvt'
 	| 'pmtiles'
 	| 'model'
 	| 'gaussian-splat'
@@ -292,6 +293,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'位置情報を持つラスターデータです。空中写真や標高などの格子データを表示するときに使います。',
 		extensions: ['.tif', '.tiff']
+	},
+	{
+		label: 'MVT（フォルダ / ZIP）',
+		description:
+			'階層フォルダに分割したベクタータイルです。{z}/{x}/{y}の階層を保ったフォルダを読み込むときに使います。',
+		extensions: ['.mvt', '.pbf', '.mvt.gz', '.pbf.gz']
 	},
 	{
 		label: 'MBTiles',

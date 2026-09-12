@@ -75,6 +75,7 @@ import {
 	terminateEsriFeatureWorker
 } from '$routes/map/protocol/vector/esri-feature';
 import { geojsonProtocol, terminateGeojsonWorker } from '$routes/map/protocol/vector/geojson';
+import { LOCAL_MVT_PROTOCOL, requestLocalMvt } from '$routes/map/protocol/vector/local-mvt';
 import {
 	ogcFeatureProtocol,
 	terminateOgcFeatureWorker
@@ -106,6 +107,7 @@ import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'ge
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
+maplibregl.addProtocol(LOCAL_MVT_PROTOCOL, requestLocalMvt);
 
 // webgl(dem)プロトコルは必要時に動的に登録/解除
 const webglProt = demProtocol('webgl');

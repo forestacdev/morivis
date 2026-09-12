@@ -28,4 +28,11 @@ describe('checkLargeDroppedFiles', () => {
 		expect(await checkLargeDroppedFiles(file)).toBe(false);
 		expect(showConfirmDialog).toHaveBeenCalledOnce();
 	});
+	it('MVTフォルダは必要なタイルだけ読むため容量確認を省略する', async () => {
+		const file = new File(['test'], '1.mvt');
+		Object.defineProperty(file, 'morivisRelativePath', { value: 'test-set/2/1/1.mvt' });
+		Object.defineProperty(file, 'size', { value: 200 * 1024 * 1024 });
+		expect(await checkLargeDroppedFiles([file])).toBe(true);
+		expect(showConfirmDialog).not.toHaveBeenCalled();
+	});
 });

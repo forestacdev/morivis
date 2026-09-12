@@ -13,6 +13,7 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { MeshStyle, MeshEntry, ThreeModelEntry } from '$routes/map/data/types/model';
 	import { unregisterGeoZarr } from '$routes/map/protocol/geozarr';
+	import { retainLocalMvtEntry } from '$routes/map/protocol/vector/local-mvt';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
@@ -166,6 +167,9 @@
 		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
 		if (copy.type === 'model' && copy.format.type === '3d-tiles') {
 			retainLocalTilesetEntry(copy.id, copy.format.url);
+		}
+		if (copy.type === 'vector' && copy.format.type === 'mvt') {
+			retainLocalMvtEntry(copy.id, copy.format.url);
 		}
 
 		registerInitialEntryStyle(copy);

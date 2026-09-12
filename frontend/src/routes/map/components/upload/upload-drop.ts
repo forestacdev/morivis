@@ -1,3 +1,4 @@
+import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
 import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
 
@@ -97,7 +98,7 @@ const attachProjectedModelEpsg = (file: File, projectedModelEpsg: EpsgCode | nul
 
 // ZIP の中身を File[] に展開し、以降は通常の複数ファイル判定へ合流させる。
 const unzipFiles = async (file: File): Promise<File[]> => {
-	const zip = await JSZip.loadAsync(file);
+	const zip = await JSZip.loadAsync(await file.arrayBuffer());
 	const extracted: File[] = [];
 	const entries: [string, import('jszip').JSZipObject][] = [];
 
@@ -552,6 +553,7 @@ export const resolveDroppedFiles = async (
 	if ((await findLocalTilesetFiles(files)).length) {
 		return createDialogDecision('local-3dtiles', files);
 	}
+	if (isLocalMvtInput(files)) return createDialogDecision('local-mvt', files);
 	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。
 	const cityGmlCandidates = files.filter((file) => /\.(?:gml|xml|citygml)$/i.test(file.name));
 	if (cityGmlCandidates.length) {
