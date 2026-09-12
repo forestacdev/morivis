@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
+import { isCityGmlFile } from '$routes/map/utils/formats/citygml/detector';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGaussianSplatPlyFile } from '$routes/map/utils/formats/gaussian-splat';
@@ -541,6 +542,20 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
+	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。
+	const cityGmlCandidates = files.filter((file) => /\.(?:gml|xml|citygml)$/i.test(file.name));
+	if (cityGmlCandidates.length) {
+		try {
+			const matches = await Promise.all(cityGmlCandidates.map(async (file) => ({
+				file,
+				matched: /\.citygml$/i.test(file.name) || await isCityGmlFile(file)
+			})));
+			const cityGmlFiles = matches.filter(({ matched }) => matched).map(({ file }) => file);
+			if (cityGmlFiles.length) return createDialogDecision('citygml', cityGmlFiles);
+		} catch {
+			return createNotificationDecision('CityGML / XMLファイルを読み取れませんでした');
+		}
+	}
 	// モバイルの写真はGPSの有無にかかわらず写真フォームへ渡す。
 	// ワールドファイル付き画像やモデルのテクスチャは従来の組み合わせ判定を優先する。
 	if (

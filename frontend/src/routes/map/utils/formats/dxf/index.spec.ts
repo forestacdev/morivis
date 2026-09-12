@@ -1,6 +1,13 @@
+import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { has3dGeometryForType } from '../geojson/3d';
 
-import { dxfToGeoJson } from '.';
+import { dxfToGeoJson, parseDxf } from '.';
+
+const POLYFACE_DXF = readFileSync(
+	new URL('./__fixtures__/test-polyface.dxf', import.meta.url),
+	'utf8'
+);
 
 const EMPTY_LWPOLYLINE_DXF = `0
 SECTION
@@ -156,6 +163,81 @@ ENDSEC
 EOF`;
 
 describe('dxf parser', () => {
+	it('単位未指定と単位なしを自動判定済みとして扱わない', () => {
+		expect(parseDxf(LINE_WITH_Z_DXF).sourceUnitCode).toBeNull();
+		expect(parseDxf(UNITLESS_LINE_DXF).sourceUnitCode).toBeNull();
+		expect(parseDxf(MILLIMETER_LINE_DXF).sourceUnitCode).toBe(4);
+	});
+
+	it('手動のmm指定でXYZを同じ倍率で換算する', () => {
+		const result = parseDxf(LINE_WITH_Z_DXF, 'mm');
+		expect(result.metersPerUnit).toBe(0.001);
+		expect(result.geojson.features[0].geometry.coordinates).toEqual([
+			[0.001, 0.002, 0.003],
+			[0.004, 0.005, 0.006]
+		]);
+	});
+
+	it('手動指定はヘッダーの換算を置き換え、二重に倍率を掛けない', () => {
+		const result = parseDxf(MILLIMETER_LINE_DXF, 'cm');
+		expect(result.sourceUnitCode).toBe(4);
+		expect(result.metersPerUnit).toBe(0.01);
+		expect(result.geojson.features[0].geometry.coordinates).toEqual([[10, 20], [30, 40]]);
+	});
+
+	it('メッシュもXYZと色を保持したまま単位を換算する', () => {
+		const result = parseDxf(POLYFACE_DXF, 'mm');
+		expect(result.geojson.features[0].geometry).toMatchObject({
+			type: 'MultiPolygon',
+			coordinates: [
+				[[[0.001, 0.002, 0.003], [0.004, 0.002, 0.003], [0.004, 0.002, 0.006], [
+					0.001,
+					0.002,
+					0.006
+				], [0.001, 0.002, 0.003]]],
+				[[[0.001, 0.002, 0.003], [0.004, 0.002, 0.006], [0.001, 0.002, 0.006], [
+					0.001,
+					0.002,
+					0.003
+				]]]
+			]
+		});
+		expect(result.geojson.features[0].properties.color).toBe('#ff0000');
+	});
+
+	it('ポリフェイスの頂点参照を面に展開し、垂直面のZを保持する', () => {
+		const geojson = dxfToGeoJson(POLYFACE_DXF);
+		expect(geojson.features).toHaveLength(1);
+		expect(geojson.features[0].geometry).toEqual({
+			type: 'MultiPolygon',
+			coordinates: [
+				[[[1, 2, 3], [4, 2, 3], [4, 2, 6], [1, 2, 6], [1, 2, 3]]],
+				[[[1, 2, 3], [4, 2, 6], [1, 2, 6], [1, 2, 3]]]
+			]
+		});
+		expect(geojson.features[0].properties.layer).toBe('test-mesh');
+		expect(geojson.features[0].properties.color).toBe('#ff0000');
+		expect(has3dGeometryForType(geojson, 'Polygon')).toBe(true);
+	});
+
+	it('範囲外の面参照を座標として混入させずエラーにする', () => {
+		expect(() => dxfToGeoJson(POLYFACE_DXF.replace('72\n-2', '72\n-9')))
+			.toThrow('不正な頂点参照');
+	});
+
+	it('同じ座標が重複する退化面を除き、他の面は読み込む', () => {
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		const geojson = dxfToGeoJson(POLYFACE_DXF.replace('72\n3\n73\n4', '72\n1\n73\n4'));
+		expect(geojson.features[0].geometry.type).toBe('MultiPolygon');
+		expect(geojson.features[0].geometry.coordinates).toHaveLength(1);
+		expect(warn).toHaveBeenCalledWith('Skipping degenerate DXF polyface faces', 1);
+	});
+
+	it('面レコードの0で参照を終え、三角形の不足した頂点を検出する', () => {
+		expect(() => dxfToGeoJson(POLYFACE_DXF.replace('73\n3', '73\n0')))
+			.toThrow('必要な頂点がありません');
+	});
+
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});

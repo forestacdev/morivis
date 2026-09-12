@@ -177,6 +177,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/GmlForm.svelte'),
 		profile: 'vector-zone-georef'
 	},
+	citygml: {
+		load: () => import('$routes/map/components/upload/form/CityGmlForm.svelte'),
+		profile: 'drop-file'
+	},
 	kml: {
 		load: () => import('$routes/map/components/upload/form/KmlForm.svelte'),
 		profile: 'vector-zone-georef'

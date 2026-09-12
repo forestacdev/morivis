@@ -1,10 +1,34 @@
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
 import DxfParser from 'dxf-parser';
+import { DxfFaceHandler } from './face';
 
 type DxfHeader = Record<string, unknown>;
 type DxfPointLike = { x?: unknown; y?: unknown; z?: unknown; };
 type DxfPoint = { x: number; y: number; z?: number; };
+type DxfMeshVertex = DxfPointLike & {
+	threeDPolylineMesh?: boolean;
+	polyfaceMeshVertex?: boolean;
+	faceA?: number;
+	faceB?: number;
+	faceC?: number;
+	faceD?: number;
+};
+
+export type DxfUnit = 'auto' | 'mm' | 'cm' | 'm' | 'in' | 'ft';
+export interface DxfParseResult {
+	geojson: FeatureCollection;
+	/** 単位指定なし・単位なし(0)・未対応コードはnull。 */
+	sourceUnitCode: number | null;
+	metersPerUnit: number;
+}
+const DXF_UNIT_SCALE: Record<Exclude<DxfUnit, 'auto'>, number> = {
+	mm: 0.001,
+	cm: 0.01,
+	m: 1,
+	in: 0.0254,
+	ft: 0.3048
+};
 
 const DXF_INSUNITS_TO_METERS: Record<number, number> = {
 	0: 1,
@@ -37,15 +61,23 @@ const DXF_INSUNITS_TO_METERS: Record<number, number> = {
 /**
  * DXFファイルの内容をGeoJSONに変換
  */
-export const dxfToGeoJson = (dxfText: string): FeatureCollection => {
+export const parseDxf = (dxfText: string, unit: DxfUnit = 'auto'): DxfParseResult => {
 	const parser = new DxfParser();
+	parser.registerEntityHandler(DxfFaceHandler);
 	const dxf = parser.parseSync(dxfText);
 
 	if (!dxf) {
 		throw new Error('DXFの解析に失敗しました');
 	}
 
-	const unitScaleFactor = getDxfUnitScaleFactor((dxf as { header?: DxfHeader; }).header);
+	const insunits = (dxf as { header?: DxfHeader; }).header?.['$INSUNITS'];
+	const sourceUnitCode = typeof insunits === 'number' && insunits !== 0
+			&& Object.hasOwn(DXF_INSUNITS_TO_METERS, insunits)
+		? insunits
+		: null;
+	const unitScaleFactor = unit === 'auto'
+		? (sourceUnitCode === null ? 1 : DXF_INSUNITS_TO_METERS[sourceUnitCode])
+		: DXF_UNIT_SCALE[unit];
 	const features: Feature[] = [];
 
 	dxf.entities.forEach((entity: any) => {
@@ -56,10 +88,14 @@ export const dxfToGeoJson = (dxfText: string): FeatureCollection => {
 	});
 
 	return {
-		type: 'FeatureCollection',
-		features
+		geojson: { type: 'FeatureCollection', features },
+		sourceUnitCode,
+		metersPerUnit: unitScaleFactor
 	};
 };
+
+export const dxfToGeoJson = (dxfText: string, unit: DxfUnit = 'auto'): FeatureCollection =>
+	parseDxf(dxfText, unit).geojson;
 
 /**
  * DXFエンティティをGeoJSON Featureに変換
@@ -95,6 +131,10 @@ const entityToFeature = (entity: any, unitScaleFactor: number): Feature | null =
 
 		case 'LWPOLYLINE':
 		case 'POLYLINE': {
+			if (entity.isPolyfaceMesh) {
+				geometry = createPolyfaceMeshGeometry(entity.vertices ?? []);
+				break;
+			}
 			const vertices: DxfPoint[] = Array.isArray(entity.vertices)
 				? entity.vertices.filter(isDxfPointLike)
 				: [];
@@ -249,16 +289,6 @@ const entityToFeature = (entity: any, unitScaleFactor: number): Feature | null =
 	};
 };
 
-const getDxfUnitScaleFactor = (header?: DxfHeader): number => {
-	const insunits = header?.['$INSUNITS'];
-
-	if (typeof insunits !== 'number' || !Number.isFinite(insunits)) {
-		return 1;
-	}
-
-	return DXF_INSUNITS_TO_METERS[insunits] ?? 1;
-};
-
 const isFiniteCoordinate = (value: unknown): value is number =>
 	typeof value === 'number' && Number.isFinite(value);
 
@@ -324,6 +354,38 @@ const closeRing = (coordinates: number[][]): number[][] => {
 	}
 
 	return [...coordinates, [...coordinates[0]]];
+};
+
+const createPolyfaceMeshGeometry = (vertices: DxfMeshVertex[]): AnyGeometry | null => {
+	// 面レコードの座標はダミー。頂点番号は座標レコードだけを1から数える。
+	const points = vertices.filter((vertex) => vertex.threeDPolylineMesh);
+	const faces = vertices.filter((vertex) =>
+		vertex.polyfaceMeshVertex && !vertex.threeDPolylineMesh
+	);
+	const coordinates = faces.flatMap((face) => {
+		const ring: number[][] = [];
+		for (const index of [face.faceA, face.faceB, face.faceC, face.faceD]) {
+			if (index === undefined || index === 0) break;
+			// 負の番号は辺の非表示指定で、参照する頂点は絶対値で求める。
+			const point = points[Math.abs(index) - 1];
+			if (!Number.isInteger(index) || !isDxfPointLike(point)) {
+				throw new Error('DXFのポリフェイスメッシュに不正な頂点参照があります');
+			}
+			ring.push(toCoordinate(point, { force3d: true }));
+		}
+		if (ring.length < 3) {
+			throw new Error('DXFのポリフェイスメッシュの面に必要な頂点がありません');
+		}
+		// CAD出力には異なる頂点番号で同じ座標を指す退化面が混ざる。
+		if (new Set(ring.map((coordinate) => coordinate.join(','))).size < 3) return [];
+		return [[closeRing(removeDuplicateAdjacentCoordinates(ring))]];
+	});
+	if (coordinates.length < faces.length) {
+		console.warn('Skipping degenerate DXF polyface faces', faces.length - coordinates.length);
+	}
+	return coordinates.length
+		? ({ type: 'MultiPolygon', coordinates }) as unknown as AnyGeometry
+		: null;
 };
 
 const scaleCoordinates = (coordinates: unknown, factor: number): unknown => {

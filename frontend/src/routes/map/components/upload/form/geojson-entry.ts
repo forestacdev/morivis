@@ -104,6 +104,7 @@ export const createGeoJsonEntryWithMode = async ({
 	style,
 	attribution,
 	defaultColor,
+	colorProperty,
 	renderMode
 }: {
 	geojson: FeatureCollection;
@@ -113,6 +114,7 @@ export const createGeoJsonEntryWithMode = async ({
 	style?: VectorStyle;
 	attribution: string;
 	defaultColor?: string;
+	colorProperty?: string;
 	renderMode: GeoJsonRenderMode;
 }): Promise<MorivisLayerEntry | undefined> => {
 	if (resolveGeoJsonRenderMode(geojson, geometryType, renderMode) === 'deck') {
@@ -120,6 +122,7 @@ export const createGeoJsonEntryWithMode = async ({
 
 		return {
 			...entry,
+			style: { ...entry.style, ...(colorProperty ? { colorProperty } : {}) },
 			metaData: {
 				...entry.metaData,
 				attribution
@@ -145,6 +148,7 @@ export const createAutoGeoJsonEntry = async ({
 	style,
 	attribution,
 	defaultColor,
+	colorProperty,
 	allow3d = true
 }: {
 	geojson: FeatureCollection;
@@ -154,6 +158,7 @@ export const createAutoGeoJsonEntry = async ({
 	style?: VectorStyle;
 	attribution: string;
 	defaultColor?: string;
+	colorProperty?: string;
 	allow3d?: boolean;
 }): Promise<MorivisLayerEntry | undefined> =>
 	createGeoJsonEntryWithMode({
@@ -164,5 +169,6 @@ export const createAutoGeoJsonEntry = async ({
 		style,
 		attribution,
 		defaultColor,
+		colorProperty,
 		renderMode: allow3d ? 'deck' : 'geojson'
 	});

@@ -42,6 +42,12 @@ export interface PolygonFeatureCollection<_Properties = FeatureProp> {
 	features: Feature<PolygonGeometry | MultiPolygonGeometry, _Properties>[];
 }
 
+/** 標高を保持した面群。deck.glで屋根や垂直な壁面を描画する。 */
+export type MultiPolygon3DFeatureCollection = FeatureCollection<{
+	type: 'MultiPolygon';
+	coordinates: [number, number, number][][][];
+}>;
+
 export interface GeometryCollectionFeatureCollection<_Properties = FeatureProp> {
 	type: 'FeatureCollection';
 	features: Feature<GeometryCollection, _Properties>[];

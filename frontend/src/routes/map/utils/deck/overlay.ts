@@ -10,6 +10,7 @@ import {
 	GeoArrowPolygonLayer,
 	GeoArrowScatterplotLayer
 } from '@geoarrow/deck.gl-layers';
+import { createGeoJsonColorAccessors, hexToRgba } from './geojson-color';
 
 import type {
 	AnyTiles3DEntry,
@@ -44,27 +45,6 @@ type CloneableDeckLayer = {
 type PointCloudDatum = {
 	position: [number, number, number];
 	color: [number, number, number, number];
-};
-
-const hexToRgba = (color: string, alpha = 255): [number, number, number, number] => {
-	const normalized = color.replace('#', '');
-	const hex = normalized.length === 3
-		? normalized
-			.split('')
-			.map((char) => char + char)
-			.join('')
-		: normalized;
-
-	if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
-		return [64, 140, 255, alpha];
-	}
-
-	return [
-		parseInt(hex.slice(0, 2), 16),
-		parseInt(hex.slice(2, 4), 16),
-		parseInt(hex.slice(4, 6), 16),
-		alpha
-	];
 };
 
 const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
@@ -293,8 +273,7 @@ const createGeoJson3DLayer = (dataEntry: GeoJson3DEntry) =>
 		_full3d: true,
 		lineWidthMinPixels: dataEntry.format.geometryType === 'LineString' ? 2 : 1,
 		pointRadiusMinPixels: 4,
-		getFillColor: hexToRgba(dataEntry.style.color, 180),
-		getLineColor: hexToRgba(dataEntry.style.color, 220),
+		...createGeoJsonColorAccessors(dataEntry.style),
 		parameters: { depthTest: dataEntry.format.geometryType === 'Polygon' },
 		beforeId: 'deck-reference-layer'
 	});

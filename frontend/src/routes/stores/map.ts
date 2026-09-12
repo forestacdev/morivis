@@ -1087,10 +1087,11 @@ const createMapStore = () => {
 		await refreshCurrentDeckOverlay();
 	};
 
-	const setDeckVectorColor = async (entryId: string, color: string) => {
+	const setDeckVectorColor = async (entryId: string, color: string, colorProperty?: string) => {
 		const deckVectorEntry = currentDeckVectorEntries.get(entryId);
 		if (!deckVectorEntry) return;
 		deckVectorEntry.style.color = color;
+		deckVectorEntry.style.colorProperty = colorProperty;
 		await refreshCurrentDeckOverlay();
 	};
 

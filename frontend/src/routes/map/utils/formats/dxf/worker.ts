@@ -1,13 +1,12 @@
-import type { FeatureCollection } from '$routes/map/types/geojson';
-
-import { dxfArrayBufferToGeoJson } from '.';
+import { type DxfParseResult, type DxfUnit, parseDxf, readArrayBufferAsText } from '.';
 
 interface DxfWorkerRequest {
 	arrayBuffer: ArrayBuffer;
+	unit?: DxfUnit;
 }
 
 interface DxfWorkerSuccessResponse {
-	result: FeatureCollection;
+	result: DxfParseResult;
 }
 
 interface DxfWorkerErrorResponse {
@@ -16,7 +15,7 @@ interface DxfWorkerErrorResponse {
 
 self.onmessage = async (event: MessageEvent<DxfWorkerRequest>) => {
 	try {
-		const result = dxfArrayBufferToGeoJson(event.data.arrayBuffer);
+		const result = parseDxf(readArrayBufferAsText(event.data.arrayBuffer), event.data.unit);
 		postMessage({ result } satisfies DxfWorkerSuccessResponse);
 	} catch (error) {
 		postMessage(

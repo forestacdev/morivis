@@ -136,6 +136,19 @@ describe('createGeoJsonEntryWithMode', () => {
 });
 
 describe('createAutoGeoJsonEntry', () => {
+	it('3Dの登録時にDXFの色属性を描画設定へ引き継ぐ', async () => {
+		const entry = await createAutoGeoJsonEntry({
+			geojson: createLineStringWithZ(),
+			geometryType: 'LineString',
+			name: 'test-cad',
+			bbox: [0, 0, 1, 1],
+			attribution: 'DXF',
+			colorProperty: 'color'
+		});
+		expect(entry?.type).toBe('model');
+		expect(entry?.style).toMatchObject({ colorProperty: 'color' });
+	});
+
 	it('allow3d が false のときは Z 座標があっても vector entry を返す', async () => {
 		const geojson = {
 			type: 'FeatureCollection',

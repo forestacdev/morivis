@@ -96,6 +96,11 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+CityGMLは専用の `CityGmlForm.svelte` でLODを選び、Workerで建物の面群を標高付きGeoJSON MultiPolygonへ変換する。
+3Dモデルを選ぶと `createCityGmlEntry()` で `GeoJson3DEntry` に正規化し、既存のdeck.gl描画へ渡す。
+2Dを選ぶと `createCityGml2DEntry()` で標高と面積のない面を除き、`createGeoJsonEntry()` で通常のベクターレイヤーに登録する。
+対応する座標系・形状と制限は [CityGMLパーサー](../frontend/src/routes/map/utils/formats/citygml/README.md) を参照。
+
 現在の `DialogType` に近い粒度で、主要な流れをまとめる。
 
 | 系統 | 主な形式 | 解析 | 座標系 / 配置の確定 | preview | final entry | worker / 補助実装 |

@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$routes/map/utils/formats/exif', () => ({
@@ -69,6 +70,41 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveDroppedFiles', () => {
+	const cityGml = readFileSync(
+		new URL('../../utils/formats/citygml/__fixtures__/test-buildings.gml', import.meta.url),
+		'utf8'
+	);
+
+	it.each(['gml', 'xml', 'citygml'])('CityGMLの.%sは専用フォームに渡す', async (extension) => {
+		const file = createFile(`test-building.${extension}`, cityGml);
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'citygml',
+			dropFiles: [file]
+		});
+	});
+
+	it('複数のCityGMLと補助ファイルからCityGML一式をフォームに渡す', async () => {
+		const files = [createFile('test-a.gml', cityGml), createFile('test-b.xml', cityGml)];
+		expect(await resolveDroppedFiles([...files, createFile('test-texture.png')])).toEqual({
+			type: 'dialog',
+			dialogType: 'citygml',
+			dropFiles: files
+		});
+	});
+
+	it('通常GMLをCityGMLフォームに渡さない', async () => {
+		expect(
+			await resolveDroppedFiles(
+				createFile(
+					'test-generic.gml',
+					'<g:FeatureCollection xmlns:g="http://www.opengis.net/gml"/>'
+				)
+			)
+		)
+			.toMatchObject({ type: 'dialog', dialogType: 'gml' });
+	});
+
 	beforeEach(() => {
 		vi.resetAllMocks();
 		vi.mocked(hasExifGps).mockResolvedValue(false);

@@ -111,6 +111,7 @@ export type DialogType =
 	| 'demxml'
 	| 'grib2'
 	| 'gml'
+	| 'citygml'
 	| 'kml'
 	| 'topojson'
 	| 'landxml'
@@ -254,6 +255,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'地理情報をXMLで表現するベクターデータです。基盤地図情報や各種XML地図データを読み込むときに使います。',
 		extensions: ['.gml', '.xml']
+	},
+	{
+		label: 'CityGML',
+		description:
+			'都市モデルの形状と属性をXMLで表したデータです。建物を標高付きGeoJSONに変換して3D表示するときに使います。',
+		extensions: ['.citygml', '.gml', '.xml']
 	},
 	{
 		label: 'KML / KMZ',

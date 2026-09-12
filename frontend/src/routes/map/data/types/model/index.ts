@@ -8,7 +8,7 @@ import type {
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { AttributeView } from '$routes/map/data/types/vector/properties';
 import type { ColorsStyle } from '$routes/map/data/types/vector/style';
-import type { FeatureCollection } from '$routes/map/types/geojson';
+import type { FeatureCollection, MultiPolygon3DFeatureCollection } from '$routes/map/types/geojson';
 import type { ModelAttributes } from '$routes/map/utils/three/model-attributes';
 import type { Table } from 'apache-arrow';
 
@@ -237,6 +237,8 @@ export interface GeoArrowStyle {
 	opacity: Opacity;
 	visible?: boolean;
 	color: string;
+	/** GeoJSON 3Dで色コードを読む属性名。未指定なら単色。 */
+	colorProperty?: string;
 }
 
 /** mesh 系 model entry の入力形式。主に three.js 側で読む 3D モデル形式を表す。 */
@@ -338,7 +340,7 @@ export interface GeoArrowEntry extends BaseModelEntry {
 export interface GeoJson3DEntry extends BaseModelEntry {
 	format: {
 		type: 'geojson-3d';
-		data: FeatureCollection;
+		data: FeatureCollection | MultiPolygon3DFeatureCollection;
 		geometryType: VectorEntryGeometryType;
 	};
 	style: GeoArrowStyle;
