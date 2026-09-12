@@ -220,6 +220,8 @@ export interface Tiles3DMeshStyle {
 	type: '3d-tiles-mesh';
 	opacity: Opacity;
 	visible?: boolean;
+	/** 元の高さに加えるメートル値。負の値で下げる。 */
+	heightOffset?: number;
 	color: string;
 	/** ScenegraphLayer では pbr / flat を切り替える。SimpleMeshLayer では無視される。 */
 	lighting: 'pbr' | 'flat';

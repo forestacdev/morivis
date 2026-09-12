@@ -64,6 +64,7 @@ const getTiles3DMeshStyleSignature = (style: Tiles3DMeshStyle) =>
 		style.color,
 		style.lighting,
 		style.opacity,
+		style.heightOffset ?? 0,
 		style.visible ?? true
 	].join(':');
 
@@ -72,7 +73,11 @@ const getTiles3DMeshSubLayerProps = (style: Tiles3DMeshStyle) => ({
 });
 
 export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
-	const altitudeOffset = dataEntry.metaData.altitude ?? 0;
+	const style = { ...dataEntry.style };
+	const requestedOffset = style.type === '3d-tiles-mesh'
+		? (style.heightOffset ?? dataEntry.metaData.altitude ?? 0)
+		: 0;
+	const altitudeOffset = Number.isFinite(requestedOffset) ? requestedOffset : 0;
 
 	const layer = new Tile3DLayer({
 		id: `3d-tiles-layer-${dataEntry.id}`,
@@ -80,8 +85,8 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 		pickable: dataEntry.interaction.clickable,
 		opacity: dataEntry.style.opacity,
 		visible: dataEntry.style.visible ?? true,
-		morivisStyleSignature: dataEntry.style.type === '3d-tiles-mesh'
-			? getTiles3DMeshStyleSignature(dataEntry.style)
+		morivisStyleSignature: style.type === '3d-tiles-mesh'
+			? getTiles3DMeshStyleSignature({ ...style, heightOffset: altitudeOffset })
 			: undefined,
 		pointSize: dataEntry.style.type === 'point-cloud'
 			? (dataEntry.style.pointSize ?? 1)
@@ -96,10 +101,6 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 		},
 		onTileLoad: (tile: Tile3D) => {
 			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
-
-			if (tile.content?.cartographicOrigin && altitudeOffset !== 0) {
-				// 高さオフセットは既存動作に合わせて未適用のままにしている。
-			}
 		}
 	});
 
@@ -115,7 +116,7 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
 			const subLayer = originalGetSubLayer(tile, oldLayer);
 
-			if (dataEntry.style.type !== '3d-tiles-mesh' || !isCloneableDeckLayer(subLayer)) {
+			if (style.type !== '3d-tiles-mesh' || !isCloneableDeckLayer(subLayer)) {
 				return subLayer;
 			}
 
@@ -125,13 +126,20 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 			]
 				.join(' ')
 				.toLowerCase();
-			const sharedProps = getTiles3DMeshSubLayerProps(dataEntry.style);
+			// タイル本体は変更せず、再描画のたびに元の原点から計算する。
+			const origin = tile.content?.cartographicOrigin;
+			const sharedProps = {
+				...getTiles3DMeshSubLayerProps(style),
+				...(origin?.length === 3 && origin.every(Number.isFinite)
+					? { coordinateOrigin: [origin[0], origin[1], origin[2] + altitudeOffset] }
+					: {})
+			};
 
 			if (subLayerName.includes('scenegraph')) {
 				return subLayer.clone({
 					...sharedProps,
 					getTransformMatrix: [],
-					_lighting: dataEntry.style.lighting
+					_lighting: style.lighting
 				});
 			}
 
