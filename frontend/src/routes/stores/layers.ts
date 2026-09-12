@@ -9,6 +9,7 @@ import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 import { JoinDataCache } from '$routes/map/utils/cache/join-data-cache';
 import { rotationalVibration } from '$routes/map/utils/camera/effects/shake';
 import { type LayerType } from '$routes/map/utils/entries';
+import { releaseLocalTilesetEntry } from '$routes/map/utils/tiles3d/local-files';
 import { triggerMapPaneScale } from '$routes/stores/effect';
 import { showNotification } from '$routes/stores/notification';
 import { get, writable } from 'svelte/store';
@@ -38,6 +39,10 @@ const sortLayerIds = (ids: string[]): string[] => {
 const createLayerStore = () => {
 	const store = writable<string[]>([...INT_ADD_LAYER_IDS]);
 	const { subscribe, update, set } = store;
+	const releaseRemovedLocalTilesets = (previous: string[], next: string[]) => {
+		const retained = new Set(next);
+		for (const id of previous) if (!retained.has(id)) releaseLocalTilesetEntry(id);
+	};
 
 	const hasMissingRequiredUrl = (id: string) => {
 		const entry = findCatalogEntry(id);
@@ -50,6 +55,7 @@ const createLayerStore = () => {
 		subscribe,
 
 		setLayers: (layers: string[]) => {
+			releaseRemovedLocalTilesets(get(store), layers);
 			// GeojsonCacheの初期化
 			GeojsonCache.clear();
 			// ストアの値を更新
@@ -91,6 +97,7 @@ const createLayerStore = () => {
 		remove: (id: string) =>
 			update((layers) => {
 				const newLayers = layers.filter((layerId) => layerId !== id);
+				releaseLocalTilesetEntry(id);
 				// GeojsonCacheからも削除
 				if (GeojsonCache.has(id)) GeojsonCache.remove(id);
 
@@ -123,6 +130,7 @@ const createLayerStore = () => {
 
 		// 完全リセット
 		reset: () => {
+			releaseRemovedLocalTilesets(get(store), INT_ADD_LAYER_IDS);
 			for (const id of GeojsonCache.keys()) {
 				GeojsonCache.remove(id);
 			}

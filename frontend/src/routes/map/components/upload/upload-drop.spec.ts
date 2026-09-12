@@ -70,6 +70,33 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveDroppedFiles', () => {
+	it('タイルセットとGLBを含むフォルダは3D Tilesフォームに渡す', async () => {
+		const files = [
+			createPathLikeFile(
+				'tileset.json',
+				'test-set/tileset.json',
+				JSON.stringify({ asset: { version: '1.0' }, root: {} })
+			),
+			createPathLikeFile('test.glb', 'test-set/data/test.glb')
+		];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-3dtiles',
+			dropFiles: files
+		});
+	});
+
+	it('tiles.json単体も内容で3D Tilesと判定する', async () => {
+		const file = createFile(
+			'tiles.json',
+			JSON.stringify({ asset: { version: '1.1' }, root: {} })
+		);
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-3dtiles',
+			dropFiles: [file]
+		});
+	});
 	const cityGml = readFileSync(
 		new URL('../../utils/formats/citygml/__fixtures__/test-buildings.gml', import.meta.url),
 		'utf8'

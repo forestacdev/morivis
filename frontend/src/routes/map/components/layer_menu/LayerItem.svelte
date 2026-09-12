@@ -21,6 +21,7 @@
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
+	import { retainLocalTilesetEntry } from '$routes/map/utils/tiles3d/local-files';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
@@ -163,6 +164,9 @@
 
 		copy.id = uuid;
 		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
+		if (copy.type === 'model' && copy.format.type === '3d-tiles') {
+			retainLocalTilesetEntry(copy.id, copy.format.url);
+		}
 
 		registerInitialEntryStyle(copy);
 		tempLayerEntries = [...tempLayerEntries, copy];

@@ -1,3 +1,4 @@
+import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
@@ -107,7 +108,12 @@ const unzipFiles = async (file: File): Promise<File[]> => {
 	for (const [path, entry] of entries) {
 		const blob = await entry.async('blob');
 		const fileName = path.split('/').pop() ?? path;
-		extracted.push(new File([blob], fileName, { type: blob.type }));
+		const extractedFile = new File([blob], fileName, { type: blob.type });
+		Object.defineProperty(extractedFile, 'morivisRelativePath', {
+			value: path,
+			configurable: true
+		});
+		extracted.push(extractedFile);
 	}
 
 	return extracted;
@@ -542,6 +548,10 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
+	// tilesetとGLB等が同居しても、個別モデルではなくフォルダ全体を渡す。
+	if ((await findLocalTilesetFiles(files)).length) {
+		return createDialogDecision('local-3dtiles', files);
+	}
 	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。
 	const cityGmlCandidates = files.filter((file) => /\.(?:gml|xml|citygml)$/i.test(file.name));
 	if (cityGmlCandidates.length) {

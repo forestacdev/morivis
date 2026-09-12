@@ -1,4 +1,8 @@
 import {
+	fetchLocalTilesetResource,
+	isLocalTilesetUrl
+} from '$routes/map/utils/tiles3d/local-files';
+import {
 	sanitizeScenegraphGltfForDeck,
 	type ScenegraphGltfLike
 } from '$routes/map/utils/tiles3d/sanitize-scenegraph-gltf';
@@ -85,6 +89,9 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 		parameters: { depthTest: false },
 		beforeId: 'deck-reference-layer',
 		loadOptions: {
+			...(isLocalTilesetUrl(dataEntry.format.url)
+				? { fetch: fetchLocalTilesetResource }
+				: {}),
 			'3d-tiles': { decodeQuantizedPositions: true }
 		},
 		onTileLoad: (tile: Tile3D) => {

@@ -101,6 +101,7 @@ export type DialogType =
 	| 'gdb'
 	| 'mfjson'
 	| '3dtiles'
+	| 'local-3dtiles'
 	| 'pmtiles'
 	| 'model'
 	| 'gaussian-splat'
@@ -386,6 +387,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'位置情報を持つPDF地図です。紙地図由来のラスタやベクターを読み込むときに使います。',
 		extensions: ['.pdf']
+	},
+	{
+		label: '3D Tiles（フォルダ / ZIP）',
+		description:
+			'3Dモデルをタイルに分割したデータです。tileset.jsonとタイル本体を含むフォルダ、またはZIPをまとめて読み込みます。',
+		extensions: ['.json', '.b3dm', '.i3dm', '.pnts', '.cmpt', '.subtree']
 	},
 	{
 		label: 'GLB / GLTF',
