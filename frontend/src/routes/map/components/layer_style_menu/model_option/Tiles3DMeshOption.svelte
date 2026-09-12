@@ -73,20 +73,7 @@
 			step={0.1}
 			icon="mdi:arrow-up-down"
 		/>
-		<div class="flex items-center gap-2">
-			<input
-				type="number"
-				aria-label="高さ補正 (m)"
-				class="w-28 rounded border border-current/20 bg-transparent px-2 py-1"
-				step="0.1"
-				bind:value={getHeightOffset, setHeightOffset}
-			/>
-			<span>m</span>
-			<button type="button" class="text-sm underline" onclick={() => setHeightOffset(0)}
-				>0に戻す</button
-			>
-		</div>
-		<p class="text-xs opacity-70">負の値で下げ、正の値で上げます。</p>
+
 		{#if !$isTerrain3d}
 			<button
 				type="button"
