@@ -38,6 +38,53 @@ describe('ローカルMVTのドロップ', () => {
 	});
 });
 
+describe('ローカルラスタータイルのドロップ', () => {
+	const tileFile = () => {
+		const file = new File(['test-image'], '1.png');
+		Object.defineProperty(file, 'morivisRelativePath', { value: 'test-set/2/1/1.png' });
+		return file;
+	};
+	it('TileJSON付き画像フォルダはMVTより先に判定する', async () => {
+		const files = [new File(['{}'], 'tilejson.json'), tileFile()];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-raster-tiles',
+			dropFiles: files
+		});
+	});
+	it('モバイルでも画像タイルを写真フォームへ渡さない', async () => {
+		const files = [tileFile()];
+		expect(await resolveDroppedFiles(files, { mobile: true })).toEqual({
+			type: 'dialog',
+			dialogType: 'local-raster-tiles',
+			dropFiles: files
+		});
+	});
+	it('画像のTileJSON単体はラスター用フォームで再入力を案内する', async () => {
+		const file = new File([JSON.stringify({ tiles: ['/{z}/{x}/{y}.webp'] })], 'tilejson.json');
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-raster-tiles',
+			dropFiles: [file]
+		});
+	});
+	it('ZIP展開後も画像タイルの階層を保持する', async () => {
+		const zip = new JSZip();
+		zip.file('test-set/2/1/1.png', 'test-image');
+		const file = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-raster.zip'
+		);
+		const result = await resolveDroppedFiles(file);
+		expect(result.type).toBe('dialog');
+		if (result.type !== 'dialog') throw new Error('test dialog required');
+		expect(result.dialogType).toBe('local-raster-tiles');
+		expect(
+			(result.dropFiles?.[0] as File & { morivisRelativePath: string; }).morivisRelativePath
+		).toBe('test-set/2/1/1.png');
+	});
+});
+
 vi.mock('$routes/map/utils/formats/exif', () => ({
 	hasExifGps: vi.fn()
 }));

@@ -93,6 +93,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/LocalMvtForm.svelte'),
 		profile: 'drop-file'
 	},
+	'local-raster-tiles': {
+		load: () => import('$routes/map/components/upload/form/LocalRasterTilesForm.svelte'),
+		profile: 'drop-file'
+	},
 	pointcloud: {
 		load: () => import('$routes/map/components/upload/form/PointCloudForm.svelte'),
 		profile: 'pointcloud-georef'

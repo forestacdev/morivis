@@ -71,6 +71,10 @@ import {
 } from '$routes/map/data/types/model';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import {
+	LOCAL_RASTER_TILE_PROTOCOL,
+	requestLocalRasterTile
+} from '$routes/map/protocol/raster/local-tiles';
+import {
 	esriFeatureProtocol,
 	terminateEsriFeatureWorker
 } from '$routes/map/protocol/vector/esri-feature';
@@ -108,6 +112,7 @@ import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'ge
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
 maplibregl.addProtocol(LOCAL_MVT_PROTOCOL, requestLocalMvt);
+maplibregl.addProtocol(LOCAL_RASTER_TILE_PROTOCOL, requestLocalRasterTile);
 
 // webgl(dem)プロトコルは必要時に動的に登録/解除
 const webglProt = demProtocol('webgl');

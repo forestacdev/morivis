@@ -1,4 +1,5 @@
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
+import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
 import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
 
@@ -552,6 +553,9 @@ export const resolveDroppedFiles = async (
 	// tilesetとGLB等が同居しても、個別モデルではなくフォルダ全体を渡す。
 	if ((await findLocalTilesetFiles(files)).length) {
 		return createDialogDecision('local-3dtiles', files);
+	}
+	if (await isLocalRasterTileInput(files)) {
+		return createDialogDecision('local-raster-tiles', files);
 	}
 	if (isLocalMvtInput(files)) return createDialogDecision('local-mvt', files);
 	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。

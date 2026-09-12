@@ -103,6 +103,7 @@ export type DialogType =
 	| '3dtiles'
 	| 'local-3dtiles'
 	| 'local-mvt'
+	| 'local-raster-tiles'
 	| 'pmtiles'
 	| 'model'
 	| 'gaussian-splat'
@@ -293,6 +294,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'位置情報を持つラスターデータです。空中写真や標高などの格子データを表示するときに使います。',
 		extensions: ['.tif', '.tiff']
+	},
+	{
+		label: 'ラスタータイル（フォルダ / ZIP）',
+		description:
+			'階層フォルダに分割した画像タイルです。{z}/{x}/{y}の階層を保ったフォルダを地図として読み込むときに使います。',
+		extensions: ['.png', '.jpg', '.jpeg', '.webp']
 	},
 	{
 		label: 'MVT（フォルダ / ZIP）',
