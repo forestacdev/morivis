@@ -1,3 +1,4 @@
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 import {
 	getLocalFilePath,
 	isTileset,
@@ -55,10 +56,10 @@ export const fetchLocalTilesetResource = async (
 	init?: RequestInit
 ): Promise<Response> => {
 	if (!isLocalTilesetUrl(url)) {
-		if (new URL(url).origin === LOCAL_ORIGIN) {
+		if (url === LOCAL_ORIGIN || url.startsWith(`${LOCAL_ORIGIN}/`)) {
 			throw new Error('3D Tilesの参照がフォルダの外を指しています');
 		}
-		return fetch(url, init);
+		return fetchWithDevProxy(url, init);
 	}
 	init?.signal?.throwIfAborted();
 	const file = findFile(url);

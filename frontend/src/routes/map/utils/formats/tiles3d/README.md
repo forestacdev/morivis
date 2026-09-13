@@ -15,3 +15,5 @@ ZIPは展開時に相対パスを保持して同じ入口へ渡す。
 入力からの流れは `File[] → LocalTiles3DForm → Tiles3DEntry → Tile3DLayer`。
 Fileやfetch関数はentryに入れず、runtime側で管理する。
 取得関数はloaders.glの [LoaderOptions.fetch](https://loaders.gl/docs/modules/core/api-reference/loader-options) で子ローダーへ渡す。
+
+URLからの取得も `tiles3d/fetch-resource.ts` を通す。`Content-Encoding` が欠けたgzip配信は本文の先頭を判別してストリーム展開する。HTTPで展開済みの本文には再展開をかけず、子リソースを解決するためのレスポンスURLを保持する。

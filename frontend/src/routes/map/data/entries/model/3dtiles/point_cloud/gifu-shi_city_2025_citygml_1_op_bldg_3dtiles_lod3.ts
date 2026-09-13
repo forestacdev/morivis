@@ -6,7 +6,7 @@ const entry: Tiles3DEntry<Tiles3DMeshStyle> = {
 	type: 'model',
 	format: {
 		type: '3d-tiles',
-		url: `${ENTRY_3DTILES_PATH}/21201_gifu-shi_city_2025_citygml_1_op_bldg_3dtiles_lod3/tileset.json`
+		url: `${ENTRY_3DTILES_PATH}/gifu_city_plateau_nusamai_3dtiles/tileset.json`
 	},
 	metaData: {
 		name: '岐阜市 3D都市モデル',

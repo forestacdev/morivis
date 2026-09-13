@@ -1,5 +1,5 @@
 import type { LngLatBoundsLike } from '$routes/map/utils/maplibre';
-import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+import { fetchTilesetResource } from './fetch-resource';
 
 type Tiles3DBoundingVolume = { box?: number[]; region?: number[]; sphere?: number[]; };
 type Tiles3DContent = { uri?: string; url?: string; };
@@ -204,7 +204,7 @@ export const fetchTileset3DBbox = async (
 	url: string
 ): Promise<FetchTileset3DBboxResult> => {
 	try {
-		const res = await fetchWithDevProxy(url);
+		const res = await fetchTilesetResource(url);
 		if (!res.ok) throw new Error(`HTTP ${res.status}`);
 		const tileset = await res.json();
 
