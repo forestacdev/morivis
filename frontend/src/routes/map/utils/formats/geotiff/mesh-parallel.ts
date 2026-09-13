@@ -73,7 +73,8 @@ export const createRasterMeshEntryInWorker = async (
 			},
 			transformOptions: {
 				scale: false,
-				rotation: false
+				rotation: false,
+				heightOffset: true
 			},
 			transform: {
 				lng: center.lng,

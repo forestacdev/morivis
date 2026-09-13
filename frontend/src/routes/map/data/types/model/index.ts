@@ -149,6 +149,7 @@ export interface MeshTransformOptionStyle {
 	scale?: boolean;
 	rotation?: boolean;
 	heightScale?: boolean;
+	/** 地形メッシュなど、高さオフセットの編集が必要な場合のみ有効にする。既定はfalse。 */
 	heightOffset?: boolean;
 }
 
