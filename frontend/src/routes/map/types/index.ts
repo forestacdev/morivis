@@ -173,7 +173,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'wmts',
 		dialogType: 'wmts',
 		label: 'WMS/WMTS',
-		description: '地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
+		description:
+			'地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
 		icon: 'mdi:layers-outline',
 		extensions: []
 	},
@@ -235,7 +236,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'stac',
 		dialogType: 'stac',
 		label: 'STAC / COG',
-		description: 'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
+		description:
+			'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
 		icon: 'mdi:image-multiple',
 		extensions: []
 	},
@@ -459,7 +461,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'grib2',
 		label: 'GRIB2 (GPV)',
 		icon: 'mdi:weather-windy',
-		description: '気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
+		description:
+			'気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
 		extensions: ['.grib2', '.grb2', '.grb', '.bin']
 	},
 	{
@@ -520,7 +523,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'dm',
 		label: 'DM',
 		icon: 'mdi:terrain',
-		description: '数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
+		description:
+			'数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
 		extensions: ['.dm']
 	},
 	{
@@ -596,7 +600,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: '3ds',
 		label: 'Autodesk 3DS',
 		icon: 'mdi:cube-outline',
-		description: '3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
+		description:
+			'3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
 		extensions: ['.3ds']
 	},
 	{
@@ -722,7 +727,7 @@ export interface PoiHighlightMarkerState {
 	type: 'poi';
 	featureId: string | number;
 	point: [number, number];
-	properties: { [key: string]: any };
+	properties: { [key: string]: any; };
 	iconImage?: string | null;
 }
 

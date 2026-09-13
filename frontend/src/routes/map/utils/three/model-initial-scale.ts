@@ -51,11 +51,12 @@ export const getInitialModelPlacementScale = (
 	const fallback = normalizeModelTransformScale(transform);
 	const { width, height, worldToClip, terrainEnabled } = viewport;
 	if (
-		!localBounds.every(Number.isFinite) ||
-		!(width > 0 && height > 0) ||
-		!worldToClip.elements.every(Number.isFinite)
-	)
+		!localBounds.every(Number.isFinite)
+		|| !(width > 0 && height > 0)
+		|| !worldToClip.elements.every(Number.isFinite)
+	) {
 		return fallback;
+	}
 	const spans = [0, 1, 2].map((axis) => localBounds[axis + 3] - localBounds[axis]);
 	if (spans.some((span) => span < 0) || Math.max(...spans) <= 0 || transform.baseScale === 0) {
 		return fallback;
@@ -69,7 +70,9 @@ export const getInitialModelPlacementScale = (
 	const fits = (scale: number) => {
 		const matrix = worldToClip
 			.clone()
-			.multiply(buildMercatorModelMatrix({ ...transform, scale, scaleUnit: 0 }, terrainEnabled));
+			.multiply(
+				buildMercatorModelMatrix({ ...transform, scale, scaleUnit: 0 }, terrainEnabled)
+			);
 		let minX = Infinity,
 			minY = Infinity,
 			maxX = -Infinity,
@@ -90,7 +93,8 @@ export const getInitialModelPlacementScale = (
 		}
 		const targetPixels = Math.min(width, height) * VIEWPORT_FRACTION;
 		return (
-			((maxX - minX) * width) / 2 <= targetPixels && ((maxY - minY) * height) / 2 <= targetPixels
+			((maxX - minX) * width) / 2 <= targetPixels
+			&& ((maxY - minY) * height) / 2 <= targetPixels
 		);
 	};
 	if (!fits(0)) return fallback;

@@ -1,5 +1,5 @@
-import type { Tiles3DMeshStyle, Tiles3DEntry } from '$routes/map/data/types/model';
 import { COVER_IMAGE_BASE_PATH, ENTRY_3DTILES_PATH } from '$routes/constants';
+import type { Tiles3DEntry, Tiles3DMeshStyle } from '$routes/map/data/types/model';
 
 const entry: Tiles3DEntry<Tiles3DMeshStyle> = {
 	id: 'gifu-shi_city_2025_citygml_1_op_bldg_3dtiles_lod3',
