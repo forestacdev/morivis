@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { PMTiles, TileType } from 'pmtiles';
+	import { onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
@@ -22,21 +23,36 @@
 	} from '$routes/map/utils/vector/tile-metadata';
 	import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: UploadFilesInput;
 		remotePmtilesUrl: string | null;
+		active?: boolean;
+		loading?: boolean;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		dropFile = $bindable(),
-		remotePmtilesUrl = $bindable()
+		remotePmtilesUrl = $bindable(),
+		active = true,
+		loading = $bindable(false)
 	}: Props = $props();
+
+	const id = $props.id();
+	let disposed = false;
+	let analysisVersion = 0;
+	let registeredUrl = '';
+	let analyzedUrl = $state('');
+	let analysisError = $state('');
+	onDestroy(() => {
+		disposed = true;
+		analysisVersion++;
+		loading = false;
+	});
 
 	const urlValidation = yup.object().shape({
 		name: yup.string().required('データ名を入力してください。'),
@@ -89,7 +105,8 @@
 
 	const pmtilesFile = $derived.by(() => {
 		if (!dropFile) return null;
-		return getFirstUploadFile(dropFile);
+		const file = getFirstUploadFile(dropFile);
+		return file && /\.pmtiles$/i.test(file.name) ? file : null;
 	});
 
 	const getNameFromUrl = (url: string): string => {
@@ -109,7 +126,11 @@
 			forms.url = blobUrl;
 			forms.name = pmtilesFile.name.replace(/\.[^.]+$/, '');
 			isFromFile = true;
-			analyzePmtiles(blobUrl);
+			void analyzePmtiles(blobUrl);
+			return () => {
+				analysisVersion++;
+				if (registeredUrl !== blobUrl) URL.revokeObjectURL(blobUrl);
+			};
 		}
 	});
 
@@ -143,7 +164,10 @@
 	});
 
 	const analyzePmtiles = async (url: string) => {
-		isProcessing.set(true);
+		const version = ++analysisVersion;
+		loading = true;
+		analysisError = '';
+		analyzedUrl = '';
 		analyzed = false;
 		tileTypeLabel = '';
 		isVector = false;
@@ -156,6 +180,7 @@
 		try {
 			const pm = new PMTiles(url);
 			const header = await pm.getHeader();
+			if (disposed || version !== analysisVersion || !active) return;
 
 			const tileType = header.tileType;
 			isVector = tileType === TileType.Mvt;
@@ -179,6 +204,7 @@
 
 			if (isVector) {
 				const metadata = (await pm.getMetadata()) as Record<string, unknown>;
+				if (disposed || version !== analysisVersion || !active) return;
 				const vlayers = metadata?.vector_layers as RawVectorTileLayerMetadata[] | undefined;
 				const tilestats = metadata?.tilestats as
 					| { layers?: RawVectorTileStatsLayerMetadata[] }
@@ -199,26 +225,44 @@
 			} else {
 				// ラスターはそのまま登録
 				analyzed = true;
+				analyzedUrl = url;
 				registration();
 				return;
 			}
 
 			analyzed = true;
+			analyzedUrl = url;
 		} catch (e) {
-			showNotification('PMTilesの解析に失敗しました', 'error');
-			console.error(e);
+			if (!disposed && version === analysisVersion) {
+				analysisError = 'PMTilesの解析に失敗しました。URLまたはファイルを確認してください。';
+				showNotification(analysisError, 'error');
+				console.error(e);
+			}
 		} finally {
-			isProcessing.set(false);
+			if (!disposed && version === analysisVersion) loading = false;
 		}
 	};
 
+	const invalidateAnalysis = () => {
+		analysisVersion++;
+		analyzed = false;
+		analyzedUrl = '';
+		analysisError = '';
+		tileTypeLabel = '';
+		vectorLayers = [];
+		selectedLayerId = '';
+		loading = false;
+	};
+
 	const fetchAndAnalyze = () => {
-		if (forms.url) {
+		if (forms.url && !loading && active) {
 			analyzePmtiles(forms.url.trim());
 		}
 	};
 
 	const registration = () => {
+		if (disposed || !active || !analyzed || analyzedUrl !== forms.url.trim() || !forms.name.trim())
+			return;
 		const opts = {
 			bounds: pmtilesBbox ?? undefined,
 			minZoom: pmtilesMinZoom,
@@ -246,6 +290,7 @@
 				}
 			);
 			if (entry) {
+				registeredUrl = forms.url.trim();
 				showDataEntry = entry;
 				showDialogType = null;
 				dropFile = null;
@@ -254,6 +299,7 @@
 		} else {
 			const entry = createPmtilesRasterEntry(forms.name, forms.url.trim(), opts);
 			if (entry) {
+				registeredUrl = forms.url.trim();
 				showDataEntry = entry;
 				showDialogType = null;
 				dropFile = null;
@@ -263,15 +309,14 @@
 	};
 
 	const cancel = () => {
+		disposed = true;
+		analysisVersion++;
+		loading = false;
 		showDialogType = null;
 		dropFile = null;
 		remotePmtilesUrl = null;
 	};
 </script>
-
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">PMTilesの登録</span>
-</div>
 
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
@@ -284,10 +329,17 @@
 		</div>
 	{:else}
 		<div class="flex w-full items-center gap-2">
-			<TextForm bind:value={forms.url} label="PMTiles URL" error={errors.url} />
+			<TextForm
+				bind:value={forms.url}
+				label="PMTiles URL"
+				error={errors.url}
+				onInput={invalidateAnalysis}
+			/>
 		</div>
 	{/if}
 
+	{#if loading}<p role="status" class="w-full text-sm">PMTilesを解析しています…</p>{/if}
+	{#if analysisError}<p role="alert" class="w-full text-sm text-red-300">{analysisError}</p>{/if}
 	{#if tileTypeLabel}
 		<div transition:slide class="w-full text-sm text-gray-300">
 			タイプ: {tileTypeLabel}
@@ -297,9 +349,9 @@
 	{#if isVector && vectorLayers.length > 0}
 		<div transition:slide class="w-full">
 			<div class="flex flex-col gap-1">
-				<label for="layer-select" class="text-sm text-gray-300">ソースレイヤーを選択</label>
+				<label for={`${id}-layer-select`} class="text-sm text-gray-300">ソースレイヤーを選択</label>
 				<select
-					id="layer-select"
+					id={`${id}-layer-select`}
 					bind:value={selectedLayerId}
 					onchange={() => {
 						const layer = vectorLayers.find((l) => l.id === selectedLayerId);
@@ -313,7 +365,7 @@
 					class="bg-sub rounded border border-gray-600 p-2 text-white"
 				>
 					<option value="" disabled>選択してください</option>
-					{#each vectorLayers as layer}
+					{#each vectorLayers as layer (layer.id)}
 						<option value={layer.id}>
 							{layer.id}
 							{#if layer.geometryType}
@@ -339,27 +391,27 @@
 	{/if}
 </div>
 
-<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+<div class="flex shrink-0 flex-wrap justify-center gap-3 pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={fetchAndAnalyze}
-		disabled={isDisabled || $isProcessing}
-		class="c-btn-confirm min-w-[150px] cursor-pointer p-4 text-lg {isDisabled || $isProcessing
+		disabled={isDisabled || loading}
+		class="c-btn-confirm min-w-[150px] cursor-pointer p-4 text-lg {isDisabled || loading
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>
-		{analyzed ? '再解析' : '決定'}
+		{loading ? '解析中…' : analyzed ? '再解析' : '解析'}
 	</button>
 	{#if analyzed}
 		<button
 			onclick={registration}
-			disabled={$isProcessing || (isVector && !selectedLayerId)}
-			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
+			disabled={loading || !forms.name.trim() || (isVector && !selectedLayerId)}
+			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {loading ||
 			(isVector && !selectedLayerId)
 				? 'cursor-not-allowed opacity-50'
 				: ''}"
 		>
-			決定
+			登録
 		</button>
 	{/if}
 </div>

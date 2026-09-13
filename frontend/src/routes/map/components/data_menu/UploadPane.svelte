@@ -212,7 +212,14 @@
 			type: 'pmtiles',
 			label: 'PMTiles',
 			description:
-				'PMTiles ファイルのURLです。単一ファイルで配信されるタイルデータを開くときに使います。',
+				'タイルを単一ファイルにまとめたデータです。URL入力またはローカルファイルから登録できます。',
+			icon: 'mdi:package-variant-closed'
+		},
+		{
+			type: 'mbtiles',
+			label: 'MBTiles',
+			description:
+				'タイルをSQLiteファイルにまとめたデータです。URL入力またはローカルファイルから登録できます。',
 			icon: 'mdi:package-variant-closed'
 		},
 		{
@@ -276,28 +283,28 @@
 		'HRIT/LRIT': 'mdi:satellite-variant',
 		'DXF / DWG': 'mdi:vector-square',
 		SIMA: 'mdi:ruler-square-compass',
-		DRM: 'mdi:road-variant',
 		DM: 'mdi:terrain',
 		LandXML: 'mdi:terrain',
 		法務局地図XML: 'mdi:map-legend',
+		DRM: 'mdi:road-variant',
+		GeoPDF: 'mdi:file-pdf-box',
 		'画像 (EXIF GPS)': 'mdi:image',
 		SVG: 'mdi:svg',
-		GeoPDF: 'mdi:file-pdf-box',
+		点群: 'mdi:chart-scatter-plot',
 		'GLB / GLTF': 'mdi:cube-outline',
 		'USD / USDZ': 'mdi:package-variant-closed',
-		VRM: 'mdi:account',
 		'Wavefront OBJ': 'mdi:cube-outline',
 		'Autodesk 3DS': 'mdi:cube-outline',
 		'Collada DAE': 'mdi:vector-combine',
 		'Rhino 3DM': 'mdi:alpha-r-box-outline',
 		'Autodesk FBX': 'mdi:cube-outline',
-		'MikuMikuDance PMX': 'mdi:account',
 		'Draco DRC': 'mdi:cube-outline',
 		'3D Manufacturing Format': 'mdi:printer-3d',
 		'Additive Manufacturing Format': 'mdi:printer-3d',
 		'Industry Foundation Classes': 'mdi:office-building-cog',
 		'BIM Collaboration Format': 'mdi:comment-question-outline',
-		点群: 'mdi:chart-scatter-plot'
+		'MikuMikuDance PMX': 'mdi:human',
+		VRM: 'mdi:human'
 	};
 
 	const formatListItems: FormatListItem[] = [
@@ -319,7 +326,9 @@
 					'ラスタータイル（フォルダ / ZIP）',
 					'MVT（フォルダ / ZIP）',
 					'MLT（フォルダ / ZIP）',
-					'3D Tiles（フォルダ / ZIP）'
+					'3D Tiles（フォルダ / ZIP）',
+					'PMTiles',
+					'MBTiles'
 				].includes(group.label)
 		).map((group) => ({
 			id: `file:${group.label}`,
@@ -502,7 +511,7 @@
 				{#each formatListItems as item (item.id)}
 					<button
 						onclick={() => openFormatItem(item)}
-						class="bg-base hover:bg-accent group relative flex min-h-[132px] cursor-pointer flex-col gap-2 overflow-hidden rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
+						class="bg-base hover:bg-accent group relative flex min-h-[160px] cursor-pointer flex-col gap-2 overflow-hidden rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
 					>
 						<Icon
 							icon={item.icon}
@@ -510,14 +519,14 @@
 						/>
 						<div class="flex flex-col gap-2 pr-8">
 							<span class="font-semibold">{item.label}</span>
-							<span class="text-xs leading-5 text-black/70 group-hover:text-white/80">
-								{item.description}
-							</span>
 							{#if item.kind === 'file'}
 								<span class="text-[11px] leading-4 text-black/55 group-hover:text-white/65">
 									対応拡張子: {item.extensions.join(' ')}
 								</span>
 							{/if}
+							<span class="text-xs leading-5 text-black/70 group-hover:text-white/80">
+								{item.description}
+							</span>
 						</div>
 					</button>
 				{/each}

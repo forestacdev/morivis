@@ -15,7 +15,6 @@ export type DialogProfile =
 	| 'remote-wmts'
 	| 'remote-geozarr'
 	| 'tiles'
-	| 'remote-pmtiles'
 	| 'wcs'
 	| 'tile-url-type'
 	| 'vector-georef';
@@ -90,10 +89,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/PointCloudForm.svelte'),
 		profile: 'pointcloud-georef'
 	},
-	mbtiles: {
-		load: () => import('$routes/map/components/upload/form/MBTilesForm.svelte'),
-		profile: 'drop-file'
-	},
+	mbtiles: tileDialog,
 	netcdf: {
 		load: () => import('$routes/map/components/upload/form/NetCDFForm.svelte'),
 		profile: 'raster-georef'
@@ -110,10 +106,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/DemXmlForm.svelte'),
 		profile: 'raster-georef'
 	},
-	pmtiles: {
-		load: () => import('$routes/map/components/upload/form/PmtilesForm.svelte'),
-		profile: 'remote-pmtiles'
-	},
+	pmtiles: tileDialog,
 	model: {
 		load: () => import('$routes/map/components/upload/form/MeshModelForm.svelte'),
 		profile: 'model-georef'

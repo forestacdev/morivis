@@ -4,6 +4,8 @@
 	import LocalMvtForm from './LocalMvtForm.svelte';
 	import LocalRasterTilesForm from './LocalRasterTilesForm.svelte';
 	import LocalTiles3DForm from './LocalTiles3DForm.svelte';
+	import MBTilesForm from './MBTilesForm.svelte';
+	import PmtilesForm from './PmtilesForm.svelte';
 	import RasterForm from './RasterForm.svelte';
 	import Tiles3DForm from './Tiles3DForm.svelte';
 	import VectorForm from './VectorForm.svelte';
@@ -21,6 +23,7 @@
 		remoteRasterUrl: string | null;
 		remoteVectorUrl: string | null;
 		remoteTiles3dUrl: string | null;
+		remotePmtilesUrl: string | null;
 	}
 	let {
 		showDataEntry = $bindable(),
@@ -28,23 +31,35 @@
 		dropFile = $bindable(),
 		remoteRasterUrl = $bindable(),
 		remoteVectorUrl = $bindable(),
-		remoteTiles3dUrl = $bindable()
+		remoteTiles3dUrl = $bindable(),
+		remotePmtilesUrl = $bindable()
 	}: Props = $props();
 
 	const id = $props.id();
 	const kind = $derived(
-		showDialogType === '3dtiles' || showDialogType === 'local-3dtiles'
-			? '3dtiles'
-			: showDialogType === 'raster' || showDialogType === 'local-raster-tiles'
-				? 'raster'
-				: 'vector'
+		showDialogType === 'pmtiles' || showDialogType === 'mbtiles'
+			? showDialogType
+			: showDialogType === '3dtiles' || showDialogType === 'local-3dtiles'
+				? '3dtiles'
+				: showDialogType === 'raster' || showDialogType === 'local-raster-tiles'
+					? 'raster'
+					: 'vector'
 	);
 	const title = $derived(
-		kind === '3dtiles' ? '3D Tiles' : kind === 'raster' ? 'ラスタータイル' : 'ベクタータイル'
+		kind === 'pmtiles'
+			? 'PMTiles'
+			: kind === 'mbtiles'
+				? 'MBTiles'
+				: kind === '3dtiles'
+					? '3D Tiles'
+					: kind === 'raster'
+						? 'ラスタータイル'
+						: 'ベクタータイル'
 	);
+	const isArchive = $derived(kind === 'pmtiles' || kind === 'mbtiles');
 	const files = $derived(toUploadFiles(dropFile));
 	let inputMode = $derived<'url' | 'file'>(
-		showDialogType?.startsWith('local-') && files.length > 0 ? 'file' : 'url'
+		(showDialogType?.startsWith('local-') || isArchive) && files.length > 0 ? 'file' : 'url'
 	);
 	const tabs = [
 		{ key: 'url', label: 'URL' },
@@ -52,9 +67,13 @@
 	] as const;
 	let selecting = $state(false);
 	let registering = $state(false);
+	let archiveUrlLoading = $state(false);
+	let archiveFileLoading = $state(false);
+	const busy = $derived(registering || archiveUrlLoading || archiveFileLoading);
 	let error = $state('');
-	let folderInput: HTMLInputElement;
-	let zipInput: HTMLInputElement;
+	let folderInput = $state<HTMLInputElement | null>(null);
+	let zipInput = $state<HTMLInputElement | null>(null);
+	let archiveInput = $state<HTMLInputElement | null>(null);
 	let active = true;
 	onDestroy(() => {
 		active = false;
@@ -67,6 +86,7 @@
 			remoteRasterUrl = null;
 			remoteVectorUrl = null;
 			remoteTiles3dUrl = null;
+			remotePmtilesUrl = null;
 		}
 		showDialogType = value;
 	};
@@ -75,7 +95,14 @@
 		const input = event.currentTarget as HTMLInputElement;
 		const incoming = Array.from(input.files ?? []);
 		input.value = '';
-		if (!incoming.length || selecting || registering) return;
+		if (!incoming.length || selecting || busy) return;
+		if (
+			isArchive &&
+			(incoming.length !== 1 || !incoming[0].name.toLowerCase().endsWith(`.${kind}`))
+		) {
+			error = `.${kind}ファイルを1つ選択してください。`;
+			return;
+		}
 		const requestedKind = kind;
 		const previousFiles = dropFile;
 		selecting = true;
@@ -86,13 +113,19 @@
 			if (!active || kind !== requestedKind || dropFile !== previousFiles) return;
 			if (decision.type === 'notification') throw new Error(decision.message);
 			const expected =
-				requestedKind === '3dtiles'
-					? ['local-3dtiles']
-					: requestedKind === 'raster'
-						? ['local-raster-tiles']
-						: ['local-mvt', 'local-mlt'];
+				requestedKind === 'pmtiles' || requestedKind === 'mbtiles'
+					? [requestedKind]
+					: requestedKind === '3dtiles'
+						? ['local-3dtiles']
+						: requestedKind === 'raster'
+							? ['local-raster-tiles']
+							: ['local-mvt', 'local-mlt'];
 			if (decision.type !== 'dialog' || !expected.includes(decision.dialogType ?? '')) {
-				throw new Error(`${title}のフォルダ、または階層を保ったZIPを選択してください。`);
+				throw new Error(
+					isArchive
+						? `${title}ファイルを選択してください。`
+						: `${title}のフォルダ、または階層を保ったZIPを選択してください。`
+				);
 			}
 			dropFile = decision.dropFiles ?? incoming;
 			showDialogType = decision.dialogType;
@@ -105,7 +138,7 @@
 	};
 
 	const handleTabKey = (event: KeyboardEvent) => {
-		if (registering || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+		if (busy || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
 		event.preventDefault();
 		inputMode =
 			event.key === 'Home'
@@ -130,7 +163,7 @@
 			<button
 				type="button"
 				role="tab"
-				disabled={registering}
+				disabled={busy}
 				id={`${id}-${tab.key}-tab`}
 				aria-controls={`${id}-${tab.key}-panel`}
 				aria-selected={inputMode === tab.key}
@@ -165,6 +198,24 @@
 				bind:registering
 				active={inputMode === 'url'}
 			/>
+		{:else if kind === 'pmtiles'}
+			<PmtilesForm
+				bind:showDataEntry
+				bind:showDialogType={() => showDialogType, setDialogType}
+				dropFile={null}
+				bind:remotePmtilesUrl
+				active={inputMode === 'url'}
+				bind:loading={archiveUrlLoading}
+			/>
+		{:else if kind === 'mbtiles'}
+			<MBTilesForm
+				bind:showDataEntry
+				bind:showDialogType={() => showDialogType, setDialogType}
+				dropFile={null}
+				source="url"
+				active={inputMode === 'url'}
+				bind:loading={archiveUrlLoading}
+			/>
 		{:else}
 			<VectorForm
 				bind:showDataEntry
@@ -181,50 +232,68 @@
 		class={inputMode === 'file' ? 'flex min-h-0 flex-col' : 'hidden'}
 	>
 		<div class="mb-4 flex shrink-0 flex-col gap-3 rounded border border-dashed border-gray-500 p-4">
-			<p class="text-sm">タイルのフォルダ、またはZIPをここにドロップしてください。</p>
-			<div class="flex flex-wrap gap-3">
+			{#if isArchive}
+				<p class="text-sm">{title}ファイルをここにドロップしてください。</p>
 				<button
 					type="button"
-					class="c-btn-sub px-4 py-2 disabled:opacity-50"
-					disabled={selecting || registering}
-					onclick={() => folderInput.click()}>フォルダを選択</button
+					class="c-btn-sub self-start px-4 py-2 disabled:opacity-50"
+					disabled={selecting || busy}
+					onclick={() => archiveInput?.click()}>ファイルを選択</button
 				>
-				<button
-					type="button"
-					class="c-btn-sub px-4 py-2 disabled:opacity-50"
-					disabled={selecting || registering}
-					onclick={() => zipInput.click()}>ZIPを選択</button
-				>
-			</div>
-			<input
-				bind:this={folderInput}
-				type="file"
-				webkitdirectory
-				multiple
-				class="hidden"
-				aria-label="タイルフォルダ"
-				onchange={selectFiles}
-			/>
-			<input
-				bind:this={zipInput}
-				type="file"
-				accept=".zip"
-				class="hidden"
-				aria-label="タイルZIP"
-				onchange={selectFiles}
-			/>
-			<p class="text-xs text-gray-400">
-				{#if kind === '3dtiles'}
-					tileset.jsonと、参照するモデル・テクスチャを含むフォルダ全体を選択してください。
-				{:else}
-					{kind === 'raster' ? 'PNG・JPEG・WebP' : 'MVT・PBF・MLT（gzip圧縮も可）'}。
-					{'{z}/{x}/{y}'}のフォルダ階層を保って選択してください。
-				{/if}
-			</p>
+				<input
+					bind:this={archiveInput}
+					type="file"
+					accept={`.${kind}`}
+					class="hidden"
+					aria-label={`${title}ファイル`}
+					onchange={selectFiles}
+				/>
+			{:else}
+				<p class="text-sm">タイルのフォルダ、またはZIPをここにドロップしてください。</p>
+				<div class="flex flex-wrap gap-3">
+					<button
+						type="button"
+						class="c-btn-sub px-4 py-2 disabled:opacity-50"
+						disabled={selecting || busy}
+						onclick={() => folderInput?.click()}>フォルダを選択</button
+					>
+					<button
+						type="button"
+						class="c-btn-sub px-4 py-2 disabled:opacity-50"
+						disabled={selecting || busy}
+						onclick={() => zipInput?.click()}>ZIPを選択</button
+					>
+				</div>
+				<input
+					bind:this={folderInput}
+					type="file"
+					webkitdirectory
+					multiple
+					class="hidden"
+					aria-label="タイルフォルダ"
+					onchange={selectFiles}
+				/>
+				<input
+					bind:this={zipInput}
+					type="file"
+					accept=".zip"
+					class="hidden"
+					aria-label="タイルZIP"
+					onchange={selectFiles}
+				/>
+				<p class="text-xs text-gray-400">
+					{#if kind === '3dtiles'}
+						tileset.jsonと、参照するモデル・テクスチャを含むフォルダ全体を選択してください。
+					{:else}
+						{kind === 'raster' ? 'PNG・JPEG・WebP' : 'MVT・PBF・MLT（gzip圧縮も可）'}。
+						{'{z}/{x}/{y}'}のフォルダ階層を保って選択してください。
+					{/if}
+				</p>
+			{/if}
 		</div>
 		{#if selecting}<p role="status" class="pb-3 text-sm">ファイルを確認しています…</p>{/if}
 		{#if error}<p role="alert" class="pb-3 text-sm text-red-300">{error}</p>{/if}
-		{#if files.length && showDialogType?.startsWith('local-')}
+		{#if files.length && (showDialogType?.startsWith('local-') || isArchive)}
 			{#if kind === 'raster'}
 				<LocalRasterTilesForm
 					bind:showDataEntry
@@ -238,6 +307,23 @@
 					bind:dropFile
 					bind:registering
 					active={inputMode === 'file'}
+				/>
+			{:else if kind === 'pmtiles'}
+				<PmtilesForm
+					bind:showDataEntry
+					bind:showDialogType={() => showDialogType, setDialogType}
+					bind:dropFile
+					remotePmtilesUrl={null}
+					active={inputMode === 'file'}
+					bind:loading={archiveFileLoading}
+				/>
+			{:else if kind === 'mbtiles'}
+				<MBTilesForm
+					bind:showDataEntry
+					bind:showDialogType={() => showDialogType, setDialogType}
+					bind:dropFile
+					active={inputMode === 'file'}
+					bind:loading={archiveFileLoading}
 				/>
 			{:else}
 				<LocalMvtForm
