@@ -37,6 +37,10 @@
 		getModelCoordinateMode,
 		resolveProjectedModelPlacementFromOrigin
 	} from '$routes/map/utils/three/model-georeference';
+	import {
+		getInitialModelPlacementViewport,
+		getInitialModelPlacementScale
+	} from '$routes/map/utils/three/model-initial-scale';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -815,6 +819,12 @@
 		const resolvedProjectedModelEpsg =
 			options?.projectedModelEpsg ??
 			(activeFormat === 'obj' ? detectedProjectedModelEpsg : undefined);
+		// 読み込み中の地図移動に左右されないよう、配置開始時のカメラとビューポートを保持する。
+		const initialPlacementMap = mapStore.getMap();
+		const initialPlacementViewport =
+			requiresModelPlacement && !resolvedProjectedModelEpsg && initialPlacementMap
+				? getInitialModelPlacementViewport(initialPlacementMap)
+				: undefined;
 		const blobUrl = URL.createObjectURL(glbFile);
 		const center = mapStore.getCenter();
 		let resolvedMtlUrl: string | undefined;
@@ -985,11 +995,27 @@
 			if (uploadedModelMeta.scaleMultiplier !== 1) {
 				entry.style.transform.baseScale =
 					(entry.style.transform.baseScale ?? 1) * uploadedModelMeta.scaleMultiplier;
-				showNotification('小さいモデルのため拡大して表示します', 'info');
+				if (initialPlacementViewport === undefined)
+					showNotification('小さいモデルのため拡大して表示します', 'info');
 			}
 			entry.metaData.bounds = uploadedModelMeta.bounds;
 			entry.metaData.xyzImageTile = uploadedModelMeta.xyzImageTile;
 			entry.format.localBounds = uploadedModelMeta.localBounds;
+			if (initialPlacementViewport !== undefined && !uploadedModelMeta.resolvedPlacement) {
+				Object.assign(
+					entry.style.transform,
+					getInitialModelPlacementScale(
+						uploadedModelMeta.localBounds,
+						initialPlacementViewport,
+						entry.style.transform
+					)
+				);
+				entry.metaData.bounds = getModelGeoBoundsFromLocalBounds(
+					uploadedModelMeta.localBounds,
+					entry.style
+				);
+				entry.metaData.xyzImageTile = findCenterTile(entry.metaData.bounds);
+			}
 
 			if (!import.meta.env.PROD) {
 				console.info('[model-entry] created', {
