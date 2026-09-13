@@ -45,8 +45,8 @@ import {
 	isHighlightLayerId,
 	scheduleHighlightAnimationWarmup
 } from '$routes/map/utils/layers/highlight';
+import { configureInertialScrollZoom } from '$routes/map/utils/platform/inertial-scroll-zoom';
 import {
-	configureProgressiveScrollZoom,
 	createMapOptions,
 	DRAG_PITCH_DEGREES_PER_PIXEL,
 	DRAG_ROTATE_DEGREES_PER_PIXEL
@@ -415,7 +415,7 @@ const createMapStore = () => {
 		isDeckOverlayAdded = false;
 
 		map = new maplibregl.Map(createMapOptions(mapContainer, mapPosition));
-		configureProgressiveScrollZoom(map);
+		configureInertialScrollZoom(map);
 
 		if (get(isDebugMode)) {
 			// map.showTileBoundaries = true; // タイルの境界を表示
