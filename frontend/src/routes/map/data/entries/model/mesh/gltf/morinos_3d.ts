@@ -132,7 +132,7 @@ const entry = {
 				]
 			},
 			'341e0e34-68a2-40b7-91d9-60d0b46d1e63': {
-				name: '格子',
+				name: 'ランダム格子',
 				description:
 					'morinosの収納庫は普通の壁ではなく「木の格子」。向こう側が見えて、光と空気が行き来できるようになっています。あと、中が見えているのでいつも綺麗に片付けながら運用する効果も狙っているのです。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi14/',
@@ -140,6 +140,14 @@ const entry = {
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1153%E3%81%AE%E3%82%B3%E3%83%94%E3%83%BC-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_4670-2-scaled.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1292-scaled.jpg'
 					},
 					{
 						type: 'image',
@@ -165,8 +173,7 @@ const entry = {
 			},
 			houtate: {
 				name: '樹皮付き方立',
-				description:
-					'方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
+				description: '方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi3/',
 				medias: [
 					{
@@ -181,8 +188,7 @@ const entry = {
 			},
 			'77164639-4feb-49d5-b86e-af26be2296c0': {
 				name: 'ガラスコーナー',
-				description:
-					'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
+				description: 'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi4/',
 				medias: [
 					{
@@ -422,6 +428,54 @@ const entry = {
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1068-720x480.jpg'
+					}
+				]
+			},
+			cane: {
+				name: '方杖',
+				description:
+					'白い薄化粧の丸太から伸びるヒノキ（無塗装）の方づえ。「ひかり付け」の技法のように波打つ丸太表面にピタッと大入れで差し込まれています。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi23/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1450-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1264-720x721.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1487-720x1080.jpg'
+					}
+				]
+			},
+			'9466d565-e516-47b6-9338-a7d58bef08fb': {
+				name: '小さな豆型テーブル',
+				description:
+					'テーブルは小さく丸っこい豆型。お子さんが木のおもちゃで遊んだり、お弁当や水筒を置いたりしやすい高さです。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi23/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/04/IMG_2948-scaled.jpeg'
+					}
+				]
+			},
+			'b7278802-3603-4dd9-b6ce-aed08e9083b2': {
+				name: '収納棚',
+				description:
+					'収納棚です。お子さんが使いやすい高さに設計されており、木のおもちゃや学用品を整理するのに便利です。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi16/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_0933-4-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1330-720x480.jpg'
 					}
 				]
 			}
