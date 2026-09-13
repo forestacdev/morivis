@@ -11,7 +11,8 @@ export interface ModelPlacementViewport {
 	terrainEnabled: boolean;
 }
 
-const VIEWPORT_FRACTION = 0.4;
+/** ビューポート短辺に対する初期表示サイズの割合。 */
+export const VIEWPORT_FRACTION = 0.4;
 
 /** 公開カメラ設定から、three.jsのMercator描画と同じ投影を保存する。地理的な2D boundsは使わない。 */
 export const getInitialModelPlacementViewport = (map: Map): ModelPlacementViewport => {
@@ -42,7 +43,7 @@ export const getInitialModelPlacementViewport = (map: Map): ModelPlacementViewpo
 	return { width, height, worldToClip, terrainEnabled: Boolean(map.getTerrain()) };
 };
 
-/** 回転・高さ・奥行き込みの8頂点を画面へ投影し、短辺の15％以内に収まる倍率を求める。 */
+/** 回転・高さ・奥行き込みの8頂点を画面へ投影し、短辺に対する設定割合以内に収まる倍率を求める。 */
 export const getInitialModelPlacementScale = (
 	localBounds: ModelLocalBounds,
 	viewport: ModelPlacementViewport,

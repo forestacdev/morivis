@@ -5,7 +5,8 @@ import { describe, expect, it } from 'vitest';
 import { buildMercatorModelMatrix } from './mercator-model-matrix';
 import {
 	getInitialModelPlacementScale,
-	getInitialModelPlacementViewport
+	getInitialModelPlacementViewport,
+	VIEWPORT_FRACTION
 } from './model-initial-scale';
 import { getEffectiveModelScale } from './model-scale';
 
@@ -59,8 +60,8 @@ const getScreenSize = (map: Map, localBounds = bounds, initialTransform = transf
 };
 
 describe('3D boundsから決めるモデルの初期スケール', () => {
-	it.each([0, 45, 70, 85])('ピッチ %s 度でも画面短辺の15％に収まる', pitch => {
-		expect(getScreenSize(createMap(pitch)).size).toBeCloseTo(90, 3);
+	it.each([0, 45, 70, 85])('ピッチ %s 度でも画面短辺に対する設定割合に収まる', pitch => {
+		expect(getScreenSize(createMap(pitch)).size).toBeCloseTo(600 * VIEWPORT_FRACTION, 3);
 	});
 	it('ズームを1段拡大すると初期倍率が半分になり、画面上の大きさは変わらない', () => {
 		const initial = getScreenSize(createMap(60, 16));
@@ -69,7 +70,10 @@ describe('3D boundsから決めるモデルの初期スケール', () => {
 		expect(zoomed.size).toBeCloseTo(initial.size, 3);
 	});
 	it('縦長のビューポートでは横幅に合わせる', () => {
-		expect(getScreenSize(createMap(60, 16, 400, 800)).size).toBeCloseTo(60, 3);
+		expect(getScreenSize(createMap(60, 16, 400, 800)).size).toBeCloseTo(
+			400 * VIEWPORT_FRACTION,
+			3
+		);
 	});
 	it('同じ底面でも高さのあるモデルは小さい倍率にする', () => {
 		const map = createMap(70);
@@ -82,7 +86,10 @@ describe('3D boundsから決めるモデルの初期スケール', () => {
 		const base = getScreenSize(map);
 		const converted = getScreenSize(map, bounds, { ...transform, baseScale: 0.001 });
 		expect(converted.scale * 0.001).toBeCloseTo(base.scale, 4);
-		expect(getScreenSize(map, bounds, { ...transform, rotationZ: 45 }).size).toBeCloseTo(90, 3);
+		expect(getScreenSize(map, bounds, { ...transform, rotationZ: 45 }).size).toBeCloseTo(
+			600 * VIEWPORT_FRACTION,
+			3
+		);
 	});
 	it('空の3D範囲やサイズ0のビューポートでは元の倍率を維持する', () => {
 		const original = { ...transform, scale: 2, scaleUnit: -3 };
