@@ -105,6 +105,7 @@ export type DialogType =
 	| '3dtiles'
 	| 'local-3dtiles'
 	| 'local-mvt'
+	| 'local-mlt'
 	| 'local-raster-tiles'
 	| 'pmtiles'
 	| 'model'
@@ -308,6 +309,12 @@ export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = [
 		description:
 			'階層フォルダに分割したベクタータイルです。{z}/{x}/{y}の階層を保ったフォルダを読み込むときに使います。',
 		extensions: ['.mvt', '.pbf', '.mvt.gz', '.pbf.gz']
+	},
+	{
+		label: 'MLT（フォルダ / ZIP）',
+		description:
+			'MapLibre形式のベクタータイルです。{z}/{x}/{y}の階層を保ったフォルダを読み込むときに使います。',
+		extensions: ['.mlt', '.mlt.gz']
 	},
 	{
 		label: 'MBTiles',

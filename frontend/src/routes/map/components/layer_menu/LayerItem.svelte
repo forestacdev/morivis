@@ -169,7 +169,7 @@
 		if (copy.type === 'model' && copy.format.type === '3d-tiles') {
 			retainLocalTilesetEntry(copy.id, copy.format.url);
 		}
-		if (copy.type === 'vector' && copy.format.type === 'mvt') {
+		if (copy.type === 'vector' && (copy.format.type === 'mvt' || copy.format.type === 'mlt')) {
 			retainLocalMvtEntry(copy.id, copy.format.url);
 		}
 		if (copy.type === 'raster' && copy.format.type === 'image') {

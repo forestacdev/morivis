@@ -6,6 +6,7 @@ import {
 	type SourceSpecification,
 	type VectorSourceSpecification
 } from '$routes/map/utils/maplibre';
+import { createVectorTileSource } from './vector-tiles';
 
 import type {
 	DemRangeColorStyle,
@@ -622,16 +623,8 @@ export const createSourcesItems = async (
 							// lineMetrics: true // ラインの長さをメートルで取得 重たい場合は削除
 							// TODO: 線のグラデーションをする場合は以下を追加
 						} as GeoJSONSourceSpecification;
-					} else if (format.type === 'mvt') {
-						items[sourceId] = {
-							type: 'vector',
-							tiles: [format.url],
-							maxzoom: metaData.maxZoom,
-							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
-							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
-							attribution: metaData.attribution,
-							bounds: metaData.bounds
-						} as VectorSourceSpecification;
+					} else if (format.type === 'mvt' || format.type === 'mlt') {
+						items[sourceId] = createVectorTileSource(entry);
 					} else if (format.type === 'pmtiles') {
 						const pmtilesUrl = resolveRequestUrl(format.url);
 						items[sourceId] = {

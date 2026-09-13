@@ -1,3 +1,4 @@
+import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
 import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
 import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
@@ -560,6 +561,7 @@ export const resolveDroppedFiles = async (
 	if (await isLocalRasterTileInput(files)) {
 		return createDialogDecision('local-raster-tiles', files);
 	}
+	if (files.some(isMltFile)) return createDialogDecision('local-mlt', files);
 	if (isLocalMvtInput(files)) return createDialogDecision('local-mvt', files);
 	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。
 	const cityGmlCandidates = files.filter((file) => /\.(?:gml|xml|citygml)$/i.test(file.name));

@@ -42,7 +42,7 @@ export const inspectLocalTileFolder = async (
 	const tileFiles = files.filter(options.isTileFile);
 	if (!tileFiles.length) {
 		throw new Error(
-			'タイルがありません。画像やMVTを含むフォルダ全体をドロップしてください。'
+			'タイルがありません。画像やベクタータイルを含むフォルダ全体をドロップしてください。'
 		);
 	}
 	const tiles = new Map<string, File>();

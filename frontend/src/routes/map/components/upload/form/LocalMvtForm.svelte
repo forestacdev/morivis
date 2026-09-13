@@ -6,6 +6,7 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import { registerLocalMvt, retainLocalMvtEntry } from '$routes/map/protocol/vector/local-mvt';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
+	import { inspectLocalMlt } from '$routes/map/utils/formats/mlt';
 	import { inspectLocalMvt, type LocalMvtSource } from '$routes/map/utils/formats/mvt';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import {
@@ -25,6 +26,8 @@
 		dropFile = $bindable()
 	}: Props = $props();
 	const files = $derived(toUploadFiles(dropFile));
+	const format = $derived(showDialogType === 'local-mlt' ? 'mlt' : 'mvt');
+	const formatLabel = $derived(format.toUpperCase());
 	let source = $state.raw<LocalMvtSource | null>(null);
 	let name = $state('');
 	let selectedLayer = $state('');
@@ -46,7 +49,7 @@
 		source = null;
 		loading = true;
 		error = '';
-		inspectLocalMvt(input)
+		(format === 'mlt' ? inspectLocalMlt(input) : inspectLocalMvt(input))
 			.then((result) => {
 				if (!active) return;
 				source = result;
@@ -72,6 +75,7 @@
 		try {
 			const fields = buildVectorTileFields(layer.fields);
 			const entry = createVectorTileEntry(name.trim(), runtime.url, layer.id, geometry, undefined, {
+				format,
 				bounds: source.bounds,
 				minZoom: source.minZoom,
 				maxZoom: source.maxZoom,
@@ -79,7 +83,7 @@
 				popupKeys: buildVectorTilePopupKeys(fields),
 				titles: buildVectorTileTitles(fields, name.trim())
 			});
-			if (!entry) throw new Error('MVTレイヤーを作成できませんでした。');
+			if (!entry) throw new Error(`${formatLabel}レイヤーを作成できませんでした。`);
 			retainLocalMvtEntry(entry.id, runtime.url);
 			showDataEntry = entry;
 			dropFile = null;
@@ -95,7 +99,7 @@
 	};
 </script>
 
-<div class="pb-4 text-2xl font-bold">MVTフォルダの登録</div>
+<div class="pb-4 text-2xl font-bold">{formatLabel}フォルダの登録</div>
 <div class="c-scroll flex w-full grow flex-col gap-4 overflow-y-auto">
 	{#if loading}<p role="status">タイルの構成を確認しています…</p>{/if}
 	{#if source}
