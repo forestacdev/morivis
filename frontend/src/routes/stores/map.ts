@@ -103,6 +103,7 @@ import {
 } from '$routes/map/utils/icon';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { getSinglePointFocus } from '$routes/map/utils/map/focus-layer';
+import { getModelFocusCamera } from '$routes/map/utils/map/focus-model';
 import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { LayersList } from '@deck.gl/core';
@@ -1312,6 +1313,12 @@ const createMapStore = () => {
 
 	const focusLayer = async (_entry: MorivisLayerEntry) => {
 		if (!map || !isMapValid(map)) return;
+
+		const modelCamera = getModelFocusCamera(_entry, map);
+		if (modelCamera) {
+			map.flyTo({ ...modelCamera, duration: 1000, easing: MAP_EASING });
+			return;
+		}
 
 		// 現在の中心とターゲットの距離に応じてdurationを調整
 		const currentCenter = map.getCenter();

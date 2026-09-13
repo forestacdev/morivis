@@ -173,8 +173,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'wmts',
 		dialogType: 'wmts',
 		label: 'WMS/WMTS',
-		description:
-			'地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
+		description: '地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
 		icon: 'mdi:layers-outline',
 		extensions: []
 	},
@@ -236,8 +235,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'stac',
 		dialogType: 'stac',
 		label: 'STAC / COG',
-		description:
-			'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
+		description: 'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
 		icon: 'mdi:image-multiple',
 		extensions: []
 	},
@@ -461,8 +459,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'grib2',
 		label: 'GRIB2 (GPV)',
 		icon: 'mdi:weather-windy',
-		description:
-			'気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
+		description: '気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
 		extensions: ['.grib2', '.grb2', '.grb', '.bin']
 	},
 	{
@@ -523,8 +520,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'dm',
 		label: 'DM',
 		icon: 'mdi:terrain',
-		description:
-			'数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
+		description: '数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
 		extensions: ['.dm']
 	},
 	{
@@ -555,8 +551,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'svg',
 		label: 'SVG',
 		icon: 'mdi:svg',
-		description:
-			'ベクター図形をXMLで記述した画像形式です。図面やイラストを画像としてジオリファレンスして重ねるときに使います。',
+		description: 'ベクター図形をXMLで記述した画像形式です。',
 		extensions: ['.svg']
 	},
 	{
@@ -568,11 +563,17 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.pdf']
 	},
 	{
+		id: 'pointcloud',
+		label: '点群',
+		icon: 'mdi:chart-scatter-plot',
+		description: '多数の座標点で構成された3Dデータです。',
+		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
+	},
+	{
 		id: 'glb',
 		label: 'GLB / GLTF',
 		icon: 'mdi:cube-outline',
-		description:
-			'3Dモデルの形状、材質、テクスチャ、アニメーションなどを記録するファイルです。GLTFはJSONと外部リソースで構成され、GLBは同じ内容を単一のバイナリファイルにまとめます。',
+		description: '3Dモデルの形状、材質、テクスチャ、アニメーションなどを記録するファイルです。',
 		extensions: ['.glb', '.gltf']
 	},
 	{
@@ -583,14 +584,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 			'Pixar USDの3Dシーン形式です。USDZアーカイブ、テキスト形式のUSD/USDA、バイナリ形式のUSDCモデルを読み込みます。',
 		extensions: ['.usd', '.usda', '.usdz']
 	},
-	{
-		id: 'vrm',
-		label: 'VRM',
-		icon: 'mdi:human',
-		description:
-			'人型アバターのモデル形式です。表情、骨格、揺れ物などを持つVRMモデルを読み込むときに使います。',
-		extensions: ['.vrm']
-	},
+
 	{
 		id: 'obj',
 		label: 'Wavefront OBJ',
@@ -602,8 +596,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: '3ds',
 		label: 'Autodesk 3DS',
 		icon: 'mdi:cube-outline',
-		description:
-			'3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
+		description: '3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
 		extensions: ['.3ds']
 	},
 	{
@@ -629,14 +622,6 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.fbx']
 	},
 	{
-		id: 'pmx',
-		label: 'MikuMikuDance PMX',
-		icon: 'mdi:human',
-		description:
-			'MikuMikuDanceで使う3Dモデル形式です。キャラクターなどのスキニング済みモデルを読み込むときに使います。',
-		extensions: ['.pmx']
-	},
-	{
 		id: 'drc',
 		label: 'Draco DRC',
 		icon: 'mdi:cube-outline',
@@ -660,7 +645,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	{
 		id: 'stl',
 		label: 'STL',
-		icon: 'mdi:file-outline',
+		icon: 'mdi:cube-outline',
 		description:
 			'三角形メッシュで形状を表す3Dモデル形式です。ASCII形式とバイナリ形式の造形データを読み込むときに使います。',
 		extensions: ['.stl']
@@ -682,12 +667,20 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.bcf']
 	},
 	{
-		id: 'pointcloud',
-		label: '点群',
-		icon: 'mdi:chart-scatter-plot',
+		id: 'vrm',
+		label: 'VRM',
+		icon: 'mdi:human',
 		description:
-			'多数の座標点で構成された3Dデータです。LAS/LAZ や COPC、各種点群テキストを表示するときに使います。3D Gaussian Splatting の通常PLYは自動判別します。',
-		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
+			'人型アバターのモデル形式です。表情、骨格、揺れ物などを持つVRMモデルを読み込むときに使います。',
+		extensions: ['.vrm']
+	},
+	{
+		id: 'pmx',
+		label: 'MikuMikuDance PMX',
+		icon: 'mdi:human',
+		description:
+			'MikuMikuDanceで使う3Dモデル形式です。キャラクターなどのスキニング済みモデルを読み込むときに使います。',
+		extensions: ['.pmx']
 	}
 ];
 
@@ -729,7 +722,7 @@ export interface PoiHighlightMarkerState {
 	type: 'poi';
 	featureId: string | number;
 	point: [number, number];
-	properties: { [key: string]: any; };
+	properties: { [key: string]: any };
 	iconImage?: string | null;
 }
 
