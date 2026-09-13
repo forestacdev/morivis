@@ -68,6 +68,7 @@ describe('getLayerFeaturePanelSummary', () => {
 				source: 'static'
 			},
 			timberSpecies: {
+				name: 'test-species',
 				url: 'https://example.test/timber/test-species',
 				distribution: 'test distribution',
 				nameEn: 'test species'

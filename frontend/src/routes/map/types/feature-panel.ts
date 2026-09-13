@@ -80,6 +80,7 @@ export interface FeaturePanelAudioMedia {
 }
 
 export interface TimberSpecies {
+	name: string;
 	url: string;
 	distribution?: string;
 	nameEn?: string;

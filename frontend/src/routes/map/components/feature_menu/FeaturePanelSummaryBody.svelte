@@ -122,7 +122,7 @@
 		<!-- 木材の情報 -->
 		{#if summary.timberSpecies}
 			<div class="bg-sub mt-2 flex flex-col gap-2 rounded-lg p-3 py-2">
-				<span class="text-base">木材</span>
+				<span class="text-base">木材：{summary.timberSpecies.name}</span>
 				<div class="flex flex-col gap-3">
 					<div class="flex items-center justify-center gap-4">
 						<div
