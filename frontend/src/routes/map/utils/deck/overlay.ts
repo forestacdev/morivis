@@ -97,7 +97,10 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 			...(isLocalTilesetUrl(dataEntry.format.url)
 				? { fetch: fetchLocalTilesetResource }
 				: {}),
-			'3d-tiles': { decodeQuantizedPositions: true }
+			'3d-tiles': { decodeQuantizedPositions: true },
+			// loaders.gl 4.3の文字列配列属性デコーダーは未実装で、タイル全体が失敗する。
+			// 描画には未使用のため生の属性を保持する。現行APIではfalseがデコード除外。
+			gltf: { excludeExtensions: { EXT_structural_metadata: false } }
 		},
 		onTileLoad: (tile: Tile3D) => {
 			sanitizeScenegraphGltfForDeck(tile.content?.gltf);

@@ -1,4 +1,9 @@
-import { getLocalFilePath, isTileset, readLocalTileset } from '../formats/tiles3d';
+import {
+	getLocalFilePath,
+	isTileset,
+	readLocalTileset,
+	readLocalTilesetBody
+} from '../formats/tiles3d';
 
 // 相対URLをloaders.glが解決できる仮想URL。通信せず、このモジュールでFileへ解決する。
 const LOCAL_ORIGIN = 'https://morivis-local.invalid';
@@ -64,7 +69,9 @@ export const fetchLocalTilesetResource = async (
 			}`
 		);
 	}
-	const response = new Response(file, { headers: { 'Content-Type': getMimeType(file) } });
+	const body = await readLocalTilesetBody(file);
+	init?.signal?.throwIfAborted();
+	const response = new Response(body, { headers: { 'Content-Type': getMimeType(file) } });
 	Object.defineProperty(response, 'url', { value: url });
 	return response;
 };
@@ -121,7 +128,7 @@ export const registerLocalTileset = async (files: File[], rootFile: File) => {
 						);
 					}
 					if (/\.json$/i.test(file.name) && !visited.has(target)) {
-						await validate(JSON.parse(await file.text()), target);
+						await validate(await readLocalTileset(file), target);
 					}
 				}
 				if (Array.isArray(node.children)) nodes.push(...node.children);
