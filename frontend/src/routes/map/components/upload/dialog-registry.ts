@@ -14,8 +14,7 @@ export type DialogProfile =
 	| 'feature-service'
 	| 'remote-wmts'
 	| 'remote-geozarr'
-	| 'remote-raster'
-	| 'remote-vector'
+	| 'tiles'
 	| 'remote-3dtiles'
 	| 'remote-pmtiles'
 	| 'wcs'
@@ -27,6 +26,11 @@ export interface DialogDefinition {
 	profile: DialogProfile;
 	fixedHeight?: boolean;
 }
+
+const tileDialog: DialogDefinition = {
+	load: () => import('$routes/map/components/upload/form/TileForm.svelte'),
+	profile: 'tiles'
+};
 
 export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDefinition>> = {
 	wmts: {
@@ -73,10 +77,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/XlsxForm.svelte'),
 		profile: 'vector-zone-georef'
 	},
-	raster: {
-		load: () => import('$routes/map/components/upload/form/RasterForm.svelte'),
-		profile: 'remote-raster'
-	},
+	raster: tileDialog,
 	tileurltype: {
 		load: () => import('$routes/map/components/upload/form/TileUrlTypeForm.svelte'),
 		profile: 'tile-url-type'
@@ -89,18 +90,9 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/LocalTiles3DForm.svelte'),
 		profile: 'drop-file'
 	},
-	'local-mvt': {
-		load: () => import('$routes/map/components/upload/form/LocalMvtForm.svelte'),
-		profile: 'drop-file'
-	},
-	'local-mlt': {
-		load: () => import('$routes/map/components/upload/form/LocalMvtForm.svelte'),
-		profile: 'drop-file'
-	},
-	'local-raster-tiles': {
-		load: () => import('$routes/map/components/upload/form/LocalRasterTilesForm.svelte'),
-		profile: 'drop-file'
-	},
+	'local-mvt': tileDialog,
+	'local-mlt': tileDialog,
+	'local-raster-tiles': tileDialog,
 	pointcloud: {
 		load: () => import('$routes/map/components/upload/form/PointCloudForm.svelte'),
 		profile: 'pointcloud-georef'
@@ -153,10 +145,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/SvgForm.svelte'),
 		profile: 'vector-georef'
 	},
-	vector: {
-		load: () => import('$routes/map/components/upload/form/VectorForm.svelte'),
-		profile: 'remote-vector'
-	},
+	vector: tileDialog,
 	geojson: {
 		load: () => import('$routes/map/components/upload/form/GeoJsonForm.svelte'),
 		profile: 'vector-zone-georef'

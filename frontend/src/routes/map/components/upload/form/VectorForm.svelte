@@ -144,10 +144,6 @@
 	};
 </script>
 
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">ベクタータイルの登録</span>
-</div>
-
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-2 overflow-x-hidden overflow-y-auto"
 >

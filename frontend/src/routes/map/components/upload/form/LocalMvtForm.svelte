@@ -99,7 +99,6 @@
 	};
 </script>
 
-<div class="pb-4 text-2xl font-bold">{formatLabel}フォルダの登録</div>
 <div class="c-scroll flex w-full grow flex-col gap-4 overflow-y-auto">
 	{#if loading}<p role="status">タイルの構成を確認しています…</p>{/if}
 	{#if source}

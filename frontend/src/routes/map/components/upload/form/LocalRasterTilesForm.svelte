@@ -79,7 +79,6 @@
 	};
 </script>
 
-<div class="pb-4 text-2xl font-bold">ラスタータイルの登録</div>
 <div class="c-scroll flex w-full grow flex-col gap-4 overflow-y-auto">
 	<TextForm bind:value={name} label="データ名" />
 	<label class="flex flex-col gap-2 text-sm">

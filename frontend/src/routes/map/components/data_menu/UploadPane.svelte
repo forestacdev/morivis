@@ -166,19 +166,18 @@
 				accept: string;
 		  };
 
-	const urlDialogs: DialogFormat[] = [
+	const sourceDialogs: DialogFormat[] = [
 		{
 			type: 'raster',
-			label: 'XYZタイル',
-			description:
-				'画像タイルのURLテンプレートです。背景地図やオルソ画像を表示するときに使います。',
+			label: 'ラスタータイル',
+			description: '画像や標高のタイルデータです。URL入力またはフォルダ・ZIPから登録できます。',
 			icon: 'mdi:map-outline'
 		},
 		{
 			type: 'vector',
 			label: 'ベクタータイル',
 			description:
-				'ベクタータイルのURLテンプレートです。属性を持つタイルデータを表示するときに使います。',
+				'属性を持つベクタータイルです。URL入力またはMVT・MLTのフォルダ・ZIPから登録できます。',
 			icon: 'mdi:vector-polygon'
 		},
 		{
@@ -302,7 +301,7 @@
 	};
 
 	const formatListItems: FormatListItem[] = [
-		...urlDialogs.map((dialog) => ({
+		...sourceDialogs.map((dialog) => ({
 			...dialog,
 			id: `dialog:${dialog.type}`,
 			kind: 'dialog' as const
@@ -313,7 +312,14 @@
 			kind: 'dialog' as const
 		})),
 		...SUPPORTED_FILE_GROUPS.filter(
-			(group) => group.label !== 'GeoJSON' && group.label !== 'WKT'
+			(group) =>
+				![
+					'GeoJSON',
+					'WKT',
+					'ラスタータイル（フォルダ / ZIP）',
+					'MVT（フォルダ / ZIP）',
+					'MLT（フォルダ / ZIP）'
+				].includes(group.label)
 		).map((group) => ({
 			id: `file:${group.label}`,
 			kind: 'file' as const,

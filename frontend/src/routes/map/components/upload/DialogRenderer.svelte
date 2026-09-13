@@ -145,10 +145,14 @@
 			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteWmtsUrl />
 		{:else if profile === 'remote-geozarr'}
 			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteGeoZarrUrl />
-		{:else if profile === 'remote-raster'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteRasterUrl />
-		{:else if profile === 'remote-vector'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteVectorUrl />
+		{:else if profile === 'tiles'}
+			<FormComponent
+				bind:showDataEntry
+				bind:showDialogType
+				bind:dropFile
+				bind:remoteRasterUrl
+				bind:remoteVectorUrl
+			/>
 		{:else if profile === 'remote-3dtiles'}
 			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteTiles3dUrl />
 		{:else if profile === 'remote-pmtiles'}
