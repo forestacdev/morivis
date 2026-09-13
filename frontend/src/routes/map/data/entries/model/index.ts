@@ -17,7 +17,6 @@ import type {
 	Tiles3DMeshStyle
 } from '$routes/map/data/types/model';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-import type { FeatureCollection } from '$routes/map/types/geojson';
 import { getModelBaseRotationX } from '$routes/map/utils/three/model-axis';
 import { normalizeModelScale } from '$routes/map/utils/three/model-scale';
 import type { Table } from 'apache-arrow';
@@ -146,7 +145,7 @@ export const createGeoArrowEntry = (
 
 export const createGeoJson3DEntry = (
 	name: string,
-	data: FeatureCollection,
+	data: GeoJson3DEntry['format']['data'],
 	geometryType: VectorEntryGeometryType,
 	bounds?: [number, number, number, number]
 ): GeoJson3DEntry => ({

@@ -732,6 +732,7 @@ export const createVectorTileEntry = (
 	entryGeometryType: VectorEntryGeometryType,
 	color: string = getRandomColor(),
 	options?: {
+		format?: 'mvt' | 'mlt';
 		bounds?: [number, number, number, number];
 		minZoom?: number;
 		maxZoom?: number;
@@ -780,19 +781,19 @@ export const createVectorTileEntry = (
 	if (entryGeometryType === 'Point') {
 		return {
 			...baseEntry,
-			format: { type: 'mvt' as const, geometryType: 'Point' as const, url },
+			format: { type: options?.format ?? 'mvt', geometryType: 'Point' as const, url },
 			style: style as PointStyle
 		};
 	} else if (entryGeometryType === 'LineString') {
 		return {
 			...baseEntry,
-			format: { type: 'mvt' as const, geometryType: 'LineString' as const, url },
+			format: { type: options?.format ?? 'mvt', geometryType: 'LineString' as const, url },
 			style: style as LineStringStyle
 		};
 	} else if (entryGeometryType === 'Polygon') {
 		return {
 			...baseEntry,
-			format: { type: 'mvt' as const, geometryType: 'Polygon' as const, url },
+			format: { type: options?.format ?? 'mvt', geometryType: 'Polygon' as const, url },
 			style: style as PolygonStyle
 		};
 	}

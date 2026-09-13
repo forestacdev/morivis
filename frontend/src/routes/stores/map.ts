@@ -45,8 +45,8 @@ import {
 	isHighlightLayerId,
 	scheduleHighlightAnimationWarmup
 } from '$routes/map/utils/layers/highlight';
+import { configureInertialScrollZoom } from '$routes/map/utils/platform/inertial-scroll-zoom';
 import {
-	configureProgressiveScrollZoom,
 	createMapOptions,
 	DRAG_PITCH_DEGREES_PER_PIXEL,
 	DRAG_ROTATE_DEGREES_PER_PIXEL
@@ -71,10 +71,15 @@ import {
 } from '$routes/map/data/types/model';
 import { mbtilesProtocol } from '$routes/map/protocol/mbtiles';
 import {
+	LOCAL_RASTER_TILE_PROTOCOL,
+	requestLocalRasterTile
+} from '$routes/map/protocol/raster/local-tiles';
+import {
 	esriFeatureProtocol,
 	terminateEsriFeatureWorker
 } from '$routes/map/protocol/vector/esri-feature';
 import { geojsonProtocol, terminateGeojsonWorker } from '$routes/map/protocol/vector/geojson';
+import { LOCAL_MVT_PROTOCOL, requestLocalMvt } from '$routes/map/protocol/vector/local-mvt';
 import {
 	ogcFeatureProtocol,
 	terminateOgcFeatureWorker
@@ -98,6 +103,7 @@ import {
 } from '$routes/map/utils/icon';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { getSinglePointFocus } from '$routes/map/utils/map/focus-layer';
+import { getModelFocusCamera } from '$routes/map/utils/map/focus-model';
 import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 import type { LayersList } from '@deck.gl/core';
@@ -106,6 +112,8 @@ import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'ge
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
+maplibregl.addProtocol(LOCAL_MVT_PROTOCOL, requestLocalMvt);
+maplibregl.addProtocol(LOCAL_RASTER_TILE_PROTOCOL, requestLocalRasterTile);
 
 // webgl(dem)プロトコルは必要時に動的に登録/解除
 const webglProt = demProtocol('webgl');
@@ -407,7 +415,7 @@ const createMapStore = () => {
 		isDeckOverlayAdded = false;
 
 		map = new maplibregl.Map(createMapOptions(mapContainer, mapPosition));
-		configureProgressiveScrollZoom(map);
+		configureInertialScrollZoom(map);
 
 		if (get(isDebugMode)) {
 			// map.showTileBoundaries = true; // タイルの境界を表示
@@ -1087,10 +1095,11 @@ const createMapStore = () => {
 		await refreshCurrentDeckOverlay();
 	};
 
-	const setDeckVectorColor = async (entryId: string, color: string) => {
+	const setDeckVectorColor = async (entryId: string, color: string, colorProperty?: string) => {
 		const deckVectorEntry = currentDeckVectorEntries.get(entryId);
 		if (!deckVectorEntry) return;
 		deckVectorEntry.style.color = color;
+		deckVectorEntry.style.colorProperty = colorProperty;
 		await refreshCurrentDeckOverlay();
 	};
 
@@ -1304,6 +1313,12 @@ const createMapStore = () => {
 
 	const focusLayer = async (_entry: MorivisLayerEntry) => {
 		if (!map || !isMapValid(map)) return;
+
+		const modelCamera = getModelFocusCamera(_entry, map);
+		if (modelCamera) {
+			map.flyTo({ ...modelCamera, duration: 1000, easing: MAP_EASING });
+			return;
+		}
 
 		// 現在の中心とターゲットの距離に応じてdurationを調整
 		const currentCenter = map.getCenter();

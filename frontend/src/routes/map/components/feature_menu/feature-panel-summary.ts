@@ -180,21 +180,7 @@ const getProtectionForestDescription = (
 const getTimberSpeciesSummary = (
 	targetLayer: MorivisLayerEntry | null,
 	featureMenuData: FeatureMenuData
-):
-	| {
-		url: string;
-		distribution?: string;
-		nameEn?: string;
-		scientificName?: string;
-		airDryDensity?: number | { min: number; max: number; };
-		woodStructure?: string;
-		hardness?: string;
-		summary?: string;
-		characteristics?: string[];
-		uses?: string[];
-	}
-	| undefined =>
-{
+): FeaturePanelSummaryData['timberSpecies'] => {
 	if (
 		!targetLayer
 		|| (targetLayer.type !== 'vector' && targetLayer.type !== 'model')
@@ -219,6 +205,7 @@ const getTimberSpeciesSummary = (
 	if (!timberSpecies) return undefined;
 
 	return {
+		name: timberSpeciesName,
 		url: timberSpecies.url,
 		distribution: timberSpecies.distribution,
 		nameEn: timberSpecies.detail?.nameEn,

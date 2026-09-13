@@ -1,6 +1,11 @@
+import { isMltFile } from '$routes/map/utils/formats/mlt';
+import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
+import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
+import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
+import { isCityGmlFile } from '$routes/map/utils/formats/citygml/detector';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGaussianSplatPlyFile } from '$routes/map/utils/formats/gaussian-splat';
@@ -95,7 +100,7 @@ const attachProjectedModelEpsg = (file: File, projectedModelEpsg: EpsgCode | nul
 
 // ZIP の中身を File[] に展開し、以降は通常の複数ファイル判定へ合流させる。
 const unzipFiles = async (file: File): Promise<File[]> => {
-	const zip = await JSZip.loadAsync(file);
+	const zip = await JSZip.loadAsync(await file.arrayBuffer());
 	const extracted: File[] = [];
 	const entries: [string, import('jszip').JSZipObject][] = [];
 
@@ -106,7 +111,12 @@ const unzipFiles = async (file: File): Promise<File[]> => {
 	for (const [path, entry] of entries) {
 		const blob = await entry.async('blob');
 		const fileName = path.split('/').pop() ?? path;
-		extracted.push(new File([blob], fileName, { type: blob.type }));
+		const extractedFile = new File([blob], fileName, { type: blob.type });
+		Object.defineProperty(extractedFile, 'morivisRelativePath', {
+			value: path,
+			configurable: true
+		});
+		extracted.push(extractedFile);
 	}
 
 	return extracted;
@@ -121,6 +131,7 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 
 	try {
 		const header = await targetFile.slice(0, 2000).text();
+		if (/<CADIF(?:\s|>)/.test(header)) return createDialogDecision('cedxm');
 
 		if (hasGeoRssMarker(header)) {
 			return createDialogDecision('georss');
@@ -179,6 +190,8 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	dm: 'dm',
 	dwg: 'dwg',
 	dxf: 'dxf',
+	jww: 'jww',
+	jwc: 'jww',
 	sfc: 'sxf',
 	sim: 'sima',
 	shp: 'shp',
@@ -541,6 +554,29 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
+	// tilesetとGLB等が同居しても、個別モデルではなくフォルダ全体を渡す。
+	if ((await findLocalTilesetFiles(files)).length) {
+		return createDialogDecision('local-3dtiles', files);
+	}
+	if (await isLocalRasterTileInput(files)) {
+		return createDialogDecision('local-raster-tiles', files);
+	}
+	if (files.some(isMltFile)) return createDialogDecision('local-mlt', files);
+	if (isLocalMvtInput(files)) return createDialogDecision('local-mvt', files);
+	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。
+	const cityGmlCandidates = files.filter((file) => /\.(?:gml|xml|citygml)$/i.test(file.name));
+	if (cityGmlCandidates.length) {
+		try {
+			const matches = await Promise.all(cityGmlCandidates.map(async (file) => ({
+				file,
+				matched: /\.citygml$/i.test(file.name) || await isCityGmlFile(file)
+			})));
+			const cityGmlFiles = matches.filter(({ matched }) => matched).map(({ file }) => file);
+			if (cityGmlFiles.length) return createDialogDecision('citygml', cityGmlFiles);
+		} catch {
+			return createNotificationDecision('CityGML / XMLファイルを読み取れませんでした');
+		}
+	}
 	// モバイルの写真はGPSの有無にかかわらず写真フォームへ渡す。
 	// ワールドファイル付き画像やモデルのテクスチャは従来の組み合わせ判定を優先する。
 	if (

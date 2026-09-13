@@ -1,3 +1,4 @@
+import { fetchTilesetResource } from '$routes/map/utils/tiles3d/fetch-resource';
 import {
 	sanitizeScenegraphGltfForDeck,
 	type ScenegraphGltfLike
@@ -10,6 +11,7 @@ import {
 	GeoArrowPolygonLayer,
 	GeoArrowScatterplotLayer
 } from '@geoarrow/deck.gl-layers';
+import { createGeoJsonColorAccessors, hexToRgba } from './geojson-color';
 
 import type {
 	AnyTiles3DEntry,
@@ -46,27 +48,6 @@ type PointCloudDatum = {
 	color: [number, number, number, number];
 };
 
-const hexToRgba = (color: string, alpha = 255): [number, number, number, number] => {
-	const normalized = color.replace('#', '');
-	const hex = normalized.length === 3
-		? normalized
-			.split('')
-			.map((char) => char + char)
-			.join('')
-		: normalized;
-
-	if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
-		return [64, 140, 255, alpha];
-	}
-
-	return [
-		parseInt(hex.slice(0, 2), 16),
-		parseInt(hex.slice(2, 4), 16),
-		parseInt(hex.slice(4, 6), 16),
-		alpha
-	];
-};
-
 const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
 
 const isCloneableDeckLayer = (layer: unknown): layer is CloneableDeckLayer =>
@@ -80,6 +61,7 @@ const getTiles3DMeshStyleSignature = (style: Tiles3DMeshStyle) =>
 		style.color,
 		style.lighting,
 		style.opacity,
+		style.heightOffset ?? 0,
 		style.visible ?? true
 	].join(':');
 
@@ -88,7 +70,11 @@ const getTiles3DMeshSubLayerProps = (style: Tiles3DMeshStyle) => ({
 });
 
 export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
-	const altitudeOffset = dataEntry.metaData.altitude ?? 0;
+	const style = { ...dataEntry.style };
+	const requestedOffset = style.type === '3d-tiles-mesh'
+		? (style.heightOffset ?? dataEntry.metaData.altitude ?? 0)
+		: 0;
+	const altitudeOffset = Number.isFinite(requestedOffset) ? requestedOffset : 0;
 
 	const layer = new Tile3DLayer({
 		id: `3d-tiles-layer-${dataEntry.id}`,
@@ -96,8 +82,8 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 		pickable: dataEntry.interaction.clickable,
 		opacity: dataEntry.style.opacity,
 		visible: dataEntry.style.visible ?? true,
-		morivisStyleSignature: dataEntry.style.type === '3d-tiles-mesh'
-			? getTiles3DMeshStyleSignature(dataEntry.style)
+		morivisStyleSignature: style.type === '3d-tiles-mesh'
+			? getTiles3DMeshStyleSignature({ ...style, heightOffset: altitudeOffset })
 			: undefined,
 		pointSize: dataEntry.style.type === 'point-cloud'
 			? (dataEntry.style.pointSize ?? 1)
@@ -105,14 +91,14 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 		parameters: { depthTest: false },
 		beforeId: 'deck-reference-layer',
 		loadOptions: {
-			'3d-tiles': { decodeQuantizedPositions: true }
+			fetch: fetchTilesetResource,
+			'3d-tiles': { decodeQuantizedPositions: true },
+			// loaders.gl 4.3の文字列配列属性デコーダーは未実装で、タイル全体が失敗する。
+			// 描画には未使用のため生の属性を保持する。現行APIではfalseがデコード除外。
+			gltf: { excludeExtensions: { EXT_structural_metadata: false } }
 		},
 		onTileLoad: (tile: Tile3D) => {
 			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
-
-			if (tile.content?.cartographicOrigin && altitudeOffset !== 0) {
-				// 高さオフセットは既存動作に合わせて未適用のままにしている。
-			}
 		}
 	});
 
@@ -128,7 +114,7 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
 			const subLayer = originalGetSubLayer(tile, oldLayer);
 
-			if (dataEntry.style.type !== '3d-tiles-mesh' || !isCloneableDeckLayer(subLayer)) {
+			if (style.type !== '3d-tiles-mesh' || !isCloneableDeckLayer(subLayer)) {
 				return subLayer;
 			}
 
@@ -138,13 +124,20 @@ export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
 			]
 				.join(' ')
 				.toLowerCase();
-			const sharedProps = getTiles3DMeshSubLayerProps(dataEntry.style);
+			// タイル本体は変更せず、再描画のたびに元の原点から計算する。
+			const origin = tile.content?.cartographicOrigin;
+			const sharedProps = {
+				...getTiles3DMeshSubLayerProps(style),
+				...(origin?.length === 3 && origin.every(Number.isFinite)
+					? { coordinateOrigin: [origin[0], origin[1], origin[2] + altitudeOffset] }
+					: {})
+			};
 
 			if (subLayerName.includes('scenegraph')) {
 				return subLayer.clone({
 					...sharedProps,
 					getTransformMatrix: [],
-					_lighting: dataEntry.style.lighting
+					_lighting: style.lighting
 				});
 			}
 
@@ -293,8 +286,7 @@ const createGeoJson3DLayer = (dataEntry: GeoJson3DEntry) =>
 		_full3d: true,
 		lineWidthMinPixels: dataEntry.format.geometryType === 'LineString' ? 2 : 1,
 		pointRadiusMinPixels: 4,
-		getFillColor: hexToRgba(dataEntry.style.color, 180),
-		getLineColor: hexToRgba(dataEntry.style.color, 220),
+		...createGeoJsonColorAccessors(dataEntry.style),
 		parameters: { depthTest: dataEntry.format.geometryType === 'Polygon' },
 		beforeId: 'deck-reference-layer'
 	});

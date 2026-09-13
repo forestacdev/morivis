@@ -1,5 +1,5 @@
 import type { LngLatBoundsLike } from '$routes/map/utils/maplibre';
-import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+import { fetchTilesetResource } from './fetch-resource';
 
 type Tiles3DBoundingVolume = { box?: number[]; region?: number[]; sphere?: number[]; };
 type Tiles3DContent = { uri?: string; url?: string; };
@@ -122,6 +122,28 @@ export interface FetchTileset3DBboxResult {
 	error: string | null;
 }
 
+/** URL取得とローカルフォルダ登録で共用するタイルセットの表示範囲判定。 */
+export const getTileset3DBbox = (tileset: { root?: unknown; }): FetchTileset3DBboxResult => {
+	const root = tileset.root as Tiles3DRoot | undefined;
+	if (!root?.boundingVolume) {
+		return {
+			bbox: null,
+			styleType: 'mesh',
+			error: 'tileset.json に root.boundingVolume がありません'
+		};
+	}
+	const bbox = rootToBbox(root);
+	const styleType = detectTilesetStyleType(root);
+	if (!bbox || !bbox.every(Number.isFinite)) {
+		return {
+			bbox: null,
+			styleType,
+			error: 'tileset.json の boundingVolume から bbox を計算できませんでした'
+		};
+	}
+	return { bbox, styleType, error: null };
+};
+
 const detectTiles3DStyleTypeFromUri = (uri: string): Tiles3DStyleType => {
 	const normalizedUri = uri.toLowerCase().split('?')[0];
 
@@ -182,29 +204,11 @@ export const fetchTileset3DBbox = async (
 	url: string
 ): Promise<FetchTileset3DBboxResult> => {
 	try {
-		const res = await fetchWithDevProxy(url);
+		const res = await fetchTilesetResource(url);
 		if (!res.ok) throw new Error(`HTTP ${res.status}`);
 		const tileset = await res.json();
 
-		if (!tileset.root?.boundingVolume) {
-			return {
-				bbox: null,
-				styleType: 'mesh',
-				error: 'tileset.json に root.boundingVolume がありません'
-			};
-		}
-
-		const bbox = rootToBbox(tileset.root);
-		const styleType = detectTilesetStyleType(tileset.root);
-		if (!bbox) {
-			return {
-				bbox: null,
-				styleType,
-				error: 'tileset.json の boundingVolume から bbox を計算できませんでした'
-			};
-		}
-
-		return { bbox, styleType, error: null };
+		return getTileset3DBbox(tileset);
 	} catch (e) {
 		console.error('tileset.json の読み込みに失敗しました:', e);
 		return {

@@ -14,10 +14,7 @@ export type DialogProfile =
 	| 'feature-service'
 	| 'remote-wmts'
 	| 'remote-geozarr'
-	| 'remote-raster'
-	| 'remote-vector'
-	| 'remote-3dtiles'
-	| 'remote-pmtiles'
+	| 'tiles'
 	| 'wcs'
 	| 'tile-url-type'
 	| 'vector-georef';
@@ -27,6 +24,11 @@ export interface DialogDefinition {
 	profile: DialogProfile;
 	fixedHeight?: boolean;
 }
+
+const tileDialog: DialogDefinition = {
+	load: () => import('$routes/map/components/upload/form/TileForm.svelte'),
+	profile: 'tiles'
+};
 
 export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDefinition>> = {
 	wmts: {
@@ -73,26 +75,21 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/XlsxForm.svelte'),
 		profile: 'vector-zone-georef'
 	},
-	raster: {
-		load: () => import('$routes/map/components/upload/form/RasterForm.svelte'),
-		profile: 'remote-raster'
-	},
+	raster: tileDialog,
 	tileurltype: {
 		load: () => import('$routes/map/components/upload/form/TileUrlTypeForm.svelte'),
 		profile: 'tile-url-type'
 	},
-	'3dtiles': {
-		load: () => import('$routes/map/components/upload/form/Tiles3DForm.svelte'),
-		profile: 'remote-3dtiles'
-	},
+	'3dtiles': tileDialog,
+	'local-3dtiles': tileDialog,
+	'local-mvt': tileDialog,
+	'local-mlt': tileDialog,
+	'local-raster-tiles': tileDialog,
 	pointcloud: {
 		load: () => import('$routes/map/components/upload/form/PointCloudForm.svelte'),
 		profile: 'pointcloud-georef'
 	},
-	mbtiles: {
-		load: () => import('$routes/map/components/upload/form/MBTilesForm.svelte'),
-		profile: 'drop-file'
-	},
+	mbtiles: tileDialog,
 	netcdf: {
 		load: () => import('$routes/map/components/upload/form/NetCDFForm.svelte'),
 		profile: 'raster-georef'
@@ -109,10 +106,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/DemXmlForm.svelte'),
 		profile: 'raster-georef'
 	},
-	pmtiles: {
-		load: () => import('$routes/map/components/upload/form/PmtilesForm.svelte'),
-		profile: 'remote-pmtiles'
-	},
+	pmtiles: tileDialog,
 	model: {
 		load: () => import('$routes/map/components/upload/form/MeshModelForm.svelte'),
 		profile: 'model-georef'
@@ -137,10 +131,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/SvgForm.svelte'),
 		profile: 'vector-georef'
 	},
-	vector: {
-		load: () => import('$routes/map/components/upload/form/VectorForm.svelte'),
-		profile: 'remote-vector'
-	},
+	vector: tileDialog,
 	geojson: {
 		load: () => import('$routes/map/components/upload/form/GeoJsonForm.svelte'),
 		profile: 'vector-zone-georef'
@@ -176,6 +167,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	gml: {
 		load: () => import('$routes/map/components/upload/form/GmlForm.svelte'),
 		profile: 'vector-zone-georef'
+	},
+	citygml: {
+		load: () => import('$routes/map/components/upload/form/CityGmlForm.svelte'),
+		profile: 'drop-file'
 	},
 	kml: {
 		load: () => import('$routes/map/components/upload/form/KmlForm.svelte'),
@@ -229,6 +224,16 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	},
 	dxf: {
 		load: () => import('$routes/map/components/upload/form/DxfForm.svelte'),
+		profile: 'vector-zone-georef',
+		fixedHeight: true
+	},
+	jww: {
+		load: () => import('$routes/map/components/upload/form/JwwForm.svelte'),
+		profile: 'vector-zone-georef',
+		fixedHeight: true
+	},
+	cedxm: {
+		load: () => import('$routes/map/components/upload/form/CedxmForm.svelte'),
 		profile: 'vector-zone-georef',
 		fixedHeight: true
 	},

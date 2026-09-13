@@ -48,7 +48,7 @@
 		<button type="button" class="c-btn-sub px-3 py-2 text-sm" onclick={() => shiftScaleUnit(-1)}>
 			÷10
 		</button>
-		<div class="min-w-28 text-center text-sm">
+		<div class="min-w-28 text-center text-sm text-base">
 			<div>倍率単位 ×10<sup>{normalizedScale.scaleUnit}</sup></div>
 			<div class="text-xs opacity-70">実倍率 ×{effectiveScaleLabel}</div>
 		</div>

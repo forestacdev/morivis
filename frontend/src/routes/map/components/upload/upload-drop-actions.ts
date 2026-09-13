@@ -2,6 +2,9 @@ import { createGlbEntry } from '$routes/map/data/entries/model';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { MeshFormatType } from '$routes/map/data/types/model';
 import type { DialogType, UploadFiles } from '$routes/map/types';
+import { isMvtFile, parseMvtPath } from '$routes/map/utils/formats/mvt';
+import { isLocalRasterTileFolder } from '$routes/map/utils/formats/raster-tiles';
+import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import type maplibregl from '$routes/map/utils/maplibre';
 import { showConfirmDialog } from '$routes/stores/confirmation';
 import { showNotification } from '$routes/stores/notification';
@@ -82,6 +85,14 @@ export const checkLargeDroppedFiles = async (files: File | File[]): Promise<bool
 	const fileList = Array.isArray(files) ? files : [files];
 	const totalSize = fileList.reduce((sum, file) => sum + file.size, 0);
 	if (totalSize < LARGE_FILE_THRESHOLD) return true;
+	// フォルダのタイル本体は表示時に読むため、一括展開を前提としたサイズ確認は不要。
+	if (fileList.length > 1 && (await findLocalTilesetFiles(fileList)).length) return true;
+	if (isLocalRasterTileFolder(fileList)) return true;
+	const mvtFiles = fileList.filter(isMvtFile);
+	if (
+		mvtFiles.length && mvtFiles.every(file => parseMvtPath(file))
+		&& fileList.every(file => isMvtFile(file) || /\.json$/i.test(file.name))
+	) return true;
 
 	return showConfirmDialog({
 		message: `ファイルサイズが大きいです（${

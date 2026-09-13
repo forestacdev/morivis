@@ -5,7 +5,7 @@ import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style'
 const baseEntry = createMeshModelEntry({
 	id: 'morinos_3d',
 	name: 'morinos 3Dモデル',
-	url: `${ENTRY_GLTF_PATH}/morinos_fix3.glb`,
+	url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix10.glb`,
 	attribution: '森林文化アカデミー',
 	location: '森林文化アカデミー',
 	bounds: [136.919310634999988, 35.5537624600000015, 136.9200659429999973, 35.5544524530000032],
@@ -24,7 +24,6 @@ const entry = {
 	...baseEntry,
 	format: {
 		...baseEntry.format,
-		url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix8.glb`,
 		lods: [
 			{ maxZoom: 16, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix4.webp.low.glb` },
 			{ maxZoom: 18, url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix4.webp.medium.glb` }
@@ -51,7 +50,7 @@ const entry = {
 					name: '樹種による色分け',
 					mapping: {
 						...createMatchColorMapping(
-							['ヒノキ', 'ミズナラ', 'カバノキ', 'スギ', 'ナラ'],
+							['ヒノキ', 'ミズナラ', 'カバノキ', 'スギ', 'ナラ', 'ブナ'],
 							'treeSpecies'
 						)
 					},
@@ -132,7 +131,7 @@ const entry = {
 				]
 			},
 			'341e0e34-68a2-40b7-91d9-60d0b46d1e63': {
-				name: '格子',
+				name: 'ランダム格子',
 				description:
 					'morinosの収納庫は普通の壁ではなく「木の格子」。向こう側が見えて、光と空気が行き来できるようになっています。あと、中が見えているのでいつも綺麗に片付けながら運用する効果も狙っているのです。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi14/',
@@ -140,6 +139,14 @@ const entry = {
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1153%E3%81%AE%E3%82%B3%E3%83%94%E3%83%BC-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_4670-2-scaled.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1292-scaled.jpg'
 					},
 					{
 						type: 'image',
@@ -272,6 +279,10 @@ const entry = {
 					'外であそぶ子どもを見ながらコーヒーを飲める、PCを持ってくれば仕事もできる、誰でも使えるヒノキの一枚板カウンターです。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi59/',
 				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/04/IMG_1494-720x480.jpg'
+					},
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/03/20200514_0061-scaled.jpg'
@@ -422,6 +433,77 @@ const entry = {
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1068-720x480.jpg'
+					}
+				]
+			},
+			cane: {
+				name: '方杖',
+				description:
+					'白い薄化粧の丸太から伸びるヒノキ（無塗装）の方づえ。「ひかり付け」の技法のように波打つ丸太表面にピタッと大入れで差し込まれています。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi23/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1450-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1264-720x721.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1487-720x1080.jpg'
+					}
+				]
+			},
+			'9466d565-e516-47b6-9338-a7d58bef08fb': {
+				name: '小さな豆型テーブル',
+				description:
+					'テーブルは小さく丸っこい豆型。お子さんが木のおもちゃで遊んだり、お弁当や水筒を置いたりしやすい高さです。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi23/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2021/04/IMG_2948-scaled.jpeg'
+					}
+				]
+			},
+			'b7278802-3603-4dd9-b6ce-aed08e9083b2': {
+				name: '収納庫',
+				description:
+					'物入も大きめにとってあるので、ここに資料を置きます。運用しながら可動棚を設置する予定です。でもここに役所っぽく大量の紙ファイルを並べては、いくら棚があってもキリがありません。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi30/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_0933-4-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/04/IMG_1639-2.jpg'
+					}
+				]
+			},
+			'317f8a99-9484-458d-a38b-3cf10916b414': {
+				name: '南出入り口両開き戸',
+				description: 'morinosの南面には三箇所も出入り口があります。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi26/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1501-720x1080.jpg'
+					}
+				]
+			},
+			'bc392685-4578-4526-a6fd-8cefad97e71d': {
+				name: 'メインエントランスの両引戸',
+				description:
+					'東面のメインエントランスは「森の入り口」としてたくさんの人を大きく開いて迎え入れるために2.7ｍ大開口です。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi26/',
+				medias: [
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_4656-scaled.jpg'
 					}
 				]
 			}

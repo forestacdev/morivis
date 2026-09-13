@@ -128,6 +128,7 @@
 		"@mapbox/tilebelt": "^2.0.3",
 		"@mapbox/togeojson": "^0.16.2",
 		"@mapbox/vector-tile": "^2.0.3",
+		"@maplibre/mlt": "1.1.12",
 		"@pixiv/three-vrm": "^3.5.5",
 		"@pixiv/three-vrm-animation": "^3.5.5",
 		"@tailwindcss/typography": "^0.5.15",

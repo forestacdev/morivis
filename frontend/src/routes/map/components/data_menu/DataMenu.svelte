@@ -15,7 +15,7 @@
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
 
 	const mobileFileAccept = SUPPORTED_FILE_GROUPS.filter((group) =>
-		['GPX', '画像 (EXIF GPS)', '点群'].includes(group.label)
+		['gpx', 'geophoto', 'pointcloud'].includes(group.id)
 	)
 		.flatMap((group) => group.extensions)
 		.join(',');

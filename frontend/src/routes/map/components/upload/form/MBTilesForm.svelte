@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy, untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
@@ -7,8 +8,13 @@
 	import { createVectorTileEntry } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-	import { registerMBTiles, type MBTilesMetadata } from '$routes/map/protocol/mbtiles';
+	import {
+		registerMBTiles,
+		releaseMBTiles,
+		type MBTilesMetadata
+	} from '$routes/map/protocol/mbtiles';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
+	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import {
 		buildVectorTileFields,
@@ -17,24 +23,46 @@
 	} from '$routes/map/utils/vector/tile-metadata';
 	import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: UploadFilesInput;
+		source?: 'url' | 'file';
+		active?: boolean;
+		loading?: boolean;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		dropFile = $bindable()
+		dropFile = $bindable(),
+		source = 'file',
+		active = true,
+		loading = $bindable(false)
 	}: Props = $props();
+
+	const formId = $props.id();
+	let inputUrl = $state('');
+	let error = $state('');
+	let disposed = false;
+	let analysisVersion = 0;
+	let registeredId = '';
+	let downloadController: AbortController | undefined;
+	let analyzedUrl = '';
 
 	let entryName = $state('');
 	let analyzed = $state(false);
 	let entryId = $state('');
-	let metadata = $state<MBTilesMetadata | null>(null);
+	let metadata = $state.raw<MBTilesMetadata | null>(null);
+
+	onDestroy(() => {
+		disposed = true;
+		analysisVersion++;
+		downloadController?.abort();
+		if (entryId && entryId !== registeredId) releaseMBTiles(entryId);
+		loading = false;
+	});
 
 	// ベクター用
 	let selectedLayerId = $state('');
@@ -61,25 +89,34 @@
 	});
 
 	$effect(() => {
-		if (mbtilesFile) {
-			entryName = mbtilesFile.name.replace(/\.[^.]+$/, '');
-			analyzeMBTiles(mbtilesFile);
+		const file = mbtilesFile;
+		if (source === 'file' && file) {
+			entryName = file.name.replace(/\.[^.]+$/, '');
+			untrack(() => void analyzeMBTiles(file));
 		}
 	});
 
-	const analyzeMBTiles = async (file: File) => {
-		isProcessing.set(true);
+	const analyzeMBTiles = async (file: File, version = ++analysisVersion) => {
+		loading = true;
+		error = '';
+		if (entryId && entryId !== registeredId) releaseMBTiles(entryId);
+		const id = 'mbtiles_' + crypto.randomUUID();
+		entryId = id;
 		analyzed = false;
 		metadata = null;
 		selectedLayerId = '';
 
 		try {
-			const id = 'mbtiles_' + crypto.randomUUID();
-			entryId = id;
-
 			const meta = await registerMBTiles(id, file);
+			if (disposed || version !== analysisVersion || !active) {
+				releaseMBTiles(id);
+				return;
+			}
 			metadata = meta;
-			entryName = meta.name || entryName;
+			entryName =
+				source === 'url' && entryName.trim()
+					? entryName
+					: meta.name || entryName || file.name.replace(/\.[^.]+$/, '');
 
 			// ベクターでレイヤーが1つなら自動選択
 			if (meta.isVector && meta.vectorLayers.length === 1) {
@@ -105,15 +142,64 @@
 			const typeLabel = meta.isVector ? 'ベクター (PBF)' : `ラスター (${meta.format})`;
 			showNotification(`MBTiles: ${typeLabel}`, 'success');
 		} catch (e) {
-			showNotification(e instanceof Error ? e.message : 'MBTilesの解析に失敗しました', 'error');
-			console.error(e);
+			releaseMBTiles(id);
+			if (!disposed && version === analysisVersion) {
+				error = e instanceof Error ? e.message : 'MBTilesの解析に失敗しました';
+				showNotification(error, 'error');
+				console.error(e);
+			}
 		} finally {
-			isProcessing.set(false);
+			if (!disposed && version === analysisVersion) loading = false;
+		}
+	};
+
+	const invalidateAnalysis = () => {
+		analysisVersion++;
+		downloadController?.abort();
+		if (entryId && entryId !== registeredId) releaseMBTiles(entryId);
+		entryId = '';
+		analyzed = false;
+		metadata = null;
+		selectedLayerId = '';
+		error = '';
+		loading = false;
+	};
+
+	const fetchAndAnalyze = async () => {
+		if (loading || !active || disposed) return;
+		let url: URL;
+		try {
+			url = new URL(inputUrl.trim());
+			if (!['http:', 'https:'].includes(url.protocol)) throw new Error();
+		} catch {
+			error = 'http(s)で始まるMBTilesのURLを入力してください。';
+			return;
+		}
+		invalidateAnalysis();
+		const version = ++analysisVersion;
+		analyzedUrl = inputUrl.trim();
+		downloadController = new AbortController();
+		loading = true;
+		try {
+			const response = await fetchWithDevProxy(url.href, { signal: downloadController.signal });
+			if (!response.ok)
+				throw new Error(`MBTilesを取得できませんでした（HTTP ${response.status}）。`);
+			const blob = await response.blob();
+			if (disposed || version !== analysisVersion || !active) return;
+			const fileName = decodeURIComponent(url.pathname.split('/').pop() || 'download.mbtiles');
+			await analyzeMBTiles(new File([blob], fileName), version);
+		} catch (cause) {
+			if (!disposed && version === analysisVersion) {
+				error = cause instanceof Error ? cause.message : 'MBTilesを取得できませんでした。';
+			}
+		} finally {
+			if (!disposed && version === analysisVersion) loading = false;
 		}
 	};
 
 	const registration = () => {
-		if (!analyzed || !entryId || !metadata) return;
+		if (disposed || !active || !analyzed || !entryId || !metadata || !entryName.trim()) return;
+		if (source === 'url' && analyzedUrl !== inputUrl.trim()) return;
 
 		const tileUrl = `mbtiles://${entryId}/{z}/{x}/{y}`;
 		const opts = {
@@ -146,6 +232,7 @@
 			);
 			if (entry) {
 				entry.format.type = 'mbtiles';
+				registeredId = entryId;
 				showDataEntry = entry;
 				showDialogType = null;
 				dropFile = null;
@@ -154,6 +241,7 @@
 			const entry = createRasterEntry(entryName || 'MBTiles', tileUrl, opts);
 			if (entry) {
 				(entry.format as { type: string }).type = 'mbtiles';
+				registeredId = entryId;
 				showDataEntry = entry;
 				showDialogType = null;
 				dropFile = null;
@@ -162,20 +250,26 @@
 	};
 
 	const cancel = () => {
+		disposed = true;
+		analysisVersion++;
+		downloadController?.abort();
+		loading = false;
 		showDialogType = null;
 		dropFile = null;
 	};
 </script>
-
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">MBTilesの登録</span>
-</div>
 
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
 >
 	<TextForm bind:value={entryName} label="データ名" />
 
+	{#if source === 'url'}
+		<TextForm bind:value={inputUrl} label="MBTiles URL" onInput={invalidateAnalysis} />
+		<p class="w-full text-xs text-gray-400">URLからファイル全体を取得して読み込みます。</p>
+	{/if}
+	{#if loading}<p role="status" class="w-full text-sm">MBTilesを読み込んでいます…</p>{/if}
+	{#if error}<p role="alert" class="w-full text-sm text-red-300">{error}</p>{/if}
 	{#if mbtilesFile}
 		<div class="w-full px-2 text-sm text-gray-300">
 			ファイル: {mbtilesFile.name}
@@ -201,11 +295,11 @@
 			{#if metadata.vectorLayers.length > 0}
 				<div transition:slide class="w-full">
 					<div class="flex flex-col gap-1">
-						<label for="mbtiles-layer-select" class="text-sm text-gray-300"
+						<label for={`${formId}-layer-select`} class="text-sm text-gray-300"
 							>ソースレイヤーを選択</label
 						>
 						<select
-							id="mbtiles-layer-select"
+							id={`${formId}-layer-select`}
 							bind:value={selectedLayerId}
 							onchange={() => {
 								const layer = metadata?.vectorLayers.find((l) => l.id === selectedLayerId);
@@ -219,7 +313,7 @@
 							class="bg-sub rounded border border-gray-600 p-2 text-white"
 						>
 							<option value="" disabled>選択してください</option>
-							{#each metadata.vectorLayers as layer}
+							{#each metadata.vectorLayers as layer (layer.id)}
 								<option value={layer.id}>
 									{layer.id}
 									{#if layer.geometryType}
@@ -251,17 +345,25 @@
 	{/if}
 </div>
 
-<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+<div class="flex shrink-0 flex-wrap justify-center gap-3 pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg">キャンセル</button>
+	{#if source === 'url'}
+		<button
+			onclick={fetchAndAnalyze}
+			disabled={loading || !inputUrl.trim()}
+			class="c-btn-confirm min-w-[150px] p-4 text-lg disabled:cursor-not-allowed disabled:opacity-50"
+			>{loading ? '読み込み中…' : analyzed ? '再解析' : '解析'}</button
+		>
+	{/if}
 	{#if analyzed && metadata?.isVector}
 		<button
 			onclick={registration}
-			disabled={$isProcessing || !selectedLayerId}
-			class="c-btn-confirm min-w-[200px] p-4 text-lg {$isProcessing || !selectedLayerId
+			disabled={loading || !selectedLayerId || !entryName.trim()}
+			class="c-btn-confirm min-w-[200px] p-4 text-lg {loading || !selectedLayerId
 				? 'cursor-not-allowed opacity-50'
 				: 'cursor-pointer'}"
 		>
-			決定
+			登録
 		</button>
 	{/if}
 </div>

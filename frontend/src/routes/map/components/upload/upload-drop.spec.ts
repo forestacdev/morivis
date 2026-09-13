@@ -1,4 +1,150 @@
+import JSZip from 'jszip';
+import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+describe('ローカルMLTのドロップ', () => {
+	it.each(['test.mlt', 'test.MLT', 'test.mlt.gz'])('MLTの入口へ渡す: %s', async name => {
+		const file = new File(['test'], name);
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-mlt',
+			dropFiles: [file]
+		});
+	});
+	it('TileJSONが同居してもMLTを優先する', async () => {
+		const files = [new File(['{}'], 'tilejson.json'), new File(['test'], 'test.mlt')];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			dialogType: 'local-mlt',
+			dropFiles: files
+		});
+	});
+	it('ZIP内のMLTの相対パスを維持する', async () => {
+		const zip = new JSZip();
+		zip.file('test-set/2/1/1.mlt', 'test');
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-set.zip')
+		);
+		expect(result.type).toBe('dialog');
+		if (result.type !== 'dialog') throw new Error('test dialog required');
+		expect(result.dialogType).toBe('local-mlt');
+		expect(
+			(result.dropFiles?.[0] as File & { morivisRelativePath: string; }).morivisRelativePath
+		).toBe('test-set/2/1/1.mlt');
+	});
+});
+
+describe('Jw_cadのドロップ', () => {
+	it.each(['test-drawing.jww', 'test-drawing.JWW', 'test-drawing.jwc', 'test-drawing.JWC'])(
+		'Jw_cadを専用フォームへ渡す: %s',
+		async name => {
+			const file = new File(['test'], name);
+			expect(await resolveDroppedFiles(file)).toEqual({
+				type: 'dialog',
+				dialogType: 'jww',
+				dropFiles: undefined
+			});
+		}
+	);
+});
+
+describe('CEDXMのドロップ', () => {
+	it.each([false, true])('XML本体とフォルダ入力を判定する: folder=%s', async folder => {
+		const file = new File([
+			'<?xml version="1.0" encoding="Shift_JIS"?><CADIF Version="1.0"></CADIF>'
+		], 'test-building.xml');
+		Object.defineProperty(file, 'morivisRelativePath', {
+			value: 'test-building/test-building.xml'
+		});
+		expect(await resolveDroppedFiles(folder ? [file] : file)).toEqual({
+			type: 'dialog',
+			dialogType: 'cedxm',
+			dropFiles: undefined
+		});
+	});
+});
+
+describe('ローカルMVTのドロップ', () => {
+	it('TileJSONとタイル一式をフォームに渡す', async () => {
+		const files = [new File(['{}'], 'tilejson.json'), new File(['test'], '1.mvt')];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-mvt',
+			dropFiles: files
+		});
+	});
+	it('単体MVTとTileJSONにも専用フォームで入力方法を案内する', async () => {
+		for (const name of ['1.mvt', '1.pbf', 'tilejson.json']) {
+			const file = new File(['test'], name);
+			expect(await resolveDroppedFiles(file)).toEqual({
+				type: 'dialog',
+				dialogType: 'local-mvt',
+				dropFiles: [file]
+			});
+		}
+	});
+	it('ZIPを展開してタイルの相対パスを保持する', async () => {
+		const zip = new JSZip();
+		zip.file('test-set/tilejson.json', '{}');
+		zip.file('test-set/2/1/1.mvt', 'test');
+		const file = new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-set.zip');
+		const result = await resolveDroppedFiles(file);
+		expect(result.type).toBe('dialog');
+		if (result.type !== 'dialog') throw new Error('test dialog required');
+		expect(result.dialogType).toBe('local-mvt');
+		expect(
+			result.dropFiles?.map(item =>
+				(item as File & { morivisRelativePath: string; }).morivisRelativePath
+			)
+		).toEqual(['test-set/tilejson.json', 'test-set/2/1/1.mvt']);
+	});
+});
+
+describe('ローカルラスタータイルのドロップ', () => {
+	const tileFile = () => {
+		const file = new File(['test-image'], '1.png');
+		Object.defineProperty(file, 'morivisRelativePath', { value: 'test-set/2/1/1.png' });
+		return file;
+	};
+	it('TileJSON付き画像フォルダはMVTより先に判定する', async () => {
+		const files = [new File(['{}'], 'tilejson.json'), tileFile()];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-raster-tiles',
+			dropFiles: files
+		});
+	});
+	it('モバイルでも画像タイルを写真フォームへ渡さない', async () => {
+		const files = [tileFile()];
+		expect(await resolveDroppedFiles(files, { mobile: true })).toEqual({
+			type: 'dialog',
+			dialogType: 'local-raster-tiles',
+			dropFiles: files
+		});
+	});
+	it('画像のTileJSON単体はラスター用フォームで再入力を案内する', async () => {
+		const file = new File([JSON.stringify({ tiles: ['/{z}/{x}/{y}.webp'] })], 'tilejson.json');
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-raster-tiles',
+			dropFiles: [file]
+		});
+	});
+	it('ZIP展開後も画像タイルの階層を保持する', async () => {
+		const zip = new JSZip();
+		zip.file('test-set/2/1/1.png', 'test-image');
+		const file = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-raster.zip'
+		);
+		const result = await resolveDroppedFiles(file);
+		expect(result.type).toBe('dialog');
+		if (result.type !== 'dialog') throw new Error('test dialog required');
+		expect(result.dialogType).toBe('local-raster-tiles');
+		expect(
+			(result.dropFiles?.[0] as File & { morivisRelativePath: string; }).morivisRelativePath
+		).toBe('test-set/2/1/1.png');
+	});
+});
 
 vi.mock('$routes/map/utils/formats/exif', () => ({
 	hasExifGps: vi.fn()
@@ -69,6 +215,68 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveDroppedFiles', () => {
+	it('タイルセットとGLBを含むフォルダは3D Tilesフォームに渡す', async () => {
+		const files = [
+			createPathLikeFile(
+				'tileset.json',
+				'test-set/tileset.json',
+				JSON.stringify({ asset: { version: '1.0' }, root: {} })
+			),
+			createPathLikeFile('test.glb', 'test-set/data/test.glb')
+		];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-3dtiles',
+			dropFiles: files
+		});
+	});
+
+	it('tiles.json単体も内容で3D Tilesと判定する', async () => {
+		const file = createFile(
+			'tiles.json',
+			JSON.stringify({ asset: { version: '1.1' }, root: {} })
+		);
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'local-3dtiles',
+			dropFiles: [file]
+		});
+	});
+	const cityGml = readFileSync(
+		new URL('../../utils/formats/citygml/__fixtures__/test-buildings.gml', import.meta.url),
+		'utf8'
+	);
+
+	it.each(['gml', 'xml', 'citygml'])('CityGMLの.%sは専用フォームに渡す', async (extension) => {
+		const file = createFile(`test-building.${extension}`, cityGml);
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'citygml',
+			dropFiles: [file]
+		});
+	});
+
+	it('複数のCityGMLと補助ファイルからCityGML一式をフォームに渡す', async () => {
+		const files = [createFile('test-a.gml', cityGml), createFile('test-b.xml', cityGml)];
+		expect(await resolveDroppedFiles([...files, createFile('test-texture.png')])).toEqual({
+			type: 'dialog',
+			dialogType: 'citygml',
+			dropFiles: files
+		});
+	});
+
+	it('通常GMLをCityGMLフォームに渡さない', async () => {
+		expect(
+			await resolveDroppedFiles(
+				createFile(
+					'test-generic.gml',
+					'<g:FeatureCollection xmlns:g="http://www.opengis.net/gml"/>'
+				)
+			)
+		)
+			.toMatchObject({ type: 'dialog', dialogType: 'gml' });
+	});
+
 	beforeEach(() => {
 		vi.resetAllMocks();
 		vi.mocked(hasExifGps).mockResolvedValue(false);

@@ -13,6 +13,8 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { MeshStyle, MeshEntry, ThreeModelEntry } from '$routes/map/data/types/model';
 	import { unregisterGeoZarr } from '$routes/map/protocol/geozarr';
+	import { retainLocalRasterTileEntry } from '$routes/map/protocol/raster/local-tiles';
+	import { retainLocalMvtEntry } from '$routes/map/protocol/vector/local-mvt';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
@@ -21,6 +23,7 @@
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
+	import { retainLocalTilesetEntry } from '$routes/map/utils/tiles3d/local-files';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
 	import { activeLayerIdsStore, reorderStatus } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
@@ -163,6 +166,15 @@
 
 		copy.id = uuid;
 		copy.metaData.name = `${layerEntry.metaData.name} (コピー)`;
+		if (copy.type === 'model' && copy.format.type === '3d-tiles') {
+			retainLocalTilesetEntry(copy.id, copy.format.url);
+		}
+		if (copy.type === 'vector' && (copy.format.type === 'mvt' || copy.format.type === 'mlt')) {
+			retainLocalMvtEntry(copy.id, copy.format.url);
+		}
+		if (copy.type === 'raster' && copy.format.type === 'image') {
+			retainLocalRasterTileEntry(copy.id, copy.format.url);
+		}
 
 		registerInitialEntryStyle(copy);
 		tempLayerEntries = [...tempLayerEntries, copy];

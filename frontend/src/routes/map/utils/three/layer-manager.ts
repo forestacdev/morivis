@@ -794,6 +794,7 @@ export class ThreeJsLayerManager {
 		}
 
 		const material = new THREE.ShaderMaterial({
+			vertexColors: 'vertexColors' in sourceMaterial && sourceMaterial.vertexColors === true,
 			uniforms: {
 				uBaseColor: { value: baseColor },
 				uOpacity: { value: style.opacity },
@@ -820,8 +821,10 @@ export class ThreeJsLayerManager {
 				varying vec2 vUv;
 				varying float vPartColorIndex;
 				#include <skinning_pars_vertex>
+				#include <color_pars_vertex>
 
 				void main() {
+					#include <color_vertex>
 					vec3 objectNormal = vec3(normal);
 					#include <skinbase_vertex>
 					#include <skinnormal_vertex>
@@ -856,9 +859,15 @@ export class ThreeJsLayerManager {
 				varying vec3 vNormal;
 				varying vec2 vUv;
 				varying float vPartColorIndex;
+				#include <color_pars_fragment>
 
 				void main() {
 					vec4 texel = uUseMap ? texture2D(uMap, vUv) : vec4(1.0);
+					#if defined( USE_COLOR_ALPHA )
+						texel *= vColor;
+					#elif defined( USE_COLOR )
+						texel.rgb *= vColor;
+					#endif
 					float sourceDenominator = max(uHeightRampSourceMax - uHeightRampSourceMin, 0.000001);
 					float selectedMin = clamp(
 						(uHeightRampMin - uHeightRampSourceMin) / sourceDenominator,

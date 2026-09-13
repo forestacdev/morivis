@@ -8,7 +8,7 @@ import type {
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { AttributeView } from '$routes/map/data/types/vector/properties';
 import type { ColorsStyle } from '$routes/map/data/types/vector/style';
-import type { FeatureCollection } from '$routes/map/types/geojson';
+import type { FeatureCollection, MultiPolygon3DFeatureCollection } from '$routes/map/types/geojson';
 import type { ModelAttributes } from '$routes/map/utils/three/model-attributes';
 import type { Table } from 'apache-arrow';
 
@@ -149,6 +149,7 @@ export interface MeshTransformOptionStyle {
 	scale?: boolean;
 	rotation?: boolean;
 	heightScale?: boolean;
+	/** 地形メッシュなど、高さオフセットの編集が必要な場合のみ有効にする。既定はfalse。 */
 	heightOffset?: boolean;
 }
 
@@ -220,6 +221,8 @@ export interface Tiles3DMeshStyle {
 	type: '3d-tiles-mesh';
 	opacity: Opacity;
 	visible?: boolean;
+	/** 元の高さに加えるメートル値。負の値で下げる。 */
+	heightOffset?: number;
 	color: string;
 	/** ScenegraphLayer では pbr / flat を切り替える。SimpleMeshLayer では無視される。 */
 	lighting: 'pbr' | 'flat';
@@ -237,6 +240,8 @@ export interface GeoArrowStyle {
 	opacity: Opacity;
 	visible?: boolean;
 	color: string;
+	/** GeoJSON 3Dで色コードを読む属性名。未指定なら単色。 */
+	colorProperty?: string;
 }
 
 /** mesh 系 model entry の入力形式。主に three.js 側で読む 3D モデル形式を表す。 */
@@ -338,7 +343,7 @@ export interface GeoArrowEntry extends BaseModelEntry {
 export interface GeoJson3DEntry extends BaseModelEntry {
 	format: {
 		type: 'geojson-3d';
-		data: FeatureCollection;
+		data: FeatureCollection | MultiPolygon3DFeatureCollection;
 		geometryType: VectorEntryGeometryType;
 	};
 	style: GeoArrowStyle;

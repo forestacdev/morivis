@@ -226,10 +226,6 @@
 		const layers =
 			!showDataEntry && !isZoneRegistrationActive ? await createLayersItems(_dataEntries) : [];
 
-		if (!import.meta.env.PROD) {
-			console.log('debug:entries', _dataEntries);
-		}
-
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (showDataEntry || isZoneRegistrationActive) {
 			previewSources = {
@@ -639,6 +635,14 @@
 
 	const setStyle = async (entries: MorivisLayerEntry[]) => {
 		const updateId = ++styleUpdateId;
+		if (!import.meta.env.PROD) {
+			// 描画方式で絞る前に、アップロードしたモデルと登録前のプレビューも出力する。
+			const previewEntry = showDataEntry;
+			const debugEntries = previewEntry
+				? [...entries.filter((entry) => entry.id !== previewEntry.id), previewEntry]
+				: entries;
+			console.log('debug:entries', debugEntries);
+		}
 		const mapLibreEntry = getMapStyleEntries(entries);
 
 		// esri-featureプロトコルの動的管理
