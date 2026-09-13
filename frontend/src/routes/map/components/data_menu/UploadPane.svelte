@@ -10,6 +10,8 @@
 	import {
 		SUPPORTED_FILE_ACCEPT,
 		SUPPORTED_FILE_GROUPS,
+		SUPPORTED_UPLOAD_FORMATS,
+		type UploadFormat,
 		type DialogType,
 		type UploadFiles
 	} from '$routes/map/types';
@@ -147,214 +149,20 @@
 		showDialogType = type;
 	};
 
-	type DialogFormat = {
-		type: Exclude<DialogType, null>;
-		label: string;
-		description: string;
-		icon: string;
-	};
-
-	type FormatListItem =
-		| (DialogFormat & { id: string; kind: 'dialog' })
-		| {
-				id: string;
-				kind: 'file';
-				label: string;
-				description: string;
-				icon: string;
-				extensions: string[];
-				accept: string;
-		  };
-
-	const sourceDialogs: DialogFormat[] = [
-		{
-			type: 'raster',
-			label: 'ラスタータイル',
-			description: '画像や標高のタイルデータです。URL入力またはフォルダ・ZIPから登録できます。',
-			icon: 'mdi:map-outline'
-		},
-		{
-			type: 'vector',
-			label: 'ベクタータイル',
-			description:
-				'属性を持つベクタータイルです。URL入力またはMVT・MLTのフォルダ・ZIPから登録できます。',
-			icon: 'mdi:vector-polygon'
-		},
-		{
-			type: 'wmts',
-			label: 'WMS/WMTS',
-			description:
-				'地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
-			icon: 'mdi:layers-outline'
-		},
-		{
-			type: 'wcs',
-			label: 'WCS',
-			description:
-				'カバレッジ配信サービスのURLです。ラスターデータを範囲指定で取得するときに使います。',
-			icon: 'mdi:chart-areaspline'
-		},
-		{
-			type: 'featureservice',
-			label: 'WFS / OGC API',
-			description:
-				'地物配信サービスのURLです。WFS と OGC API - Features のどちらも同じフォームから開けます。',
-			icon: 'mdi:map-marker-path'
-		},
-		{
-			type: 'arcgis',
-			label: 'ArcGIS',
-			description:
-				'ArcGIS REST サービスのURLです。ArcGIS Server や Online のレイヤーを追加するときに使います。',
-			icon: 'mdi:lan-connect'
-		},
-		{
-			type: 'pmtiles',
-			label: 'PMTiles',
-			description:
-				'タイルを単一ファイルにまとめたデータです。URL入力またはローカルファイルから登録できます。',
-			icon: 'mdi:package-variant-closed'
-		},
-		{
-			type: 'mbtiles',
-			label: 'MBTiles',
-			description:
-				'タイルをSQLiteファイルにまとめたデータです。URL入力またはローカルファイルから登録できます。',
-			icon: 'mdi:package-variant-closed'
-		},
-		{
-			type: '3dtiles',
-			label: '3D Tiles',
-			description:
-				'3次元の地物やモデルをタイルに分割したデータです。URL入力またはフォルダ・ZIPから登録できます。',
-			icon: 'mdi:cube-scan'
-		},
-		{
-			type: 'stac',
-			label: 'STAC / COG',
-			description: 'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
-			icon: 'mdi:image-multiple'
-		}
-	];
-
-	const textDialogs: DialogFormat[] = [
-		{
-			type: 'geojson',
-			label: 'GeoJSON',
-			description: 'GeoJSONファイルの読み込みや、GeoJSONテキストの直接入力を行うフォームです。',
-			icon: 'mdi:code-json'
-		},
-		{
-			type: 'wkt',
-			label: 'WKT',
-			description: 'WKTファイルの読み込みや、WKTテキストの直接入力を行うフォームです。',
-			icon: 'mdi:code-tags'
-		}
-	];
-
-	const fileFormatIcons: Record<string, string> = {
-		TopoJSON: 'mdi:vector-polyline',
-		FlatGeobuf: 'mdi:vector-square',
-		GeoParquet: 'mdi:table-large',
-		'GeoArrow / Feather': 'mdi:arrow-right-bold-hexagon-outline',
-		'MapInfo MIF/MID': 'mdi:map-marker-radius',
-		GeoPackage: 'mdi:database',
-		'SQLite / SQL dump': 'mdi:database-outline',
-		'Esri FileGDB': 'mdi:database-cog',
-		Shapefile: 'mdi:shape-outline',
-		GPX: 'mdi:map-marker-path',
-		TCX: 'mdi:run',
-		'Garmin GDB': 'mdi:map-marker-radius',
-		'OpenStreetMap XML': 'mdi:map',
-		GeoRSS: 'mdi:rss',
-		'SXF (SFC)': 'mdi:ruler-square-compass',
-		GML: 'mdi:file-code-outline',
-		'KML / KMZ': 'mdi:earth',
-		CSV: 'mdi:table',
-		TSV: 'mdi:table',
-		Excel: 'mdi:microsoft-excel',
-		GeoTIFF: 'mdi:image',
-		MBTiles: 'mdi:package-variant-closed',
-		PMTiles: 'mdi:package-variant-closed',
-		HDF5: 'mdi:file-tree-outline',
-		NetCDF: 'mdi:weather-cloudy',
-		'GRIB2 (GPV)': 'mdi:weather-windy',
-		GTFS: 'mdi:train',
-		'HRIT/LRIT': 'mdi:satellite-variant',
-		'DXF / DWG': 'mdi:vector-square',
-		SIMA: 'mdi:ruler-square-compass',
-		DM: 'mdi:terrain',
-		LandXML: 'mdi:terrain',
-		法務局地図XML: 'mdi:map-legend',
-		DRM: 'mdi:road-variant',
-		GeoPDF: 'mdi:file-pdf-box',
-		'画像 (EXIF GPS)': 'mdi:image',
-		SVG: 'mdi:svg',
-		点群: 'mdi:chart-scatter-plot',
-		'GLB / GLTF': 'mdi:cube-outline',
-		'USD / USDZ': 'mdi:package-variant-closed',
-		'Wavefront OBJ': 'mdi:cube-outline',
-		'Autodesk 3DS': 'mdi:cube-outline',
-		'Collada DAE': 'mdi:vector-combine',
-		'Rhino 3DM': 'mdi:alpha-r-box-outline',
-		'Autodesk FBX': 'mdi:cube-outline',
-		'Draco DRC': 'mdi:cube-outline',
-		'3D Manufacturing Format': 'mdi:printer-3d',
-		'Additive Manufacturing Format': 'mdi:printer-3d',
-		'Industry Foundation Classes': 'mdi:office-building-cog',
-		'BIM Collaboration Format': 'mdi:comment-question-outline',
-		'MikuMikuDance PMX': 'mdi:human',
-		VRM: 'mdi:human'
-	};
-
-	const formatListItems: FormatListItem[] = [
-		...sourceDialogs.map((dialog) => ({
-			...dialog,
-			id: `dialog:${dialog.type}`,
-			kind: 'dialog' as const
-		})),
-		...textDialogs.map((dialog) => ({
-			...dialog,
-			id: `dialog:${dialog.type}`,
-			kind: 'dialog' as const
-		})),
-		...SUPPORTED_FILE_GROUPS.filter(
-			(group) =>
-				![
-					'GeoJSON',
-					'WKT',
-					'ラスタータイル（フォルダ / ZIP）',
-					'MVT（フォルダ / ZIP）',
-					'MLT（フォルダ / ZIP）',
-					'3D Tiles（フォルダ / ZIP）',
-					'PMTiles',
-					'MBTiles'
-				].includes(group.label)
-		).map((group) => ({
-			id: `file:${group.label}`,
-			kind: 'file' as const,
-			label: group.label,
-			description: group.description,
-			icon: fileFormatIcons[group.label] ?? 'mdi:file-outline',
-			extensions: group.extensions,
-			accept: group.extensions.join(',')
-		}))
-	];
-
 	const openFilteredFilePicker = async (accept: string) => {
 		formListFileAccept = accept;
 		await tick();
 		formListFileInput?.click();
 	};
 
-	const openFormatItem = async (item: FormatListItem) => {
-		if (item.kind === 'dialog') {
-			showUploadDialog(item.type);
+	const openFormatItem = async (item: UploadFormat) => {
+		if (item.dialogType) {
+			showUploadDialog(item.dialogType);
 			return;
 		}
 
 		showFormListDialog = false;
-		await openFilteredFilePicker(item.accept);
+		await openFilteredFilePicker(item.extensions.join(','));
 	};
 	let isDragover = $state(false);
 	const setRelativePath = (file: File, relativePath: string) => {
@@ -473,7 +281,7 @@
 			<div class="marquee-container overflow-hidden">
 				<div class="marquee-track flex w-max gap-2 select-none">
 					{#each Array.from({ length: 2 }) as _, index (index)}
-						{#each SUPPORTED_FILE_GROUPS as group (group.label)}
+						{#each SUPPORTED_FILE_GROUPS as group (group.id)}
 							<span class="bg-sub rounded-full p-1 px-3 text-xs whitespace-nowrap text-gray-300">
 								{group.label}
 							</span>
@@ -508,7 +316,7 @@
 			</div>
 
 			<div class="c-scroll grid grid-cols-2 gap-3 overflow-y-auto pr-1 md:grid-cols-3">
-				{#each formatListItems as item (item.id)}
+				{#each SUPPORTED_UPLOAD_FORMATS as item (item.id)}
 					<button
 						onclick={() => openFormatItem(item)}
 						class="bg-base hover:bg-accent group relative flex min-h-[160px] cursor-pointer flex-col gap-2 overflow-hidden rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
@@ -519,7 +327,7 @@
 						/>
 						<div class="flex flex-col gap-2 pr-8">
 							<span class="font-semibold">{item.label}</span>
-							{#if item.kind === 'file'}
+							{#if !item.dialogType}
 								<span class="text-[11px] leading-4 text-black/55 group-hover:text-white/65">
 									対応拡張子: {item.extensions.join(' ')}
 								</span>

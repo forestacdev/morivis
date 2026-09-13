@@ -42,7 +42,7 @@ flowchart LR
 
 | ファイル | 役割 |
 | --- | --- |
-| `types/index.ts` | `DialogType` と `SUPPORTED_FILE_GROUPS`。UI に見せる対応拡張子の定義元。 |
+| `types/index.ts` | `DialogType` と `SUPPORTED_UPLOAD_FORMATS`。形式名・説明・アイコン・拡張子・入力フォームの定義元。`SUPPORTED_FILE_GROUPS` とファイル選択用の拡張子一覧もここから生成する。 |
 | `upload-drop.ts` | ファイルや URL をどの `DialogType` に振り分けるかの定義元。OBJ の軽量事前検査結果のような形式別メタデータもここで `File` に一時付与する。 |
 | `dialog-registry.ts` | `DialogType -> Form の動的 import / profile` の対応表。 |
 | `transform-policy.ts` | 形式ごとの `zone` / `georef` 許可方針。 |
