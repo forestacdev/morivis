@@ -15,7 +15,6 @@ export type DialogProfile =
 	| 'remote-wmts'
 	| 'remote-geozarr'
 	| 'tiles'
-	| 'remote-3dtiles'
 	| 'remote-pmtiles'
 	| 'wcs'
 	| 'tile-url-type'
@@ -82,14 +81,8 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/TileUrlTypeForm.svelte'),
 		profile: 'tile-url-type'
 	},
-	'3dtiles': {
-		load: () => import('$routes/map/components/upload/form/Tiles3DForm.svelte'),
-		profile: 'remote-3dtiles'
-	},
-	'local-3dtiles': {
-		load: () => import('$routes/map/components/upload/form/LocalTiles3DForm.svelte'),
-		profile: 'drop-file'
-	},
+	'3dtiles': tileDialog,
+	'local-3dtiles': tileDialog,
 	'local-mvt': tileDialog,
 	'local-mlt': tileDialog,
 	'local-raster-tiles': tileDialog,

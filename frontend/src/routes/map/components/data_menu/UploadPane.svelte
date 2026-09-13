@@ -219,7 +219,7 @@
 			type: '3dtiles',
 			label: '3D Tiles',
 			description:
-				'3D Tiles の tileset.json のURLです。3次元の地物やモデルを表示するときに使います。',
+				'3次元の地物やモデルをタイルに分割したデータです。URL入力またはフォルダ・ZIPから登録できます。',
 			icon: 'mdi:cube-scan'
 		},
 		{
@@ -318,7 +318,8 @@
 					'WKT',
 					'ラスタータイル（フォルダ / ZIP）',
 					'MVT（フォルダ / ZIP）',
-					'MLT（フォルダ / ZIP）'
+					'MLT（フォルダ / ZIP）',
+					'3D Tiles（フォルダ / ZIP）'
 				].includes(group.label)
 		).map((group) => ({
 			id: `file:${group.label}`,

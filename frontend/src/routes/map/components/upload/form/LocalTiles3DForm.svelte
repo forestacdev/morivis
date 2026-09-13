@@ -19,11 +19,15 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		dropFile: UploadFilesInput;
+		registering?: boolean;
+		active?: boolean;
 	}
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		dropFile = $bindable()
+		dropFile = $bindable(),
+		registering = $bindable(false),
+		active = true
 	}: Props = $props();
 	const files = $derived(toUploadFiles(dropFile));
 	let candidates = $state.raw<File[]>([]);
@@ -39,7 +43,6 @@
 	);
 	const totalBytes = $derived(files.reduce((sum, file) => sum + file.size, 0));
 	let loading = $state(true);
-	let registering = $state(false);
 	let error = $state('');
 	let disposed = false;
 	onDestroy(() => {
@@ -69,7 +72,7 @@
 	});
 
 	const register = async () => {
-		if (!rootFile || registering || !name.trim()) return;
+		if (!rootFile || registering || !active || disposed || !name.trim()) return;
 		const input = files;
 		const selectedRoot = rootFile;
 		const entryName = name.trim();
@@ -79,7 +82,7 @@
 		let source: Awaited<ReturnType<typeof registerLocalTileset>> | undefined;
 		try {
 			source = await registerLocalTileset(input, selectedRoot);
-			if (disposed || files !== input) {
+			if (disposed || !active || files !== input) {
 				source.dispose();
 				return;
 			}
@@ -106,7 +109,6 @@
 	};
 </script>
 
-<div class="pb-4 text-2xl font-bold">3D Tilesフォルダの登録</div>
 <div class="c-scroll flex w-full grow flex-col gap-4 overflow-y-auto">
 	<TextForm bind:value={name} label="データ名" />
 	{#if candidates.length > 1}

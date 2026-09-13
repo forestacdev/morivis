@@ -152,9 +152,8 @@
 				bind:dropFile
 				bind:remoteRasterUrl
 				bind:remoteVectorUrl
+				bind:remoteTiles3dUrl
 			/>
-		{:else if profile === 'remote-3dtiles'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteTiles3dUrl />
 		{:else if profile === 'remote-pmtiles'}
 			<FormComponent bind:showDataEntry bind:showDialogType bind:dropFile bind:remotePmtilesUrl />
 		{:else if profile === 'wcs'}

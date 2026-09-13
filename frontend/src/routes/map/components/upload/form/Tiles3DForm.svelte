@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import * as yup from 'yup';
 
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
@@ -13,12 +14,16 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		remoteTiles3dUrl: string | null;
+		registering?: boolean;
+		active?: boolean;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		remoteTiles3dUrl = $bindable()
+		remoteTiles3dUrl = $bindable(),
+		registering = $bindable(false),
+		active = true
 	}: Props = $props();
 
 	const validation = yup.object().shape({
@@ -87,12 +92,21 @@
 		}
 	});
 
+	let disposed = false;
+	onDestroy(() => {
+		disposed = true;
+	});
+
 	const registration = async () => {
+		if (registering || !active || disposed) return;
+		const name = forms.name.trim();
+		registering = true;
 		const url = forms.tileUrl.trim();
 		isProcessing.set(true);
 
 		try {
 			const { bbox, styleType, error } = await fetchTileset3DBbox(url);
+			if (disposed || !active) return;
 			if (!bbox) {
 				showNotification(
 					error ?? 'tileset.json を取得できなかったため、3D Tiles を登録しませんでした',
@@ -101,26 +115,24 @@
 				return;
 			}
 
-			const entry = createTiles3DEntry(forms.name, url, bbox, styleType);
+			const entry = createTiles3DEntry(name, url, bbox, styleType);
 			if (entry) {
 				showDataEntry = entry;
 				showDialogType = null;
 				remoteTiles3dUrl = null;
 			}
 		} finally {
+			registering = false;
 			isProcessing.set(false);
 		}
 	};
 
 	const cancel = () => {
+		disposed = true;
 		showDialogType = null;
 		remoteTiles3dUrl = null;
 	};
 </script>
-
-<div class="flex shrink-0 items-center justify-between overflow-auto pb-4">
-	<span class="text-2xl font-bold">3D Tilesの登録</span>
-</div>
 
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-6 overflow-x-hidden overflow-y-auto"
@@ -133,11 +145,11 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={registration}
-		disabled={isDisabled}
-		class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled
+		disabled={isDisabled || registering}
+		class="c-btn-confirm min-w-[200px] p-4 text-lg {isDisabled || registering
 			? 'cursor-not-allowed opacity-50'
 			: 'cursor-pointer'}"
 	>
-		決定
+		{registering ? 'タイルセットを確認中…' : '決定'}
 	</button>
 </div>
