@@ -51,8 +51,8 @@
 	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
 	const canEditScale = $derived(layerEntry.style.transformOptions?.scale ?? true);
 	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);
-	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? true);
-	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? false);
+	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? false);
+	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
 	const isIfc = $derived(layerEntry.format.type === 'ifc');
 	const isFbx = $derived(layerEntry.format.type === 'fbx');
 	const hasPartColorProfile = $derived(

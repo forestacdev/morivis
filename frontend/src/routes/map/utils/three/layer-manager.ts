@@ -47,6 +47,7 @@ import {
 import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
 import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
 import { createEdgeUvGeometry } from '$routes/map/utils/three/model-edge-uv';
+import { createModelHighlightMaterial } from '$routes/map/utils/three/model-highlight';
 import { isLowerDetailLodUrl, resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
 import { getModelPartColor } from '$routes/map/utils/three/model-part-style';
 import {
@@ -1374,16 +1375,7 @@ export class ThreeJsLayerManager {
 			? mesh.geometry
 			: (this.getIfcHighlightGeometry(mesh, expressId) ?? mesh.geometry);
 
-		const fillMaterial = new THREE.MeshBasicMaterial({
-			color: HIGHLIGHT_LAYER_COLOR,
-			transparent: true,
-			opacity: 0.38,
-			side: THREE.DoubleSide,
-			depthWrite: false,
-			polygonOffset: true,
-			polygonOffsetFactor: -1,
-			polygonOffsetUnits: -1
-		});
+		const fillMaterial = createModelHighlightMaterial();
 		const sourceSkinnedMesh = mesh as THREE.SkinnedMesh;
 		let fill: THREE.Mesh;
 		if (sourceSkinnedMesh.isSkinnedMesh) {

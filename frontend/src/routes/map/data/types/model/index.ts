@@ -148,8 +148,9 @@ export interface MeshHeightColorRampStyle {
 export interface MeshTransformOptionStyle {
 	scale?: boolean;
 	rotation?: boolean;
+	/** 地形メッシュなど、高さ倍率の編集が必要な場合のみ有効にする。既定はfalse。 */
 	heightScale?: boolean;
-	/** 地形メッシュなど、高さオフセットの編集が必要な場合のみ有効にする。既定はfalse。 */
+	/** 高さオフセットの編集可否。既定はtrue。 */
 	heightOffset?: boolean;
 }
 
