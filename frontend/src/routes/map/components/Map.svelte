@@ -94,7 +94,7 @@
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showLayerAddedNotification, showNotification } from '$routes/stores/notification';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { showDataMenu, showModelView } from '$routes/stores/ui';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -506,15 +506,17 @@
 				// 	source: 'webgl_canvas'
 				// }
 			],
-			sky: {
-				'sky-color': '#2baeff',
-				'sky-horizon-blend': 0.5,
-				'horizon-color': '#ffffff',
-				'horizon-fog-blend': 0.5,
-				'fog-color': '#2222ff',
-				'fog-ground-blend': 0.5,
-				'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 10, 1, 12, 0]
-			},
+			sky: $showModelView
+				? undefined
+				: {
+						'sky-color': '#2baeff',
+						'sky-horizon-blend': 0.5,
+						'horizon-color': '#ffffff',
+						'horizon-fog-blend': 0.5,
+						'fog-color': '#2222ff',
+						'fog-ground-blend': 0.5,
+						'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 10, 1, 12, 0]
+					},
 			transition: { duration: 0, delay: 0 },
 			terrain: $isTerrain3d ? terrain : undefined
 		};
@@ -950,6 +952,12 @@
 	// ストリートビューの表示
 	styleUpdateUnsubscribers.push(
 		showStreetViewLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
+		})
+	);
+	// モデルビュー中は空と大気を外し、閉じたら通常のスタイルへ戻す。
+	styleUpdateUnsubscribers.push(
+		showModelView.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
 		})
 	);
