@@ -343,6 +343,28 @@ endsolid y-offset`
 		expect(box.max.y).toBeCloseTo(3, 6);
 	});
 
+	it('VRMLのWorker範囲計算と描画時の原点補正が一致する', async () => {
+		const { getUploadedModelObject } = await import('./model-bounds');
+		const { parseVrmlText } = await import('../formats/vrml');
+		const { finalizeRuntimeModelObject } = await import('./runtime-model-finalize');
+		const text = readFileSync(
+			new URL('../formats/vrml/__fixtures__/test-textured.wrl', import.meta.url),
+			'utf8'
+		);
+		const { object } = await getUploadedModelObject(
+			new File([text], 'test-model.wrl'),
+			'vrml',
+			undefined,
+			true
+		);
+		const runtime = await parseVrmlText(text, { skipTextures: true });
+		finalizeRuntimeModelObject(runtime, { formatType: 'vrml', normalizeToLocalOrigin: true });
+		const bounds = new THREE.Box3().setFromObject(object);
+		expect(bounds.min.toArray()).toEqual([-1, 0, 0]);
+		expect(bounds.max.toArray()).toEqual([1, 3, 0]);
+		expect(new THREE.Box3().setFromObject(runtime).equals(bounds)).toBe(true);
+	});
+
 	it('KTX2 テクスチャを含む GLTF でも形状範囲を取得できる', async () => {
 		const { getUploadedModelObject } = await import('./model-bounds');
 		const { object } = await getUploadedModelObject(createKtx2TextureGltfFile(), 'gltf');

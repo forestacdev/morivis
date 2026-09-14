@@ -235,6 +235,8 @@ export const createGlbEntry = (
 				? 'DAE'
 				: formatType === '3dm'
 				? '3DM'
+				: formatType === 'vrml'
+				? 'VRML'
 				: formatType === 'fbx'
 				? 'FBX'
 				: formatType === 'drc'

@@ -4,7 +4,9 @@
 
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
 	import type { MeshFormatType } from '$routes/map/data/types/model';
+	import { parseVrmlFile } from '$routes/map/utils/formats/vrml';
 	import { getUploadedModelObject } from '$routes/map/utils/three/model-bounds';
+	import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 
 	type CandidateModelFile = {
 		id: string;
@@ -37,7 +39,7 @@
 	};
 
 	const MODEL_FILE_ACCEPT =
-		'.glb,.gltf,.vrm,.obj,.3ds,.dae,.3dm,.fbx,.drc,.3mf,.amf,.ifc,.mtl,.bin,.png,.jpg,.jpeg,.bmp,.tga,.gif,.webp';
+		'.glb,.gltf,.vrm,.obj,.3ds,.dae,.3dm,.fbx,.wrl,.vrml,.drc,.3mf,.amf,.ifc,.mtl,.bin,.png,.jpg,.jpeg,.bmp,.tga,.gif,.webp';
 
 	const FORMAT_EXTENSIONS: Array<{ format: MeshFormatType; extensions: string[] }> = [
 		{ format: 'gltf', extensions: ['.glb', '.gltf'] },
@@ -47,6 +49,7 @@
 		{ format: 'dae', extensions: ['.dae'] },
 		{ format: '3dm', extensions: ['.3dm'] },
 		{ format: 'fbx', extensions: ['.fbx'] },
+		{ format: 'vrml', extensions: ['.wrl', '.vrml'] },
 		{ format: 'drc', extensions: ['.drc'] },
 		{ format: '3mf', extensions: ['.3mf'] },
 		{ format: 'amf', extensions: ['.amf'] },
@@ -327,12 +330,20 @@
 				(file) => createFileId(file) !== selectedCandidate.id
 			);
 			const resourceUrls = buildResourceUrls(resourceFiles);
-			const { object, animationNames } = await getUploadedModelObject(
-				selectedCandidate.file,
-				selectedCandidate.format,
-				resourceUrls,
-				normalizeToLocalOrigin
-			);
+			let object: THREE.Object3D;
+			let animationNames: string[];
+			if (selectedCandidate.format === 'vrml') {
+				object = await parseVrmlFile(selectedCandidate.file, { resourceUrls });
+				finalizeRuntimeModelObject(object, { formatType: 'vrml', normalizeToLocalOrigin });
+				animationNames = [];
+			} else {
+				({ object, animationNames } = await getUploadedModelObject(
+					selectedCandidate.file,
+					selectedCandidate.format,
+					resourceUrls,
+					normalizeToLocalOrigin
+				));
+			}
 
 			object.updateMatrixWorld(true);
 			loadedObject = object;
@@ -474,7 +485,7 @@
 						モデル本体と関連ファイルをまとめて選択 / ドロップ
 					</span>
 					<span class="mt-2 block text-sm text-slate-400">
-						ファイルでもフォルダでも投入できます。OBJ の `.mtl`、FBX/DAE/3DS/3DM
+						ファイルでもフォルダでも投入できます。OBJ の `.mtl`、FBX/DAE/3DS/3DM/VRML
 						のテクスチャ類も一緒に入れてください。
 					</span>
 					<input

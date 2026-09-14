@@ -14,6 +14,7 @@ import type {
 import type { TileXYZ } from '$routes/map/data/types/raster';
 import { parseStlFile } from '$routes/map/utils/formats/stl';
 import { parseUsdFile } from '$routes/map/utils/formats/usd';
+import { parseVrmlFile } from '$routes/map/utils/formats/vrml';
 import { findCenterTile } from '$routes/map/utils/map/tile';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
 import {
@@ -735,6 +736,12 @@ export const getUploadedModelObject = async (
 		return parse3dmObject(file, resourceUrls);
 	}
 
+	if (format === 'vrml') {
+		const object = await parseVrmlFile(file, { skipTextures: true });
+		if (normalizeToLocalOrigin) normalizeObjectToLocalOrigin(object, 'y');
+		return { object, animationNames: [] };
+	}
+
 	if (format === 'fbx') {
 		return parseFbxObject(file, resourceUrls, normalizeToLocalOrigin);
 	}
@@ -935,6 +942,7 @@ export const computeUploadedModelMeta = async ({
 		localBounds: getRuntimeModelLocalBounds(runtimeLocalBox, localRenderUnitScale),
 		...((
 			format === 'fbx'
+			|| format === 'vrml'
 			|| format === 'gltf'
 			|| format === 'vrm'
 			|| format === 'ifc'

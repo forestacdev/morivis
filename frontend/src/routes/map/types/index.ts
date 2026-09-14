@@ -619,6 +619,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.3dm']
 	},
 	{
+		id: 'vrml',
+		label: 'VRML 2.0',
+		icon: 'mdi:cube-outline',
+		description:
+			'形状や材質を記述する3Dモデル形式です。外部画像を含むモデルを地図上に表示するときに使います。',
+		extensions: ['.wrl', '.vrml']
+	},
+	{
 		id: 'fbx',
 		label: 'Autodesk FBX',
 		icon: 'mdi:cube-outline',

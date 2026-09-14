@@ -368,6 +368,29 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it.each(['test-model.wrl', 'test-model.VRML'])(
+		'%s はモデルダイアログ判定になる',
+		async (name) => {
+			expect(await resolveDroppedFiles(createFile(name, '#VRML V2.0 utf8'))).toEqual({
+				type: 'dialog',
+				dialogType: 'model',
+				dropFiles: undefined
+			});
+		}
+	);
+
+	it('VRMLフォルダのモデルと画像をまとめて扱う', async () => {
+		const files = [createFile('test-grid.png'), createFile('test-model.wrl')];
+		Object.defineProperty(files[1], 'morivisRelativePath', {
+			value: 'test-folder/test-model.wrl'
+		});
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: files
+		});
+	});
+
 	it('単一の STL はモデルダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(createFile('test-shape.stl', 'solid test-shape'));
 

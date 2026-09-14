@@ -26,6 +26,7 @@ const getMeshFormatType = (path: string): MeshFormatType => {
 	if (normalizedPath.endsWith('.3ds')) return '3ds';
 	if (normalizedPath.endsWith('.dae')) return 'dae';
 	if (normalizedPath.endsWith('.3dm')) return '3dm';
+	if (/\.(wrl|vrml)$/.test(normalizedPath)) return 'vrml';
 	if (normalizedPath.endsWith('.fbx')) return 'fbx';
 	if (normalizedPath.endsWith('.drc')) return 'drc';
 	if (normalizedPath.endsWith('.3mf')) return '3mf';

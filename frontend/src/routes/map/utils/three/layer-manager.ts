@@ -314,6 +314,7 @@ interface ActiveModelView {
 
 const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>([
 	'fbx',
+	'vrml',
 	'obj',
 	'gltf',
 	'vrm',
@@ -2814,6 +2815,25 @@ export class ThreeJsLayerManager {
 							(error) => reject(error)
 						);
 					})
+					.catch((error) => reject(error));
+			} else if (entry.format.type === 'vrml') {
+				const manager = createManagedLoaderContext();
+				void fetch(entry.format.url)
+					.then(async (response) => {
+						if (!response.ok) {
+							throw new Error(`VRMLファイルを取得できません: ${response.status}`);
+						}
+						const { parseVrmlText } = await import('$routes/map/utils/formats/vrml');
+						const resourcePath = /^https?:/i.test(entry.format.url)
+							? new URL('./', entry.format.url).href
+							: '';
+						return parseVrmlText(await response.text(), {
+							manager,
+							resourceUrls: entry.format.resourceUrls,
+							resourcePath: entry.format.resourceUrls ? '' : resourcePath
+						});
+					})
+					.then((object) => finalizeAndLoadModel(object))
 					.catch((error) => reject(error));
 			} else if (entry.format.type === 'fbx') {
 				const manager = createManagedLoaderContext();

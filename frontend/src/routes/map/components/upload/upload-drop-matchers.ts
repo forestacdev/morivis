@@ -11,6 +11,8 @@ export const MODEL_FILE_EXTENSIONS = [
 	'.dae',
 	'.3dm',
 	'.fbx',
+	'.wrl',
+	'.vrml',
 	'.drc',
 	'.3mf',
 	'.amf',

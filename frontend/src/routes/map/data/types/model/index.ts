@@ -254,6 +254,7 @@ export type MeshFormatType =
 	| 'dae'
 	| '3dm'
 	| 'fbx'
+	| 'vrml'
 	| 'drc'
 	| '3mf'
 	| 'amf'
