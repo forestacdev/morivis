@@ -44,7 +44,7 @@ export const createTiles3DEntry = (
 			name,
 			bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
 		},
-		interaction: { clickable: false }
+		interaction: { clickable: styleType !== 'point-cloud' }
 	};
 
 	if (styleType === 'point-cloud') {

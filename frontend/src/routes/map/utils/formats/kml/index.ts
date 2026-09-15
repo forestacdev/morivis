@@ -20,7 +20,7 @@ export type {
 	KmzModelResult
 } from './kmz';
 export type { KmlParseResult } from './parse';
-export { getKmlDefaultColor } from './styles';
+export { getKmlColorOptions, getKmlDefaultColor } from './styles';
 
 export const kmlFileToGeoJson = async (file: File): Promise<KmlParseResult> => {
 	try {

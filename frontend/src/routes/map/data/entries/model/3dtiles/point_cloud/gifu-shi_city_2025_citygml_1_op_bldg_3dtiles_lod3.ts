@@ -22,7 +22,7 @@ const entry: Tiles3DEntry<Tiles3DMeshStyle> = {
 		xyzImageTile: { x: 923099, y: 413380, z: 20 }
 	},
 	interaction: {
-		clickable: false
+		clickable: true
 	},
 	style: {
 		type: '3d-tiles-mesh',

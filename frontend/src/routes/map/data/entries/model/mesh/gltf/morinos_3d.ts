@@ -5,7 +5,7 @@ import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style'
 const baseEntry = createMeshModelEntry({
 	id: 'morinos_3d',
 	name: 'morinos 3Dモデル',
-	url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix10.glb`,
+	url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix11.glb`,
 	attribution: '森林文化アカデミー',
 	location: '森林文化アカデミー',
 	bounds: [136.919310634999988, 35.5537624600000015, 136.9200659429999973, 35.5544524530000032],

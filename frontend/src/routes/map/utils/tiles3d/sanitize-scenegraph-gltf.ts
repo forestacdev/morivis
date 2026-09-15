@@ -9,7 +9,7 @@ type TypedArrayLike =
 	| Float32Array
 	| Float64Array;
 
-type GltfAccessorLike = {
+export type GltfAccessorLike = {
 	componentType?: number;
 	components?: number;
 	count?: number;
@@ -20,9 +20,11 @@ type GltfAccessorLike = {
 	value?: ArrayBufferView | TypedArrayLike;
 };
 
-type GltfPrimitiveLike = {
+export type GltfPrimitiveLike = {
 	attributes?: Record<string, GltfAccessorLike>;
 	indices?: GltfAccessorLike;
+	mode?: number;
+	extensions?: Record<string, unknown>;
 };
 
 type GltfMeshLike = {
@@ -33,6 +35,13 @@ export type ScenegraphGltfLike = {
 	accessors?: GltfAccessorLike[];
 	meshes?: GltfMeshLike[];
 };
+
+// GPUに渡せない独自属性も、クリック時の地物ID参照には必要。
+// primitiveと寿命を共有し、タイル破棄時に一緒に回収される。
+const featureAttributes = new WeakMap<GltfPrimitiveLike, Record<string, GltfAccessorLike>>();
+
+export const getScenegraphFeatureAttributes = (primitive: GltfPrimitiveLike) =>
+	featureAttributes.get(primitive) ?? primitive.attributes ?? {};
 
 // FME 製 b3dm 互換用の一時回避。
 // deck.gl / luma.gl 側が独自属性や Uint8 インデックスをそのまま扱えるようになったら
@@ -108,6 +117,17 @@ export const sanitizeScenegraphGltfAttributes = (
 			const { attributes } = primitive;
 			if (!attributes) {
 				continue;
+			}
+			if (!featureAttributes.has(primitive)) {
+				featureAttributes.set(
+					primitive,
+					Object.fromEntries(
+						Object.entries(attributes).filter(([name]) =>
+							name === '_BATCHID' || name === 'BATCHID'
+							|| name.startsWith('_FEATURE_ID_')
+						)
+					)
+				);
 			}
 
 			for (const attributeName of Object.keys(attributes)) {

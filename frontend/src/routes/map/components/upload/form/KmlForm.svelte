@@ -33,7 +33,7 @@
 	import {
 		extractGroundOverlayFromKmz,
 		kmlFileToGeoJson,
-		getKmlDefaultColor,
+		getKmlColorOptions,
 		type KmlParseResult
 	} from '$routes/map/utils/formats/kml';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
@@ -348,16 +348,13 @@
 			transformOptionMode = 'zone';
 			focusBbox = bbox as [number, number, number, number];
 		} else {
-			const defaultColor = kmlResult
-				? (getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined)
-				: undefined;
 			const entry = await createGeoJsonEntryWithMode({
 				geojson: filtered,
 				geometryType: selectedGeometryType as VectorEntryGeometryType,
 				name: entryName,
 				bbox: bbox as [number, number, number, number],
 				attribution: 'KML',
-				defaultColor,
+				...getKmlColorOptions(filtered, selectedGeometryType),
 				renderMode: renderModeState.selected
 			});
 
@@ -400,16 +397,13 @@
 				return;
 			}
 
-			const defaultColor = kmlResult
-				? (getKmlDefaultColor(kmlResult, selectedGeometryType) ?? undefined)
-				: undefined;
 			const entry = await createGeoJsonEntryWithMode({
 				geojson: geojsonData,
 				geometryType: selectedGeometryType,
 				name: entryName,
 				bbox: bbox as [number, number, number, number],
 				attribution: 'KML',
-				defaultColor,
+				...getKmlColorOptions(geojsonData, selectedGeometryType),
 				renderMode: renderModeState.selected
 			});
 

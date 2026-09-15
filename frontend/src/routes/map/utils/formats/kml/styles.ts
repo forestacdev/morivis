@@ -1,3 +1,6 @@
+import type { ColorMatchExpression } from '$routes/map/data/types/vector/style';
+import type { FeatureCollection } from '$routes/map/types/geojson';
+import { isHexColor } from '$routes/map/utils/deck/geojson-color';
 import { XMLParser } from 'fast-xml-parser';
 
 export type KmlStyleMaps = {
@@ -19,7 +22,8 @@ export const parseKmlStyles = (text: string): KmlStyleMaps => {
 	const lineColors = new Map<string, string>();
 	const parser = new XMLParser({
 		ignoreAttributes: false,
-		removeNSPrefix: true
+		removeNSPrefix: true,
+		parseTagValue: false
 	});
 	const parsed = parser.parse(text);
 
@@ -113,16 +117,22 @@ export const applyStyleProperties = (
 	lineColors: Map<string, string>
 ) => {
 	const styleUrl = properties.styleUrl;
-	if (typeof styleUrl !== 'string') {
-		return;
-	}
-
-	const styleId = styleUrl.replace(/^#/, '');
-	const fill = fillColors.get(styleId);
-	const line = lineColors.get(styleId);
+	const styleId = typeof styleUrl === 'string' ? styleUrl.replace(/^#/, '') : undefined;
+	// toGeoJSONのstroke/fillは共有StyleとインラインStyleを解決済み。
+	// 地物側の上書きを優先し、共有Styleの色を補完に使う。
+	const fill = isHexColor(properties.fill)
+		? properties.fill
+		: styleId
+		? fillColors.get(styleId)
+		: undefined;
+	const line = isHexColor(properties.stroke)
+		? properties.stroke
+		: styleId
+		? lineColors.get(styleId)
+		: undefined;
 	if (fill) properties['_kml_fill_color'] = fill;
 	if (line) properties['_kml_line_color'] = line;
-	delete properties.styleUrl;
+	if (typeof styleUrl === 'string') delete properties.styleUrl;
 };
 
 export const getKmlDefaultColor = (
@@ -134,4 +144,35 @@ export const getKmlDefaultColor = (
 	const fallback = geometryType === 'Polygon' ? lineColors : fillColors;
 	const first = colors.values().next().value ?? fallback.values().next().value;
 	return first ?? null;
+};
+
+/** 選択した地物の色を、2Dの分類色と3Dの属性色へ同じ設定で渡す。 */
+export const getKmlColorOptions = (geojson: FeatureCollection, geometryType: string): {
+	defaultColor?: string;
+	colorProperty?: string;
+	extraColorExpressions?: ColorMatchExpression[];
+} => {
+	const keys = geometryType === 'Polygon'
+		? ['_kml_fill_color', '_kml_line_color']
+		: ['_kml_line_color', '_kml_fill_color'];
+	for (const key of keys) {
+		const colors = [
+			...new Set(
+				geojson.features.map((feature) => feature.properties?.[key]).filter(isHexColor)
+			)
+		];
+		if (!colors.length) continue;
+		return {
+			defaultColor: colors[0],
+			colorProperty: key,
+			extraColorExpressions: [{
+				type: 'match',
+				key,
+				name: 'KMLの色',
+				mapping: { categories: colors, values: colors, patterns: colors.map(() => null) },
+				noData: { value: colors[0], pattern: null }
+			}]
+		};
+	}
+	return {};
 };

@@ -2,7 +2,7 @@ import { createGeoJson3DEntry } from '$routes/map/data/entries/model';
 import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
-import type { VectorStyle } from '$routes/map/data/types/vector/style';
+import type { ColorMatchExpression, VectorStyle } from '$routes/map/data/types/vector/style';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry, GeometryCollection } from '$routes/map/types/geometry';
 import {
@@ -105,6 +105,7 @@ export const createGeoJsonEntryWithMode = async ({
 	attribution,
 	defaultColor,
 	colorProperty,
+	extraColorExpressions,
 	renderMode
 }: {
 	geojson: FeatureCollection;
@@ -115,6 +116,7 @@ export const createGeoJsonEntryWithMode = async ({
 	attribution: string;
 	defaultColor?: string;
 	colorProperty?: string;
+	extraColorExpressions?: ColorMatchExpression[];
 	renderMode: GeoJsonRenderMode;
 }): Promise<MorivisLayerEntry | undefined> => {
 	if (resolveGeoJsonRenderMode(geojson, geometryType, renderMode) === 'deck') {
@@ -122,7 +124,11 @@ export const createGeoJsonEntryWithMode = async ({
 
 		return {
 			...entry,
-			style: { ...entry.style, ...(colorProperty ? { colorProperty } : {}) },
+			style: {
+				...entry.style,
+				...(defaultColor ? { color: defaultColor } : {}),
+				...(colorProperty ? { colorProperty } : {})
+			},
 			metaData: {
 				...entry.metaData,
 				attribution
@@ -132,7 +138,8 @@ export const createGeoJsonEntryWithMode = async ({
 
 	return createGeoJsonEntry(stripGeojsonZ(geojson), geometryType, name, bbox, style, {
 		attribution,
-		defaultColor
+		defaultColor,
+		extraColorExpressions
 	});
 };
 
