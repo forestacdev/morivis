@@ -5,10 +5,18 @@
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import type { ModelLocalBounds } from '$routes/map/data/types/model';
 	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
+	import {
+		isValidModelPlacementLatitude,
+		isValidModelPlacementLongitude
+	} from '$routes/map/utils/three/model-placement-coordinates';
+	import {
+		WEB_MERCATOR_MIN_LAT,
+		WEB_MERCATOR_MAX_LAT
+	} from '$routes/map/data/entries/_meta_data/_bounds';
 
 	interface Props {
-		lng: number;
-		lat: number;
+		lng: number | undefined;
+		lat: number | undefined;
 		altitude: number;
 		heightOffset: number;
 		localBounds?: ModelLocalBounds;
@@ -37,6 +45,9 @@
 		rotationY = $bindable(),
 		rotationZ = $bindable()
 	}: Props = $props();
+	const inputId = $props.id();
+	const lngInvalid = $derived(!isValidModelPlacementLongitude(lng));
+	const latInvalid = $derived(!isValidModelPlacementLatitude(lat));
 
 	const heightOffsetSliderRange = $derived(
 		getModelHeightOffsetSliderRange({
@@ -57,20 +68,40 @@
 	<label class="flex w-full flex-col gap-1 text-sm">
 		<span>経度</span>
 		<input
-			class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
+			class="coordinate-input bg-base text-main w-full rounded-lg p-2 focus:outline-0"
 			type="number"
 			step="any"
 			bind:value={lng}
+			min={-180}
+			max={180}
+			required
+			aria-invalid={lngInvalid}
+			aria-describedby={lngInvalid ? `${inputId}-lng-error` : undefined}
 		/>
+		{#if lngInvalid}
+			<span id={`${inputId}-lng-error`} class="text-red-400" aria-live="polite">
+				経度は −180〜180°の数値を入力してください。
+			</span>
+		{/if}
 	</label>
 	<label class="flex w-full flex-col gap-1 text-sm">
 		<span>緯度</span>
 		<input
-			class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
+			class="coordinate-input bg-base text-main w-full rounded-lg p-2 focus:outline-0"
 			type="number"
 			step="any"
 			bind:value={lat}
+			min={WEB_MERCATOR_MIN_LAT}
+			max={WEB_MERCATOR_MAX_LAT}
+			required
+			aria-invalid={latInvalid}
+			aria-describedby={latInvalid ? `${inputId}-lat-error` : undefined}
 		/>
+		{#if latInvalid}
+			<span id={`${inputId}-lat-error`} class="text-red-400" aria-live="polite">
+				緯度は地図の表示範囲（約 −85.051〜85.051°）内の数値を入力してください。
+			</span>
+		{/if}
 	</label>
 	<!-- <label class="flex w-full flex-col gap-1 text-sm">
 		<span>高さ (m)</span>
@@ -126,3 +157,20 @@
 		</button>
 	</div>
 </div>
+
+<style>
+	.coordinate-input[aria-invalid='true'] {
+		outline: 1px solid #f87171;
+	}
+
+	.coordinate-input {
+		-moz-appearance: textfield;
+		appearance: textfield;
+	}
+
+	.coordinate-input::-webkit-inner-spin-button,
+	.coordinate-input::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+</style>

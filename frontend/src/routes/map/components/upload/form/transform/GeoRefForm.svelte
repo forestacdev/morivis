@@ -47,6 +47,10 @@
 	} from '$routes/map/utils/proj/dict';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
+	import {
+		isValidModelPlacementLatitude,
+		isValidModelPlacementLongitude
+	} from '$routes/map/utils/three/model-placement-coordinates';
 	import { normalizeModelTransformScale } from '$routes/map/utils/three/model-scale';
 	import { getPlacementPreviewBounds } from '$routes/map/utils/three/placement-preview';
 	import {
@@ -130,8 +134,11 @@
 	let geoRefTransformMode = $state<GeoRefTransformMode>('aspect-locked');
 	let zoneBuildId = 0;
 	let modelPlacementInitialized = $state(false);
-	let modelLng = $state(0);
-	let modelLat = $state(0);
+	let modelLng = $state<number | undefined>(0);
+	let modelLat = $state<number | undefined>(0);
+	const modelCoordinatesValid = $derived(
+		isValidModelPlacementLongitude(modelLng) && isValidModelPlacementLatitude(modelLat)
+	);
 	let modelAltitude = $state(0);
 	let modelHeightOffset = $state(0);
 	let modelScale = $state(1);
@@ -208,24 +215,35 @@
 		};
 	});
 
-	const getCurrentModelPlacementStyle = (entry: ThreeModelEntry): ThreeModelEntry['style'] => ({
-		...entry.style,
-		transform: {
-			...entry.style.transform,
-			lng: modelLng,
-			lat: modelLat,
-			altitude: modelAltitude,
-			heightOffset: modelHeightOffset,
-			scale: modelScale,
-			scaleUnit: modelScaleUnit,
-			rotationX: modelRotationX,
-			rotationY: modelRotationY,
-			rotationZ: modelRotationZ
+	const getCurrentModelPlacementStyle = (entry: ThreeModelEntry): ThreeModelEntry['style'] => {
+		if (!isValidModelPlacementLongitude(modelLng) || !isValidModelPlacementLatitude(modelLat)) {
+			return entry.style;
 		}
-	});
+		return {
+			...entry.style,
+			transform: {
+				...entry.style.transform,
+				lng: modelLng,
+				lat: modelLat,
+				altitude: modelAltitude,
+				heightOffset: modelHeightOffset,
+				scale: modelScale,
+				scaleUnit: modelScaleUnit,
+				rotationX: modelRotationX,
+				rotationY: modelRotationY,
+				rotationZ: modelRotationZ
+			}
+		};
+	};
 
 	$effect(() => {
-		if (!isModelPlacementActive || !showDataEntry || !modelPlacementInitialized) return;
+		if (
+			!isModelPlacementActive ||
+			!showDataEntry ||
+			!modelPlacementInitialized ||
+			!modelCoordinatesValid
+		)
+			return;
 		if (
 			showDataEntry.type !== 'model' ||
 			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
@@ -369,6 +387,7 @@
 	};
 
 	const createPlacedModelEntry = (): ThreeModelEntry | null => {
+		if (!modelCoordinatesValid) return null;
 		if (
 			showDataEntry?.type !== 'model' ||
 			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
@@ -844,8 +863,9 @@
 			>
 			<button
 				onclick={handleConfirm}
-				disabled={$isProcessing}
-				class="c-btn-confirm min-w-[200px] p-4 select-none text-lg {$isProcessing
+				disabled={$isProcessing || (isModelPlacementActive && !modelCoordinatesValid)}
+				class="c-btn-confirm min-w-[200px] p-4 select-none text-lg {$isProcessing ||
+				(isModelPlacementActive && !modelCoordinatesValid)
 					? 'cursor-not-allowed opacity-50'
 					: 'cursor-pointer'}"
 			>
