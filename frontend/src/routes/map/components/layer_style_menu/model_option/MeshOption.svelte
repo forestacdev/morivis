@@ -35,6 +35,9 @@
 	}: Props = $props();
 	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
 	let animationClips = $derived(layerEntry.properties?.animation?.clips ?? []);
+	let selectedClipIsPose = $derived(
+		animationClips[layerEntry.state?.animation?.currentClipIndex ?? 0]?.type === 'vpd'
+	);
 	let isPmx = $derived(layerEntry.format.type === 'pmx');
 	let isVrm = $derived(layerEntry.format.type === 'vrm');
 	let canAddExternalMotion = $derived(isPmx || isVrm);
@@ -85,10 +88,10 @@
 
 	const addMmdMotionFiles = (event: Event) => {
 		const input = event.currentTarget as HTMLInputElement;
-		const files = Array.from(input.files ?? []).filter((file) => /\.vmd$/i.test(file.name));
+		const files = Array.from(input.files ?? []).filter((file) => /\.(vmd|vpd)$/i.test(file.name));
 		input.value = '';
 		if (files.length === 0) return;
-		appendExternalMotionFiles(files, 'vmd');
+		appendExternalMotionFiles(files);
 	};
 
 	const openVrmaMotionPicker = () => {
@@ -100,25 +103,31 @@
 		const files = Array.from(input.files ?? []).filter((file) => /\.vrma$/i.test(file.name));
 		input.value = '';
 		if (files.length === 0) return;
-		appendExternalMotionFiles(files, 'vrma');
+		appendExternalMotionFiles(files);
 	};
 
-	const appendExternalMotionFiles = (files: File[], type: 'vmd' | 'vrma') => {
+	const selectAnimationClip = (key: string | number) => {
+		const animation = layerEntry.state?.animation;
+		const index = Number(key);
+		const clip = animationClips[index];
+		if (!animation || !clip) return;
+		const wasPose = selectedClipIsPose;
+		animation.currentClipIndex = index;
+		animation.playing = clip.type === 'vpd' ? false : wasPose || animation.playing;
+	};
+
+	const appendExternalMotionFiles = (files: File[]) => {
 		const animation = layerEntry.properties?.animation;
 		const currentClipIndex = animation?.clips.length ?? 0;
-		const clips = files.map((file) =>
-			type === 'vmd'
-				? {
-						name: file.name.replace(/\.vmd$/i, ''),
-						type: 'vmd' as const,
-						url: URL.createObjectURL(file)
-					}
-				: {
-						name: file.name.replace(/\.vrma$/i, ''),
-						type: 'vrma' as const,
-						url: URL.createObjectURL(file)
-					}
-		);
+		const clips = files.map((file) => ({
+			name: file.name.replace(/\.(vmd|vrma|vpd)$/i, ''),
+			type: /\.vpd$/i.test(file.name)
+				? ('vpd' as const)
+				: /\.vrma$/i.test(file.name)
+					? ('vrma' as const)
+					: ('vmd' as const),
+			url: URL.createObjectURL(file)
+		}));
 
 		layerEntry.properties = {
 			...layerEntry.properties,
@@ -131,7 +140,7 @@
 			...layerEntry.state,
 			animation: {
 				currentClipIndex,
-				playing: true,
+				playing: clips[0].type !== 'vpd',
 				speed: layerEntry.state?.animation?.speed ?? animation?.defaultSpeed ?? 1,
 				loop: layerEntry.state?.animation?.loop ?? animation?.defaultLoop ?? true
 			}
@@ -200,18 +209,22 @@
 </script>
 
 {#if canConfigureAnimation}
-	<Accordion label="アニメーション" icon="mdi:run-fast" bind:value={showAnimationOption}>
+	<Accordion
+		label={isPmx ? 'モーション・ポーズ' : 'アニメーション'}
+		icon="mdi:run-fast"
+		bind:value={showAnimationOption}
+	>
 		{#if isPmx}
 			<input
 				bind:this={mmdMotionInput}
 				type="file"
-				accept=".vmd"
+				accept=".vmd,.vpd"
 				multiple
 				onchange={addMmdMotionFiles}
 				class="hidden"
 			/>
 			<button type="button" onclick={openMmdMotionPicker} class="c-btn-sub w-full">
-				VMDモーションを追加
+				モーション・ポーズを追加
 			</button>
 		{:else if isVrm}
 			<input
@@ -229,33 +242,37 @@
 
 		{#if animationClips.length > 0 && layerEntry.state?.animation}
 			<div class:mt-3={canAddExternalMotion}>
-				<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
-				<div class="mt-2">
-					<Switch label="ループ再生" bind:value={layerEntry.state.animation.loop} />
-				</div>
+				<BaseSelectMenu
+					bind:selectedKey={
+						() => layerEntry.state!.animation!.currentClipIndex, selectAnimationClip
+					}
+					items={animationClips.map((clip, index) => ({
+						key: index,
+						name: clip.type === 'vpd' ? `${clip.name}（ポーズ）` : clip.name
+					}))}
+				/>
+				{#if selectedClipIsPose}
+					<p class="mt-2 text-sm text-base/70">静止ポーズを適用しています。</p>
+				{:else}
+					<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
+					<div class="mt-2">
+						<Switch label="ループ再生" bind:value={layerEntry.state.animation.loop} />
+					</div>
+					{#if layerEntry.state.animation.playing}
+						<div class="mt-4 flex w-full flex-col gap-3" transition:slide>
+							<RangeSlider
+								label="再生速度"
+								bind:value={layerEntry.state.animation.speed}
+								min={0.1}
+								max={3}
+								step={0.1}
+							/>
+						</div>
+					{/if}
+				{/if}
 			</div>
-
-			{#if layerEntry.state.animation.playing}
-				<div class="mt-4 flex w-full flex-col gap-3" transition:slide>
-					<BaseSelectMenu
-						bind:selectedKey={layerEntry.state.animation.currentClipIndex}
-						items={animationClips.map((clip, index) => ({
-							key: index,
-							name: clip.name
-						}))}
-					/>
-
-					<RangeSlider
-						label="再生速度"
-						bind:value={layerEntry.state.animation.speed}
-						min={0.1}
-						max={3}
-						step={0.1}
-					/>
-				</div>
-			{/if}
 		{:else if isPmx}
-			<p class="mt-3 text-sm text-base/70">VMDモーションを追加すると再生できます。</p>
+			<p class="mt-3 text-sm text-base/70">VMDモーションまたはVPDポーズを追加できます。</p>
 		{:else if isVrm}
 			<p class="mt-3 text-sm text-base/70">VRMAモーションを追加すると再生できます。</p>
 		{/if}

@@ -722,7 +722,8 @@ export const SUPPORTED_FILE_ACCEPT = [
 	'.spa',
 	'.sph',
 	'.tga',
-	'.vmd' // PMX に紐づける MikuMikuDance モーション
+	'.vmd', // PMX に紐づける MikuMikuDance モーション
+	'.vpd' // PMX に紐づける MikuMikuDance ポーズ
 ].join(',');
 
 export interface ClickedLayerFeaturesData {

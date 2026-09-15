@@ -29,6 +29,13 @@ export interface VmdModelAnimationClip {
 	url: string;
 }
 
+/** PMX に適用する MikuMikuDance の静止ポーズ。 */
+export interface VpdModelAnimationClip {
+	name: string;
+	type: 'vpd';
+	url: string;
+}
+
 /** VRM に適用する VRM Animation モーション。 */
 export interface VrmaModelAnimationClip {
 	name: string;
@@ -37,7 +44,9 @@ export interface VrmaModelAnimationClip {
 }
 
 export interface ModelAnimationProperties {
-	clips: Array<ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip>;
+	clips: Array<
+		ModelAnimationClip | VmdModelAnimationClip | VpdModelAnimationClip | VrmaModelAnimationClip
+	>;
 	/** 初期選択するプリセット。未指定時は先頭。 */
 	defaultClipIndex?: number;
 	/** 初回表示時に既定プリセットを再生する。 */

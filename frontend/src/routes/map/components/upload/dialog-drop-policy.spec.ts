@@ -61,6 +61,25 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveOpenDialogDrop', () => {
+	it('PMXフォームではVPD、VMD、テクスチャの追加をまとめて受け付ける', async () => {
+		const currentFiles = [createFile('test-model.pmx')];
+		const incomingFiles = [
+			createFile('test-pose.VPD'),
+			createFile('test-motion.vmd'),
+			createFile('test-texture.png')
+		];
+		expect(await resolveOpenDialogDrop('model', currentFiles, incomingFiles)).toEqual({
+			type: 'stay',
+			dropFiles: expect.arrayContaining([...currentFiles, ...incomingFiles])
+		});
+	});
+	it('VRMフォームにはVPDを補助ファイルとして追加しない', async () => {
+		const result = await resolveOpenDialogDrop('model', [createFile('test-model.vrm')], [
+			createFile('test-pose.vpd')
+		]);
+		expect(result.type).not.toBe('stay');
+	});
+
 	it('モバイルで開いているフォームに写真を追加すると写真フォームへ移る', async () => {
 		const files = [createFile('test-photo.png')];
 		expect(await resolveOpenDialogDrop('gpx', [], files, { mobile: true })).toEqual({

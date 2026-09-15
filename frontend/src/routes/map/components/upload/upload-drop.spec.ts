@@ -414,6 +414,20 @@ describe('resolveDroppedFiles', () => {
 		}
 	);
 
+	it('PMXとVPDを同梱でき、VPD単独ではPMXの案内を表示する', async () => {
+		const model = createFile('test-model.pmx');
+		const pose = createFile('test-pose.vpd');
+		expect(await resolveDroppedFiles([model, pose])).toEqual({
+			type: 'dialog',
+			dialogType: 'model',
+			dropFiles: [model, pose]
+		});
+		expect(await resolveDroppedFiles(pose)).toMatchObject({
+			type: 'notification',
+			message: 'PMXファイル(.pmx)と一緒にドロップしてください'
+		});
+	});
+
 	it('VRM と VRMA を同時にドロップするとモデルダイアログでまとめて扱う', async () => {
 		const vrmFile = createFile('test-avatar.vrm', 'vrm');
 		const vrmaFile = createFile('test-motion.vrma', 'vrma');

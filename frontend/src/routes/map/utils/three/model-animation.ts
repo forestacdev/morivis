@@ -3,19 +3,24 @@ import type {
 	ModelAnimationProperties,
 	ModelAnimationState,
 	VmdModelAnimationClip,
+	VpdModelAnimationClip,
 	VrmaModelAnimationClip
 } from '$routes/map/data/types/model';
 
 export const isVmdModelAnimationClip = (
-	clip: ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip
+	clip: ModelAnimationProperties['clips'][number]
 ): clip is VmdModelAnimationClip => clip.type === 'vmd';
 
+export const isVpdModelAnimationClip = (
+	clip: ModelAnimationProperties['clips'][number] | undefined
+): clip is VpdModelAnimationClip => clip?.type === 'vpd';
+
 export const isVrmaModelAnimationClip = (
-	clip: ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip
+	clip: ModelAnimationProperties['clips'][number]
 ): clip is VrmaModelAnimationClip => clip.type === 'vrma';
 
 export const isEmbeddedModelAnimationClip = (
-	clip: ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip | undefined
+	clip: ModelAnimationProperties['clips'][number] | undefined
 ): clip is ModelAnimationClip => !clip || clip.type === undefined || clip.type === 'embedded';
 
 export const getInitialModelAnimationState = (
@@ -30,7 +35,8 @@ export const getInitialModelAnimationState = (
 
 	return {
 		currentClipIndex,
-		playing: properties.autoPlay ?? false,
+		playing: !isVpdModelAnimationClip(properties.clips[currentClipIndex])
+			&& (properties.autoPlay ?? false),
 		speed: Math.max(properties.defaultSpeed ?? 1, 0),
 		loop: properties.defaultLoop ?? true
 	};

@@ -37,6 +37,7 @@ import {
 	getInitialModelAnimationState,
 	isEmbeddedModelAnimationClip,
 	isVmdModelAnimationClip,
+	isVpdModelAnimationClip,
 	isVrmaModelAnimationClip
 } from '$routes/map/utils/three/model-animation';
 import {
@@ -75,7 +76,12 @@ import {
 	getPlacementPreviewBoundsKey,
 	renderPlacementPreviewPass
 } from '$routes/map/utils/three/placement-preview';
-import { type LoadedPmxModel, loadPmxModel } from '$routes/map/utils/three/pmx-loader';
+import {
+	applyPmxAnimationClip,
+	type LoadedPmxModel,
+	loadPmxAnimationClip,
+	loadPmxModel
+} from '$routes/map/utils/three/pmx-loader';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import {
 	createVrmLoader,
@@ -1680,30 +1686,30 @@ export class ThreeJsLayerManager {
 
 		const clipIndex = Math.min(Math.max(animationState.currentClipIndex, 0), clips.length - 1);
 		const clip = clips[clipIndex];
-		if (!clip || !isVmdModelAnimationClip(clip)) return;
-		if (mmd.activeClipIndex === clipIndex || mmd.loadingClipIndex === clipIndex) {
+		if (!clip || (!isVmdModelAnimationClip(clip) && !isVpdModelAnimationClip(clip))) return;
+		if (mmd.activeClipIndex === clipIndex) {
+			mmd.loadingClipIndex = undefined;
 			if (!mmd.lastPlaying && animationState.playing && animationState.loop === false) {
 				mmd.elapsedSeconds = 0;
 			}
 			mmd.lastPlaying = animationState.playing;
 			return;
 		}
+		if (mmd.loadingClipIndex === clipIndex) return;
 		const cachedAnimation = mmd.animations.get(clipIndex);
 		if (cachedAnimation) {
-			mmd.model.model.setAnimation(cachedAnimation);
+			applyPmxAnimationClip(mmd.model.model, cachedAnimation, isVpdModelAnimationClip(clip));
+			mmd.loadingClipIndex = undefined;
 			mmd.activeClipIndex = clipIndex;
 			mmd.elapsedSeconds = 0;
 			mmd.durationSeconds = getMmdAnimationDurationSeconds(cachedAnimation);
 			mmd.lastPlaying = animationState.playing;
-			if (animationState.playing) {
-				this.map?.triggerRepaint();
-			}
+			this.map?.triggerRepaint();
 			return;
 		}
 
 		mmd.loadingClipIndex = clipIndex;
-		void mmd.model.loader
-			.loadAnimation(clip.url)
+		void loadPmxAnimationClip(mmd.model.loader, clip)
 			.then((animation) => {
 				if (
 					mmd.loadingClipIndex !== clipIndex
@@ -1713,21 +1719,19 @@ export class ThreeJsLayerManager {
 					return;
 				}
 
-				mmd.model.model.setAnimation(animation);
+				applyPmxAnimationClip(mmd.model.model, animation, isVpdModelAnimationClip(clip));
 				mmd.animations.set(clipIndex, animation);
 				mmd.activeClipIndex = clipIndex;
 				mmd.loadingClipIndex = undefined;
 				mmd.elapsedSeconds = 0;
 				mmd.durationSeconds = getMmdAnimationDurationSeconds(animation);
 				mmd.lastPlaying = loaded.entry.state?.animation?.playing;
-				if (loaded.entry.state?.animation?.playing) {
-					this.map?.triggerRepaint();
-				}
+				this.map?.triggerRepaint();
 			})
 			.catch((error) => {
 				if (mmd.loadingClipIndex !== clipIndex) return;
 				mmd.loadingClipIndex = undefined;
-				console.error(`MMDモーションの読み込みに失敗しました: ${clip.name}`, error);
+				console.error(`MMDモーション・ポーズの読み込みに失敗しました: ${clip.name}`, error);
 			});
 	};
 
@@ -2315,7 +2319,13 @@ export class ThreeJsLayerManager {
 				loaded.vrm.update(deltaSeconds);
 				hasPlayingAnimation = true;
 			}
-			if (loaded.entry.state?.animation?.playing && loaded.mmd?.activeClipIndex != null) {
+			if (
+				loaded.entry.state?.animation?.playing
+				&& loaded.mmd?.activeClipIndex != null
+				&& !isVpdModelAnimationClip(
+					loaded.entry.properties?.animation?.clips[loaded.mmd.activeClipIndex]
+				)
+			) {
 				const animation = loaded.entry.state.animation;
 				const speed = Math.max(animation.speed, 0);
 				const durationSeconds = loaded.mmd.durationSeconds;

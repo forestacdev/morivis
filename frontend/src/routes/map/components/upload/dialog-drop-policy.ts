@@ -117,6 +117,15 @@ const supplementaryDropMatchers: Partial<
 		),
 	model: async (currentFiles, files) => {
 		if (files.length === 0) return false;
+		const hasPmxModel = toUploadFiles(currentFiles).some((file) => hasExtension(file, '.pmx'));
+		if (
+			hasPmxModel
+			&& files.every((file) =>
+				['.vpd', '.vmd', ...MODEL_TEXTURE_EXTENSIONS].some((extension) =>
+					hasExtension(file, extension)
+				)
+			)
+		) return true;
 		const hasVrmModel = toUploadFiles(currentFiles).some((file) => hasExtension(file, '.vrm'));
 		if (hasVrmModel && files.every((file) => hasExtension(file, VRMA_EXTENSION))) {
 			return true;

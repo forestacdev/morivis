@@ -184,6 +184,9 @@
 	const vmdFiles = $derived.by(() => {
 		return inputFiles.filter((file) => /\.vmd$/i.test(getPathLikeName(file)));
 	});
+	const vpdFiles = $derived.by(() => {
+		return inputFiles.filter((file) => /\.vpd$/i.test(getPathLikeName(file)));
+	});
 	const vrmaFiles = $derived.by(() => {
 		return inputFiles.filter((file) => /\.vrma$/i.test(getPathLikeName(file)));
 	});
@@ -199,7 +202,7 @@
 
 	const modelSupplementaryFiles = $derived.by(() => {
 		if (activeFormat === 'gltf') return gltfSupplementaryFiles;
-		if (activeFormat === 'pmx') return [...textureFiles, ...vmdFiles];
+		if (activeFormat === 'pmx') return [...textureFiles, ...vpdFiles, ...vmdFiles];
 		if (activeFormat === 'vrm') return vrmaFiles;
 		if (activeFormat === 'usd') return [];
 		return textureFiles;
@@ -916,14 +919,14 @@
 		if (activeFormat === 'fbx' && fbxDescription) {
 			entry.metaData.description = fbxDescription;
 		}
-		if (activeFormat === 'pmx' && resourceUrls && vmdFiles.length > 0) {
-			const clips = vmdFiles.flatMap((file) => {
+		if (activeFormat === 'pmx' && resourceUrls && (vpdFiles.length > 0 || vmdFiles.length > 0)) {
+			const clips = [...vpdFiles, ...vmdFiles].flatMap((file) => {
 				const url = resourceUrls?.[file.name.toLowerCase()];
 				if (!url) return [];
 				return [
 					{
-						name: file.name.replace(/\.vmd$/i, ''),
-						type: 'vmd' as const,
+						name: file.name.replace(/\.(vmd|vpd)$/i, ''),
+						type: /\.vpd$/i.test(file.name) ? ('vpd' as const) : ('vmd' as const),
 						url
 					}
 				];
@@ -934,7 +937,7 @@
 					animation: {
 						clips,
 						defaultClipIndex: 0,
-						autoPlay: true,
+						autoPlay: clips[0].type !== 'vpd',
 						defaultLoop: true
 					}
 				};
@@ -942,7 +945,7 @@
 					...entry.state,
 					animation: {
 						currentClipIndex: 0,
-						playing: true,
+						playing: clips[0].type !== 'vpd',
 						speed: 1,
 						loop: true
 					}
@@ -1507,6 +1510,13 @@
 				</p>
 				<p class="mt-2">未追加画像: {missingVrmlTexturePaths.join(', ')}</p>
 				<p class="mt-2">画像なしのまま登録することもできます。</p>
+			{:else if activeFormat === 'pmx' && vpdFiles.length > 0}
+				<p class="mt-2">
+					VPDポーズを{vpdFiles.length}件追加します。先頭のポーズを適用します。
+				</p>
+				{#if vmdFiles.length > 0}
+					<p class="mt-2">VMDモーションを{vmdFiles.length}件追加します。</p>
+				{/if}
 			{:else if activeFormat === 'pmx' && vmdFiles.length > 0}
 				<p class="mt-2">
 					VMDモーションを{vmdFiles.length}件追加します。先頭のモーションを既定で再生します。

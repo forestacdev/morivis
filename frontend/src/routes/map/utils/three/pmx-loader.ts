@@ -1,6 +1,8 @@
+import type { VmdModelAnimationClip, VpdModelAnimationClip } from '$routes/map/data/types/model';
 import type {
 	ModelSource,
 	TextureMap,
+	ThreeMmdAnimation,
 	ThreeMmdLoader,
 	ThreeMmdModel
 } from '@yohawing/three-mmd-loader/three';
@@ -43,3 +45,24 @@ export const loadPmxObject = async (
 	source: ModelSource,
 	resourceUrls?: Record<string, string>
 ): Promise<THREE.Group> => (await loadPmxModel(source, resourceUrls)).model.root;
+
+/** VPD は 0 フレームのアニメーションとして既存の MMD ランタイムへ渡す。 */
+export const loadPmxAnimationClip = (
+	loader: ThreeMmdLoader,
+	clip: VmdModelAnimationClip | VpdModelAnimationClip
+): Promise<ThreeMmdAnimation> =>
+	clip.type === 'vpd'
+		? loader.loadPoseAnimation(clip.url, clip.name)
+		: loader.loadAnimation(clip.url);
+
+export const applyPmxAnimationClip = (
+	model: Pick<ThreeMmdModel, 'setAnimation' | 'update' | 'runtime'>,
+	animation: ThreeMmdAnimation,
+	isPose: boolean
+) => {
+	// VPD 用ランタイムの再生成前に戻し、前のポーズが累積するのを防ぐ。
+	model.runtime.resetPose();
+	model.setAnimation(animation);
+	// 静止ポーズも停止中のモーションも、選択直後に一度だけ描画姿勢を更新する。
+	model.update(0, isPose ? { physics: false } : undefined);
+};

@@ -506,7 +506,7 @@ const resolveSingleFile = async (
 		return await resolveXmlFiles([file]);
 	}
 
-	if (ext === 'vmd') {
+	if (ext === 'vmd' || ext === 'vpd') {
 		return createNotificationDecision('PMXファイル(.pmx)と一緒にドロップしてください');
 	}
 
