@@ -49,7 +49,7 @@ export interface ModelAnimationProperties {
 	clips: Array<
 		ModelAnimationClip | VmdModelAnimationClip | VpdModelAnimationClip | VrmaModelAnimationClip
 	>;
-	/** 初期選択するプリセット。未指定時は先頭。 */
+	/** 初期選択するプリセット。未指定時は先頭。PMX は -1 で「なし」。 */
 	defaultClipIndex?: number;
 	/** 初回表示時に既定プリセットを再生する。 */
 	autoPlay?: boolean;
@@ -60,6 +60,7 @@ export interface ModelAnimationProperties {
 }
 
 export interface ModelAnimationState {
+	/** PMX は -1 でモーション・ポーズを適用しない。 */
 	currentClipIndex: number;
 	playing: boolean;
 	speed: number;

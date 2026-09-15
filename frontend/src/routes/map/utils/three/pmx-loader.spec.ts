@@ -3,7 +3,7 @@ import { ThreeMmdLoader, type ThreeMmdModel } from '@yohawing/three-mmd-loader/t
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { applyPmxAnimationClip, loadPmxAnimationClip } from './pmx-loader';
+import { applyPmxAnimationClip, clearPmxAnimationClip, loadPmxAnimationClip } from './pmx-loader';
 
 const createPoseUrl = (translation: number) =>
 	`data:application/octet-stream,${
@@ -64,6 +64,13 @@ describe('PMX static poses', () => {
 		expect(bone.position.x).toBeCloseTo(14);
 		applyPmxAnimationClip(model, first, true);
 		expect(bone.position.x).toBeCloseTo(12);
+		clearPmxAnimationClip(model);
+		expect(bone.position.x).toBeCloseTo(10);
+		expect(bone.quaternion.equals(new THREE.Quaternion())).toBe(true);
+		model.update(1, { physics: false, ik: false });
+		expect(bone.position.x).toBeCloseTo(10);
+		applyPmxAnimationClip(model, second, true);
+		expect(bone.position.x).toBeCloseTo(14);
 	});
 
 	it('rejects files that do not contain a VPD pose', async () => {

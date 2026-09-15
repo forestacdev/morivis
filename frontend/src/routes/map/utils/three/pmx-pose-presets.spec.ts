@@ -60,6 +60,11 @@ describe('PMX default pose presets', () => {
 		expect(withDefaultPmxPoses(merged)).toBe(merged);
 		expect(existing.clips).toHaveLength(1);
 		expect(withDefaultPmxPoses().autoPlay).toBe(false);
+		expect(withDefaultPmxPoses().defaultClipIndex).toBe(-1);
+		expect(withDefaultPmxPoses({ clips: [] }).defaultClipIndex).toBe(-1);
+		expect(withDefaultPmxPoses({ ...existing, defaultClipIndex: -1 }).defaultClipIndex).toBe(
+			-1
+		);
 	});
 
 	it.each(['common', 'male', 'female'])(

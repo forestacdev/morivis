@@ -34,7 +34,7 @@ export const withDefaultPmxPoses = (
 	return {
 		...animation,
 		clips: [...clips, ...missing],
-		defaultClipIndex: animation?.defaultClipIndex ?? 0,
+		defaultClipIndex: animation?.defaultClipIndex ?? (clips.length > 0 ? 0 : -1),
 		autoPlay: animation?.autoPlay ?? false
 	};
 };

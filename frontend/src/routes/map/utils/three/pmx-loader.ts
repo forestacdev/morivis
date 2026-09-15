@@ -75,3 +75,10 @@ export const applyPmxAnimationClip = (
 	// 静止ポーズも停止中のモーションも、選択直後に一度だけ描画姿勢を更新する。
 	model.update(0, isPose ? { physics: false, ik } : undefined);
 };
+
+/** 適用中のモーション・ポーズを解除し、モデル本来の姿勢を描画へ反映する。 */
+export const clearPmxAnimationClip = (model: Pick<ThreeMmdModel, 'runtime' | 'update'>) => {
+	model.runtime.clearAnimation();
+	model.runtime.resetPose();
+	model.update(0, { physics: false, ik: false });
+};

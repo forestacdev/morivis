@@ -78,6 +78,7 @@ import {
 } from '$routes/map/utils/three/placement-preview';
 import {
 	applyPmxAnimationClip,
+	clearPmxAnimationClip,
 	type LoadedPmxModel,
 	loadPmxAnimationClip,
 	loadPmxModel
@@ -1683,6 +1684,18 @@ export class ThreeJsLayerManager {
 		const animationState = loaded.entry.state?.animation;
 		const clips = loaded.entry.properties?.animation?.clips;
 		if (!mmd || !animationState || !clips?.length) return;
+		if (animationState.currentClipIndex === -1) {
+			mmd.loadingClipIndex = undefined;
+			if (mmd.activeClipIndex !== -1) {
+				clearPmxAnimationClip(mmd.model.model);
+				mmd.activeClipIndex = -1;
+				mmd.elapsedSeconds = 0;
+				mmd.durationSeconds = undefined;
+				mmd.lastPlaying = false;
+				this.map?.triggerRepaint();
+			}
+			return;
+		}
 
 		const clipIndex = Math.min(Math.max(animationState.currentClipIndex, 0), clips.length - 1);
 		const clip = clips[clipIndex];
@@ -2332,6 +2345,7 @@ export class ThreeJsLayerManager {
 			if (
 				loaded.entry.state?.animation?.playing
 				&& loaded.mmd?.activeClipIndex != null
+				&& loaded.mmd.activeClipIndex >= 0
 				&& !isVpdModelAnimationClip(
 					loaded.entry.properties?.animation?.clips[loaded.mmd.activeClipIndex]
 				)

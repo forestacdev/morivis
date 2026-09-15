@@ -28,14 +28,15 @@ export const getInitialModelAnimationState = (
 ): ModelAnimationState | undefined => {
 	if (!properties || properties.clips.length === 0) return undefined;
 
-	const currentClipIndex = Math.min(
+	const currentClipIndex = properties.defaultClipIndex === -1 ? -1 : Math.min(
 		Math.max(properties.defaultClipIndex ?? 0, 0),
 		properties.clips.length - 1
 	);
 
 	return {
 		currentClipIndex,
-		playing: !isVpdModelAnimationClip(properties.clips[currentClipIndex])
+		playing: currentClipIndex !== -1
+			&& !isVpdModelAnimationClip(properties.clips[currentClipIndex])
 			&& (properties.autoPlay ?? false),
 		speed: Math.max(properties.defaultSpeed ?? 1, 0),
 		loop: properties.defaultLoop ?? true

@@ -42,6 +42,7 @@
 		animationClips[layerEntry.state?.animation?.currentClipIndex ?? 0]?.type === 'vpd'
 	);
 	let isPmx = $derived(layerEntry.format.type === 'pmx');
+	let selectedClipIsNone = $derived(isPmx && layerEntry.state?.animation?.currentClipIndex === -1);
 	let isVrm = $derived(layerEntry.format.type === 'vrm');
 	let canAddExternalMotion = $derived(isPmx || isVrm);
 	let canConfigureAnimation = $derived(canAddExternalMotion || animationClips.length > 0);
@@ -125,9 +126,14 @@
 	const selectAnimationClip = (key: string | number) => {
 		const animation = layerEntry.state?.animation;
 		const index = Number(key);
+		if (animation && isPmx && index === -1) {
+			animation.currentClipIndex = -1;
+			animation.playing = false;
+			return;
+		}
 		const clip = animationClips[index];
 		if (!animation || !clip) return;
-		const wasPose = selectedClipIsPose;
+		const wasPose = selectedClipIsPose || selectedClipIsNone;
 		animation.currentClipIndex = index;
 		animation.playing = clip.type === 'vpd' ? false : wasPose || animation.playing;
 	};
@@ -268,14 +274,17 @@
 					bind:selectedKey={
 						() => layerEntry.state!.animation!.currentClipIndex, selectAnimationClip
 					}
-					items={animationClips.map((clip, index) => ({
-						key: index,
-						name: clip.type === 'vpd' ? `${clip.name}（ポーズ）` : clip.name
-					}))}
+					items={[
+						...(isPmx ? [{ key: -1, name: 'なし' }] : []),
+						...animationClips.map((clip, index) => ({
+							key: index,
+							name: clip.type === 'vpd' ? `${clip.name}（ポーズ）` : clip.name
+						}))
+					]}
 				/>
 				{#if selectedClipIsPose}
 					<p class="mt-2 text-sm text-base/70">静止ポーズを適用しています。</p>
-				{:else}
+				{:else if !selectedClipIsNone}
 					<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
 					<div class="mt-2">
 						<Switch label="ループ再生" bind:value={layerEntry.state.animation.loop} />

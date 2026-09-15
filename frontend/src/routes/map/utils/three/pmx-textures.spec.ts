@@ -2,7 +2,7 @@ import { disposeMmdModel, type ThreeMmdModel } from '@yohawing/three-mmd-loader/
 import { MeshToonMaterial } from 'three';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { loadPmxModel } from './pmx-loader';
+import { applyPmxAnimationClip, clearPmxAnimationClip, loadPmxModel } from './pmx-loader';
 
 /** テクスチャ付きの三角形と、存在しないスフィアマップを参照する架空の PMX。 */
 const createTestPmx = () => {
@@ -83,6 +83,27 @@ const getMaterial = (model: ThreeMmdModel) => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('PMX texture loading', () => {
+	it('restores a loaded PMX to its original pose after clearing a VPD', async () => {
+		const { loader, model } = await loadPmxModel(createTestPmx());
+		try {
+			const bone = model.mesh.skeleton.bones[0];
+			const originalPosition = bone.position.clone();
+			const pose = await loader.loadPoseAnimation(new TextEncoder().encode(
+				'Vocaloid Pose Data file\n\ntest-model.pmx;\n1;\nBone0{test-bone\n2, 0, 0;\n0, 0, 0, 1;\n}\n'
+			));
+			applyPmxAnimationClip(model, pose, true, false);
+			expect(bone.position.x).toBeCloseTo(originalPosition.x + 2);
+			clearPmxAnimationClip(model);
+			expect(bone.position.toArray()).toEqual(originalPosition.toArray());
+			model.update(1, { physics: false, ik: false });
+			expect(bone.position.toArray()).toEqual(originalPosition.toArray());
+			applyPmxAnimationClip(model, pose, true, false);
+			expect(bone.position.x).toBeCloseTo(originalPosition.x + 2);
+		} finally {
+			disposeMmdModel(model);
+		}
+	});
+
 	it('loads an uploaded model with a missing texture and retains the supplied TGA', async () => {
 		const modelUrl = 'blob:https://test.invalid/test-model';
 		const textureUrl = 'blob:https://test.invalid/test-texture';
