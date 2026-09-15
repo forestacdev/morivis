@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+
+	import ModelScaleControl from '$routes/map/components/atoms/ModelScaleControl.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
 	import type { ModelLocalBounds } from '$routes/map/data/types/model';
 	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
-	import ModelScaleControl from '$routes/map/components/atoms/ModelScaleControl.svelte';
 
 	interface Props {
 		lng: number;
@@ -55,16 +56,26 @@
 	</div>
 	<label class="flex w-full flex-col gap-1 text-sm">
 		<span>経度</span>
-		<input class="c-input w-full" type="number" step="any" bind:value={lng} />
+		<input
+			class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
+			type="number"
+			step="any"
+			bind:value={lng}
+		/>
 	</label>
 	<label class="flex w-full flex-col gap-1 text-sm">
 		<span>緯度</span>
-		<input class="c-input w-full" type="number" step="any" bind:value={lat} />
+		<input
+			class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
+			type="number"
+			step="any"
+			bind:value={lat}
+		/>
 	</label>
-	<label class="flex w-full flex-col gap-1 text-sm">
+	<!-- <label class="flex w-full flex-col gap-1 text-sm">
 		<span>高さ (m)</span>
-		<input class="c-input w-full" type="number" step="0.1" bind:value={altitude} />
-	</label>
+		<input class="c-form-field w-full" type="number" step="0.1" bind:value={altitude} />
+	</label> -->
 	{#if canEditHeightOffset}
 		<RangeSlider
 			label="高さオフセット (m)"
@@ -84,10 +95,18 @@
 			scaleUnit = value.scaleUnit;
 		}}
 	/>
-	<label class="flex w-full flex-col gap-1 text-sm">
-		<span>Y回転 (°)</span>
-		<input class="c-input w-full" type="number" step="1" bind:value={rotationY} />
-	</label>
+	<RangeSlider
+		label="Y回転 (°)"
+		bind:value={
+			() => (rotationY < 0 || rotationY > 360 ? ((rotationY % 360) + 360) % 360 : rotationY),
+			(value) => (rotationY = value)
+		}
+		min={0}
+		max={360}
+		step={1}
+		isInt
+		icon="mdi:rotate-right"
+	/>
 	<div class="grid grid-cols-2 gap-2">
 		<button
 			type="button"
