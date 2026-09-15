@@ -34,6 +34,8 @@ export interface VpdModelAnimationClip {
 	name: string;
 	type: 'vpd';
 	url: string;
+	/** 足などのIKを適用する。未指定時はtrue。 */
+	ik?: boolean;
 }
 
 /** VRM に適用する VRM Animation モーション。 */

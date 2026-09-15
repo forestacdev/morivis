@@ -32,7 +32,15 @@ export const loadPmxModel = async (
 	const loader = new ThreeMmdLoader({
 		...(resourceUrls && { textureMap: resourceUrls as TextureMap })
 	});
-	const model = await loader.loadModel(source, {
+	// blob/data URL には相対パスの基点がない。バイナリとして渡すことで、
+	// 未添付のテクスチャをローダーが URL 解決しようとして失敗するのを防ぐ。
+	let modelSource = source;
+	if (typeof source === 'string' && /^(blob|data):/i.test(source)) {
+		const response = await fetch(source);
+		if (!response.ok) throw new Error(`PMXを取得できません: ${response.status}`);
+		modelSource = await response.arrayBuffer();
+	}
+	const model = await loader.loadModel(modelSource, {
 		outline: false,
 		materialRenderOrder: false,
 		morphSplit: false,
@@ -58,11 +66,12 @@ export const loadPmxAnimationClip = (
 export const applyPmxAnimationClip = (
 	model: Pick<ThreeMmdModel, 'setAnimation' | 'update' | 'runtime'>,
 	animation: ThreeMmdAnimation,
-	isPose: boolean
+	isPose: boolean,
+	ik = true
 ) => {
 	// VPD 用ランタイムの再生成前に戻し、前のポーズが累積するのを防ぐ。
 	model.runtime.resetPose();
 	model.setAnimation(animation);
 	// 静止ポーズも停止中のモーションも、選択直後に一度だけ描画姿勢を更新する。
-	model.update(0, isPose ? { physics: false } : undefined);
+	model.update(0, isPose ? { physics: false, ik } : undefined);
 };

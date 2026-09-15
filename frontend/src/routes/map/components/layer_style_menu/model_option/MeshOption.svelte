@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
 	import { slide } from 'svelte/transition';
 	import { untrack } from 'svelte';
 
@@ -166,6 +167,12 @@
 
 	$effect(() => {
 		ensureShading();
+		if (isPmx) {
+			const animation = withDefaultPmxPoses(layerEntry.properties?.animation);
+			if (animation !== layerEntry.properties?.animation) {
+				layerEntry.properties = { ...layerEntry.properties, animation };
+			}
+		}
 		if (animationClips.length > 0 && !layerEntry.state?.animation) {
 			const animationState = getInitialModelAnimationState(layerEntry.properties?.animation);
 			if (!animationState) return;

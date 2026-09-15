@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
+	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
 	import { onDestroy, untrack } from 'svelte';
 	import * as yup from 'yup';
 
@@ -1081,6 +1083,14 @@
 			isProcessing.set(false);
 		}
 
+		if (entry.format.type === 'pmx') {
+			const animation = withDefaultPmxPoses(entry.properties?.animation);
+			entry.properties = { ...entry.properties, animation };
+			entry.state = {
+				...entry.state,
+				animation: entry.state?.animation ?? getInitialModelAnimationState(animation)
+			};
+		}
 		return entry;
 	};
 

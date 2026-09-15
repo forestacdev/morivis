@@ -1698,7 +1698,12 @@ export class ThreeJsLayerManager {
 		if (mmd.loadingClipIndex === clipIndex) return;
 		const cachedAnimation = mmd.animations.get(clipIndex);
 		if (cachedAnimation) {
-			applyPmxAnimationClip(mmd.model.model, cachedAnimation, isVpdModelAnimationClip(clip));
+			applyPmxAnimationClip(
+				mmd.model.model,
+				cachedAnimation,
+				isVpdModelAnimationClip(clip),
+				isVpdModelAnimationClip(clip) ? clip.ik : undefined
+			);
 			mmd.loadingClipIndex = undefined;
 			mmd.activeClipIndex = clipIndex;
 			mmd.elapsedSeconds = 0;
@@ -1719,7 +1724,12 @@ export class ThreeJsLayerManager {
 					return;
 				}
 
-				applyPmxAnimationClip(mmd.model.model, animation, isVpdModelAnimationClip(clip));
+				applyPmxAnimationClip(
+					mmd.model.model,
+					animation,
+					isVpdModelAnimationClip(clip),
+					isVpdModelAnimationClip(clip) ? clip.ik : undefined
+				);
 				mmd.animations.set(clipIndex, animation);
 				mmd.activeClipIndex = clipIndex;
 				mmd.loadingClipIndex = undefined;
