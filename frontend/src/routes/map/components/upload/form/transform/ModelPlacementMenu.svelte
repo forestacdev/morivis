@@ -1,10 +1,19 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
+	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import type { ModelLocalBounds } from '$routes/map/data/types/model';
+	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
 	import ModelScaleControl from '$routes/map/components/atoms/ModelScaleControl.svelte';
 
 	interface Props {
 		lng: number;
 		lat: number;
 		altitude: number;
+		heightOffset: number;
+		localBounds?: ModelLocalBounds;
+		baseScale?: number;
+		heightScale?: number;
+		canEditHeightOffset?: boolean;
 		scale: number;
 		scaleUnit: number;
 		rotationX: number;
@@ -16,12 +25,26 @@
 		lng = $bindable(),
 		lat = $bindable(),
 		altitude = $bindable(),
+		heightOffset = $bindable(),
+		localBounds,
+		baseScale,
+		heightScale,
+		canEditHeightOffset = true,
 		scale = $bindable(),
 		scaleUnit = $bindable(),
 		rotationX = $bindable(),
 		rotationY = $bindable(),
 		rotationZ = $bindable()
 	}: Props = $props();
+
+	const heightOffsetSliderRange = $derived(
+		getModelHeightOffsetSliderRange({
+			localBounds,
+			transform: { scale, scaleUnit, baseScale, heightScale },
+			// 高さをドラッグしている間は範囲を固定する。
+			heightOffset: untrack(() => heightOffset)
+		})
+	);
 
 	const rotateQuarterTurn = (rotation: number) => (((rotation + 90) % 360) + 360) % 360;
 </script>
@@ -42,6 +65,17 @@
 		<span>高さ (m)</span>
 		<input class="c-input w-full" type="number" step="0.1" bind:value={altitude} />
 	</label>
+	{#if canEditHeightOffset}
+		<RangeSlider
+			label="高さオフセット (m)"
+			bind:value={heightOffset}
+			min={heightOffsetSliderRange.min}
+			max={heightOffsetSliderRange.max}
+			step={heightOffsetSliderRange.step}
+			fractionDigits={heightOffsetSliderRange.fractionDigits}
+			icon="mdi:arrow-up-down"
+		/>
+	{/if}
 	<ModelScaleControl
 		{scale}
 		{scaleUnit}

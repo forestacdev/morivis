@@ -78,6 +78,9 @@
 		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		allowedTransformModes: ActiveTransformOptionMode[];
+		isEditingModelPlacement?: boolean;
+		onModelPlacementConfirm?: (entry: ThreeModelEntry) => void;
+		onModelPlacementCancel?: () => void;
 		onZoneConfirm: (epsgCode: EpsgCode) => void;
 		onZoneGeoRef: (epsgCode: EpsgCode) => void;
 		onGeoRefConfirm: (payload: GeoRefConfirmPayload) => Promise<void>;
@@ -96,6 +99,9 @@
 		dropFile = $bindable(),
 		transformOptionMode = $bindable(),
 		allowedTransformModes,
+		isEditingModelPlacement = false,
+		onModelPlacementConfirm,
+		onModelPlacementCancel,
 		onZoneConfirm,
 		onZoneGeoRef,
 		onGeoRefConfirm
@@ -165,8 +171,12 @@
 		showDataMenu.set(false);
 		isProcessing.set(true);
 
-		void mapStore
-			.setThreeLayer([entry], 'preview')
+		// 再配置では登録済みの描画モデルを使い、複製・再読み込みを避ける。
+		void (
+			isEditingModelPlacement
+				? threeJsManager.addModel(entry, 'main')
+				: mapStore.setThreeLayer([entry], 'preview')
+		)
 			.then(() => {
 				if (
 					loadId !== modelPlacementLoadId ||
@@ -381,6 +391,13 @@
 	};
 
 	const handleCancel = () => {
+		if (isEditingModelPlacement) {
+			modelPlacementLoadId += 1;
+			isProcessing.set(false);
+			threeJsManager.clearPlacementPreview();
+			onModelPlacementCancel?.();
+			return;
+		}
 		if (isModelPlacementActive) {
 			const entryId = showDataEntry?.id;
 			if (showDataEntry?.style.type === 'gaussian-splat') {
@@ -408,6 +425,12 @@
 		if (isModelPlacementActive) {
 			const placedEntry = createPlacedModelEntry();
 			if (!placedEntry) return;
+			if (isEditingModelPlacement) {
+				modelPlacementLoadId += 1;
+				threeJsManager.clearPlacementPreview();
+				onModelPlacementConfirm?.(placedEntry);
+				return;
+			}
 
 			threeJsManager.setModelTransform(placedEntry.id, placedEntry.style);
 			showDataEntry = placedEntry;
@@ -796,11 +819,17 @@
 					fitToCurrentCorners(300);
 				}}
 			/>
-		{:else if isModelPlacementActive}
+		{:else if isModelPlacementActive && modelPlacementInitialized}
+			{@const modelEntry = showDataEntry as ThreeModelEntry}
 			<ModelPlacementMenu
 				bind:lng={modelLng}
 				bind:lat={modelLat}
 				bind:altitude={modelAltitude}
+				bind:heightOffset={modelHeightOffset}
+				localBounds={modelEntry.format.localBounds}
+				baseScale={modelEntry.style.transform.baseScale}
+				heightScale={modelEntry.style.transform.heightScale}
+				canEditHeightOffset={modelEntry.style.transformOptions?.heightOffset ?? true}
 				bind:scale={modelScale}
 				bind:scaleUnit={modelScaleUnit}
 				bind:rotationX={modelRotationX}

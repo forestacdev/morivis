@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
+	import { untrack } from 'svelte';
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
@@ -18,6 +19,7 @@
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
+	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
 	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
@@ -56,6 +58,19 @@
 	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);
 	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? false);
 	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
+	const heightOffsetSliderRange = $derived(
+		getModelHeightOffsetSliderRange({
+			localBounds: layerEntry.format.localBounds,
+			transform: {
+				scale: layerEntry.style.transform.scale,
+				scaleUnit: layerEntry.style.transform.scaleUnit,
+				baseScale: layerEntry.style.transform.baseScale,
+				heightScale: layerEntry.style.transform.heightScale
+			},
+			// ドラッグ中は範囲を固定し、スケール変更時にその時点の高さを範囲へ含める。
+			heightOffset: untrack(() => layerEntry.style.transform.heightOffset)
+		})
+	);
 	const isIfc = $derived(layerEntry.format.type === 'ifc');
 	const isFbx = $derived(layerEntry.format.type === 'fbx');
 	const hasPartColorProfile = $derived(
@@ -451,10 +466,10 @@
 			<RangeSlider
 				label="高さオフセット (m)"
 				bind:value={layerEntry.style.transform.heightOffset}
-				min={-100}
-				max={1000}
-				step={1}
-				isInt
+				min={heightOffsetSliderRange.min}
+				max={heightOffsetSliderRange.max}
+				step={heightOffsetSliderRange.step}
+				fractionDigits={heightOffsetSliderRange.fractionDigits}
 				icon="mdi:arrow-up-down"
 			/>
 		{/if}

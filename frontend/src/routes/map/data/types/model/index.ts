@@ -155,6 +155,8 @@ export interface MeshHeightColorRampStyle {
 }
 
 export interface MeshTransformOptionStyle {
+	/** 再ジオリファレンスの可否。未指定時はtrue。 */
+	georeference?: boolean;
 	scale?: boolean;
 	rotation?: boolean;
 	/** 地形メッシュなど、高さ倍率の編集が必要な場合のみ有効にする。既定はfalse。 */
@@ -172,6 +174,7 @@ export interface ProjectedModelGeoreference {
 }
 
 export interface ModelTransformStyle {
+	transformOptions?: MeshTransformOptionStyle;
 	transform: {
 		lng: number;
 		lat: number;
@@ -215,7 +218,6 @@ export interface MeshStyle extends ModelTransformStyle {
 	shading?: MeshShadingStyle;
 	edge?: MeshEdgeStyle;
 	heightColorRamp?: MeshHeightColorRampStyle;
-	transformOptions?: MeshTransformOptionStyle;
 }
 
 /** 通常 PLY の 3D Gaussian Splatting 向けスタイル。 */

@@ -69,6 +69,9 @@ const entry = {
 		edge: {
 			...baseEntry.style.edge,
 			enabled: true
+		},
+		transformOptions: {
+			georeference: false
 		}
 	},
 	properties: {

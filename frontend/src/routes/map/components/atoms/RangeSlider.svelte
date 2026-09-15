@@ -8,6 +8,7 @@
 		step: number;
 		icon?: string;
 		isInt?: boolean;
+		fractionDigits?: number;
 		showValue?: boolean;
 		disabled?: boolean;
 		onInput?: (value: number) => void;
@@ -20,6 +21,7 @@
 		step = 0.01,
 		icon,
 		isInt = false,
+		fractionDigits,
 		showValue = true,
 		disabled = false,
 		onInput
@@ -43,7 +45,7 @@
 		{/if}
 		<div class="flex w-full justify-between pr-2 select-none">
 			<span>{label ? `${label}: ` : ''}</span>{#if showValue}<span class={isInt ? 'pr-2' : ''}
-					>{isInt ? value.toFixed(0) : value.toFixed(2)}</span
+					>{value.toFixed(fractionDigits ?? (isInt ? 0 : 2))}</span
 				>{/if}
 		</div>
 	</div>

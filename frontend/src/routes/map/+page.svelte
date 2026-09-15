@@ -158,7 +158,8 @@
 		showSearchMenu,
 		showTermsDialog,
 		isProcessing,
-		showModelView
+		showModelView,
+		modelGeoreferenceRequest
 	} from '$routes/stores/ui';
 	let map = $state.raw<maplibregl.Map | null>(null); // MapLibreのマップオブジェクト
 
@@ -294,6 +295,7 @@
 	let zoneConfirmedEpsg = $state<EpsgCode | null>(null);
 	let pendingZoneGeoRefData = $state.raw<PendingZoneGeoRefData | null>(null);
 	let transformOptionMode = $state<TransformOptionMode>(null);
+	let modelPlacementOriginalEntry = $state.raw<ThreeModelEntry | null>(null);
 
 	const setUploadDialogType = (dialogType: DialogType) => {
 		if (dialogType && !showDialogType) {
@@ -325,6 +327,7 @@
 	let geoRefPreviewData = $state<GeoRefPreviewData | null>(null);
 	let geoRefPreviewOpacity = $state(0.6);
 	let allowedTransformModes = $derived.by(() => {
+		if (modelPlacementOriginalEntry) return ['georef' as const];
 		if (geoRefData?.allowedTransformModes?.length) {
 			return geoRefData.allowedTransformModes;
 		}
@@ -340,7 +343,52 @@
 		return [];
 	});
 
+	const cancelModelGeoreference = () => {
+		const original = modelPlacementOriginalEntry;
+		if (!original) return;
+		modelPlacementOriginalEntry = null;
+		mapStore.setModelStyle(original);
+		showDataEntry = null;
+		transformOptionMode = null;
+	};
+
+	const confirmModelGeoreference = (placedEntry: ThreeModelEntry) => {
+		if (!modelPlacementOriginalEntry || placedEntry.id !== modelPlacementOriginalEntry.id) return;
+		layerEntries = layerEntries.map((entry) => (entry.id === placedEntry.id ? placedEntry : entry));
+		modelPlacementOriginalEntry = null;
+		showDataEntry = null;
+		transformOptionMode = null;
+		showNotification('モデルの配置を更新しました', 'success');
+	};
+
+	$effect(() => {
+		const entryId = $modelGeoreferenceRequest;
+		if (!entryId) return;
+		untrack(() => {
+			modelGeoreferenceRequest.set(null);
+			if (transformOptionMode || showDialogType || showDataEntry) return;
+			const entry = layerEntries.find((candidate) => candidate.id === entryId);
+			if (
+				!entry ||
+				!isThreeModelEntry(entry) ||
+				entry.style.transformOptions?.georeference === false
+			)
+				return;
+			modelPlacementOriginalEntry = entry;
+			showDataEntry = {
+				...entry,
+				metaData: { ...entry.metaData },
+				style: { ...entry.style, transform: { ...entry.style.transform } }
+			} as ThreeModelEntry;
+			selectedLayerId.set('');
+			isStyleEdit.set(false);
+			showDataMenu.set(false);
+			transformOptionMode = 'georef';
+		});
+	});
+
 	const closeGeoRefUi = () => {
+		cancelModelGeoreference();
 		if (geoRefData?.sourceFeatureCollectionId) {
 			GeoRefVectorSourceCache.remove(geoRefData.sourceFeatureCollectionId);
 		}
@@ -1515,6 +1563,9 @@
 			<GeoRefForm
 				map={geoRefMap}
 				{allowedTransformModes}
+				isEditingModelPlacement={!!modelPlacementOriginalEntry}
+				onModelPlacementConfirm={confirmModelGeoreference}
+				onModelPlacementCancel={cancelModelGeoreference}
 				bind:selectedEpsgCode
 				bind:focusBbox
 				bind:zoneBboxGeojsonData
@@ -1572,6 +1623,10 @@
 		}
 
 		if (e.key === 'Escape') {
+			if (modelPlacementOriginalEntry) {
+				cancelModelGeoreference();
+				return;
+			}
 			// フォーカスを外す処理を追加
 			if (document.activeElement && document.activeElement instanceof HTMLElement) {
 				document.activeElement.blur();

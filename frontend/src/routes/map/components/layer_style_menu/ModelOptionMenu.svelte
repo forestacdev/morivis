@@ -19,7 +19,9 @@
 	} from '$routes/map/data/types/model';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import { closeModelView, modelViewRequest, openModelView } from '$routes/stores';
+	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
+	import { modelGeoreferenceRequest } from '$routes/stores/ui';
 
 	interface Props {
 		layerEntry: MorivisModelEntry;
@@ -105,6 +107,19 @@
 						? 'モデルビューを閉じる'
 						: 'モデルビューで開く'}
 			</button>
+			{#if $activeLayerIdsStore.includes(layerEntry.id) && (layerEntry.style.transformOptions?.georeference ?? true)}
+				<button
+					type="button"
+					class="c-btn-sub mt-2 flex w-full items-center justify-center gap-2 rounded-full p-2 text-sm"
+					onclick={() => {
+						closeModelView();
+						modelGeoreferenceRequest.set(layerEntry.id);
+					}}
+				>
+					<Icon icon="mdi:map-marker-move" class="h-5 w-5" />
+					位置合わせをする
+				</button>
+			{/if}
 		</div>
 		{#if isThreeMeshEntry(layerEntry)}
 			<MeshOption bind:layerEntry bind:showColorOption bind:showDimensionOption />
