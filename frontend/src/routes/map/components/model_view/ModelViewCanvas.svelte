@@ -21,6 +21,7 @@
 		onModelMiss?: () => void;
 		onResetViewChange?: (resetView: (() => void) | null) => void;
 		onFpsModeChange?: (enabled: boolean) => void;
+		onFpsStartChange?: (startFps: (() => void) | null) => void;
 	}
 
 	let {
@@ -31,11 +32,13 @@
 		onModelPicked,
 		onModelMiss,
 		onResetViewChange,
-		onFpsModeChange
+		onFpsModeChange,
+		onFpsStartChange
 	}: Props = $props();
 	let interactionTarget = $state<HTMLButtonElement>();
 	let isLoading = $state(true);
 	let errorMessage = $state<string | null>(null);
+	let isPointerLocked = $state(false);
 	const MODEL_VIEW_BACKGROUND =
 		'radial-gradient(circle at 50% 42%, #26343d 0%, #151d24 48%, #080c10 100%)';
 	let setFpsMode = (_enabled: boolean) => {};
@@ -146,6 +149,8 @@
 			requestRender();
 		};
 		controls.addEventListener('change', onControlsChange);
+		// FPSの視点回転も、移動キーの入力とは独立して再描画する。
+		pointerLockControls.addEventListener('change', onControlsChange);
 		// TrackballControlsのホイール入力はupdate()で初めてカメラへ反映されるため、
 		// 静止中でもstartイベントから描画フレームを起動する。
 		zoomControls.addEventListener('start', onControlsChange);
@@ -180,13 +185,32 @@
 			pressedKeys.delete(event.code);
 		};
 		const lockPointer = () => {
-			if (fpsModeEnabled && !pointerLockControls.isLocked) pointerLockControls.lock();
+			if (!fpsModeEnabled || pointerLockControls.isLocked) return;
+			// ブラウザが拒否した場合はクリック案内を残して再試行できるようにする。
+			try {
+				const request = target.requestPointerLock();
+				request?.catch(() => {
+					isPointerLocked = false;
+				});
+			} catch {
+				isPointerLocked = false;
+			}
+		};
+		const onPointerLocked = () => {
+			isPointerLocked = true;
 		};
 		const unlockPointer = () => {
+			isPointerLocked = false;
 			pressedKeys.clear();
 			if (fpsModeEnabled) onFpsModeChange?.(false);
 		};
+		// ヘッダーのクリック中に呼び出し、ブラウザのユーザー操作としてロックを要求する。
+		onFpsStartChange?.(() => {
+			setFpsMode(true);
+			lockPointer();
+		});
 		target.addEventListener('click', lockPointer);
+		pointerLockControls.addEventListener('lock', onPointerLocked);
 		pointerLockControls.addEventListener('unlock', unlockPointer);
 		const syncControls = () => {
 			const target = session.getTarget();
@@ -215,7 +239,9 @@
 			resizeObserver.disconnect();
 			cancelAnimationFrame(animationFrame);
 			target.removeEventListener('click', lockPointer);
+			pointerLockControls.removeEventListener('lock', onPointerLocked);
 			pointerLockControls.removeEventListener('unlock', unlockPointer);
+			pointerLockControls.removeEventListener('change', onControlsChange);
 			controls.removeEventListener('change', onControlsChange);
 			zoomControls.removeEventListener('start', onControlsChange);
 			zoomControls.removeEventListener('change', onControlsChange);
@@ -225,6 +251,7 @@
 			pointerLockControls.dispose();
 			session.canvas.style.background = originalCanvasBackground;
 			onResetViewChange?.(null);
+			onFpsStartChange?.(null);
 			onFpsModeChange?.(false);
 			setFpsMode = () => {};
 			handleFpsKeyDown = () => false;
@@ -252,6 +279,14 @@
 		onpointerdown={onPointerDown}
 		onclick={onModelClick}
 	></button>
+
+	{#if fpsMode && !isPointerLocked && !isLoading && !errorMessage}
+		<div class="pointer-events-none absolute inset-0 grid place-items-center p-6" role="status">
+			<p class="rounded-2xl border border-white/20 bg-black/70 px-6 py-4 text-center shadow-lg">
+				ここをクリックでFPS操作を開始します
+			</p>
+		</div>
+	{/if}
 
 	{#if isLoading || errorMessage}
 		<div

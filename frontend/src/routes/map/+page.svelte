@@ -269,6 +269,7 @@
 	let featureMenuData = $state<FeatureMenuData | null>(null);
 	let highlightMarkerState = $state<HighlightMarkerState | null>(null);
 	let resetModelView = $state<(() => void) | null>(null);
+	let startModelViewFps: (() => void) | null = null;
 	let modelViewFpsMode = $state(false);
 
 	// 選択マーカー
@@ -946,6 +947,10 @@
 	};
 	const toggleModelViewFps = () => {
 		modelViewFpsMode = !modelViewFpsMode;
+		if (modelViewFpsMode) startModelViewFps?.();
+	};
+	const setModelViewFpsStart = (startFps: (() => void) | null) => {
+		startModelViewFps = startFps;
 	};
 	const setModelViewFpsMode = (enabled: boolean) => {
 		modelViewFpsMode = enabled;
@@ -1458,6 +1463,7 @@
 						onModelMiss={closeFeaturePanel}
 						onResetViewChange={setModelViewReset}
 						onFpsModeChange={setModelViewFpsMode}
+						onFpsStartChange={setModelViewFpsStart}
 					/>
 				{/key}
 			{/if}
