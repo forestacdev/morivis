@@ -39,6 +39,7 @@
 	let isLoading = $state(true);
 	let errorMessage = $state<string | null>(null);
 	let isPointerLocked = $state(false);
+	let fpsSpeedMultiplier = $state(1);
 	const MODEL_VIEW_BACKGROUND =
 		'radial-gradient(circle at 50% 42%, #26343d 0%, #151d24 48%, #080c10 100%)';
 	let setFpsMode = (_enabled: boolean) => {};
@@ -114,6 +115,7 @@
 		const pointerLockControls = new PointerLockControls(session.camera, target);
 		const pressedKeys = new Set<string>();
 		let fpsModeEnabled = false;
+		let wheelRemainder = 0;
 		let animationFrame = 0;
 		let previousFrameTime = performance.now();
 		const renderFrame = (timeMs: number) => {
@@ -129,7 +131,7 @@
 			}
 			if (!pointerLockControls.isLocked || pressedKeys.size === 0) return;
 
-			const distance = session.movementSpeed * deltaSeconds;
+			const distance = session.movementSpeed * fpsSpeedMultiplier * deltaSeconds;
 			if (pressedKeys.has('KeyW')) pointerLockControls.moveForward(distance);
 			if (pressedKeys.has('KeyS')) pointerLockControls.moveForward(-distance);
 			if (pressedKeys.has('KeyA')) pointerLockControls.moveRight(-distance);
@@ -160,6 +162,7 @@
 			controls.enabled = !enabled;
 			zoomControls.enabled = !enabled;
 			pressedKeys.clear();
+			wheelRemainder = 0;
 			if (!enabled && pointerLockControls.isLocked) pointerLockControls.unlock();
 			requestRender();
 		};
@@ -184,6 +187,22 @@
 		handleFpsKeyUp = (event) => {
 			pressedKeys.delete(event.code);
 		};
+		const onFpsWheel = (event: WheelEvent) => {
+			if (!fpsModeEnabled || !pointerLockControls.isLocked) return;
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			if (!Number.isFinite(event.deltaY) || event.deltaY === 0) return;
+			// 100px / 3行 / 1ページを1段とし、トラックパッドの微小入力を蓄積する。
+			const delta =
+				event.deltaY * (event.deltaMode === 1 ? 100 / 3 : event.deltaMode === 2 ? 100 : 1);
+			if (Math.sign(delta) !== Math.sign(wheelRemainder)) wheelRemainder = 0;
+			wheelRemainder += delta;
+			const steps = Math.trunc(wheelRemainder / 100);
+			if (steps === 0) return;
+			wheelRemainder -= steps * 100;
+			fpsSpeedMultiplier = Math.min(10, Math.max(0.1, fpsSpeedMultiplier * 1.2 ** -steps));
+		};
+		target.addEventListener('wheel', onFpsWheel, { passive: false, capture: true });
 		const lockPointer = () => {
 			if (!fpsModeEnabled || pointerLockControls.isLocked) return;
 			// ブラウザが拒否した場合はクリック案内を残して再試行できるようにする。
@@ -201,6 +220,7 @@
 		};
 		const unlockPointer = () => {
 			isPointerLocked = false;
+			wheelRemainder = 0;
 			pressedKeys.clear();
 			if (fpsModeEnabled) onFpsModeChange?.(false);
 		};
@@ -239,6 +259,7 @@
 			resizeObserver.disconnect();
 			cancelAnimationFrame(animationFrame);
 			target.removeEventListener('click', lockPointer);
+			target.removeEventListener('wheel', onFpsWheel, true);
 			pointerLockControls.removeEventListener('lock', onPointerLocked);
 			pointerLockControls.removeEventListener('unlock', unlockPointer);
 			pointerLockControls.removeEventListener('change', onControlsChange);
@@ -285,6 +306,18 @@
 			<p class="rounded-2xl border border-white/20 bg-black/70 px-6 py-4 text-center shadow-lg">
 				ここをクリックでFPS操作を開始します
 			</p>
+		</div>
+	{/if}
+
+	{#if fpsMode && isPointerLocked && !isLoading && !errorMessage}
+		<div
+			class="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 rounded-xl border border-white/20 bg-black/70 px-4 py-2 text-center text-sm shadow-lg"
+		>
+			<p class="tabular-nums">
+				移動速度 ×{fpsSpeedMultiplier.toFixed(fpsSpeedMultiplier < 1 ? 2 : 1)}
+			</p>
+			<p class="mt-1 text-xs text-white/70">ホイール ↑ 速く ／ ↓ 遅く</p>
+			<p class="mt-1 text-xs text-white/70">WASD：移動 ／ Esc：FPS操作を終了</p>
 		</div>
 	{/if}
 
