@@ -605,6 +605,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.3ds']
 	},
 	{
+		id: 'rik',
+		label: 'RIKCAD RIK（3DS）',
+		icon: 'mdi:home-city-outline',
+		description:
+			'3DSモデルとテクスチャを格納したRIKCAD連携ファイルです。建物などを3Dモデルとして地図上に配置するときに使います。',
+		extensions: ['.rik']
+	},
+	{
 		id: 'dae',
 		label: 'Collada DAE',
 		icon: 'mdi:vector-combine',

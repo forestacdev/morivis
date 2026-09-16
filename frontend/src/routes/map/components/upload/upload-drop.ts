@@ -254,6 +254,17 @@ const SXF_SAF_EXTENSION = '.saf';
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
+		id: 'rik-archive',
+		match: (files) => files.some((file) => hasExtension(file, '.rik')),
+		resolve: async (files, options) => {
+			const archives = files.filter((file) => hasExtension(file, '.rik'));
+			if (archives.length !== 1) {
+				return createNotificationDecision('RIKファイルは1つずつ読み込んでください');
+			}
+			return resolveSingleFile(archives[0], options);
+		}
+	},
+	{
 		id: 'kml-model',
 		match: (files) => files.some((file) => hasExtension(file, '.kml')),
 		resolve: async (files) => {
@@ -403,6 +414,17 @@ const resolveSingleFile = async (
 	options: UploadDropOptions
 ): Promise<UploadDropDecision> => {
 	const ext = file.name.split('.').pop()?.toLowerCase();
+
+	if (ext === 'rik') {
+		try {
+			const { extractRikModelFiles } = await import('$routes/map/utils/formats/rik/analyze');
+			return createDialogDecision('model', await extractRikModelFiles(file));
+		} catch (error) {
+			return createNotificationDecision(
+				error instanceof Error ? error.message : 'RIKファイルを読み込めませんでした'
+			);
+		}
+	}
 
 	if (ext === 'zip') {
 		if (await isGtfsZip(file)) {

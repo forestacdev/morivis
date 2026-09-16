@@ -75,8 +75,7 @@ let rhino3dmLoaderModulePromise:
 	>
 	| null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
-let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
-	null;
+let tdsLoaderModulePromise: Promise<typeof import('./tds-loader')> | null = null;
 let colladaLoaderModulePromise:
 	| Promise<
 		typeof import('three/addons/loaders/ColladaLoader.js')
@@ -204,7 +203,7 @@ const loadIfcLoaderModule = async () => {
 
 const loadTdsLoaderModule = async () => {
 	if (!tdsLoaderModulePromise) {
-		tdsLoaderModulePromise = import('three/addons/loaders/TDSLoader.js');
+		tdsLoaderModulePromise = import('./tds-loader');
 	}
 	return tdsLoaderModulePromise;
 };

@@ -281,7 +281,7 @@
 				step={1}
 				isInt={true}
 			/>
-			<div class="text-sub-text text-sm">北 0° / 東 90° / 南 180° / 西 270°</div>
+			<div class="text-sub-text text-sm text-base">北 0° / 東 90° / 南 180° / 西 270°</div>
 			<RangeSlider
 				label="光源の高度角（°）"
 				bind:value={() => shadowStyle.altitude, (value) => setShadowAngle('altitude', value)}

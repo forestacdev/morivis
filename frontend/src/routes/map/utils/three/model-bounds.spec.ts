@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 
 import * as THREE from 'three';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createTestTds } from './__fixtures__/test-tds';
 
 vi.mock('$app/paths', () => ({
 	asset: (path: string) => path
@@ -341,6 +342,42 @@ endsolid y-offset`
 
 		expect(box.min.y).toBeCloseTo(0, 6);
 		expect(box.max.y).toBeCloseTo(3, 6);
+	});
+
+	it('3DSのWorker範囲計算と描画時の階層・インスタンス配置が一致する', async () => {
+		const { computeUploadedModelMeta } = await import('./model-bounds');
+		const { TDSLoader } = await import('./tds-loader');
+		const { getModelGeoBoundsFromLocalBounds } = await import('./model-geo-bounds');
+		const bytes = createTestTds();
+		vi.stubGlobal('fetch', vi.fn(async () => new Response(bytes)));
+		vi.stubGlobal('ProgressEvent', class {});
+		const style = {
+			transform: {
+				lng: 0,
+				lat: 0,
+				altitude: 0,
+				heightOffset: 0,
+				heightScale: 1,
+				baseScale: 0.01,
+				baseRotationX: -180,
+				scale: 1,
+				rotationX: 0,
+				rotationY: 0,
+				rotationZ: 0
+			}
+		};
+		const result = await computeUploadedModelMeta({
+			file: new File([bytes], 'test-model.3ds'),
+			format: '3ds',
+			style
+		});
+		const runtime = new TDSLoader().parse(bytes, '');
+		const bounds = new THREE.Box3().setFromObject(runtime);
+		expect(result.localBounds).toEqual([...bounds.min.toArray(), ...bounds.max.toArray()]);
+		result.localBounds.forEach((value, index) => {
+			expect(value).toBeCloseTo([-10, 0, 0, 32, 10, 5][index], 5);
+		});
+		expect(result.bounds).toEqual(getModelGeoBoundsFromLocalBounds(result.localBounds, style));
 	});
 
 	it('VRMLのWorker範囲計算と描画時の原点補正が一致する', async () => {
