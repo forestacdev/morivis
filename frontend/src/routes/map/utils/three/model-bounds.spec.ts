@@ -344,6 +344,23 @@ endsolid y-offset`
 		expect(box.max.y).toBeCloseTo(3, 6);
 	});
 
+	it('テクスチャ付き3DSの範囲をDOMのないWorker環境でも計算できる', async () => {
+		const { getUploadedModelObject } = await import('./model-bounds');
+		const bytes = createTestTds({ texture: true });
+		vi.stubGlobal('document', undefined);
+		vi.stubGlobal('window', undefined);
+		vi.stubGlobal('fetch', vi.fn(async () => new Response(bytes)));
+		vi.stubGlobal('ProgressEvent', class {});
+		const { object } = await getUploadedModelObject(
+			new File([bytes], 'test-textured.3ds'),
+			'3ds'
+		);
+		const bounds = new THREE.Box3().setFromObject(object);
+		expect(bounds.min.x).toBeCloseTo(-10);
+		expect(bounds.max.x).toBeCloseTo(32);
+		expect(fetch).not.toHaveBeenCalled();
+	});
+
 	it('3DSのWorker範囲計算と描画時の階層・インスタンス配置が一致する', async () => {
 		const { computeUploadedModelMeta } = await import('./model-bounds');
 		const { TDSLoader } = await import('./tds-loader');

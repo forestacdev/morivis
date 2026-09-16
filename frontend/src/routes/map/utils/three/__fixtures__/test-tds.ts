@@ -40,7 +40,9 @@ const node = (id: number, parent: number, name: string, ...parts: number[][]) =>
 	);
 
 /** 任意の三角形を、回転・非一様縮尺・pivotを持つ親と独立した親へ配置する。 */
-export const createTestTds = (options: { keyframes?: boolean; cycle?: boolean; } = {}) => {
+export const createTestTds = (
+	options: { keyframes?: boolean; cycle?: boolean; texture?: boolean; } = {}
+) => {
 	const mesh = tdsChunk(
 		0x4000,
 		string('test-mesh'),
@@ -81,7 +83,17 @@ export const createTestTds = (options: { keyframes?: boolean; cycle?: boolean; }
 	return new Uint8Array(
 		tdsChunk(
 			0x4d4d,
-			tdsChunk(0x3d3d, mesh),
+			tdsChunk(
+				0x3d3d,
+				...(options.texture
+					? [tdsChunk(
+						0xafff,
+						tdsChunk(0xa000, string('test-material')),
+						tdsChunk(0xa200, tdsChunk(0xa300, string('test-texture.png')))
+					)]
+					: []),
+				mesh
+			),
 			...(options.keyframes === false ? [] : [hierarchy])
 		)
 	).buffer;
