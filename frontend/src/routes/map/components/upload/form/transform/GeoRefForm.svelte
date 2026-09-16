@@ -47,6 +47,10 @@
 	} from '$routes/map/utils/proj/dict';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
+	import {
+		isValidModelPlacementLatitude,
+		isValidModelPlacementLongitude
+	} from '$routes/map/utils/three/model-placement-coordinates';
 	import { normalizeModelTransformScale } from '$routes/map/utils/three/model-scale';
 	import { getPlacementPreviewBounds } from '$routes/map/utils/three/placement-preview';
 	import {
@@ -78,6 +82,9 @@
 		dropFile: UploadFilesInput;
 		transformOptionMode: TransformOptionMode;
 		allowedTransformModes: ActiveTransformOptionMode[];
+		isEditingModelPlacement?: boolean;
+		onModelPlacementConfirm?: (entry: ThreeModelEntry) => void;
+		onModelPlacementCancel?: () => void;
 		onZoneConfirm: (epsgCode: EpsgCode) => void;
 		onZoneGeoRef: (epsgCode: EpsgCode) => void;
 		onGeoRefConfirm: (payload: GeoRefConfirmPayload) => Promise<void>;
@@ -96,6 +103,9 @@
 		dropFile = $bindable(),
 		transformOptionMode = $bindable(),
 		allowedTransformModes,
+		isEditingModelPlacement = false,
+		onModelPlacementConfirm,
+		onModelPlacementCancel,
 		onZoneConfirm,
 		onZoneGeoRef,
 		onGeoRefConfirm
@@ -124,8 +134,11 @@
 	let geoRefTransformMode = $state<GeoRefTransformMode>('aspect-locked');
 	let zoneBuildId = 0;
 	let modelPlacementInitialized = $state(false);
-	let modelLng = $state(0);
-	let modelLat = $state(0);
+	let modelLng = $state<number | undefined>(0);
+	let modelLat = $state<number | undefined>(0);
+	const modelCoordinatesValid = $derived(
+		isValidModelPlacementLongitude(modelLng) && isValidModelPlacementLatitude(modelLat)
+	);
 	let modelAltitude = $state(0);
 	let modelHeightOffset = $state(0);
 	let modelScale = $state(1);
@@ -165,8 +178,12 @@
 		showDataMenu.set(false);
 		isProcessing.set(true);
 
-		void mapStore
-			.setThreeLayer([entry], 'preview')
+		// 再配置では登録済みの描画モデルを使い、複製・再読み込みを避ける。
+		void (
+			isEditingModelPlacement
+				? threeJsManager.addModel(entry, 'main')
+				: mapStore.setThreeLayer([entry], 'preview')
+		)
 			.then(() => {
 				if (
 					loadId !== modelPlacementLoadId ||
@@ -198,24 +215,35 @@
 		};
 	});
 
-	const getCurrentModelPlacementStyle = (entry: ThreeModelEntry): ThreeModelEntry['style'] => ({
-		...entry.style,
-		transform: {
-			...entry.style.transform,
-			lng: modelLng,
-			lat: modelLat,
-			altitude: modelAltitude,
-			heightOffset: modelHeightOffset,
-			scale: modelScale,
-			scaleUnit: modelScaleUnit,
-			rotationX: modelRotationX,
-			rotationY: modelRotationY,
-			rotationZ: modelRotationZ
+	const getCurrentModelPlacementStyle = (entry: ThreeModelEntry): ThreeModelEntry['style'] => {
+		if (!isValidModelPlacementLongitude(modelLng) || !isValidModelPlacementLatitude(modelLat)) {
+			return entry.style;
 		}
-	});
+		return {
+			...entry.style,
+			transform: {
+				...entry.style.transform,
+				lng: modelLng,
+				lat: modelLat,
+				altitude: modelAltitude,
+				heightOffset: modelHeightOffset,
+				scale: modelScale,
+				scaleUnit: modelScaleUnit,
+				rotationX: modelRotationX,
+				rotationY: modelRotationY,
+				rotationZ: modelRotationZ
+			}
+		};
+	};
 
 	$effect(() => {
-		if (!isModelPlacementActive || !showDataEntry || !modelPlacementInitialized) return;
+		if (
+			!isModelPlacementActive ||
+			!showDataEntry ||
+			!modelPlacementInitialized ||
+			!modelCoordinatesValid
+		)
+			return;
 		if (
 			showDataEntry.type !== 'model' ||
 			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
@@ -359,6 +387,7 @@
 	};
 
 	const createPlacedModelEntry = (): ThreeModelEntry | null => {
+		if (!modelCoordinatesValid) return null;
 		if (
 			showDataEntry?.type !== 'model' ||
 			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
@@ -381,6 +410,13 @@
 	};
 
 	const handleCancel = () => {
+		if (isEditingModelPlacement) {
+			modelPlacementLoadId += 1;
+			isProcessing.set(false);
+			threeJsManager.clearPlacementPreview();
+			onModelPlacementCancel?.();
+			return;
+		}
 		if (isModelPlacementActive) {
 			const entryId = showDataEntry?.id;
 			if (showDataEntry?.style.type === 'gaussian-splat') {
@@ -408,6 +444,12 @@
 		if (isModelPlacementActive) {
 			const placedEntry = createPlacedModelEntry();
 			if (!placedEntry) return;
+			if (isEditingModelPlacement) {
+				modelPlacementLoadId += 1;
+				threeJsManager.clearPlacementPreview();
+				onModelPlacementConfirm?.(placedEntry);
+				return;
+			}
 
 			threeJsManager.setModelTransform(placedEntry.id, placedEntry.style);
 			showDataEntry = placedEntry;
@@ -796,11 +838,17 @@
 					fitToCurrentCorners(300);
 				}}
 			/>
-		{:else if isModelPlacementActive}
+		{:else if isModelPlacementActive && modelPlacementInitialized}
+			{@const modelEntry = showDataEntry as ThreeModelEntry}
 			<ModelPlacementMenu
 				bind:lng={modelLng}
 				bind:lat={modelLat}
 				bind:altitude={modelAltitude}
+				bind:heightOffset={modelHeightOffset}
+				localBounds={modelEntry.format.localBounds}
+				baseScale={modelEntry.style.transform.baseScale}
+				heightScale={modelEntry.style.transform.heightScale}
+				canEditHeightOffset={modelEntry.style.transformOptions?.heightOffset ?? true}
 				bind:scale={modelScale}
 				bind:scaleUnit={modelScaleUnit}
 				bind:rotationX={modelRotationX}
@@ -815,8 +863,9 @@
 			>
 			<button
 				onclick={handleConfirm}
-				disabled={$isProcessing}
-				class="c-btn-confirm min-w-[200px] p-4 select-none text-lg {$isProcessing
+				disabled={$isProcessing || (isModelPlacementActive && !modelCoordinatesValid)}
+				class="c-btn-confirm min-w-[200px] p-4 select-none text-lg {$isProcessing ||
+				(isModelPlacementActive && !modelCoordinatesValid)
 					? 'cursor-not-allowed opacity-50'
 					: 'cursor-pointer'}"
 			>

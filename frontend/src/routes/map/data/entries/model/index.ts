@@ -44,7 +44,7 @@ export const createTiles3DEntry = (
 			name,
 			bounds: bounds ?? WEB_MERCATOR_WORLD_BBOX
 		},
-		interaction: { clickable: false }
+		interaction: { clickable: styleType !== 'point-cloud' }
 	};
 
 	if (styleType === 'point-cloud') {
@@ -235,6 +235,8 @@ export const createGlbEntry = (
 				? 'DAE'
 				: formatType === '3dm'
 				? '3DM'
+				: formatType === 'vrml'
+				? 'VRML'
 				: formatType === 'fbx'
 				? 'FBX'
 				: formatType === 'drc'

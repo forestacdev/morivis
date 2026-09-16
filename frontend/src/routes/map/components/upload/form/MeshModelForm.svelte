@@ -20,6 +20,7 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
+	import { inspectVrmlFile } from '$routes/map/utils/formats/vrml';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { inspectFbxFile } from '$routes/map/utils/three/fbx-references';
@@ -30,6 +31,7 @@
 		readIfcPlacementMetadata,
 		type IfcPlacementMetadata
 	} from '$routes/map/utils/three/ifc-metadata';
+	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
 	import { applyProjectedModelAxisOverride } from '$routes/map/utils/three/model-axis';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
@@ -41,6 +43,7 @@
 		getInitialModelPlacementViewport,
 		getInitialModelPlacementScale
 	} from '$routes/map/utils/three/model-initial-scale';
+	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -102,6 +105,7 @@
 		if (pathLikeName.endsWith('.dae')) return 'dae';
 		if (pathLikeName.endsWith('.3dm')) return '3dm';
 		if (pathLikeName.endsWith('.fbx')) return 'fbx';
+		if (pathLikeName.endsWith('.wrl') || pathLikeName.endsWith('.vrml')) return 'vrml';
 		if (pathLikeName.endsWith('.drc')) return 'drc';
 		if (pathLikeName.endsWith('.3mf')) return '3mf';
 		if (pathLikeName.endsWith('.amf')) return 'amf';
@@ -126,6 +130,7 @@
 			format === 'dae' ||
 			format === '3dm' ||
 			format === 'fbx' ||
+			format === 'vrml' ||
 			format === 'pmx'
 		);
 	};
@@ -138,6 +143,7 @@
 		'dae',
 		'3dm',
 		'fbx',
+		'vrml',
 		'drc',
 		'3mf',
 		'amf',
@@ -151,7 +157,7 @@
 	const glbFile = $derived.by(() => {
 		return (
 			inputFiles.find((file) =>
-				/\.(glb|gltf|vrm|obj|3ds|dae|3dm|fbx|drc|3mf|amf|stl|ifc|pmx|usd|usda|usdz)$/i.test(
+				/\.(glb|gltf|vrm|obj|3ds|dae|3dm|fbx|wrl|vrml|drc|3mf|amf|stl|ifc|pmx|usd|usda|usdz)$/i.test(
 					getPathLikeName(file)
 				)
 			) ?? null
@@ -180,6 +186,9 @@
 	const vmdFiles = $derived.by(() => {
 		return inputFiles.filter((file) => /\.vmd$/i.test(getPathLikeName(file)));
 	});
+	const vpdFiles = $derived.by(() => {
+		return inputFiles.filter((file) => /\.vpd$/i.test(getPathLikeName(file)));
+	});
 	const vrmaFiles = $derived.by(() => {
 		return inputFiles.filter((file) => /\.vrma$/i.test(getPathLikeName(file)));
 	});
@@ -195,7 +204,7 @@
 
 	const modelSupplementaryFiles = $derived.by(() => {
 		if (activeFormat === 'gltf') return gltfSupplementaryFiles;
-		if (activeFormat === 'pmx') return [...textureFiles, ...vmdFiles];
+		if (activeFormat === 'pmx') return [...textureFiles, ...vpdFiles, ...vmdFiles];
 		if (activeFormat === 'vrm') return vrmaFiles;
 		if (activeFormat === 'usd') return [];
 		return textureFiles;
@@ -285,6 +294,8 @@
 	let isInspectingFbxReferences = $state(false);
 	let referencedFbxTexturePaths = $state<string[]>([]);
 	let fbxDescription = $state<string | undefined>(undefined);
+	let isInspectingVrmlReferences = $state(false);
+	let referencedVrmlTexturePaths = $state<string[]>([]);
 	let gltfInspectionFileKey = $state<string | null>(null);
 	let isInspectingGltfReferences = $state(false);
 	let referencedGltfBufferUris = $state<string[]>([]);
@@ -355,6 +366,13 @@
 	const requiresFbxTextureResolution = $derived(
 		activeFormat === 'fbx' && missingFbxTexturePaths.length > 0
 	);
+	const missingVrmlTexturePaths = $derived.by(() => {
+		if (activeFormat !== 'vrml') return [];
+		return referencedVrmlTexturePaths.filter(
+			(pathLikeValue) => !hasMatchingResourceFile(textureResourceKeys, pathLikeValue)
+		);
+	});
+	const requiresVrmlTextureResolution = $derived(missingVrmlTexturePaths.length > 0);
 	const missingGltfBufferUris = $derived.by(() => {
 		if (!isJsonGltfFile || referencedGltfBufferUris.length === 0) return [];
 		return referencedGltfBufferUris.filter(
@@ -379,6 +397,7 @@
 			activeFormat === 'obj' &&
 			(isInspectingObjReferences || isInspectingMtlReferences)) ||
 			(!!glbFile && activeFormat === 'fbx' && isInspectingFbxReferences) ||
+			(!!glbFile && activeFormat === 'vrml' && isInspectingVrmlReferences) ||
 			(!!glbFile && isJsonGltfFile && isInspectingGltfReferences) ||
 			isInspectingProjectedCandidateCoordinates ||
 			(!!glbFile && activeFormat === 'ifc' && isInspectingIfcPlacement)
@@ -386,6 +405,7 @@
 	const requiresModelSupplementaryResolution = $derived(
 		requiresObjSupplementaryResolution ||
 			requiresFbxTextureResolution ||
+			requiresVrmlTextureResolution ||
 			requiresGltfSupplementaryResolution
 	);
 	const requiresStlAxisSelection = $derived(activeFormat === 'stl');
@@ -522,6 +542,33 @@
 		};
 
 		void inspectReferences();
+	});
+
+	$effect(() => {
+		const file = glbFile;
+		referencedVrmlTexturePaths = [];
+		if (!file || activeFormat !== 'vrml') {
+			isInspectingVrmlReferences = false;
+			return;
+		}
+
+		let cancelled = false;
+		isInspectingVrmlReferences = true;
+		const inspectReferences = async () => {
+			try {
+				const inspection = await inspectVrmlFile(file);
+				if (!cancelled) referencedVrmlTexturePaths = inspection.referencedTexturePaths;
+			} catch (error) {
+				if (!cancelled) console.warn('VRML の参照画像判定に失敗しました', error);
+			} finally {
+				if (!cancelled) isInspectingVrmlReferences = false;
+			}
+		};
+
+		void inspectReferences();
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	$effect(() => {
@@ -795,6 +842,7 @@
 				isInspectingObjReferences ||
 				isInspectingMtlReferences ||
 				isInspectingFbxReferences ||
+				isInspectingVrmlReferences ||
 				isInspectingGltfReferences
 			);
 		}
@@ -843,6 +891,7 @@
 		const normalizeToLocalOrigin =
 			(activeFormat === 'ifc' ||
 				activeFormat === 'gltf' ||
+				activeFormat === 'vrml' ||
 				activeFormat === 'vrm' ||
 				activeFormat === 'pmx' ||
 				activeFormat === 'stl' ||
@@ -872,14 +921,14 @@
 		if (activeFormat === 'fbx' && fbxDescription) {
 			entry.metaData.description = fbxDescription;
 		}
-		if (activeFormat === 'pmx' && resourceUrls && vmdFiles.length > 0) {
-			const clips = vmdFiles.flatMap((file) => {
+		if (activeFormat === 'pmx' && resourceUrls && (vpdFiles.length > 0 || vmdFiles.length > 0)) {
+			const clips = [...vpdFiles, ...vmdFiles].flatMap((file) => {
 				const url = resourceUrls?.[file.name.toLowerCase()];
 				if (!url) return [];
 				return [
 					{
-						name: file.name.replace(/\.vmd$/i, ''),
-						type: 'vmd' as const,
+						name: file.name.replace(/\.(vmd|vpd)$/i, ''),
+						type: /\.vpd$/i.test(file.name) ? ('vpd' as const) : ('vmd' as const),
 						url
 					}
 				];
@@ -890,7 +939,7 @@
 					animation: {
 						clips,
 						defaultClipIndex: 0,
-						autoPlay: true,
+						autoPlay: clips[0].type !== 'vpd',
 						defaultLoop: true
 					}
 				};
@@ -898,7 +947,7 @@
 					...entry.state,
 					animation: {
 						currentClipIndex: 0,
-						playing: true,
+						playing: clips[0].type !== 'vpd',
 						speed: 1,
 						loop: true
 					}
@@ -1034,6 +1083,14 @@
 			isProcessing.set(false);
 		}
 
+		if (entry.format.type === 'pmx') {
+			const animation = withDefaultPmxPoses(entry.properties?.animation);
+			entry.properties = { ...entry.properties, animation };
+			entry.state = {
+				...entry.state,
+				animation: entry.state?.animation ?? getInitialModelAnimationState(animation)
+			};
+		}
 		return entry;
 	};
 
@@ -1176,6 +1233,7 @@
 		if (!glbFile || requiresManualRegistration || isWaitingForModelSupplementaryInspection) return;
 		if (activeFormat === 'obj' && (isInspectingObjReferences || isInspectingMtlReferences)) return;
 		if (activeFormat === 'fbx' && isInspectingFbxReferences) return;
+		if (activeFormat === 'vrml' && isInspectingVrmlReferences) return;
 		if (activeFormat === 'gltf' && isInspectingGltfReferences) return;
 
 		const register = async () => {
@@ -1346,6 +1404,7 @@
 		const normalizeToLocalOrigin =
 			format === 'ifc' ||
 			format === 'fbx' ||
+			format === 'vrml' ||
 			format === 'pmx' ||
 			format === 'vrm' ||
 			format === 'stl' ||
@@ -1455,6 +1514,19 @@
 				</p>
 				<p class="mt-2">未追加画像: {missingFbxTexturePaths.join(', ')}</p>
 				<p class="mt-2">画像なしのまま登録することもできます。</p>
+			{:else if requiresVrmlTextureResolution}
+				<p class="mt-2">
+					この VRML はテクスチャ画像を参照しています。画像を追加ドロップするとそのまま続行できます。
+				</p>
+				<p class="mt-2">未追加画像: {missingVrmlTexturePaths.join(', ')}</p>
+				<p class="mt-2">画像なしのまま登録することもできます。</p>
+			{:else if activeFormat === 'pmx' && vpdFiles.length > 0}
+				<p class="mt-2">
+					VPDポーズを{vpdFiles.length}件追加します。先頭のポーズを適用します。
+				</p>
+				{#if vmdFiles.length > 0}
+					<p class="mt-2">VMDモーションを{vmdFiles.length}件追加します。</p>
+				{/if}
 			{:else if activeFormat === 'pmx' && vmdFiles.length > 0}
 				<p class="mt-2">
 					VMDモーションを{vmdFiles.length}件追加します。先頭のモーションを既定で再生します。

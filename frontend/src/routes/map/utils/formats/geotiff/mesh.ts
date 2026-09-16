@@ -412,6 +412,7 @@ export const createRasterMeshEntry = async (
 			transformOptions: {
 				scale: false,
 				rotation: false,
+				heightScale: true,
 				heightOffset: true
 			},
 			transform: {

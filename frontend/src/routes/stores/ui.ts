@@ -39,6 +39,9 @@ export const isStyleEdit = writable<boolean>(false);
 /** ストリートビュー */
 export const isStreetView = writable<boolean>(false);
 
+/** 登録済み3Dモデルの位置合わせを開くリクエスト。 */
+export const modelGeoreferenceRequest = writable<string | null>(null);
+
 /** 単体3Dモデルビューの表示状態 */
 export const showModelView = writable<boolean>(false);
 

@@ -72,3 +72,58 @@ describe('3D Tilesの高さ補正', () => {
 		expect(renderHeight()).toBe(80);
 	});
 });
+
+it('高さ補正された実際のdeck投影位置から属性を取得できる', async () => {
+	const { WebMercatorViewport } = await import('@deck.gl/core');
+	const { resolvePickedTiles3DFeature } = await import('../tiles3d/picking');
+	const viewport = new WebMercatorViewport({
+		width: 800,
+		height: 600,
+		longitude: 10,
+		latitude: 20,
+		zoom: 17,
+		pitch: 55,
+		bearing: 25
+	});
+	const primitive = {
+		attributes: {
+			POSITION: { value: new Float32Array([0, 0, 0, 100, 0, 0, 0, 100, 0]) },
+			_BATCHID: { value: new Uint8Array([0, 0, 0]) }
+		}
+	};
+	const mesh = { primitives: [primitive] };
+	const tile = {
+		...createTile(),
+		content: {
+			cartographicOrigin: [10, 20, 80],
+			gltf: { meshes: [mesh], scene: { nodes: [{ mesh, translation: [10, 10, 0] }] } },
+			featureTableJson: { BATCH_LENGTH: 1 },
+			batchTableJson: { name: ['test-building'] }
+		}
+	};
+	const entry = createEntry();
+	entry.style.heightOffset = 30;
+	const layer = createTiles3DLayer(entry) as unknown as {
+		_getSubLayer: (tile: unknown) => import('@deck.gl/core').Layer;
+	};
+	const sourceLayer = layer._getSubLayer(tile);
+	// GPUを作らずに、サブレイヤー本来のprojectとMapLibre連携時と同じviewportを使う。
+	Object.assign(sourceLayer, { internalState: { viewport } });
+	const point = sourceLayer.project([30, 30, 0]);
+	const info = {
+		picked: true,
+		x: point[0],
+		y: point[1],
+		sourceLayer,
+		viewport,
+		object: tile,
+		color: null,
+		layer: sourceLayer,
+		index: 0,
+		pixelRatio: 1
+	} as import('@deck.gl/core').PickingInfo;
+	expect(resolvePickedTiles3DFeature(info, entry.id)?.properties).toEqual({
+		地物ID: 0,
+		name: 'test-building'
+	});
+});

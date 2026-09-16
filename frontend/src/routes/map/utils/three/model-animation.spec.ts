@@ -7,6 +7,23 @@ import {
 } from './model-animation';
 
 describe('model animation presets', () => {
+	it('keeps the none selection inactive even when autoplay is enabled', () => {
+		expect(getInitialModelAnimationState({
+			clips: [{ name: 'test-pose', type: 'vpd', url: 'blob:test-pose' }],
+			defaultClipIndex: -1,
+			autoPlay: true
+		})).toMatchObject({ currentClipIndex: -1, playing: false });
+	});
+
+	it('keeps a VPD pose static even when autoplay is enabled', () => {
+		expect(
+			getInitialModelAnimationState({
+				clips: [{ name: 'test-pose', type: 'vpd', url: 'blob:test-pose' }],
+				autoPlay: true
+			})?.playing
+		).toBe(false);
+	});
+
 	it('returns the configured default state for an animation preset', () => {
 		const state = getInitialModelAnimationState({
 			clips: [

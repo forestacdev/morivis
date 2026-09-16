@@ -214,6 +214,8 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	dae: 'model',
 	'3dm': 'model',
 	fbx: 'model',
+	wrl: 'model',
+	vrml: 'model',
 	drc: 'model',
 	'3mf': 'model',
 	amf: 'model',
@@ -504,7 +506,7 @@ const resolveSingleFile = async (
 		return await resolveXmlFiles([file]);
 	}
 
-	if (ext === 'vmd') {
+	if (ext === 'vmd' || ext === 'vpd') {
 		return createNotificationDecision('PMXファイル(.pmx)と一緒にドロップしてください');
 	}
 

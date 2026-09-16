@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
@@ -20,6 +21,8 @@
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
 	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
+	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
+	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showModelView } from '$routes/stores/ui';
 	interface Props {
@@ -35,7 +38,11 @@
 	}: Props = $props();
 	let temporalDimension = $derived(layerEntry.properties?.temporal?.dimension);
 	let animationClips = $derived(layerEntry.properties?.animation?.clips ?? []);
+	let selectedClipIsPose = $derived(
+		animationClips[layerEntry.state?.animation?.currentClipIndex ?? 0]?.type === 'vpd'
+	);
 	let isPmx = $derived(layerEntry.format.type === 'pmx');
+	let selectedClipIsNone = $derived(isPmx && layerEntry.state?.animation?.currentClipIndex === -1);
 	let isVrm = $derived(layerEntry.format.type === 'vrm');
 	let canAddExternalMotion = $derived(isPmx || isVrm);
 	let canConfigureAnimation = $derived(canAddExternalMotion || animationClips.length > 0);
@@ -51,8 +58,21 @@
 	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
 	const canEditScale = $derived(layerEntry.style.transformOptions?.scale ?? true);
 	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);
-	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? true);
-	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? false);
+	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? false);
+	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
+	const heightOffsetSliderRange = $derived(
+		getModelHeightOffsetSliderRange({
+			localBounds: layerEntry.format.localBounds,
+			transform: {
+				scale: layerEntry.style.transform.scale,
+				scaleUnit: layerEntry.style.transform.scaleUnit,
+				baseScale: layerEntry.style.transform.baseScale,
+				heightScale: layerEntry.style.transform.heightScale
+			},
+			// ドラッグ中は範囲を固定し、スケール変更時にその時点の高さを範囲へ含める。
+			heightOffset: untrack(() => layerEntry.style.transform.heightOffset)
+		})
+	);
 	const isIfc = $derived(layerEntry.format.type === 'ifc');
 	const isFbx = $derived(layerEntry.format.type === 'fbx');
 	const hasPartColorProfile = $derived(
@@ -85,10 +105,10 @@
 
 	const addMmdMotionFiles = (event: Event) => {
 		const input = event.currentTarget as HTMLInputElement;
-		const files = Array.from(input.files ?? []).filter((file) => /\.vmd$/i.test(file.name));
+		const files = Array.from(input.files ?? []).filter((file) => /\.(vmd|vpd)$/i.test(file.name));
 		input.value = '';
 		if (files.length === 0) return;
-		appendExternalMotionFiles(files, 'vmd');
+		appendExternalMotionFiles(files);
 	};
 
 	const openVrmaMotionPicker = () => {
@@ -100,25 +120,36 @@
 		const files = Array.from(input.files ?? []).filter((file) => /\.vrma$/i.test(file.name));
 		input.value = '';
 		if (files.length === 0) return;
-		appendExternalMotionFiles(files, 'vrma');
+		appendExternalMotionFiles(files);
 	};
 
-	const appendExternalMotionFiles = (files: File[], type: 'vmd' | 'vrma') => {
+	const selectAnimationClip = (key: string | number) => {
+		const animation = layerEntry.state?.animation;
+		const index = Number(key);
+		if (animation && isPmx && index === -1) {
+			animation.currentClipIndex = -1;
+			animation.playing = false;
+			return;
+		}
+		const clip = animationClips[index];
+		if (!animation || !clip) return;
+		const wasPose = selectedClipIsPose || selectedClipIsNone;
+		animation.currentClipIndex = index;
+		animation.playing = clip.type === 'vpd' ? false : wasPose || animation.playing;
+	};
+
+	const appendExternalMotionFiles = (files: File[]) => {
 		const animation = layerEntry.properties?.animation;
 		const currentClipIndex = animation?.clips.length ?? 0;
-		const clips = files.map((file) =>
-			type === 'vmd'
-				? {
-						name: file.name.replace(/\.vmd$/i, ''),
-						type: 'vmd' as const,
-						url: URL.createObjectURL(file)
-					}
-				: {
-						name: file.name.replace(/\.vrma$/i, ''),
-						type: 'vrma' as const,
-						url: URL.createObjectURL(file)
-					}
-		);
+		const clips = files.map((file) => ({
+			name: file.name.replace(/\.(vmd|vrma|vpd)$/i, ''),
+			type: /\.vpd$/i.test(file.name)
+				? ('vpd' as const)
+				: /\.vrma$/i.test(file.name)
+					? ('vrma' as const)
+					: ('vmd' as const),
+			url: URL.createObjectURL(file)
+		}));
 
 		layerEntry.properties = {
 			...layerEntry.properties,
@@ -131,7 +162,7 @@
 			...layerEntry.state,
 			animation: {
 				currentClipIndex,
-				playing: true,
+				playing: clips[0].type !== 'vpd',
 				speed: layerEntry.state?.animation?.speed ?? animation?.defaultSpeed ?? 1,
 				loop: layerEntry.state?.animation?.loop ?? animation?.defaultLoop ?? true
 			}
@@ -142,6 +173,12 @@
 
 	$effect(() => {
 		ensureShading();
+		if (isPmx) {
+			const animation = withDefaultPmxPoses(layerEntry.properties?.animation);
+			if (animation !== layerEntry.properties?.animation) {
+				layerEntry.properties = { ...layerEntry.properties, animation };
+			}
+		}
 		if (animationClips.length > 0 && !layerEntry.state?.animation) {
 			const animationState = getInitialModelAnimationState(layerEntry.properties?.animation);
 			if (!animationState) return;
@@ -200,18 +237,22 @@
 </script>
 
 {#if canConfigureAnimation}
-	<Accordion label="アニメーション" icon="mdi:run-fast" bind:value={showAnimationOption}>
+	<Accordion
+		label={isPmx ? 'モーション・ポーズ' : 'アニメーション'}
+		icon="mdi:run-fast"
+		bind:value={showAnimationOption}
+	>
 		{#if isPmx}
 			<input
 				bind:this={mmdMotionInput}
 				type="file"
-				accept=".vmd"
+				accept=".vmd,.vpd"
 				multiple
 				onchange={addMmdMotionFiles}
 				class="hidden"
 			/>
 			<button type="button" onclick={openMmdMotionPicker} class="c-btn-sub w-full">
-				VMDモーションを追加
+				モーション・ポーズを追加
 			</button>
 		{:else if isVrm}
 			<input
@@ -229,33 +270,40 @@
 
 		{#if animationClips.length > 0 && layerEntry.state?.animation}
 			<div class:mt-3={canAddExternalMotion}>
-				<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
-				<div class="mt-2">
-					<Switch label="ループ再生" bind:value={layerEntry.state.animation.loop} />
-				</div>
-			</div>
-
-			{#if layerEntry.state.animation.playing}
-				<div class="mt-4 flex w-full flex-col gap-3" transition:slide>
-					<BaseSelectMenu
-						bind:selectedKey={layerEntry.state.animation.currentClipIndex}
-						items={animationClips.map((clip, index) => ({
+				<BaseSelectMenu
+					bind:selectedKey={
+						() => layerEntry.state!.animation!.currentClipIndex, selectAnimationClip
+					}
+					items={[
+						...(isPmx ? [{ key: -1, name: 'なし' }] : []),
+						...animationClips.map((clip, index) => ({
 							key: index,
-							name: clip.name
-						}))}
-					/>
-
-					<RangeSlider
-						label="再生速度"
-						bind:value={layerEntry.state.animation.speed}
-						min={0.1}
-						max={3}
-						step={0.1}
-					/>
-				</div>
-			{/if}
+							name: clip.type === 'vpd' ? `${clip.name}（ポーズ）` : clip.name
+						}))
+					]}
+				/>
+				{#if selectedClipIsPose}
+					<p class="mt-2 text-sm text-base/70">静止ポーズを適用しています。</p>
+				{:else if !selectedClipIsNone}
+					<Switch label="アニメーション再生" bind:value={layerEntry.state.animation.playing} />
+					<div class="mt-2">
+						<Switch label="ループ再生" bind:value={layerEntry.state.animation.loop} />
+					</div>
+					{#if layerEntry.state.animation.playing}
+						<div class="mt-4 flex w-full flex-col gap-3" transition:slide>
+							<RangeSlider
+								label="再生速度"
+								bind:value={layerEntry.state.animation.speed}
+								min={0.1}
+								max={3}
+								step={0.1}
+							/>
+						</div>
+					{/if}
+				{/if}
+			</div>
 		{:else if isPmx}
-			<p class="mt-3 text-sm text-base/70">VMDモーションを追加すると再生できます。</p>
+			<p class="mt-3 text-sm text-base/70">VMDモーションまたはVPDポーズを追加できます。</p>
 		{:else if isVrm}
 			<p class="mt-3 text-sm text-base/70">VRMAモーションを追加すると再生できます。</p>
 		{/if}
@@ -434,10 +482,10 @@
 			<RangeSlider
 				label="高さオフセット (m)"
 				bind:value={layerEntry.style.transform.heightOffset}
-				min={-100}
-				max={1000}
-				step={1}
-				isInt
+				min={heightOffsetSliderRange.min}
+				max={heightOffsetSliderRange.max}
+				step={heightOffsetSliderRange.step}
+				fractionDigits={heightOffsetSliderRange.fractionDigits}
 				icon="mdi:arrow-up-down"
 			/>
 		{/if}

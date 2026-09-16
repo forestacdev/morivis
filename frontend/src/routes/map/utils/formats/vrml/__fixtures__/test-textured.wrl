@@ -1,0 +1,23 @@
+#VRML V2.0 utf8
+# ImageTexture { url "test-comment.png" }
+Transform {
+  translation 10 20 30
+  children [
+    Shape {
+      appearance Appearance {
+        material Material { diffuseColor 0.2 0.4 0.6 }
+        texture DEF test-texture ImageTexture {
+          url [ "textures/test-grid.png" "test-fallback.png" ]
+          repeatS FALSE
+        }
+        textureTransform TextureTransform { scale 1 -1 }
+      }
+      geometry IndexedFaceSet {
+        coord Coordinate { point [ 0 0 0, 2 0 0, 0 3 0 ] }
+        coordIndex [ 0 1 2 -1 ]
+        texCoord TextureCoordinate { point [ 0 0, 1 0, 0 1 ] }
+        texCoordIndex [ 0 1 2 -1 ]
+      }
+    }
+  ]
+}

@@ -94,7 +94,7 @@
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showLayerAddedNotification, showNotification } from '$routes/stores/notification';
-	import { showDataMenu } from '$routes/stores/ui';
+	import { showDataMenu, showModelView } from '$routes/stores/ui';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -166,6 +166,10 @@
 
 	const isZoneRegistrationActive = $derived(transformOptionMode === 'zone');
 	const isGeoRefRegistrationActive = $derived(transformOptionMode === 'georef');
+	// 位置合わせは現在の地図に重ねる。通常プレビューと座標系選択だけを単独表示にする。
+	const isIsolatedPreview = $derived(
+		!isGeoRefRegistrationActive && (!!showDataEntry || isZoneRegistrationActive)
+	);
 	const isModelPlacementActive = $derived(
 		transformOptionMode === 'georef' &&
 			showDataEntry?.type === 'model' &&
@@ -221,13 +225,11 @@
 	// mapStyleの作成
 	const createMapStyle = async (_dataEntries: MorivisLayerEntry[]): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
-		const sources =
-			!showDataEntry && !isZoneRegistrationActive ? await createSourcesItems(_dataEntries) : {};
-		const layers =
-			!showDataEntry && !isZoneRegistrationActive ? await createLayersItems(_dataEntries) : [];
+		const sources = !isIsolatedPreview ? await createSourcesItems(_dataEntries) : {};
+		const layers = !isIsolatedPreview ? await createLayersItems(_dataEntries) : [];
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
-		if (showDataEntry || isZoneRegistrationActive) {
+		if (isIsolatedPreview) {
 			previewSources = {
 				...previewSources,
 				// preview_base_1: {
@@ -267,7 +269,7 @@
 			};
 		}
 		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
-		if (showDataEntry || isZoneRegistrationActive) {
+		if (isIsolatedPreview) {
 			previewLayers = [...previewBaseLayers, ...previewLayers];
 		}
 		if (isGeoRefRegistrationActive && geoRefPreviewData) {
@@ -506,15 +508,17 @@
 				// 	source: 'webgl_canvas'
 				// }
 			],
-			sky: {
-				'sky-color': '#2baeff',
-				'sky-horizon-blend': 0.5,
-				'horizon-color': '#ffffff',
-				'horizon-fog-blend': 0.5,
-				'fog-color': '#2222ff',
-				'fog-ground-blend': 0.5,
-				'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 10, 1, 12, 0]
-			},
+			sky: $showModelView
+				? undefined
+				: {
+						'sky-color': '#2baeff',
+						'sky-horizon-blend': 0.5,
+						'horizon-color': '#ffffff',
+						'horizon-fog-blend': 0.5,
+						'fog-color': '#2222ff',
+						'fog-ground-blend': 0.5,
+						'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 10, 1, 12, 0]
+					},
 			transition: { duration: 0, delay: 0 },
 			terrain: $isTerrain3d ? terrain : undefined
 		};
@@ -783,12 +787,11 @@
 		await refreshWcsEntries(entries);
 		await refreshCogEntries(entries);
 
-		const tiles3dEntry =
-			showDataEntry || isZoneRegistrationActive
-				? []
-				: (entries.filter(
-						(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
-					) as AnyTiles3DEntry[]);
+		const tiles3dEntry = isIsolatedPreview
+			? []
+			: (entries.filter(
+					(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
+				) as AnyTiles3DEntry[]);
 
 		if (
 			showDataEntry &&
@@ -798,12 +801,11 @@
 			tiles3dEntry.push(showDataEntry as AnyTiles3DEntry);
 		}
 
-		const pointCloudEntries =
-			showDataEntry || isZoneRegistrationActive
-				? []
-				: (entries.filter(
-						(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
-					) as PointCloudEntry[]);
+		const pointCloudEntries = isIsolatedPreview
+			? []
+			: (entries.filter(
+					(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
+				) as PointCloudEntry[]);
 
 		if (
 			showDataEntry &&
@@ -813,14 +815,13 @@
 			pointCloudEntries.push(showDataEntry as PointCloudEntry);
 		}
 
-		const deckVectorEntries =
-			showDataEntry || isZoneRegistrationActive
-				? []
-				: (entries.filter(
-						(entry) =>
-							entry.type === 'model' &&
-							(entry.format.type === 'geoarrow' || entry.format.type === 'geojson-3d')
-					) as DeckVectorEntry[]);
+		const deckVectorEntries = isIsolatedPreview
+			? []
+			: (entries.filter(
+					(entry) =>
+						entry.type === 'model' &&
+						(entry.format.type === 'geoarrow' || entry.format.type === 'geojson-3d')
+				) as DeckVectorEntry[]);
 
 		if (
 			showDataEntry &&
@@ -835,28 +836,28 @@
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
 
-		const threeModelEntries =
-			showDataEntry || isZoneRegistrationActive
-				? []
-				: (entries.filter(
-						(entry) =>
-							entry.type === 'model' &&
-							(entry.format.type === 'gaussian-splat' ||
-								entry.format.type === 'gltf' ||
-								entry.format.type === 'vrm' ||
-								entry.format.type === 'obj' ||
-								entry.format.type === '3ds' ||
-								entry.format.type === 'dae' ||
-								entry.format.type === '3dm' ||
-								entry.format.type === 'fbx' ||
-								entry.format.type === 'drc' ||
-								entry.format.type === '3mf' ||
-								entry.format.type === 'amf' ||
-								entry.format.type === 'stl' ||
-								entry.format.type === 'ifc' ||
-								entry.format.type === 'pmx' ||
-								entry.format.type === 'usd')
-					) as ThreeModelEntry[]);
+		const threeModelEntries = isIsolatedPreview
+			? []
+			: (entries.filter(
+					(entry) =>
+						entry.type === 'model' &&
+						(entry.format.type === 'gaussian-splat' ||
+							entry.format.type === 'gltf' ||
+							entry.format.type === 'vrm' ||
+							entry.format.type === 'obj' ||
+							entry.format.type === '3ds' ||
+							entry.format.type === 'dae' ||
+							entry.format.type === '3dm' ||
+							entry.format.type === 'fbx' ||
+							entry.format.type === 'vrml' ||
+							entry.format.type === 'drc' ||
+							entry.format.type === '3mf' ||
+							entry.format.type === 'amf' ||
+							entry.format.type === 'stl' ||
+							entry.format.type === 'ifc' ||
+							entry.format.type === 'pmx' ||
+							entry.format.type === 'usd')
+				) as ThreeModelEntry[]);
 
 		const previewThreeModelEntry =
 			showDataEntry &&
@@ -905,7 +906,7 @@
 	};
 
 	const syncHighlightLayers = () => {
-		if (showDataEntry || isZoneRegistrationActive) {
+		if (isIsolatedPreview) {
 			mapStore.clearHighlightLayers();
 			mapStore.syncPatternAnimation();
 			return;
@@ -952,6 +953,12 @@
 			setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
 		})
 	);
+	// モデルビュー中は空と大気を外し、閉じたら通常のスタイルへ戻す。
+	styleUpdateUnsubscribers.push(
+		showModelView.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
+		})
+	);
 
 	styleUpdateUnsubscribers.push(
 		mapStore.onTerrain(() => {
@@ -983,7 +990,7 @@
 	// データプレビュー
 	$effect(() => {
 		setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
-		threeJsManager.setGroupVisibility(!showDataEntry);
+		threeJsManager.setGroupVisibility(!showDataEntry || isGeoRefRegistrationActive);
 	});
 
 	// 座標系選択

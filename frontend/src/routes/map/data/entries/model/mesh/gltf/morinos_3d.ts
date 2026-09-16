@@ -5,7 +5,7 @@ import { createMatchColorMapping } from '$routes/map/data/entries/vector/_style'
 const baseEntry = createMeshModelEntry({
 	id: 'morinos_3d',
 	name: 'morinos 3Dモデル',
-	url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix10.glb`,
+	url: `${ENTRY_GLTF_PATH}/morinos/morinos_fix11.glb`,
 	attribution: '森林文化アカデミー',
 	location: '森林文化アカデミー',
 	bounds: [136.919310634999988, 35.5537624600000015, 136.9200659429999973, 35.5544524530000032],
@@ -69,6 +69,9 @@ const entry = {
 		edge: {
 			...baseEntry.style.edge,
 			enabled: true
+		},
+		transformOptions: {
+			georeference: false
 		}
 	},
 	properties: {
@@ -87,12 +90,25 @@ const entry = {
 			v_log: {
 				name: 'V柱',
 				description:
-					'morinosの象徴的なデザインとなっているV柱。見ようによってはWoodのWにも見えます。',
-				url: 'https://www.forest.ac.jp/academy-archives/mori-archi1/',
+					'morinosの象徴的なデザインとなっているV柱。見ようによってはWoodのWにも見えます。'
+					+ 'V柱に使われているヒノキ丸太は、アカデミー演習林の100年生のヒノキ林から集材されたものです。',
+				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi2/',
 				medias: [
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_0961-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_0929-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2019/04/IMG_5403-720x480.jpg'
+					},
+					{
+						type: 'image',
+						url: 'https://www.forest.ac.jp/wp-content/uploads/2019/08/67436785_2613963358634078_6561609984084279296_o.jpg'
 					}
 				]
 			},

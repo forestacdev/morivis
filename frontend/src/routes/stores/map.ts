@@ -21,6 +21,7 @@ import type {
 	StyleSetterOptions,
 	StyleSpecification
 } from '$routes/map/utils/maplibre';
+import { pickTiles3DFeature } from '$routes/map/utils/tiles3d/picking';
 import { Protocol } from 'pmtiles';
 import { type Writable, writable } from 'svelte/store';
 
@@ -1701,6 +1702,8 @@ const createMapStore = () => {
 		addLockonMarker,
 		removeLockonMarker,
 		queryRenderedFeatures,
+		pickTiles3D: (point: { x: number; y: number; }) =>
+			pickTiles3DFeature(deckOverlay, point, currentDeckTiles3dEntries.values()),
 		setCursor,
 		setData,
 		setTiles,

@@ -29,6 +29,15 @@ export interface VmdModelAnimationClip {
 	url: string;
 }
 
+/** PMX に適用する MikuMikuDance の静止ポーズ。 */
+export interface VpdModelAnimationClip {
+	name: string;
+	type: 'vpd';
+	url: string;
+	/** 足などのIKを適用する。未指定時はtrue。 */
+	ik?: boolean;
+}
+
 /** VRM に適用する VRM Animation モーション。 */
 export interface VrmaModelAnimationClip {
 	name: string;
@@ -37,8 +46,10 @@ export interface VrmaModelAnimationClip {
 }
 
 export interface ModelAnimationProperties {
-	clips: Array<ModelAnimationClip | VmdModelAnimationClip | VrmaModelAnimationClip>;
-	/** 初期選択するプリセット。未指定時は先頭。 */
+	clips: Array<
+		ModelAnimationClip | VmdModelAnimationClip | VpdModelAnimationClip | VrmaModelAnimationClip
+	>;
+	/** 初期選択するプリセット。未指定時は先頭。PMX は -1 で「なし」。 */
 	defaultClipIndex?: number;
 	/** 初回表示時に既定プリセットを再生する。 */
 	autoPlay?: boolean;
@@ -49,6 +60,7 @@ export interface ModelAnimationProperties {
 }
 
 export interface ModelAnimationState {
+	/** PMX は -1 でモーション・ポーズを適用しない。 */
 	currentClipIndex: number;
 	playing: boolean;
 	speed: number;
@@ -146,10 +158,13 @@ export interface MeshHeightColorRampStyle {
 }
 
 export interface MeshTransformOptionStyle {
+	/** 再ジオリファレンスの可否。未指定時はtrue。 */
+	georeference?: boolean;
 	scale?: boolean;
 	rotation?: boolean;
+	/** 地形メッシュなど、高さ倍率の編集が必要な場合のみ有効にする。既定はfalse。 */
 	heightScale?: boolean;
-	/** 地形メッシュなど、高さオフセットの編集が必要な場合のみ有効にする。既定はfalse。 */
+	/** 高さオフセットの編集可否。既定はtrue。 */
 	heightOffset?: boolean;
 }
 
@@ -162,6 +177,7 @@ export interface ProjectedModelGeoreference {
 }
 
 export interface ModelTransformStyle {
+	transformOptions?: MeshTransformOptionStyle;
 	transform: {
 		lng: number;
 		lat: number;
@@ -205,7 +221,6 @@ export interface MeshStyle extends ModelTransformStyle {
 	shading?: MeshShadingStyle;
 	edge?: MeshEdgeStyle;
 	heightColorRamp?: MeshHeightColorRampStyle;
-	transformOptions?: MeshTransformOptionStyle;
 }
 
 /** 通常 PLY の 3D Gaussian Splatting 向けスタイル。 */
@@ -253,6 +268,7 @@ export type MeshFormatType =
 	| 'dae'
 	| '3dm'
 	| 'fbx'
+	| 'vrml'
 	| 'drc'
 	| '3mf'
 	| 'amf'

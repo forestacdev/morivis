@@ -37,6 +37,7 @@ import {
 	getInitialModelAnimationState,
 	isEmbeddedModelAnimationClip,
 	isVmdModelAnimationClip,
+	isVpdModelAnimationClip,
 	isVrmaModelAnimationClip
 } from '$routes/map/utils/three/model-animation';
 import {
@@ -47,6 +48,7 @@ import {
 import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
 import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
 import { createEdgeUvGeometry } from '$routes/map/utils/three/model-edge-uv';
+import { createModelHighlightMaterial } from '$routes/map/utils/three/model-highlight';
 import { isLowerDetailLodUrl, resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
 import { getModelPartColor } from '$routes/map/utils/three/model-part-style';
 import {
@@ -74,7 +76,13 @@ import {
 	getPlacementPreviewBoundsKey,
 	renderPlacementPreviewPass
 } from '$routes/map/utils/three/placement-preview';
-import { type LoadedPmxModel, loadPmxModel } from '$routes/map/utils/three/pmx-loader';
+import {
+	applyPmxAnimationClip,
+	clearPmxAnimationClip,
+	type LoadedPmxModel,
+	loadPmxAnimationClip,
+	loadPmxModel
+} from '$routes/map/utils/three/pmx-loader';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import {
 	createVrmLoader,
@@ -313,6 +321,7 @@ interface ActiveModelView {
 
 const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>([
 	'fbx',
+	'vrml',
 	'obj',
 	'gltf',
 	'vrm',
@@ -1374,16 +1383,7 @@ export class ThreeJsLayerManager {
 			? mesh.geometry
 			: (this.getIfcHighlightGeometry(mesh, expressId) ?? mesh.geometry);
 
-		const fillMaterial = new THREE.MeshBasicMaterial({
-			color: HIGHLIGHT_LAYER_COLOR,
-			transparent: true,
-			opacity: 0.38,
-			side: THREE.DoubleSide,
-			depthWrite: false,
-			polygonOffset: true,
-			polygonOffsetFactor: -1,
-			polygonOffsetUnits: -1
-		});
+		const fillMaterial = createModelHighlightMaterial();
 		const sourceSkinnedMesh = mesh as THREE.SkinnedMesh;
 		let fill: THREE.Mesh;
 		if (sourceSkinnedMesh.isSkinnedMesh) {
@@ -1684,33 +1684,50 @@ export class ThreeJsLayerManager {
 		const animationState = loaded.entry.state?.animation;
 		const clips = loaded.entry.properties?.animation?.clips;
 		if (!mmd || !animationState || !clips?.length) return;
+		if (animationState.currentClipIndex === -1) {
+			mmd.loadingClipIndex = undefined;
+			if (mmd.activeClipIndex !== -1) {
+				clearPmxAnimationClip(mmd.model.model);
+				mmd.activeClipIndex = -1;
+				mmd.elapsedSeconds = 0;
+				mmd.durationSeconds = undefined;
+				mmd.lastPlaying = false;
+				this.map?.triggerRepaint();
+			}
+			return;
+		}
 
 		const clipIndex = Math.min(Math.max(animationState.currentClipIndex, 0), clips.length - 1);
 		const clip = clips[clipIndex];
-		if (!clip || !isVmdModelAnimationClip(clip)) return;
-		if (mmd.activeClipIndex === clipIndex || mmd.loadingClipIndex === clipIndex) {
+		if (!clip || (!isVmdModelAnimationClip(clip) && !isVpdModelAnimationClip(clip))) return;
+		if (mmd.activeClipIndex === clipIndex) {
+			mmd.loadingClipIndex = undefined;
 			if (!mmd.lastPlaying && animationState.playing && animationState.loop === false) {
 				mmd.elapsedSeconds = 0;
 			}
 			mmd.lastPlaying = animationState.playing;
 			return;
 		}
+		if (mmd.loadingClipIndex === clipIndex) return;
 		const cachedAnimation = mmd.animations.get(clipIndex);
 		if (cachedAnimation) {
-			mmd.model.model.setAnimation(cachedAnimation);
+			applyPmxAnimationClip(
+				mmd.model.model,
+				cachedAnimation,
+				isVpdModelAnimationClip(clip),
+				isVpdModelAnimationClip(clip) ? clip.ik : undefined
+			);
+			mmd.loadingClipIndex = undefined;
 			mmd.activeClipIndex = clipIndex;
 			mmd.elapsedSeconds = 0;
 			mmd.durationSeconds = getMmdAnimationDurationSeconds(cachedAnimation);
 			mmd.lastPlaying = animationState.playing;
-			if (animationState.playing) {
-				this.map?.triggerRepaint();
-			}
+			this.map?.triggerRepaint();
 			return;
 		}
 
 		mmd.loadingClipIndex = clipIndex;
-		void mmd.model.loader
-			.loadAnimation(clip.url)
+		void loadPmxAnimationClip(mmd.model.loader, clip)
 			.then((animation) => {
 				if (
 					mmd.loadingClipIndex !== clipIndex
@@ -1720,21 +1737,24 @@ export class ThreeJsLayerManager {
 					return;
 				}
 
-				mmd.model.model.setAnimation(animation);
+				applyPmxAnimationClip(
+					mmd.model.model,
+					animation,
+					isVpdModelAnimationClip(clip),
+					isVpdModelAnimationClip(clip) ? clip.ik : undefined
+				);
 				mmd.animations.set(clipIndex, animation);
 				mmd.activeClipIndex = clipIndex;
 				mmd.loadingClipIndex = undefined;
 				mmd.elapsedSeconds = 0;
 				mmd.durationSeconds = getMmdAnimationDurationSeconds(animation);
 				mmd.lastPlaying = loaded.entry.state?.animation?.playing;
-				if (loaded.entry.state?.animation?.playing) {
-					this.map?.triggerRepaint();
-				}
+				this.map?.triggerRepaint();
 			})
 			.catch((error) => {
 				if (mmd.loadingClipIndex !== clipIndex) return;
 				mmd.loadingClipIndex = undefined;
-				console.error(`MMDモーションの読み込みに失敗しました: ${clip.name}`, error);
+				console.error(`MMDモーション・ポーズの読み込みに失敗しました: ${clip.name}`, error);
 			});
 	};
 
@@ -2322,7 +2342,14 @@ export class ThreeJsLayerManager {
 				loaded.vrm.update(deltaSeconds);
 				hasPlayingAnimation = true;
 			}
-			if (loaded.entry.state?.animation?.playing && loaded.mmd?.activeClipIndex != null) {
+			if (
+				loaded.entry.state?.animation?.playing
+				&& loaded.mmd?.activeClipIndex != null
+				&& loaded.mmd.activeClipIndex >= 0
+				&& !isVpdModelAnimationClip(
+					loaded.entry.properties?.animation?.clips[loaded.mmd.activeClipIndex]
+				)
+			) {
 				const animation = loaded.entry.state.animation;
 				const speed = Math.max(animation.speed, 0);
 				const durationSeconds = loaded.mmd.durationSeconds;
@@ -2822,6 +2849,25 @@ export class ThreeJsLayerManager {
 							(error) => reject(error)
 						);
 					})
+					.catch((error) => reject(error));
+			} else if (entry.format.type === 'vrml') {
+				const manager = createManagedLoaderContext();
+				void fetch(entry.format.url)
+					.then(async (response) => {
+						if (!response.ok) {
+							throw new Error(`VRMLファイルを取得できません: ${response.status}`);
+						}
+						const { parseVrmlText } = await import('$routes/map/utils/formats/vrml');
+						const resourcePath = /^https?:/i.test(entry.format.url)
+							? new URL('./', entry.format.url).href
+							: '';
+						return parseVrmlText(await response.text(), {
+							manager,
+							resourceUrls: entry.format.resourceUrls,
+							resourcePath: entry.format.resourceUrls ? '' : resourcePath
+						});
+					})
+					.then((object) => finalizeAndLoadModel(object))
 					.catch((error) => reject(error));
 			} else if (entry.format.type === 'fbx') {
 				const manager = createManagedLoaderContext();

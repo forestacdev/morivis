@@ -567,6 +567,20 @@
 			if (!import.meta.env.PROD) console.info('[モデル属性] メッシュにヒットしませんでした');
 			threeJsManager.clearModelHighlight();
 
+			const pickedTiles3D = mapStore.pickTiles3D(e.point);
+			if (pickedTiles3D) {
+				clearSearchHighlight();
+				clickedLayerIds = [pickedTiles3D.entryId];
+				featureMenuData = {
+					layerId: pickedTiles3D.entryId,
+					featureId: pickedTiles3D.featureId,
+					point: [e.lngLat.lng, e.lngLat.lat],
+					properties: pickedTiles3D.properties
+				};
+				setSelectedHighlight(null);
+				return;
+			}
+
 			const existingLayerIds = getExistingClickableLayerIds();
 			if (!existingLayerIds.length) return;
 			const hitQueryBox = getHitQueryBox(e.point, existingLayerIds, layerEntries);
