@@ -1,19 +1,44 @@
 {
-  "type": "CityJSON",
-  "version": "2.0",
-  "transform": { "scale": [0.001, 0.001, 0.5], "translate": [10, 20, 2] },
-  "metadata": { "referenceSystem": "https://www.opengis.net/def/crs/EPSG/0/4979", "geographicalExtent": [-1, -1, -1, 1, 1, 1] },
-  "CityObjects": {
-    "test-parent": { "type": "Building", "children": ["test-part"] },
-    "test-part": {
-      "type": "BuildingPart", "parents": ["test-parent"],
-      "attributes": { "name": "test-object", "count": 2, "active": true, "test-list": [1, 2], "test-object": {"test-value": 3}, "test-null": null },
-      "geometry": [
-        { "type": "MultiSurface", "lod": "1", "boundaries": [[[0, 1, 2, 3]]] },
-        { "type": "Solid", "lod": "2.2", "boundaries": [[[[4, 5, 6, 7], [8, 9, 10, 11]]]] },
-        { "type": "MultiSurface", "lod": "2.2", "boundaries": [[[0, 1, 5, 4]]] }
-      ]
-    }
-  },
-  "vertices": [[0,0,0],[10,0,0],[10,10,0],[0,10,0],[0,0,10],[10,0,10],[10,10,10],[0,10,10],[2,2,10],[2,4,10],[4,4,10],[4,2,10],[10000,10000,10000]]
+	"type": "CityJSON",
+	"version": "2.0",
+	"transform": { "scale": [0.001, 0.001, 0.5], "translate": [10, 20, 2] },
+	"metadata": {
+		"referenceSystem": "https://www.opengis.net/def/crs/EPSG/0/4979",
+		"geographicalExtent": [-1, -1, -1, 1, 1, 1]
+	},
+	"CityObjects": {
+		"test-parent": { "type": "Building", "children": ["test-part"] },
+		"test-part": {
+			"type": "BuildingPart",
+			"parents": ["test-parent"],
+			"attributes": {
+				"name": "test-object",
+				"count": 2,
+				"active": true,
+				"test-list": [1, 2],
+				"test-object": { "test-value": 3 },
+				"test-null": null
+			},
+			"geometry": [
+				{ "type": "MultiSurface", "lod": "1", "boundaries": [[[0, 1, 2, 3]]] },
+				{ "type": "Solid", "lod": "2.2", "boundaries": [[[[4, 5, 6, 7], [8, 9, 10, 11]]]] },
+				{ "type": "MultiSurface", "lod": "2.2", "boundaries": [[[0, 1, 5, 4]]] }
+			]
+		}
+	},
+	"vertices": [
+		[0, 0, 0],
+		[10, 0, 0],
+		[10, 10, 0],
+		[0, 10, 0],
+		[0, 0, 10],
+		[10, 0, 10],
+		[10, 10, 10],
+		[0, 10, 10],
+		[2, 2, 10],
+		[2, 4, 10],
+		[4, 4, 10],
+		[4, 2, 10],
+		[10000, 10000, 10000]
+	]
 }

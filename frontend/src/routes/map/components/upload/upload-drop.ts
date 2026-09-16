@@ -259,9 +259,10 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
 		id: 'bds-set',
 		match: files => files.some(file => hasExtension(file, '.bds')),
-		resolve: async files => files.every(file => hasExtension(file, '.bds'))
-			? createDialogDecision('bds', files)
-			: createNotificationDecision('BDSは.bdsファイルだけをまとめて選択してください')
+		resolve: async files =>
+			files.every(file => hasExtension(file, '.bds'))
+				? createDialogDecision('bds', files)
+				: createNotificationDecision('BDSは.bdsファイルだけをまとめて選択してください')
 	},
 	{
 		id: 'gcd-set',

@@ -1079,14 +1079,22 @@ describe('GCDのドロップ', () => {
 
 describe('BDS upload', () => {
 	it.each(['test.bds', 'test.BDS'])('単体BDSを判定する: %s', async name => {
-		expect(await resolveDroppedFiles(createFile(name))).toMatchObject({ type: 'dialog', dialogType: 'bds' });
+		expect(await resolveDroppedFiles(createFile(name))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'bds'
+		});
 	});
 	it('複数のBDSをまとめて渡す', async () => {
 		const files = [createFile('test-a.bds'), createFile('test-b.bds')];
-		expect(await resolveDroppedFiles(files)).toEqual({ type: 'dialog', dialogType: 'bds', dropFiles: files });
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'bds',
+			dropFiles: files
+		});
 	});
 	it('BDSと他形式の混在を拒否する', async () => {
-		expect(await resolveDroppedFiles([createFile('test.bds'), createFile('test.txt')])).toMatchObject({ type: 'notification', level: 'error' });
+		expect(await resolveDroppedFiles([createFile('test.bds'), createFile('test.txt')]))
+			.toMatchObject({ type: 'notification', level: 'error' });
 	});
 });
 
