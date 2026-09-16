@@ -31,6 +31,10 @@ const tileDialog: DialogDefinition = {
 };
 
 export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDefinition>> = {
+	gcd: {
+		load: () => import('$routes/map/components/upload/form/GcdForm.svelte'),
+		profile: 'drop-file'
+	},
 	wmts: {
 		load: () => import('$routes/map/components/upload/form/WmtsForm.svelte'),
 		profile: 'remote-wmts'

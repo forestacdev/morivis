@@ -1051,3 +1051,28 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 });
+
+describe('GCDのドロップ', () => {
+	it.each(['test.gcd', 'test.GCD'])('単体をGCDフォームへ渡す: %s', async name => {
+		expect(await resolveDroppedFiles(new File(['test'], name))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'gcd'
+		});
+	});
+	it('複数のGCDをまとめて渡す', async () => {
+		const files = [new File(['test'], 'test-a.gcd'), new File(['test'], 'test-b.gcd')];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'gcd',
+			dropFiles: files
+		});
+	});
+	it('他形式が混ざった場合は黙って読み捨てない', async () => {
+		expect(
+			await resolveDroppedFiles([
+				new File(['test'], 'test.gcd'),
+				new File(['test'], 'test.txt')
+			])
+		).toMatchObject({ type: 'notification', level: 'error' });
+	});
+});

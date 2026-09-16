@@ -101,6 +101,7 @@ export type DialogType =
 	| 'sqlite'
 	| 'filegdb'
 	| 'gdb'
+	| 'gcd'
 	| 'mfjson'
 	| '3dtiles'
 	| 'local-3dtiles'
@@ -295,6 +296,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		icon: 'mdi:map-marker-radius',
 		description: 'MapInfoの交換用ベクターデータです。図形と属性を組で読み込むときに使います。',
 		extensions: ['.mif', '.mid']
+	},
+	{
+		id: 'gcd',
+		dialogType: 'gcd',
+		label: 'GeoCloud / GeoConic GCD',
+		icon: 'mdi:vector-polyline',
+		description: 'GCD形式の地図データです。図形の境界線と属性を読み込みます。',
+		extensions: ['.gcd']
 	},
 	{
 		id: 'gpkg',
