@@ -6,6 +6,7 @@ import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
 import { isCityGmlFile } from '$routes/map/utils/formats/citygml/detector';
+import { isCityJsonFile } from '$routes/map/utils/formats/cityjson/detector';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGaussianSplatPlyFile } from '$routes/map/utils/formats/gaussian-splat';
@@ -604,6 +605,14 @@ export const resolveDroppedFiles = async (
 	}
 	if (files.some(isMltFile)) return createDialogDecision('local-mlt', files);
 	if (isLocalMvtInput(files)) return createDialogDecision('local-mvt', files);
+	const cityJsonCandidates = files.filter(file => /\.(?:json|cityjson)$/i.test(file.name));
+	if (cityJsonCandidates.length) {
+		const matches = await Promise.all(
+			cityJsonCandidates.map(async file => ({ file, matched: await isCityJsonFile(file) }))
+		);
+		const cityJsonFiles = matches.filter(item => item.matched).map(item => item.file);
+		if (cityJsonFiles.length) return createDialogDecision('cityjson', cityJsonFiles);
+	}
 	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。
 	const cityGmlCandidates = files.filter((file) => /\.(?:gml|xml|citygml)$/i.test(file.name));
 	if (cityGmlCandidates.length) {

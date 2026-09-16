@@ -120,6 +120,7 @@ export type DialogType =
 	| 'grib2'
 	| 'gml'
 	| 'citygml'
+	| 'cityjson'
 	| 'kml'
 	| 'topojson'
 	| 'landxml'
@@ -410,6 +411,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description:
 			'地理情報をXMLで表現するベクターデータです。基盤地図情報や各種XML地図データを読み込むときに使います。',
 		extensions: ['.gml', '.xml']
+	},
+	{
+		id: 'cityjson',
+		label: 'CityJSON',
+		icon: 'mdi:file-outline',
+		description:
+			'都市モデルの形状と属性をJSONで表したデータです。建物や地形などの面・立体形状を3D表示するときに使います。',
+		extensions: ['.city.json', '.cityjson', '.json']
 	},
 	{
 		id: 'citygml',
