@@ -3,16 +3,16 @@
 
 	import ModelScaleControl from '$routes/map/components/atoms/ModelScaleControl.svelte';
 	import RangeSlider from '$routes/map/components/atoms/RangeSlider.svelte';
+	import {
+		WEB_MERCATOR_MIN_LAT,
+		WEB_MERCATOR_MAX_LAT
+	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import type { ModelLocalBounds } from '$routes/map/data/types/model';
 	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
 	import {
 		isValidModelPlacementLatitude,
 		isValidModelPlacementLongitude
 	} from '$routes/map/utils/three/model-placement-coordinates';
-	import {
-		WEB_MERCATOR_MIN_LAT,
-		WEB_MERCATOR_MAX_LAT
-	} from '$routes/map/data/entries/_meta_data/_bounds';
 
 	interface Props {
 		lng: number | undefined;

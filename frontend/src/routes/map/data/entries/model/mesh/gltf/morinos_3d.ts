@@ -90,8 +90,8 @@ const entry = {
 			v_log: {
 				name: 'V柱',
 				description:
-					'morinosの象徴的なデザインとなっているV柱。見ようによってはWoodのWにも見えます。' +
-					'V柱に使われているヒノキ丸太は、アカデミー演習林の100年生のヒノキ林から集材されたものです。',
+					'morinosの象徴的なデザインとなっているV柱。見ようによってはWoodのWにも見えます。'
+					+ 'V柱に使われているヒノキ丸太は、アカデミー演習林の100年生のヒノキ林から集材されたものです。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi2/',
 				medias: [
 					{
@@ -188,7 +188,8 @@ const entry = {
 			},
 			houtate: {
 				name: '樹皮付き方立',
-				description: '方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
+				description:
+					'方立（ほうだて）とは、ガラスや開口部の横に取り付けられる垂直の桟のこと。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi3/',
 				medias: [
 					{
@@ -203,7 +204,8 @@ const entry = {
 			},
 			'77164639-4feb-49d5-b86e-af26be2296c0': {
 				name: 'ガラスコーナー',
-				description: 'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
+				description:
+					'morinosの建物コーナー部はガラスのみで、柱や押さえ縁などの木材がありません。',
 				url: 'https://www.forest.ac.jp/academy-archives/morinos-archi4/',
 				medias: [
 					{

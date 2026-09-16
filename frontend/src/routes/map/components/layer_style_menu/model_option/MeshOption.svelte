@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
-	import { slide } from 'svelte/transition';
 	import { untrack } from 'svelte';
+	import { slide } from 'svelte/transition';
 
 	import Accordion from '$routes/map/components/atoms/Accordion.svelte';
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
@@ -20,9 +19,10 @@
 	// import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
-	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
 	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
+	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
+	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showModelView } from '$routes/stores/ui';
 	interface Props {

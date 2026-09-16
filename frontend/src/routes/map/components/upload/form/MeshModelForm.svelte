@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
-	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
 	import { onDestroy, untrack } from 'svelte';
 	import * as yup from 'yup';
 
@@ -33,6 +31,7 @@
 		readIfcPlacementMetadata,
 		type IfcPlacementMetadata
 	} from '$routes/map/utils/three/ifc-metadata';
+	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
 	import { applyProjectedModelAxisOverride } from '$routes/map/utils/three/model-axis';
 	import { computeUploadedModelMetaInWorker } from '$routes/map/utils/three/model-bounds-parallel';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
@@ -44,6 +43,7 @@
 		getInitialModelPlacementViewport,
 		getInitialModelPlacementScale
 	} from '$routes/map/utils/three/model-initial-scale';
+	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
