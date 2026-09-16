@@ -6,6 +6,7 @@ import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
 import { isCityGmlFile } from '$routes/map/utils/formats/citygml/detector';
+import { isCityJsonFile } from '$routes/map/utils/formats/cityjson/detector';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGaussianSplatPlyFile } from '$routes/map/utils/formats/gaussian-splat';
@@ -166,6 +167,8 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 
 // 単体ファイルで同期的に決められるものは、ここに拡張子 -> ダイアログ種別として寄せる。
 const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
+	bds: 'bds',
+	gcd: 'gcd',
 	csv: 'csv',
 	tsv: 'tsv',
 	xlsx: 'xlsx',
@@ -253,6 +256,33 @@ const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
+	{
+		id: 'bds-set',
+		match: files => files.some(file => hasExtension(file, '.bds')),
+		resolve: async files =>
+			files.every(file => hasExtension(file, '.bds'))
+				? createDialogDecision('bds', files)
+				: createNotificationDecision('BDSは.bdsファイルだけをまとめて選択してください')
+	},
+	{
+		id: 'gcd-set',
+		match: files => files.some(file => hasExtension(file, '.gcd')),
+		resolve: async files =>
+			files.every(file => hasExtension(file, '.gcd'))
+				? createDialogDecision('gcd', files)
+				: createNotificationDecision('GCDは.gcdファイルだけをまとめて選択してください')
+	},
+	{
+		id: 'rik-archive',
+		match: (files) => files.some((file) => hasExtension(file, '.rik')),
+		resolve: async (files, options) => {
+			const archives = files.filter((file) => hasExtension(file, '.rik'));
+			if (archives.length !== 1) {
+				return createNotificationDecision('RIKファイルは1つずつ読み込んでください');
+			}
+			return resolveSingleFile(archives[0], options);
+		}
+	},
 	{
 		id: 'kml-model',
 		match: (files) => files.some((file) => hasExtension(file, '.kml')),
@@ -403,6 +433,17 @@ const resolveSingleFile = async (
 	options: UploadDropOptions
 ): Promise<UploadDropDecision> => {
 	const ext = file.name.split('.').pop()?.toLowerCase();
+
+	if (ext === 'rik') {
+		try {
+			const { extractRikModelFiles } = await import('$routes/map/utils/formats/rik/analyze');
+			return createDialogDecision('model', await extractRikModelFiles(file));
+		} catch (error) {
+			return createNotificationDecision(
+				error instanceof Error ? error.message : 'RIKファイルを読み込めませんでした'
+			);
+		}
+	}
 
 	if (ext === 'zip') {
 		if (await isGtfsZip(file)) {
@@ -565,6 +606,14 @@ export const resolveDroppedFiles = async (
 	}
 	if (files.some(isMltFile)) return createDialogDecision('local-mlt', files);
 	if (isLocalMvtInput(files)) return createDialogDecision('local-mvt', files);
+	const cityJsonCandidates = files.filter(file => /\.(?:json|cityjson)$/i.test(file.name));
+	if (cityJsonCandidates.length) {
+		const matches = await Promise.all(
+			cityJsonCandidates.map(async file => ({ file, matched: await isCityJsonFile(file) }))
+		);
+		const cityJsonFiles = matches.filter(item => item.matched).map(item => item.file);
+		if (cityJsonFiles.length) return createDialogDecision('cityjson', cityJsonFiles);
+	}
 	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。
 	const cityGmlCandidates = files.filter((file) => /\.(?:gml|xml|citygml)$/i.test(file.name));
 	if (cityGmlCandidates.length) {

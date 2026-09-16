@@ -75,8 +75,7 @@ let rhino3dmLoaderModulePromise:
 	>
 	| null = null;
 let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
-let tdsLoaderModulePromise: Promise<typeof import('three/addons/loaders/TDSLoader.js')> | null =
-	null;
+let tdsLoaderModulePromise: Promise<typeof import('./tds-loader')> | null = null;
 let colladaLoaderModulePromise:
 	| Promise<
 		typeof import('three/addons/loaders/ColladaLoader.js')
@@ -204,7 +203,7 @@ const loadIfcLoaderModule = async () => {
 
 const loadTdsLoaderModule = async () => {
 	if (!tdsLoaderModulePromise) {
-		tdsLoaderModulePromise = import('three/addons/loaders/TDSLoader.js');
+		tdsLoaderModulePromise = import('./tds-loader');
 	}
 	return tdsLoaderModulePromise;
 };
@@ -466,37 +465,16 @@ const parseObjObject = async (file: File): Promise<UploadedModelObject> => {
 	};
 };
 
-const parseTdsObject = async (
-	file: File,
-	resourceUrls?: Record<string, string>
-): Promise<UploadedModelObject> => {
+const parseTdsObject = async (file: File): Promise<UploadedModelObject> => {
 	const { TDSLoader } = await loadTdsLoaderModule();
-	const manager = new THREE.LoadingManager();
-	if (resourceUrls) {
-		manager.setURLModifier((url) => {
-			const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
-			const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
-			const fileName = normalizedUrl.split('/').pop() ?? '';
-			return (
-				resourceUrls[normalizedUrl]
-					?? resourceUrls[relativeWithoutRoot]
-					?? resourceUrls[fileName]
-					?? url
-			);
-		});
-	}
-
-	const loader = new TDSLoader(manager);
-	const url = URL.createObjectURL(file);
-	try {
-		const object = await loader.loadAsync(url);
-		return {
-			object,
-			animationNames: []
-		};
-	} finally {
-		URL.revokeObjectURL(url);
-	}
+	const loader = new TDSLoader();
+	// 範囲計算には画像が不要。Workerにはdocumentがないため、画像を読むと
+	// 解析が失敗して仮のboundsが残る。このインスタンスだけテクスチャ読込を省く。
+	loader.readMap = () => new THREE.Texture();
+	return {
+		object: loader.parse(await file.arrayBuffer(), ''),
+		animationNames: []
+	};
 };
 
 const parseDaeObject = async (
@@ -725,7 +703,7 @@ export const getUploadedModelObject = async (
 	}
 
 	if (format === '3ds') {
-		return parseTdsObject(file, resourceUrls);
+		return parseTdsObject(file);
 	}
 
 	if (format === 'dae') {

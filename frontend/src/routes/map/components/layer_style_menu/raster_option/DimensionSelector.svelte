@@ -80,7 +80,8 @@
 		loop: true,
 		dragFree: false,
 		align: 'center',
-		containScroll: 'trimSnaps', // スナップを調整
+		// 項目が少なくloopが無効になっても、先頭・末尾を中央にそろえる。
+		containScroll: false,
 		duration: 25,
 		slidesToScroll: 1, // 1つずつスクロール
 		startIndex: 0

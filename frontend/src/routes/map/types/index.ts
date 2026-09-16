@@ -101,6 +101,8 @@ export type DialogType =
 	| 'sqlite'
 	| 'filegdb'
 	| 'gdb'
+	| 'bds'
+	| 'gcd'
 	| 'mfjson'
 	| '3dtiles'
 	| 'local-3dtiles'
@@ -118,6 +120,7 @@ export type DialogType =
 	| 'grib2'
 	| 'gml'
 	| 'citygml'
+	| 'cityjson'
 	| 'kml'
 	| 'topojson'
 	| 'landxml'
@@ -297,6 +300,22 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.mif', '.mid']
 	},
 	{
+		id: 'bds',
+		dialogType: 'bds',
+		label: 'SIS BDS',
+		icon: 'mdi:vector-polyline',
+		description: 'SIS形式の地図データです。線・境界線・文字位置と属性を読み込みます。',
+		extensions: ['.bds']
+	},
+	{
+		id: 'gcd',
+		dialogType: 'gcd',
+		label: 'GeoCloud / GeoConic GCD',
+		icon: 'mdi:vector-polyline',
+		description: 'GCD形式の地図データです。図形の境界線と属性を読み込みます。',
+		extensions: ['.gcd']
+	},
+	{
 		id: 'gpkg',
 		label: 'GeoPackage',
 		icon: 'mdi:database',
@@ -392,6 +411,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description:
 			'地理情報をXMLで表現するベクターデータです。基盤地図情報や各種XML地図データを読み込むときに使います。',
 		extensions: ['.gml', '.xml']
+	},
+	{
+		id: 'cityjson',
+		label: 'CityJSON',
+		icon: 'mdi:file-outline',
+		description:
+			'都市モデルの形状と属性をJSONで表したデータです。建物や地形などの面・立体形状を3D表示するときに使います。',
+		extensions: ['.city.json', '.cityjson', '.json']
 	},
 	{
 		id: 'citygml',
@@ -603,6 +630,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description:
 			'3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
 		extensions: ['.3ds']
+	},
+	{
+		id: 'rik',
+		label: 'RIKCAD RIK（3DS）',
+		icon: 'mdi:home-city-outline',
+		description:
+			'3DSモデルとテクスチャを格納したRIKCAD連携ファイルです。建物などを3Dモデルとして地図上に配置するときに使います。',
+		extensions: ['.rik']
 	},
 	{
 		id: 'dae',

@@ -12,8 +12,8 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 export default [
 	includeIgnoreFile(gitignorePath),
 	{
-		// Basisは外部ライブラリの配布ファイルをそのまま配置する。
-		ignores: ['docs/**', 'static/basis/**']
+		// Basis・vendorは外部ライブラリの配布ファイルをそのまま配置する。
+		ignores: ['docs/**', 'static/basis/**', 'static/vendor/**']
 	},
 	js.configs.recommended,
 	...ts.configs.recommended,

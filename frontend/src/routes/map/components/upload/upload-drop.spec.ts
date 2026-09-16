@@ -1051,3 +1051,96 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 });
+
+describe('GCDのドロップ', () => {
+	it.each(['test.gcd', 'test.GCD'])('単体をGCDフォームへ渡す: %s', async name => {
+		expect(await resolveDroppedFiles(new File(['test'], name))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'gcd'
+		});
+	});
+	it('複数のGCDをまとめて渡す', async () => {
+		const files = [new File(['test'], 'test-a.gcd'), new File(['test'], 'test-b.gcd')];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'gcd',
+			dropFiles: files
+		});
+	});
+	it('他形式が混ざった場合は黙って読み捨てない', async () => {
+		expect(
+			await resolveDroppedFiles([
+				new File(['test'], 'test.gcd'),
+				new File(['test'], 'test.txt')
+			])
+		).toMatchObject({ type: 'notification', level: 'error' });
+	});
+});
+
+describe('BDS upload', () => {
+	it.each(['test.bds', 'test.BDS'])('単体BDSを判定する: %s', async name => {
+		expect(await resolveDroppedFiles(createFile(name))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'bds'
+		});
+	});
+	it('複数のBDSをまとめて渡す', async () => {
+		const files = [createFile('test-a.bds'), createFile('test-b.bds')];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'bds',
+			dropFiles: files
+		});
+	});
+	it('BDSと他形式の混在を拒否する', async () => {
+		expect(await resolveDroppedFiles([createFile('test.bds'), createFile('test.txt')]))
+			.toMatchObject({ type: 'notification', level: 'error' });
+	});
+});
+
+describe('CityJSONのドロップ', () => {
+	const cityJson = readFileSync(
+		new URL('../../utils/formats/cityjson/__fixtures__/test-city.city.json', import.meta.url),
+		'utf8'
+	);
+	it.each(['test.city.json', 'test.cityjson', 'test.CITY.JSON', 'test.json'])(
+		'専用フォームへ渡す: %s',
+		async name => {
+			const file = new File([cityJson], name);
+			expect(await resolveDroppedFiles(file)).toEqual({
+				type: 'dialog',
+				dialogType: 'cityjson',
+				dropFiles: [file]
+			});
+		}
+	);
+	it('複数のCityJSONをまとめ、無関係なJSONを渡さない', async () => {
+		const files = [
+			new File([cityJson], 'test-a.json'),
+			new File([cityJson], 'test-b.city.json')
+		];
+		expect(await resolveDroppedFiles([...files, new File(['{}'], 'test-other.json')]))
+			.toMatchObject({ dialogType: 'cityjson', dropFiles: files });
+	});
+	it('ZIP展開後のCityJSONを検出する', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/test.city.json', cityJson);
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+		);
+		expect(result).toMatchObject({ dialogType: 'cityjson' });
+	});
+	it('GeoJSONの属性にCityJSONと書かれていてもGeoJSONへ渡す', async () => {
+		const file = new File([
+			'{"type":"FeatureCollection","features":[],"properties":{"type":"CityJSON"}}'
+		], 'test.json');
+		expect(await resolveDroppedFiles(file)).toMatchObject({ dialogType: 'geojson' });
+	});
+	it('専用拡張子は壊れたJSONでもCityJSONフォームでエラーを扱う', async () => {
+		const file = new File(['{'], 'test.city.json');
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			dialogType: 'cityjson',
+			dropFiles: [file]
+		});
+	});
+});

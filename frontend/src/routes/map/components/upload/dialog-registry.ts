@@ -31,6 +31,14 @@ const tileDialog: DialogDefinition = {
 };
 
 export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDefinition>> = {
+	bds: {
+		load: () => import('$routes/map/components/upload/form/BdsForm.svelte'),
+		profile: 'drop-file'
+	},
+	gcd: {
+		load: () => import('$routes/map/components/upload/form/GcdForm.svelte'),
+		profile: 'drop-file'
+	},
 	wmts: {
 		load: () => import('$routes/map/components/upload/form/WmtsForm.svelte'),
 		profile: 'remote-wmts'
@@ -167,6 +175,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	gml: {
 		load: () => import('$routes/map/components/upload/form/GmlForm.svelte'),
 		profile: 'vector-zone-georef'
+	},
+	cityjson: {
+		load: () => import('$routes/map/components/upload/form/CityJsonForm.svelte'),
+		profile: 'drop-file'
 	},
 	citygml: {
 		load: () => import('$routes/map/components/upload/form/CityGmlForm.svelte'),
