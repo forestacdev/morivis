@@ -101,6 +101,7 @@ export type DialogType =
 	| 'sqlite'
 	| 'filegdb'
 	| 'gdb'
+	| 'bds'
 	| 'gcd'
 	| 'mfjson'
 	| '3dtiles'
@@ -296,6 +297,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		icon: 'mdi:map-marker-radius',
 		description: 'MapInfoの交換用ベクターデータです。図形と属性を組で読み込むときに使います。',
 		extensions: ['.mif', '.mid']
+	},
+	{
+		id: 'bds',
+		dialogType: 'bds',
+		label: 'SIS BDS',
+		icon: 'mdi:vector-polyline',
+		description: 'SIS形式の地図データです。線・境界線・文字位置と属性を読み込みます。',
+		extensions: ['.bds']
 	},
 	{
 		id: 'gcd',

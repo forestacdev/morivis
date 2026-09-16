@@ -166,6 +166,7 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 
 // 単体ファイルで同期的に決められるものは、ここに拡張子 -> ダイアログ種別として寄せる。
 const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
+	bds: 'bds',
 	gcd: 'gcd',
 	csv: 'csv',
 	tsv: 'tsv',
@@ -254,6 +255,13 @@ const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
+	{
+		id: 'bds-set',
+		match: files => files.some(file => hasExtension(file, '.bds')),
+		resolve: async files => files.every(file => hasExtension(file, '.bds'))
+			? createDialogDecision('bds', files)
+			: createNotificationDecision('BDSは.bdsファイルだけをまとめて選択してください')
+	},
 	{
 		id: 'gcd-set',
 		match: files => files.some(file => hasExtension(file, '.gcd')),

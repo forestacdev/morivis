@@ -31,6 +31,10 @@ const tileDialog: DialogDefinition = {
 };
 
 export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDefinition>> = {
+	bds: {
+		load: () => import('$routes/map/components/upload/form/BdsForm.svelte'),
+		profile: 'drop-file'
+	},
 	gcd: {
 		load: () => import('$routes/map/components/upload/form/GcdForm.svelte'),
 		profile: 'drop-file'
