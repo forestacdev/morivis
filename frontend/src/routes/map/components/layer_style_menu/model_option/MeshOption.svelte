@@ -12,6 +12,7 @@
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import ColorOption from '$routes/map/components/layer_style_menu/ColorOption.svelte';
 	import ColorScaleDem from '$routes/map/components/layer_style_menu/extension_menu/ColorScaleDem.svelte';
+	import PmxMorphControls from '$routes/map/components/layer_style_menu/model_option/PmxMorphControls.svelte';
 	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
 	import { createAdjustableRange } from '$routes/map/data/types';
 	import { DEFAULT_MESH_EDGE, DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
@@ -235,6 +236,10 @@
 		mapStore.setModelAnimationState(layerEntry);
 	});
 </script>
+
+{#if isPmx}
+	<PmxMorphControls bind:layerEntry />
+{/if}
 
 {#if canConfigureAnimation}
 	<Accordion

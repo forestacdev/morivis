@@ -992,6 +992,11 @@ const createMapStore = () => {
 		}
 	};
 
+	const setPmxMorphState = (entry: MeshEntry<MeshStyle>) => {
+		threeJsManager.setPmxMorphState(entry);
+		if (map && isMapValid(map)) map.triggerRepaint();
+	};
+
 	const setModelAnimationState = (entry: MeshEntry<MeshStyle>) => {
 		threeJsManager.setModelAnimationState(entry);
 		if (map && isMapValid(map)) {
@@ -1724,6 +1729,7 @@ const createMapStore = () => {
 		setDeckTiles3DMeshStyle,
 		setDeckVectorColor,
 		setModelAnimationState,
+		setPmxMorphState,
 		setHighlightLayers,
 		syncPatternAnimation,
 		clearHighlightLayers,

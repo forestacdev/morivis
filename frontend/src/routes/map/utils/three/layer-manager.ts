@@ -83,6 +83,11 @@ import {
 	loadPmxAnimationClip,
 	loadPmxModel
 } from '$routes/map/utils/three/pmx-loader';
+import {
+	applyPmxMorphState,
+	getPmxMorphCatalog,
+	normalizePmxMorphWeights
+} from '$routes/map/utils/three/pmx-morphs';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import {
 	createVrmLoader,
@@ -91,6 +96,7 @@ import {
 	rotateVrm0IfNeeded
 } from '$routes/map/utils/three/vrm-loader';
 import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
+import { removePmxMorphCatalog, setPmxMorphCatalog } from '$routes/stores/pmx-morphs';
 import type { VRM } from '@pixiv/three-vrm';
 import type { ThreeMmdAnimation } from '@yohawing/three-mmd-loader/three';
 import * as THREE from 'three';
@@ -224,6 +230,9 @@ interface LoadedModel {
 	mmd?: {
 		model: LoadedPmxModel;
 		animations: Map<number, ThreeMmdAnimation>;
+		morphCatalog: ReturnType<typeof getPmxMorphCatalog>;
+		morphStateKey?: string;
+		morphOverridesActive?: boolean;
 		activeClipIndex?: number;
 		loadingClipIndex?: number;
 		elapsedSeconds: number;
@@ -828,16 +837,19 @@ export class ThreeJsLayerManager {
 				varying vec3 vNormal;
 				varying vec2 vUv;
 				varying float vPartColorIndex;
+				#include <morphtarget_pars_vertex>
 				#include <skinning_pars_vertex>
 				#include <color_pars_vertex>
 
 				void main() {
 					#include <color_vertex>
 					vec3 objectNormal = vec3(normal);
+					#include <morphnormal_vertex>
 					#include <skinbase_vertex>
 					#include <skinnormal_vertex>
 					vNormal = normalize(normalMatrix * objectNormal);
 					vec3 transformed = vec3(position);
+					#include <morphtarget_vertex>
 					#include <skinning_vertex>
 					vUv = uv;
 					vPartColorIndex = morivisPartColorIndex;
@@ -1544,6 +1556,7 @@ export class ThreeJsLayerManager {
 
 	private syncAnimationState = (loaded: LoadedModel) => {
 		this.syncMmdAnimationState(loaded);
+		this.syncPmxMorphState(loaded);
 		this.syncVrmAnimationState(loaded);
 		if (!loaded.mixer || !loaded.actions || loaded.actions.length === 0) return;
 
@@ -1678,6 +1691,31 @@ export class ThreeJsLayerManager {
 			});
 	};
 
+	private syncPmxMorphState = (loaded: LoadedModel, force = false) => {
+		const mmd = loaded.mmd;
+		if (!mmd) return;
+		const options = mmd.morphCatalog.options;
+		const weights = normalizePmxMorphWeights(loaded.entry.state?.pmxMorphWeights, options);
+		const key = JSON.stringify([mmd.activeClipIndex ?? -1, weights]);
+		if (!force && mmd.morphStateKey === key) return;
+		const hadOverride = mmd.morphOverridesActive;
+		mmd.morphOverridesActive = Object.keys(weights).length > 0;
+		mmd.morphStateKey = key;
+		if (!mmd.morphOverridesActive && !hadOverride) return;
+		const index = mmd.activeClipIndex ?? -1;
+		const clip = loaded.entry.properties?.animation?.clips[index];
+		applyPmxMorphState(
+			mmd.model.model,
+			options,
+			weights,
+			mmd.animations.get(index),
+			mmd.elapsedSeconds,
+			isVpdModelAnimationClip(clip),
+			isVpdModelAnimationClip(clip) ? clip.ik : undefined
+		);
+		this.map?.triggerRepaint();
+	};
+
 	private syncMmdAnimationState = (loaded: LoadedModel) => {
 		const mmd = loaded.mmd;
 		const animationState = loaded.entry.state?.animation;
@@ -1748,6 +1786,7 @@ export class ThreeJsLayerManager {
 				mmd.elapsedSeconds = 0;
 				mmd.durationSeconds = getMmdAnimationDurationSeconds(animation);
 				mmd.lastPlaying = loaded.entry.state?.animation?.playing;
+				this.syncPmxMorphState(loaded, true);
 				this.map?.triggerRepaint();
 			})
 			.catch((error) => {
@@ -2610,6 +2649,7 @@ export class ThreeJsLayerManager {
 						mmd: {
 							model: mmdModel,
 							animations: new Map(),
+							morphCatalog: getPmxMorphCatalog(mmdModel.model),
 							elapsedSeconds: 0
 						}
 					}),
@@ -2635,6 +2675,7 @@ export class ThreeJsLayerManager {
 					}
 				}
 				this.loadedModels.set(entry.id, loaded);
+				if (loaded.mmd) setPmxMorphCatalog(entry.id, loaded.mmd.morphCatalog);
 				this.syncAnimationState(loaded);
 				if (_type === 'preview') {
 					this.previewModelGroup!.add(model);
@@ -3206,6 +3247,7 @@ export class ThreeJsLayerManager {
 		this.disposeModelObject(loaded.object);
 
 		this.loadedModels.delete(entryId);
+		removePmxMorphCatalog(entryId);
 	}
 
 	/** すべてのモデルを削除 */
@@ -3490,6 +3532,13 @@ export class ThreeJsLayerManager {
 		loaded.transform = newTransform;
 		loaded.entry = { ...loaded.entry, style } as ThreeModelEntry;
 		this.syncAnimationState(loaded);
+	}
+
+	setPmxMorphState(entry: MeshEntry<MeshStyle>): void {
+		const loaded = this.loadedModels.get(entry.id);
+		if (!loaded?.mmd) return;
+		loaded.entry = entry;
+		this.syncPmxMorphState(loaded);
 	}
 
 	setModelAnimationState(entry: MeshEntry<MeshStyle>): void {

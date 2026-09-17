@@ -59,6 +59,9 @@ export interface ModelAnimationProperties {
 	defaultLoop?: boolean;
 }
 
+/** モーフ番号ごとの手動指定値（0〜1）。未指定はモーションに従う。 */
+export type PmxMorphWeights = Record<string, number>;
+
 export interface ModelAnimationState {
 	/** PMX は -1 でモーション・ポーズを適用しない。 */
 	currentClipIndex: number;
@@ -114,6 +117,7 @@ interface BaseModelEntry {
 	state?: {
 		dimension?: RasterDimensionState;
 		animation?: ModelAnimationState;
+		pmxMorphWeights?: PmxMorphWeights;
 	};
 }
 
