@@ -111,6 +111,7 @@ export type DialogType =
 	| 'local-raster-tiles'
 	| 'pmtiles'
 	| 'model'
+	| 'mca'
 	| 'gaussian-splat'
 	| 'arcgis'
 	| 'pointcloud'
@@ -606,6 +607,15 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		icon: 'mdi:cube-outline',
 		description: '3Dモデルの形状、材質、テクスチャ、アニメーションなどを記録するファイルです。',
 		extensions: ['.glb', '.gltf']
+	},
+	{
+		id: 'mca',
+		dialogType: 'mca',
+		label: 'Minecraft Java (.mca)',
+		icon: 'mdi:cube-outline',
+		description:
+			'Minecraft Java版の地形リージョンデータです。ブロックを色分けした簡易3Dモデルとして地図上に配置できます。',
+		extensions: ['.mca']
 	},
 	{
 		id: 'usd',

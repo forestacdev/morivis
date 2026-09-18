@@ -1,6 +1,68 @@
+import { SUPPORTED_FILE_ACCEPT, SUPPORTED_FILE_GROUPS } from '$routes/map/types';
 import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+describe('Minecraftのドロップ', () => {
+	it.each(['test-region.mca', 'test-region.MCA'])(
+		'単体ファイルと配列を専用フォームへ渡す: %s',
+		async name => {
+			const file = new File(['test'], name);
+			for (const input of [file, [file]]) {
+				expect(await resolveDroppedFiles(input)).toEqual({
+					type: 'dialog',
+					dialogType: 'mca',
+					dropFiles: [file]
+				});
+			}
+		}
+	);
+	it.each(['test-other.mca', 'test-model.glb', 'tilejson.json', 'test.mlt', 'test.bds'])(
+		'複数ファイルや他形式との混在を拒否する: %s',
+		async name => {
+			expect(
+				await resolveDroppedFiles([
+					new File(['test'], 'test-region.mca'),
+					new File(['{}'], name)
+				])
+			).toEqual({
+				type: 'notification',
+				level: 'error',
+				message:
+					'Minecraftの地形リージョン（.mca）は、他のファイルを含めず1つずつ読み込んでください'
+			});
+		}
+	);
+	it('ZIP内の単体MCAを専用フォームへ渡す', async () => {
+		const zip = new JSZip();
+		zip.file('test-world/region/test-region.mca', 'test');
+		const result = await resolveDroppedFiles(
+			new File([
+				await zip.generateAsync({ type: 'arraybuffer' })
+			], 'test-world.zip')
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'mca' });
+	});
+	it('ZIP内の複数MCAを黙って読み捨てない', async () => {
+		const zip = new JSZip();
+		zip.file('test-world/region/test-a.mca', 'test');
+		zip.file('test-world/region/test-b.mca', 'test');
+		expect(
+			await resolveDroppedFiles(
+				new File([
+					await zip.generateAsync({ type: 'arraybuffer' })
+				], 'test-world.zip')
+			)
+		).toMatchObject({ type: 'notification', level: 'error' });
+	});
+	it('ファイル選択と形式一覧からMCAを選べる', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.mca');
+		expect(SUPPORTED_FILE_GROUPS.find((group) => group.id === 'mca')).toMatchObject({
+			dialogType: 'mca',
+			extensions: ['.mca']
+		});
+	});
+});
 
 describe('ローカルMLTのドロップ', () => {
 	it.each(['test.mlt', 'test.MLT', 'test.mlt.gz'])('MLTの入口へ渡す: %s', async name => {

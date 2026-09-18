@@ -119,6 +119,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/MeshModelForm.svelte'),
 		profile: 'model-georef'
 	},
+	mca: {
+		load: () => import('$routes/map/components/upload/form/McaForm.svelte'),
+		profile: 'drop-file'
+	},
 	'gaussian-splat': {
 		load: () => import('$routes/map/components/upload/form/GaussianSplatForm.svelte'),
 		profile: 'model-georef'

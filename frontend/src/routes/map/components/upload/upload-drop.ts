@@ -597,6 +597,14 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
+	// 他形式の優先判定より先に、MCAの複数・混在入力を拒否する。
+	if (files.some((file) => hasExtension(file, '.mca'))) {
+		return files.length === 1
+			? createDialogDecision('mca', files)
+			: createNotificationDecision(
+				'Minecraftの地形リージョン（.mca）は、他のファイルを含めず1つずつ読み込んでください'
+			);
+	}
 	// tilesetとGLB等が同居しても、個別モデルではなくフォルダ全体を渡す。
 	if ((await findLocalTilesetFiles(files)).length) {
 		return createDialogDecision('local-3dtiles', files);
