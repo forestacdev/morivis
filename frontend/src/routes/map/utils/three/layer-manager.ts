@@ -2293,10 +2293,14 @@ export class ThreeJsLayerManager {
 		this.placementTransformChangeHandler = handler;
 	};
 
-	setPlacementPreview(entry: ThreeModelEntry, style = entry.style): void {
+	setPlacementPreview(
+		entry: ThreeModelEntry,
+		style = entry.style,
+		{ showTransformHandles = true }: { showTransformHandles?: boolean; } = {}
+	): void {
 		if (!this.scene) return;
 		const bounds = getPlacementPreviewBounds(entry);
-		const boundsKey = getPlacementPreviewBoundsKey(bounds);
+		const boundsKey = `${getPlacementPreviewBoundsKey(bounds)}:${showTransformHandles}`;
 		if (
 			!this.placementPreview
 			|| this.placementPreview.entryId !== entry.id
@@ -2308,7 +2312,9 @@ export class ThreeJsLayerManager {
 				disposePlacementPreviewObject(this.placementPreview.object);
 			}
 			const object = createPlacementPreviewObject(bounds);
-			const handles = this.createPlacementScaleHandles(bounds);
+			const handles = showTransformHandles
+				? this.createPlacementScaleHandles(bounds)
+				: new THREE.Group();
 			this.scene.add(object, handles);
 			this.placementPreview = {
 				entryId: entry.id,

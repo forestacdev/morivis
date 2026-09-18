@@ -86,6 +86,8 @@ export const checkLargeDroppedFiles = async (files: File | File[]): Promise<bool
 	const fileList = Array.isArray(files) ? files : [files];
 	const totalSize = fileList.reduce((sum, file) => sum + file.size, 0);
 	if (totalSize < LARGE_FILE_THRESHOLD) return true;
+	// MCAは逐次展開し、生成メッシュ量を専用フォームの面数上限で管理する。
+	if (fileList.every(file => /\.mca$/i.test(file.name))) return true;
 	// フォルダのタイル本体は表示時に読むため、一括展開を前提としたサイズ確認は不要。
 	if (fileList.length > 1 && (await findLocalTilesetFiles(fileList)).length) return true;
 	if (isLocalRasterTileFolder(fileList)) return true;

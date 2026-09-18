@@ -14,6 +14,10 @@
 	import ColorScaleDem from '$routes/map/components/layer_style_menu/extension_menu/ColorScaleDem.svelte';
 	import PmxMorphControls from '$routes/map/components/layer_style_menu/model_option/PmxMorphControls.svelte';
 	import DimensionSelector from '$routes/map/components/layer_style_menu/raster_option/DimensionSelector.svelte';
+	import {
+		WEB_MERCATOR_MAX_LAT,
+		WEB_MERCATOR_MIN_LAT
+	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import { createAdjustableRange } from '$routes/map/data/types';
 	import { DEFAULT_MESH_EDGE, DEFAULT_MESH_SHADING } from '$routes/map/data/types/model';
 	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
@@ -23,6 +27,10 @@
 	import { getInitialModelAnimationState } from '$routes/map/utils/three/model-animation';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
 	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
+	import {
+		isValidModelPlacementLatitude,
+		isValidModelPlacementLongitude
+	} from '$routes/map/utils/three/model-placement-coordinates';
 	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
 	import { isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showModelView } from '$routes/stores/ui';
@@ -58,6 +66,11 @@
 	const colorMapManager = new ColorMapManager();
 	const colorMapOptions = [...COLORMAP_PRESET_NAMES];
 	const canEditScale = $derived(layerEntry.style.transformOptions?.scale ?? true);
+	let worldOriginLng = $derived<number | undefined>(layerEntry.style.transform.lng);
+	let worldOriginLat = $derived<number | undefined>(layerEntry.style.transform.lat);
+	const worldOriginLngInvalid = $derived(!isValidModelPlacementLongitude(worldOriginLng));
+	const worldOriginLatInvalid = $derived(!isValidModelPlacementLatitude(worldOriginLat));
+	const worldOriginInputId = $props.id();
 	const canEditRotation = $derived(layerEntry.style.transformOptions?.rotation ?? true);
 	const canEditHeightScale = $derived(layerEntry.style.transformOptions?.heightScale ?? false);
 	const canEditHeightOffset = $derived(layerEntry.style.transformOptions?.heightOffset ?? true);
@@ -85,6 +98,18 @@
 		const localBounds = layerEntry.format.localBounds;
 		if (!localBounds) return;
 		layerEntry.metaData.bounds = getModelGeoBoundsFromLocalBounds(localBounds, layerEntry.style);
+	};
+	const updateWorldOriginLng = (value: number | undefined) => {
+		worldOriginLng = value;
+		if (!isValidModelPlacementLongitude(value)) return;
+		layerEntry.style.transform.lng = value;
+		updateModelGeoBounds();
+	};
+	const updateWorldOriginLat = (value: number | undefined) => {
+		worldOriginLat = value;
+		if (!isValidModelPlacementLatitude(value)) return;
+		layerEntry.style.transform.lat = value;
+		updateModelGeoBounds();
 	};
 	const ensureShading = () => {
 		layerEntry.style.showThroughTerrain ??= false;
@@ -459,10 +484,90 @@
 
 {#if !$showModelView}
 	<Accordion label="変形・移動" icon="gis:cube-3d" bind:value={showTransformOption}>
+		{#if layerEntry.format.minecraftRegion}
+			<div class="mb-3 flex flex-col gap-3 text-sm">
+				<label class="flex items-center gap-2">
+					<input
+						type="checkbox"
+						bind:checked={
+							() => layerEntry.style.minecraftGrid?.visible ?? false,
+							(visible) => {
+								layerEntry.style.minecraftGrid = {
+									visible,
+									labels: layerEntry.style.minecraftGrid?.labels ?? true
+								};
+							}
+						}
+					/>
+					<span>リージョングリッド</span>
+				</label>
+				<label class="flex items-center gap-2">
+					<input
+						type="checkbox"
+						disabled={!(layerEntry.style.minecraftGrid?.visible ?? false)}
+						bind:checked={
+							() => layerEntry.style.minecraftGrid?.labels ?? true,
+							(labels) => {
+								layerEntry.style.minecraftGrid = {
+									visible: layerEntry.style.minecraftGrid?.visible ?? false,
+									labels
+								};
+							}
+						}
+					/>
+					<span>リージョン名ラベル</span>
+				</label>
+				<p>
+					ワールド原点（X=0、Z=0）の位置です。読み込んだすべてのリージョンに共通の設定です。Xの正方向は東、Zの正方向は南で、1リージョンは512×512ブロックです。
+				</p>
+				<label class="flex flex-col gap-1"
+					><span>ワールド原点の経度</span><input
+						class="c-input w-full"
+						type="number"
+						step="any"
+						min="-180"
+						max="180"
+						required
+						aria-invalid={worldOriginLngInvalid}
+						aria-describedby={worldOriginLngInvalid ? `${worldOriginInputId}-lng-error` : undefined}
+						bind:value={() => worldOriginLng, updateWorldOriginLng}
+					/></label
+				>
+				{#if worldOriginLngInvalid}<p
+						id={`${worldOriginInputId}-lng-error`}
+						class="text-red-400"
+						aria-live="polite"
+					>
+						経度は−180〜180°の数値を入力してください。
+					</p>{/if}
+				<label class="flex flex-col gap-1"
+					><span>ワールド原点の緯度</span><input
+						class="c-input w-full"
+						type="number"
+						step="any"
+						min={WEB_MERCATOR_MIN_LAT}
+						max={WEB_MERCATOR_MAX_LAT}
+						required
+						aria-invalid={worldOriginLatInvalid}
+						aria-describedby={worldOriginLatInvalid ? `${worldOriginInputId}-lat-error` : undefined}
+						bind:value={() => worldOriginLat, updateWorldOriginLat}
+					/></label
+				>
+				{#if worldOriginLatInvalid}<p
+						id={`${worldOriginInputId}-lat-error`}
+						class="text-red-400"
+						aria-live="polite"
+					>
+						緯度は約−85.051〜85.051°の数値を入力してください。
+					</p>{/if}
+			</div>
+		{/if}
 		{#if canEditScale}
 			<ModelScaleControl
 				scale={layerEntry.style.transform.scale}
 				scaleUnit={layerEntry.style.transform.scaleUnit}
+				baseScale={layerEntry.style.transform.baseScale}
+				sourceUnit={layerEntry.format.sourceUnit}
 				onChange={(value) => {
 					layerEntry.style.transform.scale = value.scale;
 					layerEntry.style.transform.scaleUnit = value.scaleUnit;

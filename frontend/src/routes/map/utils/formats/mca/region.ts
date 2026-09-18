@@ -1,11 +1,17 @@
+import { resolveMcaMaxFaces } from './limits';
 import { asCompound, MAX_NBT_BYTES, type NbtLongArray, type NbtValue, readNbt } from './nbt';
 import { type McaOptions, type McaProgress, type McaRegion, sectionKey } from './types';
+import { isMcaRegionPositionValid } from './world-placement';
 
 const SECTOR_BYTES = 4096;
 const MAX_SECTION_COUNT = 32_768;
 export const MAX_REGION_BYTES = 256 * 1024 * 1024;
 
-export const validateMcaOptions = (options: McaOptions): Required<McaOptions> => {
+export const validateMcaOptions = (options: McaOptions) => {
+	resolveMcaMaxFaces(options.maxFaces);
+	if (options.region && !isMcaRegionPositionValid(options.region)) {
+		throw new Error('リージョン座標が不正です');
+	}
 	const range = {
 		minChunkX: options.minChunkX ?? 0,
 		maxChunkX: options.maxChunkX ?? 31,
@@ -186,6 +192,15 @@ export const readMcaRegion = async (
 			}
 			regionX ??= Math.floor(x / 32);
 			regionZ ??= Math.floor(z / 32);
+			if (
+				options.region
+				&& (options.region.x !== Math.floor(x / 32)
+					|| options.region.z !== Math.floor(z / 32))
+			) {
+				throw new Error(
+					'ファイル名のリージョン座標とチャンクの座標が一致しません。元のr.x.z.mcaの名前を確認してください'
+				);
+			}
 			if (regionX !== Math.floor(x / 32) || regionZ !== Math.floor(z / 32)) {
 				throw new Error('異なるリージョンのチャンクが混在しています');
 			}

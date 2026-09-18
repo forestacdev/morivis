@@ -2,8 +2,8 @@ import type { McaOptions, McaProgress, McaResult } from './types';
 import type { McaWorkerResponse } from './worker';
 import McaWorker from './worker?worker';
 
-export const mcaFileToGlbInWorker = (
-	file: File,
+const convertInWorker = (
+	input: { file: File; } | { files: File[]; },
 	options: McaOptions,
 	signal: AbortSignal,
 	onProgress?: (progress: McaProgress) => void
@@ -41,9 +41,25 @@ export const mcaFileToGlbInWorker = (
 			reject(new Error('MCAの変換結果を受け取れませんでした'));
 		};
 		try {
-			worker.postMessage({ file, options });
+			worker.postMessage({ ...input, options });
 		} catch (error) {
 			cleanup();
 			reject(error);
 		}
 	});
+
+export const mcaFileToGlbInWorker = (
+	file: File,
+	options: McaOptions,
+	signal: AbortSignal,
+	onProgress?: (progress: McaProgress) => void
+): Promise<McaResult> => convertInWorker({ file }, options, signal, onProgress);
+
+export const mcaFilesToGlbInWorker = (
+	files: File[],
+	options: McaOptions,
+	signal: AbortSignal,
+	onProgress?: (progress: McaProgress) => void
+): Promise<McaResult> =>
+	// Svelteの配列Proxyはstructured cloneできないため、通常の配列へコピーする。
+	convertInWorker({ files: [...files] }, options, signal, onProgress);

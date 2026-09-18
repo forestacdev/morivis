@@ -1,4 +1,5 @@
 import { blockColor, linearColor } from './colors';
+import { createMcaFaceLimitError, resolveMcaMaxFaces } from './limits';
 import { type McaProgress, type McaRegion, type McaSection, sectionKey } from './types';
 
 export interface McaMesh {
@@ -12,12 +13,13 @@ export interface McaMesh {
 	max: number[];
 }
 
-export const MAX_MCA_FACES = 500_000;
+export const MAX_MCA_FACES = resolveMcaMaxFaces();
 
 /** 隣接sectionも参照して内部面を除き、同じブロックの連続面を矩形にまとめる。 */
 export const meshMcaRegion = (
 	region: McaRegion,
-	onProgress?: (progress: McaProgress) => void
+	onProgress?: (progress: McaProgress) => void,
+	maxFaces = MAX_MCA_FACES
 ): McaMesh => {
 	if (!region.sections.size) throw new Error('指定範囲に表示できるブロックがありません');
 	const origin = [Infinity, Infinity, Infinity];
@@ -26,7 +28,7 @@ export const meshMcaRegion = (
 		origin[1] = Math.min(origin[1], section.y * 16);
 		origin[2] = Math.min(origin[2], section.z * 16);
 	}
-	let capacity = 4096;
+	let capacity = Math.min(4096, maxFaces);
 	let positions = new Float32Array(capacity * 12);
 	let normals = new Float32Array(capacity * 12);
 	let colors = new Uint8Array(capacity * 16);
@@ -36,11 +38,11 @@ export const meshMcaRegion = (
 	const max = [-Infinity, -Infinity, -Infinity];
 	const paletteColors = region.palette.map((name) => linearColor(blockColor(name)));
 	const reserve = () => {
-		if (faceCount >= MAX_MCA_FACES) {
-			throw new Error('表示する面が多すぎます。チャンク範囲を狭めてください');
+		if (faceCount >= maxFaces) {
+			throw createMcaFaceLimitError(maxFaces);
 		}
 		if (faceCount < capacity) return;
-		capacity = Math.min(MAX_MCA_FACES, capacity * 2);
+		capacity = Math.min(maxFaces, capacity * 2);
 		const nextPositions = new Float32Array(capacity * 12);
 		nextPositions.set(positions);
 		positions = nextPositions;
@@ -154,11 +156,12 @@ export const meshMcaRegion = (
 		onProgress?.({ stage: 'mesh', completed: ++completed, total: region.sections.size });
 	}
 	if (!faceCount) throw new Error('指定範囲に表示できるブロックがありません');
+	// 一括取り込みで各リージョンの未使用capacityを保持し続けない。
 	return {
-		positions: positions.subarray(0, faceCount * 12),
-		normals: normals.subarray(0, faceCount * 12),
-		colors: colors.subarray(0, faceCount * 16),
-		indices: indices.subarray(0, faceCount * 6),
+		positions: positions.slice(0, faceCount * 12),
+		normals: normals.slice(0, faceCount * 12),
+		colors: colors.slice(0, faceCount * 16),
+		indices: indices.slice(0, faceCount * 6),
 		faceCount,
 		origin,
 		min,

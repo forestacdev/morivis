@@ -198,7 +198,7 @@ describe('MCA surface mesh / GLB', () => {
 		expect(mesh.max).toEqual([16, 16, 16]);
 	});
 
-	it('過剰な表面を生成する入力を上限で停止する', () => {
+	it('従来の50万面を超える入力を標準設定で読み込め、軽量設定では停止する', () => {
 		const blocks = Uint16Array.from(
 			{ length: 4096 },
 			(_, i) => (i % 16 + Math.floor(i / 16) % 16 + Math.floor(i / 256)) % 2
@@ -211,7 +211,12 @@ describe('MCA surface mesh / GLB', () => {
 			dataVersions: [2865]
 		};
 		for (let x = 0; x < 50; x++) region.sections.set(`${x},0,0`, { x, y: 0, z: 0, blocks });
-		expect(() => meshMcaRegion(region)).toThrow('チャンク範囲を狭めて');
+		expect(() => meshMcaRegion(region, undefined, 500_000)).toThrow('面数上限（500,000面）');
+		const mesh = meshMcaRegion(region);
+		expect(mesh.faceCount).toBeGreaterThan(500_000);
+		for (const array of [mesh.positions, mesh.normals, mesh.colors, mesh.indices]) {
+			expect(array.buffer.byteLength).toBe(array.byteLength);
+		}
 	});
 });
 

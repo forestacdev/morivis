@@ -210,6 +210,8 @@ export type ModelLocalBounds = [number, number, number, number, number, number];
 
 export interface MeshStyle extends ModelTransformStyle {
 	type: 'mesh';
+	/** Minecraftのリージョン境界と名前。通常表示では明示的に有効にした場合のみ表示する。 */
+	minecraftGrid?: { visible: boolean; labels: boolean; };
 	opacity: Opacity;
 	visible?: boolean;
 	wireframe: boolean;
@@ -284,6 +286,9 @@ export type MeshFormatType =
 /** 上方向のメタデータを持たないmesh形式に対して、利用者が指定する入力座標軸。 */
 export type MeshUpAxis = 'y' | 'z';
 
+/** 入力モデルの1座標単位が表す量。メートルへの換算はtransformで保持する。 */
+export type ModelSourceUnit = 'minecraft-block';
+
 /** 指定ズーム以下で選択する、同一モデルの下位表示解像度。 */
 export interface ModelLodLevel {
 	maxZoom: number;
@@ -302,6 +307,11 @@ export interface MeshEntry<T> extends BaseModelEntry {
 		resourceUrls?: Record<string, string>;
 		normalizeToLocalOrigin?: boolean;
 		upAxis?: MeshUpAxis;
+		sourceUnit?: ModelSourceUnit;
+		/** Minecraftワールド原点をローカル座標原点として保持したリージョン。 */
+		minecraftRegion?: { x: number; z: number; };
+		/** 一括読み込みした全リージョン。minecraftRegionは先頭を保持する。 */
+		minecraftRegions?: { x: number; z: number; }[];
 		georeference?: ProjectedModelGeoreference;
 		localBounds?: ModelLocalBounds;
 	};

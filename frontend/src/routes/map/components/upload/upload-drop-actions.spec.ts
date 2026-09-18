@@ -21,6 +21,22 @@ describe('checkLargeDroppedFiles', () => {
 		expect(await checkLargeDroppedFiles([root, tile])).toBe(true);
 		expect(showConfirmDialog).not.toHaveBeenCalled();
 	});
+	it('逐次処理するMCA一式は合計容量による確認を出さない', async () => {
+		const files = ['r.0.0.mca', 'r.1.0.MCA'].map(name => {
+			const file = new File(['test'], name);
+			Object.defineProperty(file, 'size', { value: 80 * 1024 * 1024 });
+			return file;
+		});
+		expect(await checkLargeDroppedFiles(files)).toBe(true);
+		expect(showConfirmDialog).not.toHaveBeenCalled();
+	});
+	it('MCAと他形式が混在する場合は容量確認を維持する', async () => {
+		const file = new File(['test'], 'r.0.0.mca');
+		Object.defineProperty(file, 'size', { value: 200 * 1024 * 1024 });
+		vi.mocked(showConfirmDialog).mockResolvedValue(false);
+		expect(await checkLargeDroppedFiles([file, new File(['test'], 'test.glb')])).toBe(false);
+		expect(showConfirmDialog).toHaveBeenCalledOnce();
+	});
 	it('ほかの大容量ファイルは既存の確認を維持する', async () => {
 		const file = new File(['test'], 'test.glb');
 		Object.defineProperty(file, 'size', { value: 200 * 1024 * 1024 });

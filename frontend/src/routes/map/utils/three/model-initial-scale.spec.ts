@@ -8,7 +8,7 @@ import {
 	getInitialModelPlacementViewport,
 	VIEWPORT_FRACTION
 } from './model-initial-scale';
-import { getEffectiveModelScale } from './model-scale';
+import { getEffectiveModelScale, getModelUnitMeters } from './model-scale';
 
 const transform = {
 	lng: 0,
@@ -60,6 +60,17 @@ const getScreenSize = (map: Map, localBounds = bounds, initialTransform = transf
 };
 
 describe('3D boundsから決めるモデルの初期スケール', () => {
+	it.each([4, 16, 20])('Minecraftはズーム%sでも1ブロック=1mで開始する', (zoom) => {
+		const viewport = getInitialModelPlacementViewport(createMap(60, zoom));
+		for (const baseScale of [1, 5]) {
+			const scale = getInitialModelPlacementScale(bounds, viewport, {
+				...transform,
+				baseScale
+			}, 'minecraft-block');
+			expect(getModelUnitMeters({ ...scale, baseScale })).toBeCloseTo(1);
+		}
+	});
+
 	it.each([0, 45, 70, 85])('ピッチ %s 度でも画面短辺に対する設定割合に収まる', pitch => {
 		expect(getScreenSize(createMap(pitch)).size).toBeCloseTo(600 * VIEWPORT_FRACTION, 3);
 	});

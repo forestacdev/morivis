@@ -4,6 +4,16 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('Minecraftのドロップ', () => {
+	it('複数のMCAを順序を保って専用フォームへ渡す', async () => {
+		const files = ['r.-1.0.mca', 'r.0.0.MCA', 'r.1.0.mca'].map(name =>
+			new File(['test'], name)
+		);
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'mca',
+			dropFiles: files
+		});
+	});
 	it.each(['test-region.mca', 'test-region.MCA'])(
 		'単体ファイルと配列を専用フォームへ渡す: %s',
 		async name => {
@@ -17,8 +27,8 @@ describe('Minecraftのドロップ', () => {
 			}
 		}
 	);
-	it.each(['test-other.mca', 'test-model.glb', 'tilejson.json', 'test.mlt', 'test.bds'])(
-		'複数ファイルや他形式との混在を拒否する: %s',
+	it.each(['test-model.glb', 'tilejson.json', 'test.mlt', 'test.bds'])(
+		'他形式との混在を拒否する: %s',
 		async name => {
 			expect(
 				await resolveDroppedFiles([
@@ -28,8 +38,7 @@ describe('Minecraftのドロップ', () => {
 			).toEqual({
 				type: 'notification',
 				level: 'error',
-				message:
-					'Minecraftの地形リージョン（.mca）は、他のファイルを含めず1つずつ読み込んでください'
+				message: 'Minecraftの地形リージョン（.mca）だけをまとめて選択してください'
 			});
 		}
 	);
@@ -43,17 +52,24 @@ describe('Minecraftのドロップ', () => {
 		);
 		expect(result).toMatchObject({ type: 'dialog', dialogType: 'mca' });
 	});
-	it('ZIP内の複数MCAを黙って読み捨てない', async () => {
+	it('ZIP内の複数MCAをすべて専用フォームへ渡す', async () => {
 		const zip = new JSZip();
-		zip.file('test-world/region/test-a.mca', 'test');
-		zip.file('test-world/region/test-b.mca', 'test');
+		zip.file('test-world/region/r.0.0.mca', 'test');
+		zip.file('test-world/region/r.1.0.mca', 'test');
 		expect(
 			await resolveDroppedFiles(
 				new File([
 					await zip.generateAsync({ type: 'arraybuffer' })
 				], 'test-world.zip')
 			)
-		).toMatchObject({ type: 'notification', level: 'error' });
+		).toMatchObject({
+			type: 'dialog',
+			dialogType: 'mca',
+			dropFiles: [
+				expect.objectContaining({ name: 'r.0.0.mca' }),
+				expect.objectContaining({ name: 'r.1.0.mca' })
+			]
+		});
 	});
 	it('ファイル選択と形式一覧からMCAを選べる', () => {
 		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.mca');

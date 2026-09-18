@@ -25,6 +25,8 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type {
 		AnyTiles3DEntry,
+		MeshEntry,
+		MeshStyle,
 		DeckVectorEntry,
 		PointCloudEntry,
 		ThreeModelEntry
@@ -53,6 +55,8 @@
 		terminateCogViewportRuntime
 	} from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import { mcaGridPreviewStore } from '$routes/map/utils/formats/mca/placement-store';
+	import { createMcaRegionGridController } from '$routes/map/utils/formats/mca/region-grid';
 	import {
 		fetchWcsViewportImage,
 		clearAllWcsViewportImages,
@@ -77,6 +81,7 @@
 	import { getLayerWatchStyleTarget } from '$routes/map/utils/raster/dimension-runtime';
 	import { createSourcesItems } from '$routes/map/utils/sources';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
+	import { MODEL_OVERLAY_METADATA_KEY } from '$routes/map/utils/three/model-overlay-order';
 	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
 	import { mapPaneScale } from '$routes/stores/effect';
@@ -175,6 +180,36 @@
 			showDataEntry?.type === 'model' &&
 			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat')
 	);
+	const mcaRegionGridController = createMcaRegionGridController();
+	let mapDestroyed = false;
+	const isMcaGridModel = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> =>
+		entry.type === 'model' &&
+		entry.style.type === 'mesh' &&
+		'minecraftRegion' in entry.format &&
+		!!entry.format.minecraftRegion;
+	const effectiveMcaGridModels = $derived.by(() => {
+		const models = new Map<string, MeshEntry<MeshStyle>>();
+		if (!isIsolatedPreview) {
+			for (const entry of layerEntries) {
+				if (isMcaGridModel(entry)) models.set(entry.id, entry);
+			}
+		}
+		if (showDataEntry && isMcaGridModel(showDataEntry)) models.set(showDataEntry.id, showDataEntry);
+		const draft = $mcaGridPreviewStore;
+		if (draft && isModelPlacementActive && draft.id === showDataEntry?.id)
+			models.set(draft.id, draft);
+		return [...models.values()];
+	});
+	const mcaGridWatchTargets = $derived(
+		effectiveMcaGridModels.map((entry) => ({
+			id: entry.id,
+			region: entry.format.minecraftRegion,
+			regions: entry.format.minecraftRegions,
+			visible: entry.style.visible,
+			transform: entry.style.transform,
+			grid: entry.style.minecraftGrid
+		}))
+	);
 
 	// 監視用のデータを保持
 	let layerWatchTargets = $derived.by(() => {
@@ -223,10 +258,24 @@
 	// 	]
 	// });
 	// mapStyleの作成
-	const createMapStyle = async (_dataEntries: MorivisLayerEntry[]): Promise<StyleSpecification> => {
+	const createMapStyle = async (
+		_dataEntries: MorivisLayerEntry[],
+		mcaGridEntries: MorivisLayerEntry[]
+	): Promise<StyleSpecification> => {
 		// ソースとレイヤーの作成
-		const sources = !isIsolatedPreview ? await createSourcesItems(_dataEntries) : {};
+		const sources =
+			!isIsolatedPreview || mcaGridEntries.length
+				? await createSourcesItems([...(!isIsolatedPreview ? _dataEntries : []), ...mcaGridEntries])
+				: {};
 		const layers = !isIsolatedPreview ? await createLayersItems(_dataEntries) : [];
+		// 派生グリッドはクリック対象を持たず、通常プレビューの背景よりも上へ重ねる。
+		const mcaGridLayers = createLayersItems(mcaGridEntries, 'preview').map((layer) => ({
+			...layer,
+			metadata: {
+				...(typeof layer.metadata === 'object' && layer.metadata !== null ? layer.metadata : {}),
+				[MODEL_OVERLAY_METADATA_KEY]: true
+			}
+		}));
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (isIsolatedPreview) {
@@ -440,6 +489,7 @@
 				...layers,
 				...xyzTileLayer,
 				...previewLayers,
+				...mcaGridLayers,
 				{
 					id: 'deck-reference-layer',
 					type: 'background' as const,
@@ -557,6 +607,9 @@
 	});
 
 	onDestroy(() => {
+		mapDestroyed = true;
+		styleUpdateId += 1;
+		mcaRegionGridController.clear();
 		// Svelte storeの購読は明示的に解除しないと、画面破棄後もcallbackが残る。
 		styleUpdateUnsubscribers.forEach((unsubscribe) => unsubscribe());
 		clearAllCogViewportImages();
@@ -638,7 +691,10 @@
 	const setStyleDebounceHandlers: Record<number, (entries: MorivisLayerEntry[]) => void> = {};
 
 	const setStyle = async (entries: MorivisLayerEntry[]) => {
+		if (mapDestroyed) return;
 		const updateId = ++styleUpdateId;
+		// 非同期のspec生成前に、main/preview/draftを統合した最新のグリッドを確定する。
+		const mcaGridEntries = mcaRegionGridController.sync(effectiveMcaGridModels);
 		if (!import.meta.env.PROD) {
 			// 描画方式で絞る前に、アップロードしたモデルと登録前のプレビューも出力する。
 			const previewEntry = showDataEntry;
@@ -776,7 +832,7 @@
 			mapStore.releaseTileIndexProtocol();
 		}
 
-		const mapStyle = await createMapStyle(mapLibreEntry as MorivisLayerEntry[]);
+		const mapStyle = await createMapStyle(mapLibreEntry as MorivisLayerEntry[], mcaGridEntries);
 		// 後から開始した更新がある場合、この結果は古いので破棄する。
 		if (updateId !== styleUpdateId) return;
 
@@ -919,6 +975,10 @@
 	};
 
 	// レイヤーの更新を監視
+	$effect(() => {
+		requestStyleUpdateByDependency($state.snapshot(mcaGridWatchTargets));
+	});
+
 	$effect(() => {
 		$state.snapshot(layerWatchTargets);
 		setStyleDebounce(layerEntries as MorivisLayerEntry[]);

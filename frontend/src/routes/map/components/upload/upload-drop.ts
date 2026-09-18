@@ -597,12 +597,12 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
-	// 他形式の優先判定より先に、MCAの複数・混在入力を拒否する。
+	// MCAは同じワールドのリージョン一式を専用フォームへ渡す。
 	if (files.some((file) => hasExtension(file, '.mca'))) {
-		return files.length === 1
+		return files.every(file => hasExtension(file, '.mca'))
 			? createDialogDecision('mca', files)
 			: createNotificationDecision(
-				'Minecraftの地形リージョン（.mca）は、他のファイルを含めず1つずつ読み込んでください'
+				'Minecraftの地形リージョン（.mca）だけをまとめて選択してください'
 			);
 	}
 	// tilesetとGLB等が同居しても、個別モデルではなくフォルダ全体を渡す。

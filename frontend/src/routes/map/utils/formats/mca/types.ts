@@ -1,4 +1,13 @@
+export interface McaRegionPosition {
+	x: number;
+	z: number;
+}
+
 export interface McaOptions {
+	/** 単体・複数とも読み込み全体の結合後の面数上限。0は制限なし。 */
+	maxFaces?: number;
+	/** ファイル名由来のリージョン座標。指定時はワールド原点をGLB内に保持する。 */
+	region?: McaRegionPosition;
 	minChunkX?: number;
 	maxChunkX?: number;
 	minChunkZ?: number;
@@ -6,6 +15,9 @@ export interface McaOptions {
 }
 
 export interface McaProgress {
+	fileName?: string;
+	fileIndex?: number;
+	fileCount?: number;
 	stage: 'read' | 'mesh';
 	completed: number;
 	total: number;

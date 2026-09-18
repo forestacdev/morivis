@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
-	import { mcaFileToGlbInWorker } from '$routes/map/utils/formats/mca/analyze';
+	import { mcaFilesToGlbInWorker } from '$routes/map/utils/formats/mca/analyze';
+	import { validateMcaFileSet } from '$routes/map/utils/formats/mca/batch';
+	import { createMcaModelFile } from '$routes/map/utils/formats/mca/model-file';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 
@@ -10,14 +12,22 @@
 	}
 	let { showDialogType = $bindable(), dropFile = $bindable() }: Props = $props();
 	const files = $derived(toUploadFiles(dropFile));
-	const file = $derived(files.length === 1 && /\.mca$/i.test(files[0].name) ? files[0] : null);
+	const fileSetError = $derived.by(() => {
+		if (!files.length) return null;
+		try {
+			validateMcaFileSet(files);
+			return null;
+		} catch (error) {
+			return error instanceof Error ? error.message : '地形リージョンを選び直してください。';
+		}
+	});
 	let minChunkX = $state<number | undefined>(0);
 	let maxChunkX = $state<number | undefined>(31);
 	let minChunkZ = $state<number | undefined>(0);
 	let maxChunkZ = $state<number | undefined>(31);
-	let activeFile = $state.raw<File | null>(null);
+	let activeFiles = $state.raw<File[] | null>(null);
 	let running = $state(false);
-	const busy = $derived(running && activeFile === file);
+	const busy = $derived(running && activeFiles === files);
 	let errorMessage = $state('');
 	let progress = $state('');
 	let conversion: AbortController | null = null;
@@ -33,9 +43,10 @@
 		showDialogType = null;
 	};
 	const read = async () => {
-		if (!file || busy) return;
+		if (!files.length || fileSetError || busy) return;
 		cancelConversion();
-		activeFile = file;
+		activeFiles = files;
+		errorMessage = '';
 		if (
 			minChunkX === undefined ||
 			maxChunkX === undefined ||
@@ -50,33 +61,44 @@
 			errorMessage = 'チャンク番号は0〜31の整数で、開始が終了以下になるように指定してください。';
 			return;
 		}
-		const input = file;
+		const input = files;
 		const controller = new AbortController();
 		conversion = controller;
 		running = true;
 		errorMessage = '';
 		progress = '地形データを読み込み中…';
 		try {
-			const result = await mcaFileToGlbInWorker(
+			const result = await mcaFilesToGlbInWorker(
 				input,
-				{ minChunkX, maxChunkX, minChunkZ, maxChunkZ },
+				{
+					minChunkX,
+					maxChunkX,
+					minChunkZ,
+					maxChunkZ
+				},
 				controller.signal,
 				(update) => {
-					if (controller.signal.aborted) return;
-					progress = `${update.stage === 'read' ? 'チャンクを読み込み中' : '3Dモデルを作成中'}（${update.completed.toLocaleString()} / ${update.total.toLocaleString()}）`;
+					if (controller.signal.aborted || input !== files) return;
+					const fileProgress = update.fileName
+						? `${update.fileIndex ?? 1} / ${update.fileCount ?? input.length}ファイル: ${update.fileName} — `
+						: '';
+					progress = `${fileProgress}${update.stage === 'read' ? 'チャンクを読み込み中' : '3Dモデルを作成中'}（${update.completed.toLocaleString()} / ${update.total.toLocaleString()}）`;
 				}
 			);
-			if (controller.signal.aborted || input !== file) return;
+			if (controller.signal.aborted || input !== files) return;
 			dropFile = [
-				new File([result.glb], input.name.replace(/\.mca$/i, '.glb'), { type: 'model/gltf-binary' })
+				createMcaModelFile(
+					result.glb,
+					input.map((file) => file.name)
+				)
 			];
 			showDialogType = 'model';
 			showNotification(
-				`${result.chunkCount.toLocaleString()}チャンクを読み込みました。モデルの配置位置と大きさを指定してください。`,
+				`${input.length}リージョン、${result.chunkCount.toLocaleString()}チャンクを1つのレイヤーに読み込みました。地図上でワールド原点と1ブロックの長さを設定してください。`,
 				'success'
 			);
 		} catch (error) {
-			if (!controller.signal.aborted && input === file) {
+			if (!controller.signal.aborted && input === files) {
 				errorMessage =
 					error instanceof Error ? error.message : 'Minecraftの地形データを読み込めませんでした。';
 			}
@@ -89,9 +111,9 @@
 	};
 	// 外部ドロップによるファイル差し替えと、ダイアログ破棄時にWorkerを終了する。
 	$effect(() => {
-		const observedFile = file;
+		const observedFiles = files;
 		return () => {
-			if (activeFile === observedFile) conversion?.abort();
+			if (activeFiles === observedFiles) conversion?.abort();
 		};
 	});
 </script>
@@ -102,7 +124,7 @@
 		Java版1.13以降のパレット形式に対応しています。gzip・zlib・非圧縮に対応し、LZ4と外部.mcc参照は対象外です。
 	</p>
 	<p>
-		ワールドのregionフォルダにある.mcaファイルを1つ選んでください。entities・poiフォルダのファイルは対象外です。
+		同じワールドのregionフォルダにある.mcaファイルを選んでください。複数選択できます。entities・poiフォルダのファイルは対象外です。
 	</p>
 	<p>
 		水やガラスを含むブロックを、色分けした不透明の立方体で表示します。テクスチャ、階段やフェンスなどの形状、エンティティは再現しません。
@@ -112,20 +134,28 @@
 		<input
 			type="file"
 			accept=".mca"
+			multiple
+			disabled={busy}
 			onchange={(event) => {
 				cancelConversion();
 				dropFile = Array.from(event.currentTarget.files ?? []);
 			}}
 		/>
 	</label>
-	{#if file}<p class="break-all">{file.name}</p>{/if}
-	{#if files.length && !file}<p role="alert" class="text-red-300">
-			.mcaファイルを1つだけ選んでください。
-		</p>{/if}
+	{#if files.length}
+		<p>{files.length}ファイルを選択中</p>
+		<ul class="max-h-40 overflow-y-auto break-all">
+			{#each files as file (file)}<li>{file.name}</li>{/each}
+		</ul>
+	{/if}
+	{#if fileSetError}<p role="alert" class="text-red-300">{fileSetError}</p>{/if}
+	<p>
+		すべてのリージョンを元の位置関係を保った1つのレイヤーにまとめます。読み込み後、ワールド原点と1ブロックの長さを一度設定して一括配置します。
+	</p>
 	<fieldset class="flex flex-col gap-3" disabled={busy}>
 		<legend class="mb-2 font-bold">読み込むチャンク範囲</legend>
 		<p>
-			ファイル内のチャンク番号（0〜31）で指定します。初期値は全範囲です。大きな地形で読み込めない場合は範囲を狭めてください。
+			各ファイル内のチャンク番号（0〜31）で指定し、同じ範囲をすべてのファイルに適用します。初期値は全範囲です。大きな地形で読み込めない場合は範囲を狭めてください。
 		</p>
 		<div class="grid grid-cols-2 gap-3">
 			<label class="flex flex-col gap-1"
@@ -170,8 +200,8 @@
 			>
 		</div>
 	</fieldset>
-	<p>読み込み後、3Dモデルの画面で地図上の配置位置・向き・大きさを指定します。</p>
-	{#if errorMessage && activeFile === file}<p role="alert" class="text-red-300">
+
+	{#if errorMessage && activeFiles === files}<p role="alert" class="text-red-300">
 			{errorMessage}
 		</p>{/if}
 	{#if busy}<p role="status">{progress}</p>{/if}
@@ -180,7 +210,7 @@
 	<button onclick={close} class="c-btn-sub p-4 text-lg">キャンセル</button>
 	<button
 		onclick={() => void read()}
-		disabled={!file || busy}
+		disabled={!files.length || !!fileSetError || busy}
 		class="c-btn-confirm min-w-[160px] p-4 text-lg">{busy ? '読み込み中…' : '読み込む'}</button
 	>
 </div>

@@ -10,6 +10,7 @@ import type {
 	MeshFormatType,
 	MeshStyle,
 	MeshUpAxis,
+	ModelSourceUnit,
 	PointCloudEntry,
 	PointCloudStyle,
 	ProjectedModelGeoreference,
@@ -192,6 +193,9 @@ export const createGlbEntry = (
 		normalizeToLocalOrigin?: boolean;
 		preserveSourceOrientation?: boolean;
 		upAxis?: MeshUpAxis;
+		sourceUnit?: ModelSourceUnit;
+		minecraftRegion?: { x: number; z: number; };
+		minecraftRegions?: { x: number; z: number; }[];
 		georeference?: ProjectedModelGeoreference;
 		sourceFileName?: string;
 		initialShadingEnabled?: boolean;
@@ -219,6 +223,9 @@ export const createGlbEntry = (
 				normalizeToLocalOrigin: options.normalizeToLocalOrigin
 			}),
 			...(options?.upAxis && { upAxis: options.upAxis }),
+			...(options?.sourceUnit && { sourceUnit: options.sourceUnit }),
+			...(options?.minecraftRegion && { minecraftRegion: options.minecraftRegion }),
+			...(options?.minecraftRegions && { minecraftRegions: options.minecraftRegions }),
 			...(options?.georeference && {
 				georeference: options.georeference
 			})

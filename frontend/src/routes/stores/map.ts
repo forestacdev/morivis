@@ -21,6 +21,7 @@ import type {
 	StyleSetterOptions,
 	StyleSpecification
 } from '$routes/map/utils/maplibre';
+import { getModelOverlayBeforeId } from '$routes/map/utils/three/model-overlay-order';
 import { pickTiles3DFeature } from '$routes/map/utils/tiles3d/picking';
 import { Protocol } from 'pmtiles';
 import { type Writable, writable } from 'svelte/store';
@@ -769,6 +770,10 @@ const createMapStore = () => {
 				};
 			}
 		});
+		// custom layerはstyleの差分更新でも残るため、ガイド追加・削除後の順序を合わせる。
+		if (map.getLayer('3d-model-layer')) {
+			map.moveLayer('3d-model-layer', getModelOverlayBeforeId(map.getStyle().layers));
+		}
 	};
 
 	// deck.gl レイヤーを設定
@@ -823,10 +828,11 @@ const createMapStore = () => {
 		if (!map || !isMapValid(map)) return;
 		const layerId = '3d-model-layer';
 		if (map.getLayer(layerId)) {
+			map.moveLayer(layerId, getModelOverlayBeforeId(map.getStyle().layers));
 			return;
 		}
 		const layer = threeJsManager.createLayer();
-		map.addLayer(layer);
+		map.addLayer(layer, getModelOverlayBeforeId(map.getStyle().layers));
 	};
 
 	const releaseThreeLayer = () => {
