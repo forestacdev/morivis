@@ -26,3 +26,4 @@ vite.config.ts.timestamp-*
 # Vendored runtime assets
 static/rhino3dm/**
 static/draco/**
+static/minecraft/**

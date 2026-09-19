@@ -33,6 +33,7 @@ import {
 	createGaussianSplatObject
 } from '$routes/map/utils/three/gaussian-splat-renderer';
 import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
+import { minecraftMaterialState } from '$routes/map/utils/three/minecraft-material';
 import {
 	getInitialModelAnimationState,
 	isEmbeddedModelAnimationClip,
@@ -745,6 +746,7 @@ export class ThreeJsLayerManager {
 		useIndexedPartColors = false
 	): THREE.ShaderMaterial => {
 		const shadingUniforms = resolveMeshShadingUniforms(style);
+		const sourceAlpha = minecraftMaterialState(sourceMaterial, style.opacity);
 		const objectPartIsTransparent = objectPartColor === 'transparent';
 		const baseColor = new THREE.Color(
 			objectPartIsTransparent ? style.color : objectPartColor ?? style.color
@@ -815,6 +817,8 @@ export class ThreeJsLayerManager {
 			uniforms: {
 				uBaseColor: { value: baseColor },
 				uOpacity: { value: style.opacity },
+				uSourceOpacity: { value: sourceAlpha.sourceOpacity },
+				uSourceAlphaTest: { value: sourceAlpha.alphaTest },
 				uAmbientStrength: { value: shadingUniforms.ambientStrength },
 				uShadeStrength: { value: shadingUniforms.shadeStrength },
 				uLightDirection: { value: shadingUniforms.lightDirection },
@@ -859,6 +863,8 @@ export class ThreeJsLayerManager {
 			fragmentShader: `
 				uniform vec3 uBaseColor;
 				uniform float uOpacity;
+				uniform float uSourceOpacity;
+				uniform float uSourceAlphaTest;
 				uniform float uAmbientStrength;
 				uniform float uShadeStrength;
 				uniform vec3 uLightDirection;
@@ -888,6 +894,7 @@ export class ThreeJsLayerManager {
 					#elif defined( USE_COLOR )
 						texel.rgb *= vColor;
 					#endif
+					if (texel.a < uSourceAlphaTest) discard;
 					float sourceDenominator = max(uHeightRampSourceMax - uHeightRampSourceMin, 0.000001);
 					float selectedMin = clamp(
 						(uHeightRampMin - uHeightRampSourceMin) / sourceDenominator,
@@ -918,7 +925,7 @@ export class ThreeJsLayerManager {
 					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
 					vec3 shadedColor = surfaceColor * shade;
 					float objectPartOpacity = uUseObjectPartColor ? uObjectPartOpacity : 1.0;
-					float alpha = texel.a * uOpacity * objectPartOpacity;
+					float alpha = texel.a * uOpacity * uSourceOpacity * objectPartOpacity;
 
 					if (alpha <= 0.001) discard;
 
@@ -926,11 +933,13 @@ export class ThreeJsLayerManager {
 					#include <colorspace_fragment>
 				}
 			`,
-			transparent: true,
+			transparent: sourceAlpha.transparent,
+			depthWrite: sourceAlpha.depthWrite,
 			wireframe: style.wireframe,
 			side: THREE.DoubleSide
 		});
 		material.userData.morivisShaderShading = true;
+		material.userData.morivisMinecraftMaterial = sourceAlpha.enabled;
 		material.userData.colorRampTexture = colorRampTexture;
 		material.userData.morivisPartColorPalette = partColorTexture;
 		return material;
@@ -1017,6 +1026,11 @@ export class ThreeJsLayerManager {
 			: null;
 		material.uniforms.uBaseColor.value.copy(baseColor);
 		material.uniforms.uOpacity.value = style.opacity;
+		const sourceAlpha = minecraftMaterialState(sourceMaterial, style.opacity);
+		material.uniforms.uSourceOpacity.value = sourceAlpha.sourceOpacity;
+		material.uniforms.uSourceAlphaTest.value = sourceAlpha.alphaTest;
+		material.transparent = sourceAlpha.transparent;
+		material.depthWrite = sourceAlpha.depthWrite;
 		material.uniforms.uAmbientStrength.value = shadingUniforms.ambientStrength;
 		material.uniforms.uShadeStrength.value = shadingUniforms.shadeStrength;
 		material.uniforms.uLightDirection.value.copy(shadingUniforms.lightDirection);
@@ -1807,14 +1821,19 @@ export class ThreeJsLayerManager {
 			const map = material.uniforms.uMap?.value instanceof THREE.Texture
 				? material.uniforms.uMap.value
 				: null;
-			const opacity = typeof material.uniforms.uOpacity?.value === 'number'
+			const opacity = (typeof material.uniforms.uOpacity?.value === 'number'
 				? material.uniforms.uOpacity.value
-				: style.opacity;
+				: style.opacity) * (material.uniforms.uSourceOpacity?.value ?? 1);
 
 			return new THREE.MeshStandardMaterial({
 				color: baseColor,
 				map,
-				transparent: opacity < 1,
+				transparent: material.userData.morivisMinecraftMaterial
+					? material.transparent
+					: opacity < 1,
+				alphaTest: material.uniforms.uSourceAlphaTest?.value ?? 0,
+				vertexColors: material.userData.morivisMinecraftMaterial === true
+					&& material.vertexColors,
 				opacity,
 				side: THREE.DoubleSide
 			});

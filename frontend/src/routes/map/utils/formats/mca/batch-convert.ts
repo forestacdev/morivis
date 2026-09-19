@@ -3,6 +3,8 @@ import { mcaMeshesToGlb } from './glb';
 import { createMcaFaceLimitError, resolveMcaMaxFaces } from './limits';
 import { type McaMesh, meshMcaRegion } from './mesh';
 import { MAX_REGION_BYTES, readMcaRegion, validateMcaOptions } from './region';
+import { meshResourceRegion } from './resources/mesh';
+import { loadMinecraftResourcePack } from './resources/pack';
 import type { McaOptions, McaProgress, McaResult } from './types';
 
 /** 入力は1ファイルずつ展開し、共有の面数上限でメッシュの合計量を制限する。 */
@@ -14,6 +16,9 @@ export const mcaFilesToGlb = async (
 	const regions = validateMcaFileSet(files);
 	validateMcaOptions(options);
 	const maxFaces = resolveMcaMaxFaces(options.maxFaces);
+	const pack = options.resourcePackUrl
+		? await loadMinecraftResourcePack(options.resourcePackUrl)
+		: null;
 	const meshes: McaMesh[] = [];
 	let chunkCount = 0;
 	let blockCount = 0;
@@ -36,7 +41,9 @@ export const mcaFilesToGlb = async (
 				...options,
 				region: regions[index]
 			}, progress);
-			const mesh = meshMcaRegion(region, progress, maxFaces - faceCount);
+			const mesh = pack
+				? await meshResourceRegion(region, pack, progress, maxFaces - faceCount)
+				: meshMcaRegion(region, progress, maxFaces - faceCount);
 			meshes.push(mesh);
 			chunkCount += region.chunkCount;
 			blockCount += region.blockCount;

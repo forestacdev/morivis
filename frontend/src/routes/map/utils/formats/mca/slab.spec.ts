@@ -14,7 +14,7 @@ const slab = (type: string, waterlogged = 'false') => ({
 
 describe('MCA slab states', () => {
 	it.each([false, true])(
-		'上下・二重を区別し、水没状態で形状を増やさない（modern=%s）',
+		'上下・二重と水没状態を保持する（modern=%s）',
 		async (modern) => {
 			const region = await readMcaRegion(regionFixture([{
 				nbt: chunkFixture({
@@ -31,11 +31,17 @@ describe('MCA slab states', () => {
 			}]));
 			expect(region.palette).toEqual([
 				'minecraft:air',
-				...Array<string>(3).fill('minecraft:stone_slab')
+				...Array<string>(4).fill('minecraft:stone_slab')
 			]);
-			expect(region.shapes).toEqual(['cube', 'slab-bottom', 'slab-top', 'cube']);
+			expect(region.shapes).toEqual([
+				'cube',
+				'slab-bottom',
+				'slab-top',
+				'cube',
+				'slab-bottom'
+			]);
 			expect(Array.from((region.sections.get('0,0,0')!.blocks as Uint16Array).slice(0, 4)))
-				.toEqual([1, 2, 3, 1]);
+				.toEqual([1, 2, 3, 4]);
 		}
 	);
 

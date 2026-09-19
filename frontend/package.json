@@ -10,6 +10,7 @@
 		"build": "vite build",
 		"deploy": "pnpm run build && echo > build/.nojekyll && gh-pages -d build -m \"Updates --skip-ci\"",
 		"preview": "vite preview",
+		"minecraft:prepare": "node scripts/prepare-minecraft-resources.mjs",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"check:dprint": "dprint check",

@@ -1,5 +1,6 @@
 import { blockColor, linearColor } from './colors';
 import { createMcaFaceLimitError, resolveMcaMaxFaces } from './limits';
+import type { ResourceMaterial } from './resources/types';
 import { type McaProgress, type McaRegion, type McaSection, sectionKey } from './types';
 
 export interface McaMesh {
@@ -8,6 +9,8 @@ export interface McaMesh {
 	colors: Uint8Array<ArrayBuffer>;
 	indices: Uint32Array<ArrayBuffer>;
 	faceCount: number;
+	uvs?: Float32Array<ArrayBuffer>;
+	groups?: { start: number; count: number; material: ResourceMaterial; }[];
 	origin: number[];
 	min: number[];
 	max: number[];

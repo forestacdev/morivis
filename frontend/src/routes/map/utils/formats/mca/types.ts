@@ -6,6 +6,8 @@ export interface McaRegionPosition {
 export interface McaOptions {
 	/** 単体・複数とも読み込み全体の結合後の面数上限。0は制限なし。 */
 	maxFaces?: number;
+	/** 配置済みのリソースパック。Worker入口で設定する。 */
+	resourcePackUrl?: string;
 	/** ファイル名由来のリージョン座標。指定時はワールド原点をGLB内に保持する。 */
 	region?: McaRegionPosition;
 	minChunkX?: number;
@@ -42,6 +44,8 @@ export interface McaSection {
 export interface McaRegion {
 	sections: Map<string, McaSection>;
 	palette: string[];
+	/** モデルのvariants/multipartを選ぶためのブロック状態。 */
+	states?: Record<string, string>[];
 	/** パレットIDごとの形状。省略時は従来の立方体。 */
 	shapes?: ('cube' | 'slab-bottom' | 'slab-top')[];
 	chunkCount: number;

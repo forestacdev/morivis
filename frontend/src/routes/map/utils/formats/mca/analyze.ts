@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import type { McaOptions, McaProgress, McaResult } from './types';
 import type { McaWorkerResponse } from './worker';
 import McaWorker from './worker?worker';
@@ -41,7 +42,10 @@ const convertInWorker = (
 			reject(new Error('MCAの変換結果を受け取れませんでした'));
 		};
 		try {
-			worker.postMessage({ ...input, options });
+			worker.postMessage({
+				...input,
+				options: { resourcePackUrl: `${base}/minecraft/`, ...options }
+			});
 		} catch (error) {
 			cleanup();
 			reject(error);

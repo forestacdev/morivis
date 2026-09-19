@@ -144,10 +144,12 @@ export const readMcaRegion = async (
 	}
 	if (!chunks.length) throw new Error('指定範囲に保存済みのチャンクがありません');
 	const shapes: NonNullable<McaRegion['shapes']> = ['cube'];
+	const paletteStates: Record<string, string>[] = [{}];
 	const region: McaRegion = {
 		sections: new Map(),
 		palette: ['minecraft:air'],
 		shapes,
+		states: paletteStates,
 		chunkCount: 0,
 		blockCount: 0,
 		dataVersions: []
@@ -241,7 +243,17 @@ export const readMcaRegion = async (
 						: slabType === 'top'
 						? 'slab-top'
 						: 'cube';
-					const key = shape === 'cube' ? name : `${name}[${shape}]`;
+					const properties = Object.fromEntries(
+						Object.entries(asCompound(state?.Properties) ?? {})
+							.filter((entry): entry is [string, string] =>
+								typeof entry[1] === 'string'
+							)
+							.sort(([a], [b]) => a.localeCompare(b))
+					);
+					if (ids.get(name) === 0) return 0;
+					const key = Object.keys(properties).length
+						? `${name}${JSON.stringify(properties)}`
+						: name;
 					let id = ids.get(key);
 					if (id === undefined) {
 						if (region.palette.length >= 65536) {
@@ -251,6 +263,7 @@ export const readMcaRegion = async (
 						ids.set(key, id);
 						region.palette.push(name);
 						shapes.push(shape);
+						paletteStates.push(properties);
 					}
 					return id;
 				});

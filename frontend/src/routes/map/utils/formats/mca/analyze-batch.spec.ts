@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mcaFilesToGlbInWorker } from './analyze';
 
+vi.mock('$app/paths', () => ({ base: '/test-base' }));
+
 const state = vi.hoisted(() => ({
 	workers: [] as {
 		postMessage: ReturnType<typeof vi.fn>;
@@ -39,7 +41,10 @@ describe('MCA一括変換のWorker寿命', () => {
 		const progress = vi.fn();
 		const pending = mcaFilesToGlbInWorker(files, {}, controller.signal, progress);
 		const worker = state.workers[0];
-		expect(worker.postMessage).toHaveBeenCalledWith({ files, options: {} });
+		expect(worker.postMessage).toHaveBeenCalledWith({
+			files,
+			options: { resourcePackUrl: '/test-base/minecraft/' }
+		});
 		const update = {
 			fileName: 'r.1.0.mca',
 			fileIndex: 2,

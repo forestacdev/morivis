@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('$app/paths', () => ({ base: '/test-base' }));
+
 const worker = vi.hoisted(() => ({
 	postMessage: vi.fn(),
 	terminate: vi.fn(),
@@ -28,7 +30,10 @@ describe('MCA worker lifecycle', () => {
 		await expect(promise).rejects.toMatchObject({ name: 'AbortError' });
 		expect(worker.terminate).toHaveBeenCalledOnce();
 		const retry = mcaFileToGlbInWorker(file, { maxChunkX: 0 }, new AbortController().signal);
-		expect(worker.postMessage).toHaveBeenLastCalledWith({ file, options: { maxChunkX: 0 } });
+		expect(worker.postMessage).toHaveBeenLastCalledWith({
+			file,
+			options: { maxChunkX: 0, resourcePackUrl: '/test-base/minecraft/' }
+		});
 		worker.onmessage?.({ data: { error: 'test-parse-error' } });
 		await expect(retry).rejects.toThrow('test-parse-error');
 	});
