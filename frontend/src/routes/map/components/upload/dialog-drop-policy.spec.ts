@@ -1,3 +1,4 @@
+import JSZip from 'jszip';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('$routes/map/utils/formats/exif', () => ({
@@ -61,6 +62,46 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveOpenDialogDrop', () => {
+	it('MCAフォームへの追加ドロップで既存のリージョンを保持する', async () => {
+		const original = createFile('r.-1.0.mca');
+		const added = createFile('r.0.0.MCA');
+		expect(await resolveOpenDialogDrop('mca', [original], [added])).toEqual({
+			type: 'stay',
+			dropFiles: [original, added]
+		});
+	});
+	it('MCAフォームでは再ドロップした区画を新しいファイルに置換する', async () => {
+		const original = createFile('r.0.0.mca');
+		const replacement = createFile('r.00.0.MCA', 'test-new');
+		expect(await resolveOpenDialogDrop('mca', [original], [replacement])).toEqual({
+			type: 'stay',
+			dropFiles: [replacement]
+		});
+	});
+	it('不正なMCAの追加は通知にして現在の一覧を置換しない', async () => {
+		const files = [createFile('r.0.0.mca')];
+		expect(await resolveOpenDialogDrop('mca', files, [createFile('test-invalid.mca')]))
+			.toMatchObject({
+				type: 'delegate',
+				decision: { type: 'notification', level: 'error' }
+			});
+		expect(files).toHaveLength(1);
+	});
+	it('ZIPから追加したMCAも既存一覧と統合する', async () => {
+		const zip = new JSZip();
+		zip.file('test-world/region/r.1.0.mca', 'test');
+		const archive = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-regions.zip'
+		);
+		const original = createFile('r.0.0.mca');
+		const decision = await resolveOpenDialogDrop('mca', [original], [archive]);
+		expect(decision).toMatchObject({
+			type: 'stay',
+			dropFiles: [original, expect.objectContaining({ name: 'r.1.0.mca' })]
+		});
+	});
+
 	it('PMXフォームではVPD、VMD、テクスチャの追加をまとめて受け付ける', async () => {
 		const currentFiles = [createFile('test-model.pmx')];
 		const incomingFiles = [

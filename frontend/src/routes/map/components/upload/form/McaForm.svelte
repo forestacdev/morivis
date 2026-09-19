@@ -1,8 +1,12 @@
 <script lang="ts">
+	import McaRegionGrid from '$routes/map/components/upload/form/McaRegionGrid.svelte';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { mcaFilesToGlbInWorker } from '$routes/map/utils/formats/mca/analyze';
 	import { validateMcaFileSet } from '$routes/map/utils/formats/mca/batch';
 	import { createMcaModelFile } from '$routes/map/utils/formats/mca/model-file';
+	import type { McaRegionPosition } from '$routes/map/utils/formats/mca/types';
+	import { mergeMcaUploadFiles } from '$routes/map/utils/formats/mca/upload-grid';
+	import { parseMcaRegionFileName } from '$routes/map/utils/formats/mca/world-placement';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 
@@ -30,6 +34,9 @@
 	const busy = $derived(running && activeFiles === files);
 	let errorMessage = $state('');
 	let progress = $state('');
+	let selectionError = $state('');
+	let selectionErrorFiles = $state.raw<File[] | null>(null);
+	let gridCenter = $state<McaRegionPosition | undefined>();
 	let conversion: AbortController | null = null;
 
 	const cancelConversion = () => {
@@ -120,43 +127,71 @@
 
 <div class="shrink-0 pb-4 text-2xl font-bold">Minecraftの地形を読み込む</div>
 <div class="c-scroll flex grow flex-col gap-4 overflow-y-auto p-2 text-sm">
-	<p>
-		Java版1.13以降のパレット形式に対応しています。gzip・zlib・非圧縮に対応し、LZ4と外部.mcc参照は対象外です。
-	</p>
-	<p>
-		同じワールドのregionフォルダにある.mcaファイルを選んでください。複数選択できます。entities・poiフォルダのファイルは対象外です。
-	</p>
-	<p>
-		水やガラスを含むブロックを、色分けした不透明の立方体で表示します。テクスチャ、階段やフェンスなどの形状、エンティティは再現しません。
-	</p>
+	<p>同じワールドの .mca を追加してください。</p>
 	<label class="flex flex-col gap-2">
-		<span>地形リージョン（.mca）</span>
+		<span>地形リージョンを追加（.mca）</span>
 		<input
 			type="file"
 			accept=".mca"
 			multiple
 			disabled={busy}
 			onchange={(event) => {
-				cancelConversion();
-				dropFile = Array.from(event.currentTarget.files ?? []);
+				const incoming = Array.from(event.currentTarget.files ?? []);
+				event.currentTarget.value = '';
+				if (!incoming.length) return;
+				selectionError = '';
+				try {
+					const merged = mergeMcaUploadFiles(files, incoming);
+					cancelConversion();
+					dropFile = merged;
+					gridCenter = undefined;
+				} catch (error) {
+					selectionErrorFiles = files;
+					selectionError =
+						error instanceof Error ? error.message : 'ファイルを追加できませんでした。';
+				}
 			}}
 		/>
 	</label>
+	<p>ドロップでも追加できます。同じ区画は上書き。</p>
+	{#if selectionError && selectionErrorFiles === files}<p role="alert" class="text-red-300">
+			{selectionError}
+		</p>{/if}
+	<McaRegionGrid {files} bind:center={gridCenter} />
 	{#if files.length}
 		<p>{files.length}ファイルを選択中</p>
 		<ul class="max-h-40 overflow-y-auto break-all">
-			{#each files as file (file)}<li>{file.name}</li>{/each}
+			{#each files as file (file)}
+				{@const region = parseMcaRegionFileName(file.name)}
+				<li class="flex items-center gap-2 py-1">
+					<button
+						type="button"
+						class="min-w-0 flex-1 text-left underline"
+						disabled={!region}
+						title="配置図で表示"
+						onclick={() => {
+							if (region) gridCenter = region;
+						}}>{file.name}</button
+					>
+					<button
+						type="button"
+						class="c-btn-sub shrink-0 px-2 py-1"
+						disabled={busy}
+						aria-label={`${file.name}を取り除く`}
+						onclick={() => {
+							cancelConversion();
+							selectionError = '';
+							dropFile = files.filter((candidate) => candidate !== file);
+						}}>削除</button
+					>
+				</li>
+			{/each}
 		</ul>
 	{/if}
 	{#if fileSetError}<p role="alert" class="text-red-300">{fileSetError}</p>{/if}
-	<p>
-		すべてのリージョンを元の位置関係を保った1つのレイヤーにまとめます。読み込み後、ワールド原点と1ブロックの長さを一度設定して一括配置します。
-	</p>
 	<fieldset class="flex flex-col gap-3" disabled={busy}>
 		<legend class="mb-2 font-bold">読み込むチャンク範囲</legend>
-		<p>
-			各ファイル内のチャンク番号（0〜31）で指定し、同じ範囲をすべてのファイルに適用します。初期値は全範囲です。大きな地形で読み込めない場合は範囲を狭めてください。
-		</p>
+		<p>0〜31・全ファイル共通</p>
 		<div class="grid grid-cols-2 gap-3">
 			<label class="flex flex-col gap-1"
 				><span>X 開始</span><input

@@ -54,24 +54,8 @@
 	class="c-scroll flex h-full w-full grow flex-col gap-4 overflow-x-hidden overflow-y-auto px-2 text-sm"
 >
 	<h2 class="text-xl font-bold">Minecraftのジオリファレンス</h2>
-	<p>ワールド原点（X=0、Z=0）の地図上の位置を指定します。Xの正方向は東、Zの正方向は南です。</p>
-	<div class="rounded-md bg-black/15 p-3">
-		<p class="font-bold">{displayedRegions.length}リージョンを一括配置</p>
-		<ul class="max-h-40 overflow-y-auto">
-			{#each displayedRegions as item (`${item.x},${item.z}`)}
-				<li class="mb-2">
-					<p class="break-all">r.{item.x}.{item.z}.mca</p>
-					<p>
-						ワールド範囲: X {item.x * 512}〜{item.x * 512 + 511}、Z {item.z * 512}〜{item.z * 512 +
-							511}
-					</p>
-				</li>
-			{/each}
-		</ul>
-		<p>
-			1リージョンは512×512ブロックです。リージョン間の位置関係を保ち、選択したチャンクを元の位置に配置します。
-		</p>
-	</div>
+	<p>ワールド原点（X=0、Z=0）を指定してください。</p>
+	<p>{displayedRegions.length}リージョン</p>
 	<label class="flex flex-col gap-1">
 		<span>ワールド原点の経度</span>
 		<input
@@ -122,7 +106,7 @@
 		<p id={`${inputId}-error`} class="text-red-400" aria-live="polite">
 			{errorMessage ?? '1ブロックの長さを描画可能な正の数値で指定してください。'}
 		</p>
-		<p>グリッドは最後に有効だった配置を表示しています。</p>
+		<p>グリッドは直前の有効な配置を表示中です。</p>
 	{/if}
 	<div class="flex flex-col gap-2">
 		<label class="flex items-center gap-2"
@@ -133,17 +117,13 @@
 				>リージョン名ラベル</span
 			></label
 		>
-		<p>読み込んだ各リージョンと周囲の3×3区画を表示します。重なる区画はまとめて表示します。</p>
-		<p>グリッドは位置合わせ完了時に消えます。再表示するにはレイヤー設定で有効にしてください。</p>
+		<p>グリッドは確定後に非表示になります。</p>
 	</div>
-	<p>
-		赤いボックスをドラッグするとワールド原点が移動します。大きさは上の入力欄で変更し、東西南北の向きを保ちます。
-	</p>
+	<p>赤いボックスをドラッグして移動できます。</p>
 	<button
 		type="button"
 		class="c-btn-sub px-3 py-2"
 		disabled={!placementValid}
 		onclick={onShowTerrain}>地形を表示</button
 	>
-	<p>「決定」で原点とブロックの長さを保存し、次の.mcaにも引き継ぎます。</p>
 </div>
