@@ -56,13 +56,21 @@ export const meshMcaRegion = (
 		nextIndices.set(indices);
 		indices = nextIndices;
 	};
-	const at = (section: McaSection | undefined, x: number, y: number, z: number) =>
-		!section
-			? 0
-			: typeof section.blocks === 'number'
+	// ハーフブロックを含む場合だけYを半ブロック単位で走査する。
+	// ブロック配列は複製せず、元のパレットと形状から占有部分を参照する。
+	const yScale = region.shapes?.some((shape) => shape !== 'cube') ? 2 : 1;
+	const dimensions = [16, 16 * yScale, 16];
+	const at = (section: McaSection | undefined, x: number, y: number, z: number) => {
+		if (!section) return 0;
+		const id = typeof section.blocks === 'number'
 			? section.blocks
-			: section.blocks[y * 256 + z * 16 + x];
-	const mask = new Uint16Array(256);
+			: section.blocks[Math.floor(y / yScale) * 256 + z * 16 + x];
+		const shape = region.shapes?.[id];
+		if (shape === 'slab-bottom' && y % 2 === 1) return 0;
+		if (shape === 'slab-top' && y % 2 === 0) return 0;
+		return id;
+	};
+	const mask = new Uint16Array(256 * yScale);
 	let completed = 0;
 	for (const section of region.sections.values()) {
 		const base = [
@@ -79,46 +87,55 @@ export const meshMcaRegion = (
 				const neighbor = region.sections.get(
 					sectionKey(neighborPos[0], neighborPos[1], neighborPos[2])
 				);
-				for (let depth = 0; depth < 16; depth++) {
+				const depthSize = dimensions[axis];
+				const widthSize = dimensions[u];
+				const heightSize = dimensions[v];
+				for (let depth = 0; depth < depthSize; depth++) {
 					// 一様なsectionの内部には露出面がない。
 					if (
-						typeof section.blocks === 'number' && depth + sign >= 0 && depth + sign < 16
+						typeof section.blocks === 'number'
+						&& (region.shapes?.[section.blocks] ?? 'cube') === 'cube'
+						&& depth + sign >= 0 && depth + sign < depthSize
 					) continue;
 					const p = [0, 0, 0];
 					p[axis] = depth;
-					for (let j = 0; j < 16; j++) {
+					for (let j = 0; j < heightSize; j++) {
 						p[v] = j;
-						for (let i = 0; i < 16; i++) {
+						for (let i = 0; i < widthSize; i++) {
 							p[u] = i;
 							const id = at(section, p[0], p[1], p[2]);
 							let adjacent = 0;
 							if (id) {
-								p[axis] = (depth + sign + 16) % 16;
+								p[axis] = (depth + sign + depthSize) % depthSize;
 								adjacent = at(
-									depth + sign < 0 || depth + sign > 15 ? neighbor : section,
+									depth + sign < 0 || depth + sign >= depthSize
+										? neighbor
+										: section,
 									p[0],
 									p[1],
 									p[2]
 								);
 								p[axis] = depth;
 							}
-							mask[j * 16 + i] = adjacent ? 0 : id;
+							mask[j * widthSize + i] = adjacent ? 0 : id;
 						}
 					}
-					for (let j = 0; j < 16; j++) {
-						for (let i = 0; i < 16;) {
-							const id = mask[j * 16 + i];
+					for (let j = 0; j < heightSize; j++) {
+						for (let i = 0; i < widthSize;) {
+							const id = mask[j * widthSize + i];
 							if (!id) {
 								i++;
 								continue;
 							}
 							let width = 1;
-							while (i + width < 16 && mask[j * 16 + i + width] === id) width++;
+							while (
+								i + width < widthSize && mask[j * widthSize + i + width] === id
+							) width++;
 							let height = 1;
 							let matches = true;
-							while (j + height < 16 && matches) {
+							while (j + height < heightSize && matches) {
 								for (let k = 0; k < width; k++) {
-									if (mask[(j + height) * 16 + i + k] !== id) {
+									if (mask[(j + height) * widthSize + i + k] !== id) {
 										matches = false;
 										break;
 									}
@@ -128,10 +145,12 @@ export const meshMcaRegion = (
 							reserve();
 							const corners = [[0, 0], [width, 0], [width, height], [0, height]];
 							for (let corner = 0; corner < 4; corner++) {
-								const point = [...base];
+								const point = [0, 0, 0];
 								point[axis] += depth + (sign > 0 ? 1 : 0);
 								point[u] += i + corners[corner][0];
 								point[v] += j + corners[corner][1];
+								point[1] /= yScale;
+								for (let a = 0; a < 3; a++) point[a] += base[a];
 								const offset = faceCount * 12 + corner * 3;
 								positions.set(point, offset);
 								normals[offset + axis] = sign;
@@ -145,7 +164,11 @@ export const meshMcaRegion = (
 							indices.set(order.map((n) => faceCount * 4 + n), faceCount * 6);
 							faceCount++;
 							for (let row = 0; row < height; row++) {
-								mask.fill(0, (j + row) * 16 + i, (j + row) * 16 + i + width);
+								mask.fill(
+									0,
+									(j + row) * widthSize + i,
+									(j + row) * widthSize + i + width
+								);
 							}
 							i += width;
 						}

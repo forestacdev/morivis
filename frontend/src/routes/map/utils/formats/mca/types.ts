@@ -42,6 +42,8 @@ export interface McaSection {
 export interface McaRegion {
 	sections: Map<string, McaSection>;
 	palette: string[];
+	/** パレットIDごとの形状。省略時は従来の立方体。 */
+	shapes?: ('cube' | 'slab-bottom' | 'slab-top')[];
 	chunkCount: number;
 	blockCount: number;
 	dataVersions: number[];

@@ -69,7 +69,7 @@ interface TestChunkOptions {
 	version?: number;
 	modern?: boolean;
 	padded?: boolean;
-	palette?: string[];
+	palette?: (string | { name: string; properties: Record<string, string>; })[];
 	values?: number[];
 }
 
@@ -84,7 +84,20 @@ export const chunkFixture = (options: TestChunkOptions = {}): Uint8Array => {
 		palette = ['minecraft:air', 'minecraft:stone'],
 		values = [1, ...Array<number>(4095).fill(0)]
 	} = options;
-	const names = tag(9, { type: 10, values: palette.map((name) => ({ Name: tag(8, name) })) });
+	const names = tag(9, {
+		type: 10,
+		values: palette.map((block) =>
+			typeof block === 'string' ? { Name: tag(8, block) } : {
+				Name: tag(8, block.name),
+				Properties: tag(
+					10,
+					Object.fromEntries(
+						Object.entries(block.properties).map(([key, value]) => [key, tag(8, value)])
+					)
+				)
+			}
+		)
+	});
 	const states = palette.length > 1
 		? tag(12, packedStates(values, palette.length, padded))
 		: undefined;

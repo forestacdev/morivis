@@ -143,9 +143,11 @@ export const readMcaRegion = async (
 		}
 	}
 	if (!chunks.length) throw new Error('指定範囲に保存済みのチャンクがありません');
+	const shapes: NonNullable<McaRegion['shapes']> = ['cube'];
 	const region: McaRegion = {
 		sections: new Map(),
 		palette: ['minecraft:air'],
+		shapes,
 		chunkCount: 0,
 		blockCount: 0,
 		dataVersions: []
@@ -226,18 +228,29 @@ export const readMcaRegion = async (
 					throw new Error('ブロックパレットが不正です');
 				}
 				const mapped = palette.map((block) => {
-					const name = asCompound(block)?.Name;
+					const state = asCompound(block);
+					const name = state?.Name;
 					if (typeof name !== 'string' || !/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(name)) {
 						throw new Error('ブロック名が不正です');
 					}
-					let id = ids.get(name);
+					const slabType = name.startsWith('minecraft:') && name.endsWith('_slab')
+						? asCompound(state?.Properties)?.type
+						: undefined;
+					const shape = slabType === 'bottom'
+						? 'slab-bottom'
+						: slabType === 'top'
+						? 'slab-top'
+						: 'cube';
+					const key = shape === 'cube' ? name : `${name}[${shape}]`;
+					let id = ids.get(key);
 					if (id === undefined) {
 						if (region.palette.length >= 65536) {
 							throw new Error('ブロックの種類が多すぎます');
 						}
 						id = region.palette.length;
-						ids.set(name, id);
+						ids.set(key, id);
 						region.palette.push(name);
+						shapes.push(shape);
 					}
 					return id;
 				});
