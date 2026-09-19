@@ -230,13 +230,20 @@ export const readMcaRegion = async (
 					throw new Error('ブロックパレットが不正です');
 				}
 				const mapped = palette.map((block) => {
-					const state = asCompound(block);
-					const name = state?.Name;
+					// NBTの混在リストでは、文字列を空のキーのcompoundで包む。
+					const wrapper = asCompound(block);
+					const value =
+						wrapper && Object.keys(wrapper).length === 1 && Object.hasOwn(wrapper, '')
+							? wrapper['']
+							: block;
+					const state = asCompound(value);
+					const name = typeof value === 'string' ? value : state?.id ?? state?.Name;
 					if (typeof name !== 'string' || !/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(name)) {
 						throw new Error('ブロック名が不正です');
 					}
+					const stateProperties = asCompound(state?.properties ?? state?.Properties);
 					const slabType = name.startsWith('minecraft:') && name.endsWith('_slab')
-						? asCompound(state?.Properties)?.type
+						? stateProperties?.type
 						: undefined;
 					const shape = slabType === 'bottom'
 						? 'slab-bottom'
@@ -244,7 +251,7 @@ export const readMcaRegion = async (
 						? 'slab-top'
 						: 'cube';
 					const properties = Object.fromEntries(
-						Object.entries(asCompound(state?.Properties) ?? {})
+						Object.entries(stateProperties ?? {})
 							.filter((entry): entry is [string, string] =>
 								typeof entry[1] === 'string'
 							)

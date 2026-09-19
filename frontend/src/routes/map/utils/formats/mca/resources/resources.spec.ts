@@ -83,6 +83,23 @@ const glbJson = (buffer: ArrayBuffer) => {
 };
 
 describe('Minecraft model definitions', () => {
+	it('省略された初期状態を補い、保存されている状態を優先する', async () => {
+		const { pack } = makePack(resources({
+			'assets/test/blockstates/solid.json': {
+				variants: {
+					'facing=east': { model: 'test:block/solid' },
+					'facing=west': { model: 'test:block/glass' }
+				}
+			}
+		}));
+		pack.manifest.defaultStates = { 'test:solid': { facing: 'west' } };
+		expect((await pack.variants('test:solid', {}))?.[0][0].model).toBe('test:block/glass');
+		expect((await pack.variants('test:solid', { facing: 'east' }))?.[0][0].model).toBe(
+			'test:block/solid'
+		);
+		delete pack.manifest.defaultStates;
+		expect(await pack.variants('test:solid', {})).toBeNull();
+	});
 	it('Workerのfetchにグローバルの呼び出し元を保持する', async () => {
 		const manifest = {
 			format: 1 as const,

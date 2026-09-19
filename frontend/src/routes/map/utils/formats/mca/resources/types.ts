@@ -44,6 +44,7 @@ export interface TextureAnimation {
 	frames?: (number | { index: number; time?: number; })[];
 }
 export interface PackManifest {
+	defaultStates?: Record<string, Record<string, string>>;
 	format: 1;
 	minecraftVersion: string | null;
 	blockstates: string[];

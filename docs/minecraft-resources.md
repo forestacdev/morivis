@@ -52,3 +52,21 @@ CloudFrontにはS3をオリジンとして設定し、OACとバケットポリ�
 更新直後も古い素材や403が返る場合はCloudFrontの対象パスを無効化するか、新しい配信フォルダーに切り替える。
 
 AWS公式: [OACの設定](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html)、[レスポンスヘッダーポリシー](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-managed-response-headers-policies.html)。
+
+## 26.3の省略されたブロック状態
+
+26.3ではブロック状態が `id` / `properties` に変わり、初期状態はID文字列だけで保存できる。
+初期状態を補う `defaultStates` を `manifest.json` に含める。明示された状態は初期値より優先する。
+
+素材の準備コマンドの後、同じバージョンの [mcmeta blocks summary](https://github.com/misode/mcmeta/tree/26.3-summary/blocks) をプロジェクト内へ取得して実行する。
+
+```sh
+curl -fsS https://raw.githubusercontent.com/misode/mcmeta/26.3-summary/blocks/data.json -o .mca-default-states.json
+node frontend/scripts/prepare-minecraft-defaults.mjs .mca-default-states.json 26.3
+rm .mca-default-states.json
+```
+
+素材を再生成した場合は、この初期状態の追加も再実行する。CloudFront利用時は更新した `manifest.json` をアップロードし、必要に応じてキャッシュを無効化する。
+状態が不足してモデル候補を選べない場合は、ブロックを消さず従来の色付き形状を使う。
+
+仕様変更: [Minecraft 26.3リリースノート](https://www.minecraft.net/en-us/article/minecraft-java-edition-26-3)。

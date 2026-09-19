@@ -74,23 +74,27 @@ export class MinecraftResourcePack {
 			throw new Error(`ブロック定義が不正です: ${name}`);
 		}
 		const groups = await Promise.all(
-			selectVariants(definition, state).map(async (variants) => {
-				if (!variants.length) throw new Error(`空のモデル候補です: ${name}`);
-				return Promise.all(variants.map(async (variant) => {
-					if (
-						!variant || typeof variant.model !== 'string'
-						|| ![variant.x ?? 0, variant.y ?? 0].every((v) =>
-							Number.isFinite(v) && v % 90 === 0
-						)
-						|| !Number.isSafeInteger(variant.weight ?? 1) || (variant.weight ?? 1) <= 0
-					) {
-						throw new Error(`ブロックのモデル指定が不正です: ${name}`);
-					}
-					return { ...variant, definition: await this.model(variant.model) };
-				}));
-			})
+			selectVariants(definition, { ...this.manifest.defaultStates?.[name], ...state }).map(
+				async (variants) => {
+					if (!variants.length) throw new Error(`空のモデル候補です: ${name}`);
+					return Promise.all(variants.map(async (variant) => {
+						if (
+							!variant || typeof variant.model !== 'string'
+							|| ![variant.x ?? 0, variant.y ?? 0].every((v) =>
+								Number.isFinite(v) && v % 90 === 0
+							)
+							|| !Number.isSafeInteger(variant.weight ?? 1)
+							|| (variant.weight ?? 1) <= 0
+						) {
+							throw new Error(`ブロックのモデル指定が不正です: ${name}`);
+						}
+						return { ...variant, definition: await this.model(variant.model) };
+					}));
+				}
+			)
 		);
-		return groups.some((group) => group.some((variant) => variant.definition.unsupported))
+		return (definition.variants && !groups.length)
+				|| groups.some((group) => group.some((variant) => variant.definition.unsupported))
 			? null
 			: groups;
 	};
