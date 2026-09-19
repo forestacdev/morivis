@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$app/paths', () => ({ base: '/test-base' }));
+const resourceEnv = vi.hoisted(() => ({ PUBLIC_MINECRAFT_RESOURCE_URL: '' }));
+vi.mock('$env/static/public', () => resourceEnv);
 
 const worker = vi.hoisted(() => ({
 	postMessage: vi.fn(),
@@ -15,9 +17,28 @@ import { mcaFileToGlbInWorker } from './analyze';
 
 const file = { name: 'test-region.mca' } as File;
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+	vi.clearAllMocks();
+	resourceEnv.PUBLIC_MINECRAFT_RESOURCE_URL = '';
+});
 
 describe('MCA worker lifecycle', () => {
+	it('素材の配信URLをWorkerに渡し、明示されたオプションを優先する', async () => {
+		resourceEnv.PUBLIC_MINECRAFT_RESOURCE_URL = ' https://test-assets.invalid/minecraft ';
+		for (const options of [{}, { resourcePackUrl: '/test-override/' }]) {
+			const controller = new AbortController();
+			const promise = mcaFileToGlbInWorker(file, options, controller.signal);
+			expect(worker.postMessage).toHaveBeenLastCalledWith({
+				file,
+				options: {
+					resourcePackUrl: options.resourcePackUrl
+						?? 'https://test-assets.invalid/minecraft'
+				}
+			});
+			controller.abort();
+			await expect(promise).rejects.toMatchObject({ name: 'AbortError' });
+		}
+	});
 	it('進捗受信中も中断でき、同じファイルで再試行できる', async () => {
 		const controller = new AbortController();
 		const progress = vi.fn();

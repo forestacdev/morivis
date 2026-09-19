@@ -1,4 +1,5 @@
 import { base } from '$app/paths';
+import { PUBLIC_MINECRAFT_RESOURCE_URL } from '$env/static/public';
 import type { McaOptions, McaProgress, McaResult } from './types';
 import type { McaWorkerResponse } from './worker';
 import McaWorker from './worker?worker';
@@ -44,7 +45,10 @@ const convertInWorker = (
 		try {
 			worker.postMessage({
 				...input,
-				options: { resourcePackUrl: `${base}/minecraft/`, ...options }
+				options: {
+					resourcePackUrl: PUBLIC_MINECRAFT_RESOURCE_URL.trim() || `${base}/minecraft/`,
+					...options
+				}
 			});
 		} catch (error) {
 			cleanup();

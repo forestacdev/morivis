@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mcaFilesToGlbInWorker } from './analyze';
 
 vi.mock('$app/paths', () => ({ base: '/test-base' }));
+vi.mock(
+	'$env/static/public',
+	() => ({ PUBLIC_MINECRAFT_RESOURCE_URL: 'https://test-assets.invalid/minecraft' })
+);
 
 const state = vi.hoisted(() => ({
 	workers: [] as {
@@ -43,7 +47,7 @@ describe('MCA一括変換のWorker寿命', () => {
 		const worker = state.workers[0];
 		expect(worker.postMessage).toHaveBeenCalledWith({
 			files,
-			options: { resourcePackUrl: '/test-base/minecraft/' }
+			options: { resourcePackUrl: 'https://test-assets.invalid/minecraft' }
 		});
 		const update = {
 			fileName: 'r.1.0.mca',
