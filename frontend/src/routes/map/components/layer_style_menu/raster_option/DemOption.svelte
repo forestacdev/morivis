@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
+
 	import DemColorLegend from './DemColorLegend.svelte';
 	import Accordion from '../../atoms/Accordion.svelte';
 	import ColorPicker from '../../atoms/ColorPicker.svelte';
@@ -36,12 +38,38 @@
 	}
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
-	const shadowStyle = $derived(
+	let shadowStyle = $derived(
 		normalizeDemShadowStyle(layerEntry.style.visualization.uniformsData.shadow)
 	);
-	const setShadowStyle = <K extends keyof DemShadowStyle>(key: K, value: DemShadowStyle[K]) => {
-		layerEntry.style.visualization.uniformsData.shadow = { ...shadowStyle, [key]: value };
+	let shadowUpdateTimer: ReturnType<typeof setTimeout> | undefined;
+	let pendingShadowUpdate: { entry: DemRasterEntry; commit: () => void } | undefined;
+	const flushShadowUpdate = () => {
+		clearTimeout(shadowUpdateTimer);
+		shadowUpdateTimer = undefined;
+		const pending = pendingShadowUpdate;
+		pendingShadowUpdate = undefined;
+		pending?.commit();
 	};
+	const setShadowStyle = <K extends keyof DemShadowStyle>(key: K, value: DemShadowStyle[K]) => {
+		if (pendingShadowUpdate && pendingShadowUpdate.entry !== layerEntry) flushShadowUpdate();
+		const entry = layerEntry;
+		const original = entry.style.visualization.uniformsData.shadow;
+		// 入力は即時表示し、タイルの再生成は操作が落ち着いてから一度だけ行う。
+		const next = { ...shadowStyle, [key]: value };
+		shadowStyle = next;
+		clearTimeout(shadowUpdateTimer);
+		pendingShadowUpdate = {
+			entry,
+			commit: () => {
+				// 待機中に外部から置き換えられた設定を上書きしない。
+				if (entry.style.visualization.uniformsData.shadow === original) {
+					entry.style.visualization.uniformsData.shadow = next;
+				}
+			}
+		};
+		shadowUpdateTimer = setTimeout(flushShadowUpdate, 100);
+	};
+	onDestroy(flushShadowUpdate);
 	const slopeStyle = $derived(layerEntry.style.visualization.uniformsData.slope);
 	const slopeRangeMode = $derived(slopeStyle ? getDemSlopeRangeMode(slopeStyle) : 'manual');
 	const setSlopeRangeMode = (rangeMode: 'auto' | 'manual') => {
