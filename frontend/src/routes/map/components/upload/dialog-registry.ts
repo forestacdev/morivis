@@ -123,6 +123,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/McaForm.svelte'),
 		profile: 'drop-file'
 	},
+	roblox: {
+		load: () => import('$routes/map/components/upload/form/RobloxForm.svelte'),
+		profile: 'drop-file'
+	},
 	'gaussian-splat': {
 		load: () => import('$routes/map/components/upload/form/GaussianSplatForm.svelte'),
 		profile: 'model-georef'

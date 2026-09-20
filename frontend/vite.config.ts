@@ -4,6 +4,7 @@ import path from 'path';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { qrcode } from 'vite-plugin-qrcode';
 import { lazySvelteKitPWA } from './scripts/pwa-precache';
+import { robloxAssetsPlugin } from './scripts/roblox-assets-plugin';
 import { buildViteProxyConfig } from './src/routes/map/utils/platform/proxy';
 
 // @devantic/diaper の自動CSSインジェクトを無効化するプラグイン
@@ -33,6 +34,7 @@ export default defineConfig(({ mode }) => {
 		optimizeDeps: { include: ['three/addons/objects/MarchingCubes.js'] },
 		plugins: [
 			diaperCssOverridePlugin,
+			robloxAssetsPlugin(env.ROBLOX_API_KEY),
 			sveltekit(),
 			qrcode(),
 			enhancedImages(),

@@ -27,3 +27,4 @@ vite.config.ts.timestamp-*
 static/rhino3dm/**
 static/draco/**
 static/minecraft/**
+static/roblox/**

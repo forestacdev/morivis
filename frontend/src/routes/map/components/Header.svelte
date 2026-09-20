@@ -24,7 +24,13 @@
 	import { resetLayersConfirm } from '$routes/stores/confirmation';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing, showSearchMenu, showOtherMenu, showDataMenu } from '$routes/stores/ui';
+	import {
+		isProcessing,
+		showSearchMenu,
+		showOtherMenu,
+		showDataMenu,
+		isStreetView
+	} from '$routes/stores/ui';
 
 	interface Props {
 		layerEntries: MorivisLayerEntry[];
@@ -245,7 +251,11 @@
 	let isFocus = $state<boolean>(false); // 検索フォームがフォーカスされているかどうか
 </script>
 
-<div class="bg-main relative z-20 flex w-full items-center justify-between my-2 max-lg:hidden">
+<div
+	class="bg-main relative z-20 flex w-full items-center justify-between my-2 max-lg:hidden {$isStreetView
+		? 'opacity-0 pointer-events-none'
+		: ''}"
+>
 	<!-- 左側 -->
 	<div class="flex h-full items-center gap-4 pl-2">
 		<div class="flex h-full items-end justify-center gap-2"></div>

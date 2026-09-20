@@ -112,6 +112,7 @@ export type DialogType =
 	| 'pmtiles'
 	| 'model'
 	| 'mca'
+	| 'roblox'
 	| 'gaussian-splat'
 	| 'arcgis'
 	| 'pointcloud'
@@ -612,14 +613,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description: '3Dモデルの形状、材質、テクスチャ、アニメーションなどを記録するファイルです。',
 		extensions: ['.glb', '.gltf']
 	},
-	{
-		id: 'mca',
-		dialogType: 'mca',
-		label: 'Minecraft Java (.mca)',
-		icon: 'mdi:minecraft',
-		description: 'Minecraft Java版の地形リージョンデータです。',
-		extensions: ['.mca']
-	},
+
 	{
 		id: 'usd',
 		label: 'USD / USDZ',
@@ -741,6 +735,22 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description:
 			'MikuMikuDanceで使う3Dモデル形式です。キャラクターなどのスキニング済みモデルを読み込むときに使います。',
 		extensions: ['.pmx']
+	},
+	{
+		id: 'mca',
+		dialogType: 'mca',
+		label: 'Minecraft Java (.mca)',
+		icon: 'mdi:minecraft',
+		description: 'Minecraft Java版の地形リージョンデータです。',
+		extensions: ['.mca']
+	},
+	{
+		id: 'roblox',
+		dialogType: 'roblox',
+		label: 'Roblox (.rbxl / .rbxlx)',
+		icon: 'simple-icons:roblox',
+		description: 'Robloxのワールドデータです。基本パーツを3Dモデルとして地図に配置します。',
+		extensions: ['.rbxl', '.rbxlx']
 	}
 ];
 

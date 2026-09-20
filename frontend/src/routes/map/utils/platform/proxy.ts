@@ -34,6 +34,11 @@ const CLOUDFRONT_PUBLIC_ENV_RULES: CloudFrontPublicEnvRule[] = [
 ];
 
 const STATIC_PROXY_RULES: ProxyRule[] = [
+	{
+		match: 'https://assetdelivery.roblox.com/',
+		target: 'https://assetdelivery.roblox.com',
+		proxyPath: '/api/roblox-assets'
+	},
 	{ match: 'mapdata.qchizu.xyz', target: 'https://mapdata.qchizu.xyz', proxyPath: '/api/qchizu' },
 	{
 		match: 'www2.ffpri.go.jp',

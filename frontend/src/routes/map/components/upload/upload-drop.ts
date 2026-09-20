@@ -239,6 +239,8 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	laz: 'pointcloud',
 	ply: 'pointcloud',
 	spz: 'gaussian-splat',
+	rbxlx: 'roblox',
+	rbxl: 'roblox',
 	pcd: 'pointcloud',
 	xyz: 'pointcloud',
 	mbtiles: 'mbtiles',

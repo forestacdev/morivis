@@ -3,6 +3,27 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('Robloxのドロップ', () => {
+	it.each(['test-world.rbxl', 'test-world.RBXL', 'test-world.rbxlx', 'test-world.RBXLX'])(
+		'専用フォームへ渡す: %s',
+		async name => {
+			const file = new File(['test'], name);
+			expect(await resolveDroppedFiles(file)).toMatchObject({
+				type: 'dialog',
+				dialogType: 'roblox'
+			});
+		}
+	);
+	it('ファイル選択と形式一覧から選べる', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.rbxl');
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.rbxlx');
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'roblox')).toMatchObject({
+			dialogType: 'roblox',
+			extensions: ['.rbxl', '.rbxlx']
+		});
+	});
+});
+
 describe('Minecraftのドロップ', () => {
 	it('複数のMCAを順序を保って専用フォームへ渡す', async () => {
 		const files = ['r.-1.0.mca', 'r.0.0.MCA', 'r.1.0.mca'].map(name =>
