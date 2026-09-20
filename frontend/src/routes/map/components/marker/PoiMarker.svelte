@@ -209,7 +209,7 @@
 {#if properties.name}
 	<div
 		bind:this={nameContainer}
-		class="items-top pointer-events-none absolute relative z-10 flex w-[200px] -translate-y-7.5 justify-center"
+		class="items-top pointer-events-none absolute z-10 flex w-[200px] -translate-y-8.5 justify-center"
 	>
 		{#if isReady}
 			<div
