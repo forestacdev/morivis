@@ -20,6 +20,18 @@ import { robloxWorldToGlb } from './glb';
 import { parseRobloxWorld } from './index';
 
 describe('RBXLバイナリ', () => {
+	it('PartのNameを読み、巨大なBaseplateだけを除外する', async () => {
+		const chunks = testChunks();
+		chunks.splice(
+			-2,
+			0,
+			prop(2, 'Name', 0x01, concat(text('Baseplate'), text('Floor'), text('Unused'))),
+			prop(2, 'size', 0x0e, vectors([[768, 12, 640], [4, 2, 2], [8, 8, 8]]))
+		);
+		const world = await parseRbxl(await encodeRbxl(chunks, 'lz4'));
+		expect(world.parts).toHaveLength(1);
+		expect(world.parts[0].shape).toBe('wedge');
+	});
 	it('Terrainの共有文字列と複数プロパティを消費し、未対応内容を通知する', async () => {
 		const chunks = testChunks();
 		chunks.unshift({

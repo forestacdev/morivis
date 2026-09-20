@@ -93,6 +93,7 @@ export const readBasicRotation = (id: number): number[] => {
 };
 
 const partProperties = new Set([
+	'Name',
 	'Material',
 	'MaterialVariant',
 	'MaterialVariantSerialized',

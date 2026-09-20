@@ -137,6 +137,13 @@ export const instancesToWorld = (roots: RobloxInstance[]): RobloxWorld => {
 		if (size.some(value => value <= 0)) {
 			throw new Error('パーツのサイズは正の数である必要があります。');
 		}
+		// 背景用の大きなBaseplateだけを除外し、建物の床や地面のMeshPartは残す。
+		if (
+			className === 'Part' && node.name === 'Baseplate' && shape === 'block'
+			&& Math.min(size[0], size[2]) >= 256
+			&& size[1] <= Math.min(size[0], size[2]) / 16
+			&& Math.abs(rotation[4]) > 0.9999
+		) continue;
 		if (!node.color && node.legacyColor) skip('旧形式の色（グレーで代替）');
 		const textures: RobloxTexture[] = [];
 		for (const child of node.children) {

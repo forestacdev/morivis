@@ -6,6 +6,19 @@ import { robloxWorldToGlb } from './glb';
 import { parseRbxlx } from './index';
 
 describe('Roblox→GLB', () => {
+	it('除外したBaseplateをモデルの範囲や接地高さへ含めない', async () => {
+		const world = parseRbxlx(worldXml(
+			partXml(
+				'<string name="Name">Baseplate</string>' + sizeXml(768, 12, 640)
+					+ frameXml(0, -6, 0)
+			)
+				+ partXml(sizeXml(20, 8, 16) + frameXml(30, 4, -24))
+		));
+		const { scene } = await new GLTFLoader().parseAsync(robloxWorldToGlb(world), '');
+		const bounds = new Box3().setFromObject(scene);
+		expect(bounds.getSize(new Vector3()).toArray()).toEqual([20, 8, 16]);
+		expect(bounds.min.y).toBe(0);
+	});
 	it('回転とサイズを保ち、中心と底面を原点へ寄せたGLBを標準ローダーで開ける', async () => {
 		const world = parseRbxlx(
 			worldXml(partXml(sizeXml() + frameXml(10000, 8, -10000, [0, 0, 1, 0, 1, 0, -1, 0, 0])))

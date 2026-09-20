@@ -51,6 +51,31 @@ describe('Roblox XMLワールド', () => {
 		);
 		expect(world.parts).toHaveLength(1);
 	});
+	it('巨大な水平Baseplateを除外し、その子パーツは残す', () => {
+		const baseplate = partXml(
+			'<string name="Name">Baseplate</string>' + sizeXml(768, 12, 640),
+			partXml(sizeXml(8, 2, 8), '', 'SpawnLocation')
+		);
+		const world = parseRbxlx(worldXml(baseplate));
+		expect(world.parts.map(part => part.size)).toEqual([[8, 2, 8]]);
+		expect(world.warnings).toEqual([]);
+	});
+	it.each(
+		[
+			['通常の床', 'Part', 'Floor', [768, 12, 640], undefined],
+			['小さなBaseplate', 'Part', 'Baseplate', [24, 2, 32], undefined],
+			['厚みのある構造物', 'Part', 'Baseplate', [768, 320, 640], undefined],
+			['垂直の壁', 'Part', 'Baseplate', [768, 12, 640], [1, 0, 0, 0, 0, -1, 0, 1, 0]],
+			['地面メッシュ', 'MeshPart', 'Baseplate', [768, 12, 640], undefined]
+		] as const
+	)('%sを除外しない', (_label, className, name, size, rotation) => {
+		const properties = `<string name="Name">${name}</string>` + sizeXml(...size)
+			+ frameXml(0, 0, 0, rotation ? [...rotation] : undefined)
+			+ (className === 'MeshPart'
+				? '<Content name="MeshId"><url>rbxassetid://12345</url></Content>'
+				: '');
+		expect(parseRbxlx(worldXml(partXml(properties, '', className))).parts).toHaveLength(1);
+	});
 	it('未設定メッシュ・Terrainを集計し、メッシュ付きPartを箱で偽装しない', () => {
 		const world = parseRbxlx(
 			worldXml(

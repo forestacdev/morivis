@@ -7,6 +7,7 @@
 - バイナリ version 0（非圧縮 / LZ4 / Zstandard）とXML version 4。
 - PartのBlock / Ball / Cylinder / Wedge、WedgePart、Seat / VehicleSeat / SpawnLocationの基本形状。
 - CFrame、size / Size、Color3uint8 / Color、Transparency。子のCFrameもワールド座標として扱い、親Modelのピボットを加算しない。
+- 背景用の巨大なBaseplateを自動除外する。対象は名前が`Baseplate`の水平な箱型Partで、幅・奥行きがともに256 studs以上、厚みが短辺の1/16以下。通常の床や地面のMeshPartは残す。
 - 箱型パーツのDecalとTexture。下地の色と画像を合成し、面を重ねずに表示する。単独の繰り返し画像は元の解像度を保持し、複数画像を重ねた面は最大4096×4096ピクセルへ合成する。Face、Color3、Transparency、ZIndex、StudsPerTileU/V、OffsetStudsU/V。
 - MeshPartの静的FileMesh version 2〜5、LOD0の形状・UV、TextureID / TextureContent、SurfaceAppearanceのColorMap / NormalMap / RoughnessMap / MetalnessMap。画像はPNG / JPEG。
 - 標準Materialの画像・PBR。MaterialService.Use2022Materialsによる旧材質切替。Neonはunlit、Plastic / SmoothPlastic / Glass等は粗さも設定する。
