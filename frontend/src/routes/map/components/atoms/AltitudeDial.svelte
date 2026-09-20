@@ -18,7 +18,7 @@
 				: undefined;
 		if (!bounds) return;
 		// SVG と同じ座標系に変換し、扇の左下を回転の中心にする。
-		const dx = ((event.clientX - bounds.left) / bounds.width) * 160 - 24;
+		const dx = ((event.clientX - bounds.left) / bounds.width) * 200 - 24;
 		const dy = 132 - ((event.clientY - bounds.top) / bounds.height) * 160;
 		if (Math.hypot(dx, dy) < 8) return;
 		// 扇の外へドラッグしたときは、水平または真上で止める。
@@ -95,7 +95,7 @@
 		}}
 		onkeydown={handleKeydown}
 	>
-		<svg viewBox="0 0 160 160" class="h-full w-full" aria-hidden="true">
+		<svg viewBox="0 0 200 160" class="h-full w-full" aria-hidden="true">
 			<path
 				d="M 24 132 L 120 132 A 96 96 0 0 0 24 36 Z"
 				fill="var(--color-sub)"
@@ -115,7 +115,7 @@
 			{/each}
 			<g fill="currentColor" dominant-baseline="central" font-size="12">
 				<text x="24" y="16">真上 90°</text>
-				<text x="120" y="151" text-anchor="middle">水平 0°</text>
+				<text x="132" y="132">水平 0°</text>
 			</g>
 			<line
 				x1="24"
@@ -151,9 +151,9 @@
 
 <style>
 	.dial {
-		width: 176px;
+		width: 220px;
 		max-width: 100%;
-		aspect-ratio: 1;
+		aspect-ratio: 5 / 4;
 		cursor: grab;
 		touch-action: none;
 		user-select: none;
