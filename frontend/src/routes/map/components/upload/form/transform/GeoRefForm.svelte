@@ -154,7 +154,21 @@
 	let modelHeightOffset = $state(0);
 	let modelScale = $state(1);
 	let modelScaleUnit = $state(0);
-	let minecraftMetersPerBlock = $state<number | undefined>(1);
+	let modelPlacementMode = $state<'model' | 'minecraft'>('model');
+	// 縮尺は両モードで共有し、Minecraft側ではメートル表示に変換する。
+	let minecraftMetersPerBlock = $derived.by((): number | undefined => {
+		if (
+			modelPlacementMode !== 'minecraft' ||
+			showDataEntry?.type !== 'model' ||
+			!('transform' in showDataEntry.style)
+		)
+			return undefined;
+		return getModelUnitMeters({
+			scale: modelScale,
+			scaleUnit: modelScaleUnit,
+			baseScale: showDataEntry.style.transform.baseScale
+		});
+	});
 	let minecraftGridVisible = $state(true);
 	let minecraftGridLabels = $state(true);
 	const minecraftRegion = $derived(
@@ -167,8 +181,11 @@
 			? showDataEntry.format.minecraftRegions
 			: undefined
 	);
+	const isMinecraftPlacementMode = $derived(
+		Boolean(minecraftRegion) && modelPlacementMode === 'minecraft'
+	);
 	const minecraftPlacementError = $derived.by(() => {
-		if (!minecraftRegion || showDataEntry?.type !== 'model') return null;
+		if (!isMinecraftPlacementMode || showDataEntry?.type !== 'model') return null;
 		const error = validateMcaWorldPlacement({
 			lng: modelLng ?? Number.NaN,
 			lat: modelLat ?? Number.NaN,
@@ -209,7 +226,7 @@
 		const normalizedScale = normalizeModelTransformScale(transform);
 		modelScale = normalizedScale.scale;
 		modelScaleUnit = normalizedScale.scaleUnit;
-		minecraftMetersPerBlock = getModelUnitMeters(transform);
+		modelPlacementMode = 'model';
 		minecraftGridVisible = true;
 		minecraftGridLabels =
 			entry.style.type === 'mesh' ? (entry.style.minecraftGrid?.labels ?? true) : true;
@@ -237,7 +254,7 @@
 				}
 				modelPlacementInitialized = true;
 				threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry), {
-					showTransformHandles: !('minecraftRegion' in entry.format && entry.format.minecraftRegion)
+					showTransformHandles: !isMinecraftPlacementMode
 				});
 			})
 			.catch((error) => {
@@ -247,7 +264,7 @@
 				showNotification('実モデルを読み込めなかったため、範囲のみ表示します', 'error');
 				modelPlacementInitialized = true;
 				threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry), {
-					showTransformHandles: !('minecraftRegion' in entry.format && entry.format.minecraftRegion)
+					showTransformHandles: !isMinecraftPlacementMode
 				});
 			})
 			.finally(() => {
@@ -269,14 +286,15 @@
 		) {
 			return entry.style;
 		}
-		const minecraftScale =
-			'minecraftRegion' in entry.format && entry.format.minecraftRegion
-				? normalizeModelUnitMeters(minecraftMetersPerBlock!, entry.style.transform.baseScale)
-				: null;
 		return {
 			...entry.style,
 			...(minecraftRegion
-				? { minecraftGrid: { visible: minecraftGridVisible, labels: minecraftGridLabels } }
+				? {
+						minecraftGrid: {
+							visible: isMinecraftPlacementMode && minecraftGridVisible,
+							labels: minecraftGridLabels
+						}
+					}
 				: {}),
 			transform: {
 				...entry.style.transform,
@@ -284,13 +302,27 @@
 				lat: modelLat,
 				altitude: modelAltitude,
 				heightOffset: modelHeightOffset,
-				scale: minecraftScale?.scale ?? modelScale,
-				scaleUnit: minecraftScale?.scaleUnit ?? modelScaleUnit,
+				scale: modelScale,
+				scaleUnit: modelScaleUnit,
 				rotationX: modelRotationX,
 				rotationY: modelRotationY,
 				rotationZ: modelRotationZ
 			}
 		};
+	};
+	const setMinecraftMetersPerBlock = (meters: number | undefined) => {
+		if (!minecraftRegion || showDataEntry?.type !== 'model') return;
+		const entry = showDataEntry as ThreeModelEntry;
+		const normalized = normalizeModelUnitMeters(
+			meters ?? Number.NaN,
+			entry.style.transform.baseScale
+		);
+		if (normalized) {
+			modelScale = normalized.scale;
+			modelScaleUnit = normalized.scaleUnit;
+		}
+		// 無効な入力もフォームに残し、描画には最後の有効な縮尺を保持する。
+		minecraftMetersPerBlock = meters;
 	};
 
 	$effect(() => {
@@ -308,7 +340,7 @@
 			return;
 		const entry = showDataEntry as ThreeModelEntry;
 		threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry), {
-			showTransformHandles: !minecraftRegion
+			showTransformHandles: !isMinecraftPlacementMode
 		});
 	});
 
@@ -322,7 +354,6 @@
 			const normalizedScale = normalizeModelTransformScale(transform);
 			modelScale = normalizedScale.scale;
 			modelScaleUnit = normalizedScale.scaleUnit;
-			minecraftMetersPerBlock = getModelUnitMeters(transform);
 			modelRotationX = transform.rotationX;
 			modelRotationY = transform.rotationY;
 			modelRotationZ = transform.rotationZ;
@@ -333,7 +364,7 @@
 	});
 
 	$effect(() => {
-		if (!isModelPlacementActive || !minecraftRegion || !modelPlacementInitialized) {
+		if (!isModelPlacementActive || !isMinecraftPlacementMode || !modelPlacementInitialized) {
 			mcaGridPreviewStore.set(null);
 			return;
 		}
@@ -951,10 +982,21 @@
 		{:else if isModelPlacementActive && modelPlacementInitialized}
 			{@const modelEntry = showDataEntry as ThreeModelEntry}
 			{#if minecraftRegion}
+				<div class="mb-4 w-full shrink-0">
+					<HorizontalSelectBox
+						bind:group={modelPlacementMode}
+						options={[
+							{ key: 'model', name: '位置合わせ' },
+							{ key: 'minecraft', name: 'ワールド座標' }
+						]}
+					/>
+				</div>
+			{/if}
+			{#if isMinecraftPlacementMode && minecraftRegion}
 				<McaPlacementMenu
 					bind:lng={modelLng}
 					bind:lat={modelLat}
-					bind:metersPerBlock={minecraftMetersPerBlock}
+					bind:metersPerBlock={() => minecraftMetersPerBlock, setMinecraftMetersPerBlock}
 					region={minecraftRegion}
 					regions={minecraftRegions}
 					placementValid={modelPlacementValid}

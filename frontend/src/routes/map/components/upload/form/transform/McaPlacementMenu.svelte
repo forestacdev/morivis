@@ -53,7 +53,6 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col gap-4 overflow-x-hidden overflow-y-auto px-2 text-sm"
 >
-	<h2 class="text-xl font-bold">Minecraftのジオリファレンス</h2>
 	<p>ワールド原点（X=0、Z=0）を指定してください。</p>
 	<p>{displayedRegions.length}リージョン</p>
 	<label class="flex flex-col gap-1">
