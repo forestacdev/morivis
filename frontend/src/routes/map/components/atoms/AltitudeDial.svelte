@@ -76,9 +76,7 @@
 </script>
 
 <div class="flex flex-col gap-2 text-base">
-	<div class="flex items-center justify-between pr-2">
-		<span>{label}</span><span class="tabular-nums">{angle}°</span>
-	</div>
+	<span>{label}</span>
 	<div
 		class="dial mx-auto rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
 		role="slider"
@@ -133,10 +131,20 @@
 				cx={24 + 96 * Math.cos(radians)}
 				cy={132 - 96 * Math.sin(radians)}
 				r="7"
-				fill="var(--color-accent)"
-				stroke="var(--color-base)"
+				fill="var(--color-base)"
+				stroke="var(--color-accent)"
 				stroke-width="2"
 			/>
+			<rect x="28" y="100" width="48" height="28" rx="8" fill="var(--color-sub)" />
+			<text
+				x="52"
+				y="114"
+				fill="currentColor"
+				text-anchor="middle"
+				dominant-baseline="central"
+				font-size="18"
+				font-weight="600">{angle}°</text
+			>
 		</svg>
 	</div>
 </div>
