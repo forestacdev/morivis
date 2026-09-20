@@ -178,7 +178,10 @@ class WorkerProtocol {
 					shadow: mode === 'shadow'
 						? normalizeDemShadowStyle({
 							azimuth: Number(url.searchParams.get('azimuth') ?? NaN),
-							altitude: Number(url.searchParams.get('altitude') ?? NaN)
+							altitude: Number(url.searchParams.get('altitude') ?? NaN),
+							shadowColor: url.searchParams.get('shadowColor') ?? undefined,
+							baseColor: url.searchParams.get('baseColor') ?? undefined,
+							baseTransparent: url.searchParams.get('baseTransparent') === 'true'
 						})
 						: undefined,
 					tile: { x, y, z },

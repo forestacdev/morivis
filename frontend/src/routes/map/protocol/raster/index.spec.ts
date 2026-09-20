@@ -1,3 +1,4 @@
+import { DEFAULT_DEM_SHADOW_STYLE } from '$routes/map/data/types/raster';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { demProtocol, terminateDemWorkerPool } from '.';
@@ -24,13 +25,18 @@ afterEach(() => {
 
 describe('DEM のタイル要求', () => {
 	it.each(['image', 'pmtiles'].flatMap((formatType) => [
-		{ formatType, mode: 'shadow', slopeAutoRange: undefined },
-		{ formatType, mode: 'slope', slopeAutoRange: 'true' },
-		{ formatType, mode: 'slope', slopeAutoRange: 'false' },
-		{ formatType, mode: 'slope', slopeAutoRange: undefined }
+		...['default', 'opaque', 'transparent'].map((colors) => ({
+			formatType,
+			mode: 'shadow',
+			slopeAutoRange: undefined,
+			colors
+		})),
+		{ formatType, mode: 'slope', slopeAutoRange: 'true', colors: 'default' },
+		{ formatType, mode: 'slope', slopeAutoRange: 'false', colors: 'default' },
+		{ formatType, mode: 'slope', slopeAutoRange: undefined, colors: 'default' }
 	]))(
-		'$formatType $mode 自動補正=$slopeAutoRange の隣接タイルと設定を Worker に渡す',
-		async ({ formatType, mode, slopeAutoRange }) => {
+		'$formatType $mode 配色=$colors 自動補正=$slopeAutoRange の隣接タイルと設定を Worker に渡す',
+		async ({ formatType, mode, slopeAutoRange, colors }) => {
 			vi.stubGlobal('window', { location: { origin: 'https://test.invalid' } });
 			vi.stubGlobal(
 				'Worker',
@@ -69,6 +75,11 @@ describe('DEM のタイル要求', () => {
 				tileSize: '512',
 				baseUrl: 'https://test.invalid/{z}/{x}/{y}.png'
 			});
+			if (colors !== 'default') {
+				params.set('shadowColor', '#336699');
+				params.set('baseColor', '#ffcc00');
+				params.set('baseTransparent', String(colors === 'transparent'));
+			}
 			if (slopeAutoRange !== undefined) params.set('slopeAutoRange', slopeAutoRange);
 			const result = await demProtocol('webgl').request({
 				url: `webgl://https://test.invalid/tile?${params}`
@@ -91,7 +102,20 @@ describe('DEM のタイル要求', () => {
 				max: 90,
 				tile: { x: 1, y: 1, z: 2 },
 				demTypeNumber: 2,
-				shadow: mode === 'shadow' ? { azimuth: 0, altitude: 0 } : undefined,
+				shadow: mode === 'shadow'
+					? {
+						...DEFAULT_DEM_SHADOW_STYLE,
+						azimuth: 0,
+						altitude: 0,
+						...(colors === 'default'
+							? {}
+							: {
+								shadowColor: '#336699',
+								baseColor: '#ffcc00',
+								baseTransparent: colors === 'transparent'
+							})
+					}
+					: undefined,
 				tileSize: 512,
 				...Object.fromEntries(
 					Object.entries(images).map(([side, item]) => [side, item.image])
