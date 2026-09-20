@@ -16,7 +16,7 @@
 - SurfaceAppearanceのAlphaMode=Overlayは透明部分をPart.Colorで埋め、Transparencyは画像のアルファを保持する。TintMaskはアルファに応じて色を混ぜ、Opaqueはアルファを無視する。SurfaceAppearance.Colorはカラー画像へ適用する。
 - 同じ素材IDの取得をまとめ、最大4件を並行処理する。公開アセットはRobloxの配信APIから取得する。取得できた画像は重複を除いてGLB内に格納し、配置後のモデルは外部URLに依存しない。
 - 画像だけ取得に失敗した場合はパーツの色で表示する。MeshIdの取得失敗・未対応メッシュは省略し、理由と件数を通知する。表示可能なパーツがなくなった場合はエラーにする。
-- 水平中心と底面をローカル原点へ寄せ、Y-upを保つ。ダイアログのキャンセル・ファイル切替でWorkerと進行中の取得を終了する。
+- 水平中心と底面をローカル原点へ寄せ、Y-upを保つ。GLBのルートを水平に180度回転し、初期配置ではRobloxの−Zを南、＋Zを北、＋Xを西へ向ける。ダイアログのキャンセル・ファイル切替でWorkerと進行中の取得を終了する。
 
 未対応: Union等の演算形状、SpecialMesh付きPart、CornerWedge、Truss、Terrain、ボーン付きメッシュ、曲面・MeshPart上のDecal、EmissiveMask、Decalの新しいUVScale・Rotation、スクリプト・物理・照明。旧BrickColorのみのパーツはグレーで代替する。
 

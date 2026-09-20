@@ -387,7 +387,8 @@ export const robloxWorldToGlb = (
 				: {}),
 			scene: 0,
 			scenes: [{ nodes: [0] }],
-			nodes: [{ mesh: 0 }],
+			// Y軸まわりに180度回し、Robloxの前方(-Z)を地図上の南へ向ける。
+			nodes: [{ mesh: 0, rotation: [0, 1, 0, 0] }],
 			meshes: [{ primitives }],
 			buffers: [{ byteLength: binarySize }],
 			bufferViews,

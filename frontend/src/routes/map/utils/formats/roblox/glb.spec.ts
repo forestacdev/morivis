@@ -1,11 +1,42 @@
 import { Box3, Mesh, Vector3 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { describe, expect, it } from 'vitest';
+import { buildMercatorModelMatrix } from '../../three/mercator-model-matrix';
+import { getModelBaseRotationX } from '../../three/model-axis';
 import { frameXml, partXml, sizeXml, worldXml } from './__fixtures__/world';
 import { robloxWorldToGlb } from './glb';
 import { parseRbxlx } from './index';
 
 describe('Roblox→GLB', () => {
+	it('地図上でRobloxの-Zを南、+Xを西、+Yを上へ向ける', async () => {
+		const world = parseRbxlx(worldXml(partXml(sizeXml() + frameXml())));
+		const { scene } = await new GLTFLoader().parseAsync(robloxWorldToGlb(world), '');
+		scene.updateMatrixWorld(true);
+		const modelMatrix = scene.children[0].matrixWorld;
+		// 水平回転なので鏡像にはせず、法線や面の表裏も維持する。
+		expect(modelMatrix.determinant()).toBeCloseTo(1);
+		const mapMatrix = buildMercatorModelMatrix({
+			lng: 0,
+			lat: 0,
+			altitude: 0,
+			scale: 1,
+			baseRotationX: getModelBaseRotationX('gltf'),
+			rotationX: 0,
+			rotationY: 0,
+			rotationZ: 0
+		}, false).multiply(modelMatrix);
+		// Mercator座標の+Yは南、+Zは上。
+		for (
+			const [source, expected] of [
+				[[0, 0, -1], [0, 1, 0]],
+				[[1, 0, 0], [-1, 0, 0]],
+				[[0, 1, 0], [0, 0, 1]]
+			]
+		) {
+			const direction = new Vector3().fromArray(source).transformDirection(mapMatrix);
+			expect(direction.distanceTo(new Vector3().fromArray(expected))).toBeLessThan(1e-10);
+		}
+	});
 	it('除外したBaseplateをモデルの範囲や接地高さへ含めない', async () => {
 		const world = parseRbxlx(worldXml(
 			partXml(
