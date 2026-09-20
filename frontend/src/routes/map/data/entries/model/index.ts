@@ -336,7 +336,8 @@ export const createGaussianSplatEntry = (
 			altitude: transform.altitude,
 			heightOffset: 0,
 			heightScale: 1,
-			baseRotationX: 0,
+			// SPZはY-upへ正規化済みなので、通常の3Dモデルと同じ地図用の軸補正を行う。
+			baseRotationX: encoding === 'spz' ? -180 : 0,
 			scale: 1,
 			scaleUnit: 0,
 			rotationX: 0,

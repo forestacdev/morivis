@@ -18,6 +18,10 @@
 	import { parseGaussianSplatInWorker } from '$routes/map/utils/formats/gaussian-splat/gaussian-splat-parallel';
 	import { inspectSpzFile } from '$routes/map/utils/formats/spz';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
+	import {
+		getInitialModelPlacementScale,
+		getInitialModelPlacementViewport
+	} from '$routes/map/utils/three/model-initial-scale';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -104,13 +108,16 @@
 		let url: string | undefined;
 		let entryId: string | undefined;
 		try {
+			// 解析中の地図移動に左右されないよう、配置開始時の位置と画面を使う。
+			const center = mapStore.getCenter();
+			const map = mapStore.getMap();
+			const viewport = map ? getInitialModelPlacementViewport(map) : undefined;
 			const data = await parseGaussianSplatInWorker(
 				await file.arrayBuffer(),
 				sourceEncoding,
 				controller.signal
 			);
 			if (controller.signal.aborted || splatFile !== file) return;
-			const center = mapStore.getCenter();
 			url = URL.createObjectURL(file);
 			const entry = createGaussianSplatEntry(
 				name.trim(),
@@ -131,6 +138,12 @@
 			entryId = entry.id;
 			entry.format.sourceFileName = file.name;
 			entry.format.localBounds = getGaussianSplatRenderBounds(data.bounds);
+			if (viewport) {
+				Object.assign(
+					entry.style.transform,
+					getInitialModelPlacementScale(entry.format.localBounds, viewport, entry.style.transform)
+				);
+			}
 			entry.metaData.bounds = getModelGeoBoundsFromLocalBounds(
 				entry.format.localBounds,
 				entry.style
