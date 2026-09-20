@@ -1,7 +1,11 @@
 import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
-import type { GeoJsonMetaData, VectorPolygonEntry } from '$routes/map/data/types/vector';
+import type {
+	GeoJsonMetaData,
+	VectorPointEntry,
+	VectorPolygonEntry
+} from '$routes/map/data/types/vector';
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { PolygonGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
@@ -9,6 +13,7 @@ import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import { getModelUnitMeters } from '$routes/map/utils/three/model-scale';
 import { Vector3 } from 'three';
+import { createMcaWorldOrigin } from './world-origin';
 import { isMcaRegionPositionValid, validateMcaWorldPlacement } from './world-placement';
 
 export interface McaRegionGridProperties extends FeatureProp {
@@ -157,8 +162,12 @@ export const createMcaRegionGridEntry = (
 /** 派生vector entryとデータの寿命を地形に合わせる。確定値を二重に保存しない。 */
 export const createMcaRegionGridController = () => {
 	const ownedIds = new Set<string>();
-	const sync = (models: MorivisLayerEntry[]): VectorPolygonEntry<GeoJsonMetaData>[] => {
-		const entries: VectorPolygonEntry<GeoJsonMetaData>[] = [];
+	const sync = (
+		models: MorivisLayerEntry[],
+		placementPreview: MeshEntry<MeshStyle> | null = null
+	) => {
+		const entries: (VectorPolygonEntry<GeoJsonMetaData> | VectorPointEntry<GeoJsonMetaData>)[] =
+			[];
 		const nextIds = new Set<string>();
 		const groups = new Map<
 			string,
@@ -212,6 +221,13 @@ export const createMcaRegionGridController = () => {
 			GeojsonCache.set(entry.id, group.data);
 			nextIds.add(entry.id);
 			entries.push(entry);
+		}
+		// 原点はグリッドの表示設定に依存せず、専用モードの仮配置だけから生成する。
+		const origin = placementPreview ? createMcaWorldOrigin(placementPreview) : null;
+		if (origin) {
+			GeojsonCache.set(origin.entry.id, origin.data);
+			nextIds.add(origin.entry.id);
+			entries.push(origin.entry);
 		}
 		for (const id of ownedIds) {
 			if (!nextIds.has(id)) GeojsonCache.remove(id);

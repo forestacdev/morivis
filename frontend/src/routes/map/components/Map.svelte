@@ -187,6 +187,11 @@
 		entry.style.type === 'mesh' &&
 		'minecraftRegion' in entry.format &&
 		!!entry.format.minecraftRegion;
+	const mcaPlacementPreview = $derived(
+		isModelPlacementActive && $mcaGridPreviewStore?.id === showDataEntry?.id
+			? $mcaGridPreviewStore
+			: null
+	);
 	const effectiveMcaGridModels = $derived.by(() => {
 		const models = new Map<string, MeshEntry<MeshStyle>>();
 		if (!isIsolatedPreview) {
@@ -195,13 +200,12 @@
 			}
 		}
 		if (showDataEntry && isMcaGridModel(showDataEntry)) models.set(showDataEntry.id, showDataEntry);
-		const draft = $mcaGridPreviewStore;
-		if (draft && isModelPlacementActive && draft.id === showDataEntry?.id)
-			models.set(draft.id, draft);
+		if (mcaPlacementPreview) models.set(mcaPlacementPreview.id, mcaPlacementPreview);
 		return [...models.values()];
 	});
-	const mcaGridWatchTargets = $derived(
-		effectiveMcaGridModels.map((entry) => ({
+	const mcaGridWatchTargets = $derived({
+		placementId: mcaPlacementPreview?.id ?? null,
+		models: effectiveMcaGridModels.map((entry) => ({
 			id: entry.id,
 			region: entry.format.minecraftRegion,
 			regions: entry.format.minecraftRegions,
@@ -209,7 +213,7 @@
 			transform: entry.style.transform,
 			grid: entry.style.minecraftGrid
 		}))
-	);
+	});
 
 	// 監視用のデータを保持
 	let layerWatchTargets = $derived.by(() => {
@@ -694,7 +698,10 @@
 		if (mapDestroyed) return;
 		const updateId = ++styleUpdateId;
 		// 非同期のspec生成前に、main/preview/draftを統合した最新のグリッドを確定する。
-		const mcaGridEntries = mcaRegionGridController.sync(effectiveMcaGridModels);
+		const mcaGridEntries = mcaRegionGridController.sync(
+			effectiveMcaGridModels,
+			mcaPlacementPreview
+		);
 		if (!import.meta.env.PROD) {
 			// 描画方式で絞る前に、アップロードしたモデルと登録前のプレビューも出力する。
 			const previewEntry = showDataEntry;

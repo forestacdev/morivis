@@ -1,6 +1,7 @@
 import { createGlbEntry } from '$routes/map/data/entries/model';
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
+import { createCircleLayer } from '$routes/map/utils/layers/vector/point';
 import { createFillLayer, createOutLineLayer } from '$routes/map/utils/layers/vector/polygon';
 import { buildMercatorModelMatrix } from '$routes/map/utils/three/mercator-model-matrix';
 import { Vector3 } from 'three';
@@ -32,6 +33,73 @@ const modelFixture = (x = 0, z = 0, id = 'test-model') => {
 afterEach(() => GeojsonCache.clear());
 
 describe('MCAリージョングリッド', () => {
+	it('専用モードの原点を、グリッド非表示でもポイントとラベルで表示する', () => {
+		const controller = createMcaRegionGridController();
+		const draft = modelFixture(-2, 3);
+		draft.style.minecraftGrid = { visible: false, labels: false };
+		const [origin] = controller.sync([draft], draft);
+		expect(origin.format.geometryType).toBe('Point');
+		expect(GeojsonCache.get(origin.id)?.features[0].geometry).toEqual({
+			type: 'Point',
+			coordinates: [10, 20]
+		});
+		expect(origin.style.type).toBe('circle');
+		if (origin.style.type !== 'circle') throw new Error('原点はポイントレイヤー');
+		const layer = { id: origin.id, source: `${origin.id}_source`, minzoom: 0, maxzoom: 24 };
+		expect(createCircleLayer(layer, origin.style).paint?.['circle-radius']).toBe(7);
+		expect(origin.style.labels.show).toBe(true);
+		expect(
+			createSymbolLayer(layer, origin.style, origin.properties.fields).layout
+				?.['text-allow-overlap']
+		).toBe(true);
+		expect(origin.interaction.clickable).toBe(false);
+	});
+
+	it('原点はリージョン位置・縮尺・回転に左右されず、入力座標に追従する', () => {
+		const controller = createMcaRegionGridController();
+		const draft = modelFixture(3, -2);
+		draft.style.minecraftGrid!.visible = false;
+		const [origin] = controller.sync([draft], draft);
+		draft.style.transform = {
+			...draft.style.transform,
+			lng: 12,
+			lat: 21,
+			scale: 3,
+			rotationZ: 45
+		};
+		const [updated] = controller.sync([draft], draft);
+		expect(updated.id).toBe(origin.id);
+		expect(GeojsonCache.get(origin.id)?.features[0].geometry).toEqual({
+			type: 'Point',
+			coordinates: [12, 21]
+		});
+	});
+
+	it('専用モード終了時は原点を削除し、グリッドだけの表示では原点を残さない', () => {
+		const controller = createMcaRegionGridController();
+		const draft = modelFixture();
+		const entries = controller.sync([draft], draft);
+		const origin = entries.find((entry) => entry.format.geometryType === 'Point')!;
+		expect(GeojsonCache.has(origin.id)).toBe(true);
+		expect(controller.sync([draft]).map((entry) => entry.format.geometryType)).toEqual([
+			'Polygon'
+		]);
+		expect(GeojsonCache.has(origin.id)).toBe(false);
+		controller.sync([draft], draft);
+		controller.clear();
+		expect(GeojsonCache.has(origin.id)).toBe(false);
+	});
+
+	it('不正な原点やMinecraft以外の仮配置ではポイントを生成しない', () => {
+		const controller = createMcaRegionGridController();
+		const draft = modelFixture();
+		draft.style.transform.lng = Number.NaN;
+		expect(controller.sync([draft], draft)).toEqual([]);
+		draft.style.transform.lng = 10;
+		delete draft.format.minecraftRegion;
+		expect(controller.sync([draft], draft)).toEqual([]);
+	});
+
 	it('位置合わせ完了でグリッドとラベルのentry・キャッシュを除き、再表示できる', () => {
 		const controller = createMcaRegionGridController();
 		const draft = modelFixture();
