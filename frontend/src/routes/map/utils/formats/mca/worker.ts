@@ -1,15 +1,31 @@
 import { mcaToGlb } from '.';
 import { mcaFilesToGlb } from './batch-convert';
+import { McaChunkMeshPool } from './chunk-mesh-pool';
 import { MAX_REGION_BYTES, validateMcaOptions } from './region';
 import type { McaOptions, McaProgress, McaResult } from './types';
 
-export type McaWorkerResponse = { result: McaResult; } | { error: string; } | {
-	progress: McaProgress;
-};
+export type McaWorkerResponse =
+	| { cancelled: true; }
+	| { result: McaResult; }
+	| { error: string; }
+	| {
+		progress: McaProgress;
+	};
 
+let activePool: McaChunkMeshPool | undefined;
 self.onmessage = async (
-	{ data }: MessageEvent<({ file: File; } | { files: File[]; }) & { options: McaOptions; }>
+	{ data }: MessageEvent<
+		(({ file: File; } | { files: File[]; }) & { options: McaOptions; }) | { cancel: true; }
+	>
 ) => {
+	if ('cancel' in data) {
+		activePool?.dispose();
+		postMessage({ cancelled: true } satisfies McaWorkerResponse);
+		self.close();
+		return;
+	}
+	const pool = new McaChunkMeshPool();
+	activePool = pool;
 	try {
 		validateMcaOptions(data.options);
 		if ('file' in data && data.file.size > MAX_REGION_BYTES) {
@@ -26,8 +42,13 @@ self.onmessage = async (
 			postMessage({ progress } satisfies McaWorkerResponse);
 		};
 		const result = 'files' in data
-			? await mcaFilesToGlb(data.files, data.options, reportProgress)
-			: await mcaToGlb(await data.file.arrayBuffer(), data.options, reportProgress);
+			? await mcaFilesToGlb(data.files, data.options, reportProgress, pool.mesh)
+			: await mcaToGlb(
+				await data.file.arrayBuffer(),
+				data.options,
+				reportProgress,
+				pool.mesh
+			);
 		postMessage({ result } satisfies McaWorkerResponse, { transfer: [result.glb] });
 	} catch (error) {
 		postMessage(
@@ -35,5 +56,7 @@ self.onmessage = async (
 				error: error instanceof Error ? error.message : 'MCAを読み込めませんでした'
 			} satisfies McaWorkerResponse
 		);
+	} finally {
+		pool.dispose();
 	}
 };

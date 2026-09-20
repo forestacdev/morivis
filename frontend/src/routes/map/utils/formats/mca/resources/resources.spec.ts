@@ -3,7 +3,9 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { chunkFixture, regionFixture } from '../__fixtures__/region';
 import { mcaFilesToGlb } from '../batch-convert';
+import { partitionMcaChunks } from '../chunk-partitions';
 import { mcaMeshesToGlb } from '../glb';
+import type { McaMesh } from '../mesh';
 import { readMcaRegion } from '../region';
 import { compileVariant } from './geometry';
 import { meshResourceRegion } from './mesh';
@@ -324,6 +326,38 @@ describe('Minecraft model definitions', () => {
 });
 
 describe('Minecraft resource mesh / GLB', () => {
+	it('テクスチャ付きの分割でも境界面・UV・法線・材質を維持する', async () => {
+		const { pack } = makePack();
+		const values = Array<number>(4096).fill(0);
+		values[0] = 1;
+		values[15] = 1;
+		values[16] = 2;
+		values[31] = 2;
+		const region = await readMcaRegion(regionFixture(Array.from({ length: 4 }, (_, x) => ({
+			index: x,
+			nbt: chunkFixture({ x, palette: ['minecraft:air', 'test:solid', 'test:glass'], values })
+		}))));
+		const original = await meshResourceRegion(region, pack);
+		const parts = await Promise.all(
+			partitionMcaChunks(region).map((p) =>
+				meshResourceRegion(p.region, pack, undefined, Infinity, p.ownedSections)
+			)
+		);
+		const faces = (meshes: McaMesh[]) =>
+			meshes.flatMap((mesh) =>
+				Array.from({ length: mesh.faceCount }, (_, i) =>
+					JSON.stringify({
+						p: Array.from(mesh.positions.slice(i * 12, i * 12 + 12), (v, axis) =>
+							v + mesh.origin[axis % 3]),
+						n: [...mesh.normals.slice(i * 12, i * 12 + 12)],
+						uv: [...mesh.uvs!.slice(i * 8, i * 8 + 8)]
+					}))
+			).sort();
+		expect(faces(parts)).toEqual(faces([original]));
+		expect(parts.every((m) => m.groups?.some((g) => g.material.alphaMode === 'BLEND'))).toBe(
+			true
+		);
+	});
 	it('画素が不透明でもモデルの透過指定を材質に保持する', async () => {
 		const { pack } = makePack(resources({
 			'assets/test/models/block/solid.json': {

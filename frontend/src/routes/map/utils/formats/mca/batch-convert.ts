@@ -5,18 +5,26 @@ import { type McaMesh, meshMcaRegion } from './mesh';
 import { MAX_REGION_BYTES, readMcaRegion, validateMcaOptions } from './region';
 import { meshResourceRegion } from './resources/mesh';
 import { loadMinecraftResourcePack } from './resources/pack';
-import type { McaOptions, McaProgress, McaResult } from './types';
+import type { McaOptions, McaProgress, McaRegion, McaResult } from './types';
+
+export type McaParallelMesher = (
+	region: McaRegion,
+	resourcePackUrl: string | undefined,
+	maxFaces: number,
+	onProgress?: (progress: McaProgress) => void
+) => Promise<McaMesh[]>;
 
 /** 入力は1ファイルずつ展開し、共有の面数上限でメッシュの合計量を制限する。 */
 export const mcaFilesToGlb = async (
 	files: File[],
 	options: McaOptions = {},
-	onProgress?: (progress: McaProgress) => void
+	onProgress?: (progress: McaProgress) => void,
+	parallelMesh?: McaParallelMesher
 ): Promise<McaResult> => {
 	const regions = validateMcaFileSet(files);
 	validateMcaOptions(options);
 	const maxFaces = resolveMcaMaxFaces(options.maxFaces);
-	const pack = options.resourcePackUrl
+	const pack = options.resourcePackUrl && !parallelMesh
 		? await loadMinecraftResourcePack(options.resourcePackUrl)
 		: null;
 	const meshes: McaMesh[] = [];
@@ -41,13 +49,22 @@ export const mcaFilesToGlb = async (
 				...options,
 				region: regions[index]
 			}, progress);
-			const mesh = pack
-				? await meshResourceRegion(region, pack, progress, maxFaces - faceCount)
-				: meshMcaRegion(region, progress, maxFaces - faceCount);
-			meshes.push(mesh);
+			const parts = parallelMesh
+				? await parallelMesh(
+					region,
+					options.resourcePackUrl,
+					maxFaces - faceCount,
+					progress
+				)
+				: [
+					pack
+						? await meshResourceRegion(region, pack, progress, maxFaces - faceCount)
+						: meshMcaRegion(region, progress, maxFaces - faceCount)
+				];
+			meshes.push(...parts);
 			chunkCount += region.chunkCount;
 			blockCount += region.blockCount;
-			faceCount += mesh.faceCount;
+			faceCount += parts.reduce((sum, mesh) => sum + mesh.faceCount, 0);
 			for (const version of region.dataVersions) versions.add(version);
 		} catch (error) {
 			throw new Error(

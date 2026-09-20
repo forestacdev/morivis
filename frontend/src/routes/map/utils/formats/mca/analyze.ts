@@ -16,16 +16,32 @@ const convertInWorker = (
 			return;
 		}
 		const worker = new McaWorker();
+		let cancelled = false;
+		let cancelTimeout: ReturnType<typeof setTimeout> | undefined;
 		const cleanup = () => {
+			clearTimeout(cancelTimeout);
 			worker.terminate();
 			signal.removeEventListener('abort', abort);
 		};
 		const abort = () => {
-			cleanup();
+			cancelled = true;
+			signal.removeEventListener('abort', abort);
+			// 親だけを即時終了すると計算中の子Workerが残り得るため、停止応答を待つ。
+			cancelTimeout = setTimeout(cleanup, 1000);
+			try {
+				worker.postMessage({ cancel: true });
+			} catch {
+				cleanup();
+			}
 			reject(new DOMException('読み込みをキャンセルしました', 'AbortError'));
 		};
 		signal.addEventListener('abort', abort, { once: true });
 		worker.onmessage = ({ data }: MessageEvent<McaWorkerResponse>) => {
+			if (cancelled) {
+				if (!('progress' in data)) cleanup();
+				return;
+			}
+			if ('cancelled' in data) return;
 			if ('progress' in data) {
 				onProgress?.(data.progress);
 				return;

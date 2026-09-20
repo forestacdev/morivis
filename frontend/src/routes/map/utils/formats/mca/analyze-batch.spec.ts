@@ -16,7 +16,10 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock('./worker?worker', () => ({
 	default: class {
-		postMessage = vi.fn();
+		onmessage?: (event: { data: unknown; }) => void;
+		postMessage = vi.fn((data) => {
+			if ('cancel' in data) this.onmessage?.({ data: { cancelled: true } });
+		});
 		terminate = vi.fn();
 		constructor() {
 			state.workers.push(this);

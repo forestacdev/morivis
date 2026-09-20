@@ -19,10 +19,26 @@ const file = { name: 'test-region.mca' } as File;
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	worker.postMessage.mockImplementation((data) => {
+		if ('cancel' in data) worker.onmessage?.({ data: { cancelled: true } });
+	});
 	resourceEnv.PUBLIC_MINECRAFT_RESOURCE_URL = '';
 });
 
 describe('MCA worker lifecycle', () => {
+	it('中断後の進捗を無視し、子Worker停止の応答後に親を終了する', async () => {
+		worker.postMessage.mockImplementation(() => {});
+		const controller = new AbortController(), progress = vi.fn();
+		const pending = mcaFileToGlbInWorker(file, {}, controller.signal, progress);
+		controller.abort();
+		await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+		expect(worker.postMessage).toHaveBeenLastCalledWith({ cancel: true });
+		expect(worker.terminate).not.toHaveBeenCalled();
+		worker.onmessage?.({ data: { progress: { stage: 'mesh', completed: 1, total: 2 } } });
+		expect(progress).not.toHaveBeenCalled();
+		worker.onmessage?.({ data: { cancelled: true } });
+		expect(worker.terminate).toHaveBeenCalledOnce();
+	});
 	it('素材の配信URLをWorkerに渡し、明示されたオプションを優先する', async () => {
 		resourceEnv.PUBLIC_MINECRAFT_RESOURCE_URL = ' https://test-assets.invalid/minecraft ';
 		for (const options of [{}, { resourcePackUrl: '/test-override/' }]) {

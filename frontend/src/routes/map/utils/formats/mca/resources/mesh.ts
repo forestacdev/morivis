@@ -2,6 +2,7 @@ import { blockColor, linearColor } from '../colors';
 import { createMcaFaceLimitError } from '../limits';
 import type { McaMesh } from '../mesh';
 import { type McaProgress, type McaRegion, sectionKey } from '../types';
+import { isWaterBlock, waterMaterial } from '../water';
 import { compileVariant } from './geometry';
 import { chooseVariant } from './models';
 import type { MinecraftResourcePack } from './pack';
@@ -20,7 +21,9 @@ const white: [number, number, number, number] = [255, 255, 255, 255];
 const fallback = (region: McaRegion, id: number): Variant[][] => {
 	const shape = region.shapes?.[id];
 	const y0 = shape === 'slab-top' ? 8 : 0, y1 = shape === 'slab-bottom' ? 8 : 16;
-	const material: ResourceMaterial = { key: 'fallback', alphaMode: 'OPAQUE' };
+	const material: ResourceMaterial = isWaterBlock(region.palette[id])
+		? waterMaterial
+		: { key: 'fallback', alphaMode: 'OPAQUE' };
 	const color = linearColor(blockColor(region.palette[id]));
 	return [[{
 		faces: compileVariant({
@@ -40,7 +43,7 @@ const fallback = (region: McaRegion, id: number): Variant[][] => {
 	}]];
 };
 
-const prepareModels = async (region: McaRegion, pack: MinecraftResourcePack) => {
+const buildModels = async (region: McaRegion, pack: MinecraftResourcePack) => {
 	const templates: Variant[][][] = new Array(region.palette.length);
 	let next = 1;
 	// 素材の並列リクエスト数を抑え、同じモデル・画像はpack内のキャッシュを共有する。
@@ -80,11 +83,32 @@ const prepareModels = async (region: McaRegion, pack: MinecraftResourcePack) => 
 	}));
 	return templates;
 };
+const modelTemplates = new WeakMap<
+	MinecraftResourcePack,
+	{ key: string; value: Promise<Variant[][][]>; }
+>();
+const prepareModels = (region: McaRegion, pack: MinecraftResourcePack) => {
+	const key = JSON.stringify([region.palette, region.states, region.shapes]);
+	const cached = modelTemplates.get(pack);
+	if (cached?.key === key) return cached.value;
+	const value = buildModels(region, pack);
+	modelTemplates.set(pack, { key, value });
+	return value;
+};
 const normal = (p: Vec3[]): Vec3 => {
 	const a = p[1].map((v, i) => v - p[0][i]), b = p[2].map((v, i) => v - p[0][i]);
 	const cross = [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 	const length = Math.hypot(...cross);
 	return cross.map((v) => length ? v / length : 0) as Vec3;
+};
+const faceNormals = new WeakMap<Face, Vec3>();
+const faceNormal = (face: Face) => {
+	let result = faceNormals.get(face);
+	if (!result) {
+		result = normal(face.positions);
+		faceNormals.set(face, result);
+	}
+	return result;
 };
 const epsilon = 0.00001;
 const faceIsCovered = (face: Face, neighbor: Face[], identical: boolean) => {
@@ -99,7 +123,7 @@ const faceIsCovered = (face: Face, neighbor: Face[], identical: boolean) => {
 			other.material.alphaMode !== 'OPAQUE' && !(identical && face.texture === other.texture)
 		) return false;
 		if (!other.positions.every((p) => Math.abs(p[axis] - (1 - plane)) < epsilon)) return false;
-		if (normal(other.positions)[axis] * sign > -0.999) return false;
+		if (faceNormal(other)[axis] * sign > -0.999) return false;
 		// 回転した菱形などを外接矩形で覆ったとみなさない。
 		if (
 			![u, v].every((dimension) => {
@@ -125,9 +149,20 @@ export const meshResourceRegion = async (
 	region: McaRegion,
 	pack: MinecraftResourcePack,
 	onProgress?: (progress: McaProgress) => void,
-	maxFaces = Infinity
+	maxFaces = Infinity,
+	ownedSections?: Set<string>
 ): Promise<McaMesh> => {
 	const templates = await prepareModels(region, pack);
+	const staticFaces: (Face[] | undefined)[] = templates.map((groups) =>
+		groups.every((variants) => variants.length === 1)
+			? groups.flatMap((variants) => variants[0].faces)
+			: undefined
+	);
+	staticFaces[0] = [];
+	const coverage = [
+		new WeakMap<Face, WeakMap<Face[], boolean>>(),
+		new WeakMap<Face, WeakMap<Face[], boolean>>()
+	];
 	const origin = [Infinity, Infinity, Infinity];
 	for (const section of region.sections.values()) {
 		[section.x, section.y, section.z].forEach((value, i) => {
@@ -140,12 +175,30 @@ export const meshResourceRegion = async (
 		const id = !section ? 0 : typeof section.blocks === 'number'
 			? section.blocks
 			: section.blocks[(y - sy * 16) * 256 + (z - sz * 16) * 16 + x - sx * 16];
-		const faces = id
+		const faces = staticFaces[id] ?? (id
 			? templates[id].flatMap((variants, index) =>
 				chooseVariant(variants, x, y, z, index).faces
 			)
-			: [];
+			: []);
 		return { id, faces };
+	};
+	const covered = (face: Face, neighbor: ReturnType<typeof at>, identical: boolean) => {
+		if (!neighbor.faces.length) return false;
+		if (neighbor.faces !== staticFaces[neighbor.id]) {
+			return faceIsCovered(face, neighbor.faces, identical);
+		}
+		const cache = coverage[Number(identical)];
+		let neighbors = cache.get(face);
+		if (!neighbors) {
+			neighbors = new WeakMap();
+			cache.set(face, neighbors);
+		}
+		let value = neighbors.get(neighbor.faces);
+		if (value === undefined) {
+			value = faceIsCovered(face, neighbor.faces, identical);
+			neighbors.set(neighbor.faces, value);
+		}
+		return value;
 	};
 	let capacity = Math.min(4096, maxFaces), faceCount = 0;
 	let positions = new Float32Array(capacity * 12), normals = new Float32Array(capacity * 12);
@@ -171,6 +224,9 @@ export const meshResourceRegion = async (
 	};
 	let completed = 0;
 	for (const section of region.sections.values()) {
+		if (ownedSections && !ownedSections.has(sectionKey(section.x, section.y, section.z))) {
+			continue;
+		}
 		for (let y = 0; y < 16; y++) {
 			for (let z = 0; z < 16; z++) {
 				for (let x = 0; x < 16; x++) {
@@ -187,14 +243,16 @@ export const meshResourceRegion = async (
 								neighbors.set(face.cullface, neighbor);
 							}
 							if (
-								faceIsCovered(
+								covered(
 									face,
-									neighbor.faces,
+									neighbor,
 									region.palette[block.id] === region.palette[neighbor.id]
+										|| (isWaterBlock(region.palette[block.id])
+											&& isWaterBlock(region.palette[neighbor.id]))
 								)
 							) continue;
 						}
-						const n = normal(face.positions);
+						const n = faceNormal(face);
 						if (n.every((v) => v === 0)) continue;
 						reserve();
 						for (let vertex = 0; vertex < 4; vertex++) {
@@ -220,9 +278,13 @@ export const meshResourceRegion = async (
 				}
 			}
 		}
-		onProgress?.({ stage: 'mesh', completed: ++completed, total: region.sections.size });
+		onProgress?.({
+			stage: 'mesh',
+			completed: ++completed,
+			total: ownedSections?.size ?? region.sections.size
+		});
 	}
-	if (!faceCount) throw new Error('指定範囲に表示できるブロックがありません');
+	if (!faceCount && !ownedSections) throw new Error('指定範囲に表示できるブロックがありません');
 	const indices = new Uint32Array(faceCount * 6);
 	let offset = 0;
 	const ranges = [...groups.values()].map(({ material, faces }) => {

@@ -28,6 +28,15 @@ interface Material {
 
 /** 各リージョンの座標を保持し、使用画像と材質を共通化してGLB内に埋め込む。 */
 export const mcaMeshesToGlb = (meshes: McaMesh[], preserveWorldOrigin = true): ArrayBuffer => {
+	const worldMin = [Infinity, Infinity, Infinity], worldMax = [-Infinity, -Infinity, -Infinity];
+	if (!preserveWorldOrigin) {
+		for (const mesh of meshes) {
+			for (let axis = 0; axis < 3; axis++) {
+				worldMin[axis] = Math.min(worldMin[axis], mesh.min[axis] + mesh.origin[axis]);
+				worldMax[axis] = Math.max(worldMax[axis], mesh.max[axis] + mesh.origin[axis]);
+			}
+		}
+	}
 	const arrays: BinaryArray[] = [];
 	const bufferViews: {
 		buffer: number;
@@ -66,7 +75,7 @@ export const mcaMeshesToGlb = (meshes: McaMesh[], preserveWorldOrigin = true): A
 		return accessors.length - 1;
 	};
 	const materialId = (material: ResourceMaterial) => {
-		const key = `${material.key}/${material.alphaMode}`;
+		const key = `${material.key}/${material.alphaMode}/${material.opacity ?? 1}`;
 		const found = materialIds.get(key);
 		if (found !== undefined) return found;
 		let textureIndex: number | undefined;
@@ -91,7 +100,7 @@ export const mcaMeshesToGlb = (meshes: McaMesh[], preserveWorldOrigin = true): A
 			doubleSided: true,
 			extras: { morivisMinecraftMaterial: true },
 			pbrMetallicRoughness: {
-				baseColorFactor: [1, 1, 1, 1],
+				baseColorFactor: [1, 1, 1, material.opacity ?? 1],
 				metallicFactor: 0,
 				roughnessFactor: 1,
 				...(textureIndex !== undefined && { baseColorTexture: { index: textureIndex } })
@@ -160,9 +169,9 @@ export const mcaMeshesToGlb = (meshes: McaMesh[], preserveWorldOrigin = true): A
 			translation: preserveWorldOrigin
 				? mesh.origin
 				: [
-					-(mesh.min[0] + mesh.max[0]) / 2,
-					-mesh.min[1],
-					-(mesh.min[2] + mesh.max[2]) / 2
+					mesh.origin[0] - (worldMin[0] + worldMax[0]) / 2,
+					mesh.origin[1] - worldMin[1],
+					mesh.origin[2] - (worldMin[2] + worldMax[2]) / 2
 				],
 			extras: { minecraftOrigin: mesh.origin }
 		})),

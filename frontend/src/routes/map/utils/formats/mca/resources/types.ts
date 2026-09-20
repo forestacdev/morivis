@@ -56,6 +56,7 @@ export interface ResourceTexture {
 	alphaMode: AlphaMode;
 }
 export interface ResourceMaterial {
+	opacity?: number;
 	key: string;
 	texture?: ResourceTexture;
 	alphaMode: AlphaMode;

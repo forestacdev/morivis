@@ -2,6 +2,7 @@ import { blockColor, linearColor } from './colors';
 import { createMcaFaceLimitError, resolveMcaMaxFaces } from './limits';
 import type { ResourceMaterial } from './resources/types';
 import { type McaProgress, type McaRegion, type McaSection, sectionKey } from './types';
+import { isWaterBlock, waterMaterial } from './water';
 
 export interface McaMesh {
 	positions: Float32Array<ArrayBuffer>;
@@ -22,7 +23,8 @@ export const MAX_MCA_FACES = resolveMcaMaxFaces();
 export const meshMcaRegion = (
 	region: McaRegion,
 	onProgress?: (progress: McaProgress) => void,
-	maxFaces = MAX_MCA_FACES
+	maxFaces = MAX_MCA_FACES,
+	ownedSections?: Set<string>
 ): McaMesh => {
 	if (!region.sections.size) throw new Error('指定範囲に表示できるブロックがありません');
 	const origin = [Infinity, Infinity, Infinity];
@@ -40,6 +42,8 @@ export const meshMcaRegion = (
 	const min = [Infinity, Infinity, Infinity];
 	const max = [-Infinity, -Infinity, -Infinity];
 	const paletteColors = region.palette.map((name) => linearColor(blockColor(name)));
+	const water = region.palette.map(isWaterBlock);
+	const materialFaces = water.some(Boolean) ? [[], []] as number[][] : undefined;
 	const reserve = () => {
 		if (faceCount >= maxFaces) {
 			throw createMcaFaceLimitError(maxFaces);
@@ -76,6 +80,9 @@ export const meshMcaRegion = (
 	const mask = new Uint16Array(256 * yScale);
 	let completed = 0;
 	for (const section of region.sections.values()) {
+		if (ownedSections && !ownedSections.has(sectionKey(section.x, section.y, section.z))) {
+			continue;
+		}
 		const base = [
 			section.x * 16 - origin[0],
 			section.y * 16 - origin[1],
@@ -120,7 +127,10 @@ export const meshMcaRegion = (
 								);
 								p[axis] = depth;
 							}
-							mask[j * widthSize + i] = adjacent ? 0 : id;
+							// 水越しに見える地形の面は残す。水同士・水と地形の内側の水面は除く。
+							mask[j * widthSize + i] = adjacent && (water[id] || !water[adjacent])
+								? 0
+								: id;
 						}
 					}
 					for (let j = 0; j < heightSize; j++) {
@@ -165,6 +175,7 @@ export const meshMcaRegion = (
 							}
 							const order = sign > 0 ? [0, 1, 2, 0, 2, 3] : [0, 2, 1, 0, 3, 2];
 							indices.set(order.map((n) => faceCount * 4 + n), faceCount * 6);
+							materialFaces?.[Number(water[id])].push(faceCount);
 							faceCount++;
 							for (let row = 0; row < height; row++) {
 								mask.fill(
@@ -179,9 +190,32 @@ export const meshMcaRegion = (
 				}
 			}
 		}
-		onProgress?.({ stage: 'mesh', completed: ++completed, total: region.sections.size });
+		onProgress?.({
+			stage: 'mesh',
+			completed: ++completed,
+			total: ownedSections?.size ?? region.sections.size
+		});
 	}
-	if (!faceCount) throw new Error('指定範囲に表示できるブロックがありません');
+	if (!faceCount && !ownedSections) throw new Error('指定範囲に表示できるブロックがありません');
+	let groups: McaMesh['groups'];
+	if (materialFaces) {
+		const groupedIndices = new Uint32Array(faceCount * 6);
+		let offset = 0;
+		groups = materialFaces.flatMap((faces, kind) => {
+			if (!faces.length) return [];
+			const start = offset;
+			for (const face of faces) {
+				groupedIndices.set(indices.subarray(face * 6, face * 6 + 6), offset);
+				offset += 6;
+			}
+			return [{
+				start,
+				count: offset - start,
+				material: kind ? waterMaterial : { key: 'fallback', alphaMode: 'OPAQUE' as const }
+			}];
+		});
+		indices = groupedIndices;
+	}
 	// 一括取り込みで各リージョンの未使用capacityを保持し続けない。
 	return {
 		positions: positions.slice(0, faceCount * 12),
@@ -189,6 +223,7 @@ export const meshMcaRegion = (
 		colors: colors.slice(0, faceCount * 16),
 		indices: indices.slice(0, faceCount * 6),
 		faceCount,
+		...(groups && { groups }),
 		origin,
 		min,
 		max
