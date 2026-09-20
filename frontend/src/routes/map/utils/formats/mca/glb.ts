@@ -54,6 +54,8 @@ export const mcaMeshesToGlb = (meshes: McaMesh[], preserveWorldOrigin = true): A
 	}];
 	const images: { bufferView: number; mimeType: string; name: string; }[] = [];
 	const textures: { sampler: number; source: number; }[] = [];
+	const samplers: { magFilter: number; minFilter: number; wrapS: number; wrapT: number; }[] = [];
+	const samplerIds = new Map<boolean, number>();
 	const materialIds = new Map<string, number>();
 	const textureIds = new Map<string, number>();
 	let binarySize = 0;
@@ -84,7 +86,19 @@ export const mcaMeshesToGlb = (meshes: McaMesh[], preserveWorldOrigin = true): A
 			if (textureIndex === undefined) {
 				textureIndex = textures.length;
 				textureIds.set(material.texture.name, textureIndex);
-				textures.push({ sampler: 0, source: images.length });
+				const atlas = material.texture.atlas === true;
+				let sampler = samplerIds.get(atlas);
+				if (sampler === undefined) {
+					sampler = samplers.length;
+					samplerIds.set(atlas, sampler);
+					samplers.push({
+						magFilter: 9728,
+						minFilter: atlas ? 9728 : 9984,
+						wrapS: atlas ? 33071 : 10497,
+						wrapT: atlas ? 33071 : 10497
+					});
+				}
+				textures.push({ sampler, source: images.length });
 				images.push({
 					bufferView: addBuffer(material.texture.png),
 					mimeType: 'image/png',
@@ -181,7 +195,7 @@ export const mcaMeshesToGlb = (meshes: McaMesh[], preserveWorldOrigin = true): A
 			&& {
 				images,
 				textures,
-				samplers: [{ magFilter: 9728, minFilter: 9984, wrapS: 10497, wrapT: 10497 }]
+				samplers
 			}),
 		buffers: [{ byteLength: binarySize }],
 		bufferViews,

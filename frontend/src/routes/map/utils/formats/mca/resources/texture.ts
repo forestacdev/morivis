@@ -43,7 +43,7 @@ export const decodeResourceTexture = async (
 		const png = !animation
 			? blob
 			: await canvas.convertToBlob({ type: 'image/png' });
-		return { name, png: new Uint8Array(await png.arrayBuffer()), alphaMode };
+		return { name, png: new Uint8Array(await png.arrayBuffer()), alphaMode, width, height };
 	} finally {
 		bitmap.close();
 	}

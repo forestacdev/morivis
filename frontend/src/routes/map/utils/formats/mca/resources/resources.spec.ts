@@ -500,8 +500,14 @@ describe('Minecraft resource mesh / GLB', () => {
 			class {
 				getContext = () => ({
 					drawImage: vi.fn(),
+					createPattern: vi.fn(() => ({})),
+					save: vi.fn(),
+					restore: vi.fn(),
+					translate: vi.fn(),
+					fillRect: vi.fn(),
 					getImageData: () => ({ data: new Uint8ClampedArray([255, 255, 255, 255]) })
 				});
+				convertToBlob = async () => new Blob([imageBytes]);
 			}
 		);
 		const mca = (x: number, half: string) =>

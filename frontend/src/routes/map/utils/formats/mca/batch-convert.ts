@@ -3,6 +3,7 @@ import { mcaMeshesToGlb } from './glb';
 import { createMcaFaceLimitError, resolveMcaMaxFaces } from './limits';
 import { type McaMesh, meshMcaRegion } from './mesh';
 import { MAX_REGION_BYTES, readMcaRegion, validateMcaOptions } from './region';
+import { atlasMcaMeshes } from './resources/atlas';
 import { meshResourceRegion } from './resources/mesh';
 import { loadMinecraftResourcePack } from './resources/pack';
 import type { McaOptions, McaProgress, McaRegion, McaResult } from './types';
@@ -78,6 +79,7 @@ export const mcaFilesToGlb = async (
 			);
 		}
 	}
+	await atlasMcaMeshes(meshes);
 	return {
 		glb: mcaMeshesToGlb(meshes),
 		chunkCount,

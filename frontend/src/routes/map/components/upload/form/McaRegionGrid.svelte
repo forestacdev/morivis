@@ -73,6 +73,20 @@
 		<h3 class="font-bold">リージョン配置図</h3>
 		<p class="text-xs">クリックで選択・解除</p>
 	</div>
+	<div class="flex justify-end gap-2 text-xs">
+		<button
+			type="button"
+			class="c-btn-sub px-3 py-2"
+			disabled={disabled || !files.length}
+			onclick={() => (excludedFiles = [])}>全選択</button
+		>
+		<button
+			type="button"
+			class="c-btn-sub px-3 py-2"
+			disabled={disabled || !files.length}
+			onclick={() => (excludedFiles = [...files])}>全選択解除</button
+		>
+	</div>
 	<div class="grid grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-1">
 		<button
 			type="button"

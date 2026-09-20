@@ -30,10 +30,6 @@
 			return error instanceof Error ? error.message : '地形リージョンを選び直してください。';
 		}
 	});
-	let minChunkX = $state<number | undefined>(0);
-	let maxChunkX = $state<number | undefined>(31);
-	let minChunkZ = $state<number | undefined>(0);
-	let maxChunkZ = $state<number | undefined>(31);
 	let activeFiles = $state.raw<File[] | null>(null);
 	let running = $state(false);
 	const busy = $derived(running && activeFiles === files);
@@ -58,21 +54,6 @@
 		if (!selectedFiles.length || fileSetError || busy) return;
 		cancelConversion();
 		activeFiles = files;
-		errorMessage = '';
-		if (
-			minChunkX === undefined ||
-			maxChunkX === undefined ||
-			minChunkZ === undefined ||
-			maxChunkZ === undefined ||
-			![minChunkX, maxChunkX, minChunkZ, maxChunkZ].every(
-				(value) => Number.isInteger(value) && value >= 0 && value <= 31
-			) ||
-			minChunkX > maxChunkX ||
-			minChunkZ > maxChunkZ
-		) {
-			errorMessage = 'チャンク番号は0〜31の整数で、開始が終了以下になるように指定してください。';
-			return;
-		}
 		const sourceFiles = files;
 		const input = selectedFiles;
 		const controller = new AbortController();
@@ -81,23 +62,13 @@
 		errorMessage = '';
 		progress = '地形データを読み込み中…';
 		try {
-			const result = await mcaFilesToGlbInWorker(
-				input,
-				{
-					minChunkX,
-					maxChunkX,
-					minChunkZ,
-					maxChunkZ
-				},
-				controller.signal,
-				(update) => {
-					if (controller.signal.aborted || sourceFiles !== files) return;
-					const fileProgress = update.fileName
-						? `${update.fileIndex ?? 1} / ${update.fileCount ?? input.length}ファイル: ${update.fileName} — `
-						: '';
-					progress = `${fileProgress}${update.stage === 'read' ? 'チャンクを読み込み中' : '3Dモデルを作成中'}（${update.completed.toLocaleString()} / ${update.total.toLocaleString()}）`;
-				}
-			);
+			const result = await mcaFilesToGlbInWorker(input, {}, controller.signal, (update) => {
+				if (controller.signal.aborted || sourceFiles !== files) return;
+				const fileProgress = update.fileName
+					? `${update.fileIndex ?? 1} / ${update.fileCount ?? input.length}ファイル: ${update.fileName} — `
+					: '';
+				progress = `${fileProgress}${update.stage === 'read' ? 'チャンクを読み込み中' : '3Dモデルを作成中'}（${update.completed.toLocaleString()} / ${update.total.toLocaleString()}）`;
+			});
 			if (controller.signal.aborted || sourceFiles !== files) return;
 			dropFile = [
 				createMcaModelFile(
@@ -198,53 +169,6 @@
 		</ul>
 	{/if}
 	{#if fileSetError}<p role="alert" class="text-red-300">{fileSetError}</p>{/if}
-	<fieldset class="flex flex-col gap-3" disabled={busy}>
-		<legend class="mb-2 font-bold">読み込むチャンク範囲</legend>
-		<p>0〜31・全ファイル共通</p>
-		<div class="grid grid-cols-2 gap-3">
-			<label class="flex flex-col gap-1"
-				><span>X 開始</span><input
-					class="c-input w-full"
-					type="number"
-					min="0"
-					max="31"
-					step="1"
-					bind:value={minChunkX}
-				/></label
-			>
-			<label class="flex flex-col gap-1"
-				><span>X 終了</span><input
-					class="c-input w-full"
-					type="number"
-					min="0"
-					max="31"
-					step="1"
-					bind:value={maxChunkX}
-				/></label
-			>
-			<label class="flex flex-col gap-1"
-				><span>Z 開始</span><input
-					class="c-input w-full"
-					type="number"
-					min="0"
-					max="31"
-					step="1"
-					bind:value={minChunkZ}
-				/></label
-			>
-			<label class="flex flex-col gap-1"
-				><span>Z 終了</span><input
-					class="c-input w-full"
-					type="number"
-					min="0"
-					max="31"
-					step="1"
-					bind:value={maxChunkZ}
-				/></label
-			>
-		</div>
-	</fieldset>
-
 	{#if errorMessage && activeFiles === files}<p role="alert" class="text-red-300">
 			{errorMessage}
 		</p>{/if}

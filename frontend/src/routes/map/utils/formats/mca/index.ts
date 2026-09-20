@@ -3,6 +3,7 @@ import { mcaMeshesToGlb } from './glb';
 import { resolveMcaMaxFaces } from './limits';
 import { meshMcaRegion } from './mesh';
 import { readMcaRegion } from './region';
+import { atlasMcaMeshes } from './resources/atlas';
 import { meshResourceRegion } from './resources/mesh';
 import { loadMinecraftResourcePack } from './resources/pack';
 import type { McaOptions, McaProgress, McaResult } from './types';
@@ -27,6 +28,7 @@ export const mcaToGlb = async (
 				? await meshResourceRegion(region, pack, onProgress, maxFaces)
 				: meshMcaRegion(region, onProgress, maxFaces)
 		];
+	await atlasMcaMeshes(meshes);
 	return {
 		glb: mcaMeshesToGlb(meshes, options.region !== undefined),
 		chunkCount: region.chunkCount,

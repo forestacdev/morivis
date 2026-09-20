@@ -54,6 +54,10 @@ export interface ResourceTexture {
 	name: string;
 	png: Uint8Array<ArrayBuffer>;
 	alphaMode: AlphaMode;
+	width?: number;
+	height?: number;
+	/** アトラスは領域をまたぐミップマップと繰り返しを使わない。 */
+	atlas?: boolean;
 }
 export interface ResourceMaterial {
 	opacity?: number;
