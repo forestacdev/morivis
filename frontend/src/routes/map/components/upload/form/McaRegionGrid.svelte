@@ -4,14 +4,24 @@
 	import { prefersReducedMotion, Tween } from 'svelte/motion';
 
 	import type { McaRegionPosition } from '$routes/map/utils/formats/mca/types';
-	import { createMcaUploadGrid } from '$routes/map/utils/formats/mca/upload-grid';
+	import {
+		createMcaUploadGrid,
+		toggleMcaUploadRegion
+	} from '$routes/map/utils/formats/mca/upload-grid';
 
 	interface Props {
-		files: Pick<File, 'name'>[];
+		files: File[];
 		center?: McaRegionPosition;
+		excludedFiles?: File[];
+		disabled?: boolean;
 	}
-	let { files, center = $bindable() }: Props = $props();
-	const grid = $derived(createMcaUploadGrid(files, center));
+	let {
+		files,
+		center = $bindable(),
+		excludedFiles = $bindable([]),
+		disabled = false
+	}: Props = $props();
+	const grid = $derived(createMcaUploadGrid(files, center, { excludedFiles }));
 	const viewport = new Tween(
 		untrack(() => grid.center),
 		{ duration: 240, easing: cubicOut }
@@ -20,7 +30,9 @@
 	const anchorX = $derived(Math.floor(viewport.current.x));
 	const anchorZ = $derived(Math.floor(viewport.current.z));
 	const anchor = $derived({ x: anchorX, z: anchorZ });
-	const bufferedGrid = $derived(createMcaUploadGrid(files, anchor, { columns: 11, rows: 9 }));
+	const bufferedGrid = $derived(
+		createMcaUploadGrid(files, anchor, { columns: 11, rows: 9, excludedFiles })
+	);
 	const offset = $derived({ x: viewport.current.x - anchor.x, z: viewport.current.z - anchor.z });
 	const origin = $derived.by(() => {
 		if (!bufferedGrid.origin) return null;
@@ -59,6 +71,7 @@
 <section class="flex flex-col gap-2" aria-label="選択した地形リージョンの配置図">
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<h3 class="font-bold">リージョン配置図</h3>
+		<p class="text-xs">クリックで選択・解除</p>
 	</div>
 	<div class="grid grid-cols-[2.25rem_minmax(0,1fr)_2.25rem] items-center gap-1">
 		<button
@@ -87,20 +100,35 @@
 					aria-label="9列7行のリージョン一覧"
 				>
 					{#each bufferedGrid.cells as cell (cell.name)}
-						<div
-							role="listitem"
-							title={cell.loaded
-								? `${cell.name}\n選択済み: ${cell.files.join(', ')}`
-								: `${cell.name}\n未選択`}
-							aria-label={`${cell.name} ${cell.loaded ? '選択済み' : '未選択'}`}
-							class={[
-								'flex min-w-0 flex-col items-center justify-center border-r border-b border-white/20 px-0.5 py-1 text-[10px] leading-tight',
-								cell.loaded ? 'bg-cyan-700 text-white' : 'bg-gray-800 text-gray-400'
-							]}
-						>
-							<span class="w-full truncate text-center">X {cell.x}</span>
-							<span class="w-full truncate text-center">Z {cell.z}</span>
-							<span aria-hidden="true">{cell.loaded ? '●' : '·'}</span>
+						<div role="listitem" class="min-w-0">
+							<button
+								type="button"
+								disabled={disabled || !cell.loaded}
+								tabindex={Math.abs(cell.x - viewport.current.x) <= Math.floor(grid.columns / 2) &&
+								Math.abs(cell.z - viewport.current.z) <= Math.floor(grid.rows / 2)
+									? 0
+									: -1}
+								title={`${cell.name}\n${cell.loaded ? (cell.selected ? '読み込み対象（クリックで解除）' : '対象外（クリックで選択）') : '未追加'}`}
+								aria-label={cell.loaded ? cell.name : `${cell.name} 未追加`}
+								aria-pressed={cell.loaded ? cell.selected : undefined}
+								class={[
+									'flex h-full w-full min-w-0 flex-col items-center justify-center border-r border-b border-white/20 px-0.5 py-1 text-[10px] leading-tight focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white',
+									cell.selected
+										? 'bg-cyan-700 text-white'
+										: cell.loaded
+											? 'bg-gray-700 text-gray-200'
+											: 'bg-gray-800 text-gray-400',
+									cell.loaded && !disabled && 'cursor-pointer hover:brightness-125'
+								]}
+								onclick={() => {
+									if (disabled || !cell.loaded) return;
+									excludedFiles = toggleMcaUploadRegion(files, excludedFiles, cell);
+								}}
+							>
+								<span class="w-full truncate text-center">X {cell.x}</span>
+								<span class="w-full truncate text-center">Z {cell.z}</span>
+								<span aria-hidden="true">{cell.selected ? '●' : cell.loaded ? '○' : '·'}</span>
+							</button>
 						</div>
 					{/each}
 				</div>
@@ -110,7 +138,7 @@
 					role="img"
 					title="ワールド原点 X=0, Z=0"
 					aria-label="ワールド原点 X=0, Z=0"
-					class="absolute z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-amber-300 ring-2 ring-black/80"
+					class="pointer-events-none absolute z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-amber-300 ring-2 ring-black/80"
 					style:left={`${(origin.column / grid.columns) * 100}%`}
 					style:top={`${(origin.row / grid.rows) * 100}%`}
 				></span>
@@ -130,7 +158,8 @@
 		>
 	</div>
 	<div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-		<p><span class="text-cyan-300">● 選択済み</span> {grid.regionCount}リージョン</p>
+		<p><span class="text-cyan-300">● 読み込み</span> {grid.selectedCount} / {grid.regionCount}</p>
+		<p>○ 対象外</p>
 		<p class="text-amber-300">◯ ワールド原点</p>
 		<p>中心 X={grid.center.x}、Z={grid.center.z}</p>
 	</div>

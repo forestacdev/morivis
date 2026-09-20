@@ -1,9 +1,66 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createMcaUploadGrid, mergeMcaUploadFiles } from './upload-grid';
+import {
+	createMcaUploadGrid,
+	getSelectedMcaUploadFiles,
+	mergeMcaUploadFiles,
+	toggleMcaUploadRegion
+} from './upload-grid';
 
 const file = (name: string) => new File(['test'], name);
 
 describe('MCAダイアログのリージョングリッド', () => {
+	it('初期状態は全区画を選択し、未追加の区画は選択しない', () => {
+		const files = [file('r.-1.0.mca'), file('r.0.0.mca')];
+		const grid = createMcaUploadGrid(files);
+		expect(grid.selectedCount).toBe(2);
+		expect(grid.cells.filter(cell => cell.selected)).toEqual(
+			grid.cells.filter(cell => cell.loaded)
+		);
+		expect(getSelectedMcaUploadFiles(files, [])).toEqual(files);
+	});
+	it('クリックで対象外にしても区画を残し、再クリックで読み込み対象に戻す', () => {
+		const files = [file('r.-1.0.mca'), file('r.0.0.mca')];
+		const excluded = toggleMcaUploadRegion(files, [], { x: -1, z: 0 });
+		const grid = createMcaUploadGrid(files, undefined, { excludedFiles: excluded });
+		expect(grid.cells.find(cell => cell.x === -1 && cell.z === 0)).toMatchObject({
+			loaded: true,
+			selected: false
+		});
+		expect(grid.selectedCount).toBe(1);
+		expect(grid.regionCount).toBe(2);
+		expect(getSelectedMcaUploadFiles(files, excluded)).toEqual([files[1]]);
+		const restored = toggleMcaUploadRegion(files, excluded, { x: -1, z: 0 });
+		expect(getSelectedMcaUploadFiles(files, restored)).toEqual(files);
+	});
+	it('全解除で読み込み対象を空にし、未追加区画の操作では増やさない', () => {
+		const files = [file('r.0.0.mca')];
+		const excluded = toggleMcaUploadRegion(files, [], { x: 0, z: 0 });
+		expect(getSelectedMcaUploadFiles(files, excluded)).toEqual([]);
+		expect(createMcaUploadGrid(files, undefined, { excludedFiles: excluded }).selectedCount)
+			.toBe(0);
+		expect(toggleMcaUploadRegion(files, excluded, { x: 2, z: 3 })).toEqual(excluded);
+	});
+	it('追加時は既存の解除を保持し、新規・差し替えファイルは選択する', () => {
+		const files = [file('r.0.0.mca'), file('r.1.0.mca')];
+		const excluded = toggleMcaUploadRegion(files, [], { x: 0, z: 0 });
+		const added = file('r.2.0.mca');
+		const merged = mergeMcaUploadFiles(files, [added]);
+		expect(getSelectedMcaUploadFiles(merged, excluded)).toEqual([files[1], added]);
+		const replacement = file('r.00.0.MCA');
+		const replaced = mergeMcaUploadFiles(merged, [replacement]);
+		expect(getSelectedMcaUploadFiles(replaced, excluded)).toEqual(replaced);
+	});
+	it('表示位置を移動しても選択は維持し、同一区画の表記違いも一緒に切り替える', () => {
+		const files = [file('r.0.0.mca'), file('r.00.0.MCA'), file('r.20.0.mca')];
+		const excluded = toggleMcaUploadRegion(files, [], { x: 0, z: 0 });
+		expect(getSelectedMcaUploadFiles(files, excluded)).toEqual([files[2]]);
+		const moved = createMcaUploadGrid(files, { x: 20, z: 0 }, { excludedFiles: excluded });
+		expect(moved.selectedCount).toBe(1);
+		expect(moved.cells.find(cell => cell.loaded)?.selected).toBe(true);
+		const returned = createMcaUploadGrid(files, { x: 0, z: 0 }, { excludedFiles: excluded });
+		expect(returned.cells.find(cell => cell.loaded)?.selected).toBe(false);
+	});
+
 	it('スクロール用の周辺セルを追加しても既存セルと原点の位置関係が変わらない', () => {
 		const files = [file('r.0.0.mca'), file('r.5.0.mca')];
 		const center = { x: 0, z: 0 };

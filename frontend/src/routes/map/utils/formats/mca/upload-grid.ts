@@ -3,6 +3,33 @@ import { isMcaRegionPositionValid, parseMcaRegionFileName } from './world-placem
 
 const regionKey = ({ x, z }: McaRegionPosition) => `${x},${z}`;
 
+/** 除外はファイル単位で保持し、新規追加・差し替えファイルは最初から選択する。 */
+export const getSelectedMcaUploadFiles = <T extends Pick<File, 'name'>>(
+	files: T[],
+	excludedFiles: readonly T[]
+): T[] => {
+	const excluded = new Set(excludedFiles);
+	return files.filter(file => !excluded.has(file));
+};
+
+export const toggleMcaUploadRegion = <T extends Pick<File, 'name'>>(
+	files: T[],
+	excludedFiles: readonly T[],
+	region: McaRegionPosition
+): T[] => {
+	const targets = files.filter(file => {
+		const position = parseMcaRegionFileName(file.name);
+		return position && regionKey(position) === regionKey(region);
+	});
+	const excluded = new Set(excludedFiles.filter(file => files.includes(file)));
+	const selected = targets.some(file => !excluded.has(file));
+	for (const file of targets) {
+		if (selected) excluded.add(file);
+		else excluded.delete(file);
+	}
+	return [...excluded];
+};
+
 /** 追加ドロップ・ファイル選択共通。同じ区画は最新のファイルに置き換える。 */
 export const mergeMcaUploadFiles = (current: File[], incoming: File[]): File[] => {
 	const regions = incoming.map(file => {
@@ -23,19 +50,27 @@ export interface McaUploadGridCell extends McaRegionPosition {
 	name: string;
 	files: string[];
 	loaded: boolean;
+	selected: boolean;
 }
 
 /** 指定した表示範囲のみ生成する。アニメーション時は周辺セルを含められる。 */
 export const createMcaUploadGrid = (
 	files: Pick<File, 'name'>[],
 	center?: McaRegionPosition,
-	dimensions: { columns: number; rows: number; } = { columns: 9, rows: 7 }
+	options: { columns?: number; rows?: number; excludedFiles?: readonly Pick<File, 'name'>[]; } =
+		{}
 ) => {
-	const { columns, rows } = dimensions;
+	const { columns = 9, rows = 7, excludedFiles = [] } = options;
 	if (![columns, rows].every(value => Number.isSafeInteger(value) && value > 0)) {
 		throw new Error('グリッドの行列数は1以上の整数で指定してください');
 	}
 	const regions = new Map<string, { position: McaRegionPosition; files: string[]; }>();
+	const selectedRegions = new Set(
+		getSelectedMcaUploadFiles(files, excludedFiles)
+			.map(file => parseMcaRegionFileName(file.name))
+			.filter((position): position is McaRegionPosition => position !== null)
+			.map(regionKey)
+	);
 	for (const file of files) {
 		const position = parseMcaRegionFileName(file.name);
 		if (!position) continue;
@@ -75,7 +110,14 @@ export const createMcaUploadGrid = (
 			const z = gridCenter.z + row - Math.floor(rows / 2);
 			const names = regions.get(regionKey({ x, z }))?.files ?? [];
 			if (names.length) visibleRegions++;
-			cells.push({ x, z, name: `r.${x}.${z}.mca`, files: names, loaded: names.length > 0 });
+			cells.push({
+				x,
+				z,
+				name: `r.${x}.${z}.mca`,
+				files: names,
+				loaded: names.length > 0,
+				selected: selectedRegions.has(regionKey({ x, z }))
+			});
 		}
 	}
 	return {
@@ -85,6 +127,7 @@ export const createMcaUploadGrid = (
 		origin,
 		cells,
 		regionCount: regions.size,
+		selectedCount: selectedRegions.size,
 		outsideCount: regions.size - visibleRegions
 	};
 };
