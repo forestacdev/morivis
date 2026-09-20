@@ -3,6 +3,7 @@
 
 	import DemColorLegend from './DemColorLegend.svelte';
 	import Accordion from '../../atoms/Accordion.svelte';
+	import AltitudeDial from '../../atoms/AltitudeDial.svelte';
 	import AzimuthDial from '../../atoms/AzimuthDial.svelte';
 	import ColorPicker from '../../atoms/ColorPicker.svelte';
 	import RangeSlider from '../../atoms/RangeSlider.svelte';
@@ -328,13 +329,9 @@
 				label="光源の方位角"
 				bind:value={() => shadowStyle.azimuth, (value) => setShadowStyle('azimuth', value)}
 			/>
-			<RangeSlider
-				label="光源の高度角（°）"
+			<AltitudeDial
+				label="光源の高度角"
 				bind:value={() => shadowStyle.altitude, (value) => setShadowStyle('altitude', value)}
-				min={0}
-				max={90}
-				step={1}
-				isInt={true}
 			/>
 		{/if}
 
