@@ -839,7 +839,7 @@ export class ThreeJsLayerManager {
 			vertexShader: `
 				attribute float morivisPartColorIndex;
 				varying vec3 vNormal;
-				varying vec2 vUv;
+				centroid varying vec2 vUv;
 				varying float vPartColorIndex;
 				#include <morphtarget_pars_vertex>
 				#include <skinning_pars_vertex>
@@ -883,7 +883,8 @@ export class ThreeJsLayerManager {
 				uniform float uHeightRampSourceMax;
 
 				varying vec3 vNormal;
-				varying vec2 vUv;
+				// MSAAの画素中心が微小な面の外にある場合も、アトラスの隣の画像を拾わない。
+				centroid varying vec2 vUv;
 				varying float vPartColorIndex;
 				#include <color_pars_fragment>
 
