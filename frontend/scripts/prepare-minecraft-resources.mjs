@@ -27,8 +27,9 @@ const assetId = (name) => {
 /** @param {string} destination */
 const rejectSymlink = async (destination) => {
 	try {
-		if ((await lstat(destination)).isSymbolicLink())
+		if ((await lstat(destination)).isSymbolicLink()) {
 			throw new Error('配置先のシンボリックリンクは使用できません');
+		}
 	} catch (error) {
 		if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error;
 	}
@@ -102,7 +103,10 @@ export const prepareMinecraftResources = async (sourcePath, version = null, outp
 		blockstates,
 		...(Object.keys(animations).length && { animations })
 	};
-	await writeFile(path.join(output, 'manifest.json'), `${JSON.stringify(manifest, null, '\t')}\n`);
+	await writeFile(
+		path.join(output, 'manifest.json'),
+		`${JSON.stringify(manifest, null, '\t')}\n`
+	);
 	return { files: files.size, blockstates: blockstates.length };
 };
 

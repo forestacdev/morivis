@@ -11,11 +11,11 @@ export const extractDefaultStates = (summary) =>
 		Object.entries(summary).map(([name, entry]) => {
 			const defaults = Array.isArray(entry) ? entry[1] : undefined;
 			if (
-				!/^[a-z0-9_./-]+$/.test(name) ||
-				!defaults ||
-				typeof defaults !== 'object' ||
-				Array.isArray(defaults) ||
-				!Object.values(defaults).every((value) => typeof value === 'string')
+				!/^[a-z0-9_./-]+$/.test(name)
+				|| !defaults
+				|| typeof defaults !== 'object'
+				|| Array.isArray(defaults)
+				|| !Object.values(defaults).every((value) => typeof value === 'string')
 			) {
 				throw new Error('ブロックの初期状態一覧が不正です');
 			}
