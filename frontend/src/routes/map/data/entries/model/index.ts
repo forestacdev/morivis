@@ -305,14 +305,15 @@ export const createGaussianSplatEntry = (
 		lat: number;
 		altitude: number;
 	},
-	properties: GaussianSplatEntry['properties']
+	properties: GaussianSplatEntry['properties'],
+	encoding: GaussianSplatEntry['format']['encoding'] = 'ply'
 ): GaussianSplatEntry => ({
 	id: 'gaussian_splat_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
 		type: 'gaussian-splat',
 		url,
-		encoding: 'ply',
+		encoding,
 		sourceFileName: name
 	},
 	metaData: {

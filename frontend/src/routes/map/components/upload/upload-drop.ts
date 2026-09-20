@@ -238,6 +238,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	las: 'pointcloud',
 	laz: 'pointcloud',
 	ply: 'pointcloud',
+	spz: 'gaussian-splat',
 	pcd: 'pointcloud',
 	xyz: 'pointcloud',
 	mbtiles: 'mbtiles',

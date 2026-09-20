@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
+
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import { createGaussianSplatEntry } from '$routes/map/data/entries/model';
@@ -9,8 +11,12 @@
 		inspectGaussianSplatPlyFile,
 		type GaussianSplatPlyInspection
 	} from '$routes/map/utils/formats/gaussian-splat';
-	import { setGaussianSplatData } from '$routes/map/utils/formats/gaussian-splat/cache';
+	import {
+		removeGaussianSplatData,
+		setGaussianSplatData
+	} from '$routes/map/utils/formats/gaussian-splat/cache';
 	import { parseGaussianSplatInWorker } from '$routes/map/utils/formats/gaussian-splat/gaussian-splat-parallel';
+	import { inspectSpzFile } from '$routes/map/utils/formats/spz';
 	import { getModelGeoBoundsFromLocalBounds } from '$routes/map/utils/three/model-geo-bounds';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
@@ -34,31 +40,47 @@
 	}: Props = $props();
 
 	const splatFile = $derived(getFirstUploadFile(dropFile));
-	const fileKey = $derived(
-		splatFile ? `${splatFile.name}:${splatFile.size}:${splatFile.lastModified}` : null
-	);
-	let inspectedFileKey = $state<string | null>(null);
 	let inspection = $state<GaussianSplatPlyInspection | null>(null);
 	let name = $state('');
+	let inspectionError = $state('');
+	const encoding = $derived(splatFile?.name.toLowerCase().endsWith('.spz') ? 'spz' : 'ply');
+	let parseController: AbortController | undefined;
+	onDestroy(() => parseController?.abort());
 
 	$effect(() => {
-		if (!splatFile || !fileKey || inspectedFileKey === fileKey) return;
-		inspectedFileKey = fileKey;
+		if (!splatFile) return;
 		inspection = null;
-		name = splatFile.name.replace(/\.[^.]+$/, '');
+		inspectionError = '';
+		let active = true;
+		name = splatFile.name.replace(/\.[^.]+$/, '') || splatFile.name;
 		isProcessing.set(true);
-		void inspectGaussianSplatPlyFile(splatFile)
-			.then((result) => {
+		void (encoding === 'spz' ? inspectSpzFile(splatFile) : inspectGaussianSplatPlyFile(splatFile))
+			.then(async (result) => {
+				if (!active) return;
 				inspection = result;
+				if (encoding === 'spz' && result.kind === 'gaussian-splat') {
+					isProcessing.set(false);
+					await register();
+				}
 			})
 			.catch((error) => {
-				console.error('3D Gaussian Splatting PLYの判定に失敗しました', error);
-				inspection = { kind: 'other-ply' };
+				if (active)
+					inspectionError =
+						error instanceof Error ? error.message : 'ファイルを確認できませんでした。';
 			})
-			.finally(() => isProcessing.set(false));
+			.finally(() => {
+				if (active) isProcessing.set(false);
+			});
+		return () => {
+			active = false;
+			parseController?.abort();
+			isProcessing.set(false);
+		};
 	});
 
 	const cancel = () => {
+		parseController?.abort();
+		isProcessing.set(false);
 		transformOptionMode = null;
 		focusBbox = null;
 		showDialogType = null;
@@ -66,19 +88,33 @@
 	};
 
 	const register = async () => {
-		if (!splatFile || inspection?.kind !== 'gaussian-splat') return;
+		if ($isProcessing || !splatFile || inspection?.kind !== 'gaussian-splat') return;
 		if (!name.trim()) {
 			showNotification('データ名を入力してください', 'warning');
 			return;
 		}
 
+		inspectionError = '';
 		isProcessing.set(true);
+		const file = splatFile;
+		const sourceEncoding = encoding;
+		const metadata = inspection;
+		parseController = new AbortController();
+		const controller = parseController;
+		let url: string | undefined;
+		let entryId: string | undefined;
 		try {
-			const data = await parseGaussianSplatInWorker(await splatFile.arrayBuffer());
+			const data = await parseGaussianSplatInWorker(
+				await file.arrayBuffer(),
+				sourceEncoding,
+				controller.signal
+			);
+			if (controller.signal.aborted || splatFile !== file) return;
 			const center = mapStore.getCenter();
+			url = URL.createObjectURL(file);
 			const entry = createGaussianSplatEntry(
 				name.trim(),
-				URL.createObjectURL(splatFile),
+				url,
 				{
 					lng: center?.lng ?? 0,
 					lat: center?.lat ?? 0,
@@ -86,12 +122,14 @@
 				},
 				{
 					gaussianSplat: {
-						splatCount: inspection.splatCount,
-						shDegree: inspection.shDegree
+						splatCount: metadata.splatCount,
+						shDegree: metadata.shDegree
 					}
-				}
+				},
+				sourceEncoding
 			);
-			entry.format.sourceFileName = splatFile.name;
+			entryId = entry.id;
+			entry.format.sourceFileName = file.name;
 			entry.format.localBounds = getGaussianSplatRenderBounds(data.bounds);
 			entry.metaData.bounds = getModelGeoBoundsFromLocalBounds(
 				entry.format.localBounds,
@@ -101,10 +139,15 @@
 			showDataEntry = entry;
 			transformOptionMode = 'georef';
 		} catch (error) {
-			console.error('3D Gaussian Splatting の範囲解析に失敗しました', error);
-			showNotification('3D Gaussian Splatting の範囲を取得できませんでした', 'error');
+			if (url) URL.revokeObjectURL(url);
+			if (entryId) removeGaussianSplatData(entryId);
+			if (!controller.signal.aborted && splatFile === file) {
+				inspectionError =
+					error instanceof Error ? error.message : 'ファイルを読み込めませんでした。';
+				showNotification(inspectionError, 'error');
+			}
 		} finally {
-			isProcessing.set(false);
+			if (parseController === controller && splatFile === file) isProcessing.set(false);
 		}
 	};
 </script>
@@ -117,7 +160,11 @@
 	<div class="c-scroll flex h-full w-full grow flex-col gap-4 overflow-x-hidden overflow-y-auto">
 		<div class="rounded-md bg-black/15 p-3 text-sm text-gray-200">
 			<p>{splatFile.name}</p>
-			{#if inspection?.kind === 'gaussian-splat'}
+			{#if inspectionError}
+				<p class="mt-2 text-red-300">{inspectionError}</p>
+			{:else if encoding === 'spz'}
+				<p class="mt-2">読み込んでいます…</p>
+			{:else if inspection?.kind === 'gaussian-splat'}
 				<p class="mt-2">
 					{inspection.splatCount.toLocaleString()} splats / SH {inspection.shDegree}次
 				</p>
@@ -129,23 +176,27 @@
 			{:else if inspection?.kind === 'other-ply'}
 				<p class="mt-2 text-red-300">3D Gaussian Splatting の通常 PLY 属性が見つかりません。</p>
 			{:else}
-				<p class="mt-2">PLYヘッダーを確認しています。</p>
+				<p class="mt-2">ファイルを確認しています。</p>
 			{/if}
 		</div>
 
-		<TextForm label="データ名" bind:value={name} />
+		{#if encoding !== 'spz'}
+			<TextForm label="データ名" bind:value={name} />
+		{/if}
 
 		<div class="mt-auto flex justify-end gap-2 pb-2">
 			<button class="c-btn-cancel rounded-lg px-4 py-2" onclick={cancel}>キャンセル</button>
-			<button
-				class="c-btn-confirm rounded-lg px-4 py-2"
-				disabled={inspection?.kind !== 'gaussian-splat' || !name.trim()}
-				onclick={register}
-			>
-				配置位置を指定
-			</button>
+			{#if encoding !== 'spz' || (inspectionError && inspection?.kind === 'gaussian-splat')}
+				<button
+					class="c-btn-confirm rounded-lg px-4 py-2"
+					disabled={$isProcessing || inspection?.kind !== 'gaussian-splat' || !name.trim()}
+					onclick={register}
+				>
+					{encoding === 'spz' ? '再試行' : '配置位置を指定'}
+				</button>
+			{/if}
 		</div>
 	</div>
 {:else}
-	<p class="text-sm text-red-300">3D Gaussian Splatting PLY が見つかりません。</p>
+	<p class="text-sm text-red-300">3D Gaussian Splatting ファイルが見つかりません。</p>
 {/if}

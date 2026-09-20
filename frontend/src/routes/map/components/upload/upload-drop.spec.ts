@@ -519,6 +519,15 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it.each(['test-splats.spz', 'test-splats.SPZ'])('SPZ %s は3DGS登録へ渡す', async name => {
+		const file = createFile(name, 'test-spz');
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'gaussian-splat',
+			dropFiles: undefined
+		});
+	});
+
 	it('通常の3D Gaussian Splatting PLYは専用ダイアログ判定になる', async () => {
 		const header = [
 			'ply',

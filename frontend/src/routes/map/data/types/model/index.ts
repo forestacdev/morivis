@@ -229,7 +229,7 @@ export interface MeshStyle extends ModelTransformStyle {
 	heightColorRamp?: MeshHeightColorRampStyle;
 }
 
-/** 通常 PLY の 3D Gaussian Splatting 向けスタイル。 */
+/** PLY / SPZ の 3D Gaussian Splatting 向けスタイル。 */
 export interface GaussianSplatStyle extends ModelTransformStyle {
 	type: 'gaussian-splat';
 	opacity: Opacity;
@@ -343,13 +343,13 @@ export interface PointCloudEntry extends BaseModelEntry {
 	style: PointCloudStyle;
 }
 
-/** Three.js で描画する通常 PLY の 3D Gaussian Splatting entry。 */
+/** Three.js で描画するPLY / SPZ の 3D Gaussian Splatting entry。 */
 export interface GaussianSplatEntry extends BaseModelEntry {
 	format: {
 		type: 'gaussian-splat';
 		url: string;
 		sourceFileName?: string;
-		encoding: 'ply';
+		encoding: 'ply' | 'spz';
 		localBounds?: ModelLocalBounds;
 	};
 	properties?: ModelEntryProperties & {

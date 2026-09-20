@@ -598,6 +598,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
 	},
 	{
+		id: 'spz',
+		dialogType: 'gaussian-splat',
+		label: '3D Gaussian Splatting (SPZ)',
+		icon: 'mdi:chart-scatter-plot',
+		description: '3D Gaussian Splattingを圧縮したデータです。地図上に配置して表示します。',
+		extensions: ['.spz']
+	},
+	{
 		id: 'glb',
 		label: 'GLB / GLTF',
 		icon: 'file-icons:gltf',
