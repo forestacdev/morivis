@@ -12,6 +12,7 @@ import { getMatchedExtension } from '$routes/map/utils/upload-matchers-common';
 import {
 	extractUploadUrlFeatures,
 	hasTileExtension,
+	isArcGisService,
 	isGeoRssExtension,
 	isPmtilesExtension,
 	isRasterTileExtension,
@@ -160,6 +161,7 @@ type UploadUrlDialogTarget =
 	| 'remoteTiles3dUrl'
 	| 'remotePmtilesUrl'
 	| 'remoteWmtsUrl'
+	| 'remoteArcGisUrl'
 	| 'remoteFeatureServiceUrl';
 
 type UploadUrlDecision =
@@ -248,6 +250,11 @@ const templateRules: UploadUrlRule[] = [
 
 // パス末尾や拡張子だけで判断できるルール群。
 const extensionRules: UploadUrlRule[] = [
+	{
+		id: 'arcgis-service',
+		matchAll: [isArcGisService],
+		resolve: (context) => createDialogDecision('arcgis', 'remoteArcGisUrl', context.requestUrl)
+	},
 	{
 		id: 'tileset-json',
 		matchAll: [isTilesetJson],

@@ -66,6 +66,16 @@ const isTilesetJsonUrl = (urlValue: string): boolean => {
 	}
 };
 
+const isArcGisServiceUrl = (urlValue: string): boolean => {
+	try {
+		return /\/(?:MapServer|FeatureServer)(?:\/\d+(?:\/query)?)?\/*$/.test(
+			new URL(urlValue).pathname
+		);
+	} catch {
+		return false;
+	}
+};
+
 export type UploadUrlContext = {
 	rawInput: string;
 	templateUrl: string;
@@ -73,6 +83,7 @@ export type UploadUrlContext = {
 };
 
 export type UploadUrlFeatures = {
+	isArcGisService: boolean;
 	isTilesetJson: boolean;
 	isXyzTemplate: boolean;
 	isWmsTemplate: boolean;
@@ -91,6 +102,7 @@ export type UploadUrlMatcher = (
 export const extractUploadUrlFeatures = (context: UploadUrlContext): UploadUrlFeatures => {
 	const remoteFileNameFromTemplateUrl = getRemoteFileNameFromUrl(context.templateUrl);
 	return {
+		isArcGisService: isArcGisServiceUrl(context.requestUrl),
 		isTilesetJson: isTilesetJsonUrl(context.templateUrl),
 		isXyzTemplate: isXyzTileUrl(context.templateUrl),
 		isWmsTemplate: isWmsRequestTemplateUrl(context.templateUrl),
@@ -106,6 +118,8 @@ export const extractUploadUrlFeatures = (context: UploadUrlContext): UploadUrlFe
 };
 
 export const isTilesetJson: UploadUrlMatcher = (_context, features) => features.isTilesetJson;
+
+export const isArcGisService: UploadUrlMatcher = (_context, features) => features.isArcGisService;
 
 export const isXyzTemplate: UploadUrlMatcher = (_context, features) => features.isXyzTemplate;
 

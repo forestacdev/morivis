@@ -13,6 +13,7 @@ export type DialogProfile =
 	| 'pointcloud-georef'
 	| 'feature-service'
 	| 'remote-wmts'
+	| 'remote-arcgis'
 	| 'remote-geozarr'
 	| 'tiles'
 	| 'wcs'
@@ -69,7 +70,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	},
 	arcgis: {
 		load: () => import('$routes/map/components/upload/form/ArcGisForm.svelte'),
-		profile: 'simple'
+		profile: 'remote-arcgis'
 	},
 	csv: {
 		load: () => import('$routes/map/components/upload/form/CsvForm.svelte'),

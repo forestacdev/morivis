@@ -170,6 +170,9 @@ export const selectedBaseMap = writable<BaseMapType>('satellite');
 /** ラベルレイヤー */
 export const showLabelLayer = writable<boolean>(true);
 
+/** POIレイヤー */
+export const showPoiLayer = writable<boolean>(false);
+
 /** 陰影レイヤー */
 export const showHillshadeLayer = writable<boolean>(false);
 

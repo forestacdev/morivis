@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$routes/map/utils/formats/ogc-api-features', () => ({
 	parseOgcApiFeaturesService: vi.fn()
@@ -24,6 +24,55 @@ import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
 import { getRemoteFileName, resolveUploadUrlInput } from './upload-url';
 
 describe('resolveUploadUrlInput', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it.each([
+		'https://example.com/arcgis/rest/services/test-imagery/MapServer',
+		'https://example.com/arcgis/rest/services/test-imagery/MapServer/',
+		'https://example.com/arcgis/rest/services/test-imagery/MapServer?f=pjson',
+		'https://example.com/arcgis/rest/services/test-imagery/MapServer/?f=pjson',
+		'https://example.com/arcgis/rest/services/test-imagery/MapServer/0',
+		'https://example.com/arcgis/rest/services/test-features/FeatureServer',
+		'https://example.com/arcgis/rest/services/test-features/FeatureServer/2',
+		'https://example.com/arcgis/rest/services/test-features/FeatureServer/2/query?f=json'
+	])('ArcGISサービスURLを専用フォームへ渡す: %s', async (url) => {
+		await expect(resolveUploadUrlInput(url)).resolves.toEqual({
+			type: 'dialog',
+			dialogType: 'arcgis',
+			target: 'remoteArcGisUrl',
+			value: url
+		});
+		expect(parseWmtsCapabilities).not.toHaveBeenCalled();
+		expect(parseWmsCapabilities).not.toHaveBeenCalled();
+		expect(parseOgcApiFeaturesService).not.toHaveBeenCalled();
+		expect(parseWfsCapabilities).not.toHaveBeenCalled();
+	});
+
+	it('ArcGISのXYZタイルURLは既存のタイル判定を使う', async () => {
+		const url =
+			'https://example.com/arcgis/rest/services/test-imagery/MapServer/tile/{z}/{y}/{x}';
+		await expect(resolveUploadUrlInput(url)).resolves.toEqual({
+			type: 'dialog',
+			dialogType: 'tileurltype',
+			target: 'pendingTileUrl',
+			value: url
+		});
+	});
+
+	it.each([
+		'https://example.com/test-MapServer',
+		'https://example.com/test-file?service=/MapServer',
+		'https://example.com/arcgis/rest/services/test-imagery/MapServer/WMSServer'
+	])('サービス名を含むだけのURLはArcGISと誤判定しない: %s', async (url) => {
+		await expect(resolveUploadUrlInput(url)).resolves.toEqual({
+			type: 'remote-file',
+			requestUrl: url
+		});
+		expect(parseWmtsCapabilities).toHaveBeenCalled();
+	});
+
 	it('GeoRSS拡張子のURLは remote-file として扱う', async () => {
 		const result = await resolveUploadUrlInput('https://example.com/feed.rss');
 

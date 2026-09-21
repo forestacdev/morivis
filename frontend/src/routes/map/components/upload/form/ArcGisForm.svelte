@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
@@ -29,9 +30,14 @@
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
+		remoteArcGisUrl: string | null;
 	}
 
-	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		showDialogType = $bindable(),
+		remoteArcGisUrl = $bindable()
+	}: Props = $props();
 
 	const urlValidation = yup.object().shape({
 		url: yup
@@ -394,6 +400,13 @@
 	const cancel = () => {
 		showDialogType = null;
 	};
+
+	onMount(() => {
+		if (!remoteArcGisUrl) return;
+		forms.url = remoteArcGisUrl;
+		remoteArcGisUrl = null;
+		void fetchInfo();
+	});
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">

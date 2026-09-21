@@ -38,6 +38,7 @@ import { cloudLayers } from '$routes/map/utils/layers/cloud';
 import { createBaseLayerItem } from '$routes/map/utils/layers/highlight-builder';
 import { hillshadeLayers } from '$routes/map/utils/layers/hillshade';
 import { labelLayers } from '$routes/map/utils/layers/label';
+import { poiLayers } from '$routes/map/utils/layers/poi';
 import { railLineLayers } from '$routes/map/utils/layers/rail';
 import { roadLabelLayers, roadLineLayers } from '$routes/map/utils/layers/road';
 import {
@@ -46,6 +47,7 @@ import {
 	showCloudLayer,
 	showHillshadeLayer,
 	showLabelLayer,
+	showPoiLayer,
 	showRoadLayer,
 	showStreetViewLayer
 } from '$routes/stores/layers';
@@ -128,8 +130,7 @@ export const createVectorLayer = (
 	| CircleLayerSpecification
 	| SymbolLayerSpecification
 	| FillExtrusionLayerSpecification
-	| undefined =>
-{
+	| undefined => {
 	switch (style.type) {
 		case 'fill': {
 			if (style.extrusion && style.extrusion.show) {
@@ -284,10 +285,7 @@ export const createLayersItems = (
 							fillExtrusionLayerItems.push(vectorLayer);
 							// ポリゴンのパターン
 							if (style.colors.show) {
-								const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(
-									layer,
-									style
-								);
+								const fillExtrusionPatternLayer = createFillExtrusionPatternLayer(layer, style);
 								if (fillExtrusionPatternLayer) {
 									fillExtrusionLayerItems.push(fillExtrusionPatternLayer);
 								}
@@ -379,8 +377,7 @@ export const createLayersItems = (
 							metadata,
 							paint: {
 								...layerWithoutClickable.paint,
-								'fill-opacity': layerWithoutClickable.paint?.['fill-opacity']
-									?? style.opacity
+								'fill-opacity': layerWithoutClickable.paint?.['fill-opacity'] ?? style.opacity
 							}
 						};
 						fillLayerItems.push(layerItem);
@@ -392,8 +389,7 @@ export const createLayersItems = (
 							paint: {
 								...layerWithoutClickable.paint,
 								'fill-extrusion-opacity':
-									layerWithoutClickable.paint?.['fill-extrusion-opacity']
-										?? style.opacity
+									layerWithoutClickable.paint?.['fill-extrusion-opacity'] ?? style.opacity
 							}
 						};
 						fillLayerItems.push(layerItem);
@@ -404,8 +400,7 @@ export const createLayersItems = (
 							metadata,
 							paint: {
 								...layerWithoutClickable.paint,
-								'line-opacity': layerWithoutClickable.paint?.['line-opacity']
-									?? style.opacity
+								'line-opacity': layerWithoutClickable.paint?.['line-opacity'] ?? style.opacity
 							}
 						};
 						lineLayerItems.push(layerItem);
@@ -416,8 +411,7 @@ export const createLayersItems = (
 							metadata,
 							paint: {
 								...layerWithoutClickable.paint,
-								'circle-opacity': layerWithoutClickable.paint?.['circle-opacity']
-									?? style.opacity
+								'circle-opacity': layerWithoutClickable.paint?.['circle-opacity'] ?? style.opacity
 							}
 						};
 						circleLayerItems.push(layerItem);
@@ -428,8 +422,7 @@ export const createLayersItems = (
 							metadata,
 							paint: {
 								...layerWithoutClickable.paint,
-								'heatmap-opacity': layerWithoutClickable.paint?.['heatmap-opacity']
-									?? style.opacity
+								'heatmap-opacity': layerWithoutClickable.paint?.['heatmap-opacity'] ?? style.opacity
 							}
 						};
 						circleLayerItems.push(layerItem);
@@ -440,10 +433,8 @@ export const createLayersItems = (
 							metadata,
 							paint: {
 								...layerWithoutClickable.paint,
-								'icon-opacity': layerWithoutClickable.paint?.['icon-opacity']
-									?? style.opacity,
-								'text-opacity': layerWithoutClickable.paint?.['text-opacity']
-									?? style.opacity
+								'icon-opacity': layerWithoutClickable.paint?.['icon-opacity'] ?? style.opacity,
+								'text-opacity': layerWithoutClickable.paint?.['text-opacity'] ?? style.opacity
 							}
 						};
 						symbolLayerItems.push(layerItem);
@@ -453,45 +444,41 @@ export const createLayersItems = (
 						const layerItem = {
 							...layerWithoutClickable,
 							metadata,
-							paint: rasterStyle.type === 'basemap'
-								? {
-									...layerWithoutClickable.paint,
-									'raster-opacity':
-										layerWithoutClickable.paint?.['raster-opacity']
-											?? rasterStyle.opacity,
-									'raster-hue-rotate':
-										layerWithoutClickable.paint?.['raster-hue-rotate']
-											?? rasterStyle.hueRotate,
-									'raster-brightness-max':
-										layerWithoutClickable.paint?.['raster-brightness-max']
-											?? rasterStyle.brightnessMax,
-									'raster-brightness-min':
-										layerWithoutClickable.paint?.['raster-brightness-min']
-											?? rasterStyle.brightnessMin,
-									'raster-saturation':
-										layerWithoutClickable.paint?.['raster-saturation']
-											?? rasterStyle.saturation,
-									'raster-contrast':
-										layerWithoutClickable.paint?.['raster-contrast']
-											?? rasterStyle.contrast
-								}
-								: rasterStyle.type === 'categorical'
-								? {
-									...layerWithoutClickable.paint,
-									'raster-opacity':
-										layerWithoutClickable.paint?.['raster-opacity']
-											?? rasterStyle.opacity,
-									'raster-resampling':
-										layerWithoutClickable.paint?.['raster-resampling']
-											?? rasterStyle.resampling
-											?? 'linear'
-								}
-								: {
-									...layerWithoutClickable.paint,
-									'raster-opacity':
-										layerWithoutClickable.paint?.['raster-opacity']
-											?? rasterStyle.opacity
-								}
+							paint:
+								rasterStyle.type === 'basemap'
+									? {
+											...layerWithoutClickable.paint,
+											'raster-opacity':
+												layerWithoutClickable.paint?.['raster-opacity'] ?? rasterStyle.opacity,
+											'raster-hue-rotate':
+												layerWithoutClickable.paint?.['raster-hue-rotate'] ?? rasterStyle.hueRotate,
+											'raster-brightness-max':
+												layerWithoutClickable.paint?.['raster-brightness-max'] ??
+												rasterStyle.brightnessMax,
+											'raster-brightness-min':
+												layerWithoutClickable.paint?.['raster-brightness-min'] ??
+												rasterStyle.brightnessMin,
+											'raster-saturation':
+												layerWithoutClickable.paint?.['raster-saturation'] ??
+												rasterStyle.saturation,
+											'raster-contrast':
+												layerWithoutClickable.paint?.['raster-contrast'] ?? rasterStyle.contrast
+										}
+									: rasterStyle.type === 'categorical'
+										? {
+												...layerWithoutClickable.paint,
+												'raster-opacity':
+													layerWithoutClickable.paint?.['raster-opacity'] ?? rasterStyle.opacity,
+												'raster-resampling':
+													layerWithoutClickable.paint?.['raster-resampling'] ??
+													rasterStyle.resampling ??
+													'linear'
+											}
+										: {
+												...layerWithoutClickable.paint,
+												'raster-opacity':
+													layerWithoutClickable.paint?.['raster-opacity'] ?? rasterStyle.opacity
+											}
 						};
 						rasterLayerItems.push(layerItem);
 					}
@@ -515,9 +502,10 @@ export const createLayersItems = (
 	}
 
 	// ストリートビューのレイヤーを追加
-	const streetViewLayers = get(showStreetViewLayer) && _type === 'main'
-		? [streetViewLineLayer, streetViewCircleLayer]
-		: [];
+	const streetViewLayers =
+		get(showStreetViewLayer) && _type === 'main'
+			? [streetViewLineLayer, streetViewCircleLayer]
+			: [];
 
 	// ベースマップ
 	let baseMapLayerItems: LayerSpecification[] = [];
@@ -542,12 +530,14 @@ export const createLayersItems = (
 	}
 
 	const isNotOsm = get(selectedBaseMap) !== 'osm';
-	const isNotHillshade = get(selectedBaseMap) !== 'satellite'
-		&& get(selectedBaseMap) !== 'slope'
-		&& get(selectedBaseMap) !== 'aspect';
+	const isNotHillshade =
+		get(selectedBaseMap) !== 'satellite' &&
+		get(selectedBaseMap) !== 'slope' &&
+		get(selectedBaseMap) !== 'aspect';
 	// const isNotRelief = get(selectedBaseMap) !== 'relief';
 
 	const labelLayerItems = get(showLabelLayer) && _type === 'main' ? labelLayers : [];
+	const poiLayerItems = get(showPoiLayer) && _type === 'main' ? poiLayers : [];
 	const roadLabelLayerItems = get(showRoadLayer) && _type === 'main' ? roadLabelLayers : [];
 	const roadLineLayerItems = get(showRoadLayer) && _type === 'main' ? roadLineLayers : [];
 	const railLayerItems = get(showRoadLayer) && _type === 'main' ? railLineLayers : [];
@@ -573,6 +563,7 @@ export const createLayersItems = (
 		...streetViewLayers,
 		...roadLabelLayerItems,
 		...labelLayerItems,
+		...poiLayerItems,
 
 		...symbolLayerItems,
 		...circleIconLayerItems
