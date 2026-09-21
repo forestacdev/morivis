@@ -11,6 +11,7 @@
 		"deploy": "pnpm run build && echo > build/.nojekyll && gh-pages -d build -m \"Updates --skip-ci\"",
 		"preview": "vite preview",
 		"roblox:prepare": "node --import tsx scripts/prepare-roblox-resources.ts",
+		"roblox:verify-builtins": "node --import tsx scripts/verify-roblox-builtins.ts",
 		"minecraft:prepare": "node scripts/prepare-minecraft-resources.mjs",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

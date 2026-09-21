@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { robloxFileToGlbInWorker } from './analyze';
 
-const { workers } = vi.hoisted(() => ({
+const { workers, publicEnv } = vi.hoisted(() => ({
+	publicEnv: { PUBLIC_ROBLOX_RESOURCE_URL: '', PUBLIC_ROBLOX_ASSET_API_URL: '' },
 	workers: [] as {
 		onmessage?: (event: { data: unknown; }) => void;
 		onerror?: (event: { message: string; }) => void;
@@ -11,7 +12,7 @@ const { workers } = vi.hoisted(() => ({
 	}[]
 }));
 vi.mock('$app/paths', () => ({ base: '/test-base' }));
-vi.mock('$env/static/public', () => ({ PUBLIC_ROBLOX_RESOURCE_URL: '' }));
+vi.mock('$env/static/public', () => publicEnv);
 vi.mock('./worker?worker', () => ({
 	default: class {
 		onmessage?: (event: { data: unknown; }) => void;
@@ -26,6 +27,7 @@ vi.mock('./worker?worker', () => ({
 }));
 afterEach(() => {
 	workers.length = 0;
+	publicEnv.PUBLIC_ROBLOX_ASSET_API_URL = '';
 });
 const file = new File(['test'], 'test-world.rbxl');
 
@@ -34,12 +36,26 @@ describe('Roblox変換Worker', () => {
 		const promise = robloxFileToGlbInWorker(file, new AbortController().signal);
 		expect(workers[0].postMessage).toHaveBeenCalledWith({
 			file,
-			resourceUrl: '/test-base/roblox'
+			resourceUrl: '/test-base/roblox',
+			assetApiUrl: undefined
 		});
 		const result = { glb: new ArrayBuffer(12), partCount: 1, warnings: ['MeshPart: 1件'] };
 		workers[0].onmessage?.({ data: { result } });
 		expect(await promise).toBe(result);
 		expect(workers[0].terminate).toHaveBeenCalledOnce();
+	});
+	it('本番用の取得API URLをWorkerへ渡す', async () => {
+		publicEnv.PUBLIC_ROBLOX_ASSET_API_URL = ' https://test-api.invalid/assets ';
+		const promise = robloxFileToGlbInWorker(file, new AbortController().signal);
+		expect(workers[0].postMessage).toHaveBeenCalledWith({
+			file,
+			resourceUrl: '/test-base/roblox',
+			assetApiUrl: 'https://test-api.invalid/assets'
+		});
+		workers[0].onmessage?.({
+			data: { result: { glb: new ArrayBuffer(12), partCount: 1, warnings: [] } }
+		});
+		await promise;
 	});
 	it('実行中のキャンセルでWorkerを終了する', async () => {
 		const controller = new AbortController();

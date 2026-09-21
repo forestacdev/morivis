@@ -24,7 +24,7 @@
 
 ## 素材の事前配置
 
-`.rbxl` は通常、画像・メッシュの実体ではなくアセットIDを保持する。公開アセットは直接取得し、認証が必要なアセットは下記のOpen Cloud経路を使う。Roblox組み込み画像は元ファイルの事前配置が必要。利用できる元の素材を以下に配置すると、ワールドファイルだけのドロップで読み込める。
+`.rbxl` は通常、画像・メッシュの実体ではなくアセットIDを保持する。公開アセットは配信API、認証が必要なアセットは下記のOpen Cloud経路を使う。対応表に登録したRoblox標準画像244件はパスをIDへ変換して取得でき、画像の事前配置は不要。配信IDが不明な組み込み画像や、APIを使わず読みたい素材は以下に配置する。
 
 ```text
 frontend/static/roblox/
@@ -46,7 +46,21 @@ PUBLIC_ROBLOX_RESOURCE_URL=https://test-assets.invalid/roblox
 
 空欄の場合はアプリのベースパス配下の `/roblox` を使う。設定変更後はdev serverの再起動、または本番の再ビルドが必要。外部配信ではアプリからのGETを許可するCORSを設定する。
 
-配置先が未配置の場合は認証付きAPI、未設定なら公開APIへ進む。ローカル開発では未配置を204で返し、通常のフォールバックで404ログを出さない。Roblox APIのCORS回避は既存の `platform/proxy.ts` を通じて**開発環境のみ**に適用する。本番は静的配信のため、このdev proxyは存在しない。Roblox側のCORSで取得できない素材も、上記の配信先に事前配置する。認証情報をブラウザへ埋め込む実装は行わない。
+配置先が未配置・通信失敗の場合は認証付きAPI、未設定なら公開APIへ進む。ローカル開発では未配置を204で返し、通常のフォールバックで404ログを出さない。公開素材は `https://assetdelivery.roblox.com/v1/asset/?id={id}` から実体を取得し、開発時は `platform/proxy.ts` のプロキシを通す。v1のリダイレクト応答とv2の配信先メタデータにはブラウザ向けCORS許可がないため、本番の静的サイトでは公開素材でも直接取得に失敗する。認証・CORS対応には次項の取得APIまたは事前配置が必要。
+
+標準画像の一覧は `builtin-asset-catalog.json`、出典・件数・検証方法は [builtin-assets.md](./builtin-assets.md) を参照。パスの大文字・小文字、スラッシュの違いを吸収し、同じ画像の数値ID参照とも取得をまとめる。`roblox:prepare` でも同じ対応表を使う。
+
+## 本番でワールド固有の素材を自動取得する
+
+ドロップしたワールドのMeshId、TextureID、Decal / Texture、SurfaceAppearance / MaterialVariantの画像IDを抽出し、不足素材を最大4件並列で取得する。APIに送るのは参照IDだけで、ワールドファイル自体は送らない。
+
+本番は静的サイトなので、ビルド環境の `ROBLOX_API_KEY` だけでは認証付き取得は動かない。キーをサーバー側で保持する別の取得APIを用意し、そのURLだけを設定する。
+
+```dotenv
+PUBLIC_ROBLOX_ASSET_API_URL=https://test-api.invalid/roblox/assets
+```
+
+取得APIは `GET /roblox/assets/{id}` に対して画像・FileMeshの実体を返す。エラーはHTTPステータスとJSONの `{ "error": "説明" }` を返し、別オリジンの場合はアプリからのGETをCORSで許可する。既存の `scripts/roblox-asset-delivery.ts` はサーバー側から利用できる。取得APIのサーバー実装・デプロイはこの設定だけでは作成されない。APIキーを `PUBLIC_` 付き環境変数へ入れない。
 
 ## Open Cloudで認証が必要な素材を取得する
 

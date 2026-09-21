@@ -36,7 +36,8 @@ export const robloxFileToGlbInWorker = (file: File, signal: AbortSignal): Promis
 			const values: Record<string, string> = publicEnv;
 			worker.postMessage({
 				file,
-				resourceUrl: values.PUBLIC_ROBLOX_RESOURCE_URL?.trim() || `${base}/roblox`
+				resourceUrl: values.PUBLIC_ROBLOX_RESOURCE_URL?.trim() || `${base}/roblox`,
+				assetApiUrl: values.PUBLIC_ROBLOX_ASSET_API_URL?.trim() || undefined
 			});
 		} catch (error) {
 			cleanup();

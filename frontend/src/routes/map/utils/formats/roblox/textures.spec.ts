@@ -19,6 +19,11 @@ const xml = worldXml(
 	)
 );
 const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0]);
+// 実在素材のIDに依存せず、組み込みパスから配信IDへのフォールバックを検証する。
+vi.mock('./builtin-assets', () => ({
+	getRobloxBuiltinAssetId: (key: string) =>
+		key.toLowerCase() === 'builtin/textures/test.png' ? '101' : undefined
+}));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('Robloxの画像・UV', () => {
@@ -53,17 +58,14 @@ describe('Robloxの画像・UV', () => {
 		expect(fetcher).toHaveBeenCalledOnce();
 		expect(world.warnings).toEqual(['Roblox API: HTTP 404: 1件']);
 	});
-	it('公開APIがcontentdelivery.roblox.comを返した場合も取得する', async () => {
+	it('直接配信APIから、画像の実体を取得する', async () => {
 		vi.stubGlobal('createImageBitmap', async () => ({ close: () => {} }));
-		const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(
-			Response.json({
-				locations: [{ location: 'https://contentdelivery.roblox.com/v1/bytes/test-image' }]
-			})
-		).mockResolvedValueOnce(new Response(png));
+		const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(png));
 		const result = await loadRobloxResources(parseRbxlx(xml), { fetcher });
 		expect(result.images.size).toBe(1);
-		expect(fetcher.mock.calls[1][0]).toBe(
-			'https://contentdelivery.roblox.com/v1/bytes/test-image'
+		expect(fetcher).toHaveBeenCalledExactlyOnceWith(
+			'https://assetdelivery.roblox.com/v1/asset/?id=101',
+			expect.objectContaining({ credentials: 'omit' })
 		);
 	});
 	it('ローカル素材がなければ認証付き取得口を使い、キー未設定の404のみ公開APIへ進む', async () => {
@@ -77,11 +79,6 @@ describe('Robloxの画像・UV', () => {
 						? new Response(png)
 						: new Response('', { status: 404 });
 				}
-				if (path.includes('assetdelivery.roblox.com')) {
-					return Response.json({
-						locations: [{ location: 'https://test.rbxcdn.com/test-image' }]
-					});
-				}
 				return new Response(png);
 			});
 			const result = await loadRobloxResources(parseRbxlx(xml), {
@@ -90,7 +87,7 @@ describe('Robloxの画像・UV', () => {
 				fetcher
 			});
 			expect(result.images.size).toBe(1);
-			expect(fetcher).toHaveBeenCalledTimes(configured ? 2 : 4);
+			expect(fetcher).toHaveBeenCalledTimes(configured ? 2 : 3);
 		}
 	});
 	it('認証付き取得の権限不足は画像を省略し、公開APIを再試行しない', async () => {
@@ -206,15 +203,10 @@ describe('Robloxの画像・UV', () => {
 		});
 		expect(world.warnings).toContain('未対応の画像形式: 1件');
 	});
-	it('ローカル404の後に配信APIとCDNを使う', async () => {
+	it('ローカル404の後に開発用プロキシ経由で直接配信APIを使う', async () => {
 		vi.stubGlobal('createImageBitmap', async () => ({ close: () => {} }));
 		const fetcher = vi.fn(async (url: RequestInfo | URL) => {
 			if (String(url).startsWith('/test-resources')) return new Response('', { status: 404 });
-			if (String(url).startsWith('/test-proxy')) {
-				return Response.json({
-					locations: [{ location: 'https://test.rbxcdn.com/test-image' }]
-				});
-			}
 			return new Response(png);
 		});
 		const resources = await loadRobloxResources(parseRbxlx(xml), {
@@ -223,7 +215,83 @@ describe('Robloxの画像・UV', () => {
 			resolveUrl: url => url.replace('https://assetdelivery.roblox.com', '/test-proxy')
 		});
 		expect(resources.images.size).toBe(1);
-		expect(fetcher).toHaveBeenCalledTimes(3);
+		expect(fetcher).toHaveBeenCalledTimes(2);
+		expect(fetcher.mock.calls[1][0]).toBe('/test-proxy/v1/asset/?id=101');
+	});
+	it.each(['cors', 'forbidden', 'unavailable', 'html'])(
+		'事前配置先の%sで取得できなくても、参照IDからAPIで取得する',
+		async reason => {
+			vi.stubGlobal('createImageBitmap', async () => ({ close: () => {} }));
+			const fetcher = vi.fn<typeof fetch>().mockImplementationOnce(async () => {
+				if (reason === 'cors') throw new TypeError('Failed to fetch');
+				if (reason === 'html') {
+					return new Response('<html/>', { headers: { 'Content-Type': 'text/html' } });
+				}
+				return new Response(null, { status: reason === 'forbidden' ? 403 : 503 });
+			}).mockResolvedValueOnce(new Response(png));
+			const world = parseRbxlx(xml);
+			const result = await loadRobloxResources(world, {
+				resourceUrl: '/test-local',
+				fetcher
+			});
+			expect(result.images.size).toBe(1);
+			expect(world.warnings).toEqual([]);
+			expect(fetcher.mock.calls[1][0]).toBe(
+				'https://assetdelivery.roblox.com/v1/asset/?id=101'
+			);
+		}
+	);
+	it('対応表の組み込み画像はパス名での配置を要求せず、IDからAPIで取得する', async () => {
+		vi.stubGlobal('createImageBitmap', async () => ({ close: () => {} }));
+		const world = parseRbxlx(xml.replace('rbxassetid://101', 'rbxasset://textures/test.png'));
+		const fetcher = vi.fn<typeof fetch>()
+			.mockResolvedValueOnce(new Response(null, { status: 404 }))
+			.mockResolvedValueOnce(new Response(png));
+		const result = await loadRobloxResources(world, { resourceUrl: '/test-local', fetcher });
+		expect(fetcher.mock.calls.map(call => call[0])).toEqual([
+			'/test-local/assets/101',
+			'https://assetdelivery.roblox.com/v1/asset/?id=101'
+		]);
+		expect(result.images.has('rbxasset://textures/test.png')).toBe(true);
+		expect(world.warnings).toEqual([]);
+	});
+	it('組み込みパスの大文字・区切り違いと数値IDを同じ素材として取得する', async () => {
+		vi.stubGlobal('createImageBitmap', async () => ({ close: () => {} }));
+		const world = parseRbxlx(xml);
+		world.parts[0].textures!.push(...[
+			'rbxasset://textures/test.png',
+			'RBXASSET://Textures/Test.png',
+			'rbxasset://Textures\\Test.png'
+		].map(asset => ({ ...world.parts[0].textures![0], asset })));
+		const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(png));
+		const resources = await loadRobloxResources(world, { fetcher });
+		expect(fetcher).toHaveBeenCalledOnce();
+		expect(resources.images.size).toBe(4);
+		expect(new Set(resources.images.values()).size).toBe(1);
+	});
+	it('配信IDが不明な組み込み画像はAPIへ送らず、不足を通知する', async () => {
+		const world = parseRbxlx(
+			xml.replace('rbxassetid://101', 'rbxasset://textures/test-unknown.png')
+		);
+		const fetcher = vi.fn<typeof fetch>();
+		await loadRobloxResources(world, { fetcher });
+		expect(fetcher).not.toHaveBeenCalled();
+		expect(world.warnings).toEqual(['組み込み素材が未配置（配信ID不明）: 1件']);
+	});
+	it('ワールドのMeshIdと画像IDをそれぞれAPIで取得する', async () => {
+		vi.stubGlobal('createImageBitmap', async () => ({ close: () => {} }));
+		const world = parseRbxlx(worldXml(partXml(
+			'<Content name="MeshId"><url>rbxassetid://201</url></Content><Content name="TextureID"><url>rbxassetid://101</url></Content>',
+			'',
+			'MeshPart'
+		)));
+		const fetcher = vi.fn<typeof fetch>().mockImplementation(async url =>
+			new Response(String(url).endsWith('id=201') ? meshBytes() : png)
+		);
+		const result = await loadRobloxResources(world, { fetcher });
+		expect(result.meshes.has('rbxassetid://201')).toBe(true);
+		expect(result.images.has('rbxassetid://101')).toBe(true);
+		expect(world.warnings).toEqual([]);
 	});
 	it('合成済みの面は下地を除き、六面とも塗っても空のprimitiveを出さない', () => {
 		const world = parseRbxlx(xml);
@@ -274,7 +342,10 @@ describe('Robloxの画像・UV', () => {
 				'rbxasset://textures//test'
 			]
 		) expect(robloxAssetKey(value)).toBeNull();
-		expect(robloxAssetKey('rbxasset://textures/test.png')).toBe('builtin/textures/test.png');
+		expect(robloxAssetKey('rbxasset://textures/test.png')).toBe('assets/101');
+		expect(robloxAssetKey('rbxasset://textures/test-unknown.png')).toBe(
+			'builtin/textures/test-unknown.png'
+		);
 	});
 });
 

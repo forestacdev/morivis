@@ -12,12 +12,15 @@ export interface RobloxResult {
 }
 export type RobloxResponse = { result: RobloxResult; } | { error: string; };
 
-self.onmessage = async ({ data }: MessageEvent<{ file: File; resourceUrl?: string; }>) => {
+self.onmessage = async (
+	{ data }: MessageEvent<{ file: File; resourceUrl?: string; assetApiUrl?: string; }>
+) => {
 	try {
 		const world = await parseRobloxWorld(await data.file.arrayBuffer());
 		const resources = await loadRobloxResources(world, {
 			resourceUrl: data.resourceUrl,
-			authenticatedAssetUrl: import.meta.env.PROD ? undefined : '/api/roblox-auth-assets',
+			authenticatedAssetUrl: data.assetApiUrl
+				|| (import.meta.env.PROD ? undefined : '/api/roblox-auth-assets'),
 			resolveUrl: url => import.meta.env.PROD ? url : devProxyTransform(url).url
 		});
 		await prepareRobloxMaterials(world, resources);

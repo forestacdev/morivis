@@ -1,4 +1,4 @@
-import { isRobloxDeliveryUrl } from './delivery-url';
+import { getRobloxBuiltinAssetId } from './builtin-assets';
 import { materialMapKeys } from './materials';
 import { parseRobloxMesh, type RobloxMesh } from './mesh';
 import type { PreparedRobloxMaterial } from './pbr';
@@ -16,7 +16,7 @@ export interface RobloxResources {
 interface ResourceOptions {
 	/** 省略時は公開アセットAPIを使う。指定時はこの配下を優先する。 */
 	resourceUrl?: string;
-	/** 秘密鍵を保持するローカルdev serverの取得口。 */
+	/** 秘密鍵をサーバー側で保持し、GET /{id}で素材の実体を返す取得口。 */
 	authenticatedAssetUrl?: string;
 	resolveUrl?: (url: string) => string;
 	fetcher?: typeof fetch;
@@ -27,10 +27,12 @@ export const robloxAssetKey = (value: string): string | null => {
 	const input = value.trim();
 	const id = /^(?:rbxassetid:\/\/)?([1-9]\d*)$/i.exec(input)?.[1];
 	if (id) return `assets/${id}`;
-	if (input.startsWith('rbxasset://')) {
-		const path = input.slice(11);
+	if (/^rbxasset:\/\//i.test(input)) {
+		const path = input.slice(11).replace(/\\/g, '/');
 		if (/^[\w./-]+$/.test(path) && !path.split('/').some(p => !p || p === '.' || p === '..')) {
-			return `builtin/${path}`;
+			const key = `builtin/${path}`;
+			const builtinId = getRobloxBuiltinAssetId(key);
+			return builtinId ? `assets/${builtinId}` : key;
 		}
 		return null;
 	}
@@ -108,27 +110,30 @@ export const loadRobloxResources = async (
 		}
 		return response;
 	};
-	const read = async (key: string) => {
+	const read = async (key: string): Promise<Uint8Array<ArrayBuffer>> => {
 		if (key.startsWith('unsupported:')) throw new Error('未対応の素材参照');
 		if (resourceUrl) {
-			const response = await fetcher(`${resourceUrl.replace(/\/$/, '')}/${key}`, {
-				credentials: 'omit',
-				signal: AbortSignal.timeout(15000)
-			});
-			if (
-				response.ok && response.status !== 204
-				&& !response.headers.get('content-type')?.includes('text/html')
-			) {
-				return unpack(new Uint8Array(await response.arrayBuffer()));
-			}
-			if (![200, 204, 404].includes(response.status)) {
-				throw new Error(`配置素材の取得失敗（HTTP ${response.status}）`);
+			try {
+				const response = await fetcher(`${resourceUrl.replace(/\/$/, '')}/${key}`, {
+					credentials: 'omit',
+					signal: AbortSignal.timeout(15000)
+				});
+				if (
+					response.ok && response.status !== 204
+					&& !response.headers.get('content-type')?.includes('text/html')
+				) {
+					return await unpack(new Uint8Array(await response.arrayBuffer()));
+				}
+			} catch {
+				// 事前配置先のCORS・通信障害でも、参照IDがあれば配信APIから取得する。
 			}
 		}
-		if (key.startsWith('builtin/')) throw new Error('組み込み素材が未配置');
+		if (key.startsWith('builtin/')) {
+			throw new Error('組み込み素材が未配置（配信ID不明）');
+		}
 		const id = key.slice(7);
 		if (authenticatedAssetUrl) {
-			const response = await fetcher(`${authenticatedAssetUrl}/${id}`, {
+			const response = await fetcher(`${authenticatedAssetUrl.replace(/\/$/, '')}/${id}`, {
 				credentials: 'omit',
 				signal: AbortSignal.timeout(35000)
 			});
@@ -151,20 +156,10 @@ export const loadRobloxResources = async (
 				);
 			}
 		}
-		const response = await get(`https://assetdelivery.roblox.com/v2/assetId/${id}`);
-		const metadata = await response.json() as {
-			locations?: { location: string; }[];
-			errors?: { code: number; }[];
-		};
-		if (metadata.errors?.some(error => error.code === 401 || error.code === 403)) {
-			throw new Error('素材の取得に認証が必要');
-		}
-		const location = metadata.locations?.[0]?.location;
-		if (!location) throw new Error('素材の配信先が見つからない');
-		if (!isRobloxDeliveryUrl(location)) {
-			throw new Error('素材の配信先が不正');
-		}
-		return unpack(new Uint8Array(await (await get(location)).arrayBuffer()));
+		// メタデータ取得を挟まず実体へ進む。開発時はresolveUrlでプロキシを通す。
+		// 本番の認証・CORS対応にはauthenticatedAssetUrlの取得APIが必要。
+		const response = await get(`https://assetdelivery.roblox.com/v1/asset/?id=${id}`);
+		return unpack(new Uint8Array(await response.arrayBuffer()));
 	};
 	const queue = [...requests];
 	let cursor = 0;
