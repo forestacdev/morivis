@@ -34,8 +34,7 @@ const isTransitStop = (properties: Record<string, unknown>): boolean => {
 
 /** 駅・停留所のURLはタグから取得し、検索結果を公式ページとして自動採用しない。 */
 export const getTransitPoiLinks = (
-	properties: Record<string, unknown>,
-	point: [number, number]
+	properties: Record<string, unknown>
 ): Array<{ label: string; url: string; }> | null => {
 	if (!isTransitStop(properties)) return null;
 	const links: Array<{ label: string; url: string; }> = [];
@@ -55,18 +54,13 @@ export const getTransitPoiLinks = (
 			label: '時刻表を検索',
 			url: `https://www.google.com/search?${new URLSearchParams({ q: query })}`
 		});
-	}
-	const [lon, lat] = point;
-	if (
-		Number.isFinite(lon) && Number.isFinite(lat) && Math.abs(lon) <= 180 && Math.abs(lat) <= 90
-	) {
+		// 片方の地点だけを渡し、もう片方と日時はYahoo!路線情報で入力する。
 		links.push({
-			label: '経路検索（Google マップ）',
-			url: `https://www.google.com/maps/dir/?${new URLSearchParams({
-				api: '1',
-				destination: `${lat},${lon}`,
-				travelmode: 'transit'
-			})}`
+			label: 'ここから（Yahoo!路線情報）',
+			url: `https://transit.yahoo.co.jp/search/result?${new URLSearchParams({ from: name })}`
+		}, {
+			label: 'ここまで（Yahoo!路線情報）',
+			url: `https://transit.yahoo.co.jp/search/result?${new URLSearchParams({ to: name })}`
 		});
 	}
 	return links;

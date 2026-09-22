@@ -34,7 +34,7 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 		}
 	}
 	const name = String(properties['name:ja'] ?? properties.name ?? '名称なし');
-	const transitLinks = getTransitPoiLinks(properties, data.point);
+	const transitLinks = getTransitPoiLinks(properties);
 	const isTransit = transitLinks !== null;
 	if (transitLinks) links.unshift(...transitLinks);
 	const facilityWikidata = getWikidataId(properties.wikidata);

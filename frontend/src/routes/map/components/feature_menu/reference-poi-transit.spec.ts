@@ -13,18 +13,18 @@ describe('駅・停留所の外部リンク', () => {
 		{ class: 'railway', subclass: 'station' },
 		{ class: 'railway', subclass: 'subway' }
 	])('OSMタグ・タイル分類から交通施設を判定する: %j', (properties) => {
-		expect(getTransitPoiLinks({ ...properties, name: 'test-stop' }, [1, 2]))
+		expect(getTransitPoiLinks({ ...properties, name: 'test-stop' }))
 			.toEqual(expect.arrayContaining([expect.objectContaining({ label: '時刻表を検索' })]));
 	});
 
 	it.each([{ subclass: 'restaurant' }, { class: 'railway', subclass: 'level_crossing' }, {}])(
 		'駅・停留所以外には交通リンクを追加しない: %j',
 		(properties) => {
-			expect(getTransitPoiLinks(properties, [1, 2])).toBeNull();
+			expect(getTransitPoiLinks(properties)).toBeNull();
 		}
 	);
 
-	it('公式URLを優先し、検索語と経路の座標をエンコードする', () => {
+	it('公式URLを優先し、時刻表の検索語とYahoo!の出発・到着名をエンコードする', () => {
 		const links = getTransitPoiLinks({
 			highway: 'bus_stop',
 			name: 'test-stop & test-place',
@@ -33,16 +33,35 @@ describe('駅・停留所の外部リンク', () => {
 			website: 'https://example.com/test-stop',
 			'contact:website': 'https://example.com/test-contact',
 			'operator:website': 'https://example.com/test-operator'
-		}, [1, 2])!;
+		})!;
 		expect(links.slice(0, 2)).toEqual([
 			{ label: '公式サイト', url: 'https://example.com/test-stop' },
 			{ label: '運行事業者', url: 'https://example.com/test-operator' }
 		]);
 		expect(new URL(links[2].url).searchParams.get('q'))
 			.toBe('test-stop & test-place test-operator test-city 時刻表');
-		const directions = new URL(links[3].url);
-		expect(directions.searchParams.get('destination')).toBe('2,1');
-		expect(directions.searchParams.get('travelmode')).toBe('transit');
+		const departure = new URL(links[3].url);
+		const arrival = new URL(links[4].url);
+		expect(departure.origin + departure.pathname).toBe(
+			'https://transit.yahoo.co.jp/search/result'
+		);
+		expect(arrival.origin + arrival.pathname).toBe('https://transit.yahoo.co.jp/search/result');
+		expect([...departure.searchParams]).toEqual([['from', 'test-stop & test-place']]);
+		expect([...arrival.searchParams]).toEqual([['to', 'test-stop & test-place']]);
+	});
+
+	it('日本語名を優先してYahoo!へ渡す', () => {
+		const links = getTransitPoiLinks({
+			railway: 'station',
+			name: 'test-name',
+			'name:ja': 'テスト駅 & 仮称'
+		})!;
+		const yahooLinks = links.filter((link) =>
+			link.url.startsWith('https://transit.yahoo.co.jp/')
+		);
+		expect(yahooLinks).toHaveLength(2);
+		expect(new URL(yahooLinks[0].url).searchParams.get('from')).toBe('テスト駅 & 仮称');
+		expect(new URL(yahooLinks[1].url).searchParams.get('to')).toBe('テスト駅 & 仮称');
 	});
 
 	it('不正なURLを除外してcontact:websiteを使い、同じ事業者URLを重複させない', () => {
@@ -51,18 +70,18 @@ describe('駅・停留所の外部リンク', () => {
 			website: 'javascript:alert(1)',
 			'contact:website': 'https://example.com/test-stop',
 			'operator:website': 'https://example.com/test-stop'
-		}, [1, 2])!;
+		})!;
 		expect(links.filter((link) => link.url === 'https://example.com/test-stop')).toHaveLength(
 			1
 		);
 		expect(links.some((link) => link.url.startsWith('javascript:'))).toBe(false);
 	});
 
-	it('URL・名称・有効な座標がない場合はリンクを捏造しない', () => {
+	it('URL・名称がない場合はリンクを捏造しない', () => {
 		expect(getTransitPoiLinks({
 			railway: 'station',
 			website: 'test-invalid-url',
 			'operator:website': 'data:text/html,test'
-		}, [NaN, 100])).toEqual([]);
+		})).toEqual([]);
 	});
 });

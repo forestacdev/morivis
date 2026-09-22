@@ -51,7 +51,6 @@
 			attributeItems={details.attributeItems}
 			fields={[]}
 			resetKey={`${data.layerId}:${data.featureId}`}
-			defaultTab={details.isTransit ? 'attributes' : 'summary'}
 		/>
 	{:else}
 		<FeaturePanelAttributes
