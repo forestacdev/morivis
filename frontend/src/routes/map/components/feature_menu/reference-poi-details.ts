@@ -34,7 +34,7 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 		}
 	}
 	const name = String(properties['name:ja'] ?? properties.name ?? '名称なし');
-	const transitLinks = getTransitPoiLinks(properties);
+	const transitLinks = getTransitPoiLinks(properties, data.point);
 	const isTransit = transitLinks !== null;
 	if (transitLinks) links.unshift(...transitLinks);
 	const facilityWikidata = getWikidataId(properties.wikidata);
@@ -51,9 +51,7 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 	}
 	const { article, image } = knowledge;
 	const brandName = String(properties['brand:ja'] ?? properties.brand ?? article?.title ?? '');
-	const wikidataLabel = isBrandInformation ? 'ブランドのWikidata' : 'Wikidata';
 	const wikipediaLabel = isBrandInformation ? 'ブランドのWikipedia' : 'Wikipedia';
-	if (knowledge.wikidataUrl) links.push({ label: wikidataLabel, url: knowledge.wikidataUrl });
 	const wikipediaUrl = knowledge.wikipediaUrl ?? article?.url;
 	if (wikipediaUrl) links.push({ label: wikipediaLabel, url: wikipediaUrl });
 	const searchUrl = `https://ja.wikipedia.org/w/index.php?search=${encodeURIComponent(name)}`;
@@ -89,9 +87,7 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 			: knowledge.description?.trim()
 			? {
 				text: knowledge.description,
-				source: 'external',
-				linkUrl: knowledge.wikidataUrl,
-				linkLabel: `${wikidataLabel}を見る`
+				source: 'external'
 			}
 			: undefined
 	};

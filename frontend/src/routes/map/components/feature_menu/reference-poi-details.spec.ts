@@ -44,7 +44,11 @@ describe('背景POIの属性表示', () => {
 			label: '公式サイト',
 			url: 'https://example.com/test-stop'
 		});
-		expect(result.links.some((link) => link.label === '時刻表を検索')).toBe(true);
+		expect(result.links.some((link) => link.label === '時刻表（Yahoo!路線情報）')).toBe(true);
+		expect(result.links).toContainEqual({
+			label: '経路検索（Google マップ）',
+			url: 'https://www.google.com/maps/dir/?api=1&destination=2%2C1&travelmode=transit'
+		});
 		expect(result.links.some((link) => link.label === 'Wikipediaで検索')).toBe(false);
 		expect(knowledgeMock).not.toHaveBeenCalled();
 		expect(result.summary.description).toBeUndefined();
@@ -70,7 +74,7 @@ describe('背景POIの属性表示', () => {
 		expect(result.isTransit).toBe(true);
 		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12');
 		expect(result.summary.description?.text).toBe('test-history');
-		expect(result.links[0].label).toBe('時刻表を検索');
+		expect(result.links[0].label).toBe('時刻表（Yahoo!路線情報）');
 	});
 
 	it('OSM取得失敗でもタイルの分類から時刻表検索を出す', async () => {
@@ -80,7 +84,7 @@ describe('背景POIの属性表示', () => {
 			properties: { name: 'test-stop', class: 'bus', subclass: 'bus_stop' }
 		});
 		expect(result.isTransit).toBe(true);
-		expect(result.links.some((link) => link.label === '時刻表を検索')).toBe(true);
+		expect(result.links.some((link) => link.label === '時刻表（Yahoo!路線情報）')).toBe(true);
 		expect(knowledgeMock).not.toHaveBeenCalled();
 	});
 
@@ -158,7 +162,7 @@ describe('背景POIの属性表示', () => {
 		expect(result.summary.description?.text).toBe('test-brand-description');
 		expect(result.summary.description?.linkLabel).toBe('ブランドのWikipediaを見る');
 		expect(result.summary.media?.[0]).toMatchObject({ type: 'image', alt: 'test-brandの画像' });
-		expect(result.links).toContainEqual({
+		expect(result.links).not.toContainEqual({
 			label: 'ブランドのWikidata',
 			url: 'https://www.wikidata.org/wiki/Q12'
 		});
