@@ -1,3 +1,4 @@
+import { getMountainPoiLink } from './reference-poi-mountain';
 import { getTransitPoiLinks } from './reference-poi-transit';
 
 import {
@@ -37,6 +38,7 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 	const transitLinks = getTransitPoiLinks(properties, data.point);
 	const isTransit = transitLinks !== null;
 	if (transitLinks) links.unshift(...transitLinks);
+	const mountainLinkPromise = getMountainPoiLink(properties, data.point);
 	const facilityWikidata = getWikidataId(properties.wikidata);
 	const brandWikidata = isTransit ? undefined : getWikidataId(properties['brand:wikidata']);
 	const wikidata = facilityWikidata ?? brandWikidata;
@@ -50,6 +52,8 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 		notices.push('Wikiの情報を取得できませんでした。');
 	}
 	const { article, image } = knowledge;
+	const mountainLink = await mountainLinkPromise;
+	if (mountainLink) links.unshift(mountainLink);
 	const brandName = String(properties['brand:ja'] ?? properties.brand ?? article?.title ?? '');
 	const wikipediaLabel = isBrandInformation ? 'ブランドのWikipedia' : 'Wikipedia';
 	const wikipediaUrl = knowledge.wikipediaUrl ?? article?.url;

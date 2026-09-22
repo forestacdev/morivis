@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PoiIconMarker from '$routes/map/components/marker/PoiIconMarker.svelte';
 	import PoiMarker from '$routes/map/components/marker/PoiMarker.svelte';
 	import SearchMarker from '$routes/map/components/marker/SearchMarker.svelte';
 	import type { HighlightMarkerState } from '$routes/map/types';
@@ -37,7 +38,16 @@
 	});
 </script>
 
-{#if selectedPoiMarkerData}
+{#if highlightMarkerState?.type === 'poi' && highlightMarkerState.iconMarker && highlightMarkerState.iconImage}
+	{#key highlightMarkerState}
+		<PoiIconMarker
+			{map}
+			point={highlightMarkerState.point}
+			iconImage={highlightMarkerState.iconImage}
+			appearance={highlightMarkerState.iconMarker}
+		/>
+	{/key}
+{:else if selectedPoiMarkerData}
 	{#key selectedPoiMarkerData.featureId}
 		<PoiMarker
 			{map}

@@ -4,7 +4,7 @@ import type {
 	ResultCoordinateData,
 	ResultPoiData
 } from '$routes/map/utils/data/search-result';
-import type { MapGeoJSONFeature } from '$routes/map/utils/maplibre';
+import type { MapGeoJSONFeature, PositionAnchor } from '$routes/map/utils/maplibre';
 import { geojson } from 'flatgeobuf';
 export type {
 	FeatureMenuData,
@@ -794,12 +794,24 @@ export interface ClickedLayerFeaturesData {
 	featureId: string | number;
 }
 
+export interface PoiIconMarkerAppearance {
+	width: number;
+	height: number;
+	anchor: PositionAnchor;
+	offset: [number, number];
+	rotation: number;
+	rotationAlignment: 'map' | 'viewport';
+	pitchAlignment: 'map' | 'viewport';
+	opacity: number;
+}
+
 export interface PoiHighlightMarkerState {
 	type: 'poi';
 	featureId: string | number;
 	point: [number, number];
 	properties: { [key: string]: any; };
 	iconImage?: string | null;
+	iconMarker?: PoiIconMarkerAppearance;
 }
 
 export interface SearchHighlightMarkerState {

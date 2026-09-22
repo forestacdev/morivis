@@ -17,6 +17,7 @@
 		resolveGeneratedPoiIconUrl,
 		resolvePopupImageUrl
 	} from '$routes/map/utils/icon';
+	import { createPoiIconMarker } from '$routes/map/utils/icon/poi-marker';
 	import {
 		getLogicalLayerIdFromLayer,
 		HighlightLayerRegistry
@@ -627,7 +628,20 @@
 					referencePoi: true,
 					osmIdEncoding: poiInteraction.osmIdEncoding
 				};
-				showSelectionMarkerFallback(point);
+				const map = mapStore.getMap();
+				const iconMarker = map ? createPoiIconMarker(map, referencePoi) : null;
+				if (iconMarker) {
+					highlightMarkerState = {
+						type: 'poi',
+						featureId: featureMenuData.featureId,
+						point,
+						properties: referencePoi.properties,
+						...iconMarker
+					};
+				} else {
+					showSelectionMarkerFallback(point);
+				}
+				mapStore.panToPoi(point);
 				return;
 			}
 
