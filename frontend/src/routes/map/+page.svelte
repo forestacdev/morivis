@@ -34,6 +34,7 @@
 	import FeaturePanel from '$routes/map/components/feature_menu/FeaturePanel.svelte';
 	import FeaturePanelLayerContent from '$routes/map/components/feature_menu/FeaturePanelLayerContent.svelte';
 	import FeaturePanelLoading from '$routes/map/components/feature_menu/FeaturePanelLoading.svelte';
+	import ReferencePoiContent from '$routes/map/components/feature_menu/ReferencePoiContent.svelte';
 	import Footer from '$routes/map/components/Footer.svelte';
 	import HeaderMenu from '$routes/map/components/Header.svelte';
 	import { setResetLayerEntries } from '$routes/map/components/layer_menu/context';
@@ -766,7 +767,7 @@
 	});
 
 	let mobileLayerFeatureSummaryPromise = $derived.by(() => {
-		if (!featureMenuData) return Promise.resolve(null);
+		if (!featureMenuData || featureMenuData.referencePoi) return Promise.resolve(null);
 		return getLayerFeaturePanelSummary(featureMenuData, layerEntries);
 	});
 
@@ -1450,21 +1451,25 @@
 
 			<!-- スマホ用地物情報 -->
 			<MobileFeatureMenuCard bind:featureMenuData {layerEntries} bind:showSelectionMarker>
-				{#await mobileLayerFeatureSummaryPromise}
-					<FeaturePanelLoading
-						containerClass="flex w-full flex-col items-center justify-center gap-4 px-4 py-8"
-					/>
-				{:then summary}
-					<FeaturePanelLayerContent
-						bind:featureMenuData
-						{layerEntries}
-						bind:showSelectionMarker
-						showSummaryTab={summary ? hasFeaturePanelSummaryContent(summary) : false}
-						hasAttributeTab={mobileHasAttributeTab}
-						resetKey={mobileFeaturePanelResetKey}
-						{summary}
-					/>
-				{/await}
+				{#if featureMenuData?.referencePoi}
+					<ReferencePoiContent data={featureMenuData} />
+				{:else}
+					{#await mobileLayerFeatureSummaryPromise}
+						<FeaturePanelLoading
+							containerClass="flex w-full flex-col items-center justify-center gap-4 px-4 py-8"
+						/>
+					{:then summary}
+						<FeaturePanelLayerContent
+							bind:featureMenuData
+							{layerEntries}
+							bind:showSelectionMarker
+							showSummaryTab={summary ? hasFeaturePanelSummaryContent(summary) : false}
+							hasAttributeTab={mobileHasAttributeTab}
+							resetKey={mobileFeaturePanelResetKey}
+							{summary}
+						/>
+					{/await}
+				{/if}
 			</MobileFeatureMenuCard>
 
 			{#if !transformOptionMode}

@@ -211,19 +211,28 @@ const isLicenseAllowed = (license: string): boolean => {
 };
 
 // 画像のライセンス情報を取得
-const getImageLicenseInfo = async (pageimage: string): Promise<ImageLicenseInfo | null> => {
+export const getImageLicenseInfo = async (pageimage: string): Promise<
+	(ImageLicenseInfo & {
+		thumbnail?: WikiArticle['thumbnail'];
+		descriptionUrl?: string;
+	}) | null
+> => {
 	const endpoint = 'https://commons.wikimedia.org/w/api.php';
 	const params = new URLSearchParams({
 		action: 'query',
 		format: 'json',
 		titles: `File:${pageimage}`,
 		prop: 'imageinfo',
-		iiprop: 'extmetadata',
+		iiprop: 'extmetadata|url',
+		iiurlwidth: '600',
 		origin: '*'
 	});
 
 	try {
-		const response = await fetch(`${endpoint}?${params}`);
+		const response = await fetch(`${endpoint}?${params}`, {
+			signal: AbortSignal.timeout(10000)
+		});
+		if (!response.ok) throw new Error(`Commons API: ${response.status}`);
 		const data = await response.json();
 
 		const pages = data.query?.pages;
@@ -241,6 +250,14 @@ const getImageLicenseInfo = async (pageimage: string): Promise<ImageLicenseInfo 
 		const licenseShortName = metadata.LicenseShortName?.value || license;
 
 		return {
+			thumbnail: page.imageinfo[0].thumburl
+				? {
+					source: page.imageinfo[0].thumburl,
+					width: page.imageinfo[0].thumbwidth,
+					height: page.imageinfo[0].thumbheight
+				}
+				: undefined,
+			descriptionUrl: page.imageinfo[0].descriptionurl,
 			license,
 			licenseShortName,
 			licenseUrl: metadata.LicenseUrl?.value,
@@ -255,18 +272,25 @@ const getImageLicenseInfo = async (pageimage: string): Promise<ImageLicenseInfo 
 };
 
 // Wikipedia APIで記事情報を取得
-export const getWikipediaArticle = async (title: string): Promise<WikiArticle | null> => {
-	const normalizedTitle = normalizeWikipediaTitle(title);
+export const getWikipediaArticle = async (
+	title: string,
+	options: { exactTitle?: boolean; language?: 'ja' | 'en'; } = {}
+): Promise<WikiArticle | null> => {
+	const normalizedTitle = options.exactTitle ? title.trim() : normalizeWikipediaTitle(title);
 	if (!normalizedTitle) return null;
+	const language = options.language ?? 'ja';
+	const cacheKey = `${language}:${
+		options.exactTitle ? 'exact' : 'normalized'
+	}:${normalizedTitle}`;
 
-	if (wikipediaArticleCache.has(normalizedTitle)) {
-		const cached = wikipediaArticleCache.get(normalizedTitle)!;
-		wikipediaArticleCache.delete(normalizedTitle);
-		wikipediaArticleCache.set(normalizedTitle, cached);
+	if (wikipediaArticleCache.has(cacheKey)) {
+		const cached = wikipediaArticleCache.get(cacheKey)!;
+		wikipediaArticleCache.delete(cacheKey);
+		wikipediaArticleCache.set(cacheKey, cached);
 		return cached;
 	}
 
-	const endpoint = 'https://ja.wikipedia.org/w/api.php';
+	const endpoint = `https://${language}.wikipedia.org/w/api.php`;
 	const params = new URLSearchParams({
 		action: 'query',
 		format: 'json',
@@ -284,7 +308,10 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 	});
 
 	try {
-		const response = await fetch(`${endpoint}?${params}`);
+		const response = await fetch(`${endpoint}?${params}`, {
+			signal: AbortSignal.timeout(10000)
+		});
+		if (!response.ok) throw new Error(`Wikipedia API: ${response.status}`);
 		const data: WikipediaResponse = await response.json();
 
 		// リダイレクト情報を取得
@@ -293,7 +320,7 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 		const pages = data.query.pages;
 		const pageId = Object.keys(pages)[0];
 		const page = pages[pageId];
-		const overrideExtract = getWikipediaSummaryOverride(
+		const overrideExtract = options.exactTitle ? null : getWikipediaSummaryOverride(
 			normalizedTitle,
 			page.title,
 			redirectInfo?.from
@@ -303,14 +330,14 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 		// ページが存在しない場合
 		if (page.missing || pageId === '-1') {
 			console.warn('ページが見つかりません:', normalizedTitle);
-			setWikipediaCache(normalizedTitle, null);
+			setWikipediaCache(cacheKey, null);
 			return null;
 		}
 
 		// extractが空の場合（リダイレクトのみで実体がない）
 		if (!extract) {
 			console.warn('記事の内容が空です:', normalizedTitle);
-			setWikipediaCache(normalizedTitle, null);
+			setWikipediaCache(cacheKey, null);
 			return null;
 		}
 
@@ -365,11 +392,10 @@ export const getWikipediaArticle = async (title: string): Promise<WikiArticle | 
 			originalTitle: redirectInfo ? redirectInfo.from : normalizedTitle,
 			imageLicense
 		};
-		setWikipediaCache(normalizedTitle, result);
+		setWikipediaCache(cacheKey, result);
 		return result;
 	} catch (error) {
 		console.error('Wikipedia API Error:', error);
-		setWikipediaCache(normalizedTitle, null);
 		return null;
 	}
 };

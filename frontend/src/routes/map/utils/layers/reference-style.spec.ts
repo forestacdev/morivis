@@ -63,6 +63,7 @@ const createStyle = (): StyleSpecification => ({
 			type: 'symbol',
 			source: 'test-poi-vector',
 			'source-layer': 'place',
+			metadata: { 'morivis:interaction': { type: 'poi', osmIdEncoding: 'planetiler' } },
 			layout: { 'icon-image': 'test-icon' }
 		},
 		{

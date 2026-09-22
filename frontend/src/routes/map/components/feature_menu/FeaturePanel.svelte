@@ -7,6 +7,7 @@
 	import FeaturePanelLayerContent from './FeaturePanelLayerContent.svelte';
 	import FeaturePanelLoading from './FeaturePanelLoading.svelte';
 	import FeaturePanelSummary from './FeaturePanelSummary.svelte';
+	import ReferencePoiContent from './ReferencePoiContent.svelte';
 
 	import type { WikiArticle } from '$routes/map/api/wikipedia';
 	import { getWikipediaArticle } from '$routes/map/api/wikipedia';
@@ -131,6 +132,7 @@
 		entries: MorivisLayerEntry[]
 	): Promise<PanelContentData | null> => {
 		if (!data) return null;
+		if (data.kind === 'layer-feature' && data.referencePoi) return null;
 
 		if (data.kind === 'layer-feature') {
 			const summary = await getLayerFeaturePanelSummary(data, entries);
@@ -167,21 +169,25 @@
 	transition={panelData?.kind === 'search-address' ? 'fly' : 'scale'}
 	{onClose}
 >
-	{#await panelContentPromise}
-		<FeaturePanelLoading />
-	{:then contentData}
-		{#if contentData?.kind === 'layer-feature'}
-			<FeaturePanelLayerContent
-				featureMenuData={contentData.panelData}
-				{layerEntries}
-				bind:showSelectionMarker
-				showSummaryTab={contentData.hasSummaryTab}
-				{hasAttributeTab}
-				resetKey={panelContentResetKey ?? 'empty'}
-				summary={contentData.summary}
-			/>
-		{:else if contentData?.kind === 'search-address'}
-			<FeaturePanelSummary summary={contentData.summary} />
-		{/if}
-	{/await}
+	{#if panelData?.kind === 'layer-feature' && panelData.referencePoi}
+		<ReferencePoiContent data={panelData} />
+	{:else}
+		{#await panelContentPromise}
+			<FeaturePanelLoading />
+		{:then contentData}
+			{#if contentData?.kind === 'layer-feature'}
+				<FeaturePanelLayerContent
+					featureMenuData={contentData.panelData}
+					{layerEntries}
+					bind:showSelectionMarker
+					showSummaryTab={contentData.hasSummaryTab}
+					{hasAttributeTab}
+					resetKey={panelContentResetKey ?? 'empty'}
+					summary={contentData.summary}
+				/>
+			{:else if contentData?.kind === 'search-address'}
+				<FeaturePanelSummary summary={contentData.summary} />
+			{/if}
+		{/await}
+	{/if}
 </FeaturePanelFrame>
