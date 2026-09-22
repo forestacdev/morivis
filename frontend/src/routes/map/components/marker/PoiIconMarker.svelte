@@ -38,7 +38,11 @@
 	style:height="{appearance.height}px"
 	aria-hidden="true"
 >
-	<img src={iconImage} alt="" draggable="false" style:transform-origin={transformOrigin} />
+	<div class="poi-icon-effect" style:transform-origin={transformOrigin}>
+		<img src={iconImage} alt="" draggable="false" />
+		<span class="ripple"></span>
+		<span class="ripple ripple-delayed"></span>
+	</div>
 </div>
 
 <style>
@@ -47,14 +51,44 @@
 		z-index: 1;
 	}
 
+	.poi-icon-effect {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		transform: scale(1.2);
+		animation: pop-in 180ms ease-out;
+	}
+
 	img {
 		display: block;
 		width: 100%;
 		height: 100%;
 		max-width: none;
-		transform: scale(1.2);
 		filter: drop-shadow(0 1px 3px rgb(0 0 0 / 30%));
-		animation: pop-in 180ms ease-out;
+	}
+
+	.ripple {
+		position: absolute;
+		inset: 0;
+		border: 2px solid #fffbeb;
+		border-radius: 50%;
+		opacity: 0;
+		animation: ripple 1.5s linear infinite;
+	}
+
+	.ripple-delayed {
+		animation-delay: 0.75s;
+	}
+
+	@keyframes ripple {
+		from {
+			scale: 1.2;
+			opacity: 0.8;
+		}
+		to {
+			scale: 1.8;
+			opacity: 0;
+		}
 	}
 
 	@keyframes pop-in {
@@ -67,7 +101,11 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		img {
+		.poi-icon-effect {
+			animation: none;
+		}
+		.ripple {
+			display: none;
 			animation: none;
 		}
 	}
