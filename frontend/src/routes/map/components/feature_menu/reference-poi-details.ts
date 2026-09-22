@@ -1,3 +1,5 @@
+import { getTransitPoiLinks } from './reference-poi-transit';
+
 import {
 	checkOsmPoiMatch,
 	decodePlanetilerPoiId,
@@ -5,6 +7,7 @@ import {
 } from '$routes/map/api/osm-poi';
 import { getPoiKnowledge, type PoiKnowledge } from '$routes/map/api/poi-knowledge';
 import type { FeatureMenuData, FeaturePanelSummary } from '$routes/map/types';
+import { getPoiCategoryLabel } from '$routes/map/utils/data/poi-category';
 
 const getWikidataId = (value: unknown): string | undefined =>
 	typeof value === 'string' && /^Q[1-9]\d*$/.test(value) ? value : undefined;
@@ -31,13 +34,18 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 		}
 	}
 	const name = String(properties['name:ja'] ?? properties.name ?? '名称なし');
+	const transitLinks = getTransitPoiLinks(properties, data.point);
+	const isTransit = transitLinks !== null;
+	if (transitLinks) links.unshift(...transitLinks);
 	const facilityWikidata = getWikidataId(properties.wikidata);
-	const brandWikidata = getWikidataId(properties['brand:wikidata']);
+	const brandWikidata = isTransit ? undefined : getWikidataId(properties['brand:wikidata']);
 	const wikidata = facilityWikidata ?? brandWikidata;
 	const isBrandInformation = !facilityWikidata && !!brandWikidata;
 	let knowledge: PoiKnowledge = { article: null };
 	try {
-		knowledge = await getPoiKnowledge(name === '名称なし' ? '' : name, wikidata);
+		if (!isTransit || wikidata) {
+			knowledge = await getPoiKnowledge(name === '名称なし' ? '' : name, wikidata);
+		}
 	} catch {
 		notices.push('Wikiの情報を取得できませんでした。');
 	}
@@ -49,12 +57,14 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 	const wikipediaUrl = knowledge.wikipediaUrl ?? article?.url;
 	if (wikipediaUrl) links.push({ label: wikipediaLabel, url: wikipediaUrl });
 	const searchUrl = `https://ja.wikipedia.org/w/index.php?search=${encodeURIComponent(name)}`;
-	if (!wikidata && name !== '名称なし') links.push({ label: 'Wikipediaで検索', url: searchUrl });
+	if (!isTransit && !wikidata && name !== '名称なし') {
+		links.push({ label: 'Wikipediaで検索', url: searchUrl });
+	}
 	const thumbnail = image?.thumbnail ?? article?.thumbnail;
 	const license = image?.thumbnail ? image : article?.imageLicense;
 	const summary: FeaturePanelSummary = {
 		title: name,
-		subtitle: String(properties.subclass ?? properties.class ?? 'POI'),
+		subtitle: getPoiCategoryLabel(properties),
 		point: data.point,
 		media: thumbnail
 			? [{
@@ -95,6 +105,7 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 		attributeItems,
 		links,
 		notices,
+		isTransit,
 		brandInformationLabel: isBrandInformation
 			? `ブランド情報${brandName ? `：${brandName}` : ''}`
 			: undefined,

@@ -24,6 +24,66 @@ describe('背景POIの属性表示', () => {
 		knowledgeMock.mockReset().mockResolvedValue({ article: null });
 	});
 
+	it('バス停は公式・時刻表リンクを優先し、ブランドや名称でWikiを取得しない', async () => {
+		osmMock.mockResolvedValue({
+			type: 'node',
+			id: 12,
+			lon: 1,
+			lat: 2,
+			tags: {
+				name: 'test-poi',
+				highway: 'bus_stop',
+				'brand:wikidata': 'Q34',
+				website: 'https://example.com/test-stop',
+				operator: 'test-operator'
+			}
+		});
+		const result = await getReferencePoiDetails(data);
+		expect(result.isTransit).toBe(true);
+		expect(result.links[0]).toEqual({
+			label: '公式サイト',
+			url: 'https://example.com/test-stop'
+		});
+		expect(result.links.some((link) => link.label === '時刻表を検索')).toBe(true);
+		expect(result.links.some((link) => link.label === 'Wikipediaで検索')).toBe(false);
+		expect(knowledgeMock).not.toHaveBeenCalled();
+		expect(result.summary.description).toBeUndefined();
+		expect(result.brandInformationLabel).toBeUndefined();
+	});
+
+	it('駅自身のWikidataがある場合は補足の概要を残す', async () => {
+		osmMock.mockResolvedValue({
+			type: 'node',
+			id: 12,
+			lon: 1,
+			lat: 2,
+			tags: { name: 'test-poi', railway: 'station', wikidata: 'Q12' }
+		});
+		knowledgeMock.mockResolvedValue({
+			article: {
+				title: 'test-station',
+				extract: 'test-history',
+				url: 'https://example.com/test-wiki'
+			}
+		});
+		const result = await getReferencePoiDetails(data);
+		expect(result.isTransit).toBe(true);
+		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12');
+		expect(result.summary.description?.text).toBe('test-history');
+		expect(result.links[0].label).toBe('時刻表を検索');
+	});
+
+	it('OSM取得失敗でもタイルの分類から時刻表検索を出す', async () => {
+		osmMock.mockRejectedValue(new Error('test-error'));
+		const result = await getReferencePoiDetails({
+			...data,
+			properties: { name: 'test-stop', class: 'bus', subclass: 'bus_stop' }
+		});
+		expect(result.isTransit).toBe(true);
+		expect(result.links.some((link) => link.label === '時刻表を検索')).toBe(true);
+		expect(knowledgeMock).not.toHaveBeenCalled();
+	});
+
 	it('ID形式の宣言がなければOSM IDを推測せず、元の属性を表示する', async () => {
 		const result = await getReferencePoiDetails({ ...data, osmIdEncoding: undefined });
 		expect(osmMock).not.toHaveBeenCalled();

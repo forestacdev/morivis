@@ -11,14 +11,13 @@
 		attributeItems: [string, string | number | true][];
 		fields: FieldDef[];
 		resetKey: string;
+		defaultTab?: 'summary' | 'attributes';
 	}
 
-	let { summary, attributeItems, fields, resetKey }: Props = $props();
-	let selectedTab = $state<'summary' | 'attributes'>('summary');
-
-	$effect(() => {
+	let { summary, attributeItems, fields, resetKey, defaultTab = 'summary' }: Props = $props();
+	let selectedTab = $derived.by(() => {
 		void resetKey;
-		selectedTab = 'summary';
+		return defaultTab;
 	});
 </script>
 
