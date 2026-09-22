@@ -21,7 +21,7 @@ import {
 	getAdjustableRangeValue,
 	type MorivisLayerEntry
 } from '$routes/map/data/types';
-import { selectedBaseMap, showCloudLayer } from '$routes/stores/layers';
+import { selectedBaseMap } from '$routes/stores/layers';
 
 import {
 	baseMapAspectSources,
@@ -31,7 +31,6 @@ import {
 	baseMapSatelliteSources,
 	baseMapSlopeSources
 } from '$routes/map/utils/layers/base_map';
-import { cloudSources } from '$routes/map/utils/layers/cloud';
 import { get } from 'svelte/store';
 
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
@@ -728,13 +727,11 @@ export const createSourcesItems = async (
 	}
 
 	const referenceSourcesItem = _type === 'main' ? referenceSources : {};
-	const cloudSourcesItem = get(showCloudLayer) ? cloudSources : {};
 
 	return {
 		...sourceItems,
 		...baseSourcesItem,
-		...referenceSourcesItem,
-		...cloudSourcesItem
+		...referenceSourcesItem
 	} as {
 		[_: string]: SourceSpecification;
 	};

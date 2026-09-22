@@ -33,15 +33,9 @@ import {
 	baseMapSatelliteLayers,
 	baseMapSlopeLayers
 } from '$routes/map/utils/layers/base_map';
-import { cloudLayers } from '$routes/map/utils/layers/cloud';
 import { createBaseLayerItem } from '$routes/map/utils/layers/highlight-builder';
 import { hillshadeLayers } from '$routes/map/utils/layers/hillshade';
-import {
-	selectedBaseMap,
-	showCloudLayer,
-	showHillshadeLayer,
-	showStreetViewLayer
-} from '$routes/stores/layers';
+import { selectedBaseMap, showHillshadeLayer, showStreetViewLayer } from '$routes/stores/layers';
 
 import { getTemporalFilter } from '$routes/map/utils/layers/vector/filter';
 import {
@@ -536,11 +530,8 @@ export const createLayersItems = (
 		: [];
 	const hillshadeLayerItems = get(showHillshadeLayer) && _type === 'main' ? hillshadeLayers : [];
 
-	const cloudLayerItems = get(showCloudLayer) && _type === 'main' ? cloudLayers : [];
-
 	return [
 		...baseMapLayerItems,
-		...cloudLayerItems,
 		...referenceLineItems,
 		...hillshadeLayerItems,
 

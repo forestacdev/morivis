@@ -97,7 +97,6 @@
 		showStreetViewLayer,
 		showXYZTileLayer,
 		showLineLayer,
-		showCloudLayer,
 		type BaseMapType,
 		activeLayerIdsStore
 	} from '$routes/stores/layers';
@@ -1029,9 +1028,6 @@
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showXYZTileLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
-		}),
-		showCloudLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		})
 	);

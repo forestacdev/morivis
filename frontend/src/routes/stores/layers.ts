@@ -176,9 +176,6 @@ export const showHillshadeLayer = writable<boolean>(false);
 /** 道路・線路・境界線レイヤー */
 export const showLineLayer = writable<boolean>(true);
 
-/** 雲レイヤー */
-export const showCloudLayer = writable<boolean>(true);
-
 /** タイル座標レイヤー */
 export const showXYZTileLayer = writable<boolean>(false);
 

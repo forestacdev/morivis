@@ -77,15 +77,12 @@ export const baseMapSatelliteSources: Record<string, RasterSourceSpecification> 
 		maxzoom: 18,
 		bounds: [122.933755, 24.045713, 153.986895, 45.556277],
 		attribution: '国土地理院'
-	}
-	// base_gsi_rinya_m: {
-	// 	type: 'raster',
-	// 	tiles: ['https://forestacdev.github.io/tiles-ensyurin-photo/tiles/{z}/{x}/{y}.webp'],
-	// 	tileSize: 256,
-	// 	maxzoom: 18,
-	// 	minzoom: 14,
-	// 	attribution: ''
-	// }
+	},
+	cloud: {
+		type: 'raster',
+		url: `pmtiles://${ENTRY_PMTILES_RASTER_PATH}/cloud.pmtiles`,
+		attribution: ''
+	} as RasterSourceSpecification
 };
 
 export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
@@ -113,19 +110,23 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 			'raster-brightness-max': 0.8,
 			'raster-saturation': -0.1
 		}
-	}
-	// {
-	// 	id: 'base_gsi_rinya_m',
-	// 	source: 'base_gsi_rinya_m',
-	// 	type: 'raster',
-	// 	maxzoom: 24,
-	// 	minzoom: 12,
-	// 	paint: {
-	// 		'raster-opacity': 0.9,
-	// 		'raster-brightness-min': 0,
-	// 		'raster-brightness-max': 0.8
-	// 	}
-	// }
+	},
+	{
+		id: 'cloud_layer',
+		source: 'cloud',
+		type: 'raster',
+		paint: {
+			'raster-opacity': [
+				'interpolate',
+				['linear'],
+				['zoom'],
+				4,
+				1.0, // ズーム0で不透明度1.0（完全不透明）
+				5,
+				0
+			]
+		}
+	} as RasterLayerSpecification
 ];
 
 /** 標高段彩図 */
@@ -133,9 +134,9 @@ export const baseMapReliefSources: Record<string, RasterSourceSpecification> = {
 	relief: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&baseUrl='
-			+ encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp')
-			+ '&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=relief&max=4000&min=0&colorMap=gsi_relief&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -208,9 +209,9 @@ export const baseMapSlopeSources: Record<string, RasterSourceSpecification> = {
 	slope: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&baseUrl='
-			+ encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp')
-			+ '&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=slope&max=90&min=0&colorMap=salinity&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -235,9 +236,9 @@ export const baseMapAspectSources: Record<string, RasterSourceSpecification> = {
 	aspect: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&baseUrl='
-			+ encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp')
-			+ '&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=aspect&max=360&min=0&colorMap=rainbow-soft&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,
@@ -262,9 +263,9 @@ export const baseMapCurvatureSources: Record<string, RasterSourceSpecification> 
 	curvature: {
 		type: 'raster',
 		tiles: [
-			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=cs&tileSize=512&baseUrl='
-			+ encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp')
-			+ '&x={x}&y={y}&z={z}'
+			'webgl://https://tiles.mapterhorn.com/{z}/{x}/{y}.webp?entryId=base_map&formatType=image&demType=terrarium&mode=curvature&max=4000&min=0&colorMap=cs&tileSize=512&baseUrl=' +
+				encodeURIComponent('https://tiles.mapterhorn.com/{z}/{x}/{y}.webp') +
+				'&x={x}&y={y}&z={z}'
 		],
 		maxzoom: 16,
 		minzoom: 0,

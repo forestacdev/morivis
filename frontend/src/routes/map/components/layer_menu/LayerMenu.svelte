@@ -29,8 +29,7 @@
 		showLabelLayer,
 		showHillshadeLayer,
 		showXYZTileLayer,
-		showLineLayer,
-		showCloudLayer
+		showLineLayer
 	} from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
 	import { showLayerAddedNotification } from '$routes/stores/notification';
@@ -516,9 +515,6 @@
 					</MapSettingItem>
 					<MapSettingItem>
 						<Switch label="陰影" bind:value={$showHillshadeLayer} />
-					</MapSettingItem>
-					<MapSettingItem>
-						<Switch label="雲" bind:value={$showCloudLayer} />
 					</MapSettingItem>
 					<MapSettingItem>
 						<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
