@@ -167,20 +167,14 @@ export const getEntryIds = (layerEntries: MorivisLayerEntry[]): string[] => {
 export type BaseMapType = 'satellite' | 'relief' | 'slope' | 'aspect' | 'curvature' | 'osm';
 export const selectedBaseMap = writable<BaseMapType>('satellite');
 
-/** ラベルレイヤー */
+/** 地名・POIレイヤー */
 export const showLabelLayer = writable<boolean>(true);
-
-/** POIレイヤー */
-export const showPoiLayer = writable<boolean>(false);
 
 /** 陰影レイヤー */
 export const showHillshadeLayer = writable<boolean>(false);
 
-/** 境界 */
-export const showBoundaryLayer = writable<boolean>(false);
-
-/** 道路レイヤー */
-export const showRoadLayer = writable<boolean>(true);
+/** 道路・線路・境界線レイヤー */
+export const showLineLayer = writable<boolean>(true);
 
 /** 雲レイヤー */
 export const showCloudLayer = writable<boolean>(true);

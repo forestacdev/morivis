@@ -33,22 +33,13 @@ import {
 	baseMapSatelliteLayers,
 	baseMapSlopeLayers
 } from '$routes/map/utils/layers/base_map';
-import { boundaryLayers } from '$routes/map/utils/layers/boundary';
 import { cloudLayers } from '$routes/map/utils/layers/cloud';
 import { createBaseLayerItem } from '$routes/map/utils/layers/highlight-builder';
 import { hillshadeLayers } from '$routes/map/utils/layers/hillshade';
-import { labelLayers } from '$routes/map/utils/layers/label';
-import { poiLayers } from '$routes/map/utils/layers/poi';
-import { railLineLayers } from '$routes/map/utils/layers/rail';
-import { roadLabelLayers, roadLineLayers } from '$routes/map/utils/layers/road';
 import {
 	selectedBaseMap,
-	showBoundaryLayer,
 	showCloudLayer,
 	showHillshadeLayer,
-	showLabelLayer,
-	showPoiLayer,
-	showRoadLayer,
 	showStreetViewLayer
 } from '$routes/stores/layers';
 
@@ -156,7 +147,8 @@ export const createVectorLayer = (
 // layersの作成
 export const createLayersItems = (
 	_dataEntries: MorivisLayerEntry[],
-	_type: 'main' | 'preview' = 'main'
+	_type: 'main' | 'preview' = 'main',
+	referenceLayers: LayerSpecification[] = []
 ): LayerSpecification[] => {
 	const symbolLayerItems: LayerSpecification[] = [];
 	const circleLayerItems: LayerSpecification[] = [];
@@ -536,12 +528,12 @@ export const createLayersItems = (
 		get(selectedBaseMap) !== 'aspect';
 	// const isNotRelief = get(selectedBaseMap) !== 'relief';
 
-	const labelLayerItems = get(showLabelLayer) && _type === 'main' ? labelLayers : [];
-	const poiLayerItems = get(showPoiLayer) && _type === 'main' ? poiLayers : [];
-	const roadLabelLayerItems = get(showRoadLayer) && _type === 'main' ? roadLabelLayers : [];
-	const roadLineLayerItems = get(showRoadLayer) && _type === 'main' ? roadLineLayers : [];
-	const railLayerItems = get(showRoadLayer) && _type === 'main' ? railLineLayers : [];
-	const boundaryLayerItems = get(showBoundaryLayer) && _type === 'main' ? boundaryLayers : [];
+	const referenceLineItems = _type === 'main'
+		? referenceLayers.filter((layer) => layer.type === 'line')
+		: [];
+	const referenceSymbolItems = _type === 'main'
+		? referenceLayers.filter((layer) => layer.type === 'symbol')
+		: [];
 	const hillshadeLayerItems = get(showHillshadeLayer) && _type === 'main' ? hillshadeLayers : [];
 
 	const cloudLayerItems = get(showCloudLayer) && _type === 'main' ? cloudLayers : [];
@@ -549,9 +541,7 @@ export const createLayersItems = (
 	return [
 		...baseMapLayerItems,
 		...cloudLayerItems,
-		...boundaryLayerItems,
-		...railLayerItems,
-		...roadLineLayerItems,
+		...referenceLineItems,
 		...hillshadeLayerItems,
 
 		...rasterLayerItems,
@@ -561,9 +551,7 @@ export const createLayersItems = (
 
 		...circleLayerItems,
 		...streetViewLayers,
-		...roadLabelLayerItems,
-		...labelLayerItems,
-		...poiLayerItems,
+		...referenceSymbolItems,
 
 		...symbolLayerItems,
 		...circleIconLayerItems

@@ -29,8 +29,7 @@
 		showLabelLayer,
 		showHillshadeLayer,
 		showXYZTileLayer,
-		showRoadLayer,
-		showBoundaryLayer,
+		showLineLayer,
 		showCloudLayer
 	} from '$routes/stores/layers';
 	import { mapStore, type MapState } from '$routes/stores/map';
@@ -510,13 +509,10 @@
 					<div class="h-[300px] w-full shrink-0"></div>
 				{:else if selectedTab === 'map-display'}
 					<MapSettingItem>
-						<Switch label="境界線" bind:value={$showBoundaryLayer} />
+						<Switch label="地名・POI" bind:value={$showLabelLayer} />
 					</MapSettingItem>
 					<MapSettingItem>
-						<Switch label="地名等" bind:value={$showLabelLayer} />
-					</MapSettingItem>
-					<MapSettingItem>
-						<Switch label="道路・線路" bind:value={$showRoadLayer} />
+						<Switch label="道路・線路・境界線" bind:value={$showLineLayer} />
 					</MapSettingItem>
 					<MapSettingItem>
 						<Switch label="陰影" bind:value={$showHillshadeLayer} />

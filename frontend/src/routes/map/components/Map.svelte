@@ -67,6 +67,11 @@
 	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
+	import {
+		loadReferenceStyle,
+		selectReferenceStyle,
+		type ReferenceStyle
+	} from '$routes/map/utils/layers/reference-style';
 	import maplibregl from '$routes/map/utils/maplibre';
 	import type {
 		BackgroundLayerSpecification,
@@ -91,10 +96,9 @@
 		showHillshadeLayer,
 		showStreetViewLayer,
 		showXYZTileLayer,
-		showRoadLayer,
+		showLineLayer,
 		showCloudLayer,
 		type BaseMapType,
-		showBoundaryLayer,
 		activeLayerIdsStore
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
@@ -266,12 +270,32 @@
 		_dataEntries: MorivisLayerEntry[],
 		mcaGridEntries: MorivisLayerEntry[]
 	): Promise<StyleSpecification> => {
+		let referenceStyle: ReferenceStyle = { layers: [], sources: {} };
+		const referenceVisibility = {
+			line: $showLineLayer,
+			label: $showLabelLayer
+		};
+		if (!isIsolatedPreview && Object.values(referenceVisibility).some(Boolean)) {
+			try {
+				referenceStyle = selectReferenceStyle(await loadReferenceStyle(), referenceVisibility);
+			} catch (error) {
+				console.error('Failed to load reference style:', error);
+				showNotification('線・地名・POIのスタイルを取得できませんでした', 'error');
+			}
+		}
+
 		// ソースとレイヤーの作成
 		const sources =
 			!isIsolatedPreview || mcaGridEntries.length
-				? await createSourcesItems([...(!isIsolatedPreview ? _dataEntries : []), ...mcaGridEntries])
+				? await createSourcesItems(
+						[...(!isIsolatedPreview ? _dataEntries : []), ...mcaGridEntries],
+						'main',
+						referenceStyle.sources
+					)
 				: {};
-		const layers = !isIsolatedPreview ? await createLayersItems(_dataEntries) : [];
+		const layers = !isIsolatedPreview
+			? createLayersItems(_dataEntries, 'main', referenceStyle.layers)
+			: [];
 		// 派生グリッドはクリック対象を持たず、通常プレビューの背景よりも上へ重ねる。
 		const mcaGridLayers = createLayersItems(mcaGridEntries, 'preview').map((layer) => ({
 			...layer,
@@ -995,16 +1019,13 @@
 		selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
-		showBoundaryLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
-		}),
 		showHillshadeLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showLabelLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
-		showRoadLayer.subscribe(() => {
+		showLineLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showXYZTileLayer.subscribe(() => {

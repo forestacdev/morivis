@@ -10,8 +10,7 @@
 		showLabelLayer,
 		showHillshadeLayer,
 		showXYZTileLayer,
-		showRoadLayer,
-		showBoundaryLayer,
+		showLineLayer,
 		showStreetViewLayer,
 		showCloudLayer
 	} from '$routes/stores/layers';
@@ -75,9 +74,8 @@
 					</div>
 
 					<div class="ml-6 grid w-full grid-cols-2 items-center justify-center gap-y-4">
-						<Checkbox label="境界線" bind:value={$showBoundaryLayer} disabled={isOsm} />
-						<Checkbox label="地名等" bind:value={$showLabelLayer} disabled={isOsm} />
-						<Checkbox label="道路・線路" bind:value={$showRoadLayer} disabled={isOsm} />
+						<Checkbox label="地名・POI" bind:value={$showLabelLayer} disabled={isOsm} />
+						<Checkbox label="道路・線路・境界線" bind:value={$showLineLayer} disabled={isOsm} />
 						<Checkbox label="陰影" bind:value={$showHillshadeLayer} disabled={isNotHillshade} />
 						<Checkbox label="3D地形" bind:value={$isTerrain3d} />
 						<Checkbox label="雲" bind:value={$showCloudLayer} disabled={isNotSatellite} />

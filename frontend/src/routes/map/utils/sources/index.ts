@@ -21,14 +21,7 @@ import {
 	getAdjustableRangeValue,
 	type MorivisLayerEntry
 } from '$routes/map/data/types';
-import {
-	selectedBaseMap,
-	showBoundaryLayer,
-	showCloudLayer,
-	showLabelLayer,
-	showPoiLayer,
-	showRoadLayer
-} from '$routes/stores/layers';
+import { selectedBaseMap, showCloudLayer } from '$routes/stores/layers';
 
 import {
 	baseMapAspectSources,
@@ -38,11 +31,7 @@ import {
 	baseMapSatelliteSources,
 	baseMapSlopeSources
 } from '$routes/map/utils/layers/base_map';
-import { boundarySources } from '$routes/map/utils/layers/boundary';
 import { cloudSources } from '$routes/map/utils/layers/cloud';
-import { labelSources } from '$routes/map/utils/layers/label';
-import { roadSources } from '$routes/map/utils/layers/road';
-import { poiSources } from '$routes/map/utils/layers/poi';
 import { get } from 'svelte/store';
 
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
@@ -295,7 +284,8 @@ export const getRasterTiffImageSource = async (
 
 export const createSourcesItems = async (
 	_dataEntries: MorivisLayerEntry[],
-	_type: 'main' | 'preview' = 'main'
+	_type: 'main' | 'preview' = 'main',
+	referenceSources: Record<string, VectorSourceSpecification> = {}
 ): Promise<{ [_: string]: SourceSpecification }> => {
 	// 各エントリの非同期処理結果を配列に格納
 	const sourceItemsArray = await Promise.all(
@@ -737,19 +727,13 @@ export const createSourcesItems = async (
 		baseSourcesItem = {};
 	}
 
-	const labelSourcesItem = get(showLabelLayer) ? labelSources : {};
-	const roadSourcesItem = get(showRoadLayer) ? roadSources : {};
-	const boundarySourcesItem = get(showBoundaryLayer) ? boundarySources : {};
+	const referenceSourcesItem = _type === 'main' ? referenceSources : {};
 	const cloudSourcesItem = get(showCloudLayer) ? cloudSources : {};
-	const poiSourcesItem = get(showPoiLayer) ? poiSources : {};
 
 	return {
 		...sourceItems,
 		...baseSourcesItem,
-		...poiSourcesItem,
-		...labelSourcesItem,
-		...roadSourcesItem,
-		...boundarySourcesItem,
+		...referenceSourcesItem,
 		...cloudSourcesItem
 	} as {
 		[_: string]: SourceSpecification;
