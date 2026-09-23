@@ -185,5 +185,9 @@ export const showRegionalMeshLayer = writable<boolean>(false);
 /** H3グリッド */
 export const showH3Layer = writable<boolean>(false);
 
+/** 平面直角座標グリッド（JGD2011）。初期表示地域の第7系を既定にする。 */
+export const showPlaneGridLayer = writable<boolean>(false);
+export const planeGridZone = writable<number>(7);
+
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);

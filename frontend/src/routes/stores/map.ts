@@ -1,4 +1,8 @@
 import { h3Protocol, terminateH3Worker } from '$routes/map/protocol/vector/h3';
+import {
+	planeGridProtocol,
+	terminatePlaneGridWorker
+} from '$routes/map/protocol/vector/plane-grid';
 import type { CSSCursor } from '$routes/map/types';
 import maplibregl from '$routes/map/utils/maplibre';
 import type {
@@ -331,6 +335,21 @@ const releaseH3Protocol = () => {
 	maplibregl.removeProtocol(h3Protocol.protocolName);
 	terminateH3Worker();
 	h3ProtocolRegistered = false;
+};
+
+let planeGridProtocolRegistered = false;
+
+const ensurePlaneGridProtocol = () => {
+	if (planeGridProtocolRegistered) return;
+	maplibregl.addProtocol(planeGridProtocol.protocolName, planeGridProtocol.request);
+	planeGridProtocolRegistered = true;
+};
+
+const releasePlaneGridProtocol = () => {
+	if (!planeGridProtocolRegistered) return;
+	maplibregl.removeProtocol(planeGridProtocol.protocolName);
+	terminatePlaneGridWorker();
+	planeGridProtocolRegistered = false;
 };
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
@@ -1653,6 +1672,7 @@ const createMapStore = () => {
 		map.remove();
 		releaseRegionalMeshProtocol();
 		releaseH3Protocol();
+		releasePlaneGridProtocol();
 		map = null;
 		set(null);
 
@@ -1861,7 +1881,9 @@ const createMapStore = () => {
 		ensureRegionalMeshProtocol,
 		releaseRegionalMeshProtocol,
 		ensureH3Protocol,
-		releaseH3Protocol
+		releaseH3Protocol,
+		ensurePlaneGridProtocol,
+		releasePlaneGridProtocol
 	};
 };
 

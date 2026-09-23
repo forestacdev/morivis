@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
+	import PlaneGridSettings from '$routes/map/components/PlaneGridSettings.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
 	import { baseMapList } from '$routes/map/utils/layers/base_map';
 	import {
@@ -11,6 +12,7 @@
 		showXYZTileLayer,
 		showRegionalMeshLayer,
 		showH3Layer,
+		showPlaneGridLayer,
 		showLineLayer,
 		showStreetViewLayer
 	} from '$routes/stores/layers';
@@ -106,6 +108,12 @@
 			icon: 'mdi:hexagon-multiple-outline',
 			value: $showH3Layer,
 			setValue: showH3Layer.set
+		},
+		{
+			label: '平面直角座標',
+			icon: 'mdi:axis-arrow',
+			value: $showPlaneGridLayer,
+			setValue: showPlaneGridLayer.set
 		}
 	]);
 </script>
@@ -177,6 +185,9 @@
 					</div>
 				{/each}
 			</div>
+			{#if $showPlaneGridLayer}
+				<PlaneGridSettings />
+			{/if}
 		</div>
 	</div>
 {/if}

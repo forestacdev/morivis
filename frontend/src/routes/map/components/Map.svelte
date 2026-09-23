@@ -64,6 +64,7 @@
 		WcsViewportTooBroadError
 	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
+	import { createPlaneGridStyle } from '$routes/map/utils/layers/plane-grid';
 	import { createH3Style } from '$routes/map/utils/layers/h3';
 	import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
 	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
@@ -100,6 +101,8 @@
 		showXYZTileLayer,
 		showRegionalMeshLayer,
 		showH3Layer,
+		showPlaneGridLayer,
+		planeGridZone,
 		showLineLayer,
 		type BaseMapType,
 		activeLayerIdsStore
@@ -467,6 +470,11 @@
 			$showRegionalMeshLayer,
 			DEFAULT_SYMBOL_TEXT_FONT
 		);
+		const planeGridStyle = createPlaneGridStyle(
+			$showPlaneGridLayer,
+			$planeGridZone,
+			DEFAULT_SYMBOL_TEXT_FONT
+		);
 		const h3Style = createH3Style($showH3Layer, DEFAULT_SYMBOL_TEXT_FONT);
 		const mapStyle: StyleSpecification = {
 			version: 8,
@@ -488,6 +496,7 @@
 				...xyzTileSources,
 				...regionalMeshStyle.sources,
 				...h3Style.sources,
+				...planeGridStyle.sources,
 				...sources,
 				draw_source: {
 					type: 'geojson',
@@ -528,6 +537,7 @@
 				...xyzTileLayer,
 				...regionalMeshStyle.layers,
 				...h3Style.layers,
+				...planeGridStyle.layers,
 				...previewLayers,
 				...mcaGridLayers,
 				{
@@ -661,6 +671,7 @@
 		}
 		mapStore.releaseRegionalMeshProtocol();
 		mapStore.releaseH3Protocol();
+		mapStore.releasePlaneGridProtocol();
 	});
 
 	// マップのスタイルの更新
@@ -888,6 +899,12 @@
 			mapStore.releaseH3Protocol();
 		}
 
+		if ($showPlaneGridLayer) {
+			mapStore.ensurePlaneGridProtocol();
+		} else {
+			mapStore.releasePlaneGridProtocol();
+		}
+
 		const mapStyle = await createMapStyle(mapLibreEntry as MorivisLayerEntry[], mcaGridEntries);
 		// 後から開始した更新がある場合、この結果は古いので破棄する。
 		if (updateId !== styleUpdateId) return;
@@ -1061,6 +1078,12 @@
 		}),
 		showXYZTileLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showPlaneGridLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		planeGridZone.subscribe(() => {
+			if ($showPlaneGridLayer) setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showH3Layer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
