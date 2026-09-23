@@ -498,14 +498,6 @@ export const createLayersItems = (
 	if (_type === 'main') {
 		if (get(selectedBaseMap) === 'satellite') {
 			baseMapLayerItems = baseMapSatelliteLayers;
-		} else if (get(selectedBaseMap) === 'relief') {
-			baseMapLayerItems = baseMapReliefLayers;
-		} else if (get(selectedBaseMap) === 'slope') {
-			baseMapLayerItems = baseMapSlopeLayers;
-		} else if (get(selectedBaseMap) === 'aspect') {
-			baseMapLayerItems = baseMapAspectLayers;
-		} else if (get(selectedBaseMap) === 'curvature') {
-			baseMapLayerItems = baseMapCurvatureLayers;
 		} else if (get(selectedBaseMap) === 'osm') {
 			baseMapLayerItems = baseMapOsmLayers;
 		} else {
@@ -516,19 +508,15 @@ export const createLayersItems = (
 	}
 
 	const isNotOsm = get(selectedBaseMap) !== 'osm';
-	const isNotHillshade =
-		get(selectedBaseMap) !== 'satellite' &&
-		get(selectedBaseMap) !== 'slope' &&
-		get(selectedBaseMap) !== 'aspect';
+	const isNotHillshade = get(selectedBaseMap) !== 'satellite';
 	// const isNotRelief = get(selectedBaseMap) !== 'relief';
 
-	const referenceLineItems = _type === 'main'
-		? referenceLayers.filter((layer) => layer.type === 'line')
-		: [];
-	const referenceSymbolItems = _type === 'main'
-		? referenceLayers.filter((layer) => layer.type === 'symbol')
-		: [];
-	const hillshadeLayerItems = get(showHillshadeLayer) && _type === 'main' ? hillshadeLayers : [];
+	const referenceLineItems =
+		_type === 'main' && isNotOsm ? referenceLayers.filter((layer) => layer.type === 'line') : [];
+	const referenceSymbolItems =
+		_type === 'main' && isNotOsm ? referenceLayers.filter((layer) => layer.type === 'symbol') : [];
+	const hillshadeLayerItems =
+		get(showHillshadeLayer) && _type === 'main' && isNotHillshade ? hillshadeLayers : [];
 
 	return [
 		...baseMapLayerItems,

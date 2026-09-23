@@ -226,7 +226,6 @@
 				</button>
 
 				<Switch label="デバッグモード" bind:value={$isDebugMode} />
-				<Switch label="タイル座標" bind:value={$showXYZTileLayer} />
 			{/if}
 		</ui>
 		<!-- <ui class="mt-auto text-end"> Ver. 0.1.0 beta </ui> -->

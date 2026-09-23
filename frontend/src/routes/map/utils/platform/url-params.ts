@@ -19,11 +19,7 @@ const flushUrlParams = () => {
 	const params = get(store);
 
 	for (const [key, value] of Object.entries(pendingParams)) {
-		if (value === undefined) {
-			delete params[key];
-			continue;
-		}
-
+		// キーの省略は変更なしとして扱われるため、削除時も undefined を明示する。
 		params[key] = value;
 	}
 
@@ -170,8 +166,8 @@ export const setMapParams = (option: MapPosition) => {
 		z: option.zoom.toFixed(1),
 		p: option.pitch.toFixed(0),
 		b: option.bearing.toFixed(0),
-		sv: !get(isStreetView) ? '-1' : undefined,
-		'3d': !get(isTerrain3d) ? '0' : undefined
+		...(get(isStreetView) ? {} : { sv: undefined }),
+		'3d': get(isTerrain3d) ? '1' : undefined
 	});
 };
 
@@ -213,7 +209,7 @@ export const getStreetViewCameraParams = (): { x: number; y: number; } | null =>
 
 /** 3d用のURLパラメータのセット */
 export const set3dParams = (numString: '0' | '1') => {
-	scheduleUrlUpdate('3d', numString);
+	scheduleUrlUpdate('3d', numString === '1' ? '1' : undefined);
 };
 
 /** 3d用のURLパラメータの取得 */

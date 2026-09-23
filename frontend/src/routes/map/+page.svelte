@@ -123,7 +123,8 @@
 	import {
 		get3dParams,
 		getParams,
-		getStreetViewParams
+		getStreetViewParams,
+		removeUrlParams
 	} from '$routes/map/utils/platform/url-params';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import {
@@ -1043,6 +1044,7 @@
 			isBlocked.set(false);
 		} else {
 			// ストリートビュー終了時
+			removeUrlParams('sv');
 			mapStore.easeTo({
 				center: streetViewPoint.geometry.coordinates,
 				zoom: 20,
