@@ -46,7 +46,11 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 	let knowledge: PoiKnowledge = { article: null };
 	try {
 		if (!isTransit || wikidata) {
-			knowledge = await getPoiKnowledge(name === '名称なし' ? '' : name, wikidata);
+			knowledge = await getPoiKnowledge(
+				name === '名称なし' ? '' : name,
+				wikidata,
+				isBrandInformation ? 'logo' : 'image'
+			);
 		}
 	} catch {
 		notices.push('Wikiの情報を取得できませんでした。');
@@ -62,7 +66,7 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 	if (!isTransit && !wikidata && name !== '名称なし') {
 		links.push({ label: 'Wikipediaで検索', url: searchUrl });
 	}
-	const thumbnail = image?.thumbnail ?? article?.thumbnail;
+	const thumbnail = image?.thumbnail ?? (isBrandInformation ? undefined : article?.thumbnail);
 	const license = image?.thumbnail ? image : article?.imageLicense;
 	const summary: FeaturePanelSummary = {
 		title: name,
@@ -72,7 +76,7 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 			? [{
 				type: 'image',
 				url: thumbnail.source,
-				alt: isBrandInformation ? `${brandName || 'ブランド'}の画像` : name,
+				alt: isBrandInformation ? `${brandName || 'ブランド'}のロゴ` : name,
 				credit: license?.artist,
 				licenseName: license?.licenseShortName,
 				licenseUrl: license?.licenseUrl,

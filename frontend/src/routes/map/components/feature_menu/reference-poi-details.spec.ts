@@ -72,7 +72,7 @@ describe('背景POIの属性表示', () => {
 		});
 		const result = await getReferencePoiDetails(data);
 		expect(result.isTransit).toBe(true);
-		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12');
+		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12', 'image');
 		expect(result.summary.description?.text).toBe('test-history');
 		expect(result.links[0].label).toBe('時刻表（Yahoo!路線情報）');
 	});
@@ -92,7 +92,7 @@ describe('背景POIの属性表示', () => {
 		const result = await getReferencePoiDetails({ ...data, osmIdEncoding: undefined });
 		expect(osmMock).not.toHaveBeenCalled();
 		expect(result.attributeItems).toContainEqual(['name', 'test-poi']);
-		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', undefined);
+		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', undefined, 'image');
 	});
 
 	it('確認済みOSMタグを渡し、表示する名称と位置はPOIを維持する', async () => {
@@ -107,15 +107,19 @@ describe('背景POIの属性表示', () => {
 			article: {
 				title: 'test-article',
 				extract: 'test-extract',
-				url: 'https://example.com/test-article'
+				url: 'https://example.com/test-article',
+				thumbnail: { source: 'https://example.com/test-facility.png' }
 			}
 		});
 		const result = await getReferencePoiDetails(data);
-		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12');
+		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12', 'image');
 		expect(result.summary.title).toBe('test-poi');
 		expect(result.summary.point).toEqual([1, 2]);
 		expect(result.attributeItems).toContainEqual(['wikidata', 'Q12']);
 		expect(result.summary.description?.text).toBe('test-extract');
+		expect(result.summary.media?.[0]).toMatchObject({
+			url: 'https://example.com/test-facility.png'
+		});
 		expect(result.brandInformationLabel).toBeUndefined();
 	});
 
@@ -152,20 +156,49 @@ describe('背景POIの属性表示', () => {
 				url: 'https://example.com/test-brand',
 				thumbnail: { source: 'https://example.com/test-brand.png' }
 			},
+			image: { isAllowed: true, thumbnail: { source: 'https://example.com/test-logo.png' } },
 			wikidataUrl: 'https://www.wikidata.org/wiki/Q12'
 		});
 		const result = await getReferencePoiDetails(data);
-		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12');
+		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12', 'logo');
 		expect(result.brandInformationLabel).toBe('ブランド情報：test-brand');
 		expect(result.summary.title).toBe('test-poi');
 		expect(result.summary.point).toEqual([1, 2]);
 		expect(result.summary.description?.text).toBe('test-brand-description');
 		expect(result.summary.description?.linkLabel).toBe('ブランドのWikipediaを見る');
-		expect(result.summary.media?.[0]).toMatchObject({ type: 'image', alt: 'test-brandの画像' });
+		expect(result.summary.media?.[0]).toMatchObject({
+			type: 'image',
+			alt: 'test-brandのロゴ',
+			url: 'https://example.com/test-logo.png'
+		});
 		expect(result.links).not.toContainEqual({
 			label: 'ブランドのWikidata',
 			url: 'https://www.wikidata.org/wiki/Q12'
 		});
+		expect(result.links).toContainEqual({
+			label: 'ブランドのWikipedia',
+			url: 'https://example.com/test-brand'
+		});
+	});
+
+	it('ブランドのロゴがなくてもWikipediaの写真を代わりに表示しない', async () => {
+		knowledgeMock.mockResolvedValue({
+			article: {
+				title: 'test-brand',
+				extract: 'test-description',
+				url: 'https://example.com/test-brand',
+				thumbnail: { source: 'https://example.com/test-building.png' }
+			},
+			image: null
+		});
+		const result = await getReferencePoiDetails({
+			...data,
+			osmIdEncoding: undefined,
+			properties: { name: 'test-poi', 'brand:wikidata': 'Q12' }
+		});
+		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12', 'logo');
+		expect(result.summary.media).toEqual([]);
+		expect(result.summary.description?.text).toBe('test-description');
 		expect(result.links).toContainEqual({
 			label: 'ブランドのWikipedia',
 			url: 'https://example.com/test-brand'
@@ -181,7 +214,7 @@ describe('背景POIの属性表示', () => {
 			tags: { name: 'test-poi', 'brand:wikidata': 'test-invalid-id' }
 		});
 		const result = await getReferencePoiDetails(data);
-		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', undefined);
+		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', undefined, 'image');
 		expect(result.brandInformationLabel).toBeUndefined();
 	});
 
@@ -194,7 +227,7 @@ describe('背景POIの属性表示', () => {
 			tags: { name: 'test-other', wikidata: 'Q12' }
 		});
 		const result = await getReferencePoiDetails(data);
-		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', undefined);
+		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', undefined, 'image');
 		expect(result.attributeItems).not.toContainEqual(['wikidata', 'Q12']);
 		expect(result.notices).toHaveLength(1);
 	});

@@ -2,8 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
-	import Checkbox from './layer_menu/Checkbox.svelte';
-
+	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
 	import { baseMapList } from '$routes/map/utils/layers/base_map';
 	import {
 		selectedBaseMap,

@@ -3,18 +3,17 @@
 	import Fuse from 'fuse.js';
 	import { onMount } from 'svelte';
 
-	import { getResetLayerEntries } from './layer_menu/context';
-	import StreetViewControl from './map_control/StreetViewControl.svelte';
-	import SearchSuggest from './search_menu/SearchSuggest.svelte';
-
 	import { ICONS } from '$lib/icons';
 	import { DATA_PATH } from '$routes/constants';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import { getPostcodeInfo } from '$routes/map/api/postcode';
+	import { getResetLayerEntries } from '$routes/map/components/layer_menu/context';
+	import LayerControlPane from '$routes/map/components/LayerControlPane.svelte';
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
-	import GlobeControl from '$routes/map/components/map_control/GlobeControl.svelte';
-	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
+	import LayerControl from '$routes/map/components/map_control/LayerControl.svelte';
+	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
 	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
+	import SearchSuggest from '$routes/map/components/search_menu/SearchSuggest.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import type { ResultData, ResultAddressData } from '$routes/map/utils/data/search-result';
@@ -103,6 +102,7 @@
 	});
 
 	let searchSuggests = $state<ResultData[] | null>(null);
+	let showLayerPane = $state<boolean>(false);
 
 	// 検索処理の実行
 	const searchFeature = async (searchWord: string) => {
@@ -303,8 +303,9 @@
 		>
 			<GeolocateControl />
 			<StreetViewControl />
-			<TerrainControl />
-			<GlobeControl />
+			<!-- <TerrainControl />
+			<GlobeControl /> -->
+			<LayerControl bind:showLayerPane />
 
 			<!-- ハンバーガーメニュー -->
 			<button
@@ -369,6 +370,9 @@
 		</div>
 	</div>
 {/if}
+
+<!-- レイヤーコントロールパネル -->
+<LayerControlPane bind:showMenu={showLayerPane} />
 
 <style>
 	.set-glow {

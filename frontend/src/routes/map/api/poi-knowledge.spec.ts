@@ -49,6 +49,92 @@ describe('POI Wiki情報', () => {
 		expect(fetchMock).toHaveBeenCalledTimes(1);
 	});
 
+	it('ロゴはP154から取得し、通常画像とキャッシュを分ける', async () => {
+		const bitmap = { width: 2, height: 1, close: vi.fn() };
+		const context = { fillStyle: '', fillRect: vi.fn(), drawImage: vi.fn() };
+		const canvas = {
+			width: 0,
+			height: 0,
+			getContext: () => context,
+			toDataURL: () => 'data:image/png;base64,test-logo'
+		};
+		vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue(bitmap));
+		vi.stubGlobal('document', { createElement: () => canvas });
+		const entity = {
+			claims: {
+				P18: [{ mainsnak: { datavalue: { value: 'test-building.png' } } }],
+				P154: [
+					{ rank: 'deprecated', mainsnak: { datavalue: { value: 'test-old-logo.svg' } } },
+					{ mainsnak: { datavalue: { value: 'test-alternate-logo.svg' } } },
+					{ rank: 'preferred', mainsnak: { datavalue: { value: 'test-logo.svg' } } }
+				]
+			}
+		};
+		fetchMock.mockImplementation(async (url: string) =>
+			url.startsWith('https://example.com/')
+				? new Response(new Blob(['test-logo']))
+				: new Response(JSON.stringify({ entities: { Q12: entity } }))
+		);
+		imageMock.mockImplementation(async (file: string) => ({
+			isAllowed: true,
+			thumbnail: { source: `https://example.com/${file}` }
+		}));
+		const { getPoiKnowledge } = await import('./poi-knowledge');
+		const normal = await getPoiKnowledge('test-brand', 'Q12');
+		const logo = await getPoiKnowledge('test-brand', 'Q12', 'logo');
+		expect(normal.image?.thumbnail?.source).toBe('https://example.com/test-building.png');
+		expect(logo.image?.thumbnail?.source).toBe('data:image/png;base64,test-logo');
+		expect(context.fillStyle).toBe('#ffffff');
+		expect(context.fillRect).toHaveBeenCalledWith(0, 0, 2, 1);
+		expect(context.drawImage).toHaveBeenCalledWith(bitmap, 0, 0);
+		expect(context.fillRect.mock.invocationCallOrder[0]).toBeLessThan(
+			context.drawImage.mock.invocationCallOrder[0]
+		);
+		expect(bitmap.close).toHaveBeenCalledOnce();
+		expect(imageMock.mock.calls.map(([file]) => file)).toEqual([
+			'test-building.png',
+			'test-logo.svg'
+		]);
+		await getPoiKnowledge('test-brand', 'Q12', 'logo');
+		expect(fetchMock).toHaveBeenCalledTimes(3);
+	});
+
+	it('ロゴがなければP18の写真を取得しない', async () => {
+		fetchMock.mockResolvedValue(
+			new Response(JSON.stringify({
+				entities: {
+					Q12: {
+						claims: {
+							P18: [{ mainsnak: { datavalue: { value: 'test-building.png' } } }]
+						}
+					}
+				}
+			}))
+		);
+		const { getPoiKnowledge } = await import('./poi-knowledge');
+		const result = await getPoiKnowledge('test-brand', 'Q12', 'logo');
+		expect(result.image).toBeNull();
+		expect(imageMock).not.toHaveBeenCalled();
+	});
+
+	it('利用条件を確認できないロゴは画像なしにする', async () => {
+		fetchMock.mockResolvedValue(
+			new Response(JSON.stringify({
+				entities: {
+					Q12: {
+						claims: { P154: [{ mainsnak: { datavalue: { value: 'test-logo.svg' } } }] }
+					}
+				}
+			}))
+		);
+		imageMock.mockResolvedValue({
+			isAllowed: false,
+			thumbnail: { source: 'https://example.com/test-logo.svg' }
+		});
+		const { getPoiKnowledge } = await import('./poi-knowledge');
+		expect((await getPoiKnowledge('test-brand', 'Q12', 'logo')).image).toBeNull();
+	});
+
 	it('Wikidataに日本語記事がない場合は英語の記事を使う', async () => {
 		fetchMock.mockResolvedValue(
 			new Response(JSON.stringify({

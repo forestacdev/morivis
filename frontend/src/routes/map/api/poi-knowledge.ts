@@ -1,10 +1,14 @@
 import { getImageLicenseInfo, getWikipediaArticle, type WikiArticle } from './wikipedia';
 
+type PoiImageType = 'image' | 'logo';
+type ImageClaim = { rank?: string; mainsnak: { datavalue?: { value: unknown; }; }; };
+
 interface WikidataEntity {
 	descriptions?: Record<string, { value: string; }>;
 	sitelinks?: Record<string, { title: string; }>;
 	claims?: {
-		P18?: Array<{ rank?: string; mainsnak: { datavalue?: { value: unknown; }; }; }>;
+		P18?: ImageClaim[];
+		P154?: ImageClaim[];
 	};
 }
 
@@ -26,7 +30,35 @@ const fetchJson = async <T>(endpoint: string, values: Record<string, string>): P
 	return data as T;
 };
 
-const loadKnowledge = async (name: string, wikidata?: string): Promise<PoiKnowledge> => {
+const withWhiteLogoBackground = async (source: string): Promise<string> => {
+	try {
+		const response = await fetch(source, { signal: AbortSignal.timeout(10000) });
+		if (!response.ok) return source;
+		const bitmap = await createImageBitmap(await response.blob());
+		try {
+			const canvas = document.createElement('canvas');
+			canvas.width = bitmap.width;
+			canvas.height = bitmap.height;
+			const context = canvas.getContext('2d');
+			if (!context) return source;
+			context.fillStyle = '#ffffff';
+			context.fillRect(0, 0, canvas.width, canvas.height);
+			context.drawImage(bitmap, 0, 0);
+			return canvas.toDataURL('image/png');
+		} finally {
+			bitmap.close();
+		}
+	} catch {
+		// 画像の取得・変換に失敗しても、説明と元画像は表示する。
+		return source;
+	}
+};
+
+const loadKnowledge = async (
+	name: string,
+	wikidata: string | undefined,
+	imageType: PoiImageType
+): Promise<PoiKnowledge> => {
 	if (wikidata && /^Q[1-9]\d*$/.test(wikidata)) {
 		const data = await fetchJson<{ entities: Record<string, WikidataEntity>; }>(
 			'https://www.wikidata.org/w/api.php',
@@ -42,13 +74,28 @@ const loadKnowledge = async (name: string, wikidata?: string): Promise<PoiKnowle
 		if (!entity) throw new Error('Wikidataの項目が見つかりません');
 		const language = entity.sitelinks?.jawiki ? 'ja' : 'en';
 		const articleTitle = entity.sitelinks?.[`${language}wiki`]?.title;
-		const images = (entity.claims?.P18 ?? []).filter((claim) => claim.rank !== 'deprecated');
+		// ブランドではロゴだけを取得し、通常画像（本社ビルなど）に代替しない。
+		const images = (entity.claims?.[imageType === 'logo' ? 'P154' : 'P18'] ?? []).filter(
+			(claim) =>
+				claim.rank !== 'deprecated'
+				&& typeof claim.mainsnak.datavalue?.value === 'string'
+		);
 		const imageValue = (images.find((claim) => claim.rank === 'preferred') ?? images[0])
 			?.mainsnak.datavalue?.value;
 		const [article, image] = await Promise.all([
 			articleTitle ? getWikipediaArticle(articleTitle, { exactTitle: true, language }) : null,
 			typeof imageValue === 'string' ? getImageLicenseInfo(imageValue) : null
 		]);
+		let displayImage = image?.isAllowed ? image : null;
+		if (imageType === 'logo' && displayImage?.thumbnail) {
+			displayImage = {
+				...displayImage,
+				thumbnail: {
+					...displayImage.thumbnail,
+					source: await withWhiteLogoBackground(displayImage.thumbnail.source)
+				}
+			};
+		}
 		return {
 			article,
 			wikipediaUrl: articleTitle
@@ -56,7 +103,7 @@ const loadKnowledge = async (name: string, wikidata?: string): Promise<PoiKnowle
 					encodeURIComponent(articleTitle.replaceAll(' ', '_'))
 				}`
 				: undefined,
-			image: image?.isAllowed ? image : null,
+			image: displayImage,
 			wikidataUrl: `https://www.wikidata.org/wiki/${wikidata}`,
 			description: entity.descriptions?.ja?.value ?? entity.descriptions?.en?.value
 		};
@@ -86,11 +133,15 @@ const loadKnowledge = async (name: string, wikidata?: string): Promise<PoiKnowle
 
 const knowledgeCache = new Map<string, Promise<PoiKnowledge>>();
 
-export const getPoiKnowledge = (name: string, wikidata?: string): Promise<PoiKnowledge> => {
-	const key = JSON.stringify([name, wikidata]);
+export const getPoiKnowledge = (
+	name: string,
+	wikidata?: string,
+	imageType: PoiImageType = 'image'
+): Promise<PoiKnowledge> => {
+	const key = JSON.stringify([name, wikidata, imageType]);
 	const cached = knowledgeCache.get(key);
 	if (cached) return cached;
-	const request = loadKnowledge(name, wikidata).catch((error) => {
+	const request = loadKnowledge(name, wikidata, imageType).catch((error) => {
 		knowledgeCache.delete(key);
 		throw error;
 	});
