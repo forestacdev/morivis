@@ -2,8 +2,8 @@
 	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
-	import PlaneGridSettings from '$routes/map/components/PlaneGridSettings.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
+	import PlaneGridSettings from '$routes/map/components/PlaneGridSettings.svelte';
 	import { baseMapList } from '$routes/map/utils/layers/base_map';
 	import {
 		selectedBaseMap,
@@ -13,6 +13,7 @@
 		showRegionalMeshLayer,
 		showH3Layer,
 		showPlaneGridLayer,
+		showContourLayer,
 		showLineLayer,
 		showStreetViewLayer
 	} from '$routes/stores/layers';
@@ -92,10 +93,10 @@
 		// 	setValue: showStreetViewLayer.set
 		// },
 		{
-			label: 'タイル座標',
-			icon: 'material-symbols:grid-on',
-			value: $showXYZTileLayer,
-			setValue: showXYZTileLayer.set
+			label: '等高線・標高',
+			icon: 'mdi:terrain',
+			value: $showContourLayer,
+			setValue: showContourLayer.set
 		},
 		{
 			label: '地域メッシュ',
@@ -104,17 +105,24 @@
 			setValue: showRegionalMeshLayer.set
 		},
 		{
+			label: 'タイル座標',
+			icon: 'material-symbols:grid-on',
+			value: $showXYZTileLayer,
+			setValue: showXYZTileLayer.set
+		},
+
+		{
 			label: 'H3',
 			icon: 'mdi:hexagon-multiple-outline',
 			value: $showH3Layer,
 			setValue: showH3Layer.set
-		},
-		{
-			label: '平面直角座標',
-			icon: 'mdi:axis-arrow',
-			value: $showPlaneGridLayer,
-			setValue: showPlaneGridLayer.set
 		}
+		// {
+		// 	label: '平面直角座標',
+		// 	icon: 'mdi:axis-arrow',
+		// 	value: $showPlaneGridLayer,
+		// 	setValue: showPlaneGridLayer.set
+		// },
 	]);
 </script>
 

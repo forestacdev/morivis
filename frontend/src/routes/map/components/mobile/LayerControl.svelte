@@ -2,8 +2,8 @@
 	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
-	import PlaneGridSettings from '$routes/map/components/PlaneGridSettings.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
+	import PlaneGridSettings from '$routes/map/components/PlaneGridSettings.svelte';
 	import { baseMapList } from '$routes/map/utils/layers/base_map';
 	import {
 		selectedBaseMap,
@@ -13,6 +13,7 @@
 		showRegionalMeshLayer,
 		showH3Layer,
 		showPlaneGridLayer,
+		showContourLayer,
 		showLineLayer,
 		showStreetViewLayer
 	} from '$routes/stores/layers';
@@ -68,9 +69,6 @@
 						<Checkbox label="道路・線路・境界線" bind:value={$showLineLayer} disabled={isOsm} />
 						<Checkbox label="陰影" bind:value={$showHillshadeLayer} disabled={isNotHillshade} />
 						<Checkbox label="3D地形" bind:value={$isTerrain3d} />
-						<Checkbox label="地域メッシュ" bind:value={$showRegionalMeshLayer} />
-						<Checkbox label="H3" bind:value={$showH3Layer} />
-						<Checkbox label="平面直角座標" bind:value={$showPlaneGridLayer} />
 						{#if $isMobile}
 							<Checkbox label="ストリートビュー" bind:value={$showStreetViewLayer} />
 						{/if}

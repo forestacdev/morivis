@@ -4,6 +4,7 @@ import {
 	terminatePlaneGridWorker
 } from '$routes/map/protocol/vector/plane-grid';
 import type { CSSCursor } from '$routes/map/types';
+import { ensureContourProtocol, releaseContourProtocol } from '$routes/map/utils/contours/runtime';
 import maplibregl from '$routes/map/utils/maplibre';
 import type {
 	AllLayoutProperties,
@@ -1673,6 +1674,7 @@ const createMapStore = () => {
 		releaseRegionalMeshProtocol();
 		releaseH3Protocol();
 		releasePlaneGridProtocol();
+		releaseContourProtocol(maplibregl);
 		map = null;
 		set(null);
 
@@ -1883,7 +1885,9 @@ const createMapStore = () => {
 		ensureH3Protocol,
 		releaseH3Protocol,
 		ensurePlaneGridProtocol,
-		releasePlaneGridProtocol
+		releasePlaneGridProtocol,
+		ensureContourProtocol: () => ensureContourProtocol(maplibregl),
+		releaseContourProtocol: () => releaseContourProtocol(maplibregl)
 	};
 };
 

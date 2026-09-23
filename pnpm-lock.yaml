@@ -310,6 +310,9 @@ importers:
       lz4js:
         specifier: 0.2.0
         version: 0.2.0
+      maplibre-contour:
+        specifier: 0.1.0
+        version: 0.1.0
       maplibre-gl:
         specifier: ^6.4.0
         version: 6.4.0
@@ -5238,6 +5241,9 @@ packages:
   make-dir@3.1.0:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
     engines: {node: '>=8'}
+
+  maplibre-contour@0.1.0:
+    resolution: {integrity: sha512-H8muT7JWYE4oLbFv7L2RSbIM1NOu5JxjA9P/TQqhODDnRChE8ENoDkQIWOKgfcKNU77ypLk2ggGoh4/pt4UPLA==}
 
   maplibre-gl@6.4.0:
     resolution: {integrity: sha512-pCgDUsaYFuZwIH37aV2qF4m03nZPlW79DlqC+cQ+48tpqiqW2SJyA7fEOcFrS5ilDK493f0X3LxiH17T5BqV7g==}
@@ -12130,6 +12136,8 @@ snapshots:
   make-dir@3.1.0:
     dependencies:
       semver: 6.3.1
+
+  maplibre-contour@0.1.0: {}
 
   maplibre-gl@6.4.0:
     dependencies:

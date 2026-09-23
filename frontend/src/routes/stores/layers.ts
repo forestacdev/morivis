@@ -189,5 +189,8 @@ export const showH3Layer = writable<boolean>(false);
 export const showPlaneGridLayer = writable<boolean>(false);
 export const planeGridZone = writable<number>(7);
 
+/** DEMから生成する等高線と標高ラベル */
+export const showContourLayer = writable<boolean>(false);
+
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);

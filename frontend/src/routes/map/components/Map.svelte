@@ -65,6 +65,8 @@
 	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
 	import { createPlaneGridStyle } from '$routes/map/utils/layers/plane-grid';
+	import { createContourStyle } from '$routes/map/utils/layers/contours';
+	import { MAPTERHORN_DEM_SOURCE } from '$routes/map/utils/contours/config';
 	import { createH3Style } from '$routes/map/utils/layers/h3';
 	import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
 	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
@@ -102,6 +104,7 @@
 		showRegionalMeshLayer,
 		showH3Layer,
 		showPlaneGridLayer,
+		showContourLayer,
 		planeGridZone,
 		showLineLayer,
 		type BaseMapType,
@@ -476,6 +479,8 @@
 			DEFAULT_SYMBOL_TEXT_FONT
 		);
 		const h3Style = createH3Style($showH3Layer, DEFAULT_SYMBOL_TEXT_FONT);
+		const contourDem = $showContourLayer ? mapStore.ensureContourProtocol() : undefined;
+		const contourStyle = createContourStyle(contourDem?.contourTiles, DEFAULT_SYMBOL_TEXT_FONT);
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
@@ -485,18 +490,15 @@
 			},
 			sources: {
 				terrain: {
-					type: 'raster-dem',
-					tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
-					maxzoom: 16,
-					tileSize: 512,
-					encoding: 'terrarium',
-					attribution: '<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>'
+					...MAPTERHORN_DEM_SOURCE,
+					tiles: contourDem ? [contourDem.sharedDemTiles] : MAPTERHORN_DEM_SOURCE.tiles
 				},
 				...streetViewSources,
 				...xyzTileSources,
 				...regionalMeshStyle.sources,
 				...h3Style.sources,
 				...planeGridStyle.sources,
+				...contourStyle.sources,
 				...sources,
 				draw_source: {
 					type: 'geojson',
@@ -534,6 +536,7 @@
 					}
 				},
 				...layers,
+				...contourStyle.layers,
 				...xyzTileLayer,
 				...regionalMeshStyle.layers,
 				...h3Style.layers,
@@ -672,6 +675,7 @@
 		mapStore.releaseRegionalMeshProtocol();
 		mapStore.releaseH3Protocol();
 		mapStore.releasePlaneGridProtocol();
+		mapStore.releaseContourProtocol();
 	});
 
 	// マップのスタイルの更新
@@ -1080,6 +1084,9 @@
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showPlaneGridLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showContourLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		planeGridZone.subscribe(() => {
