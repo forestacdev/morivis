@@ -12,6 +12,7 @@
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import LayerControl from '$routes/map/components/map_control/LayerControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
+	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
 	import Geocoder from '$routes/map/components/search_menu/Geocoder.svelte';
 	import SearchSuggest from '$routes/map/components/search_menu/SearchSuggest.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
@@ -303,6 +304,7 @@
 		>
 			<GeolocateControl />
 			<StreetViewControl />
+			<TerrainControl />
 			<LayerControl bind:showLayerPane />
 
 			<!-- ハンバーガーメニュー -->

@@ -73,12 +73,12 @@
 			setValue: showHillshadeLayer.set,
 			disabled: $selectedBaseMap === 'satellite'
 		},
-		{
-			label: '3D地形',
-			icon: 'material-symbols:landscape-rounded',
-			value: $isTerrain3d,
-			setValue: isTerrain3d.set
-		},
+		// {
+		// 	label: '3D地形',
+		// 	icon: 'material-symbols:landscape-rounded',
+		// 	value: $isTerrain3d,
+		// 	setValue: isTerrain3d.set
+		// },
 		{
 			label: '地球儀表示',
 			icon: 'material-symbols:public',
