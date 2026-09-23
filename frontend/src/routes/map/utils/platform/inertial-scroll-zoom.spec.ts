@@ -34,6 +34,9 @@ const createMap = () => {
 		cooperativeGestures: { isEnabled: () => false },
 		getCanvas: () => canvas,
 		getZoom: () => 10,
+		getProjection: vi.fn(() => ({ type: 'mercator' })),
+		setTransformCameraUpdate: vi.fn(),
+		project: vi.fn(() => ({ x: 20, y: 30 })),
 		getMinZoom: () => 0,
 		getMaxZoom: () => 25,
 		getCenter: () => ({ lng: 0, lat: 0 }),
@@ -185,6 +188,18 @@ describe('慣性付きスクロールズーム', () => {
 			expect(map.easeTo).not.toHaveBeenCalled();
 		}
 	);
+
+	it('グローブでは around を使わず、描画直前の補正を設定する', () => {
+		const { map, sendWheel, renderFrame, dispose } = createMap();
+		map.getProjection.mockReturnValue({ type: 'globe' });
+		sendWheel(-120);
+		renderFrame();
+		expect(map.stop).toHaveBeenCalledOnce();
+		expect(map.easeTo.mock.calls[0][0]).not.toHaveProperty('around');
+		expect(map.setTransformCameraUpdate.mock.calls[0][0]).toBeTypeOf('function');
+		dispose();
+		expect(map.setTransformCameraUpdate).toHaveBeenLastCalledWith(null);
+	});
 
 	it('アニメーションが即時完了した場合はズームの残量を持ち越さない', () => {
 		const { map, sendWheel, renderFrame } = createMap();

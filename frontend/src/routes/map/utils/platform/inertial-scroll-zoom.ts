@@ -1,4 +1,5 @@
-import type { Map as MapLibreMap, MapWheelEvent } from '$routes/map/utils/maplibre';
+import type { LngLat, Map as MapLibreMap, MapWheelEvent, Point } from '$routes/map/utils/maplibre';
+import { correctGlobeZoomAnchor } from './globe-zoom-anchor';
 
 export const SCROLL_ZOOM_CONFIG = {
 	// モデルビューのTrackballControlsと同じ、60fps換算で1フレームに減衰する割合。
@@ -96,13 +97,28 @@ export const configureInertialScrollZoom = (map: MapLibreMap) => {
 	let frame: number | null = null;
 	let pending: { original: WheelEvent; input: ScrollInput; } | null = null;
 	const classifyInput = createScrollInputClassifier();
+	let globeAnchor: { location: LngLat; point: Point; } | null = null;
+	let zoomCorrection = 0;
+	map.setTransformCameraUpdate((next) => {
+		if (!globeAnchor || map.getProjection()?.type !== 'globe') return {};
+		const requestedZoom = next.zoom;
+		const corrected = correctGlobeZoomAnchor(next, globeAnchor, map.getCenter());
+		const correction = (corrected.zoom ?? requestedZoom) - requestedZoom;
+		if (targetZoom !== null) targetZoom += correction - zoomCorrection;
+		zoomCorrection = correction;
+		return corrected;
+	});
 	const cancelFrame = () => {
 		if (frame !== null) cancelAnimationFrame(frame);
 		frame = null;
 		pending = null;
 	};
 	const resetTarget = () => {
-		if (frame === null) targetZoom = null;
+		if (frame === null) {
+			targetZoom = null;
+			globeAnchor = null;
+			zoomCorrection = 0;
+		}
 	};
 	const stop = () => {
 		cancelFrame();
@@ -122,11 +138,29 @@ export const configureInertialScrollZoom = (map: MapLibreMap) => {
 			(original.clientY - rect.top) * canvas.clientHeight / rect.height
 		];
 		const anchor = map.unproject(point);
+		const isGlobe = map.getProjection()?.type === 'globe';
+		if (isGlobe) {
+			// 前の requestedCameraState を終了し、補正済みの実カメラから再開する。
+			map.stop();
+			targetZoom = next;
+			zoomCorrection = 0;
+			const projected = map.project(anchor);
+			const onSurface = Number.isFinite(anchor.lng) && Number.isFinite(anchor.lat)
+				&& Math.hypot(projected.x - point[0], projected.y - point[1]) < 1;
+			projected.x = point[0];
+			projected.y = point[1];
+			globeAnchor = onSurface ? { location: anchor, point: projected } : null;
+		} else {
+			globeAnchor = null;
+		}
 		map.easeTo({
 			zoom: next,
-			around: Number.isFinite(anchor.lng) && Number.isFinite(anchor.lat)
-				? anchor
-				: map.getCenter(),
+			// globe の around はズーム前に位置合わせするため、描画直前の補正に置き換える。
+			...(isGlobe ? {} : {
+				around: Number.isFinite(anchor.lng) && Number.isFinite(anchor.lat)
+					? anchor
+					: map.getCenter()
+			}),
 			duration: input === 'trackpad'
 				? SCROLL_ZOOM_CONFIG.trackpadDuration
 				: SCROLL_ZOOM_CONFIG.duration,
@@ -134,7 +168,7 @@ export const configureInertialScrollZoom = (map: MapLibreMap) => {
 			easeId: EASE_ID
 		}, { originalEvent: original });
 		// reduced-motion時はeaseToが即座に完了するので、残りの勢いを保持しない。
-		targetZoom = map.isZooming() ? next : null;
+		if (!map.isZooming()) resetTarget();
 	};
 	const onWheel = (event: MapWheelEvent) => {
 		if (event.defaultPrevented || map.dragPan.isActive() || map.touchZoomRotate.isActive()) {
@@ -179,6 +213,8 @@ export const configureInertialScrollZoom = (map: MapLibreMap) => {
 		map.off('mousedown', stop);
 		map.off('touchstart', stop);
 		map.off('remove', onRemove);
+		globeAnchor = null;
+		map.setTransformCameraUpdate(null);
 		if (restore) {
 			stop();
 			map.scrollZoom.enable();
