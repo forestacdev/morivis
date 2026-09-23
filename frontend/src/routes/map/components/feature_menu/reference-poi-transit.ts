@@ -14,12 +14,12 @@ const getWebsite = (value: unknown): string | undefined => {
 };
 
 const isBusStop = (properties: Record<string, unknown>): boolean =>
-	properties.highway === 'bus_stop' ||
-	properties.amenity === 'bus_station' ||
-	properties.class === 'bus' ||
-	['bus_stop', 'bus_station'].includes(getText(properties.subclass)) ||
-	(properties.bus === 'yes' &&
-		['station', 'stop_position', 'platform'].includes(getText(properties.public_transport)));
+	properties.highway === 'bus_stop'
+	|| properties.amenity === 'bus_station'
+	|| properties.class === 'bus'
+	|| ['bus_stop', 'bus_station'].includes(getText(properties.subclass))
+	|| (properties.bus === 'yes'
+		&& ['station', 'stop_position', 'platform'].includes(getText(properties.public_transport)));
 
 const isTransitStop = (properties: Record<string, unknown>): boolean => {
 	if (isBusStop(properties)) return true;
@@ -37,8 +37,8 @@ const isTransitStop = (properties: Record<string, unknown>): boolean => {
 	return (
 		['station', 'halt', 'tram_stop', 'subway', 'subway_entrance'].includes(
 			getText(properties.subclass)
-		) ||
-		(properties.class === 'railway' && properties.subclass === 'platform')
+		)
+		|| (properties.class === 'railway' && properties.subclass === 'platform')
 	);
 };
 
@@ -46,9 +46,9 @@ const isTransitStop = (properties: Record<string, unknown>): boolean => {
 export const getTransitPoiLinks = (
 	properties: Record<string, unknown>,
 	point?: [number, number]
-): Array<{ label: string; url: string }> | null => {
+): Array<{ label: string; url: string; }> | null => {
 	if (!isTransitStop(properties)) return null;
-	const links: Array<{ label: string; url: string }> = [];
+	const links: Array<{ label: string; url: string; }> = [];
 	const website = getWebsite(properties.website) ?? getWebsite(properties['contact:website']);
 	const operatorWebsite = getWebsite(properties['operator:website']);
 	if (website) links.push({ label: '公式サイト', url: website });
@@ -70,25 +70,14 @@ export const getTransitPoiLinks = (
 			label: '時刻表（Yahoo!路線情報）',
 			url: timetableUrl.href
 		});
-		// 片方の地点だけを渡し、もう片方と日時はYahoo!路線情報で入力する。
-		links.push(
-			{
-				label: 'ここからの路線',
-				url: `https://transit.yahoo.co.jp/search/result?${new URLSearchParams({ from: name })}`
-			},
-			{
-				label: 'ここまでの路線',
-				url: `https://transit.yahoo.co.jp/search/result?${new URLSearchParams({ to: name })}`
-			}
-		);
 	}
 	if (point) {
 		const [lon, lat] = point;
 		if (
-			Number.isFinite(lon) &&
-			Number.isFinite(lat) &&
-			Math.abs(lon) <= 180 &&
-			Math.abs(lat) <= 90
+			Number.isFinite(lon)
+			&& Number.isFinite(lat)
+			&& Math.abs(lon) <= 180
+			&& Math.abs(lat) <= 90
 		) {
 			links.push({
 				label: '経路検索（Google マップ）',

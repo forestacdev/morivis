@@ -47,7 +47,7 @@ describe('駅・停留所の外部リンク', () => {
 		});
 	});
 
-	it('公式URLを優先し、時刻表の検索語とYahoo!の出発・到着名をエンコードする', () => {
+	it('公式URLを優先し、時刻表の検索語をエンコードする', () => {
 		const links = getTransitPoiLinks({
 			highway: 'bus_stop',
 			name: 'test-stop & test-place',
@@ -71,14 +71,7 @@ describe('駅・停留所の外部リンク', () => {
 			kind: '1',
 			q: 'test-stop & test-place'
 		});
-		const departure = new URL(links[3].url);
-		const arrival = new URL(links[4].url);
-		expect(departure.origin + departure.pathname).toBe(
-			'https://transit.yahoo.co.jp/search/result'
-		);
-		expect(arrival.origin + arrival.pathname).toBe('https://transit.yahoo.co.jp/search/result');
-		expect([...departure.searchParams]).toEqual([['from', 'test-stop & test-place']]);
-		expect([...arrival.searchParams]).toEqual([['to', 'test-stop & test-place']]);
+		expect(links).toHaveLength(3);
 	});
 
 	it('日本語名を優先してYahoo!へ渡す', () => {
@@ -90,15 +83,13 @@ describe('駅・停留所の外部リンク', () => {
 		const yahooLinks = links.filter((link) =>
 			link.url.startsWith('https://transit.yahoo.co.jp/')
 		);
-		expect(yahooLinks).toHaveLength(3);
+		expect(yahooLinks).toHaveLength(1);
 		const timetable = new URL(yahooLinks[0].url);
 		expect(timetable.pathname).toBe('/timetable/search');
 		expect(Object.fromEntries(timetable.searchParams)).toEqual({
 			kind: '1',
 			q: 'テスト駅 & 仮称'
 		});
-		expect(new URL(yahooLinks[1].url).searchParams.get('from')).toBe('テスト駅 & 仮称');
-		expect(new URL(yahooLinks[2].url).searchParams.get('to')).toBe('テスト駅 & 仮称');
 	});
 
 	it('不正なURLを除外してcontact:websiteを使い、同じ事業者URLを重複させない', () => {
