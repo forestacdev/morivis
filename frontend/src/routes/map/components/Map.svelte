@@ -64,6 +64,7 @@
 		WcsViewportTooBroadError
 	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
+	import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
 	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
@@ -96,6 +97,7 @@
 		showHillshadeLayer,
 		showStreetViewLayer,
 		showXYZTileLayer,
+		showRegionalMeshLayer,
 		showLineLayer,
 		type BaseMapType,
 		activeLayerIdsStore
@@ -459,6 +461,10 @@
 				}
 			: {};
 
+		const regionalMeshStyle = createRegionalMeshStyle(
+			$showRegionalMeshLayer,
+			DEFAULT_SYMBOL_TEXT_FONT
+		);
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
@@ -477,6 +483,7 @@
 				},
 				...streetViewSources,
 				...xyzTileSources,
+				...regionalMeshStyle.sources,
 				...sources,
 				draw_source: {
 					type: 'geojson',
@@ -515,6 +522,7 @@
 				},
 				...layers,
 				...xyzTileLayer,
+				...regionalMeshStyle.layers,
 				...previewLayers,
 				...mcaGridLayers,
 				{
@@ -646,6 +654,7 @@
 			maplibreMap.remove();
 			maplibreMap = null;
 		}
+		mapStore.releaseRegionalMeshProtocol();
 	});
 
 	// マップのスタイルの更新
@@ -861,6 +870,11 @@
 		} else {
 			mapStore.releaseTileIndexProtocol();
 		}
+		if ($showRegionalMeshLayer) {
+			mapStore.ensureRegionalMeshProtocol();
+		} else {
+			mapStore.releaseRegionalMeshProtocol();
+		}
 
 		const mapStyle = await createMapStyle(mapLibreEntry as MorivisLayerEntry[], mcaGridEntries);
 		// 後から開始した更新がある場合、この結果は古いので破棄する。
@@ -1034,6 +1048,9 @@
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showXYZTileLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showRegionalMeshLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		})
 	);

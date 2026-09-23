@@ -179,5 +179,8 @@ export const showLineLayer = writable<boolean>(true);
 /** タイル座標レイヤー */
 export const showXYZTileLayer = writable<boolean>(false);
 
+/** 地域メッシュの補助表示 */
+export const showRegionalMeshLayer = writable<boolean>(false);
+
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);

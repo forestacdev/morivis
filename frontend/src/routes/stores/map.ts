@@ -37,6 +37,10 @@ import { get } from 'svelte/store';
 import { cogProtocol, terminateCogWorkerPool } from '$routes/map/protocol/cog';
 import { geozarrProtocol } from '$routes/map/protocol/geozarr';
 import { demProtocol, terminateDemWorkerPool } from '$routes/map/protocol/raster';
+import {
+	regionalMeshProtocol,
+	terminateRegionalMeshWorker
+} from '$routes/map/protocol/vector/regional-mesh';
 import { terminateTileIndexWorker, tileIndexProtocol } from '$routes/map/protocol/vector/tileindex';
 // import { terrainProtocol } from '$routes/map/protocol/terrain';
 import markerPngIcon from '$lib/icons/marker.png';
@@ -296,6 +300,21 @@ const releaseTileIndexProtocol = () => {
 		terminateTileIndexWorker();
 		_tileIndexProtocolRegistered = false;
 	}
+};
+
+let regionalMeshProtocolRegistered = false;
+
+const ensureRegionalMeshProtocol = () => {
+	if (regionalMeshProtocolRegistered) return;
+	maplibregl.addProtocol(regionalMeshProtocol.protocolName, regionalMeshProtocol.request);
+	regionalMeshProtocolRegistered = true;
+};
+
+const releaseRegionalMeshProtocol = () => {
+	if (!regionalMeshProtocolRegistered) return;
+	maplibregl.removeProtocol(regionalMeshProtocol.protocolName);
+	terminateRegionalMeshWorker();
+	regionalMeshProtocolRegistered = false;
 };
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
@@ -1616,6 +1635,7 @@ const createMapStore = () => {
 		releaseThreeLayer();
 
 		map.remove();
+		releaseRegionalMeshProtocol();
 		map = null;
 		set(null);
 
@@ -1820,7 +1840,9 @@ const createMapStore = () => {
 		ensureMbtilesProtocol,
 		releaseMbtilesProtocol,
 		ensureTileIndexProtocol,
-		releaseTileIndexProtocol
+		releaseTileIndexProtocol,
+		ensureRegionalMeshProtocol,
+		releaseRegionalMeshProtocol
 	};
 };
 

@@ -9,6 +9,7 @@
 		showLabelLayer,
 		showHillshadeLayer,
 		showXYZTileLayer,
+		showRegionalMeshLayer,
 		showLineLayer,
 		showStreetViewLayer
 	} from '$routes/stores/layers';
@@ -92,6 +93,12 @@
 			icon: 'material-symbols:grid-on',
 			value: $showXYZTileLayer,
 			setValue: showXYZTileLayer.set
+		},
+		{
+			label: '地域メッシュ',
+			icon: 'material-symbols:grid-4x4',
+			value: $showRegionalMeshLayer,
+			setValue: showRegionalMeshLayer.set
 		}
 	]);
 </script>
