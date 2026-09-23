@@ -12,12 +12,8 @@
 		showLineLayer,
 		showStreetViewLayer
 	} from '$routes/stores/layers';
-	import { mapStore, isTerrain3d } from '$routes/stores/map';
+	import { isTerrain3d } from '$routes/stores/map';
 	import { isMobile, isActiveMobileMenu } from '$routes/stores/ui';
-
-	isTerrain3d.subscribe((is3d) => {
-		mapStore.toggleTerrain(is3d);
-	});
 
 	let showMenu = $state<boolean>(false);
 
@@ -44,11 +40,7 @@
 	});
 
 	let isNotHillshade = $derived.by(() => {
-		return (
-			$selectedBaseMap === 'satellite' ||
-			$selectedBaseMap === 'slope' ||
-			$selectedBaseMap === 'aspect'
-		);
+		return $selectedBaseMap === 'satellite';
 	});
 </script>
 

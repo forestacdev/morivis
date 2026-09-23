@@ -1015,6 +1015,9 @@
 	});
 
 	styleUpdateUnsubscribers.push(
+		isTerrain3d.subscribe((is3d) => {
+			mapStore.toggleTerrain(is3d);
+		}),
 		isGlobe.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),

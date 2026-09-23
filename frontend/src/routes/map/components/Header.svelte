@@ -303,8 +303,6 @@
 		>
 			<GeolocateControl />
 			<StreetViewControl />
-			<!-- <TerrainControl />
-			<GlobeControl /> -->
 			<LayerControl bind:showLayerPane />
 
 			<!-- ハンバーガーメニュー -->

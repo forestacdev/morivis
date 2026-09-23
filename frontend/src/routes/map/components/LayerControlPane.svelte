@@ -12,12 +12,8 @@
 		showLineLayer,
 		showStreetViewLayer
 	} from '$routes/stores/layers';
-	import { mapStore, isTerrain3d, isGlobe } from '$routes/stores/map';
+	import { isTerrain3d, isGlobe } from '$routes/stores/map';
 	import { isMobile } from '$routes/stores/ui';
-
-	isTerrain3d.subscribe((is3d) => {
-		mapStore.toggleTerrain(is3d);
-	});
 
 	let containerRef = $state<HTMLElement>();
 
