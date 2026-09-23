@@ -74,7 +74,22 @@ describe('背景POIの属性表示', () => {
 		expect(result.isTransit).toBe(true);
 		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12', 'image');
 		expect(result.summary.description?.text).toBe('test-history');
+		expect(result.summary.description?.linkUrl).toBe('https://example.com/test-wiki');
+		expect(result.links.some((link) => link.label === 'Wikipedia')).toBe(false);
 		expect(result.links[0].label).toBe('時刻表（Yahoo!路線情報）');
+	});
+
+	it('概要を取得できない場合は上部の記事リンクを残す', async () => {
+		knowledgeMock.mockResolvedValue({
+			article: null,
+			wikipediaUrl: 'https://example.com/test-wiki'
+		});
+		const result = await getReferencePoiDetails({ ...data, osmIdEncoding: undefined });
+		expect(result.summary.description).toBeUndefined();
+		expect(result.links).toContainEqual({
+			label: 'Wikipedia',
+			url: 'https://example.com/test-wiki'
+		});
 	});
 
 	it('OSM取得失敗でもタイルの分類から時刻表検索を出す', async () => {
@@ -175,7 +190,7 @@ describe('背景POIの属性表示', () => {
 			label: 'ブランドのWikidata',
 			url: 'https://www.wikidata.org/wiki/Q12'
 		});
-		expect(result.links).toContainEqual({
+		expect(result.links).not.toContainEqual({
 			label: 'ブランドのWikipedia',
 			url: 'https://example.com/test-brand'
 		});
@@ -199,7 +214,7 @@ describe('背景POIの属性表示', () => {
 		expect(knowledgeMock).toHaveBeenCalledWith('test-poi', 'Q12', 'logo');
 		expect(result.summary.media).toEqual([]);
 		expect(result.summary.description?.text).toBe('test-description');
-		expect(result.links).toContainEqual({
+		expect(result.links).not.toContainEqual({
 			label: 'ブランドのWikipedia',
 			url: 'https://example.com/test-brand'
 		});

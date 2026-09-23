@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 
 	import type { PoiIconMarkerAppearance } from '$routes/map/types';
+	import { POI_HIGHLIGHT_SCALE } from '$routes/map/utils/icon/poi-marker-image';
 	import maplibregl from '$routes/map/utils/maplibre';
 
 	interface Props {
@@ -34,8 +35,9 @@
 <div
 	bind:this={container}
 	class="poi-icon-marker"
-	style:width="{appearance.width}px"
-	style:height="{appearance.height}px"
+	style:width="{appearance.width * POI_HIGHLIGHT_SCALE}px"
+	style:height="{appearance.height * POI_HIGHLIGHT_SCALE}px"
+	style:--highlight-scale={POI_HIGHLIGHT_SCALE}
 	aria-hidden="true"
 >
 	<div class="poi-icon-effect" style:transform-origin={transformOrigin}>
@@ -55,7 +57,6 @@
 		position: relative;
 		width: 100%;
 		height: 100%;
-		transform: scale(1.2);
 		animation: pop-in 180ms ease-out;
 	}
 
@@ -93,10 +94,10 @@
 
 	@keyframes pop-in {
 		from {
-			transform: scale(1);
+			transform: scale(calc(1 / var(--highlight-scale)));
 		}
 		to {
-			transform: scale(1.2);
+			transform: none;
 		}
 	}
 

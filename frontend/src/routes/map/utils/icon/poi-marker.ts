@@ -1,5 +1,6 @@
 import type { PoiIconMarkerAppearance } from '$routes/map/types';
 import type { Map, MapGeoJSONFeature, PositionAnchor } from '$routes/map/utils/maplibre';
+import { POI_HIGHLIGHT_SCALE, rasterizePoiSdf } from './poi-marker-image';
 
 const finiteNumber = (value: unknown, fallback: number): number =>
 	typeof value === 'number' && Number.isFinite(value) ? value : fallback;
@@ -38,27 +39,31 @@ export const createPoiIconMarker = (
 	if (!imageId) return null;
 	try {
 		const image = map.getImage(imageId);
-		if (!image?.data || image.pixelRatio <= 0) return null;
+		if (!image?.data || finiteNumber(image.pixelRatio, 0) <= 0) return null;
 		const { width, height, data } = image.data;
 		const size = finiteNumber(layout['icon-size'], 1);
 		if (!width || !height || !data || size <= 0) return null;
+		const displayWidth = width / image.pixelRatio * size;
+		const displayHeight = height / image.pixelRatio * size;
+		const deviceScale = Math.max(1, finiteNumber(globalThis.devicePixelRatio, 1));
 		const canvas = document.createElement('canvas');
-		canvas.width = width;
-		canvas.height = height;
+		// 通常のビットマップは元画像を保持。SDFは距離情報から表示解像度で再描画する。
+		canvas.width = image.sdf
+			? Math.ceil(displayWidth * POI_HIGHLIGHT_SCALE * deviceScale)
+			: width;
+		canvas.height = image.sdf
+			? Math.ceil(displayHeight * POI_HIGHLIGHT_SCALE * deviceScale)
+			: height;
 		const context = canvas.getContext('2d');
 		if (!context) return null;
-		const pixels = new Uint8ClampedArray(data);
-		if (image.sdf) {
-			// 距離場の背景を除去し、地図側のicon-colorで着色する。
-			for (let index = 3; index < pixels.length; index += 4) {
-				pixels[index] = Math.max(0, Math.min(255, (pixels[index] - 180) * 12));
-			}
-		}
-		context.putImageData(new ImageData(pixels, width, height), 0, 0);
+		const pixels = image.sdf
+			? rasterizePoiSdf(data, width, height, canvas.width, canvas.height, image.pixelRatio)
+			: new Uint8ClampedArray(data);
+		context.putImageData(new ImageData(pixels, canvas.width, canvas.height), 0, 0);
 		if (image.sdf) {
 			context.globalCompositeOperation = 'source-in';
 			context.fillStyle = String(paint['icon-color'] ?? '#000000');
-			context.fillRect(0, 0, width, height);
+			context.fillRect(0, 0, canvas.width, canvas.height);
 		}
 		const anchor = anchors.includes(layout['icon-anchor'] as PositionAnchor)
 			? layout['icon-anchor'] as PositionAnchor
@@ -68,8 +73,8 @@ export const createPoiIconMarker = (
 		return {
 			iconImage: canvas.toDataURL('image/png'),
 			iconMarker: {
-				width: width / image.pixelRatio * size,
-				height: height / image.pixelRatio * size,
+				width: displayWidth,
+				height: displayHeight,
 				anchor,
 				offset: Array.isArray(offset)
 					? [finiteNumber(offset[0], 0) * size, finiteNumber(offset[1], 0) * size]

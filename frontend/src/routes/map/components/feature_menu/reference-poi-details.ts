@@ -61,7 +61,10 @@ export const getReferencePoiDetails = async (data: FeatureMenuData) => {
 	const brandName = String(properties['brand:ja'] ?? properties.brand ?? article?.title ?? '');
 	const wikipediaLabel = isBrandInformation ? 'ブランドのWikipedia' : 'Wikipedia';
 	const wikipediaUrl = knowledge.wikipediaUrl ?? article?.url;
-	if (wikipediaUrl) links.push({ label: wikipediaLabel, url: wikipediaUrl });
+	// 概要の末尾に記事リンクを表示できる場合は、上部に重複させない。
+	if (wikipediaUrl && !(article?.extract?.trim() && article.url)) {
+		links.push({ label: wikipediaLabel, url: wikipediaUrl });
+	}
 	const searchUrl = `https://ja.wikipedia.org/w/index.php?search=${encodeURIComponent(name)}`;
 	if (!isTransit && !wikidata && name !== '名称なし') {
 		links.push({ label: 'Wikipediaで検索', url: searchUrl });
