@@ -10,6 +10,7 @@
 		showHillshadeLayer,
 		showXYZTileLayer,
 		showRegionalMeshLayer,
+		showH3Layer,
 		showLineLayer,
 		showStreetViewLayer
 	} from '$routes/stores/layers';
@@ -66,6 +67,7 @@
 						<Checkbox label="陰影" bind:value={$showHillshadeLayer} disabled={isNotHillshade} />
 						<Checkbox label="3D地形" bind:value={$isTerrain3d} />
 						<Checkbox label="地域メッシュ" bind:value={$showRegionalMeshLayer} />
+						<Checkbox label="H3" bind:value={$showH3Layer} />
 						{#if $isMobile}
 							<Checkbox label="ストリートビュー" bind:value={$showStreetViewLayer} />
 						{/if}

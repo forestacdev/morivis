@@ -64,6 +64,7 @@
 		WcsViewportTooBroadError
 	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
+	import { createH3Style } from '$routes/map/utils/layers/h3';
 	import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
 	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
@@ -98,6 +99,7 @@
 		showStreetViewLayer,
 		showXYZTileLayer,
 		showRegionalMeshLayer,
+		showH3Layer,
 		showLineLayer,
 		type BaseMapType,
 		activeLayerIdsStore
@@ -465,6 +467,7 @@
 			$showRegionalMeshLayer,
 			DEFAULT_SYMBOL_TEXT_FONT
 		);
+		const h3Style = createH3Style($showH3Layer, DEFAULT_SYMBOL_TEXT_FONT);
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
@@ -484,6 +487,7 @@
 				...streetViewSources,
 				...xyzTileSources,
 				...regionalMeshStyle.sources,
+				...h3Style.sources,
 				...sources,
 				draw_source: {
 					type: 'geojson',
@@ -523,6 +527,7 @@
 				...layers,
 				...xyzTileLayer,
 				...regionalMeshStyle.layers,
+				...h3Style.layers,
 				...previewLayers,
 				...mcaGridLayers,
 				{
@@ -655,6 +660,7 @@
 			maplibreMap = null;
 		}
 		mapStore.releaseRegionalMeshProtocol();
+		mapStore.releaseH3Protocol();
 	});
 
 	// マップのスタイルの更新
@@ -876,6 +882,12 @@
 			mapStore.releaseRegionalMeshProtocol();
 		}
 
+		if ($showH3Layer) {
+			mapStore.ensureH3Protocol();
+		} else {
+			mapStore.releaseH3Protocol();
+		}
+
 		const mapStyle = await createMapStyle(mapLibreEntry as MorivisLayerEntry[], mcaGridEntries);
 		// 後から開始した更新がある場合、この結果は古いので破棄する。
 		if (updateId !== styleUpdateId) return;
@@ -1048,6 +1060,9 @@
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showXYZTileLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showH3Layer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showRegionalMeshLayer.subscribe(() => {

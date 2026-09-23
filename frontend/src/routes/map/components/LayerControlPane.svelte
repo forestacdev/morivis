@@ -10,6 +10,7 @@
 		showHillshadeLayer,
 		showXYZTileLayer,
 		showRegionalMeshLayer,
+		showH3Layer,
 		showLineLayer,
 		showStreetViewLayer
 	} from '$routes/stores/layers';
@@ -99,6 +100,12 @@
 			icon: 'material-symbols:grid-4x4',
 			value: $showRegionalMeshLayer,
 			setValue: showRegionalMeshLayer.set
+		},
+		{
+			label: 'H3',
+			icon: 'mdi:hexagon-multiple-outline',
+			value: $showH3Layer,
+			setValue: showH3Layer.set
 		}
 	]);
 </script>

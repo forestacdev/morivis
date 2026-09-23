@@ -1,3 +1,4 @@
+import { h3Protocol, terminateH3Worker } from '$routes/map/protocol/vector/h3';
 import type { CSSCursor } from '$routes/map/types';
 import maplibregl from '$routes/map/utils/maplibre';
 import type {
@@ -315,6 +316,21 @@ const releaseRegionalMeshProtocol = () => {
 	maplibregl.removeProtocol(regionalMeshProtocol.protocolName);
 	terminateRegionalMeshWorker();
 	regionalMeshProtocolRegistered = false;
+};
+
+let h3ProtocolRegistered = false;
+
+const ensureH3Protocol = () => {
+	if (h3ProtocolRegistered) return;
+	maplibregl.addProtocol(h3Protocol.protocolName, h3Protocol.request);
+	h3ProtocolRegistered = true;
+};
+
+const releaseH3Protocol = () => {
+	if (!h3ProtocolRegistered) return;
+	maplibregl.removeProtocol(h3Protocol.protocolName);
+	terminateH3Worker();
+	h3ProtocolRegistered = false;
 };
 
 export const isLoadingEvent = writable<boolean>(true); // マップの読み込み状態を管理するストア
@@ -1636,6 +1652,7 @@ const createMapStore = () => {
 
 		map.remove();
 		releaseRegionalMeshProtocol();
+		releaseH3Protocol();
 		map = null;
 		set(null);
 
@@ -1842,7 +1859,9 @@ const createMapStore = () => {
 		ensureTileIndexProtocol,
 		releaseTileIndexProtocol,
 		ensureRegionalMeshProtocol,
-		releaseRegionalMeshProtocol
+		releaseRegionalMeshProtocol,
+		ensureH3Protocol,
+		releaseH3Protocol
 	};
 };
 
