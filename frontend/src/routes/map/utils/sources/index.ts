@@ -93,20 +93,21 @@ const toDemStyleUrlParams = (style: DemRangeColorStyle, slopeAutoRange?: boolean
 
 const getRasterDerivedDefaultStyle = (
 	mode: 'twi' | 'slope' | 'aspect' | 'tpi' | 'topex',
-	range?: { min: number; max: number }
+	range?: { min: number; max: number; }
 ): DerivedBandData => {
 	return {
-		colorMap:
-			mode === 'twi'
-				? 'hsv'
-				: mode === 'slope'
-					? 'salinity'
-					: mode === 'aspect'
-						? 'rainbow-soft'
-						: 'rdbu',
+		colorMap: mode === 'twi'
+			? 'hsv'
+			: mode === 'slope'
+			? 'salinity'
+			: mode === 'aspect'
+			? 'rainbow-soft'
+			: 'rdbu',
 		range: createAdjustableRange(
-			range?.min ?? (mode === 'aspect' ? 0 : mode === 'slope' ? 0 : mode === 'topex' ? -90 : -1),
-			range?.max ?? (mode === 'aspect' ? 360 : mode === 'slope' ? 90 : mode === 'topex' ? 90 : 1)
+			range?.min
+				?? (mode === 'aspect' ? 0 : mode === 'slope' ? 0 : mode === 'topex' ? -90 : -1),
+			range?.max
+				?? (mode === 'aspect' ? 360 : mode === 'slope' ? 90 : mode === 'topex' ? 90 : 1)
 		)
 	};
 };
@@ -131,9 +132,8 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 	}
 
 	if (mode === 'twi') {
-		const uniformsData =
-			visualization.uniformsData.twi ??
-			getRasterDerivedDefaultStyle(
+		const uniformsData = visualization.uniformsData.twi
+			?? getRasterDerivedDefaultStyle(
 				'twi',
 				GeoTiffCache.getDataRanges(getTwiCacheKey(entry.id))?.[0]
 			);
@@ -147,9 +147,8 @@ const getRasterTiffStyleId = (entry: RasterImageEntry<RasterTiffStyle>) => {
 
 	if (mode === 'slope' || mode === 'aspect' || mode === 'tpi' || mode === 'topex') {
 		const cacheKey = mode === 'topex' ? getTopexCacheKey(entry.id) : null;
-		const uniformsData =
-			visualization.uniformsData[mode] ??
-			getRasterDerivedDefaultStyle(
+		const uniformsData = visualization.uniformsData[mode]
+			?? getRasterDerivedDefaultStyle(
 				mode,
 				cacheKey ? GeoTiffCache.getDataRanges(cacheKey)?.[0] : undefined
 			);
@@ -208,26 +207,24 @@ const syncTemporalRasterVisualizationRange = (entry: RasterImageEntry<RasterTiff
 	}
 
 	if (
-		entry.style.visualization.mode === 'slope' ||
-		entry.style.visualization.mode === 'aspect' ||
-		entry.style.visualization.mode === 'tpi' ||
-		entry.style.visualization.mode === 'topex'
+		entry.style.visualization.mode === 'slope'
+		|| entry.style.visualization.mode === 'aspect'
+		|| entry.style.visualization.mode === 'tpi'
+		|| entry.style.visualization.mode === 'topex'
 	) {
 		const mode = entry.style.visualization.mode;
-		const currentRange =
-			mode === 'slope'
-				? { min: 0, max: 90 }
-				: mode === 'aspect'
-					? { min: 0, max: 360 }
-					: mode === 'tpi'
-						? { min: -1, max: 1 }
-						: GeoTiffCache.getDataRanges(getTopexCacheKey(entry.id))?.[0];
+		const currentRange = mode === 'slope'
+			? { min: 0, max: 90 }
+			: mode === 'aspect'
+			? { min: 0, max: 360 }
+			: mode === 'tpi'
+			? { min: -1, max: 1 }
+			: GeoTiffCache.getDataRanges(getTopexCacheKey(entry.id))?.[0];
 		if (!currentRange) return;
 		const current = entry.style.visualization.uniformsData[mode];
 		entry.style.visualization.uniformsData[mode] = {
-			colorMap:
-				current?.colorMap ??
-				(mode === 'slope' ? 'salinity' : mode === 'aspect' ? 'rainbow-soft' : 'rdbu'),
+			colorMap: current?.colorMap
+				?? (mode === 'slope' ? 'salinity' : mode === 'aspect' ? 'rainbow-soft' : 'rdbu'),
 			range: createAdjustableRange(currentRange.min, currentRange.max)
 		};
 		return;
@@ -285,11 +282,11 @@ export const createSourcesItems = async (
 	_dataEntries: MorivisLayerEntry[],
 	_type: 'main' | 'preview' = 'main',
 	referenceSources: Record<string, VectorSourceSpecification> = {}
-): Promise<{ [_: string]: SourceSpecification }> => {
+): Promise<{ [_: string]: SourceSpecification; }> => {
 	// 各エントリの非同期処理結果を配列に格納
 	const sourceItemsArray = await Promise.all(
 		_dataEntries.map(async (entry, index) => {
-			const items: { [_: string]: SourceSpecification } = {};
+			const items: { [_: string]: SourceSpecification; } = {};
 			const sourceId = `${entry.id}_source`;
 			const { metaData, format, type, style } = entry;
 
@@ -307,36 +304,43 @@ export const createSourcesItems = async (
 							const visualization = style.visualization;
 							const mode = visualization.mode;
 							if (
-								mode === 'relief' ||
-								mode === 'slope' ||
-								mode === 'aspect' ||
-								mode === 'curvature' ||
-								mode === 'shadow'
+								mode === 'relief'
+								|| mode === 'slope'
+								|| mode === 'aspect'
+								|| mode === 'curvature'
+								|| mode === 'shadow'
 							) {
 								const demType = visualization.demType;
-								const uniformsDataParam =
-									mode === 'relief'
-										? toDemStyleUrlParams(visualization.uniformsData.relief)
-										: mode === 'slope' && visualization.uniformsData.slope
-											? toDemStyleUrlParams(
-													visualization.uniformsData.slope,
-													getDemSlopeRangeMode(visualization.uniformsData.slope) === 'auto'
-												)
-											: mode === 'shadow'
-												? objectToUrlParams({
-														...normalizeDemShadowStyle(visualization.uniformsData.shadow)
-													})
-												: objectToUrlParams(
-														(mode === 'aspect'
-															? visualization.uniformsData.aspect
-															: visualization.uniformsData.curvature) as Record<string, unknown>
-													);
+								const uniformsDataParam = mode === 'relief'
+									? toDemStyleUrlParams(visualization.uniformsData.relief)
+									: mode === 'slope' && visualization.uniformsData.slope
+									? toDemStyleUrlParams(
+										visualization.uniformsData.slope,
+										getDemSlopeRangeMode(visualization.uniformsData.slope)
+											=== 'auto'
+									)
+									: mode === 'shadow'
+									? objectToUrlParams({
+										...normalizeDemShadowStyle(
+											visualization.uniformsData.shadow
+										)
+									})
+									: objectToUrlParams(
+										(mode === 'aspect'
+											? visualization.uniformsData.aspect
+											: visualization.uniformsData.curvature) as Record<
+												string,
+												unknown
+											>
+									);
 								items[sourceId] = {
 									type: 'raster',
 									tiles: [
-										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${encodeURIComponent(
-											format.url
-										)}&x={x}&y={y}&z={z}`
+										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${
+											encodeURIComponent(
+												format.url
+											)
+										}&x={x}&y={y}&z={z}`
 									],
 									maxzoom: metaData.maxZoom,
 									minzoom: metaData.minZoom,
@@ -380,37 +384,44 @@ export const createSourcesItems = async (
 							const visualization = style.visualization;
 							const mode = visualization.mode;
 							if (
-								mode === 'relief' ||
-								mode === 'slope' ||
-								mode === 'aspect' ||
-								mode === 'curvature' ||
-								mode === 'shadow'
+								mode === 'relief'
+								|| mode === 'slope'
+								|| mode === 'aspect'
+								|| mode === 'curvature'
+								|| mode === 'shadow'
 							) {
 								const demType = visualization.demType;
-								const uniformsDataParam =
-									mode === 'relief'
-										? toDemStyleUrlParams(visualization.uniformsData.relief)
-										: mode === 'slope' && visualization.uniformsData.slope
-											? toDemStyleUrlParams(
-													visualization.uniformsData.slope,
-													getDemSlopeRangeMode(visualization.uniformsData.slope) === 'auto'
-												)
-											: mode === 'shadow'
-												? objectToUrlParams({
-														...normalizeDemShadowStyle(visualization.uniformsData.shadow)
-													})
-												: objectToUrlParams(
-														(mode === 'aspect'
-															? visualization.uniformsData.aspect
-															: visualization.uniformsData.curvature) as Record<string, unknown>
-													);
+								const uniformsDataParam = mode === 'relief'
+									? toDemStyleUrlParams(visualization.uniformsData.relief)
+									: mode === 'slope' && visualization.uniformsData.slope
+									? toDemStyleUrlParams(
+										visualization.uniformsData.slope,
+										getDemSlopeRangeMode(visualization.uniformsData.slope)
+											=== 'auto'
+									)
+									: mode === 'shadow'
+									? objectToUrlParams({
+										...normalizeDemShadowStyle(
+											visualization.uniformsData.shadow
+										)
+									})
+									: objectToUrlParams(
+										(mode === 'aspect'
+											? visualization.uniformsData.aspect
+											: visualization.uniformsData.curvature) as Record<
+												string,
+												unknown
+											>
+									);
 
 								items[sourceId] = {
 									type: 'raster',
 									tiles: [
-										`webgl://${pmtilesUrl}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${encodeURIComponent(
-											pmtilesUrl
-										)}&x={x}&y={y}&z={z}`
+										`webgl://${pmtilesUrl}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${
+											encodeURIComponent(
+												pmtilesUrl
+											)
+										}&x={x}&y={y}&z={z}`
 									],
 									maxzoom: metaData.maxZoom,
 									minzoom: metaData.minZoom,
@@ -480,13 +491,27 @@ export const createSourcesItems = async (
 							if (mode === 'single') {
 								const u = visualization.uniformsData.single;
 								const [uMin, uMax] = getAdjustableRangeValue(u.range, u.min, u.max);
-								tileUrl = `cog://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${uMin}&max=${uMax}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
+								tileUrl =
+									`cog://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${uMin}&max=${uMax}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
 							} else {
 								const u = visualization.uniformsData.multi;
-								const [rMin, rMax] = getAdjustableRangeValue(u.r.range, u.r.min, u.r.max);
-								const [gMin, gMax] = getAdjustableRangeValue(u.g.range, u.g.min, u.g.max);
-								const [bMin, bMax] = getAdjustableRangeValue(u.b.range, u.b.min, u.b.max);
-								tileUrl = `cog://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${rMin}&rMax=${rMax}&gMin=${gMin}&gMax=${gMax}&bMin=${bMin}&bMax=${bMax}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
+								const [rMin, rMax] = getAdjustableRangeValue(
+									u.r.range,
+									u.r.min,
+									u.r.max
+								);
+								const [gMin, gMax] = getAdjustableRangeValue(
+									u.g.range,
+									u.g.min,
+									u.g.max
+								);
+								const [bMin, bMax] = getAdjustableRangeValue(
+									u.b.range,
+									u.b.min,
+									u.b.max
+								);
+								tileUrl =
+									`cog://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${rMin}&rMax=${rMax}&gMin=${gMin}&gMax=${gMax}&bMin=${bMin}&bMax=${bMax}&tileSize=${tileSize}&x={x}&y={y}&z={z}`;
 							}
 
 							items[sourceId] = {
@@ -507,15 +532,19 @@ export const createSourcesItems = async (
 						} satisfies ImageSourceSpecification;
 					} else if (format.type === 'geozarr') {
 						if (style.type === 'categorical' && style.legend.type === 'category') {
-							const categoricalValues =
-								entry.properties?.categories?.values.join('|') ??
-								style.legend.labels.map((_, index) => index).join('|');
+							const categoricalValues = entry.properties?.categories?.values.join('|')
+								?? style.legend.labels.map((_, index) => index).join('|');
 							const categoricalColors = style.legend.colors.join('|');
-							const tileUrl = `geozarr://tile?entryId=${entry.id}&mode=categorical&bandIndex=0&values=${encodeURIComponent(
-								categoricalValues
-							)}&colors=${encodeURIComponent(
-								categoricalColors
-							)}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+							const tileUrl =
+								`geozarr://tile?entryId=${entry.id}&mode=categorical&bandIndex=0&values=${
+									encodeURIComponent(
+										categoricalValues
+									)
+								}&colors=${
+									encodeURIComponent(
+										categoricalColors
+									)
+								}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
 
 							items[sourceId] = {
 								type: 'raster',
@@ -534,13 +563,27 @@ export const createSourcesItems = async (
 							if (mode === 'single') {
 								const u = visualization.uniformsData.single;
 								const [uMin, uMax] = getAdjustableRangeValue(u.range, u.min, u.max);
-								tileUrl = `geozarr://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${uMin}&max=${uMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+								tileUrl =
+									`geozarr://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${uMin}&max=${uMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
 							} else {
 								const u = visualization.uniformsData.multi;
-								const [rMin, rMax] = getAdjustableRangeValue(u.r.range, u.r.min, u.r.max);
-								const [gMin, gMax] = getAdjustableRangeValue(u.g.range, u.g.min, u.g.max);
-								const [bMin, bMax] = getAdjustableRangeValue(u.b.range, u.b.min, u.b.max);
-								tileUrl = `geozarr://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${rMin}&rMax=${rMax}&gMin=${gMin}&gMax=${gMax}&bMin=${bMin}&bMax=${bMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+								const [rMin, rMax] = getAdjustableRangeValue(
+									u.r.range,
+									u.r.min,
+									u.r.max
+								);
+								const [gMin, gMax] = getAdjustableRangeValue(
+									u.g.range,
+									u.g.min,
+									u.g.max
+								);
+								const [bMin, bMax] = getAdjustableRangeValue(
+									u.b.range,
+									u.b.min,
+									u.b.max
+								);
+								tileUrl =
+									`geozarr://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${rMin}&rMax=${rMax}&gMin=${gMin}&gMax=${gMax}&bMin=${bMin}&bMax=${bMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
 							}
 
 							items[sourceId] = {
@@ -605,7 +648,9 @@ export const createSourcesItems = async (
 					} else if (format.type === 'geojsontile') {
 						items[sourceId] = {
 							type: 'vector',
-							tiles: [`geojson://${format.url}?x={x}&y={y}&z={z}&entryId=${entry.id}`],
+							tiles: [
+								`geojson://${format.url}?x={x}&y={y}&z={z}&entryId=${entry.id}`
+							],
 							maxzoom: metaData.maxZoom,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
 							promoteId: 'promoteId' in metaData ? metaData.promoteId : undefined,
@@ -614,7 +659,9 @@ export const createSourcesItems = async (
 						} as VectorSourceSpecification;
 
 						if ('joinDataUrl' in entry.properties && entry.properties.joinDataUrl) {
-							const joinData = await fetch(entry.properties.joinDataUrl).then((res) => res.json());
+							const joinData = await fetch(entry.properties.joinDataUrl).then((res) =>
+								res.json()
+							);
 							JoinDataCache.set(entry.id, joinData);
 						}
 					} else if (format.type === 'esri-feature') {
@@ -627,13 +674,17 @@ export const createSourcesItems = async (
 							bounds: metaData.bounds
 						} as VectorSourceSpecification;
 					} else if (format.type === 'ogc-feature') {
-						const sourceLayer = 'sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer';
+						const sourceLayer = 'sourceLayer' in metaData
+							? metaData.sourceLayer
+							: 'geojsonLayer';
 						items[sourceId] = {
 							type: 'vector',
 							tiles: [
-								`ogc-feature://request?src=${encodeURIComponent(
-									format.url
-								)}&sourceLayer=${sourceLayer}&x={x}&y={y}&z={z}&entryId=${entry.id}`
+								`ogc-feature://request?src=${
+									encodeURIComponent(
+										format.url
+									)
+								}&sourceLayer=${sourceLayer}&x={x}&y={y}&z={z}&entryId=${entry.id}`
 							],
 							maxzoom: metaData.maxZoom,
 							minzoom: 'minZoom' in metaData ? metaData.minZoom : undefined,
@@ -642,18 +693,25 @@ export const createSourcesItems = async (
 							bounds: metaData.bounds
 						} as VectorSourceSpecification;
 					} else if (format.type === 'wfs-feature') {
-						const sourceLayer = 'sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer';
-						const version = 'version' in entry.metaData ? String(entry.metaData.version ?? '') : '';
-						const outputFormat =
-							'outputFormat' in entry.metaData
-								? String(entry.metaData.outputFormat ?? 'application/json')
-								: 'application/json';
+						const sourceLayer = 'sourceLayer' in metaData
+							? metaData.sourceLayer
+							: 'geojsonLayer';
+						const version = 'version' in entry.metaData
+							? String(entry.metaData.version ?? '')
+							: '';
+						const outputFormat = 'outputFormat' in entry.metaData
+							? String(entry.metaData.outputFormat ?? 'application/json')
+							: 'application/json';
 						const requestQuery = [
 							`serviceUrl=${encodeURIComponent(format.url)}`,
 							`version=${encodeURIComponent(version)}`,
-							`typeName=${encodeURIComponent(
-								'sourceLayer' in metaData ? metaData.sourceLayer : 'geojsonLayer'
-							)}`,
+							`typeName=${
+								encodeURIComponent(
+									'sourceLayer' in metaData
+										? metaData.sourceLayer
+										: 'geojsonLayer'
+								)
+							}`,
 							`outputFormat=${encodeURIComponent(outputFormat)}`,
 							`srsName=${encodeURIComponent('EPSG:4326')}`,
 							`sourceLayer=${encodeURIComponent(sourceLayer)}`,
@@ -680,7 +738,9 @@ export const createSourcesItems = async (
 					break;
 			}
 
-			if ('auxiliaryLayers' in entry && entry.auxiliaryLayers && entry.auxiliaryLayers.sources) {
+			if (
+				'auxiliaryLayers' in entry && entry.auxiliaryLayers && entry.auxiliaryLayers.sources
+			) {
 				const { sources } = entry.auxiliaryLayers;
 				const dimensionValue = getRasterDimensionValue(entry);
 
@@ -740,8 +800,8 @@ export const createSourcesItems = async (
 export const createTerrainSources = async (
 	_dataEntries: MorivisRasterEntry<RasterDemStyle>[],
 	_id: string
-): Promise<{ [_: string]: RasterDEMSourceSpecification }> => {
-	const sourceItems: { [_: string]: RasterDEMSourceSpecification } = {};
+): Promise<{ [_: string]: RasterDEMSourceSpecification; }> => {
+	const sourceItems: { [_: string]: RasterDEMSourceSpecification; } = {};
 
 	const entry = _dataEntries.find((e) => e.id === _id);
 
@@ -756,9 +816,11 @@ export const createTerrainSources = async (
 	sourceItems['terrain'] = {
 		type: 'raster-dem',
 		tiles: [
-			`terrain://${format.url}?entryId=${id}&formatType=${format.type}&demType=${demType}&tileSize=${metaData.tileSize}&baseUrl=${encodeURIComponent(
-				format.url
-			)}&x={x}&y={y}&z={z}`
+			`terrain://${format.url}?entryId=${id}&formatType=${format.type}&demType=${demType}&tileSize=${metaData.tileSize}&baseUrl=${
+				encodeURIComponent(
+					format.url
+				)
+			}&x={x}&y={y}&z={z}`
 		],
 		maxzoom: metaData.maxZoom,
 		minzoom: metaData.minZoom,

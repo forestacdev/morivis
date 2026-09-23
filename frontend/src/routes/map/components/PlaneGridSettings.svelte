@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { planeGridZone } from '$routes/stores/layers';
 	import {
 		getJapanPlaneRectangularInfo,
 		getJapanPlaneRectangularSystems
 	} from '$routes/map/utils/proj/japan-plane-rectangular';
+	import { planeGridZone } from '$routes/stores/layers';
 
 	const id = $props.id();
 	const systems = getJapanPlaneRectangularSystems();

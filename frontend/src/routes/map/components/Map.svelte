@@ -48,6 +48,7 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { MAPTERHORN_DEM_SOURCE } from '$routes/map/utils/contours/config';
 	import {
 		clearAllCogViewportImages,
 		fetchCogViewportImage,
@@ -64,19 +65,18 @@
 		WcsViewportTooBroadError
 	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
-	import { createPlaneGridStyle } from '$routes/map/utils/layers/plane-grid';
 	import { createContourStyle } from '$routes/map/utils/layers/contours';
-	import { MAPTERHORN_DEM_SOURCE } from '$routes/map/utils/contours/config';
 	import { createH3Style } from '$routes/map/utils/layers/h3';
-	import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
 	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
+	import { createPlaneGridStyle } from '$routes/map/utils/layers/plane-grid';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 	import {
 		loadReferenceStyle,
 		selectReferenceStyle,
 		type ReferenceStyle
 	} from '$routes/map/utils/layers/reference-style';
+	import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
 	import maplibregl from '$routes/map/utils/maplibre';
 	import type {
 		BackgroundLayerSpecification,
