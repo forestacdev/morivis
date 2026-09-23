@@ -13,7 +13,6 @@
 		showStreetViewLayer
 	} from '$routes/stores/layers';
 	import { isTerrain3d, isGlobe } from '$routes/stores/map';
-	import { isMobile } from '$routes/stores/ui';
 
 	let containerRef = $state<HTMLElement>();
 
@@ -33,52 +32,83 @@
 		};
 	});
 
-	let isOsm = $derived.by(() => {
-		return $selectedBaseMap === 'osm';
-	});
-
-	let isNotHillshade = $derived.by(() => {
-		return $selectedBaseMap === 'satellite';
-	});
-
 	interface Props {
 		showMenu: boolean;
 	}
 
 	let { showMenu = $bindable() }: Props = $props();
+
+	let layersList = $derived<
+		{
+			label: string;
+			value: boolean;
+			setValue: (value: boolean) => void;
+			disabled?: boolean;
+			icon: string;
+		}[]
+	>([
+		{
+			label: '地名・POI',
+			icon: 'material-symbols:location-on-rounded',
+			value: $showLabelLayer,
+			setValue: showLabelLayer.set,
+			disabled: $selectedBaseMap === 'osm'
+		},
+		{
+			label: '道路・線路・境界',
+			icon: 'material-symbols:route',
+			value: $showLineLayer,
+			setValue: showLineLayer.set,
+			disabled: $selectedBaseMap === 'osm'
+		},
+		{
+			label: '陰影',
+			icon: 'material-symbols:contrast',
+			value: $showHillshadeLayer,
+			setValue: showHillshadeLayer.set,
+			disabled: $selectedBaseMap === 'satellite'
+		},
+		{
+			label: '3D地形',
+			icon: 'material-symbols:landscape-rounded',
+			value: $isTerrain3d,
+			setValue: isTerrain3d.set
+		},
+		{
+			label: '地球儀表示',
+			icon: 'material-symbols:public',
+			value: $isGlobe,
+			setValue: isGlobe.set
+		},
+
+		// {
+		// 	label: 'ストリートビュー',
+		// 	icon: 'material-symbols:streetview',
+		// 	value: $showStreetViewLayer,
+		// 	setValue: showStreetViewLayer.set
+		// },
+		{
+			label: 'タイル座標',
+			icon: 'material-symbols:grid-on',
+			value: $showXYZTileLayer,
+			setValue: showXYZTileLayer.set
+		}
+	]);
 </script>
 
 {#if showMenu}
 	<div
 		bind:this={containerRef}
 		transition:fly={{ duration: 200, y: -50, opacity: 0 }}
-		class="bg-main absolute z-30 flex max-w-[400px] flex-col gap-4 rounded-lg right-4 p-2 text-base shadow-lg"
+		class="bg-main absolute z-30 flex max-w-[400px] flex-col gap-3 rounded-lg right-4 p-3 text-base shadow-lg"
 	>
 		<div class="flex flex-col gap-2">
 			<div class="flex w-full justify-between">
-				<span>レイヤ</span>
+				<span>ベースマップ</span>
 				<button onclick={() => (showMenu = false)} class="cursor-pointer text-base">
 					<Icon icon="material-symbols:close-rounded" class="h-6 w-6" />
 				</button>
 			</div>
-
-			<div class="ml-6 grid w-full grid-cols-2 items-center justify-center gap-y-4">
-				<Checkbox label="地名・POI" bind:value={$showLabelLayer} disabled={isOsm} />
-				<Checkbox label="道路・線路・境界線" bind:value={$showLineLayer} disabled={isOsm} />
-				<Checkbox label="陰影" bind:value={$showHillshadeLayer} disabled={isNotHillshade} />
-				<Checkbox label="グローブ" bind:value={$isGlobe} />
-				<Checkbox label="3D地形" bind:value={$isTerrain3d} />
-				{#if $isMobile}
-					<Checkbox label="ストリートビュー" bind:value={$showStreetViewLayer} />
-				{/if}
-
-				{#if import.meta.env.DEV}
-					<Checkbox label="タイル座標" bind:value={$showXYZTileLayer} />
-				{/if}
-			</div>
-		</div>
-		<div class="flex flex-col gap-2">
-			<div>ベースマップ</div>
 			<div class="grid w-full grid-cols-3 items-center justify-center gap-x-2">
 				{#each baseMapList as baseMap}
 					<button
@@ -98,6 +128,39 @@
 						/>
 						<span class="text-xs"> {baseMap.label}</span>
 					</button>
+				{/each}
+			</div>
+		</div>
+		<div class="flex flex-col gap-2">
+			<div class="flex w-full justify-between">
+				<span>レイヤ</span>
+			</div>
+
+			<div class="grid w-full grid-cols-3 items-center justify-center gap-y-4 gap-x-2">
+				{#each layersList as layer (layer.label)}
+					<div class={layer.disabled ? 'opacity-50 pointer-events-none' : ''}>
+						<label
+							for={layer.label}
+							class="cursor-pointer grid place-items-center border-2 rounded-lg p-2 transition-colors duration-150 {layer.value
+								? 'border-accent'
+								: 'border-base'}"
+						>
+							<Icon
+								icon={layer.icon}
+								class="h-8 w-8 transition-colors duration-150  {layer.value
+									? 'text-accent'
+									: 'text-base'}"
+							/>
+							<span class="select-none text-xs">{layer.label}</span>
+							<input
+								type="checkbox"
+								id={layer.label}
+								bind:checked={() => layer.value, layer.setValue}
+								disabled={layer.disabled}
+								class="hidden"
+							/>
+						</label>
+					</div>
 				{/each}
 			</div>
 		</div>

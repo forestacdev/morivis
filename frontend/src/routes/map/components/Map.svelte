@@ -601,7 +601,7 @@
 		};
 
 		if (!import.meta.env.PROD) {
-			console.log('debug:mapStyle', mapStyle);
+			console.log('debug:mapStyle', $state.snapshot(mapStyle));
 		}
 
 		return mapStyle;
@@ -731,7 +731,7 @@
 			const debugEntries = previewEntry
 				? [...entries.filter((entry) => entry.id !== previewEntry.id), previewEntry]
 				: entries;
-			console.log('debug:entries', debugEntries);
+			console.log('debug:entries', $state.snapshot(debugEntries));
 		}
 		const mapLibreEntry = getMapStyleEntries(entries);
 
