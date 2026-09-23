@@ -164,7 +164,7 @@ export const getEntryIds = (layerEntries: MorivisLayerEntry[]): string[] => {
 };
 
 /** ベースマップ */
-export type BaseMapType = 'satellite' | 'relief' | 'slope' | 'aspect' | 'curvature' | 'osm';
+export type BaseMapType = 'satellite' | 'osm';
 export const selectedBaseMap = writable<BaseMapType>('satellite');
 
 /** 地名・POIレイヤー */

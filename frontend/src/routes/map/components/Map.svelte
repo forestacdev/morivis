@@ -1015,6 +1015,9 @@
 	});
 
 	styleUpdateUnsubscribers.push(
+		isGlobe.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
 		selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
