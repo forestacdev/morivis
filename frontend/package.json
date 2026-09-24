@@ -195,7 +195,7 @@
 		"landxml": "^0.9.1",
 		"lz4js": "0.2.0",
 		"maplibre-contour": "0.1.0",
-		"maplibre-gl": "^6.4.0",
+		"maplibre-gl": "^6.4.1",
 		"moji": "^0.5.1",
 		"netcdfjs": "^4.0.0",
 		"ol": "^10.5.0",
