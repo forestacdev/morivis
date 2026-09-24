@@ -23,10 +23,7 @@ import {
 } from '$routes/map/data/types';
 import { selectedBaseMap } from '$routes/stores/layers';
 
-import {
-	baseMapOsmSources,
-	baseMapSatelliteSources
-} from '$routes/map/utils/layers/base_map';
+import { baseMapOsmSources, baseMapSatelliteSources } from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
 
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
