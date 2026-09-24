@@ -15,9 +15,10 @@ import {
 	Vector2,
 	WebGLRenderer
 } from 'three';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import type { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { createTilesCoordinateFrame, syncTilesCamera, withTilesHeightOffset } from './coordinates';
+import { createTilesDracoLoader } from './draco-loader';
 import { createTilesGltfLoader } from './gltf-loader';
 import { createTilesMaterialController } from './materials';
 import { fetchRendererResource } from './renderer-fetch';
@@ -167,7 +168,7 @@ export class Tiles3DLayerManager {
 			this.renderer = new WebGLRenderer({ canvas: map.getCanvas(), context: gl });
 			this.renderer.autoClear = false;
 			this.renderer.outputColorSpace = SRGBColorSpace;
-			this.draco = new DRACOLoader().setDecoderPath(resolveStaticAssetPath('/draco/gltf/'));
+			this.draco = createTilesDracoLoader();
 			this.ktx = new KTX2Loader().setTranscoderPath(resolveStaticAssetPath('/basis/'))
 				.detectSupport(this.renderer);
 			this.setEntries(this.entries);
