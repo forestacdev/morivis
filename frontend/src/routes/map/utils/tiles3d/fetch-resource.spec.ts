@@ -1,6 +1,5 @@
-import { Tile3DLayer } from '@deck.gl/geo-layers';
-import { load, type Loader } from '@loaders.gl/core';
 import { gzipSync } from 'node:zlib';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { decodeTilesetResponse, fetchTilesetResource } from './fetch-resource';
 
@@ -55,11 +54,13 @@ describe('3D TilesのURL読み込み', () => {
 		);
 		glb.set(chunk, 20);
 		vi.stubGlobal('fetch', vi.fn(async () => responseAt(new Uint8Array(gzipSync(glb)))));
-		const loaded = await load(url, Tile3DLayer.defaultProps.loader as Loader, {
-			fetch: fetchTilesetResource,
-			'3d-tiles': { loadGLTF: false }
-		}) as { gltfArrayBuffer: ArrayBuffer; };
-		expect(new Uint8Array(loaded.gltfArrayBuffer)).toEqual(glb);
+		const response = await fetchTilesetResource(url);
+		const loaded = await new GLTFLoader().parseAsync(
+			await response.arrayBuffer(),
+			'https://example.invalid/test-tiles/data/'
+		);
+		expect(loaded.asset.version).toBe('2.0');
+		expect(loaded.scene.children).toEqual([]);
 	});
 
 	it('HTTPエラーはステータスを保って返す', async () => {

@@ -919,8 +919,9 @@
 		});
 		await refreshWcsEntries(entries);
 		await refreshCogEntries(entries);
+		if (mapDestroyed || updateId !== styleUpdateId) return;
 
-		const tiles3dEntry = isIsolatedPreview
+		const tiles3dEntries = isIsolatedPreview
 			? []
 			: (entries.filter(
 					(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
@@ -931,7 +932,7 @@
 			showDataEntry.type === 'model' &&
 			(showDataEntry as AnyTiles3DEntry).format.type === '3d-tiles'
 		) {
-			tiles3dEntry.push(showDataEntry as AnyTiles3DEntry);
+			tiles3dEntries.push(showDataEntry as AnyTiles3DEntry);
 		}
 
 		const pointCloudEntries = isIsolatedPreview
@@ -965,7 +966,8 @@
 			deckVectorEntries.push(showDataEntry as DeckVectorEntry);
 		}
 
-		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries, deckVectorEntries);
+		mapStore.setTiles3DStyleEntries(tiles3dEntries);
+		await mapStore.setDeckModelStyleEntries(pointCloudEntries, deckVectorEntries);
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
 

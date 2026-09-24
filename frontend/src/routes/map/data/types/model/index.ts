@@ -245,7 +245,7 @@ export interface Tiles3DMeshStyle {
 	/** 元の高さに加えるメートル値。負の値で下げる。 */
 	heightOffset?: number;
 	color: string;
-	/** ScenegraphLayer では pbr / flat を切り替える。SimpleMeshLayer では無視される。 */
+	/** 元のPBRマテリアルと、照明の影響を受けない表示を切り替える。 */
 	lighting: 'pbr' | 'flat';
 }
 

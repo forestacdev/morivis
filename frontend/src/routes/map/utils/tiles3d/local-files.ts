@@ -6,7 +6,7 @@ import {
 	readLocalTilesetBody
 } from '../formats/tiles3d';
 
-// 相対URLをloaders.glが解決できる仮想URL。通信せず、このモジュールでFileへ解決する。
+// 相対URLをタイルローダーが解決できる仮想URL。通信せず、このモジュールでFileへ解決する。
 const LOCAL_ORIGIN = 'https://morivis-local.invalid';
 const LOCAL_PREFIX = `${LOCAL_ORIGIN}/3dtiles/`;
 const sources = new Map<string, Map<string, File>>();

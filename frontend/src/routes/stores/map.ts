@@ -28,7 +28,7 @@ import type {
 	StyleSpecification
 } from '$routes/map/utils/maplibre';
 import { getModelOverlayBeforeId } from '$routes/map/utils/three/model-overlay-order';
-import { pickTiles3DFeature } from '$routes/map/utils/tiles3d/picking';
+import { Tiles3DLayerManager, TILES_3D_LAYER_ID } from '$routes/map/utils/tiles3d/layer-manager';
 import { Protocol } from 'pmtiles';
 import { type Writable, writable } from 'svelte/store';
 
@@ -411,6 +411,7 @@ const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
 	let deckOverlay: MapboxOverlay | null = null;
 	let isDeckOverlayAdded = false;
+	const tiles3dManager = new Tiles3DLayerManager();
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 
@@ -532,6 +533,7 @@ const createMapStore = () => {
 			if (!map) return;
 
 			ensureHighlightAnimationImages(map);
+			ensureTiles3DLayer();
 			isStyleLoadEvent.set(map);
 		});
 
@@ -825,6 +827,7 @@ const createMapStore = () => {
 				};
 			}
 		});
+		ensureTiles3DLayer();
 		// custom layerはstyleの差分更新でも残るため、ガイド追加・削除後の順序を合わせる。
 		if (map.getLayer('3d-model-layer')) {
 			map.moveLayer('3d-model-layer', getModelOverlayBeforeId(map.getStyle().layers));
@@ -844,7 +847,6 @@ const createMapStore = () => {
 				deckOverlay.finalize();
 				deckOverlay = null;
 			}
-			currentDeckTiles3dEntries.clear();
 			currentDeckPointCloudEntries.clear();
 			currentDeckVectorEntries.clear();
 			clearPointCloudDataCache();
@@ -902,20 +904,37 @@ const createMapStore = () => {
 
 	// 現在のエントリIDを追跡
 	let currentThreeModelIds: Set<string> = new Set();
-	let currentDeckTiles3dEntries = new Map<string, AnyTiles3DEntry>();
+	let currentTiles3dEntries = new Map<string, AnyTiles3DEntry>();
 	let currentDeckPointCloudEntries = new Map<string, PointCloudEntry>();
 	let currentDeckVectorEntries = new Map<string, DeckVectorEntry>();
 
+	const ensureTiles3DLayer = () => {
+		if (!map || !isMapValid(map) || currentTiles3dEntries.size === 0) return;
+		const beforeId = map.getLayer('deck-reference-layer')
+			? 'deck-reference-layer'
+			: getModelOverlayBeforeId(map.getStyle().layers);
+		if (!map.getLayer(TILES_3D_LAYER_ID)) map.addLayer(tiles3dManager.createLayer(), beforeId);
+		else map.moveLayer(TILES_3D_LAYER_ID, beforeId);
+	};
+
+	const setTiles3DStyleEntries = (entries: AnyTiles3DEntry[]) => {
+		currentTiles3dEntries = new Map(entries.map((entry) => [entry.id, entry]));
+		tiles3dManager.setEntries(entries);
+		if (!entries.length) {
+			if (map?.getLayer(TILES_3D_LAYER_ID)) map.removeLayer(TILES_3D_LAYER_ID);
+			tiles3dManager.dispose();
+		} else ensureTiles3DLayer();
+	};
+
+	const refreshTiles3D = () => setTiles3DStyleEntries(Array.from(currentTiles3dEntries.values()));
+
 	const syncDeckOverlay = async (
-		tiles3dEntries: AnyTiles3DEntry[],
 		pointCloudEntries: PointCloudEntry[] = [],
 		deckVectorEntries: DeckVectorEntry[] = []
 	) => {
-		currentDeckTiles3dEntries = new Map(tiles3dEntries.map((entry) => [entry.id, entry]));
 		currentDeckPointCloudEntries = new Map(pointCloudEntries.map((entry) => [entry.id, entry]));
 		currentDeckVectorEntries = new Map(deckVectorEntries.map((entry) => [entry.id, entry]));
 		const layers = await createDeckOverlay(
-			tiles3dEntries,
 			pointCloudEntries,
 			deckVectorEntries
 		);
@@ -924,7 +943,6 @@ const createMapStore = () => {
 
 	const refreshCurrentDeckOverlay = async () => {
 		await syncDeckOverlay(
-			Array.from(currentDeckTiles3dEntries.values()),
 			Array.from(currentDeckPointCloudEntries.values()),
 			Array.from(currentDeckVectorEntries.values())
 		);
@@ -1094,18 +1112,17 @@ const createMapStore = () => {
 	};
 
 	const setDeckModelStyleEntries = async (
-		tiles3dEntries: AnyTiles3DEntry[],
 		pointCloudEntries: PointCloudEntry[] = [],
 		deckVectorEntries: DeckVectorEntry[] = []
 	) => {
-		await syncDeckOverlay(tiles3dEntries, pointCloudEntries, deckVectorEntries);
+		await syncDeckOverlay(pointCloudEntries, deckVectorEntries);
 	};
 
 	const setDeckModelVisibility = async (entryId: string, visible: boolean) => {
-		const tilesEntry = currentDeckTiles3dEntries.get(entryId);
+		const tilesEntry = currentTiles3dEntries.get(entryId);
 		if (tilesEntry) {
 			tilesEntry.style.visible = visible;
-			await refreshCurrentDeckOverlay();
+			refreshTiles3D();
 			return;
 		}
 
@@ -1123,10 +1140,10 @@ const createMapStore = () => {
 	};
 
 	const setDeckModelOpacity = async (entryId: string, opacity: Opacity) => {
-		const tilesEntry = currentDeckTiles3dEntries.get(entryId);
+		const tilesEntry = currentTiles3dEntries.get(entryId);
 		if (tilesEntry) {
 			tilesEntry.style.opacity = opacity;
-			await refreshCurrentDeckOverlay();
+			refreshTiles3D();
 			return;
 		}
 
@@ -1144,10 +1161,10 @@ const createMapStore = () => {
 	};
 
 	const setDeckPointCloudPointSize = async (entryId: string, pointSize: number) => {
-		const tilesEntry = currentDeckTiles3dEntries.get(entryId);
+		const tilesEntry = currentTiles3dEntries.get(entryId);
 		if (tilesEntry && tilesEntry.style.type === 'point-cloud') {
 			tilesEntry.style.pointSize = pointSize;
-			await refreshCurrentDeckOverlay();
+			refreshTiles3D();
 			return;
 		}
 
@@ -1158,8 +1175,8 @@ const createMapStore = () => {
 	};
 
 	const setDeckTiles3DMeshStyle = async (entry: Tiles3DMeshStyleEntry) => {
-		currentDeckTiles3dEntries.set(entry.id, entry);
-		await refreshCurrentDeckOverlay();
+		currentTiles3dEntries.set(entry.id, entry);
+		refreshTiles3D();
 	};
 
 	const setDeckVectorColor = async (entryId: string, color: string, colorProperty?: string) => {
@@ -1669,6 +1686,7 @@ const createMapStore = () => {
 			deckOverlay = null;
 		}
 		releaseThreeLayer();
+		setTiles3DStyleEntries([]);
 
 		map.remove();
 		releaseRegionalMeshProtocol();
@@ -1772,8 +1790,7 @@ const createMapStore = () => {
 		addLockonMarker,
 		removeLockonMarker,
 		queryRenderedFeatures,
-		pickTiles3D: (point: { x: number; y: number; }) =>
-			pickTiles3DFeature(deckOverlay, point, currentDeckTiles3dEntries.values()),
+		pickTiles3D: (point: { x: number; y: number; }) => tiles3dManager.pick(point),
 		setCursor,
 		setData,
 		setTiles,
@@ -1787,6 +1804,7 @@ const createMapStore = () => {
 		setModelStyle,
 		loadIfcPartColorAttributes,
 		exportModelAsGlb,
+		setTiles3DStyleEntries,
 		setDeckModelStyleEntries,
 		setDeckModelVisibility,
 		setDeckModelOpacity,

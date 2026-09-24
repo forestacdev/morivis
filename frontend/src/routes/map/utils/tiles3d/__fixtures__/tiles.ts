@@ -1,19 +1,4 @@
-import { createTiles3DEntry } from '$routes/map/data/entries/model';
-import { Tile3DLayer } from '@deck.gl/geo-layers';
-import { type Loader, parse } from '@loaders.gl/core';
-import { describe, expect, it, vi } from 'vitest';
-import { readTileFeatureProperties } from '../tiles3d/feature-metadata';
-import { findTileFeatureAtPoint } from '../tiles3d/picking';
-import { sanitizeScenegraphGltfForDeck } from '../tiles3d/sanitize-scenegraph-gltf';
-import { createTiles3DLayer } from './overlay';
-
-vi.mock('@geoarrow/deck.gl-layers', () => ({
-	GeoArrowPathLayer: vi.fn(),
-	GeoArrowPolygonLayer: vi.fn(),
-	GeoArrowScatterplotLayer: vi.fn()
-}));
-
-const createMetadataGlb = (batched = false) => {
+export const createMetadataGlb = (batched = false) => {
 	const binary = new Uint8Array(72);
 	new Float32Array(binary.buffer, 0, 9).set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
 	binary.set(new TextEncoder().encode('test-atest-b'), 36);
@@ -78,40 +63,7 @@ const createMetadataGlb = (batched = false) => {
 	return { buffer: glb.buffer, metadata };
 };
 
-describe('3D Tilesの文字列配列属性', () => {
-	it('未実装デコーダーを回避し、形状・色と元の属性を保持する', async () => {
-		const { buffer, metadata } = createMetadataGlb();
-		const loader = Tile3DLayer.defaultProps.loader as Loader;
-		await expect(parse(buffer.slice(0), loader)).rejects.toThrow(
-			'Not implemented - arrayOffsets for strings is specified'
-		);
-		const layer = createTiles3DLayer(
-			createTiles3DEntry('test-model', 'https://example.invalid/tileset.json')
-		);
-		const result = await parse(buffer, loader, layer.props.loadOptions) as {
-			gltf: Parameters<typeof findTileFeatureAtPoint>[0] & {
-				extensions: Record<string, unknown>;
-				meshes: {
-					primitives: { attributes: { POSITION: { value: Float32Array; }; }; }[];
-				}[];
-				materials: { pbrMetallicRoughness: { baseColorFactor: number[]; }; }[];
-			};
-		};
-		expect(result.gltf.extensions.EXT_structural_metadata).toEqual(metadata);
-		expect(Array.from(result.gltf.meshes[0].primitives[0].attributes.POSITION.value)).toEqual(
-			[0, 0, 0, 1, 0, 0, 0, 1, 0]
-		);
-		expect(result.gltf.materials[0].pbrMetallicRoughness.baseColorFactor).toEqual([1, 0, 0, 1]);
-		sanitizeScenegraphGltfForDeck(result.gltf);
-		const feature = findTileFeatureAtPoint(result.gltf, { x: 0.2, y: 0.2 }, (p) => p);
-		expect(feature).toEqual({ id: 0, propertyTable: 0 });
-		expect(readTileFeatureProperties(result, feature!.id, feature!.propertyTable)).toEqual({
-			labels: '["test-a","test-b"]'
-		});
-	});
-});
-
-it('b3dmを実際にパースし、描画前処理後もBatch Tableの地物属性を引ける', async () => {
+export const createBatchedTile = () => {
 	const { buffer } = createMetadataGlb(true);
 	const encodePadded = (value: unknown, start: number) => {
 		const json = JSON.stringify(value);
@@ -135,23 +87,5 @@ it('b3dmを実際にパースし、描画前処理後もBatch Tableの地物属�
 	tileBytes.set(featureTable, 28);
 	tileBytes.set(batchTable, 28 + featureTable.length);
 	tileBytes.set(new Uint8Array(buffer), 28 + featureTable.length + batchTable.length);
-	const layer = createTiles3DLayer(
-		createTiles3DEntry('test-tiles', 'https://example.invalid/test.json')
-	);
-	const result = await parse(
-		tileBytes.buffer,
-		Tile3DLayer.defaultProps.loader as Loader,
-		layer.props.loadOptions
-	) as {
-		gltf: Parameters<typeof findTileFeatureAtPoint>[0];
-		featureTableJson: { BATCH_LENGTH: number; };
-		batchTableJson: Record<string, unknown>;
-	};
-	sanitizeScenegraphGltfForDeck(result.gltf);
-	const feature = findTileFeatureAtPoint(result.gltf, { x: 0.2, y: 0.2 }, (p) => p);
-	expect(feature).toEqual({ id: 0, propertyTable: undefined });
-	expect(readTileFeatureProperties(result, feature!.id)).toEqual({
-		name: 'test-building',
-		height: 12
-	});
-});
+	return tileBytes.buffer;
+};

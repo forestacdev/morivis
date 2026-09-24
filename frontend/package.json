@@ -101,8 +101,8 @@
 		"vitest": "^3.2.6"
 	},
 	"dependencies": {
+		"3d-tiles-renderer": "0.5.2",
 		"@deck.gl/core": "^9.2.5",
-		"@deck.gl/geo-layers": "^9.2.5",
 		"@deck.gl/layers": "^9.2.11",
 		"@deck.gl/mapbox": "^9.2.5",
 		"@devantic/diaper": "^2.2.2",

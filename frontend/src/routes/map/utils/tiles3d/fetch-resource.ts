@@ -61,7 +61,7 @@ export const decodeTilesetResponse = async (response: Response): Promise<Respons
 			headers
 		}
 	);
-	// loaders.glはresponse.urlを子タイルやテクスチャの相対URL解決に使う。
+	// 取得元URLを保持し、呼び出し元で相対参照の基準として利用できるようにする。
 	Object.defineProperty(decoded, 'url', { value: response.url });
 	return decoded;
 };
