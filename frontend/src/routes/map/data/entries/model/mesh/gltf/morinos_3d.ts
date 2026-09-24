@@ -465,10 +465,6 @@ const entry = {
 					{
 						type: 'image',
 						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1264-720x721.jpg'
-					},
-					{
-						type: 'image',
-						url: 'https://www.forest.ac.jp/wp-content/uploads/2020/03/IMG_1487-720x1080.jpg'
 					}
 				]
 			},

@@ -1,6 +1,7 @@
 import type { DialogType, UploadFiles } from '$routes/map/types';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
+import { mergeMcaUploadFiles } from '$routes/map/utils/formats/mca/upload-grid';
 import { isRasterImageSidecarFile } from '$routes/map/utils/formats/raster/sidecar';
 import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 import {
@@ -171,6 +172,28 @@ export const resolveOpenDialogDrop = async (
 
 	const decision = await resolveDroppedFiles(incomingFiles, options);
 	if (decision.type === 'dialog' && decision.dialogType === dialogType) {
+		if (dialogType === 'mca') {
+			try {
+				return {
+					type: 'stay',
+					dropFiles: mergeMcaUploadFiles(
+						toUploadFiles(currentFiles),
+						decision.dropFiles ?? incomingFiles
+					)
+				};
+			} catch (error) {
+				return {
+					type: 'delegate',
+					decision: {
+						type: 'notification',
+						level: 'error',
+						message: error instanceof Error
+							? error.message
+							: 'リージョンを追加できませんでした'
+					}
+				};
+			}
+		}
 		return {
 			type: 'stay',
 			dropFiles: decision.dropFiles ?? incomingFiles

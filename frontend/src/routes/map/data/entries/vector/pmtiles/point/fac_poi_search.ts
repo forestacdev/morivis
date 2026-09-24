@@ -115,7 +115,7 @@ const entry: PointEntry<TileMetaData> = {
 		},
 		labels: {
 			key: 'name',
-			show: false,
+			show: true,
 			minZoom: 12,
 			expressions: [
 				{

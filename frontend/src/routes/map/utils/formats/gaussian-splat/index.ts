@@ -280,3 +280,16 @@ export const parseGaussianSplatPly = (buffer: ArrayBuffer): GaussianSplatData =>
 		bounds: [minX, minY, minZ, maxX, maxY, maxZ]
 	};
 };
+
+export type GaussianSplatEncoding = 'ply' | 'spz';
+
+export const parseGaussianSplat = async (
+	buffer: ArrayBuffer,
+	encoding: GaussianSplatEncoding = 'ply'
+): Promise<GaussianSplatData> => {
+	if (encoding === 'spz') {
+		const { parseSpz } = await import('../spz');
+		return parseSpz(buffer);
+	}
+	return parseGaussianSplatPly(buffer);
+};

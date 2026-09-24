@@ -1,6 +1,6 @@
 import GaussianSplatWorker from './gaussian-splat.worker?worker';
 
-import type { GaussianSplatData } from './index';
+import type { GaussianSplatData, GaussianSplatEncoding } from './index';
 
 interface GaussianSplatWorkerResponse {
 	data?: GaussianSplatData;
@@ -8,12 +8,27 @@ interface GaussianSplatWorkerResponse {
 }
 
 export const parseGaussianSplatInWorker = async (
-	buffer: ArrayBuffer
+	buffer: ArrayBuffer,
+	encoding: GaussianSplatEncoding = 'ply',
+	signal?: AbortSignal
 ): Promise<GaussianSplatData> => {
 	return await new Promise((resolve, reject) => {
+		if (signal?.aborted) {
+			reject(new DOMException('Aborted', 'AbortError'));
+			return;
+		}
 		const worker = new GaussianSplatWorker();
-		worker.onmessage = (event: MessageEvent<GaussianSplatWorkerResponse>) => {
+		const cleanup = () => {
 			worker.terminate();
+			signal?.removeEventListener('abort', abort);
+		};
+		const abort = () => {
+			cleanup();
+			reject(new DOMException('Aborted', 'AbortError'));
+		};
+		signal?.addEventListener('abort', abort, { once: true });
+		worker.onmessage = (event: MessageEvent<GaussianSplatWorkerResponse>) => {
+			cleanup();
 			if (event.data.error) {
 				reject(new Error(event.data.error));
 				return;
@@ -25,9 +40,14 @@ export const parseGaussianSplatInWorker = async (
 			resolve(event.data.data);
 		};
 		worker.onerror = (event) => {
-			worker.terminate();
+			cleanup();
 			reject(new Error(event.message || '3D Gaussian Splatting の解析に失敗しました。'));
 		};
-		worker.postMessage({ buffer }, [buffer]);
+		try {
+			worker.postMessage({ buffer, encoding }, [buffer]);
+		} catch (error) {
+			cleanup();
+			reject(error);
+		}
 	});
 };

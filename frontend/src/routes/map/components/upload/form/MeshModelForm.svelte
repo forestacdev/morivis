@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy, untrack } from 'svelte';
+	import { get } from 'svelte/store';
 	import * as yup from 'yup';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
@@ -19,6 +20,8 @@
 	} from '$routes/map/data/types/model';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
+	import { mcaWorldPlacementStore } from '$routes/map/utils/formats/mca/placement-store';
+	import { getInitialMcaWorldPlacement } from '$routes/map/utils/formats/mca/world-placement';
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
 	import { inspectVrmlFile } from '$routes/map/utils/formats/vrml';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
@@ -43,6 +46,11 @@
 		getInitialModelPlacementViewport,
 		getInitialModelPlacementScale
 	} from '$routes/map/utils/three/model-initial-scale';
+	import {
+		getUploadedMinecraftRegion,
+		getUploadedMinecraftRegions,
+		getUploadedModelSourceUnit
+	} from '$routes/map/utils/three/model-source-unit';
 	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
@@ -170,6 +178,7 @@
 		{ key: 'z', name: 'Z-up（CAD・3Dプリント）' },
 		{ key: 'y', name: 'Y-up（CG・3Dモデル）' }
 	];
+	const minecraftRegion = $derived(glbFile ? getUploadedMinecraftRegion(glbFile) : undefined);
 	const modelPlacement = $derived(glbFile ? getModelPlacement(glbFile) : undefined);
 	const detectedProjectedModelEpsg = $derived(glbFile ? getProjectedModelEpsg(glbFile) : undefined);
 
@@ -317,10 +326,12 @@
 			activeFormat !== 'ifc' &&
 			PROJECTED_COORDINATE_CANDIDATE_FORMATS.has(activeFormat) &&
 			!modelPlacement &&
+			!minecraftRegion &&
 			!detectedProjectedModelEpsg
 	);
 	const modelSpatialIssue = $derived.by(() => {
 		if (!activeFormat) return null;
+		if (minecraftRegion) return 'placement-missing';
 
 		return getModelSpatialIssue({
 			hasEmbeddedEpsg:
@@ -870,11 +881,17 @@
 		// 読み込み中の地図移動に左右されないよう、配置開始時のカメラとビューポートを保持する。
 		const initialPlacementMap = mapStore.getMap();
 		const initialPlacementViewport =
-			requiresModelPlacement && !resolvedProjectedModelEpsg && initialPlacementMap
+			requiresModelPlacement &&
+			!minecraftRegion &&
+			!resolvedProjectedModelEpsg &&
+			initialPlacementMap
 				? getInitialModelPlacementViewport(initialPlacementMap)
 				: undefined;
 		const blobUrl = URL.createObjectURL(glbFile);
 		const center = mapStore.getCenter();
+		const minecraftPlacement = minecraftRegion
+			? getInitialMcaWorldPlacement(center, get(mcaWorldPlacementStore))
+			: undefined;
 		let resolvedMtlUrl: string | undefined;
 		let resourceUrls: Record<string, string> | undefined;
 		const resourceFiles = modelSupplementaryFiles;
@@ -889,6 +906,7 @@
 		}
 
 		const normalizeToLocalOrigin =
+			!getUploadedMinecraftRegion(glbFile) &&
 			(activeFormat === 'ifc' ||
 				activeFormat === 'gltf' ||
 				activeFormat === 'vrml' ||
@@ -902,10 +920,11 @@
 			name,
 			blobUrl,
 			{
-				lng: modelPlacement?.lng ?? center?.lng ?? 0,
-				lat: modelPlacement?.lat ?? center?.lat ?? 0,
+				lng: minecraftPlacement?.lng ?? modelPlacement?.lng ?? center?.lng ?? 0,
+				lat: minecraftPlacement?.lat ?? modelPlacement?.lat ?? center?.lat ?? 0,
 				altitude: modelPlacement?.altitude ?? 0,
-				baseScale: modelPlacement?.scale
+				baseScale: modelPlacement?.scale,
+				scale: minecraftPlacement?.metersPerBlock
 			},
 			activeFormat,
 			resolvedMtlUrl,
@@ -915,6 +934,9 @@
 				...(isLocalFbx ? { preserveSourceOrientation: true } : {}),
 				...(activeFormat === 'stl' ? { upAxis: stlUpAxis } : {}),
 				sourceFileName: glbFile.name,
+				sourceUnit: getUploadedModelSourceUnit(glbFile),
+				minecraftRegion: getUploadedMinecraftRegion(glbFile),
+				minecraftRegions: getUploadedMinecraftRegions(glbFile),
 				initialShadingEnabled: activeFormat !== 'vrm' && activeFormat !== 'pmx'
 			}
 		);
@@ -1056,7 +1078,8 @@
 					getInitialModelPlacementScale(
 						uploadedModelMeta.localBounds,
 						initialPlacementViewport,
-						entry.style.transform
+						entry.style.transform,
+						entry.format.sourceUnit
 					)
 				);
 				entry.metaData.bounds = getModelGeoBoundsFromLocalBounds(

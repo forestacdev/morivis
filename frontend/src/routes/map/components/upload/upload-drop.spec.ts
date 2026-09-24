@@ -1,6 +1,105 @@
+import { SUPPORTED_FILE_ACCEPT, SUPPORTED_FILE_GROUPS } from '$routes/map/types';
 import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+describe('Robloxのドロップ', () => {
+	it.each(['test-world.rbxl', 'test-world.RBXL', 'test-world.rbxlx', 'test-world.RBXLX'])(
+		'専用フォームへ渡す: %s',
+		async name => {
+			const file = new File(['test'], name);
+			expect(await resolveDroppedFiles(file)).toMatchObject({
+				type: 'dialog',
+				dialogType: 'roblox'
+			});
+		}
+	);
+	it('ファイル選択と形式一覧から選べる', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.rbxl');
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.rbxlx');
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'roblox')).toMatchObject({
+			dialogType: 'roblox',
+			extensions: ['.rbxl', '.rbxlx']
+		});
+	});
+});
+
+describe('Minecraftのドロップ', () => {
+	it('複数のMCAを順序を保って専用フォームへ渡す', async () => {
+		const files = ['r.-1.0.mca', 'r.0.0.MCA', 'r.1.0.mca'].map(name =>
+			new File(['test'], name)
+		);
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'mca',
+			dropFiles: files
+		});
+	});
+	it.each(['test-region.mca', 'test-region.MCA'])(
+		'単体ファイルと配列を専用フォームへ渡す: %s',
+		async name => {
+			const file = new File(['test'], name);
+			for (const input of [file, [file]]) {
+				expect(await resolveDroppedFiles(input)).toEqual({
+					type: 'dialog',
+					dialogType: 'mca',
+					dropFiles: [file]
+				});
+			}
+		}
+	);
+	it.each(['test-model.glb', 'tilejson.json', 'test.mlt', 'test.bds'])(
+		'他形式との混在を拒否する: %s',
+		async name => {
+			expect(
+				await resolveDroppedFiles([
+					new File(['test'], 'test-region.mca'),
+					new File(['{}'], name)
+				])
+			).toEqual({
+				type: 'notification',
+				level: 'error',
+				message: 'Minecraftの地形リージョン（.mca）だけをまとめて選択してください'
+			});
+		}
+	);
+	it('ZIP内の単体MCAを専用フォームへ渡す', async () => {
+		const zip = new JSZip();
+		zip.file('test-world/region/test-region.mca', 'test');
+		const result = await resolveDroppedFiles(
+			new File([
+				await zip.generateAsync({ type: 'arraybuffer' })
+			], 'test-world.zip')
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'mca' });
+	});
+	it('ZIP内の複数MCAをすべて専用フォームへ渡す', async () => {
+		const zip = new JSZip();
+		zip.file('test-world/region/r.0.0.mca', 'test');
+		zip.file('test-world/region/r.1.0.mca', 'test');
+		expect(
+			await resolveDroppedFiles(
+				new File([
+					await zip.generateAsync({ type: 'arraybuffer' })
+				], 'test-world.zip')
+			)
+		).toMatchObject({
+			type: 'dialog',
+			dialogType: 'mca',
+			dropFiles: [
+				expect.objectContaining({ name: 'r.0.0.mca' }),
+				expect.objectContaining({ name: 'r.1.0.mca' })
+			]
+		});
+	});
+	it('ファイル選択と形式一覧からMCAを選べる', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.mca');
+		expect(SUPPORTED_FILE_GROUPS.find((group) => group.id === 'mca')).toMatchObject({
+			dialogType: 'mca',
+			extensions: ['.mca']
+		});
+	});
+});
 
 describe('ローカルMLTのドロップ', () => {
 	it.each(['test.mlt', 'test.MLT', 'test.mlt.gz'])('MLTの入口へ渡す: %s', async name => {
@@ -438,6 +537,15 @@ describe('resolveDroppedFiles', () => {
 			type: 'dialog',
 			dialogType: 'model',
 			dropFiles: [vrmFile, vrmaFile]
+		});
+	});
+
+	it.each(['test-splats.spz', 'test-splats.SPZ'])('SPZ %s は3DGS登録へ渡す', async name => {
+		const file = createFile(name, 'test-spz');
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'gaussian-splat',
+			dropFiles: undefined
 		});
 	});
 

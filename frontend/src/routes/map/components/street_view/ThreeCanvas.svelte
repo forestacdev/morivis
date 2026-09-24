@@ -291,7 +291,7 @@
 	});
 
 	$effect(() => {
-		if (currentSceneId && isStreetView) {
+		if (currentSceneId && $isStreetView) {
 			setStreetViewParams(currentSceneId);
 		}
 	});

@@ -26,6 +26,7 @@
 		remoteTiles3dUrl: string | null;
 		remoteWmtsUrl: string | null;
 		remoteFeatureServiceUrl: string | null;
+		remoteArcGisUrl: string | null;
 		pendingTileUrl: string | null;
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
@@ -49,6 +50,7 @@
 		remoteTiles3dUrl = $bindable(),
 		remoteWmtsUrl = $bindable(),
 		remoteFeatureServiceUrl = $bindable(),
+		remoteArcGisUrl = $bindable(),
 		pendingTileUrl = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = false,
@@ -141,6 +143,8 @@
 				bind:pendingZoneGeoRefData
 				{selectedEpsgCode}
 			/>
+		{:else if profile === 'remote-arcgis'}
+			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteArcGisUrl />
 		{:else if profile === 'remote-wmts'}
 			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteWmtsUrl />
 		{:else if profile === 'remote-geozarr'}

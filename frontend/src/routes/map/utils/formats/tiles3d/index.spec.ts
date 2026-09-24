@@ -1,6 +1,6 @@
-import { Tile3DLayer } from '@deck.gl/geo-layers';
-import { load, type Loader } from '@loaders.gl/core';
+import { TilesRenderer } from '3d-tiles-renderer/three';
 import { gzipSync } from 'node:zlib';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { getTileset3DBbox } from '../../tiles3d/bounds';
 import {
@@ -29,6 +29,7 @@ const cleanups: (() => void)[] = [];
 afterEach(() => {
 	cleanups.splice(0).forEach(dispose => dispose());
 	vi.restoreAllMocks();
+	vi.unstubAllGlobals();
 });
 
 describe('local 3D Tiles', () => {
@@ -58,11 +59,12 @@ describe('local 3D Tiles', () => {
 		expect(response.url).toBe(url);
 		expect(response.headers.has('Content-Encoding')).toBe(false);
 		expect(new Uint8Array(await response.arrayBuffer())).toEqual(glb);
-		const loaded = await load(url, Tile3DLayer.defaultProps.loader as Loader, {
-			fetch: fetchLocalTilesetResource,
-			'3d-tiles': { loadGLTF: false }
-		}) as { gltfArrayBuffer: ArrayBuffer; };
-		expect(new Uint8Array(loaded.gltfArrayBuffer)).toEqual(glb);
+		const decoded = await fetchLocalTilesetResource(url);
+		const loaded = await new GLTFLoader().parseAsync(
+			await decoded.arrayBuffer(),
+			new URL('.', url).href
+		);
+		expect(loaded.asset.version).toBe('2.0');
 	});
 
 	it('gzip圧縮された親子JSONも判定・参照検査・取得できる', async () => {
@@ -135,7 +137,8 @@ describe('local 3D Tiles', () => {
 		).toBe('test-b');
 	});
 
-	it('登録時にバイナリを読まず、loaders.glの相対パス解決へ接続できる', async () => {
+	it('登録時にバイナリを読まず、TilesRendererの相対パス解決へ接続できる', async () => {
+		vi.stubGlobal('window', { location: { href: 'https://example.invalid/' } });
 		const root = fileAt('test-set/tileset.json', JSON.stringify(tileset('data/test.b3dm')));
 		const tile = fileAt('test-set/data/test.b3dm', 'test-payload');
 		const read = vi.spyOn(tile, 'arrayBuffer');
@@ -144,11 +147,17 @@ describe('local 3D Tiles', () => {
 		cleanups.push(source.dispose);
 		expect(read).not.toHaveBeenCalled();
 		expect(text).not.toHaveBeenCalled();
-		const loader = Tile3DLayer.defaultProps.loader as Loader;
-		const loaded = await load(source.url, loader, { fetch: fetchLocalTilesetResource }) as {
-			root: { contentUrl: string; };
-		};
-		expect(loaded.root.contentUrl).toBe(new URL('data/test.b3dm', source.url).href);
+		const renderer = new TilesRenderer(source.url);
+		renderer.registerPlugin({ name: 'test-fetch', fetchData: fetchLocalTilesetResource });
+		cleanups.push(() => renderer.dispose());
+		await new Promise<void>((resolve, reject) => {
+			renderer.addEventListener('load-root-tileset', () => resolve());
+			renderer.addEventListener('load-error', ({ error }) => reject(error));
+			renderer.update();
+		});
+		expect(new URL(renderer.root!.content!.uri!, renderer.root!.internal.basePath + '/').href)
+			.toBe(new URL('data/test.b3dm', source.url).href);
+		expect(read).not.toHaveBeenCalled();
 		expect(getTileset3DBbox(source.tileset).bbox).not.toBeNull();
 	});
 

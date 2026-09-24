@@ -238,6 +238,9 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	las: 'pointcloud',
 	laz: 'pointcloud',
 	ply: 'pointcloud',
+	spz: 'gaussian-splat',
+	rbxlx: 'roblox',
+	rbxl: 'roblox',
 	pcd: 'pointcloud',
 	xyz: 'pointcloud',
 	mbtiles: 'mbtiles',
@@ -597,6 +600,14 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
+	// MCAは同じワールドのリージョン一式を専用フォームへ渡す。
+	if (files.some((file) => hasExtension(file, '.mca'))) {
+		return files.every(file => hasExtension(file, '.mca'))
+			? createDialogDecision('mca', files)
+			: createNotificationDecision(
+				'Minecraftの地形リージョン（.mca）だけをまとめて選択してください'
+			);
+	}
 	// tilesetとGLB等が同居しても、個別モデルではなくフォルダ全体を渡す。
 	if ((await findLocalTilesetFiles(files)).length) {
 		return createDialogDecision('local-3dtiles', files);

@@ -8,6 +8,7 @@ import {
 	PUBLIC_ENTRY_PATH,
 	PUBLIC_INT_ADD_LAYER_IDS,
 	PUBLIC_PANORAMA_PATH,
+	PUBLIC_STYLES_PATH,
 	PUBLIC_TIMBER_SPECIES_PATH
 } from '$env/static/public';
 
@@ -36,9 +37,11 @@ export const STREET_VIEW_PANORAMA_PATH = PUBLIC_PANORAMA_PATH;
 export const TIMBER_SPECIES_DATA_PATH = PUBLIC_TIMBER_SPECIES_PATH;
 export const DISASTER_LORE_ALL_PATH = PUBLIC_DISASTER_LORE_ALL_PATH;
 export const FONT_DATA_PATH = DATA_PATH + '/font';
-export const MAP_FONT_DATA_PATH = FONT_DATA_PATH + '/{fontstack}/{range}.pbf';
+export const STYLES_PATH = PUBLIC_STYLES_PATH;
+export const MAP_STYLE_SATELLITE_PATH = STYLES_PATH + '/morivis_satellite.json';
+export const MAP_FONT_DATA_PATH = STYLES_PATH + '/font/{fontstack}/{range}.pbf';
 // export const MAP_FONT_DATA_PATH = 'https://tile.openstreetmap.jp/fonts/{fontstack}/{range}.pbf';
-export const MAP_SPRITE_DATA_PATH = DATA_PATH + '/sprite/sprite';
+export const MAP_SPRITE_DATA_PATH = STYLES_PATH + '/sprite/sprite';
 export const COVER_NO_IMAGE_PATH = DATA_PATH + '/images/cover/no_image.webp';
 export const FEATURE_NO_IMAGE_PATH = DATA_PATH + '/images/feature/no_image.webp';
 export const ICON_NO_IMAGE_PATH = '/assets/images/icons/no_photo.webp';

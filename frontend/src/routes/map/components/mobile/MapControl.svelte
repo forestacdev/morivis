@@ -1,20 +1,17 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 
-	import LayerControl from '$routes/map/components/LayerControl.svelte';
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import ScaleControl from '$routes/map/components/map_control/ScaleControl.svelte';
 	import StreetViewControl from '$routes/map/components/map_control/StreetViewControl.svelte';
-	import TerrainControl from '$routes/map/components/map_control/TerrainControl.svelte';
+	import LayerControl from '$routes/map/components/mobile/LayerControl.svelte';
 	import { showDataMenu } from '$routes/stores/ui';
 </script>
 
 {#if !$showDataMenu}
 	<div class="pointer-events-none absolute h-full w-full lg:hidden">
 		<div style="top: calc(16px + env(safe-area-inset-top));">
-			<!-- <TerrainControl /> -->
-			<!-- <StreetViewControl /> -->
 			<LayerControl />
 		</div>
 

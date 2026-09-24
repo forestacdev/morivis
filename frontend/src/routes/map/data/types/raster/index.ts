@@ -163,11 +163,17 @@ export interface DemShadowStyle {
 	azimuth: number;
 	/** 光源の高度角（度）。水平が0、真上が90。 */
 	altitude: number;
+	shadowColor?: string;
+	baseColor?: string;
+	baseTransparent?: boolean;
 }
 
-export const DEFAULT_DEM_SHADOW_STYLE: Readonly<DemShadowStyle> = {
+export const DEFAULT_DEM_SHADOW_STYLE: Readonly<Required<DemShadowStyle>> = {
 	azimuth: 315,
-	altitude: 45
+	altitude: 45,
+	shadowColor: '#000000',
+	baseColor: '#ffffff',
+	baseTransparent: false
 };
 
 export interface RasterDemStyle extends BaseRasterStyle {

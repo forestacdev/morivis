@@ -21,26 +21,9 @@ import {
 	getAdjustableRangeValue,
 	type MorivisLayerEntry
 } from '$routes/map/data/types';
-import {
-	selectedBaseMap,
-	showBoundaryLayer,
-	showCloudLayer,
-	showLabelLayer,
-	showRoadLayer
-} from '$routes/stores/layers';
+import { selectedBaseMap } from '$routes/stores/layers';
 
-import {
-	baseMapAspectSources,
-	baseMapCurvatureSources,
-	baseMapOsmSources,
-	baseMapReliefSources,
-	baseMapSatelliteSources,
-	baseMapSlopeSources
-} from '$routes/map/utils/layers/base_map';
-import { boundarySources } from '$routes/map/utils/layers/boundary';
-import { cloudSources } from '$routes/map/utils/layers/cloud';
-import { labelSources } from '$routes/map/utils/layers/label';
-import { roadSources } from '$routes/map/utils/layers/road';
+import { baseMapOsmSources, baseMapSatelliteSources } from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
 
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
@@ -290,7 +273,8 @@ export const getRasterTiffImageSource = async (
 
 export const createSourcesItems = async (
 	_dataEntries: MorivisLayerEntry[],
-	_type: 'main' | 'preview' = 'main'
+	_type: 'main' | 'preview' = 'main',
+	referenceSources: Record<string, VectorSourceSpecification> = {}
 ): Promise<{ [_: string]: SourceSpecification; }> => {
 	// 各エントリの非同期処理結果を配列に格納
 	const sourceItemsArray = await Promise.all(
@@ -346,7 +330,9 @@ export const createSourcesItems = async (
 									type: 'raster',
 									tiles: [
 										`webgl://${format.url}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${
-											encodeURIComponent(format.url)
+											encodeURIComponent(
+												format.url
+											)
 										}&x={x}&y={y}&z={z}`
 									],
 									maxzoom: metaData.maxZoom,
@@ -425,7 +411,9 @@ export const createSourcesItems = async (
 									type: 'raster',
 									tiles: [
 										`webgl://${pmtilesUrl}?entryId=${entry.id}&formatType=${format.type}&demType=${demType}&mode=${mode}&${uniformsDataParam}&tileSize=${metaData.tileSize}&baseUrl=${
-											encodeURIComponent(pmtilesUrl)
+											encodeURIComponent(
+												pmtilesUrl
+											)
 										}&x={x}&y={y}&z={z}`
 									],
 									maxzoom: metaData.maxZoom,
@@ -542,9 +530,13 @@ export const createSourcesItems = async (
 							const categoricalColors = style.legend.colors.join('|');
 							const tileUrl =
 								`geozarr://tile?entryId=${entry.id}&mode=categorical&bandIndex=0&values=${
-									encodeURIComponent(categoricalValues)
+									encodeURIComponent(
+										categoricalValues
+									)
 								}&colors=${
-									encodeURIComponent(categoricalColors)
+									encodeURIComponent(
+										categoricalColors
+									)
 								}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
 
 							items[sourceId] = {
@@ -682,7 +674,9 @@ export const createSourcesItems = async (
 							type: 'vector',
 							tiles: [
 								`ogc-feature://request?src=${
-									encodeURIComponent(format.url)
+									encodeURIComponent(
+										format.url
+									)
 								}&sourceLayer=${sourceLayer}&x={x}&y={y}&z={z}&entryId=${entry.id}`
 							],
 							maxzoom: metaData.maxZoom,
@@ -769,34 +763,18 @@ export const createSourcesItems = async (
 	let baseSourcesItem;
 	if (get(selectedBaseMap) === 'satellite') {
 		baseSourcesItem = baseMapSatelliteSources;
-	} else if (get(selectedBaseMap) === 'relief') {
-		baseSourcesItem = baseMapReliefSources;
-	} else if (get(selectedBaseMap) === 'slope') {
-		// TODO: 共通化
-		baseSourcesItem = baseMapSlopeSources;
-	} else if (get(selectedBaseMap) === 'aspect') {
-		// TODO: 共通化
-		baseSourcesItem = baseMapAspectSources;
-	} else if (get(selectedBaseMap) === 'curvature') {
-		baseSourcesItem = baseMapCurvatureSources;
 	} else if (get(selectedBaseMap) === 'osm') {
 		baseSourcesItem = baseMapOsmSources;
 	} else {
 		baseSourcesItem = {};
 	}
 
-	const labelSourcesItem = get(showLabelLayer) ? labelSources : {};
-	const roadSourcesItem = get(showRoadLayer) ? roadSources : {};
-	const boundarySourcesItem = get(showBoundaryLayer) ? boundarySources : {};
-	const cloudSourcesItem = get(showCloudLayer) ? cloudSources : {};
+	const referenceSourcesItem = _type === 'main' ? referenceSources : {};
 
 	return {
 		...sourceItems,
 		...baseSourcesItem,
-		...labelSourcesItem,
-		...roadSourcesItem,
-		...boundarySourcesItem,
-		...cloudSourcesItem
+		...referenceSourcesItem
 	} as {
 		[_: string]: SourceSpecification;
 	};
@@ -822,7 +800,9 @@ export const createTerrainSources = async (
 		type: 'raster-dem',
 		tiles: [
 			`terrain://${format.url}?entryId=${id}&formatType=${format.type}&demType=${demType}&tileSize=${metaData.tileSize}&baseUrl=${
-				encodeURIComponent(format.url)
+				encodeURIComponent(
+					format.url
+				)
 			}&x={x}&y={y}&z={z}`
 		],
 		maxzoom: metaData.maxZoom,

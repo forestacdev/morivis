@@ -2,7 +2,7 @@ import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { FeatureProp } from '$routes/map/types/properties';
 import { normalizeGeoJsonGeometryCollections } from '$routes/map/utils/formats/geojson';
 import toGeoJSON from '@mapbox/togeojson';
-import { GX_NS, KML_NS } from './constants';
+import { GX_NS } from './constants';
 import { applyStyleProperties, type KmlStyleMaps, parseKmlStyles } from './styles';
 import { getDirectChildText, getFirstChildText, parseXmlDocument } from './xml';
 
@@ -26,14 +26,18 @@ const extractPropertiesFromDescription = (description: string): Record<string, s
 
 const getAncestorFolderNames = (element: Element): string[] => {
 	const names: string[] = [];
-	let current = element.parentElement;
+	const namespace = element.namespaceURI ?? '';
+	let current = element.parentNode;
 
 	while (current) {
-		if (current.namespaceURI === KML_NS && current.localName === 'Folder') {
-			const name = getDirectChildText(current, KML_NS, 'name');
-			if (name) names.push(name);
+		if (current.nodeType === 1) {
+			const parent = current as Element;
+			if (parent.namespaceURI === namespace && parent.localName === 'Folder') {
+				const name = getDirectChildText(parent, namespace, 'name');
+				if (name) names.push(name);
+			}
 		}
-		current = current.parentElement;
+		current = current.parentNode;
 	}
 
 	return names.reverse();
@@ -87,32 +91,34 @@ const parseFolderTemporalText = (text: string) => {
 };
 
 const extractPlacemarkTime = (placemark: Element): string | null => {
-	const explicitTimeStamp = getFirstChildText(placemark, KML_NS, 'when');
+	const namespace = placemark.namespaceURI ?? '';
+	const explicitTimeStamp = getFirstChildText(placemark, namespace, 'when');
 	if (explicitTimeStamp) return explicitTimeStamp;
 
-	const timeStamp = placemark.getElementsByTagNameNS(KML_NS, 'TimeStamp')[0];
+	const timeStamp = placemark.getElementsByTagNameNS(namespace, 'TimeStamp')[0];
 	const timeStampWhen = timeStamp
-		? (getFirstChildText(timeStamp, KML_NS, 'when')
+		? (getFirstChildText(timeStamp, namespace, 'when')
 			?? getFirstChildText(timeStamp, GX_NS, 'when'))
 		: null;
 	if (timeStampWhen) return timeStampWhen;
 
-	const timeSpan = placemark.getElementsByTagNameNS(KML_NS, 'TimeSpan')[0];
-	const begin = timeSpan ? getFirstChildText(timeSpan, KML_NS, 'begin') : null;
+	const timeSpan = placemark.getElementsByTagNameNS(namespace, 'TimeSpan')[0];
+	const begin = timeSpan ? getFirstChildText(timeSpan, namespace, 'begin') : null;
 	if (begin) return begin;
-	const end = timeSpan ? getFirstChildText(timeSpan, KML_NS, 'end') : null;
+	const end = timeSpan ? getFirstChildText(timeSpan, namespace, 'end') : null;
 	if (end) return end;
 
 	return null;
 };
 
 const extractPlacemarkProperties = (placemark: Element) => {
+	const namespace = placemark.namespaceURI ?? '';
 	const properties: Record<string, string | number | boolean> = {};
 
-	const name = getFirstChildText(placemark, KML_NS, 'name');
+	const name = getFirstChildText(placemark, namespace, 'name');
 	if (name) properties.name = name;
 
-	const description = getFirstChildText(placemark, KML_NS, 'description');
+	const description = getFirstChildText(placemark, namespace, 'description');
 	if (description) {
 		if (/<table[\s>]/i.test(description)) {
 			Object.assign(properties, extractPropertiesFromDescription(description));
@@ -121,18 +127,18 @@ const extractPlacemarkProperties = (placemark: Element) => {
 		}
 	}
 
-	const styleUrl = getFirstChildText(placemark, KML_NS, 'styleUrl');
+	const styleUrl = getFirstChildText(placemark, namespace, 'styleUrl');
 	if (styleUrl) properties.styleUrl = styleUrl;
 
-	for (const dataElement of Array.from(placemark.getElementsByTagNameNS(KML_NS, 'Data'))) {
+	for (const dataElement of Array.from(placemark.getElementsByTagNameNS(namespace, 'Data'))) {
 		const key = dataElement.getAttribute('name')?.trim();
-		const value = getFirstChildText(dataElement, KML_NS, 'value');
+		const value = getFirstChildText(dataElement, namespace, 'value');
 		if (key && value) properties[key] = value;
 	}
 
 	for (
 		const simpleDataElement of Array.from(
-			placemark.getElementsByTagNameNS(KML_NS, 'SimpleData')
+			placemark.getElementsByTagNameNS(namespace, 'SimpleData')
 		)
 	) {
 		const key = simpleDataElement.getAttribute('name')?.trim();
@@ -203,8 +209,9 @@ const parseTrackFeatures = (
 		properties: FeatureProp;
 	}[] = [];
 	let featureIndex = 1000000;
+	const namespace = doc.documentElement.namespaceURI ?? '';
 
-	for (const placemark of Array.from(doc.getElementsByTagNameNS(KML_NS, 'Placemark'))) {
+	for (const placemark of Array.from(doc.getElementsByTagNameNS(namespace, 'Placemark'))) {
 		const trackElements = placemark.getElementsByTagNameNS(GX_NS, 'Track');
 		if (trackElements.length === 0) continue;
 
@@ -212,7 +219,7 @@ const parseTrackFeatures = (
 		applyStyleProperties(baseProperties, fillColors, lineColors);
 
 		Array.from(trackElements).forEach((trackElement, trackIndex) => {
-			const whenValues = Array.from(trackElement.getElementsByTagNameNS(KML_NS, 'when'))
+			const whenValues = Array.from(trackElement.getElementsByTagNameNS(namespace, 'when'))
 				.map((element) => element.textContent?.trim() ?? '')
 				.filter((value) => value !== '');
 			const coordValues = Array.from(trackElement.getElementsByTagNameNS(GX_NS, 'coord'))
@@ -264,17 +271,23 @@ const parseTrackFeatures = (
 
 export const parseKmlString = async (text: string): Promise<KmlParseResult> => {
 	const doc = await parseXmlDocument(text);
+	const namespace = doc.documentElement.namespaceURI ?? '';
+	const placemarks = Array.from(doc.getElementsByTagNameNS(namespace, 'Placemark'));
+	const originalIds = placemarks.map((placemark) => placemark.getAttribute('id'));
+	// 空の Placemark は変換時に省かれるため、配列の位置ではなく一時 ID で対応づける。
+	placemarks.forEach((placemark, index) => placemark.setAttribute('id', String(index)));
 	const rawGeojson = toGeoJSON.kml(doc) as FeatureCollection;
-	const baseFeatures = normalizeGeoJsonGeometryCollections(rawGeojson).features;
+	placemarks.forEach((placemark, index) => {
+		const id = originalIds[index];
+		if (id) placemark.setAttribute('id', id);
+		else placemark.removeAttribute('id');
+	});
 
 	const { fillColors, lineColors } = parseKmlStyles(text);
-	const placemarks = Array.from(doc.getElementsByTagNameNS(KML_NS, 'Placemark'));
-	let featureIndex = 0;
-
-	const features = placemarks
-		.map((placemark) => {
-			const baseFeature = baseFeatures[featureIndex];
-			featureIndex += 1;
+	const features = rawGeojson.features
+		.map((baseFeature) => {
+			const featureIndex = Number(baseFeature.id);
+			const placemark = placemarks[featureIndex];
 
 			if (placemark.getElementsByTagNameNS(GX_NS, 'Track').length > 0) {
 				return null;
@@ -303,7 +316,7 @@ export const parseKmlString = async (text: string): Promise<KmlParseResult> => {
 
 			return {
 				type: 'Feature' as const,
-				id: baseFeature.id ?? featureIndex - 1,
+				id: originalIds[featureIndex] || featureIndex,
 				geometry: baseFeature.geometry,
 				properties
 			};
@@ -316,5 +329,10 @@ export const parseKmlString = async (text: string): Promise<KmlParseResult> => {
 		throw new Error('No features found in KML file');
 	}
 
-	return { geojson: { type: 'FeatureCollection', features }, fillColors, lineColors };
+	// 属性を元の Placemark に対応づけた後で MultiGeometry を展開する。
+	return {
+		geojson: normalizeGeoJsonGeometryCollections({ type: 'FeatureCollection', features }),
+		fillColors,
+		lineColors
+	};
 };

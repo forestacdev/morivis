@@ -1,8 +1,16 @@
-import type { ModelLocalBounds, ModelTransformStyle } from '$routes/map/data/types/model';
+import type {
+	ModelLocalBounds,
+	ModelSourceUnit,
+	ModelTransformStyle
+} from '$routes/map/data/types/model';
 import { type Map, MercatorCoordinate } from '$routes/map/utils/maplibre';
 import { MathUtils, Matrix4, PerspectiveCamera, Vector4 } from 'three';
 import { buildMercatorModelMatrix } from './mercator-model-matrix';
-import { normalizeModelScale, normalizeModelTransformScale } from './model-scale';
+import {
+	normalizeModelScale,
+	normalizeModelTransformScale,
+	normalizeModelUnitMeters
+} from './model-scale';
 
 export interface ModelPlacementViewport {
 	width: number;
@@ -47,9 +55,14 @@ export const getInitialModelPlacementViewport = (map: Map): ModelPlacementViewpo
 export const getInitialModelPlacementScale = (
 	localBounds: ModelLocalBounds,
 	viewport: ModelPlacementViewport,
-	transform: ModelTransformStyle['transform']
+	transform: ModelTransformStyle['transform'],
+	sourceUnit?: ModelSourceUnit
 ) => {
 	const fallback = normalizeModelTransformScale(transform);
+	// Minecraftは画面のズームによって実寸が変わらないよう、1ブロック=1mで開始する。
+	if (sourceUnit === 'minecraft-block') {
+		return normalizeModelUnitMeters(1, transform.baseScale) ?? fallback;
+	}
 	const { width, height, worldToClip, terrainEnabled } = viewport;
 	if (
 		!localBounds.every(Number.isFinite)

@@ -7,9 +7,10 @@
 
 	interface Props {
 		summary: FeaturePanelSummary;
+		showCoordinates?: boolean;
 	}
 
-	let { summary }: Props = $props();
+	let { summary, showCoordinates = true }: Props = $props();
 	let description = $derived(summary.description?.text.trim() ?? '');
 	let protectionForestName = $derived(summary.protectionForestName?.trim() ?? '');
 	let protectionForestDescription = $derived(summary.protectionForestDescription?.trim() ?? '');
@@ -21,7 +22,7 @@
 
 <div in:fade={{ duration: 100 }} class="lg:pl-2">
 	<div class="flex h-full w-full flex-col gap-2 lg:pr-2">
-		{#if summary.point}
+		{#if showCoordinates && summary.point}
 			<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
 				<div class="flex w-full justify-start gap-2">
 					<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />

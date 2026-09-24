@@ -59,6 +59,9 @@ export interface ModelAnimationProperties {
 	defaultLoop?: boolean;
 }
 
+/** モーフ番号ごとの手動指定値（0〜1）。未指定はモーションに従う。 */
+export type PmxMorphWeights = Record<string, number>;
+
 export interface ModelAnimationState {
 	/** PMX は -1 でモーション・ポーズを適用しない。 */
 	currentClipIndex: number;
@@ -114,6 +117,7 @@ interface BaseModelEntry {
 	state?: {
 		dimension?: RasterDimensionState;
 		animation?: ModelAnimationState;
+		pmxMorphWeights?: PmxMorphWeights;
 	};
 }
 
@@ -206,6 +210,8 @@ export type ModelLocalBounds = [number, number, number, number, number, number];
 
 export interface MeshStyle extends ModelTransformStyle {
 	type: 'mesh';
+	/** Minecraftのリージョン境界と名前。通常表示では明示的に有効にした場合のみ表示する。 */
+	minecraftGrid?: { visible: boolean; labels: boolean; };
 	opacity: Opacity;
 	visible?: boolean;
 	wireframe: boolean;
@@ -223,7 +229,7 @@ export interface MeshStyle extends ModelTransformStyle {
 	heightColorRamp?: MeshHeightColorRampStyle;
 }
 
-/** 通常 PLY の 3D Gaussian Splatting 向けスタイル。 */
+/** PLY / SPZ の 3D Gaussian Splatting 向けスタイル。 */
 export interface GaussianSplatStyle extends ModelTransformStyle {
 	type: 'gaussian-splat';
 	opacity: Opacity;
@@ -239,7 +245,7 @@ export interface Tiles3DMeshStyle {
 	/** 元の高さに加えるメートル値。負の値で下げる。 */
 	heightOffset?: number;
 	color: string;
-	/** ScenegraphLayer では pbr / flat を切り替える。SimpleMeshLayer では無視される。 */
+	/** 元のPBRマテリアルと、照明の影響を受けない表示を切り替える。 */
 	lighting: 'pbr' | 'flat';
 }
 
@@ -280,6 +286,9 @@ export type MeshFormatType =
 /** 上方向のメタデータを持たないmesh形式に対して、利用者が指定する入力座標軸。 */
 export type MeshUpAxis = 'y' | 'z';
 
+/** 入力モデルの1座標単位が表す量。メートルへの換算はtransformで保持する。 */
+export type ModelSourceUnit = 'minecraft-block';
+
 /** 指定ズーム以下で選択する、同一モデルの下位表示解像度。 */
 export interface ModelLodLevel {
 	maxZoom: number;
@@ -298,6 +307,11 @@ export interface MeshEntry<T> extends BaseModelEntry {
 		resourceUrls?: Record<string, string>;
 		normalizeToLocalOrigin?: boolean;
 		upAxis?: MeshUpAxis;
+		sourceUnit?: ModelSourceUnit;
+		/** Minecraftワールド原点をローカル座標原点として保持したリージョン。 */
+		minecraftRegion?: { x: number; z: number; };
+		/** 一括読み込みした全リージョン。minecraftRegionは先頭を保持する。 */
+		minecraftRegions?: { x: number; z: number; }[];
 		georeference?: ProjectedModelGeoreference;
 		localBounds?: ModelLocalBounds;
 	};
@@ -329,13 +343,13 @@ export interface PointCloudEntry extends BaseModelEntry {
 	style: PointCloudStyle;
 }
 
-/** Three.js で描画する通常 PLY の 3D Gaussian Splatting entry。 */
+/** Three.js で描画するPLY / SPZ の 3D Gaussian Splatting entry。 */
 export interface GaussianSplatEntry extends BaseModelEntry {
 	format: {
 		type: 'gaussian-splat';
 		url: string;
 		sourceFileName?: string;
-		encoding: 'ply';
+		encoding: 'ply' | 'spz';
 		localBounds?: ModelLocalBounds;
 	};
 	properties?: ModelEntryProperties & {

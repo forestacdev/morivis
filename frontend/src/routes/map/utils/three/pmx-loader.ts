@@ -23,7 +23,7 @@ export interface LoadedPmxModel {
 	model: ThreeMmdModel;
 }
 
-/** PMX の輪郭・モーフ分割は表示コストが大きいため、通常のメッシュ表示では生成しない。 */
+/** PMX の輪郭・モーフ分割は生成せず、表情に必要なモーフ属性は保持する。 */
 export const loadPmxModel = async (
 	source: ModelSource,
 	resourceUrls?: Record<string, string>
@@ -44,7 +44,7 @@ export const loadPmxModel = async (
 		outline: false,
 		materialRenderOrder: false,
 		morphSplit: false,
-		morphAttributes: false
+		morphAttributes: true
 	});
 	return { loader, model };
 };
@@ -77,8 +77,12 @@ export const applyPmxAnimationClip = (
 };
 
 /** 適用中のモーション・ポーズを解除し、モデル本来の姿勢を描画へ反映する。 */
-export const clearPmxAnimationClip = (model: Pick<ThreeMmdModel, 'runtime' | 'update'>) => {
+export const clearPmxAnimationClip = (
+	model: Pick<ThreeMmdModel, 'runtime' | 'update'> & Partial<Pick<ThreeMmdModel, 'mesh'>>
+) => {
 	model.runtime.clearAnimation();
 	model.runtime.resetPose();
 	model.update(0, { physics: false, ik: false });
+	// JSランタイムのresetPoseは骨だけを戻すため、表情も明示的に解除する。
+	model.mesh?.morphTargetInfluences?.fill(0);
 };

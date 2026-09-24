@@ -1,16 +1,17 @@
-import { parseGaussianSplatPly } from './index';
+import { type GaussianSplatEncoding, parseGaussianSplat } from './index';
 
 interface GaussianSplatWorkerRequest {
 	buffer: ArrayBuffer;
+	encoding?: GaussianSplatEncoding;
 }
 
 interface WorkerScope {
 	postMessage: (message: unknown, transfer?: Transferable[]) => void;
 }
 
-self.onmessage = (event: MessageEvent<GaussianSplatWorkerRequest>) => {
+self.onmessage = async (event: MessageEvent<GaussianSplatWorkerRequest>) => {
 	try {
-		const data = parseGaussianSplatPly(event.data.buffer);
+		const data = await parseGaussianSplat(event.data.buffer, event.data.encoding);
 		const workerScope = self as unknown as WorkerScope;
 		workerScope.postMessage(
 			{ data },

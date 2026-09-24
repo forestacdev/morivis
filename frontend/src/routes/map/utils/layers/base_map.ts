@@ -23,24 +23,24 @@ export const baseMapList: {
 			.replace('{y}', String(basemapXYZ.y))
 			.replace('{z}', String(basemapXYZ.z))
 	},
-	{
-		type: 'relief',
-		label: '標高段彩図',
-		src: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
-			.replace('{x}', String(basemapXYZ.x))
-			.replace('{y}', String(basemapXYZ.y))
-			.replace('{z}', String(basemapXYZ.z))
-	},
-	{
-		type: 'slope',
-		label: '傾斜量図',
-		src: './images/base_map/slope.png'
-	},
-	{
-		type: 'aspect',
-		label: '傾斜方位図',
-		src: './images/base_map/aspect.png'
-	},
+	// {
+	// 	type: 'relief',
+	// 	label: '標高段彩図',
+	// 	src: 'https://cyberjapandata.gsi.go.jp/xyz/relief/{z}/{x}/{y}.png'
+	// 		.replace('{x}', String(basemapXYZ.x))
+	// 		.replace('{y}', String(basemapXYZ.y))
+	// 		.replace('{z}', String(basemapXYZ.z))
+	// },
+	// {
+	// 	type: 'slope',
+	// 	label: '傾斜量図',
+	// 	src: './images/base_map/slope.png'
+	// },
+	// {
+	// 	type: 'aspect',
+	// 	label: '傾斜方位図',
+	// 	src: './images/base_map/aspect.png'
+	// },
 	// {
 	// 	type: 'curvature',
 	// 	label: '曲率図',
@@ -77,15 +77,12 @@ export const baseMapSatelliteSources: Record<string, RasterSourceSpecification> 
 		maxzoom: 18,
 		bounds: [122.933755, 24.045713, 153.986895, 45.556277],
 		attribution: '国土地理院'
-	}
-	// base_gsi_rinya_m: {
-	// 	type: 'raster',
-	// 	tiles: ['https://forestacdev.github.io/tiles-ensyurin-photo/tiles/{z}/{x}/{y}.webp'],
-	// 	tileSize: 256,
-	// 	maxzoom: 18,
-	// 	minzoom: 14,
-	// 	attribution: ''
-	// }
+	},
+	cloud: {
+		type: 'raster',
+		url: `pmtiles://${ENTRY_PMTILES_RASTER_PATH}/cloud.pmtiles`,
+		attribution: ''
+	} as RasterSourceSpecification
 };
 
 export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
@@ -113,19 +110,23 @@ export const baseMapSatelliteLayers: RasterLayerSpecification[] = [
 			'raster-brightness-max': 0.8,
 			'raster-saturation': -0.1
 		}
-	}
-	// {
-	// 	id: 'base_gsi_rinya_m',
-	// 	source: 'base_gsi_rinya_m',
-	// 	type: 'raster',
-	// 	maxzoom: 24,
-	// 	minzoom: 12,
-	// 	paint: {
-	// 		'raster-opacity': 0.9,
-	// 		'raster-brightness-min': 0,
-	// 		'raster-brightness-max': 0.8
-	// 	}
-	// }
+	},
+	{
+		id: 'cloud_layer',
+		source: 'cloud',
+		type: 'raster',
+		paint: {
+			'raster-opacity': [
+				'interpolate',
+				['linear'],
+				['zoom'],
+				4,
+				1.0, // ズーム0で不透明度1.0（完全不透明）
+				5,
+				0
+			]
+		}
+	} as RasterLayerSpecification
 ];
 
 /** 標高段彩図 */

@@ -21,6 +21,7 @@
 		RasterRegistrationMode
 	} from '$routes/map/components/upload/form/transform/georef-types';
 	import GeoRefMenu from '$routes/map/components/upload/form/transform/GeoRefMenu.svelte';
+	import McaPlacementMenu from '$routes/map/components/upload/form/transform/McaPlacementMenu.svelte';
 	import ModelPlacementMenu from '$routes/map/components/upload/form/transform/ModelPlacementMenu.svelte';
 	import ZoneMenu from '$routes/map/components/upload/form/transform/ZoneMenu.svelte';
 	import {
@@ -30,11 +31,17 @@
 		WEB_MERCATOR_MAX_LNG
 	} from '$routes/map/data/entries/_meta_data/_bounds';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { ThreeModelEntry } from '$routes/map/data/types/model';
+	import type { MeshEntry, MeshStyle, ThreeModelEntry } from '$routes/map/data/types/model';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection, Feature } from '$routes/map/types/geojson';
 	import type { PointGeometry, PolygonGeometry } from '$routes/map/types/geometry';
 	import { removeGaussianSplatData } from '$routes/map/utils/formats/gaussian-splat/cache';
+	import {
+		mcaGridPreviewStore,
+		mcaWorldPlacementStore
+	} from '$routes/map/utils/formats/mca/placement-store';
+	import { finishMcaPlacementGrid } from '$routes/map/utils/formats/mca/region-grid';
+	import { validateMcaWorldPlacement } from '$routes/map/utils/formats/mca/world-placement';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { isBboxValid, isFiniteBbox } from '$routes/map/utils/map/bbox';
 	import type { ImageSource } from '$routes/map/utils/maplibre';
@@ -51,7 +58,11 @@
 		isValidModelPlacementLatitude,
 		isValidModelPlacementLongitude
 	} from '$routes/map/utils/three/model-placement-coordinates';
-	import { normalizeModelTransformScale } from '$routes/map/utils/three/model-scale';
+	import {
+		getModelUnitMeters,
+		normalizeModelTransformScale,
+		normalizeModelUnitMeters
+	} from '$routes/map/utils/three/model-scale';
 	import { getPlacementPreviewBounds } from '$routes/map/utils/three/placement-preview';
 	import {
 		applyAspectLockedGeoRefDrag,
@@ -143,6 +154,50 @@
 	let modelHeightOffset = $state(0);
 	let modelScale = $state(1);
 	let modelScaleUnit = $state(0);
+	let modelPlacementMode = $state<'model' | 'minecraft'>('model');
+	// 縮尺は両モードで共有し、Minecraft側ではメートル表示に変換する。
+	let minecraftMetersPerBlock = $derived.by((): number | undefined => {
+		if (
+			modelPlacementMode !== 'minecraft' ||
+			showDataEntry?.type !== 'model' ||
+			!('transform' in showDataEntry.style)
+		)
+			return undefined;
+		return getModelUnitMeters({
+			scale: modelScale,
+			scaleUnit: modelScaleUnit,
+			baseScale: showDataEntry.style.transform.baseScale
+		});
+	});
+	let minecraftGridVisible = $state(true);
+	let minecraftGridLabels = $state(true);
+	const minecraftRegion = $derived(
+		showDataEntry?.type === 'model' && 'minecraftRegion' in showDataEntry.format
+			? showDataEntry.format.minecraftRegion
+			: undefined
+	);
+	const minecraftRegions = $derived(
+		showDataEntry?.type === 'model' && 'minecraftRegions' in showDataEntry.format
+			? showDataEntry.format.minecraftRegions
+			: undefined
+	);
+	const isMinecraftPlacementMode = $derived(
+		Boolean(minecraftRegion) && modelPlacementMode === 'minecraft'
+	);
+	const minecraftPlacementError = $derived.by(() => {
+		if (!isMinecraftPlacementMode || showDataEntry?.type !== 'model') return null;
+		const error = validateMcaWorldPlacement({
+			lng: modelLng ?? Number.NaN,
+			lat: modelLat ?? Number.NaN,
+			metersPerBlock: minecraftMetersPerBlock ?? Number.NaN
+		});
+		if (error) return error;
+		const entry = showDataEntry as ThreeModelEntry;
+		return normalizeModelUnitMeters(minecraftMetersPerBlock!, entry.style.transform.baseScale)
+			? null
+			: '1ブロックの長さを描画可能な正の数値で指定してください。';
+	});
+	const modelPlacementValid = $derived(modelCoordinatesValid && !minecraftPlacementError);
 	let modelRotationX = $state(0);
 	let modelRotationY = $state(0);
 	let modelRotationZ = $state(0);
@@ -171,6 +226,10 @@
 		const normalizedScale = normalizeModelTransformScale(transform);
 		modelScale = normalizedScale.scale;
 		modelScaleUnit = normalizedScale.scaleUnit;
+		modelPlacementMode = 'model';
+		minecraftGridVisible = true;
+		minecraftGridLabels =
+			entry.style.type === 'mesh' ? (entry.style.minecraftGrid?.labels ?? true) : true;
 		modelRotationX = transform.rotationX;
 		modelRotationY = transform.rotationY;
 		modelRotationZ = transform.rotationZ;
@@ -194,7 +253,9 @@
 					return;
 				}
 				modelPlacementInitialized = true;
-				threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry));
+				threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry), {
+					showTransformHandles: !isMinecraftPlacementMode
+				});
 			})
 			.catch((error) => {
 				if (loadId !== modelPlacementLoadId) return;
@@ -202,7 +263,9 @@
 				threeJsManager.clearPreview(entry.id);
 				showNotification('実モデルを読み込めなかったため、範囲のみ表示します', 'error');
 				modelPlacementInitialized = true;
-				threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry));
+				threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry), {
+					showTransformHandles: !isMinecraftPlacementMode
+				});
 			})
 			.finally(() => {
 				if (loadId === modelPlacementLoadId) isProcessing.set(false);
@@ -216,11 +279,23 @@
 	});
 
 	const getCurrentModelPlacementStyle = (entry: ThreeModelEntry): ThreeModelEntry['style'] => {
-		if (!isValidModelPlacementLongitude(modelLng) || !isValidModelPlacementLatitude(modelLat)) {
+		if (
+			!modelPlacementValid ||
+			!isValidModelPlacementLongitude(modelLng) ||
+			!isValidModelPlacementLatitude(modelLat)
+		) {
 			return entry.style;
 		}
 		return {
 			...entry.style,
+			...(minecraftRegion
+				? {
+						minecraftGrid: {
+							visible: isMinecraftPlacementMode && minecraftGridVisible,
+							labels: minecraftGridLabels
+						}
+					}
+				: {}),
 			transform: {
 				...entry.style.transform,
 				lng: modelLng,
@@ -235,13 +310,27 @@
 			}
 		};
 	};
+	const setMinecraftMetersPerBlock = (meters: number | undefined) => {
+		if (!minecraftRegion || showDataEntry?.type !== 'model') return;
+		const entry = showDataEntry as ThreeModelEntry;
+		const normalized = normalizeModelUnitMeters(
+			meters ?? Number.NaN,
+			entry.style.transform.baseScale
+		);
+		if (normalized) {
+			modelScale = normalized.scale;
+			modelScaleUnit = normalized.scaleUnit;
+		}
+		// 無効な入力もフォームに残し、描画には最後の有効な縮尺を保持する。
+		minecraftMetersPerBlock = meters;
+	};
 
 	$effect(() => {
 		if (
 			!isModelPlacementActive ||
 			!showDataEntry ||
 			!modelPlacementInitialized ||
-			!modelCoordinatesValid
+			!modelPlacementValid
 		)
 			return;
 		if (
@@ -250,7 +339,9 @@
 		)
 			return;
 		const entry = showDataEntry as ThreeModelEntry;
-		threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry));
+		threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry), {
+			showTransformHandles: !isMinecraftPlacementMode
+		});
 	});
 
 	$effect(() => {
@@ -272,7 +363,19 @@
 		};
 	});
 
+	$effect(() => {
+		if (!isModelPlacementActive || !isMinecraftPlacementMode || !modelPlacementInitialized) {
+			mcaGridPreviewStore.set(null);
+			return;
+		}
+		// 無効なdraftの間は最後の有効なグリッドを維持する。
+		if (!modelPlacementValid) return;
+		const entry = createPlacedModelEntry();
+		if (entry?.style.type === 'mesh') mcaGridPreviewStore.set(entry as MeshEntry<MeshStyle>);
+	});
+
 	onDestroy(() => {
+		mcaGridPreviewStore.set(null);
 		threeJsManager.setPlacementTransformChangeHandler(null);
 		threeJsManager.clearPlacementPreview();
 	});
@@ -387,7 +490,7 @@
 	};
 
 	const createPlacedModelEntry = (): ThreeModelEntry | null => {
-		if (!modelCoordinatesValid) return null;
+		if (!modelPlacementValid) return null;
 		if (
 			showDataEntry?.type !== 'model' ||
 			(showDataEntry.style.type !== 'mesh' && showDataEntry.style.type !== 'gaussian-splat')
@@ -408,9 +511,33 @@
 			style
 		} as ThreeModelEntry;
 	};
+	const rememberMcaPlacement = (entry: ThreeModelEntry) => {
+		if (!('minecraftRegion' in entry.format) || !entry.format.minecraftRegion) return;
+		const placement = {
+			lng: entry.style.transform.lng,
+			lat: entry.style.transform.lat,
+			metersPerBlock: getModelUnitMeters(entry.style.transform)
+		};
+		if (!validateMcaWorldPlacement(placement)) mcaWorldPlacementStore.set(placement);
+	};
+	const showMinecraftTerrain = () => {
+		const entry = createPlacedModelEntry();
+		if (!entry) return;
+		const bounds = getModelGeoBoundsFromLocalBounds(getPlacementPreviewBounds(entry), entry.style);
+		if (!isFiniteBbox(bounds)) return;
+		map.fitBounds(
+			[
+				[bounds[0], bounds[1]],
+				[bounds[2], bounds[3]]
+			],
+			{ padding: 80, duration: 300 }
+		);
+	};
 
 	const handleCancel = () => {
+		mcaGridPreviewStore.set(null);
 		if (isEditingModelPlacement) {
+			modelPlacementInitialized = false;
 			modelPlacementLoadId += 1;
 			isProcessing.set(false);
 			threeJsManager.clearPlacementPreview();
@@ -444,21 +571,35 @@
 		if (isModelPlacementActive) {
 			const placedEntry = createPlacedModelEntry();
 			if (!placedEntry) return;
+			if (
+				placedEntry.style.type === 'mesh' &&
+				'minecraftRegion' in placedEntry.format &&
+				placedEntry.format.minecraftRegion
+			) {
+				placedEntry.style = finishMcaPlacementGrid(placedEntry.style);
+			}
 			if (isEditingModelPlacement) {
+				modelPlacementInitialized = false;
+				mcaGridPreviewStore.set(null);
 				modelPlacementLoadId += 1;
 				threeJsManager.clearPlacementPreview();
-				onModelPlacementConfirm?.(placedEntry);
+				if (onModelPlacementConfirm) {
+					onModelPlacementConfirm(placedEntry);
+					rememberMcaPlacement(placedEntry);
+				}
 				return;
 			}
 
 			threeJsManager.setModelTransform(placedEntry.id, placedEntry.style);
 			showDataEntry = placedEntry;
 			modelPlacementInitialized = false;
+			mcaGridPreviewStore.set(null);
 			threeJsManager.clearPlacementPreview();
 			transformOptionMode = null;
 			await tick();
 			showDialogType = null;
 			dropFile = null;
+			rememberMcaPlacement(placedEntry);
 			return;
 		}
 		if (transformOptionMode === 'zone') {
@@ -840,21 +981,52 @@
 			/>
 		{:else if isModelPlacementActive && modelPlacementInitialized}
 			{@const modelEntry = showDataEntry as ThreeModelEntry}
-			<ModelPlacementMenu
-				bind:lng={modelLng}
-				bind:lat={modelLat}
-				bind:altitude={modelAltitude}
-				bind:heightOffset={modelHeightOffset}
-				localBounds={modelEntry.format.localBounds}
-				baseScale={modelEntry.style.transform.baseScale}
-				heightScale={modelEntry.style.transform.heightScale}
-				canEditHeightOffset={modelEntry.style.transformOptions?.heightOffset ?? true}
-				bind:scale={modelScale}
-				bind:scaleUnit={modelScaleUnit}
-				bind:rotationX={modelRotationX}
-				bind:rotationY={modelRotationY}
-				bind:rotationZ={modelRotationZ}
-			/>
+			{#if minecraftRegion}
+				<div class="mb-4 w-full shrink-0">
+					<HorizontalSelectBox
+						bind:group={modelPlacementMode}
+						options={[
+							{ key: 'model', name: '位置合わせ' },
+							{ key: 'minecraft', name: 'ワールド座標' }
+						]}
+					/>
+				</div>
+			{/if}
+			{#if isMinecraftPlacementMode && minecraftRegion}
+				<McaPlacementMenu
+					bind:lng={modelLng}
+					bind:lat={modelLat}
+					bind:metersPerBlock={() => minecraftMetersPerBlock, setMinecraftMetersPerBlock}
+					region={minecraftRegion}
+					regions={minecraftRegions}
+					placementValid={modelPlacementValid}
+					bind:gridVisible={minecraftGridVisible}
+					bind:gridLabels={minecraftGridLabels}
+					onUseMapCenter={() => {
+						const center = map.getCenter();
+						modelLng = ((((center.lng + 180) % 360) + 360) % 360) - 180;
+						modelLat = center.lat;
+					}}
+					onShowTerrain={showMinecraftTerrain}
+				/>
+			{:else}
+				<ModelPlacementMenu
+					bind:lng={modelLng}
+					bind:lat={modelLat}
+					bind:altitude={modelAltitude}
+					bind:heightOffset={modelHeightOffset}
+					localBounds={modelEntry.format.localBounds}
+					baseScale={modelEntry.style.transform.baseScale}
+					sourceUnit={'sourceUnit' in modelEntry.format ? modelEntry.format.sourceUnit : undefined}
+					heightScale={modelEntry.style.transform.heightScale}
+					canEditHeightOffset={modelEntry.style.transformOptions?.heightOffset ?? true}
+					bind:scale={modelScale}
+					bind:scaleUnit={modelScaleUnit}
+					bind:rotationX={modelRotationX}
+					bind:rotationY={modelRotationY}
+					bind:rotationZ={modelRotationZ}
+				/>
+			{/if}
 		{/if}
 
 		<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2 pb-2">
@@ -863,9 +1035,9 @@
 			>
 			<button
 				onclick={handleConfirm}
-				disabled={$isProcessing || (isModelPlacementActive && !modelCoordinatesValid)}
+				disabled={$isProcessing || (isModelPlacementActive && !modelPlacementValid)}
 				class="c-btn-confirm min-w-[200px] p-4 select-none text-lg {$isProcessing ||
-				(isModelPlacementActive && !modelCoordinatesValid)
+				(isModelPlacementActive && !modelPlacementValid)
 					? 'cursor-not-allowed opacity-50'
 					: 'cursor-pointer'}"
 			>

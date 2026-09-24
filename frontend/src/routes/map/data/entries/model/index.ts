@@ -10,6 +10,7 @@ import type {
 	MeshFormatType,
 	MeshStyle,
 	MeshUpAxis,
+	ModelSourceUnit,
 	PointCloudEntry,
 	PointCloudStyle,
 	ProjectedModelGeoreference,
@@ -192,6 +193,9 @@ export const createGlbEntry = (
 		normalizeToLocalOrigin?: boolean;
 		preserveSourceOrientation?: boolean;
 		upAxis?: MeshUpAxis;
+		sourceUnit?: ModelSourceUnit;
+		minecraftRegion?: { x: number; z: number; };
+		minecraftRegions?: { x: number; z: number; }[];
 		georeference?: ProjectedModelGeoreference;
 		sourceFileName?: string;
 		initialShadingEnabled?: boolean;
@@ -219,6 +223,9 @@ export const createGlbEntry = (
 				normalizeToLocalOrigin: options.normalizeToLocalOrigin
 			}),
 			...(options?.upAxis && { upAxis: options.upAxis }),
+			...(options?.sourceUnit && { sourceUnit: options.sourceUnit }),
+			...(options?.minecraftRegion && { minecraftRegion: options.minecraftRegion }),
+			...(options?.minecraftRegions && { minecraftRegions: options.minecraftRegions }),
 			...(options?.georeference && {
 				georeference: options.georeference
 			})
@@ -298,14 +305,15 @@ export const createGaussianSplatEntry = (
 		lat: number;
 		altitude: number;
 	},
-	properties: GaussianSplatEntry['properties']
+	properties: GaussianSplatEntry['properties'],
+	encoding: GaussianSplatEntry['format']['encoding'] = 'ply'
 ): GaussianSplatEntry => ({
 	id: 'gaussian_splat_' + crypto.randomUUID(),
 	type: 'model',
 	format: {
 		type: 'gaussian-splat',
 		url,
-		encoding: 'ply',
+		encoding,
 		sourceFileName: name
 	},
 	metaData: {
@@ -328,7 +336,8 @@ export const createGaussianSplatEntry = (
 			altitude: transform.altitude,
 			heightOffset: 0,
 			heightScale: 1,
-			baseRotationX: 0,
+			// SPZはY-upへ正規化済みなので、通常の3Dモデルと同じ地図用の軸補正を行う。
+			baseRotationX: encoding === 'spz' ? -180 : 0,
 			scale: 1,
 			scaleUnit: 0,
 			rotationX: 0,

@@ -14,6 +14,8 @@ uniform sampler2D u_height_map_bottom;
 
 uniform float u_dem_type; // 0.0:mapbox, 1.0:gsi, 2.0:terrarium
 uniform float u_mode; // 0:default, 1:elevation, 2:slope, 3:aspect, 4:curvature, 5:shadow
+uniform vec4 u_shadow_color;
+uniform vec4 u_base_color;
 uniform vec3 u_light_direction; // X=東、Y=上、Z=南
 
 uniform sampler2D u_color_map;
@@ -362,7 +364,10 @@ void main() {
         float exaggeration = shadowZoomExaggeration(u_tile_z);
         vec3 normal = normalize(vec3(-dx * exaggeration, 1.0, -dz * exaggeration));
         float intensity = clamp(dot(normal, u_light_direction), 0.0, 1.0);
-        fragColor = vec4(vec3(intensity), color.a);
+        // Canvas は premultiplied alpha。透明なベースの RGB を影に混ぜない。
+        vec4 shadow = vec4(u_shadow_color.rgb * u_shadow_color.a, u_shadow_color.a);
+        vec4 base = vec4(u_base_color.rgb * u_base_color.a, u_base_color.a);
+        fragColor = mix(shadow, base, intensity) * color.a;
         return;
     }
 

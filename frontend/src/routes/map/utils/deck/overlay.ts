@@ -1,10 +1,4 @@
-import { fetchTilesetResource } from '$routes/map/utils/tiles3d/fetch-resource';
-import {
-	sanitizeScenegraphGltfForDeck,
-	type ScenegraphGltfLike
-} from '$routes/map/utils/tiles3d/sanitize-scenegraph-gltf';
 import { COORDINATE_SYSTEM } from '@deck.gl/core';
-import { Tile3DLayer } from '@deck.gl/geo-layers';
 import { GeoJsonLayer, PointCloudLayer } from '@deck.gl/layers';
 import {
 	GeoArrowPathLayer,
@@ -14,34 +8,11 @@ import {
 import { createGeoJsonColorAccessors, hexToRgba } from './geojson-color';
 
 import type {
-	AnyTiles3DEntry,
 	DeckVectorEntry,
 	GeoArrowEntry,
 	GeoJson3DEntry,
-	PointCloudEntry,
-	Tiles3DMeshStyle
+	PointCloudEntry
 } from '$routes/map/data/types/model';
-
-interface TileContent {
-	cartographicOrigin?: number[];
-	gltf?: ScenegraphGltfLike;
-}
-
-interface Tile3D {
-	content?: TileContent;
-}
-
-type Tile3DLayerPatchedMethods = {
-	_getSubLayer?: (tile: Tile3D, oldLayer?: unknown) => unknown;
-};
-
-type CloneableDeckLayer = {
-	id?: string;
-	constructor?: {
-		layerName?: string;
-	};
-	clone: (props: Record<string, unknown>) => unknown;
-};
 
 type PointCloudDatum = {
 	position: [number, number, number];
@@ -49,108 +20,6 @@ type PointCloudDatum = {
 };
 
 const pointCloudDataCache = new Map<string, PointCloudDatum[]>();
-
-const isCloneableDeckLayer = (layer: unknown): layer is CloneableDeckLayer =>
-	typeof layer === 'object'
-	&& layer !== null
-	&& 'clone' in layer
-	&& typeof (layer as { clone?: unknown; }).clone === 'function';
-
-const getTiles3DMeshStyleSignature = (style: Tiles3DMeshStyle) =>
-	[
-		style.color,
-		style.lighting,
-		style.opacity,
-		style.heightOffset ?? 0,
-		style.visible ?? true
-	].join(':');
-
-const getTiles3DMeshSubLayerProps = (style: Tiles3DMeshStyle) => ({
-	getColor: hexToRgba(style.color)
-});
-
-export const createTiles3DLayer = (dataEntry: AnyTiles3DEntry) => {
-	const style = { ...dataEntry.style };
-	const requestedOffset = style.type === '3d-tiles-mesh'
-		? (style.heightOffset ?? dataEntry.metaData.altitude ?? 0)
-		: 0;
-	const altitudeOffset = Number.isFinite(requestedOffset) ? requestedOffset : 0;
-
-	const layer = new Tile3DLayer({
-		id: `3d-tiles-layer-${dataEntry.id}`,
-		data: dataEntry.format.url,
-		pickable: dataEntry.interaction.clickable,
-		opacity: dataEntry.style.opacity,
-		visible: dataEntry.style.visible ?? true,
-		morivisStyleSignature: style.type === '3d-tiles-mesh'
-			? getTiles3DMeshStyleSignature({ ...style, heightOffset: altitudeOffset })
-			: undefined,
-		pointSize: dataEntry.style.type === 'point-cloud'
-			? (dataEntry.style.pointSize ?? 1)
-			: undefined,
-		parameters: { depthTest: false },
-		beforeId: 'deck-reference-layer',
-		loadOptions: {
-			fetch: fetchTilesetResource,
-			'3d-tiles': { decodeQuantizedPositions: true },
-			// loaders.gl 4.3の文字列配列属性デコーダーは未実装で、タイル全体が失敗する。
-			// 描画には未使用のため生の属性を保持する。現行APIではfalseがデコード除外。
-			gltf: { excludeExtensions: { EXT_structural_metadata: false } }
-		},
-		onTileLoad: (tile: Tile3D) => {
-			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
-		}
-	});
-
-	const patchedLayer = layer as unknown as Tile3DLayerPatchedMethods;
-	const originalGetSubLayer = patchedLayer._getSubLayer?.bind(patchedLayer);
-
-	if (originalGetSubLayer) {
-		// FME 製 b3dm 向けの一時回避。
-		// onTileLoad だけだと ScenegraphLayer 初期化タイミングに間に合わない場合があるため、
-		// deck.gl の内部サブレイヤー生成直前にも同じ補正を入れている。
-		// vis.gl 側の更新で不要になったら削除候補。
-		patchedLayer._getSubLayer = (tile: Tile3D, oldLayer?: unknown) => {
-			sanitizeScenegraphGltfForDeck(tile.content?.gltf);
-			const subLayer = originalGetSubLayer(tile, oldLayer);
-
-			if (style.type !== '3d-tiles-mesh' || !isCloneableDeckLayer(subLayer)) {
-				return subLayer;
-			}
-
-			const subLayerName = [
-				subLayer.constructor?.layerName ?? '',
-				subLayer.id ?? ''
-			]
-				.join(' ')
-				.toLowerCase();
-			// タイル本体は変更せず、再描画のたびに元の原点から計算する。
-			const origin = tile.content?.cartographicOrigin;
-			const sharedProps = {
-				...getTiles3DMeshSubLayerProps(style),
-				...(origin?.length === 3 && origin.every(Number.isFinite)
-					? { coordinateOrigin: [origin[0], origin[1], origin[2] + altitudeOffset] }
-					: {})
-			};
-
-			if (subLayerName.includes('scenegraph')) {
-				return subLayer.clone({
-					...sharedProps,
-					getTransformMatrix: [],
-					_lighting: style.lighting
-				});
-			}
-
-			if (subLayerName.includes('mesh')) {
-				return subLayer.clone(sharedProps);
-			}
-
-			return subLayer;
-		};
-	}
-
-	return layer;
-};
 
 const getPointCloudData = (dataEntry: PointCloudEntry) => {
 	const { positions, colors, pointCount } = dataEntry.format;
@@ -300,15 +169,13 @@ export const createDeckVectorLayer = (dataEntry: DeckVectorEntry) => {
 };
 
 export const createDeckOverlay = async (
-	tiles3dEntries: AnyTiles3DEntry[],
 	pointCloudEntries: PointCloudEntry[] = [],
 	deckVectorEntries: DeckVectorEntry[] = []
 ) => {
-	const tiles3dLayers = tiles3dEntries.map((entry) => createTiles3DLayer(entry));
 	const pointCloudLayers = pointCloudEntries
 		.map((entry) => createPointCloudLayer(entry))
 		.filter((layer) => layer !== null);
 	const deckVectorLayers = deckVectorEntries.map((entry) => createDeckVectorLayer(entry));
 
-	return [...tiles3dLayers, ...pointCloudLayers, ...deckVectorLayers];
+	return [...pointCloudLayers, ...deckVectorLayers];
 };

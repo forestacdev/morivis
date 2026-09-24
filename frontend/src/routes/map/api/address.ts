@@ -20,6 +20,19 @@ export const addressCodeToPrefectureCode = (addressCode: string) => {
 	return addressCode.slice(0, 2);
 };
 
+/** 逆ジオコーダの市区町村コードを、地理院の変換表で都道府県名にする。 */
+export const lonLatToPrefectureName = async (
+	lng: number,
+	lat: number,
+	signal?: AbortSignal
+): Promise<string> => {
+	const data = await gsiLonLatToAddress(lng, lat, signal);
+	const code = data.results?.muniCd;
+	if (typeof code !== 'string' || !/^\d{4,5}$/.test(code)) return '';
+	const key = String(Number(code)) as keyof typeof GSI.MUNI_ARRAY;
+	return GSI.MUNI_ARRAY[key]?.split(',')[1] ?? '';
+};
+
 /**
  * 国土地理院APIを利用して、指定した緯度経度から住所情報を取得する関数
  * @param lng 経度

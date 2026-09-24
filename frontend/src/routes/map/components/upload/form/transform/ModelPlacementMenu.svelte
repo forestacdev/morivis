@@ -7,7 +7,7 @@
 		WEB_MERCATOR_MIN_LAT,
 		WEB_MERCATOR_MAX_LAT
 	} from '$routes/map/data/entries/_meta_data/_bounds';
-	import type { ModelLocalBounds } from '$routes/map/data/types/model';
+	import type { ModelLocalBounds, ModelSourceUnit } from '$routes/map/data/types/model';
 	import { getModelHeightOffsetSliderRange } from '$routes/map/utils/three/model-height-offset';
 	import {
 		isValidModelPlacementLatitude,
@@ -21,6 +21,7 @@
 		heightOffset: number;
 		localBounds?: ModelLocalBounds;
 		baseScale?: number;
+		sourceUnit?: ModelSourceUnit;
 		heightScale?: number;
 		canEditHeightOffset?: boolean;
 		scale: number;
@@ -37,6 +38,7 @@
 		heightOffset = $bindable(),
 		localBounds,
 		baseScale,
+		sourceUnit,
 		heightScale,
 		canEditHeightOffset = true,
 		scale = $bindable(),
@@ -121,6 +123,8 @@
 	<ModelScaleControl
 		{scale}
 		{scaleUnit}
+		{baseScale}
+		{sourceUnit}
 		onChange={(value) => {
 			scale = value.scale;
 			scaleUnit = value.scaleUnit;

@@ -30,6 +30,7 @@
 		remoteTiles3dUrl: string | null;
 		remoteWmtsUrl: string | null;
 		remoteFeatureServiceUrl: string | null;
+		remoteArcGisUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -44,6 +45,7 @@
 		remoteTiles3dUrl = $bindable(),
 		remoteWmtsUrl = $bindable(),
 		remoteFeatureServiceUrl = $bindable(),
+		remoteArcGisUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -82,6 +84,7 @@
 			if (resolved.target === 'remotePmtilesUrl') remotePmtilesUrl = resolved.value;
 			if (resolved.target === 'remoteWmtsUrl') remoteWmtsUrl = resolved.value;
 			if (resolved.target === 'remoteFeatureServiceUrl') remoteFeatureServiceUrl = resolved.value;
+			if (resolved.target === 'remoteArcGisUrl') remoteArcGisUrl = resolved.value;
 			inputUrl = '';
 			hasTouchedUrlInput = false;
 			return;

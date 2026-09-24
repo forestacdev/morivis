@@ -1,4 +1,6 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
+
 	import FeaturePanelAttributes from './FeaturePanelAttributes.svelte';
 	import FeaturePanelSummaryBody from './FeaturePanelSummaryBody.svelte';
 
@@ -11,14 +13,21 @@
 		attributeItems: [string, string | number | true][];
 		fields: FieldDef[];
 		resetKey: string;
+		defaultTab?: 'summary' | 'attributes';
+		summaryContent?: Snippet;
 	}
 
-	let { summary, attributeItems, fields, resetKey }: Props = $props();
-	let selectedTab = $state<'summary' | 'attributes'>('summary');
-
-	$effect(() => {
+	let {
+		summary,
+		attributeItems,
+		fields,
+		resetKey,
+		defaultTab = 'summary',
+		summaryContent
+	}: Props = $props();
+	let selectedTab = $derived.by(() => {
 		void resetKey;
-		selectedTab = 'summary';
+		return defaultTab;
 	});
 </script>
 
@@ -33,7 +42,11 @@
 </div>
 
 {#if selectedTab === 'summary'}
-	<FeaturePanelSummaryBody {summary} />
+	{#if summaryContent}
+		{@render summaryContent()}
+	{:else}
+		<FeaturePanelSummaryBody {summary} />
+	{/if}
 {:else}
 	<FeaturePanelAttributes {summary} {attributeItems} {fields} />
 {/if}

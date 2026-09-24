@@ -1,14 +1,24 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
+
 	import DemColorLegend from './DemColorLegend.svelte';
 	import Accordion from '../../atoms/Accordion.svelte';
+	import AltitudeDial from '../../atoms/AltitudeDial.svelte';
+	import AzimuthDial from '../../atoms/AzimuthDial.svelte';
+	import ColorPicker from '../../atoms/ColorPicker.svelte';
 	import RangeSlider from '../../atoms/RangeSlider.svelte';
 	import RangeSliderDouble from '../../atoms/RangeSliderDouble.svelte';
+	import Switch from '../../atoms/Switch.svelte';
 	import ColorScaleDem from '../extension_menu/ColorScaleDem.svelte';
 
 	import ColorMapSelect from '$routes/map/components/atoms/select/ColorMapSelect.svelte';
 	import DemStyleModePulldownBox from '$routes/map/components/layer_style_menu/raster_option/DemStyleModePulldownBox.svelte';
 	import { createAdjustableRange } from '$routes/map/data/types';
-	import type { DemRangeColorStyle, DemRasterEntry } from '$routes/map/data/types/raster';
+	import type {
+		DemRangeColorStyle,
+		DemRasterEntry,
+		DemShadowStyle
+	} from '$routes/map/data/types/raster';
 	import { SEQUENTIAL_SCHEMES } from '$routes/map/utils/color/color-brewer';
 	import { COLORMAP_PRESET_NAMES } from '$routes/map/utils/color/colormap-presets';
 	import {
@@ -30,12 +40,38 @@
 	}
 
 	let { layerEntry = $bindable(), showColorOption = $bindable() }: Props = $props();
-	const shadowStyle = $derived(
+	let shadowStyle = $derived(
 		normalizeDemShadowStyle(layerEntry.style.visualization.uniformsData.shadow)
 	);
-	const setShadowAngle = (key: 'azimuth' | 'altitude', value: number) => {
-		layerEntry.style.visualization.uniformsData.shadow = { ...shadowStyle, [key]: value };
+	let shadowUpdateTimer: ReturnType<typeof setTimeout> | undefined;
+	let pendingShadowUpdate: { entry: DemRasterEntry; commit: () => void } | undefined;
+	const flushShadowUpdate = () => {
+		clearTimeout(shadowUpdateTimer);
+		shadowUpdateTimer = undefined;
+		const pending = pendingShadowUpdate;
+		pendingShadowUpdate = undefined;
+		pending?.commit();
 	};
+	const setShadowStyle = <K extends keyof DemShadowStyle>(key: K, value: DemShadowStyle[K]) => {
+		if (pendingShadowUpdate && pendingShadowUpdate.entry !== layerEntry) flushShadowUpdate();
+		const entry = layerEntry;
+		const original = entry.style.visualization.uniformsData.shadow;
+		// 入力は即時表示し、タイルの再生成は操作が落ち着いてから一度だけ行う。
+		const next = { ...shadowStyle, [key]: value };
+		shadowStyle = next;
+		clearTimeout(shadowUpdateTimer);
+		pendingShadowUpdate = {
+			entry,
+			commit: () => {
+				// 待機中に外部から置き換えられた設定を上書きしない。
+				if (entry.style.visualization.uniformsData.shadow === original) {
+					entry.style.visualization.uniformsData.shadow = next;
+				}
+			}
+		};
+		shadowUpdateTimer = setTimeout(flushShadowUpdate, 100);
+	};
+	onDestroy(flushShadowUpdate);
 	const slopeStyle = $derived(layerEntry.style.visualization.uniformsData.slope);
 	const slopeRangeMode = $derived(slopeStyle ? getDemSlopeRangeMode(slopeStyle) : 'manual');
 	const setSlopeRangeMode = (rangeMode: 'auto' | 'manual') => {
@@ -273,22 +309,29 @@
 		{/if}
 
 		{#if layerEntry.style.visualization.mode === 'shadow'}
-			<RangeSlider
-				label="光源の方位角（°）"
-				bind:value={() => shadowStyle.azimuth, (value) => setShadowAngle('azimuth', value)}
-				min={0}
-				max={360}
-				step={1}
-				isInt={true}
+			<ColorPicker
+				label="影の色"
+				bind:value={() => shadowStyle.shadowColor, (value) => setShadowStyle('shadowColor', value)}
 			/>
-			<div class="text-sub-text text-sm text-base">北 0° / 東 90° / 南 180° / 西 270°</div>
-			<RangeSlider
-				label="光源の高度角（°）"
-				bind:value={() => shadowStyle.altitude, (value) => setShadowAngle('altitude', value)}
-				min={0}
-				max={90}
-				step={1}
-				isInt={true}
+			<Switch
+				label="ベースを透明にする"
+				bind:value={
+					() => shadowStyle.baseTransparent, (value) => setShadowStyle('baseTransparent', value)
+				}
+			/>
+			{#if !shadowStyle.baseTransparent}
+				<ColorPicker
+					label="ベース色"
+					bind:value={() => shadowStyle.baseColor, (value) => setShadowStyle('baseColor', value)}
+				/>
+			{/if}
+			<AzimuthDial
+				label="光源の方位角"
+				bind:value={() => shadowStyle.azimuth, (value) => setShadowStyle('azimuth', value)}
+			/>
+			<AltitudeDial
+				label="光源の高度角"
+				bind:value={() => shadowStyle.altitude, (value) => setShadowStyle('altitude', value)}
 			/>
 		{/if}
 

@@ -13,6 +13,7 @@ export type DialogProfile =
 	| 'pointcloud-georef'
 	| 'feature-service'
 	| 'remote-wmts'
+	| 'remote-arcgis'
 	| 'remote-geozarr'
 	| 'tiles'
 	| 'wcs'
@@ -69,7 +70,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	},
 	arcgis: {
 		load: () => import('$routes/map/components/upload/form/ArcGisForm.svelte'),
-		profile: 'simple'
+		profile: 'remote-arcgis'
 	},
 	csv: {
 		load: () => import('$routes/map/components/upload/form/CsvForm.svelte'),
@@ -118,6 +119,14 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	model: {
 		load: () => import('$routes/map/components/upload/form/MeshModelForm.svelte'),
 		profile: 'model-georef'
+	},
+	mca: {
+		load: () => import('$routes/map/components/upload/form/McaForm.svelte'),
+		profile: 'drop-file'
+	},
+	roblox: {
+		load: () => import('$routes/map/components/upload/form/RobloxForm.svelte'),
+		profile: 'drop-file'
 	},
 	'gaussian-splat': {
 		load: () => import('$routes/map/components/upload/form/GaussianSplatForm.svelte'),

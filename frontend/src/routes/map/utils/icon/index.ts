@@ -1,8 +1,4 @@
-import {
-	ICON_IMAGE_BASE_PATH,
-	ICON_NO_IMAGE_PATH,
-	USE_WORKER_GENERATED_POI_ICONS
-} from '$routes/constants';
+import { ICON_IMAGE_BASE_PATH, USE_WORKER_GENERATED_POI_ICONS } from '$routes/constants';
 import type {
 	IconImageSource,
 	ImageSource,
@@ -22,7 +18,7 @@ import type { PointImageIcon } from '$routes/map/data/types/vector/style';
 let mapLibreMap: MapLibreMapType | null = null;
 const imageBitmapCache = new Map<string, Promise<ImageBitmap>>();
 const inflightGeneratedPoiIcons = new Map<string, Promise<void>>();
-let renderedDummyIconPromise: Promise<ImageBitmap> | null = null;
+let fallbackDotImage: ImageData | null = null;
 
 // NOTE: 現状は1スレッドに抑えておく
 const ICON_WORKER_POOL_MIN_SIZE = 1;
@@ -31,8 +27,11 @@ const ICON_WORKER_IDLE_TIMEOUT_MS = 3000;
 
 export const GENERATED_POI_ICON_PREFIX = 'prop_icon';
 export const GENERATED_POI_ICON_SEPARATOR = ':::';
+const GENERATED_POI_DOT_ICON_ID =
+	`${GENERATED_POI_ICON_PREFIX}${GENERATED_POI_ICON_SEPARATOR}${GENERATED_POI_ICON_SEPARATOR}`;
 
 export const buildGeneratedPoiIconId = (propId: string, iconUrl?: string | null) => {
+	if (!propId) return GENERATED_POI_DOT_ICON_ID;
 	const resolvedIconUrl = iconUrl || `${ICON_IMAGE_BASE_PATH}/${propId}.webp`;
 	return [GENERATED_POI_ICON_PREFIX, propId, resolvedIconUrl].join(GENERATED_POI_ICON_SEPARATOR);
 };
@@ -74,7 +73,7 @@ export const buildGeneratedPoiIconExpression = (
 			GENERATED_POI_ICON_SEPARATOR,
 			imageUrlExpression
 		],
-		''
+		GENERATED_POI_DOT_ICON_ID
 	] as DataDrivenPropertyValueSpecification<ResolvedImageSpecification>;
 };
 
@@ -440,7 +439,7 @@ export const warmupGeneratedPoiIconWorker = async () => {
 	await iconWorkerPool.warmup();
 };
 
-const addImageToMap = (id: string, imageBitmap: ImageBitmap) => {
+const addImageToMap = (id: string, imageBitmap: ImageBitmap | ImageData) => {
 	if (!mapLibreMap || mapLibreMap.hasImage(id)) return;
 
 	mapLibreMap.addImage(id, imageBitmap, {
@@ -475,36 +474,25 @@ const loadImage = async (src: string): Promise<ImageBitmap> => {
 	return await imagePromise;
 };
 
-const getRenderedDummyIcon = async () => {
-	if (!renderedDummyIconPromise) {
-		renderedDummyIconPromise = (async () => {
-			const image = await loadImage(ICON_NO_IMAGE_PATH);
-			if (!USE_WORKER_GENERATED_POI_ICONS) {
-				return image;
-			}
-
-			return await renderImageWithWorker('__dummy__', image);
-		})().catch((error) => {
-			renderedDummyIconPromise = null;
-			throw error;
-		});
-	}
-
-	return await renderedDummyIconPromise;
-};
-
-const addDummyPhotoIcon = async (id: string) => {
+const addFallbackPoiDot = (id: string) => {
 	if (!mapLibreMap || mapLibreMap.hasImage(id)) return;
 
-	if (USE_WORKER_GENERATED_POI_ICONS) {
-		const renderedDummyIcon = await getRenderedDummyIcon();
-		const clonedDummyIcon = await createImageBitmap(renderedDummyIcon);
-		addImageToMap(id, clonedDummyIcon);
-		return;
+	if (!fallbackDotImage) {
+		// icon-size: 0.5 で約8pxの点にする。写真用の余白やピンの枠は持たせない。
+		const canvas = new OffscreenCanvas(16, 16);
+		const context = canvas.getContext('2d');
+		if (!context) throw new Error('Failed to create fallback POI dot canvas context');
+		context.beginPath();
+		context.arc(8, 8, 6, 0, Math.PI * 2);
+		context.fillStyle = '#666666';
+		context.fill();
+		context.strokeStyle = '#ffffff';
+		context.lineWidth = 3;
+		context.stroke();
+		fallbackDotImage = context.getImageData(0, 0, canvas.width, canvas.height);
 	}
 
-	const image = await loadImage(ICON_NO_IMAGE_PATH);
-	addImageToMap(id, image);
+	addImageToMap(id, fallbackDotImage);
 };
 
 export const resolveMissingStyleImage = async (id: string, map: MapLibreMapType | null) => {
@@ -525,16 +513,14 @@ export const resolveMissingStyleImage = async (id: string, map: MapLibreMapType 
 
 	const task = (async () => {
 		if (!parsed.propId) {
-			console.warn(`Skip generated poi icon without propId: ${id}`);
-			await addDummyPhotoIcon(id);
+			addFallbackPoiDot(id);
 			return;
 		}
 
 		const imageUrl = parsed.iconUrl;
 
 		if (!imageUrl) {
-			console.error(`No image URL found for id ${id}`);
-			await addDummyPhotoIcon(id);
+			addFallbackPoiDot(id);
 			return;
 		}
 		const image = await loadImage(imageUrl);
@@ -547,8 +533,8 @@ export const resolveMissingStyleImage = async (id: string, map: MapLibreMapType 
 
 		addImageToMap(id, image);
 	})()
-		.catch(async (error) => {
-			await addDummyPhotoIcon(id);
+		.catch((error) => {
+			addFallbackPoiDot(id);
 			console.error(`Error processing image for id ${id}:`, error);
 		})
 		.finally(() => {

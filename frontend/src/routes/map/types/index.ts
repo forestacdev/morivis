@@ -4,7 +4,7 @@ import type {
 	ResultCoordinateData,
 	ResultPoiData
 } from '$routes/map/utils/data/search-result';
-import type { MapGeoJSONFeature } from '$routes/map/utils/maplibre';
+import type { MapGeoJSONFeature, PositionAnchor } from '$routes/map/utils/maplibre';
 import { geojson } from 'flatgeobuf';
 export type {
 	FeatureMenuData,
@@ -111,6 +111,8 @@ export type DialogType =
 	| 'local-raster-tiles'
 	| 'pmtiles'
 	| 'model'
+	| 'mca'
+	| 'roblox'
 	| 'gaussian-splat'
 	| 'arcgis'
 	| 'pointcloud'
@@ -241,7 +243,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		label: 'STAC / COG',
 		description:
 			'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
-		icon: 'mdi:image-multiple',
+		icon: 'hugeicons:cloud-cog',
 		extensions: []
 	},
 	{
@@ -601,12 +603,21 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
 	},
 	{
+		id: 'spz',
+		dialogType: 'gaussian-splat',
+		label: '3D Gaussian Splatting (SPZ)',
+		icon: 'mdi:chart-scatter-plot',
+		description: '3D Gaussian Splattingを圧縮したデータです。地図上に配置して表示します。',
+		extensions: ['.spz']
+	},
+	{
 		id: 'glb',
 		label: 'GLB / GLTF',
-		icon: 'mdi:cube-outline',
+		icon: 'file-icons:gltf',
 		description: '3Dモデルの形状、材質、テクスチャ、アニメーションなどを記録するファイルです。',
 		extensions: ['.glb', '.gltf']
 	},
+
 	{
 		id: 'usd',
 		label: 'USD / USDZ',
@@ -729,6 +740,22 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description:
 			'MikuMikuDanceで使う3Dモデル形式です。キャラクターなどのスキニング済みモデルを読み込むときに使います。',
 		extensions: ['.pmx']
+	},
+	{
+		id: 'mca',
+		dialogType: 'mca',
+		label: 'Minecraft Java (.mca)',
+		icon: 'mdi:minecraft',
+		description: 'Minecraft Java版の地形リージョンデータです。',
+		extensions: ['.mca']
+	},
+	{
+		id: 'roblox',
+		dialogType: 'roblox',
+		label: 'Roblox (.rbxl / .rbxlx)',
+		icon: 'simple-icons:roblox',
+		description: 'Robloxのワールドデータです。基本パーツを3Dモデルとして地図に配置します。',
+		extensions: ['.rbxl', '.rbxlx']
 	}
 ];
 
@@ -767,12 +794,24 @@ export interface ClickedLayerFeaturesData {
 	featureId: string | number;
 }
 
+export interface PoiIconMarkerAppearance {
+	width: number;
+	height: number;
+	anchor: PositionAnchor;
+	offset: [number, number];
+	rotation: number;
+	rotationAlignment: 'map' | 'viewport';
+	pitchAlignment: 'map' | 'viewport';
+	opacity: number;
+}
+
 export interface PoiHighlightMarkerState {
 	type: 'poi';
 	featureId: string | number;
 	point: [number, number];
 	properties: { [key: string]: any; };
 	iconImage?: string | null;
+	iconMarker?: PoiIconMarkerAppearance;
 }
 
 export interface SearchHighlightMarkerState {

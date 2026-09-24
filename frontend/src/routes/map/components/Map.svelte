@@ -25,6 +25,8 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type {
 		AnyTiles3DEntry,
+		MeshEntry,
+		MeshStyle,
 		DeckVectorEntry,
 		PointCloudEntry,
 		ThreeModelEntry
@@ -46,6 +48,7 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
+	import { MAPTERHORN_DEM_SOURCE } from '$routes/map/utils/contours/config';
 	import {
 		clearAllCogViewportImages,
 		fetchCogViewportImage,
@@ -53,6 +56,8 @@
 		terminateCogViewportRuntime
 	} from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import { mcaGridPreviewStore } from '$routes/map/utils/formats/mca/placement-store';
+	import { createMcaRegionGridController } from '$routes/map/utils/formats/mca/region-grid';
 	import {
 		fetchWcsViewportImage,
 		clearAllWcsViewportImages,
@@ -60,9 +65,18 @@
 		WcsViewportTooBroadError
 	} from '$routes/map/utils/formats/wcs/runtime';
 	import { createLayersItems } from '$routes/map/utils/layers';
+	import { createContourStyle } from '$routes/map/utils/layers/contours';
+	import { createH3Style } from '$routes/map/utils/layers/h3';
 	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
+	import { createPlaneGridStyle } from '$routes/map/utils/layers/plane-grid';
 	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
+	import {
+		loadReferenceStyle,
+		selectReferenceStyle,
+		type ReferenceStyle
+	} from '$routes/map/utils/layers/reference-style';
+	import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
 	import maplibregl from '$routes/map/utils/maplibre';
 	import type {
 		BackgroundLayerSpecification,
@@ -77,6 +91,7 @@
 	import { getLayerWatchStyleTarget } from '$routes/map/utils/raster/dimension-runtime';
 	import { createSourcesItems } from '$routes/map/utils/sources';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
+	import { MODEL_OVERLAY_METADATA_KEY } from '$routes/map/utils/three/model-overlay-order';
 	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
 	import { mapPaneScale } from '$routes/stores/effect';
@@ -86,10 +101,13 @@
 		showHillshadeLayer,
 		showStreetViewLayer,
 		showXYZTileLayer,
-		showRoadLayer,
-		showCloudLayer,
+		showRegionalMeshLayer,
+		showH3Layer,
+		showPlaneGridLayer,
+		showContourLayer,
+		planeGridZone,
+		showLineLayer,
 		type BaseMapType,
-		showBoundaryLayer,
 		activeLayerIdsStore
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
@@ -175,6 +193,40 @@
 			showDataEntry?.type === 'model' &&
 			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat')
 	);
+	const mcaRegionGridController = createMcaRegionGridController();
+	let mapDestroyed = false;
+	const isMcaGridModel = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> =>
+		entry.type === 'model' &&
+		entry.style.type === 'mesh' &&
+		'minecraftRegion' in entry.format &&
+		!!entry.format.minecraftRegion;
+	const mcaPlacementPreview = $derived(
+		isModelPlacementActive && $mcaGridPreviewStore?.id === showDataEntry?.id
+			? $mcaGridPreviewStore
+			: null
+	);
+	const effectiveMcaGridModels = $derived.by(() => {
+		const models = new Map<string, MeshEntry<MeshStyle>>();
+		if (!isIsolatedPreview) {
+			for (const entry of layerEntries) {
+				if (isMcaGridModel(entry)) models.set(entry.id, entry);
+			}
+		}
+		if (showDataEntry && isMcaGridModel(showDataEntry)) models.set(showDataEntry.id, showDataEntry);
+		if (mcaPlacementPreview) models.set(mcaPlacementPreview.id, mcaPlacementPreview);
+		return [...models.values()];
+	});
+	const mcaGridWatchTargets = $derived({
+		placementId: mcaPlacementPreview?.id ?? null,
+		models: effectiveMcaGridModels.map((entry) => ({
+			id: entry.id,
+			region: entry.format.minecraftRegion,
+			regions: entry.format.minecraftRegions,
+			visible: entry.style.visible,
+			transform: entry.style.transform,
+			grid: entry.style.minecraftGrid
+		}))
+	});
 
 	// 監視用のデータを保持
 	let layerWatchTargets = $derived.by(() => {
@@ -223,10 +275,44 @@
 	// 	]
 	// });
 	// mapStyleの作成
-	const createMapStyle = async (_dataEntries: MorivisLayerEntry[]): Promise<StyleSpecification> => {
+	const createMapStyle = async (
+		_dataEntries: MorivisLayerEntry[],
+		mcaGridEntries: MorivisLayerEntry[]
+	): Promise<StyleSpecification> => {
+		let referenceStyle: ReferenceStyle = { layers: [], sources: {} };
+		const referenceVisibility = {
+			line: $showLineLayer,
+			label: $showLabelLayer
+		};
+		if (!isIsolatedPreview && Object.values(referenceVisibility).some(Boolean)) {
+			try {
+				referenceStyle = selectReferenceStyle(await loadReferenceStyle(), referenceVisibility);
+			} catch (error) {
+				console.error('Failed to load reference style:', error);
+				showNotification('線・地名・POIのスタイルを取得できませんでした', 'error');
+			}
+		}
+
 		// ソースとレイヤーの作成
-		const sources = !isIsolatedPreview ? await createSourcesItems(_dataEntries) : {};
-		const layers = !isIsolatedPreview ? await createLayersItems(_dataEntries) : [];
+		const sources =
+			!isIsolatedPreview || mcaGridEntries.length
+				? await createSourcesItems(
+						[...(!isIsolatedPreview ? _dataEntries : []), ...mcaGridEntries],
+						'main',
+						referenceStyle.sources
+					)
+				: {};
+		const layers = !isIsolatedPreview
+			? createLayersItems(_dataEntries, 'main', referenceStyle.layers)
+			: [];
+		// 派生グリッドはクリック対象を持たず、通常プレビューの背景よりも上へ重ねる。
+		const mcaGridLayers = createLayersItems(mcaGridEntries, 'preview').map((layer) => ({
+			...layer,
+			metadata: {
+				...(typeof layer.metadata === 'object' && layer.metadata !== null ? layer.metadata : {}),
+				[MODEL_OVERLAY_METADATA_KEY]: true
+			}
+		}));
 
 		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
 		if (isIsolatedPreview) {
@@ -383,6 +469,18 @@
 				}
 			: {};
 
+		const regionalMeshStyle = createRegionalMeshStyle(
+			$showRegionalMeshLayer,
+			DEFAULT_SYMBOL_TEXT_FONT
+		);
+		const planeGridStyle = createPlaneGridStyle(
+			$showPlaneGridLayer,
+			$planeGridZone,
+			DEFAULT_SYMBOL_TEXT_FONT
+		);
+		const h3Style = createH3Style($showH3Layer, DEFAULT_SYMBOL_TEXT_FONT);
+		const contourDem = $showContourLayer ? mapStore.ensureContourProtocol() : undefined;
+		const contourStyle = createContourStyle(contourDem?.contourTiles, DEFAULT_SYMBOL_TEXT_FONT);
 		const mapStyle: StyleSpecification = {
 			version: 8,
 			sprite: MAP_SPRITE_DATA_PATH,
@@ -392,15 +490,15 @@
 			},
 			sources: {
 				terrain: {
-					type: 'raster-dem',
-					tiles: ['https://tiles.mapterhorn.com/{z}/{x}/{y}.webp'],
-					maxzoom: 16,
-					tileSize: 512,
-					encoding: 'terrarium',
-					attribution: '<a href="https://mapterhorn.com/attribution">© Mapterhorn</a>'
+					...MAPTERHORN_DEM_SOURCE,
+					tiles: contourDem ? [contourDem.sharedDemTiles] : MAPTERHORN_DEM_SOURCE.tiles
 				},
 				...streetViewSources,
 				...xyzTileSources,
+				...regionalMeshStyle.sources,
+				...h3Style.sources,
+				...planeGridStyle.sources,
+				...contourStyle.sources,
 				...sources,
 				draw_source: {
 					type: 'geojson',
@@ -438,8 +536,13 @@
 					}
 				},
 				...layers,
+				...contourStyle.layers,
 				...xyzTileLayer,
+				...regionalMeshStyle.layers,
+				...h3Style.layers,
+				...planeGridStyle.layers,
 				...previewLayers,
+				...mcaGridLayers,
 				{
 					id: 'deck-reference-layer',
 					type: 'background' as const,
@@ -524,7 +627,7 @@
 		};
 
 		if (!import.meta.env.PROD) {
-			console.log('debug:mapStyle', mapStyle);
+			console.log('debug:mapStyle', $state.snapshot(mapStyle));
 		}
 
 		return mapStyle;
@@ -557,6 +660,9 @@
 	});
 
 	onDestroy(() => {
+		mapDestroyed = true;
+		styleUpdateId += 1;
+		mcaRegionGridController.clear();
 		// Svelte storeの購読は明示的に解除しないと、画面破棄後もcallbackが残る。
 		styleUpdateUnsubscribers.forEach((unsubscribe) => unsubscribe());
 		clearAllCogViewportImages();
@@ -566,6 +672,10 @@
 			maplibreMap.remove();
 			maplibreMap = null;
 		}
+		mapStore.releaseRegionalMeshProtocol();
+		mapStore.releaseH3Protocol();
+		mapStore.releasePlaneGridProtocol();
+		mapStore.releaseContourProtocol();
 	});
 
 	// マップのスタイルの更新
@@ -638,14 +748,20 @@
 	const setStyleDebounceHandlers: Record<number, (entries: MorivisLayerEntry[]) => void> = {};
 
 	const setStyle = async (entries: MorivisLayerEntry[]) => {
+		if (mapDestroyed) return;
 		const updateId = ++styleUpdateId;
+		// 非同期のspec生成前に、main/preview/draftを統合した最新のグリッドを確定する。
+		const mcaGridEntries = mcaRegionGridController.sync(
+			effectiveMcaGridModels,
+			mcaPlacementPreview
+		);
 		if (!import.meta.env.PROD) {
 			// 描画方式で絞る前に、アップロードしたモデルと登録前のプレビューも出力する。
 			const previewEntry = showDataEntry;
 			const debugEntries = previewEntry
 				? [...entries.filter((entry) => entry.id !== previewEntry.id), previewEntry]
 				: entries;
-			console.log('debug:entries', debugEntries);
+			console.log('debug:entries', $state.snapshot(debugEntries));
 		}
 		const mapLibreEntry = getMapStyleEntries(entries);
 
@@ -775,8 +891,25 @@
 		} else {
 			mapStore.releaseTileIndexProtocol();
 		}
+		if ($showRegionalMeshLayer) {
+			mapStore.ensureRegionalMeshProtocol();
+		} else {
+			mapStore.releaseRegionalMeshProtocol();
+		}
 
-		const mapStyle = await createMapStyle(mapLibreEntry as MorivisLayerEntry[]);
+		if ($showH3Layer) {
+			mapStore.ensureH3Protocol();
+		} else {
+			mapStore.releaseH3Protocol();
+		}
+
+		if ($showPlaneGridLayer) {
+			mapStore.ensurePlaneGridProtocol();
+		} else {
+			mapStore.releasePlaneGridProtocol();
+		}
+
+		const mapStyle = await createMapStyle(mapLibreEntry as MorivisLayerEntry[], mcaGridEntries);
 		// 後から開始した更新がある場合、この結果は古いので破棄する。
 		if (updateId !== styleUpdateId) return;
 
@@ -786,8 +919,9 @@
 		});
 		await refreshWcsEntries(entries);
 		await refreshCogEntries(entries);
+		if (mapDestroyed || updateId !== styleUpdateId) return;
 
-		const tiles3dEntry = isIsolatedPreview
+		const tiles3dEntries = isIsolatedPreview
 			? []
 			: (entries.filter(
 					(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
@@ -798,7 +932,7 @@
 			showDataEntry.type === 'model' &&
 			(showDataEntry as AnyTiles3DEntry).format.type === '3d-tiles'
 		) {
-			tiles3dEntry.push(showDataEntry as AnyTiles3DEntry);
+			tiles3dEntries.push(showDataEntry as AnyTiles3DEntry);
 		}
 
 		const pointCloudEntries = isIsolatedPreview
@@ -832,7 +966,8 @@
 			deckVectorEntries.push(showDataEntry as DeckVectorEntry);
 		}
 
-		await mapStore.setDeckModelStyleEntries(tiles3dEntry, pointCloudEntries, deckVectorEntries);
+		mapStore.setTiles3DStyleEntries(tiles3dEntries);
+		await mapStore.setDeckModelStyleEntries(pointCloudEntries, deckVectorEntries);
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
 
@@ -920,15 +1055,22 @@
 
 	// レイヤーの更新を監視
 	$effect(() => {
+		requestStyleUpdateByDependency($state.snapshot(mcaGridWatchTargets));
+	});
+
+	$effect(() => {
 		$state.snapshot(layerWatchTargets);
 		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 	});
 
 	styleUpdateUnsubscribers.push(
-		selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
+		isTerrain3d.subscribe((is3d) => {
+			mapStore.toggleTerrain(is3d);
+		}),
+		isGlobe.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
-		showBoundaryLayer.subscribe(() => {
+		selectedBaseMap.subscribe((_baseMap: BaseMapType) => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showHillshadeLayer.subscribe(() => {
@@ -937,13 +1079,25 @@
 		showLabelLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
-		showRoadLayer.subscribe(() => {
+		showLineLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showXYZTileLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
-		showCloudLayer.subscribe(() => {
+		showPlaneGridLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showContourLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		planeGridZone.subscribe(() => {
+			if ($showPlaneGridLayer) setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showH3Layer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showRegionalMeshLayer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		})
 	);

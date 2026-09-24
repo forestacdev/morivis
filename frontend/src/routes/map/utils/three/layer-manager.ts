@@ -33,6 +33,7 @@ import {
 	createGaussianSplatObject
 } from '$routes/map/utils/three/gaussian-splat-renderer';
 import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
+import { minecraftMaterialState } from '$routes/map/utils/three/minecraft-material';
 import {
 	getInitialModelAnimationState,
 	isEmbeddedModelAnimationClip,
@@ -83,6 +84,11 @@ import {
 	loadPmxAnimationClip,
 	loadPmxModel
 } from '$routes/map/utils/three/pmx-loader';
+import {
+	applyPmxMorphState,
+	getPmxMorphCatalog,
+	normalizePmxMorphWeights
+} from '$routes/map/utils/three/pmx-morphs';
 import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
 import {
 	createVrmLoader,
@@ -91,6 +97,7 @@ import {
 	rotateVrm0IfNeeded
 } from '$routes/map/utils/three/vrm-loader';
 import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
+import { removePmxMorphCatalog, setPmxMorphCatalog } from '$routes/stores/pmx-morphs';
 import type { VRM } from '@pixiv/three-vrm';
 import type { ThreeMmdAnimation } from '@yohawing/three-mmd-loader/three';
 import * as THREE from 'three';
@@ -224,6 +231,9 @@ interface LoadedModel {
 	mmd?: {
 		model: LoadedPmxModel;
 		animations: Map<number, ThreeMmdAnimation>;
+		morphCatalog: ReturnType<typeof getPmxMorphCatalog>;
+		morphStateKey?: string;
+		morphOverridesActive?: boolean;
 		activeClipIndex?: number;
 		loadingClipIndex?: number;
 		elapsedSeconds: number;
@@ -736,6 +746,7 @@ export class ThreeJsLayerManager {
 		useIndexedPartColors = false
 	): THREE.ShaderMaterial => {
 		const shadingUniforms = resolveMeshShadingUniforms(style);
+		const sourceAlpha = minecraftMaterialState(sourceMaterial, style.opacity);
 		const objectPartIsTransparent = objectPartColor === 'transparent';
 		const baseColor = new THREE.Color(
 			objectPartIsTransparent ? style.color : objectPartColor ?? style.color
@@ -806,6 +817,8 @@ export class ThreeJsLayerManager {
 			uniforms: {
 				uBaseColor: { value: baseColor },
 				uOpacity: { value: style.opacity },
+				uSourceOpacity: { value: sourceAlpha.sourceOpacity },
+				uSourceAlphaTest: { value: sourceAlpha.alphaTest },
 				uAmbientStrength: { value: shadingUniforms.ambientStrength },
 				uShadeStrength: { value: shadingUniforms.shadeStrength },
 				uLightDirection: { value: shadingUniforms.lightDirection },
@@ -826,18 +839,21 @@ export class ThreeJsLayerManager {
 			vertexShader: `
 				attribute float morivisPartColorIndex;
 				varying vec3 vNormal;
-				varying vec2 vUv;
+				centroid varying vec2 vUv;
 				varying float vPartColorIndex;
+				#include <morphtarget_pars_vertex>
 				#include <skinning_pars_vertex>
 				#include <color_pars_vertex>
 
 				void main() {
 					#include <color_vertex>
 					vec3 objectNormal = vec3(normal);
+					#include <morphnormal_vertex>
 					#include <skinbase_vertex>
 					#include <skinnormal_vertex>
 					vNormal = normalize(normalMatrix * objectNormal);
 					vec3 transformed = vec3(position);
+					#include <morphtarget_vertex>
 					#include <skinning_vertex>
 					vUv = uv;
 					vPartColorIndex = morivisPartColorIndex;
@@ -847,6 +863,8 @@ export class ThreeJsLayerManager {
 			fragmentShader: `
 				uniform vec3 uBaseColor;
 				uniform float uOpacity;
+				uniform float uSourceOpacity;
+				uniform float uSourceAlphaTest;
 				uniform float uAmbientStrength;
 				uniform float uShadeStrength;
 				uniform vec3 uLightDirection;
@@ -865,7 +883,8 @@ export class ThreeJsLayerManager {
 				uniform float uHeightRampSourceMax;
 
 				varying vec3 vNormal;
-				varying vec2 vUv;
+				// MSAAの画素中心が微小な面の外にある場合も、アトラスの隣の画像を拾わない。
+				centroid varying vec2 vUv;
 				varying float vPartColorIndex;
 				#include <color_pars_fragment>
 
@@ -876,6 +895,7 @@ export class ThreeJsLayerManager {
 					#elif defined( USE_COLOR )
 						texel.rgb *= vColor;
 					#endif
+					if (texel.a < uSourceAlphaTest) discard;
 					float sourceDenominator = max(uHeightRampSourceMax - uHeightRampSourceMin, 0.000001);
 					float selectedMin = clamp(
 						(uHeightRampMin - uHeightRampSourceMin) / sourceDenominator,
@@ -906,7 +926,7 @@ export class ThreeJsLayerManager {
 					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
 					vec3 shadedColor = surfaceColor * shade;
 					float objectPartOpacity = uUseObjectPartColor ? uObjectPartOpacity : 1.0;
-					float alpha = texel.a * uOpacity * objectPartOpacity;
+					float alpha = texel.a * uOpacity * uSourceOpacity * objectPartOpacity;
 
 					if (alpha <= 0.001) discard;
 
@@ -914,11 +934,13 @@ export class ThreeJsLayerManager {
 					#include <colorspace_fragment>
 				}
 			`,
-			transparent: true,
+			transparent: sourceAlpha.transparent,
+			depthWrite: sourceAlpha.depthWrite,
 			wireframe: style.wireframe,
 			side: THREE.DoubleSide
 		});
 		material.userData.morivisShaderShading = true;
+		material.userData.morivisMinecraftMaterial = sourceAlpha.enabled;
 		material.userData.colorRampTexture = colorRampTexture;
 		material.userData.morivisPartColorPalette = partColorTexture;
 		return material;
@@ -1005,6 +1027,11 @@ export class ThreeJsLayerManager {
 			: null;
 		material.uniforms.uBaseColor.value.copy(baseColor);
 		material.uniforms.uOpacity.value = style.opacity;
+		const sourceAlpha = minecraftMaterialState(sourceMaterial, style.opacity);
+		material.uniforms.uSourceOpacity.value = sourceAlpha.sourceOpacity;
+		material.uniforms.uSourceAlphaTest.value = sourceAlpha.alphaTest;
+		material.transparent = sourceAlpha.transparent;
+		material.depthWrite = sourceAlpha.depthWrite;
 		material.uniforms.uAmbientStrength.value = shadingUniforms.ambientStrength;
 		material.uniforms.uShadeStrength.value = shadingUniforms.shadeStrength;
 		material.uniforms.uLightDirection.value.copy(shadingUniforms.lightDirection);
@@ -1544,6 +1571,7 @@ export class ThreeJsLayerManager {
 
 	private syncAnimationState = (loaded: LoadedModel) => {
 		this.syncMmdAnimationState(loaded);
+		this.syncPmxMorphState(loaded);
 		this.syncVrmAnimationState(loaded);
 		if (!loaded.mixer || !loaded.actions || loaded.actions.length === 0) return;
 
@@ -1678,6 +1706,31 @@ export class ThreeJsLayerManager {
 			});
 	};
 
+	private syncPmxMorphState = (loaded: LoadedModel, force = false) => {
+		const mmd = loaded.mmd;
+		if (!mmd) return;
+		const options = mmd.morphCatalog.options;
+		const weights = normalizePmxMorphWeights(loaded.entry.state?.pmxMorphWeights, options);
+		const key = JSON.stringify([mmd.activeClipIndex ?? -1, weights]);
+		if (!force && mmd.morphStateKey === key) return;
+		const hadOverride = mmd.morphOverridesActive;
+		mmd.morphOverridesActive = Object.keys(weights).length > 0;
+		mmd.morphStateKey = key;
+		if (!mmd.morphOverridesActive && !hadOverride) return;
+		const index = mmd.activeClipIndex ?? -1;
+		const clip = loaded.entry.properties?.animation?.clips[index];
+		applyPmxMorphState(
+			mmd.model.model,
+			options,
+			weights,
+			mmd.animations.get(index),
+			mmd.elapsedSeconds,
+			isVpdModelAnimationClip(clip),
+			isVpdModelAnimationClip(clip) ? clip.ik : undefined
+		);
+		this.map?.triggerRepaint();
+	};
+
 	private syncMmdAnimationState = (loaded: LoadedModel) => {
 		const mmd = loaded.mmd;
 		const animationState = loaded.entry.state?.animation;
@@ -1748,6 +1801,7 @@ export class ThreeJsLayerManager {
 				mmd.elapsedSeconds = 0;
 				mmd.durationSeconds = getMmdAnimationDurationSeconds(animation);
 				mmd.lastPlaying = loaded.entry.state?.animation?.playing;
+				this.syncPmxMorphState(loaded, true);
 				this.map?.triggerRepaint();
 			})
 			.catch((error) => {
@@ -1768,14 +1822,19 @@ export class ThreeJsLayerManager {
 			const map = material.uniforms.uMap?.value instanceof THREE.Texture
 				? material.uniforms.uMap.value
 				: null;
-			const opacity = typeof material.uniforms.uOpacity?.value === 'number'
+			const opacity = (typeof material.uniforms.uOpacity?.value === 'number'
 				? material.uniforms.uOpacity.value
-				: style.opacity;
+				: style.opacity) * (material.uniforms.uSourceOpacity?.value ?? 1);
 
 			return new THREE.MeshStandardMaterial({
 				color: baseColor,
 				map,
-				transparent: opacity < 1,
+				transparent: material.userData.morivisMinecraftMaterial
+					? material.transparent
+					: opacity < 1,
+				alphaTest: material.uniforms.uSourceAlphaTest?.value ?? 0,
+				vertexColors: material.userData.morivisMinecraftMaterial === true
+					&& material.vertexColors,
 				opacity,
 				side: THREE.DoubleSide
 			});
@@ -2254,10 +2313,14 @@ export class ThreeJsLayerManager {
 		this.placementTransformChangeHandler = handler;
 	};
 
-	setPlacementPreview(entry: ThreeModelEntry, style = entry.style): void {
+	setPlacementPreview(
+		entry: ThreeModelEntry,
+		style = entry.style,
+		{ showTransformHandles = true }: { showTransformHandles?: boolean; } = {}
+	): void {
 		if (!this.scene) return;
 		const bounds = getPlacementPreviewBounds(entry);
-		const boundsKey = getPlacementPreviewBoundsKey(bounds);
+		const boundsKey = `${getPlacementPreviewBoundsKey(bounds)}:${showTransformHandles}`;
 		if (
 			!this.placementPreview
 			|| this.placementPreview.entryId !== entry.id
@@ -2269,7 +2332,9 @@ export class ThreeJsLayerManager {
 				disposePlacementPreviewObject(this.placementPreview.object);
 			}
 			const object = createPlacementPreviewObject(bounds);
-			const handles = this.createPlacementScaleHandles(bounds);
+			const handles = showTransformHandles
+				? this.createPlacementScaleHandles(bounds)
+				: new THREE.Group();
 			this.scene.add(object, handles);
 			this.placementPreview = {
 				entryId: entry.id,
@@ -2610,6 +2675,7 @@ export class ThreeJsLayerManager {
 						mmd: {
 							model: mmdModel,
 							animations: new Map(),
+							morphCatalog: getPmxMorphCatalog(mmdModel.model),
 							elapsedSeconds: 0
 						}
 					}),
@@ -2635,6 +2701,7 @@ export class ThreeJsLayerManager {
 					}
 				}
 				this.loadedModels.set(entry.id, loaded);
+				if (loaded.mmd) setPmxMorphCatalog(entry.id, loaded.mmd.morphCatalog);
 				this.syncAnimationState(loaded);
 				if (_type === 'preview') {
 					this.previewModelGroup!.add(model);
@@ -2669,10 +2736,13 @@ export class ThreeJsLayerManager {
 					.then(async (response) => {
 						if (!response.ok) {
 							throw new Error(
-								`3D Gaussian Splatting PLYを取得できません: ${response.status} ${response.statusText}`
+								`3D Gaussian Splattingを取得できません: ${response.status} ${response.statusText}`
 							);
 						}
-						return await parseGaussianSplatInWorker(await response.arrayBuffer());
+						return await parseGaussianSplatInWorker(
+							await response.arrayBuffer(),
+							entry.format.encoding
+						);
 					})
 					.then((data) => onModelLoaded(createGaussianSplatObject(data, entry.style)))
 					.catch((error) =>
@@ -3206,6 +3276,7 @@ export class ThreeJsLayerManager {
 		this.disposeModelObject(loaded.object);
 
 		this.loadedModels.delete(entryId);
+		removePmxMorphCatalog(entryId);
 	}
 
 	/** すべてのモデルを削除 */
@@ -3492,6 +3563,13 @@ export class ThreeJsLayerManager {
 		this.syncAnimationState(loaded);
 	}
 
+	setPmxMorphState(entry: MeshEntry<MeshStyle>): void {
+		const loaded = this.loadedModels.get(entry.id);
+		if (!loaded?.mmd) return;
+		loaded.entry = entry;
+		this.syncPmxMorphState(loaded);
+	}
+
 	setModelAnimationState(entry: MeshEntry<MeshStyle>): void {
 		const loaded = this.loadedModels.get(entry.id);
 		if (!loaded) return;
@@ -3593,7 +3671,9 @@ export class ThreeJsLayerManager {
 			.map((entryId) => this.loadedModels.get(entryId))
 			.filter((model): model is LoadedModel => model != null);
 		if (loaded.length === 0) return null;
-		const isGaussianSplatOnlyView = loaded.every((model) => isGaussianSplatEntry(model.entry));
+		const isPlySplatOnlyView = loaded.every((model) =>
+			isGaussianSplatEntry(model.entry) && model.entry.format.encoding !== 'spz'
+		);
 
 		this.closeModelView();
 		const axisWrappers = loaded.flatMap((model) => {
@@ -3678,7 +3758,7 @@ export class ThreeJsLayerManager {
 			camera.near = Math.max(largestDimension / 10_000, 0.001);
 			camera.far = Math.max(largestDimension * 100, 1_000);
 			// 3DGS PLYはMapLibreの画面座標と上下が逆になるため、単体ビューだけ上方向を反転する。
-			camera.up.set(0, isGaussianSplatOnlyView ? -1 : 1, 0);
+			camera.up.set(0, isPlySplatOnlyView ? -1 : 1, 0);
 			camera.position.copy(center).add(new THREE.Vector3(distance, distance * 0.7, distance));
 			camera.lookAt(center);
 			if (camera instanceof THREE.PerspectiveCamera) {

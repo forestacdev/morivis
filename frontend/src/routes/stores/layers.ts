@@ -164,26 +164,33 @@ export const getEntryIds = (layerEntries: MorivisLayerEntry[]): string[] => {
 };
 
 /** ベースマップ */
-export type BaseMapType = 'satellite' | 'relief' | 'slope' | 'aspect' | 'curvature' | 'osm';
+export type BaseMapType = 'satellite' | 'osm';
 export const selectedBaseMap = writable<BaseMapType>('satellite');
 
-/** ラベルレイヤー */
+/** 地名・POIレイヤー */
 export const showLabelLayer = writable<boolean>(true);
 
 /** 陰影レイヤー */
 export const showHillshadeLayer = writable<boolean>(false);
 
-/** 境界 */
-export const showBoundaryLayer = writable<boolean>(false);
-
-/** 道路レイヤー */
-export const showRoadLayer = writable<boolean>(true);
-
-/** 雲レイヤー */
-export const showCloudLayer = writable<boolean>(true);
+/** 道路・線路・境界線レイヤー */
+export const showLineLayer = writable<boolean>(true);
 
 /** タイル座標レイヤー */
 export const showXYZTileLayer = writable<boolean>(false);
+
+/** 地域メッシュの補助表示 */
+export const showRegionalMeshLayer = writable<boolean>(false);
+
+/** H3グリッド */
+export const showH3Layer = writable<boolean>(false);
+
+/** 平面直角座標グリッド（JGD2011）。初期表示地域の第7系を既定にする。 */
+export const showPlaneGridLayer = writable<boolean>(false);
+export const planeGridZone = writable<number>(7);
+
+/** DEMから生成する等高線と標高ラベル */
+export const showContourLayer = writable<boolean>(false);
 
 /** ストリートビューレイヤー */
 export const showStreetViewLayer = writable<boolean>(false);

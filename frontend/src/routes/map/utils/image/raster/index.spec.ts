@@ -49,7 +49,13 @@ const createEntry = (mode: DemStyleMode): DemRasterEntry => ({
 				relief: { type: 'linear', colorMap: 'bone', min: 0, max: 100 },
 				slope: { type: 'linear', colorMap: 'bone', min: 0, max: 90 },
 				// $state に由来する設定と同様、Proxy 自体は structured clone できない。
-				shadow: new Proxy({ azimuth: 270, altitude: 0 }, {})
+				shadow: new Proxy({
+					azimuth: 270,
+					altitude: 0,
+					shadowColor: '#336699',
+					baseColor: '#ffcc00',
+					baseTransparent: true
+				}, {})
 			}
 		}
 	}
@@ -129,7 +135,15 @@ describe('DEM プレビューの Worker 送信', () => {
 				expect(url).toMatch(/^blob:/);
 				expect(postMessage).toHaveBeenCalledWith(expect.objectContaining({
 					mode,
-					shadow: mode === 'shadow' ? { azimuth: 270, altitude: 0 } : undefined
+					shadow: mode === 'shadow'
+						? {
+							azimuth: 270,
+							altitude: 0,
+							shadowColor: '#336699',
+							baseColor: '#ffcc00',
+							baseTransparent: true
+						}
+						: undefined
 				}));
 				expect(listeners.size).toBe(0);
 			} finally {

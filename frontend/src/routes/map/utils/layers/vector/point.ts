@@ -83,7 +83,7 @@ export const createPointIconLayer = (
 		},
 		layout: {
 			'icon-image': iconExpression,
-			'icon-size': 1,
+			'icon-size': 0.5,
 			'icon-anchor': 'center',
 
 			// 間引きをオフに

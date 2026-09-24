@@ -19,6 +19,8 @@ export interface FeatureMenuData {
 	featureId: string | number;
 	layerId: string;
 	modelPart?: ModelPartData;
+	referencePoi?: true;
+	osmIdEncoding?: 'planetiler';
 }
 
 export type LayerFeaturePanelData = FeatureMenuData & {

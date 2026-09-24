@@ -31,12 +31,12 @@ importers:
 
   frontend:
     dependencies:
+      3d-tiles-renderer:
+        specifier: 0.5.2
+        version: 0.5.2(three@0.177.0)
       '@deck.gl/core':
         specifier: ^9.2.5
         version: 9.2.5
-      '@deck.gl/geo-layers':
-        specifier: ^9.2.5
-        version: 9.2.5(@deck.gl/core@9.2.5)(@deck.gl/extensions@9.2.5(@deck.gl/core@9.2.5)(@luma.gl/core@9.2.5)(@luma.gl/engine@9.2.5(@luma.gl/core@9.2.5)(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5))))(@deck.gl/layers@9.2.11(@deck.gl/core@9.2.5)(@loaders.gl/core@4.3.4)(@luma.gl/core@9.2.5)(@luma.gl/engine@9.2.5(@luma.gl/core@9.2.5)(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5))))(@deck.gl/mesh-layers@9.2.5(@deck.gl/core@9.2.5)(@loaders.gl/core@4.3.4)(@luma.gl/core@9.2.5)(@luma.gl/engine@9.2.5(@luma.gl/core@9.2.5)(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5)))(@luma.gl/gltf@9.2.5(@luma.gl/constants@9.2.5)(@luma.gl/core@9.2.5)(@luma.gl/engine@9.2.5(@luma.gl/core@9.2.5)(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5)))(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5)))(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5)))(@loaders.gl/core@4.3.4)(@luma.gl/constants@9.2.5)(@luma.gl/core@9.2.5)(@luma.gl/engine@9.2.5(@luma.gl/core@9.2.5)(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5)))
       '@deck.gl/layers':
         specifier: ^9.2.11
         version: 9.2.11(@deck.gl/core@9.2.5)(@loaders.gl/core@4.3.4)(@luma.gl/core@9.2.5)(@luma.gl/engine@9.2.5(@luma.gl/core@9.2.5)(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5)))
@@ -280,6 +280,9 @@ importers:
       gsap:
         specifier: ^3.12.5
         version: 3.13.0
+      h3-js:
+        specifier: 4.4.0
+        version: 4.4.0
       heic-to:
         specifier: ^1.4.2
         version: 1.4.2
@@ -307,6 +310,9 @@ importers:
       lz4js:
         specifier: 0.2.0
         version: 0.2.0
+      maplibre-contour:
+        specifier: 0.1.0
+        version: 0.1.0
       maplibre-gl:
         specifier: ^6.4.0
         version: 6.4.0
@@ -589,6 +595,29 @@ importers:
         version: 3.2.6(@types/node@25.3.0)(jsdom@15.2.1)(lightningcss@1.30.2)(msw@2.14.6(@types/node@25.3.0)(typescript@5.9.3))(terser@5.51.2)
 
 packages:
+
+  3d-tiles-renderer@0.5.2:
+    resolution: {integrity: sha512-mpl6Gqvg6ZjkxZW/TQZ9SW91gjWRRDuscuU3D2WWzw1ETFct8ijVdnXJs400sDkkIXpcmrEoHlpN+r9NdROd+w==}
+    peerDependencies:
+      '@babylonjs/core': '>=8.0.0'
+      '@babylonjs/loaders': '>=8.0.0'
+      '@react-three/fiber': ^8.17.9 || ^9.0.0
+      react: ^18.3.1 || ^19.0.0
+      react-dom: ^18.3.1 || ^19.0.0
+      three: '>=0.167.0'
+    peerDependenciesMeta:
+      '@babylonjs/core':
+        optional: true
+      '@babylonjs/loaders':
+        optional: true
+      '@react-three/fiber':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      three:
+        optional: true
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -5236,6 +5265,9 @@ packages:
     resolution: {integrity: sha512-g3FeP20LNwhALb/6Cz6Dd4F2ngze0jz7tbzrD2wAV+o9FeNHe4rL+yK2md0J/fiSf1sa1ADhXqi5+oVwOM/eGw==}
     engines: {node: '>=8'}
 
+  maplibre-contour@0.1.0:
+    resolution: {integrity: sha512-H8muT7JWYE4oLbFv7L2RSbIM1NOu5JxjA9P/TQqhODDnRChE8ENoDkQIWOKgfcKNU77ypLk2ggGoh4/pt4UPLA==}
+
   maplibre-gl@6.4.0:
     resolution: {integrity: sha512-pCgDUsaYFuZwIH37aV2qF4m03nZPlW79DlqC+cQ+48tpqiqW2SJyA7fEOcFrS5ilDK493f0X3LxiH17T5BqV7g==}
     engines: {node: '>=16.14.0', npm: '>=8.1.0'}
@@ -5616,6 +5648,9 @@ packages:
 
   pmtiles@4.3.0:
     resolution: {integrity: sha512-wnzQeSiYT/MyO63o7AVxwt7+uKqU0QUy2lHrivM7GvecNy0m1A4voVyGey7bujnEW5Hn+ZzLdvHPoFaqrOzbPA==}
+
+  pmtiles@4.5.0:
+    resolution: {integrity: sha512-CBeD4SoUluFziGdy/8k7FOjQxQy486n+929W/tWophauvMICpkZ26vGBWhDt/6b1FZQWNaf4jFdT/5+q0Wii5w==}
 
   pn@1.1.0:
     resolution: {integrity: sha512-2qHaIQr2VLRFoxe2nASzsV6ef4yOOH+Fi9FBOVH6cqeSgUnoyySPZkxzLuzd+RYOQTRpROA0ztTMqxROKSb/nA==}
@@ -7101,6 +7136,14 @@ packages:
     resolution: {integrity: sha512-w2NTI8+3l3eeltKAdK8QpiLo/flRAr2p8AGeakfMZOXBxOg9HIu4LVDxBi81sYgVhFhdJjv1OrB5ssI8uFPoLg==}
 
 snapshots:
+
+  3d-tiles-renderer@0.5.2(three@0.177.0):
+    dependencies:
+      '@mapbox/vector-tile': 2.0.4
+      pbf: 4.0.1
+      pmtiles: 4.5.0
+    optionalDependencies:
+      three: 0.177.0
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -12128,6 +12171,8 @@ snapshots:
     dependencies:
       semver: 6.3.1
 
+  maplibre-contour@0.1.0: {}
+
   maplibre-gl@6.4.0:
     dependencies:
       '@mapbox/point-geometry': 1.1.0
@@ -12581,6 +12626,10 @@ snapshots:
   pmtiles@4.3.0:
     dependencies:
       fflate: 0.8.2
+
+  pmtiles@4.5.0:
+    dependencies:
+      fflate: 0.8.3
 
   pn@1.1.0: {}
 

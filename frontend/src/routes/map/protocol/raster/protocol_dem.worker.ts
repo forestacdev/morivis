@@ -1,4 +1,4 @@
-import { getDemLightDirection } from '$routes/map/utils/style/dem-shadow';
+import { getDemLightDirection, getDemShadowColors } from '$routes/map/utils/style/dem-shadow';
 import { convertCanvasToResult } from '../farbling';
 import fsSource from './shader/fragment.glsl?raw';
 import vsSource from './shader/vertex.glsl?raw';
@@ -221,13 +221,16 @@ async function processMessage(e: MessageEvent) {
 				u_color_map: { image: elevationColorArray, type: 'colormap' }
 			});
 		} else if (mode === 'shadow') {
+			const colors = getDemShadowColors(shadow);
 			setUniforms(gl, program, {
 				u_dem_type: { type: '1f', value: demTypeNumber },
 				u_mode: { type: '1f', value: modeNumber },
 				u_tile_y: { type: '1f', value: tile.y },
 				u_tile_z: { type: '1f', value: tile.z },
 				u_tile_size: { type: '1f', value: tileSize },
-				u_light_direction: { type: '3fv', value: getDemLightDirection(shadow) }
+				u_light_direction: { type: '3fv', value: getDemLightDirection(shadow) },
+				u_shadow_color: { type: '4fv', value: colors.shadow },
+				u_base_color: { type: '4fv', value: colors.base }
 			});
 			bindTextures(ctx, {
 				u_height_map_center: { image: center, type: 'height' },

@@ -2,6 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 const imports = vi.hoisted(() => ({ gpx: 0, dwg: 0 }));
 const cadImports = vi.hoisted(() => ({ jww: 0, cedxm: 0 }));
+const mcaImports = vi.hoisted(() => ({ count: 0 }));
+vi.mock('./form/McaForm.svelte', () => {
+	mcaImports.count++;
+	return { default: () => {} };
+});
 vi.mock('./form/JwwForm.svelte', () => {
 	cadImports.jww++;
 	return { default: () => {} };
@@ -22,6 +27,12 @@ vi.mock('./form/DwgForm.svelte', () => {
 import { dialogRegistry } from './dialog-registry';
 
 describe('dialog registry loading', () => {
+	it('Minecraftのフォームをファイル入力付きで遅延ロードする', async () => {
+		expect(mcaImports.count).toBe(0);
+		expect(dialogRegistry.mca!.profile).toBe('drop-file');
+		expect((await dialogRegistry.mca!.load()).default).toBeTypeOf('function');
+		expect(mcaImports.count).toBe(1);
+	});
 	it('JWW/JWC用フォームとCEDXM専用フォームを個別に読み込む', async () => {
 		expect(cadImports).toEqual({ jww: 0, cedxm: 0 });
 		const jww = await dialogRegistry.jww!.load();

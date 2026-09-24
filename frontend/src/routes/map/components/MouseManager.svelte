@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	import { clickDebug } from './map-debug';
 
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
@@ -15,11 +17,13 @@
 		resolveGeneratedPoiIconUrl,
 		resolvePopupImageUrl
 	} from '$routes/map/utils/icon';
+	import { createPoiIconMarker } from '$routes/map/utils/icon/poi-marker';
 	import {
 		getLogicalLayerIdFromLayer,
 		HighlightLayerRegistry
 	} from '$routes/map/utils/layers/highlight';
 	import { getMorivisLayerRole } from '$routes/map/utils/layers/id';
+	import { getPoiLayerInteraction } from '$routes/map/utils/layers/interaction';
 	import { isPointInBbox } from '$routes/map/utils/map/bbox';
 	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from '$routes/map/utils/maplibre';
 	import maplibregl from '$routes/map/utils/maplibre';
@@ -113,11 +117,22 @@
 		};
 	};
 
+	let stylePoiIds: string[] = [];
+	onMount(() =>
+		mapStore.onSetStyle((style) => {
+			stylePoiIds = style.layers
+				.filter((layer) => getPoiLayerInteraction(layer.metadata) !== null)
+				.map((layer) => layer.id);
+		})
+	);
+
 	const getClickableTargetLayerIds = () => {
 		// クリック対象になりうるレイヤーIDを集め、ハイライト表示専用レイヤーは除外する。
-		return [...$clickableVectorIds, ...ADDITIONAL_CLICKABLE_LAYER_IDS].filter((layerId) => {
-			return !layerId.startsWith('@highlight_');
-		});
+		return [...$clickableVectorIds, ...ADDITIONAL_CLICKABLE_LAYER_IDS, ...stylePoiIds].filter(
+			(layerId) => {
+				return !layerId.startsWith('@highlight_');
+			}
+		);
 	};
 
 	const getExistingClickableLayerIds = () => {
@@ -591,6 +606,42 @@
 
 			if (!features.length) {
 				handleBlankMapClick(e);
+				return;
+			}
+
+			const referencePoi = features[0];
+			const poiInteraction = getPoiLayerInteraction(referencePoi.layer.metadata);
+			if (poiInteraction) {
+				const point: [number, number] =
+					referencePoi.geometry.type === 'Point'
+						? [referencePoi.geometry.coordinates[0], referencePoi.geometry.coordinates[1]]
+						: [e.lngLat.lng, e.lngLat.lat];
+				clearSearchHighlight();
+				clearContextMenuMarker();
+				setSelectedHighlight(null);
+				clickedLayerIds = [];
+				featureMenuData = {
+					layerId: referencePoi.layer.id,
+					featureId: referencePoi.id ?? `poi:${point.join(',')}`,
+					point,
+					properties: { ...referencePoi.properties },
+					referencePoi: true,
+					osmIdEncoding: poiInteraction.osmIdEncoding
+				};
+				const map = mapStore.getMap();
+				const iconMarker = map ? createPoiIconMarker(map, referencePoi) : null;
+				if (iconMarker) {
+					highlightMarkerState = {
+						type: 'poi',
+						featureId: featureMenuData.featureId,
+						point,
+						properties: referencePoi.properties,
+						...iconMarker
+					};
+				} else {
+					showSelectionMarkerFallback(point);
+				}
+				mapStore.panToPoi(point);
 				return;
 			}
 
