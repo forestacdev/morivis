@@ -132,6 +132,9 @@ const render = async (page: Page, terrain: Terrain = {}) =>
 				gl.uniform1f(gl.getUniformLocation(program, name), value)
 			);
 			gl.uniform3fv(gl.getUniformLocation(program, 'u_light_direction'), light);
+			// 陰影色のuniformも本番と同様に指定する。未設定だと透明な黒になる。
+			gl.uniform4f(gl.getUniformLocation(program, 'u_shadow_color'), 0, 0, 0, 1);
+			gl.uniform4f(gl.getUniformLocation(program, 'u_base_color'), 1, 1, 1, 1);
 			gl.viewport(0, 0, size, size);
 			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 			const pixels = new Uint8Array(size * size * 4);

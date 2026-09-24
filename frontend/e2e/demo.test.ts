@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('home page has expected h1', async ({ page }) => {
-	await page.goto('/');
-	await expect(page.locator('h1')).toBeVisible();
+test('ホームに地図を開くボタンが表示される', async ({ page }) => {
+	await page.goto('./');
+	await expect(page.getByRole('button', { name: 'マップを見る', exact: true })).toBeVisible();
 });

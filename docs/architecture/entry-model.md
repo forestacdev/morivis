@@ -1,7 +1,7 @@
 # MorivisLayerEntry モデル
 
 morivis では、地図上の表示対象を `MorivisLayerEntry` という内部モデルで扱う。  
-この文書は、`MorivisLayerEntry` の役割、分類軸、責務境界、描画系への変換段階を整理するためのたたき台である。
+この文書は、内部モデルの設計方針と現状の責務境界を整理する。型の定義元は `frontend/src/routes/map/data/types/`。
 
 ## 1. 何を解決するモデルか
 
@@ -31,16 +31,17 @@ morivis の内部でレイヤーを統一的に扱うためのアプリケーシ
 
 ```ts
 type MorivisLayerEntry =
-	| MorivisVectorEntry
-	| MorivisRasterEntry
-	| MorivisModelEntry;
+	| AnyRasterEntry
+	| AnyVectorEntry
+	| MorivisModelEntry
+	| StyleJsonEntry;
 ```
 
-将来的に別系統の entry を増やす場合も、まず「レイヤーとして扱うべきか」をここで判断する。
+`AnyRasterEntry` と `AnyVectorEntry` は、対応するstyleやmetadataをまとめた型エイリアス。将来的に別系統のentryを増やす場合も、まず「レイヤーとして扱うべきか」をここで判断する。
 
 ## 4. 分類軸
 
-`vector / raster / model` は同じ意味の粒度ではない。  
+`vector / raster / model / stylejson` は同じ意味の粒度ではない。
 無理に同じ軸に揃えるのではなく、それぞれに自然な分類軸を採用する。
 
 ### Vector
@@ -64,7 +65,7 @@ type MorivisLayerEntry =
 ### Raster
 
 - 主分類軸: visualization
-- 子分類: `BaseMapRasterEntry` `CategoricalRasterEntry` `DemRasterEntry` `TiffRasterEntry` `CadRasterEntry`
+- 表示方式は `RasterBaseMapStyle` `RasterCategoricalStyle` `RasterDemStyle` `RasterTiffStyle` `RasterCadStyle` で表す
 - format は配信・格納方式として扱う
 
 代表的な format:
@@ -76,8 +77,8 @@ type MorivisLayerEntry =
 - `wcs`
 - `geozarr`
 
-`DemRasterEntry` は `relief / slope / aspect / curvature / shadow` のような可視化モードを持ち、  
-`TiffRasterEntry` は `single / multi / twi / slope / aspect / tpi / topex` のようなバンド可視化モードを持つ。
+`RasterDemStyle` は `relief / slope / aspect / curvature / shadow` のような可視化モードを持ち、
+`RasterTiffStyle` は `single / multi / twi / slope / aspect / tpi / topex` のようなバンド可視化モードを持つ。
 
 ### Model
 
@@ -87,8 +88,13 @@ type MorivisLayerEntry =
 
 補足:
 
-- `MeshEntry` は主に three.js
-- `Tiles3DEntry` `PointCloudEntry` `DeckVectorEntry` は主に deck.gl
+- メッシュとGaussian Splatはthree.js系runtime
+- 3D Tilesは `Tiles3DLayerManager` と `3d-tiles-renderer/three`
+- 通常の点群と `DeckVectorEntry` はdeck.gl
+
+### Style JSON
+
+`StyleJsonEntry` はMapLibreのスタイルをレイヤー管理に載せるための型。現時点では型定義のみを残し、実ランタイム実装は保留している。MapLibre固有の定義を保持するため、他のentryと同じ独立性は持たない。
 
 ## 5. entry に持たせる責務
 
@@ -103,8 +109,9 @@ type MorivisLayerEntry =
 - 必要最小限の `properties`
 - 必要最小限の `state`
 
-ここでいう `style` は、描画方法の宣言的な定義である。  
-MapLibre の生レイヤー JSON や three.js の `Object3D` そのものは持たせない。
+ここでいう `style` は、描画方法の宣言的な定義である。three.js の `Object3D` など描画実体は持たせない。
+
+現状の例外として、`StyleJsonEntry` と、一部のvector/raster entryが持つ `auxiliaryLayers` はMapLibreの生定義に依存する。`AuxiliaryLayersData` は `SourceSpecification` と `LayerSpecification` を保持する。この依存を一般の入力処理・UIへ広げないことが設計上の方針であり、すべてのentryが描画ライブラリから独立しているわけではない。
 
 ## 6. entry に持たせないもの
 
@@ -196,6 +203,7 @@ flowchart LR
 - `entry` に載せる責務を増やしすぎない
 - `Map.svelte` と `map.ts` への責務集中を緩和する
 - カタログ層と内部モデル層をより明確に分離する
+- `StyleJsonEntry`・`auxiliaryLayers` のMapLibre依存を明示し、通常のentryとの境界を保つ
 
 ## 11. 当面のルール
 

@@ -84,15 +84,20 @@ for (const skinned of [false, true]) {
 							uPartColorPalette: { value: null },
 							uBaseColor: { value: new THREE.Color(0xffffff) },
 							uOpacity: { value: 1 },
+							uSourceOpacity: { value: 1 },
+							uSourceAlphaTest: { value: 0 },
 							uAmbientStrength: { value: 0.4 },
 							uShadeStrength: { value: 0.6 },
 							uLightDirection: { value: new THREE.Vector3(0, 0, 1) },
 							uUseMap: { value: false },
 							uUseHeightColorRamp: { value: false },
 							uUseObjectPartColor: { value: false },
+							uObjectPartOpacity: { value: 1 },
 							uUsePartColors: { value: false },
 							uPartColorPaletteSize: { value: 1 },
+							uHeightRampSourceMin: { value: 0 },
 							uHeightRampSourceMax: { value: 1 },
+							uHeightRampMin: { value: 0 },
 							uHeightRampMax: { value: 1 }
 						}
 					});

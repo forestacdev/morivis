@@ -4,10 +4,19 @@ on:
   pull_request:
     paths:
       - "frontend/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".npmrc"
+      - ".github/workflows/frontend-pull-request-check.yml"
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -15,13 +24,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: 'pnpm'
-          cache-dependency-path: 'frontend/pnpm-lock.yaml'
-      - name: build Svelte project
-        working-directory: frontend
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Prepare environment
+        run: cp frontend/.env.example frontend/.env
+      - name: Check and lint
         run: |
-          pnpm install --frozen-lockfile
-          cp .env.example .env
-          pnpm run check
-          pnpm run lint
-          pnpm run build
+          pnpm --dir frontend check
+          pnpm --dir frontend lint
+      - name: Build Svelte project
+        run: pnpm --dir frontend build
+      - name: Install Chromium
+        run: pnpm --dir frontend exec playwright install --with-deps chromium
+      - name: Run browser tests against the build
+        run: pnpm --dir frontend exec playwright test
+      - name: Upload browser test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: frontend/test-results/
+          retention-days: 7
+          if-no-files-found: ignore
