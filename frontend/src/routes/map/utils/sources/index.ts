@@ -24,12 +24,8 @@ import {
 import { selectedBaseMap } from '$routes/stores/layers';
 
 import {
-	baseMapAspectSources,
-	baseMapCurvatureSources,
 	baseMapOsmSources,
-	baseMapReliefSources,
-	baseMapSatelliteSources,
-	baseMapSlopeSources
+	baseMapSatelliteSources
 } from '$routes/map/utils/layers/base_map';
 import { get } from 'svelte/store';
 
@@ -770,16 +766,6 @@ export const createSourcesItems = async (
 	let baseSourcesItem;
 	if (get(selectedBaseMap) === 'satellite') {
 		baseSourcesItem = baseMapSatelliteSources;
-	} else if (get(selectedBaseMap) === 'relief') {
-		baseSourcesItem = baseMapReliefSources;
-	} else if (get(selectedBaseMap) === 'slope') {
-		// TODO: 共通化
-		baseSourcesItem = baseMapSlopeSources;
-	} else if (get(selectedBaseMap) === 'aspect') {
-		// TODO: 共通化
-		baseSourcesItem = baseMapAspectSources;
-	} else if (get(selectedBaseMap) === 'curvature') {
-		baseSourcesItem = baseMapCurvatureSources;
 	} else if (get(selectedBaseMap) === 'osm') {
 		baseSourcesItem = baseMapOsmSources;
 	} else {
