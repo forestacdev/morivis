@@ -8,8 +8,6 @@
 	import DropContainer from './DropContainer.svelte';
 	import type { ResultData, SearchGeojsonData } from '../utils/data/search-result';
 
-	import { MAP_FONT_DATA_PATH, MAP_SPRITE_DATA_PATH } from '$routes/constants';
-	import { DEFAULT_SYMBOL_TEXT_FONT } from '$routes/constants';
 	import 'maplibre-gl/dist/maplibre-gl.css';
 	import HighlightMarkerManager from '$routes/map/components/HighlightMarkerManager.svelte';
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
@@ -48,7 +46,6 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import { MAPTERHORN_DEM_SOURCE } from '$routes/map/utils/contours/config';
 	import {
 		clearAllCogViewportImages,
 		fetchCogViewportImage,
@@ -64,36 +61,24 @@
 		markWcsViewportReady,
 		WcsViewportTooBroadError
 	} from '$routes/map/utils/formats/wcs/runtime';
-	import { createLayersItems } from '$routes/map/utils/layers';
-	import { createContourStyle } from '$routes/map/utils/layers/contours';
-	import { createH3Style } from '$routes/map/utils/layers/h3';
-	import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 	import { createHighlightLayerItems } from '$routes/map/utils/layers/highlight-builder';
-	import { createPlaneGridStyle } from '$routes/map/utils/layers/plane-grid';
-	import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 	import {
 		loadReferenceStyle,
 		selectReferenceStyle,
 		type ReferenceStyle
 	} from '$routes/map/utils/layers/reference-style';
-	import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
 	import maplibregl from '$routes/map/utils/maplibre';
-	import type {
-		BackgroundLayerSpecification,
-		LayerSpecification,
-		LngLat,
-		MapGeoJSONFeature,
-		MapMouseEvent,
-		SourceSpecification,
-		StyleSpecification
-	} from '$routes/map/utils/maplibre';
+	import type { LngLat, MapGeoJSONFeature, MapMouseEvent } from '$routes/map/utils/maplibre';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
 	import { getLayerWatchStyleTarget } from '$routes/map/utils/raster/dimension-runtime';
-	import { createSourcesItems } from '$routes/map/utils/sources';
+	import { prepareSourceData } from '$routes/map/utils/sources/prepare';
+	import { applyRasterVisualizationUpdates } from '$routes/map/utils/sources/raster-updates';
+	import { createMapStyle, type MapStyleInput } from '$routes/map/utils/style/map-style';
 	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
-	import { MODEL_OVERLAY_METADATA_KEY } from '$routes/map/utils/three/model-overlay-order';
+	import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
 	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
+	import { mapAttributions } from '$routes/stores/attributions';
 	import { mapPaneScale } from '$routes/stores/effect';
 	import {
 		selectedBaseMap,
@@ -274,363 +259,38 @@
 	// 		[bbox[0], bbox[1]]
 	// 	]
 	// });
-	// mapStyleの作成
-	const createMapStyle = async (
-		_dataEntries: MorivisLayerEntry[],
-		mcaGridEntries: MorivisLayerEntry[]
-	): Promise<StyleSpecification> => {
+	// 非同期の準備を終えてから、確定した入力だけでstyleを生成する。
+	const prepareMapStyle = async (input: MapStyleInput, isCurrent: () => boolean) => {
+		if (!isCurrent()) return;
 		let referenceStyle: ReferenceStyle = { layers: [], sources: {} };
-		const referenceVisibility = {
-			line: $showLineLayer,
-			label: $showLabelLayer
-		};
-		if (!isIsolatedPreview && Object.values(referenceVisibility).some(Boolean)) {
+		const referenceVisibility = { line: input.showLine, label: input.showLabel };
+		if (!input.isIsolatedPreview && Object.values(referenceVisibility).some(Boolean)) {
 			try {
 				referenceStyle = selectReferenceStyle(await loadReferenceStyle(), referenceVisibility);
 			} catch (error) {
+				if (!isCurrent()) return;
 				console.error('Failed to load reference style:', error);
 				showNotification('線・地名・POIのスタイルを取得できませんでした', 'error');
 			}
 		}
-
-		// ソースとレイヤーの作成
-		const sources =
-			!isIsolatedPreview || mcaGridEntries.length
-				? await createSourcesItems(
-						[...(!isIsolatedPreview ? _dataEntries : []), ...mcaGridEntries],
-						'main',
-						referenceStyle.sources
-					)
-				: {};
-		const layers = !isIsolatedPreview
-			? createLayersItems(_dataEntries, 'main', referenceStyle.layers)
-			: [];
-		// 派生グリッドはクリック対象を持たず、通常プレビューの背景よりも上へ重ねる。
-		const mcaGridLayers = createLayersItems(mcaGridEntries, 'preview').map((layer) => ({
-			...layer,
-			metadata: {
-				...(typeof layer.metadata === 'object' && layer.metadata !== null ? layer.metadata : {}),
-				[MODEL_OVERLAY_METADATA_KEY]: true
-			}
-		}));
-
-		let previewSources = showDataEntry ? await createSourcesItems([showDataEntry], 'preview') : {};
-		if (isIsolatedPreview) {
-			previewSources = {
-				...previewSources,
-				// preview_base_1: {
-				// 	type: 'raster',
-				// 	tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
-				// 	tileSize: 256,
-				// 	minzoom: 0,
-				// 	maxzoom: 18,
-				// 	attribution: '地理院タイル'
-				// },
-				openmaptiles: {
-					type: 'vector',
-					url: 'pmtiles://https://tile.openstreetmap.jp/static/planet.pmtiles'
-				},
-				v: {
-					type: 'vector',
-					minzoom: 4,
-					maxzoom: 16,
-					url: 'pmtiles://https://cyberjapandata.gsi.go.jp/xyz/optimal_bvmap-v1/optimal_bvmap-v1.pmtiles',
-					attribution: '国土地理院最適化ベクトルタイル'
-				}
-				// tile_grid: {
-				// 	type: 'raster',
-				// 	tiles: ['./tile_grid.png'],
-				// 	tileSize: 256
-				// }
-			};
-		}
-		if (isGeoRefRegistrationActive && geoRefPreviewData) {
-			previewSources = {
-				...previewSources,
-				georef_image_preview: {
-					type: 'image',
-					url: geoRefPreviewData.url,
-					coordinates: geoRefPreviewData.coordinates
-				} satisfies SourceSpecification
-			};
-		}
-		let previewLayers = showDataEntry ? await createLayersItems([showDataEntry], 'preview') : [];
-		if (isIsolatedPreview) {
-			previewLayers = [...previewBaseLayers, ...previewLayers];
-		}
-		if (isGeoRefRegistrationActive && geoRefPreviewData) {
-			previewLayers = [
-				...previewLayers,
-				{
-					id: '@georef_image_preview',
-					type: 'raster',
-					source: 'georef_image_preview',
-					paint: {
-						'raster-opacity': previewOpacity
-					}
-				}
-			];
-		}
-		const zoneLayers: LayerSpecification[] = isZoneRegistrationActive
-			? [
-					{
-						id: '@zone_bbox_select',
-						type: 'fill',
-						source: 'zone_bbox',
-						filter: ['all', ['==', '$type', 'Polygon'], ['==', 'code', selectedEpsgCode]],
-						paint: {
-							'fill-pattern': ZONE_BBOX_FILL_PATTERN_ID,
-							'fill-opacity': 1
-						}
-					},
-					{
-						id: '@zone_bbox',
-						type: 'line',
-						source: 'zone_bbox',
-						filter: ['==', '$type', 'Polygon'],
-						paint: {
-							'line-color': 'white',
-							'line-width': 1
-						}
-					}
-				]
-			: [];
-
-		const xyzTileSources: Record<string, SourceSpecification> = $showXYZTileLayer
-			? {
-					tile_index: {
-						type: 'vector',
-						maxzoom: 22,
-						tiles: ['tile_index://http://{z}/{x}/{y}.png?x={x}&y={y}&z={z}']
-					}
-				}
-			: {};
-		let xyzTileLayer: LayerSpecification[] = $showXYZTileLayer
-			? [
-					{
-						id: '@tile_index_layer',
-						type: 'fill',
-						source: 'tile_index',
-						'source-layer': 'geojsonLayer',
-						maxzoom: 22,
-						paint: {
-							'fill-color': '#000000',
-							'fill-opacity': 0
-						}
-					},
-					{
-						id: '@tile_index_line_layer',
-						type: 'line',
-						source: 'tile_index',
-						'source-layer': 'geojsonLayer',
-						paint: {
-							'line-color': 'red',
-							'line-width': 2
-						}
-					},
-					{
-						id: 'tile_index_line_label',
-						type: 'symbol',
-						source: 'tile_index',
-						'source-layer': 'geojsonLayer',
-						paint: {
-							'text-color': 'red',
-							'text-halo-color': '#FFFFFF',
-
-							'text-halo-width': 3,
-							'text-opacity': 1
-						},
-						layout: {
-							'text-field': ['to-string', ['get', 'index']],
-							'text-font': DEFAULT_SYMBOL_TEXT_FONT,
-							'text-max-width': 12,
-							'text-size': 24,
-							'text-justify': 'auto'
-						}
-					}
-				]
-			: [];
-
-		const terrain = {
-			source: 'terrain',
-			exaggeration: 1
-		};
-
-		const streetViewSources: Record<string, SourceSpecification> = $showStreetViewLayer
-			? {
-					street_view_node_sources: {
-						type: 'geojson',
-						data: streetViewPointData
-					},
-					street_view_link_sources: {
-						type: 'geojson',
-						data: streetViewLineData
-					}
-				}
-			: {};
-
-		const regionalMeshStyle = createRegionalMeshStyle(
-			$showRegionalMeshLayer,
-			DEFAULT_SYMBOL_TEXT_FONT
+		if (!isCurrent()) return;
+		const prepared = await prepareSourceData(
+			[...(!input.isIsolatedPreview ? input.entries : []), ...input.mcaGridEntries],
+			{ isCurrent }
 		);
-		const planeGridStyle = createPlaneGridStyle(
-			$showPlaneGridLayer,
-			$planeGridZone,
-			DEFAULT_SYMBOL_TEXT_FONT
+		if (!isCurrent()) return;
+		const previewPrepared = await prepareSourceData(
+			input.showDataEntry ? [input.showDataEntry] : [],
+			{ isCurrent }
 		);
-		const h3Style = createH3Style($showH3Layer, DEFAULT_SYMBOL_TEXT_FONT);
-		const contourDem = $showContourLayer ? mapStore.ensureContourProtocol() : undefined;
-		const contourStyle = createContourStyle(contourDem?.contourTiles, DEFAULT_SYMBOL_TEXT_FONT);
-		const mapStyle: StyleSpecification = {
-			version: 8,
-			sprite: MAP_SPRITE_DATA_PATH,
-			glyphs: MAP_FONT_DATA_PATH,
-			projection: {
-				type: $isGlobe ? 'globe' : 'mercator'
-			},
-			sources: {
-				terrain: {
-					...MAPTERHORN_DEM_SOURCE,
-					tiles: contourDem ? [contourDem.sharedDemTiles] : MAPTERHORN_DEM_SOURCE.tiles
-				},
-				...streetViewSources,
-				...xyzTileSources,
-				...regionalMeshStyle.sources,
-				...h3Style.sources,
-				...planeGridStyle.sources,
-				...contourStyle.sources,
-				...sources,
-				draw_source: {
-					type: 'geojson',
-					data: drawGeojsonData as FeatureCollection,
-					promoteId: 'id'
-				} as SourceSpecification,
-				// prefecture: {
-				// 	type: 'vector',
-				// 	url: 'pmtiles://./prefecture.pmtiles',
-				// 	maxzoom: 14
-				// },
-
-				...previewSources,
-				zone_bbox: {
-					type: 'geojson',
-					data: zoneBboxGeojsonData as FeatureCollection
-				},
-				search_result: {
-					type: 'geojson',
-					data: searchGeojsonData || {
-						type: 'FeatureCollection',
-						features: []
-					}
-				}
-
-				// webgl_canvas: webGLCanvasSource
-			},
-			layers: [
-				{
-					id: '@background_layer',
-					type: 'background' as const,
-					paint: {
-						'background-opacity': 1,
-						'background-color': '#000'
-					}
-				},
-				...layers,
-				...contourStyle.layers,
-				...xyzTileLayer,
-				...regionalMeshStyle.layers,
-				...h3Style.layers,
-				...planeGridStyle.layers,
-				...previewLayers,
-				...mcaGridLayers,
-				{
-					id: 'deck-reference-layer',
-					type: 'background' as const,
-					paint: {
-						'background-opacity': 0
-					}
-				},
-
-				// 座標系選択のフィーチャー
-				...zoneLayers,
-
-				// 検索マーカー
-				{
-					id: '@search_result',
-					type: 'symbol',
-					source: 'search_result',
-					layout: {
-						'text-allow-overlap': true, // テキストの重複を許可
-						'text-ignore-placement': true, // 他の要素への配置影響を無視
-						'icon-allow-overlap': true, // アイコンの重複を許可
-						'icon-ignore-placement': true,
-						'icon-image': 'marker_png',
-						'icon-anchor': 'bottom'
-					}
-				},
-				// 検索ラベル
-				{
-					id: '@search_result_label',
-					type: 'symbol',
-					source: 'search_result',
-					paint: {
-						'text-color': '#000000',
-						'text-halo-color': '#e8e8e8',
-						'text-halo-width': 2
-					},
-
-					layout: {
-						'text-field': '{name}',
-						'text-size': 11,
-						'text-max-width': 10,
-						'text-font': DEFAULT_SYMBOL_TEXT_FONT,
-						'text-variable-anchor': ['bottom-left', 'bottom-right'],
-						'text-radial-offset': 2,
-						'text-justify': 'auto'
-					}
-				}
-				// TODO: 描画レイヤー
-				// ...drawLayers
-				// {
-				// 	id: 'municipalities',
-				// 	type: 'fill',
-				// 	source: 'prefecture',
-				// 	'source-layer': 'municipalities',
-
-				// 	maxzoom: 22,
-				// 	paint: {
-				// 		'fill-color': '#ffffff',
-				// 		'fill-opacity': 0.6
-				// 	}
-				// }
-				// ...drawLayers
-
-				// {
-				// 	id: '@webgl_canvas_layer',
-				// 	type: 'raster',
-				// 	source: 'webgl_canvas'
-				// }
-			],
-			sky: $showModelView
-				? undefined
-				: {
-						'sky-color': '#2baeff',
-						'sky-horizon-blend': 0.5,
-						'horizon-color': '#ffffff',
-						'horizon-fog-blend': 0.5,
-						'fog-color': '#2222ff',
-						'fog-ground-blend': 0.5,
-						'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 10, 1, 12, 0]
-					},
-			transition: { duration: 0, delay: 0 },
-			terrain: $isTerrain3d ? terrain : undefined
+		if (!isCurrent()) return;
+		const contourDem = input.showContour ? mapStore.ensureContourProtocol() : undefined;
+		return {
+			...createMapStyle(input, { prepared, previewPrepared, referenceStyle, contourDem }),
+			rasterUpdates: Object.values({ ...prepared, ...previewPrepared }).flatMap((source) =>
+				source.rasterVisualizationUpdate ? [source.rasterVisualizationUpdate] : []
+			)
 		};
-
-		if (!import.meta.env.PROD) {
-			console.log('debug:mapStyle', $state.snapshot(mapStyle));
-		}
-
-		return mapStyle;
 	};
 
 	// 初期描画時
@@ -750,11 +410,45 @@
 	const setStyle = async (entries: MorivisLayerEntry[]) => {
 		if (mapDestroyed) return;
 		const updateId = ++styleUpdateId;
+		const isCurrent = () => !mapDestroyed && updateId === styleUpdateId;
 		// 非同期のspec生成前に、main/preview/draftを統合した最新のグリッドを確定する。
 		const mcaGridEntries = mcaRegionGridController.sync(
 			effectiveMcaGridModels,
 			mcaPlacementPreview
 		);
+		const input: MapStyleInput = {
+			entries: getMapStyleEntries(entries),
+			mcaGridEntries,
+			showDataEntry,
+			baseMap: $selectedBaseMap,
+			showHillshade: $showHillshadeLayer,
+			showStreetView: $showStreetViewLayer,
+			showLine: $showLineLayer,
+			showLabel: $showLabelLayer,
+			isIsolatedPreview,
+			isGeoRefRegistrationActive,
+			geoRefPreviewData,
+			previewOpacity,
+			isZoneRegistrationActive,
+			selectedEpsgCode,
+			showXYZTile: $showXYZTileLayer,
+			showRegionalMesh: $showRegionalMeshLayer,
+			showPlaneGrid: $showPlaneGridLayer,
+			planeGridZone: $planeGridZone,
+			showH3: $showH3Layer,
+			showContour: $showContourLayer,
+			isGlobe: $isGlobe,
+			showModelView: $showModelView,
+			isTerrain3d: $isTerrain3d,
+			streetViewPointData,
+			streetViewLineData,
+			drawGeojsonData: drawGeojsonData as FeatureCollection,
+			zoneBboxGeojsonData,
+			searchGeojsonData
+		};
+		// entryの判別unionをSnapshot型で再展開せず、入力型を境界で保持する。
+		const styleInput = $state.snapshot(input as unknown) as MapStyleInput;
+
 		if (!import.meta.env.PROD) {
 			// 描画方式で絞る前に、アップロードしたモデルと登録前のプレビューも出力する。
 			const previewEntry = showDataEntry;
@@ -763,7 +457,6 @@
 				: entries;
 			console.log('debug:entries', $state.snapshot(debugEntries));
 		}
-		const mapLibreEntry = getMapStyleEntries(entries);
 
 		// esri-featureプロトコルの動的管理
 		const isGeojsonTileEntry = (e: MorivisLayerEntry) =>
@@ -909,11 +602,21 @@
 			mapStore.releasePlaneGridProtocol();
 		}
 
-		const mapStyle = await createMapStyle(mapLibreEntry as MorivisLayerEntry[], mcaGridEntries);
+		const result = await prepareMapStyle(styleInput, isCurrent);
 		// 後から開始した更新がある場合、この結果は古いので破棄する。
-		if (updateId !== styleUpdateId) return;
+		if (!result || !isCurrent()) return;
 
-		mapStore.setStyle(mapStyle);
+		const rasterPreviewEntry = showDataEntry;
+		applyRasterVisualizationUpdates(
+			rasterPreviewEntry
+				? [...entries.filter((entry) => entry.id !== rasterPreviewEntry.id), rasterPreviewEntry]
+				: entries,
+			result.rasterUpdates
+		);
+		clickableVectorIds.set(result.metadata.clickableVectorIds);
+		clickableRasterIds.set(result.metadata.clickableRasterIds);
+		mapAttributions.set(result.metadata.attributions);
+		mapStore.setStyle(result.style);
 		entries.filter(isViewportCogEntry).forEach((entry) => {
 			markCogViewportReady(entry.id);
 		});

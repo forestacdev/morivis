@@ -10,6 +10,7 @@ import { createLayersItems } from '$routes/map/utils/layers';
 import maplibregl from '$routes/map/utils/maplibre';
 import { resolveAbsoluteRequestUrl, resolveRequestUrl } from '$routes/map/utils/platform/request';
 import { createSourcesItems } from '$routes/map/utils/sources';
+import { prepareSourceData } from '$routes/map/utils/sources/prepare';
 import * as tilebelt from '@mapbox/tilebelt';
 import { Protocol } from 'pmtiles';
 import { CoverImageManager } from '../index';
@@ -383,8 +384,16 @@ export const generateVectorImageUrl = async (_layerEntry: MorivisLayerEntry) => 
 		}
 	} as MorivisLayerEntry;
 
-	const sources = await createSourcesItems([minimumEntry], 'preview');
-	const layers = await createLayersItems([minimumEntry], 'preview');
+	const generationInput = {
+		entries: [minimumEntry] as MorivisLayerEntry[],
+		mode: 'preview',
+		baseMap: null,
+		showHillshade: false,
+		showStreetView: false
+	} as const;
+	const prepared = await prepareSourceData(generationInput.entries);
+	const sources = createSourcesItems({ ...generationInput, prepared });
+	const { layers } = createLayersItems(generationInput);
 
 	const style: maplibregl.StyleSpecification = {
 		version: 8,

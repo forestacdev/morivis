@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 
 // 標準材質ではなく、morivisがモデル本体に使うGLSLをそのままGPUで検証する。
 const source = readFileSync(
-	new URL('../src/routes/map/utils/three/layer-manager.ts', import.meta.url),
+	new URL('../src/routes/map/utils/three/model-materials.ts', import.meta.url),
 	'utf8'
 );
 const materialSource = source.slice(

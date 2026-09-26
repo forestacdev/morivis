@@ -1,4 +1,3 @@
-import { INT_ADD_LAYER_IDS } from '$routes/constants';
 import type { FieldDef } from '$routes/map/data/types/vector/properties';
 import { createSymbolLayer } from '$routes/map/utils/layers/vector/label';
 
@@ -18,24 +17,15 @@ import type {
 } from '$routes/map/utils/maplibre';
 
 import { streetViewCircleLayer, streetViewLineLayer } from '$routes/map/utils/layers/street_view';
-import { clickableRasterIds, clickableVectorIds } from '$routes/stores';
 
-import { geoDataEntries } from '$routes/map/data/entries';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
 import type { IconImageSource } from '$routes/map/data/types/vector/properties';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
 
-import {
-	baseMapAspectLayers,
-	baseMapCurvatureLayers,
-	baseMapOsmLayers,
-	baseMapReliefLayers,
-	baseMapSatelliteLayers,
-	baseMapSlopeLayers
-} from '$routes/map/utils/layers/base_map';
-import { createBaseLayerItem } from '$routes/map/utils/layers/highlight-builder';
+import { createBaseLayerItem } from '$routes/map/utils/layers/base-item';
+import { baseMapOsmLayers, baseMapSatelliteLayers } from '$routes/map/utils/layers/base_map';
 import { hillshadeLayers } from '$routes/map/utils/layers/hillshade';
-import { selectedBaseMap, showHillshadeLayer, showStreetViewLayer } from '$routes/stores/layers';
+import type { BaseMapType } from '$routes/stores/layers';
 
 import { getTemporalFilter } from '$routes/map/utils/layers/vector/filter';
 import {
@@ -51,8 +41,6 @@ import {
 	createOutLineLayer
 } from '$routes/map/utils/layers/vector/polygon';
 
-import { get } from 'svelte/store';
-
 import {
 	type AttributionKey,
 	getAttribution
@@ -61,27 +49,6 @@ import { resolveDimensionPlaceholders } from '$routes/map/utils/dimension';
 import { createMorivisLayerMetadata } from '$routes/map/utils/layers/id';
 import { createRasterPaint } from '$routes/map/utils/layers/raster';
 import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
-import { mapAttributions } from '$routes/stores/attributions';
-
-// IDを収集
-const validIds = geoDataEntries.map((entry) => entry.id);
-const validateId = (id: string) => {
-	if (!validIds.includes(id)) {
-		throw new Error(`Invalid ID: ${id}`);
-	}
-};
-
-INT_ADD_LAYER_IDS.forEach((id) => {
-	try {
-		validateId(id);
-	} catch (error) {
-		if (error instanceof Error) {
-			console.warn(`無効なidです: ${id}`);
-			console.warn('有効なid: ', validIds.join(', '));
-			console.error(error.message);
-		}
-	}
-});
 
 export interface LayerItem {
 	id: string;
@@ -140,11 +107,30 @@ export const createVectorLayer = (
 };
 
 // layersの作成
-export const createLayersItems = (
-	_dataEntries: MorivisLayerEntry[],
-	_type: 'main' | 'preview' = 'main',
-	referenceLayers: LayerSpecification[] = []
-): LayerSpecification[] => {
+export interface LayerGenerationInput {
+	entries: MorivisLayerEntry[];
+	mode: 'main' | 'preview';
+	baseMap: BaseMapType | null;
+	showHillshade: boolean;
+	showStreetView: boolean;
+	referenceLayers?: LayerSpecification[];
+}
+
+export interface LayerGenerationResult {
+	layers: LayerSpecification[];
+	clickableVectorIds: string[];
+	clickableRasterIds: string[];
+	attributions: AttributionKey[];
+}
+
+export const createLayersItems = ({
+	entries: _dataEntries,
+	mode: _type,
+	baseMap,
+	showHillshade,
+	showStreetView,
+	referenceLayers = []
+}: LayerGenerationInput): LayerGenerationResult => {
 	const symbolLayerItems: LayerSpecification[] = [];
 	const circleLayerItems: LayerSpecification[] = [];
 	const circleIconLayerItems: LayerSpecification[] = [];
@@ -153,7 +139,6 @@ export const createLayersItems = (
 	const fillExtrusionLayerItems: LayerSpecification[] = [];
 	const rasterLayerItems: LayerSpecification[] = [];
 	// const vectorLayerItems: LayerSpecification[] = [];
-	const rasterAndVectorLayerItems: LayerSpecification[] = [];
 	const clickableVecter: string[] = []; // クリックイベントを有効にするレイヤーID
 	const clickableRaster: string[] = []; // クリックイベントを有効にするレイヤーID
 
@@ -164,7 +149,7 @@ export const createLayersItems = (
 		.reverse()
 		.forEach((entry) => {
 			const layerId = `${entry.id}`;
-			const { format, style, metaData, interaction, type } = entry;
+			const { style, metaData, interaction, type } = entry;
 			const temporalFilter = getTemporalFilter(entry);
 			const layer: LayerItem = {
 				...createBaseLayerItem(entry),
@@ -488,31 +473,21 @@ export const createLayersItems = (
 		});
 
 	const attributionArray = Array.from(attributionMap.values());
-	mapAttributions.set(attributionArray);
-
-	// ストリートビューレイヤー表示がオンの時
-	if (get(showStreetViewLayer)) {
-		clickableVecter.push('@street_view_line_layer');
-		clickableVecter.push('@street_view_circle_layer');
-	}
-
-	if (_type === 'main') {
-		// クリックイベントを有効にするレイヤーIDをstoreに保存
-		clickableVectorIds.set(clickableVecter);
-		clickableRasterIds.set(clickableRaster);
+	if (showStreetView && _type === 'main') {
+		clickableVecter.push('@street_view_line_layer', '@street_view_circle_layer');
 	}
 
 	// ストリートビューのレイヤーを追加
-	const streetViewLayers = get(showStreetViewLayer) && _type === 'main'
+	const streetViewLayers = showStreetView && _type === 'main'
 		? [streetViewLineLayer, streetViewCircleLayer]
 		: [];
 
 	// ベースマップ
 	let baseMapLayerItems: LayerSpecification[] = [];
 	if (_type === 'main') {
-		if (get(selectedBaseMap) === 'satellite') {
+		if (baseMap === 'satellite') {
 			baseMapLayerItems = baseMapSatelliteLayers;
-		} else if (get(selectedBaseMap) === 'osm') {
+		} else if (baseMap === 'osm') {
 			baseMapLayerItems = baseMapOsmLayers;
 		} else {
 			baseMapLayerItems = [];
@@ -521,9 +496,9 @@ export const createLayersItems = (
 		baseMapLayerItems = [];
 	}
 
-	const isNotOsm = get(selectedBaseMap) !== 'osm';
-	const isNotHillshade = get(selectedBaseMap) !== 'satellite';
-	// const isNotRelief = get(selectedBaseMap) !== 'relief';
+	const isNotOsm = baseMap !== 'osm';
+	const isNotHillshade = baseMap !== 'satellite';
+	// const isNotRelief = baseMap !== 'relief';
 
 	const referenceLineItems = _type === 'main' && isNotOsm
 		? referenceLayers.filter((layer) => layer.type === 'line')
@@ -531,25 +506,30 @@ export const createLayersItems = (
 	const referenceSymbolItems = _type === 'main' && isNotOsm
 		? referenceLayers.filter((layer) => layer.type === 'symbol')
 		: [];
-	const hillshadeLayerItems = get(showHillshadeLayer) && _type === 'main' && isNotHillshade
+	const hillshadeLayerItems = showHillshade && _type === 'main' && isNotHillshade
 		? hillshadeLayers
 		: [];
 
-	return [
-		...baseMapLayerItems,
-		...referenceLineItems,
-		...hillshadeLayerItems,
+	return {
+		attributions: attributionArray,
+		clickableVectorIds: clickableVecter,
+		clickableRasterIds: clickableRaster,
+		layers: [
+			...baseMapLayerItems,
+			...referenceLineItems,
+			...hillshadeLayerItems,
 
-		...rasterLayerItems,
-		...fillLayerItems,
-		...lineLayerItems,
-		...fillExtrusionLayerItems,
+			...rasterLayerItems,
+			...fillLayerItems,
+			...lineLayerItems,
+			...fillExtrusionLayerItems,
 
-		...circleLayerItems,
-		...streetViewLayers,
-		...referenceSymbolItems,
+			...circleLayerItems,
+			...streetViewLayers,
+			...referenceSymbolItems,
 
-		...symbolLayerItems,
-		...circleIconLayerItems
-	];
+			...symbolLayerItems,
+			...circleIconLayerItems
+		]
+	};
 };

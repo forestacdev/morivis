@@ -114,7 +114,7 @@ CityGMLは専用の `CityGmlForm.svelte` でLODを選び、Workerで建物の面
 | 科学技術・衛星ラスタ | DEM XML, NetCDF, GRIB2, HDF5, HRIT/LRIT | バンド配列や観測画像へ展開 | 形式ごとに自動、または GeoRef / Zone | `createRasterGeoRefData()` | 各 Form または `+page.svelte finalizeGeoRefEntry()` | 解析 worker、Terrarium 変換、3Dメッシュ化 |
 | 点群 | LAS, LAZ, COPC, PLY, PCD, XYZ, OBJ 点群 | positions / colors / pointCount を生成 | bbox が不正なら Zone。登録方法で raster / pointcloud に分岐 | 点群 GeoRef は pointcloud 用 `geoRefData`。DEM 化は raster 用 `geoRefData` | `PointCloudForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | 点群解析、DEM ラスタライズ、GeoRef 点群変形 |
 | TIN / サーフェス | LandXML | TIN, breakline, point 群を解析。必要に応じて DEM 化 | Zone または GeoRef | ラスター preview または mesh 準備 | `LandXmlForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | rasterize worker、3Dメッシュ化 |
-| 3D モデル | GLB, OBJ, 3DS, DAE, 3DM, FBX, DRC, 3MF, AMF, STL, IFC | three.js 系が扱える URL / Blob に正規化。OBJ は `# COORDINATE_SYSTEM` コメントから投影 EPSG を先読みできる。STL はアップロード時に Z-up / Y-up を指定する | 埋め込み配置が解ければ自動。無ければ Zone または手動配置 | なし | 各 3D Form がモデル entry を直接作る | `model-bounds-parallel` 系で bounds / resolvedPlacement を算出し、runtime では `three/layer-manager.ts` が georeference と正規化を適用 |
+| 3D モデル | GLB, OBJ, 3DS, DAE, 3DM, FBX, DRC, 3MF, AMF, STL, IFC | three.js 系が扱える URL / Blob に正規化。OBJ は `# COORDINATE_SYSTEM` コメントから投影 EPSG を先読みできる。STL はアップロード時に Z-up / Y-up を指定する | 埋め込み配置が解ければ自動。無ければ Zone または手動配置 | なし | 各 3D Form がモデル entry を直接作る | `model-bounds-parallel` 系で bounds / resolvedPlacement を算出し、runtime では `three/model-loader.ts` が georeference と正規化を適用 |
 | 3D Tiles / タイルデータ | 3D Tiles, PMTiles, MBTiles | URL / ファイルから source metadata を構築 | 通常は CRS 解決不要。PMTiles / MBTiles は source 種別の分岐あり | なし | source / model entry を直接作る | PMTiles protocol, MBTiles reader |
 | リモート配信 / カタログ | WMTS, WCS, GeoZarr, FeatureService, WFS, OGC API Features, STAC, ArcGIS WebMap / service, Raster URL, Vector URL | メタデータ問い合わせや capabilities 解析 | 形式ごとのポリシーに従う | WCS / STAC / vector は必要に応じて preview | 各 Form または `+page.svelte finalizeGeoRefEntry()` | capabilities fetch、STAC / WCS / ArcGIS 解析 |
 
@@ -288,7 +288,7 @@ flowchart LR
 - `upload-drop.ts` はこの判定結果を `morivisProjectedModelEpsg` として `File` に一時付与する。複数ファイルの OBJ 一式でも単体 OBJ でも同じ扱いで、Form 側に追加の状態を増やさず引き渡せる。
 - `MeshModelForm.svelte` は `computeUploadedModelMetaInWorker()` に `projectedModelEpsg` を渡し、bounds、unit scale、skinned mesh 情報、`resolvedPlacement` をまとめて計算する。`resolvedPlacement` が返れば `entry.format.georeference` と `style.transform` に反映してそのまま登録へ進む。
 - 投影座標つき OBJ はローカル軸の向きがそのままだと縦向きに見えるケースがあるので、登録時に `baseRotationX = 90` を補正値として入れる。
-- 実オブジェクトへの地理配置は worker ではなく runtime 側で行う。`three/layer-manager.ts` が各 loader の直後に `finalizeRuntimeModelObject()` を通し、`entry.format.georeference` があれば projected 座標原点と単位を反映し、無ければ形式別の単位補正や local origin 正規化を適用する。
+- 実オブジェクトへの地理配置は worker ではなく runtime 側で行う。`three/model-loader.ts` が各形式の loader の直後に `finalizeRuntimeModelObject()` を通し、`entry.format.georeference` があれば projected 座標原点と単位を反映し、無ければ形式別の単位補正や local origin 正規化を適用する。
 
 ## worker 境界
 

@@ -29,6 +29,8 @@ import type {
 import { clickableVectorIds } from '$routes/stores';
 
 import { createVectorLayer, type LayerItem } from '$routes/map/utils/layers';
+import { createBaseLayerItem } from './base-item';
+export { createBaseLayerItem } from './base-item';
 
 const createHiddenFilter = (): FilterSpecification => {
 	return ['==', ['literal', 1], 0];
@@ -94,20 +96,6 @@ export const registerLayerFilterState = ({
 			}
 		).filter
 	});
-};
-
-export const createBaseLayerItem = (entry: MorivisLayerEntry): LayerItem => {
-	const { metaData, style } = entry;
-
-	return {
-		id: `${entry.id}`,
-		source: `${entry.id}_source`,
-		maxzoom: 'maxZoom' in style ? (style.maxZoom ?? 24) : 24,
-		minzoom: 'minZoom' in style
-			? (style.minZoom ?? metaData.minZoom ?? 1)
-			: (metaData.minZoom ?? 1),
-		metadata: createMorivisLayerMetadata(entry.id, 'base')
-	};
 };
 
 const createHighlightLayer = (

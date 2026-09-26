@@ -109,3 +109,7 @@ pnpm --dir frontend exec playwright test
 - CORSプロキシ: `utils/platform/proxy.ts` のルールからVite設定とURL変換を生成
 
 アップロードの状態遷移は [データパイプライン](./data-pipeline.md)、内部モデルと描画系の境界は [内部レイヤーモデル](./architecture/entry-model.md) を参照する。対応形式やファイル規模、テスト件数は変化するため、固定の一覧・自己採点を開発規約に転記しない。
+
+## 描画処理の構成
+
+スタイル生成の入力境界とThree.jsの責務分担は [スタイル生成と3Dモデルの実行時処理](architecture/rendering.md) を参照。
