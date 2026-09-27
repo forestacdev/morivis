@@ -1,6 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-
 	interface Props {
 		label: string;
 		value: boolean;

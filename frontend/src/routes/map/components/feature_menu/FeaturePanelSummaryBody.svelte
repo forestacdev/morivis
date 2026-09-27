@@ -1,8 +1,7 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
-	import { ICONS } from '$lib/icons';
+	import LucideMapPinIcon from '$lib/components/svgs/icons/lucide/MapPinIcon.svelte';
 	import type { FeaturePanelSummary } from '$routes/map/types';
 
 	interface Props {
@@ -25,7 +24,7 @@
 		{#if showCoordinates && summary.point}
 			<div class="flex flex-col gap-2 rounded-lg bg-black p-2">
 				<div class="flex w-full justify-start gap-2">
-					<Icon icon="lucide:map-pin" class="h-6 w-6 shrink-0 text-base" />
+					<LucideMapPinIcon class="h-6 w-6 shrink-0 text-base" />
 					<span class="text-accent"
 						>{summary.point[1].toFixed(6)}, {summary.point[0].toFixed(6)}</span
 					>

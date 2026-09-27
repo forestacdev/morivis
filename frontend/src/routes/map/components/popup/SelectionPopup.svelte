@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { flip } from 'svelte/animate';
 	import { fly } from 'svelte/transition';
 
+	import MaterialSymbolsCloseRoundedIcon from '$lib/components/svgs/icons/material-symbols/CloseRoundedIcon.svelte';
 	import { lonLatToAddress } from '$routes/map/api/address';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
@@ -70,7 +70,7 @@
 				}}
 				class="absolute top-0 right-0 rounded-full p-2"
 			>
-				<Icon icon="material-symbols:close-rounded" class="h-4 w-4 text-black" />
+				<MaterialSymbolsCloseRoundedIcon class="h-4 w-4 text-black" />
 			</button>
 			<div class="flex grow flex-col gap-2">
 				<div class="flex gap-2">

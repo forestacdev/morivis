@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import * as THREE from 'three';
@@ -12,6 +11,10 @@
 	import { uniforms } from './utils/material';
 	import { fadeShaderMaterial, debugBoxMaterial } from './utils/material';
 
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import EpArrowUpBoldIcon from '$lib/components/svgs/icons/ep/ArrowUpBoldIcon.svelte';
+	import EpBackIcon from '$lib/components/svgs/icons/ep/BackIcon.svelte';
+	import IcRoundMenuIcon from '$lib/components/svgs/icons/ic/RoundMenuIcon.svelte';
 	import type { CurrentPointData } from '$routes/map/types/street-view';
 	import type { StreetViewPoint, NextPointData } from '$routes/map/types/street-view';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
@@ -378,8 +381,7 @@
 				<button
 					class="lg:bg-base group cursor-pointer rounded-full p-2 max-lg:text-white lg:text-black"
 					onclick={() => ($isStreetView = false)}
-					><Icon
-						icon="ep:back"
+					><EpBackIcon
 						class="max-lg:h-5 max-lg:w-5 lg:h-6 lg:w-6 lg:transition-transform lg:duration-150 lg:group-hover:-translate-x-1"
 					/>
 				</button>
@@ -394,7 +396,7 @@
 			<button
 				class="hover:text-accent lg:border-sub absolute top-3 right-4 z-10 flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-black p-2 text-white duration-100 max-lg:hidden lg:border"
 				onclick={() => showOtherMenu.set(true)}
-				><Icon icon="ic:round-menu" class="h-8 w-8" />
+				><IcRoundMenuIcon class="h-8 w-8" />
 			</button>
 		{/if}
 
@@ -429,8 +431,7 @@
 									class="css-arrow"
 									style="--angle: {point.bearing}deg; --distance: {!$isMobile ? '175' : '120'}px;"
 								>
-									<Icon
-										icon="ep:arrow-up-bold"
+									<EpArrowUpBoldIcon
 										class="max-lg:h-[70px] max-lg:w-[70px] lg:h-[128px] lg:w-[128px]"
 										style="transform: rotate({point.bearing}deg);"
 									/>

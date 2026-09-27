@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
+	import IconamoonArrowDown2DuotoneIcon from '$lib/components/svgs/icons/iconamoon/ArrowDown2DuotoneIcon.svelte';
 	import type { RasterStylePreset } from '$routes/map/utils/style/raster-preset';
 	import { getPresetCSSStyle } from '$routes/map/utils/style/raster-preset';
 
@@ -81,7 +81,7 @@
 			/>
 			<span>{presetOptions.find((option) => option.key === preset)?.name}</span>
 		</div>
-		<Icon icon="iconamoon:arrow-down-2-duotone" class="mr-2 h-8 w-8 shrink-0" />
+		<IconamoonArrowDown2DuotoneIcon class="mr-2 h-8 w-8 shrink-0" />
 	</button>
 
 	{#if showPullDown}

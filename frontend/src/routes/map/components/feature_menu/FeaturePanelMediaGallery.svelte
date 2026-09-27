@@ -1,12 +1,13 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
 	import { fade } from 'svelte/transition';
 	import Viewer from 'viewerjs';
-
 	import 'viewerjs/dist/viewer.css';
-	import { ICONS } from '$lib/icons';
+
+	import LucideMapPinIcon from '$lib/components/svgs/icons/lucide/MapPinIcon.svelte';
+	import UiArrowLeftIcon from '$lib/components/svgs/icons/ui/ArrowLeftIcon.svelte';
+	import UiArrowRightIcon from '$lib/components/svgs/icons/ui/ArrowRightIcon.svelte';
 	import type { FeaturePanelImageMedia, FeaturePanelMedia } from '$routes/map/types';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
 
@@ -145,7 +146,7 @@
 		<div
 			class="bg-sub-dark absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-2 text-gray-300"
 		>
-			<Icon icon="lucide:map-pin" class="h-64 w-64 text-white/10" />
+			<LucideMapPinIcon class="h-64 w-64 text-white/10" />
 		</div>
 	{/snippet}
 
@@ -216,7 +217,7 @@
 					aria-label="前のメディアを表示"
 					onclick={scrollPrev}
 				>
-					<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
+					<UiArrowLeftIcon class="h-6 w-6" />
 				</button>
 				<button
 					type="button"
@@ -224,7 +225,7 @@
 					aria-label="次のメディアを表示"
 					onclick={scrollNext}
 				>
-					<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
+					<UiArrowRightIcon class="h-6 w-6" />
 				</button>
 			{/if}
 		</div>

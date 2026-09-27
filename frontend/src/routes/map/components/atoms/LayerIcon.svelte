@@ -1,7 +1,11 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
+	import IcBaselineModeStandbyIcon from '$lib/components/svgs/icons/ic/BaselineModeStandbyIcon.svelte';
+	import IcBaselinePentagonIcon from '$lib/components/svgs/icons/ic/BaselinePentagonIcon.svelte';
+	import IcBaselinePolymerIcon from '$lib/components/svgs/icons/ic/BaselinePolymerIcon.svelte';
+	import MdiCubeOutlineIcon from '$lib/components/svgs/icons/mdi/CubeOutlineIcon.svelte';
+	import MdiRasterIcon from '$lib/components/svgs/icons/mdi/RasterIcon.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { ImageResult } from '$routes/map/utils/image';
 	import { getLayerImage } from '$routes/map/utils/image';
@@ -66,17 +70,17 @@
 		{/if}
 	{:catch}
 		{#if layerEntry.type === 'raster'}
-			<Icon icon="mdi:raster" class="pointer-events-none" width={30} />
+			<MdiRasterIcon class="pointer-events-none" width={30} />
 		{:else if layerEntry.type === 'vector'}
 			{#if layerEntry.format.geometryType === 'Point'}
-				<Icon icon="ic:baseline-mode-standby" class="pointer-events-none" width={30} />
+				<IcBaselineModeStandbyIcon class="pointer-events-none" width={30} />
 			{:else if layerEntry.format.geometryType === 'LineString'}
-				<Icon icon="ic:baseline-polymer" class="pointer-events-none" width={30} />
+				<IcBaselinePolymerIcon class="pointer-events-none" width={30} />
 			{:else if layerEntry.format.geometryType === 'Polygon'}
-				<Icon icon="ic:baseline-pentagon" class="pointer-events-none" width={30} />
+				<IcBaselinePentagonIcon class="pointer-events-none" width={30} />
 			{/if}
 		{:else if layerEntry.type === 'model'}
-			<Icon icon="mdi:cube-outline" class="pointer-events-none" width={30} />
+			<MdiCubeOutlineIcon class="pointer-events-none" width={30} />
 		{/if}
 	{/await}
 {/if}

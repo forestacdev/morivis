@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { Bottomsheet } from '@devantic/diaper';
-	// import '$lib/diaper.css';
-	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
 
+	import MaterialSymbolsCloseRoundedIcon from '$lib/components/svgs/icons/material-symbols/CloseRoundedIcon.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { generatePopupTitle } from '$routes/map/utils/data/properties';
@@ -136,7 +135,7 @@
 					}}
 					class="bg-base ml-2 shrink-0 cursor-pointer rounded-full p-2 shadow-md"
 				>
-					<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
+					<MaterialSymbolsCloseRoundedIcon class="text-main h-5 w-5" />
 				</button>
 			</div>
 		{/snippet}

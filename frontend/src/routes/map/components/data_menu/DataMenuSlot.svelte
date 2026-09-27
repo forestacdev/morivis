@@ -1,11 +1,17 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import DOMPurify from 'dompurify';
 	import gsap from 'gsap';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import AkarIconsEyeIcon from '$lib/components/svgs/icons/akar-icons/EyeIcon.svelte';
+	import EmojioneMonotoneMapOfJapanIcon from '$lib/components/svgs/icons/emojione-monotone/MapOfJapanIcon.svelte';
+	import FxemojiWorldmapIcon from '$lib/components/svgs/icons/fxemoji/WorldmapIcon.svelte';
+	import IcRoundMinusIcon from '$lib/components/svgs/icons/ic/RoundMinusIcon.svelte';
+	import LetsIconsCheckFillIcon from '$lib/components/svgs/icons/lets-icons/CheckFillIcon.svelte';
+	import MaterialSymbolsAddIcon from '$lib/components/svgs/icons/material-symbols/AddIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
 	import { getPrefectureCode } from '$routes/map/data/pref';
@@ -235,7 +241,7 @@
 					}}
 					class="c-btn-sub grid place-items-center p-1"
 				>
-					<Icon icon="ic:round-minus" class=" h-6 w-6" />
+					<IcRoundMinusIcon class=" h-6 w-6" />
 				</button>
 			{:else}
 				<button
@@ -245,7 +251,7 @@
 					}}
 					class="c-btn-confirm grid place-items-center p-1"
 				>
-					<Icon icon="material-symbols:add" class=" h-6 w-6" />
+					<MaterialSymbolsAddIcon class=" h-6 w-6" />
 				</button>
 			{/if}
 		</div>
@@ -338,7 +344,7 @@
 						<div
 							class="flex items-center justify-center gap-1 rounded-full bg-black/80 p-2 px-4 text-lg text-white"
 						>
-							<Icon icon="akar-icons:eye" class="h-7 w-7" /><span>プレビュー</span>
+							<AkarIconsEyeIcon class="h-7 w-7" /><span>プレビュー</span>
 						</div>
 					</div>
 				{/if}
@@ -351,7 +357,7 @@
 						<div
 							class=" flex w-full items-center justify-center gap-1 bg-black/60 p-2 px-4 text-lg text-white"
 						>
-							<Icon icon="lets-icons:check-fill" class="h-7 w-7" /><span>追加済み</span>
+							<LetsIconsCheckFillIcon class="h-7 w-7" /><span>追加済み</span>
 						</div>
 					</div>
 				{/if}
@@ -407,13 +413,13 @@
 						{/if}
 						{#if dataEntry.metaData.location === '全国'}
 							<div class="grid place-items-center">
-								<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-gray-500" />
+								<EmojioneMonotoneMapOfJapanIcon class="h-20 w-20 text-gray-500" />
 								<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 							</div>
 						{/if}
 						{#if dataEntry.metaData.location === '世界'}
 							<div class="grid place-items-center">
-								<Icon icon="fxemoji:worldmap" class="h-20 w-20 [&_path]:fill-gray-500" />
+								<FxemojiWorldmapIcon class="h-20 w-20 [&_path]:fill-gray-500" />
 								<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 							</div>
 						{/if}
@@ -444,13 +450,13 @@
 				{/if}
 				{#if dataEntry.metaData.location === '全国'}
 					<div class="grid aspect-square w-full place-items-center">
-						<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
+						<EmojioneMonotoneMapOfJapanIcon class="h-full w-full text-base" />
 						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 					</div>
 				{/if}
 				{#if dataEntry.metaData.location === '世界'}
 					<div class="grid aspect-square w-full place-items-center">
-						<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
+						<FxemojiWorldmapIcon class="[&_path]:fill-base h-full w-full" />
 						<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 					</div>
 				{/if}

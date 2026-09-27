@@ -1,9 +1,10 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { gsap } from 'gsap';
 	import { Draggable } from 'gsap/Draggable';
 	import { onMount } from 'svelte';
 
+	import TypcnMinusIcon from '$lib/components/svgs/icons/typcn/MinusIcon.svelte';
+	import TypcnPlusIcon from '$lib/components/svgs/icons/typcn/PlusIcon.svelte';
 	import { mapStore } from '$routes/stores/map';
 
 	let container: HTMLElement;
@@ -47,10 +48,10 @@
 	class="flex origin-center items-center justify-center gap-2 rounded-lg border-2 border-gray-500 px-[10px] py-4"
 >
 	<button onclick={zoomOut} class="grid place-items-center">
-		<Icon icon="typcn:minus" class=" h-6 w-6 text-base" />
+		<TypcnMinusIcon class=" h-6 w-6 text-base" />
 	</button>
 	<button onclick={zoomIn} class="grid place-items-center">
-		<Icon icon="typcn:plus" class="h-6 w-6  text-base" />
+		<TypcnPlusIcon class="h-6 w-6  text-base" />
 	</button>
 </div>
 

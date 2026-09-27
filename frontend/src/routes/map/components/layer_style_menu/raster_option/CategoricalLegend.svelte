@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-
+	import LsiconDataFilledIcon from '$lib/components/svgs/icons/lsicon/DataFilledIcon.svelte';
 	import type { RasterCategoricalStyle } from '$routes/map/data/types/raster';
 
 	interface Props {
@@ -24,7 +23,7 @@
 </script>
 
 <div class="mt-8 flex items-center gap-1 text-base text-lg">
-	<Icon icon="lsicon:data-filled" class="h-6 w-6" />
+	<LsiconDataFilledIcon class="h-6 w-6" />
 	<span>凡例</span>
 </div>
 <div class="mt-2 flex-1 shrink-0 rounded-lg p-2 mix-blend-normal">

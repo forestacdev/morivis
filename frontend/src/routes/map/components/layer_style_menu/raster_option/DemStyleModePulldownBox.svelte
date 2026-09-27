@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fade, fly } from 'svelte/transition';
 
 	import DemStyleModePulldownBoxImage from './DemStyleModePulldownBoxImage.svelte';
 
+	import IconamoonArrowDown2DuotoneIcon from '$lib/components/svgs/icons/iconamoon/ArrowDown2DuotoneIcon.svelte';
 	import type {
 		DemRangeColorStyle,
 		DemStyleMode,
@@ -161,7 +161,7 @@
 
 				<span>{availableDemStyleModes.find((mode) => mode.key === isMode)?.name}</span>
 			</div>
-			<Icon icon="iconamoon:arrow-down-2-duotone" class="mr-2 h-8 w-8 shrink-0" />
+			<IconamoonArrowDown2DuotoneIcon class="mr-2 h-8 w-8 shrink-0" />
 		</button>
 
 		{#if showPullDown}

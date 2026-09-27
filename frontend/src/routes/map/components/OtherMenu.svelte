@@ -1,10 +1,19 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { fade, fly } from 'svelte/transition';
 
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
+	import AkarIconsInfoFillIcon from '$lib/components/svgs/icons/akar-icons/InfoFillIcon.svelte';
+	import BxExportIcon from '$lib/components/svgs/icons/bx/ExportIcon.svelte';
+	import GrommetIconsInstallOptionIcon from '$lib/components/svgs/icons/grommet-icons/InstallOptionIcon.svelte';
+	import HeroiconsPower16SolidIcon from '$lib/components/svgs/icons/heroicons/Power16SolidIcon.svelte';
+	import MajesticonsNoteTextIcon from '$lib/components/svgs/icons/majesticons/NoteTextIcon.svelte';
+	import MaterialSymbolsCloseRoundedIcon from '$lib/components/svgs/icons/material-symbols/CloseRoundedIcon.svelte';
+	import MaterialSymbolsCodeRoundedIcon from '$lib/components/svgs/icons/material-symbols/CodeRoundedIcon.svelte';
+	import MaterialSymbolsDataSaverOnRoundedIcon from '$lib/components/svgs/icons/material-symbols/DataSaverOnRoundedIcon.svelte';
+	import MdiGithubIcon from '$lib/components/svgs/icons/mdi/GithubIcon.svelte';
+	import MdiWebIcon from '$lib/components/svgs/icons/mdi/WebIcon.svelte';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
 	import { imageExport, getMapCanvasImage } from '$routes/map/utils/formats/export/image';
 	import {
@@ -108,7 +117,7 @@
 				onclick={() => showOtherMenu.set(false)}
 				class="bg-base cursor-pointer rounded-full p-2 max-lg:hidden"
 			>
-				<Icon icon="material-symbols:close-rounded" class="text-main h-4 w-4" />
+				<MaterialSymbolsCloseRoundedIcon class="text-main h-4 w-4" />
 			</button>
 		</div>
 		{#if !$isStreetView}
@@ -139,7 +148,7 @@
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
 					onclick={toggleDataMenu}
 				>
-					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+					<MaterialSymbolsDataSaverOnRoundedIcon class="h-8 w-8" />
 					<span class="select-none">データカタログ</span>
 				</button>
 				<!-- <button
@@ -152,7 +161,7 @@
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
 					onclick={mapExport}
 				>
-					<Icon icon="bx:export" class="h-8 w-8" />
+					<BxExportIcon class="h-8 w-8" />
 					<span class="select-none">地図をエクスポート</span>
 				</button>
 			</ui>
@@ -163,14 +172,14 @@
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={toggleInfoDialog}
 			>
-				<Icon icon="akar-icons:info-fill" class="h-8 w-8" />
+				<AkarIconsInfoFillIcon class="h-8 w-8" />
 				<span class="select-none">このアプリについて</span>
 			</button>
 			<button
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={toggleTermsDialog}
 			>
-				<Icon icon="majesticons:note-text" class="h-8 w-8" />
+				<MajesticonsNoteTextIcon class="h-8 w-8" />
 				<span class="select-none">利用規約</span>
 			</button>
 
@@ -179,7 +188,7 @@
 				href="https://github.com/forestacdev/morivis"
 				target="_blank"
 				rel="noopener noreferrer"
-				><Icon icon="mdi:github" class="h-8 w-8" />
+				><MdiGithubIcon class="h-8 w-8" />
 				<span>GitHub</span></a
 			>
 
@@ -188,7 +197,7 @@
 				href="https://www.forest.ac.jp/"
 				target="_blank"
 				rel="noopener noreferrer"
-				><Icon icon="mdi:web" class="h-8 w-8" />
+				><MdiWebIcon class="h-8 w-8" />
 				<span>森林文化アカデミー Webサイト</span></a
 			>
 
@@ -197,7 +206,7 @@
 				href="https://morinos.net/"
 				target="_blank"
 				rel="noopener noreferrer"
-				><Icon icon="mdi:web" class="h-8 w-8" />
+				><MdiWebIcon class="h-8 w-8" />
 				<span>morinos Webサイト</span></a
 			>
 
@@ -205,7 +214,7 @@
 				<button
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 					onclick={pwaInstall}
-					><Icon icon="grommet-icons:install-option" class="h-8 w-8 scale-95" />
+					><GrommetIconsInstallOptionIcon class="h-8 w-8 scale-95" />
 					<span>アプリをインストール</span>
 				</button>
 			{/if}
@@ -213,7 +222,7 @@
 				class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 				onclick={goHome}
 				disabled={$isBlocked}
-				><Icon icon="heroicons:power-16-solid" class="h-8 w-8" />
+				><HeroiconsPower16SolidIcon class="h-8 w-8" />
 				<span>トップページへ</span></button
 			>
 
@@ -221,7 +230,7 @@
 				<button
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150"
 					onclick={() => location.reload()}
-					><Icon icon="material-symbols:code-rounded" class="h-8 w-8 scale-95" />
+					><MaterialSymbolsCodeRoundedIcon class="h-8 w-8 scale-95" />
 					<span>再読み込み</span>
 				</button>
 

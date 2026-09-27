@@ -1,13 +1,14 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import DOMPurify from 'dompurify';
 	import gsap from 'gsap';
 	import { tick } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
+	import AkarIconsEyeIcon from '$lib/components/svgs/icons/akar-icons/EyeIcon.svelte';
+	import TablerMapPinIcon from '$lib/components/svgs/icons/tabler/MapPinIcon.svelte';
+	import UiOpenIcon from '$lib/components/svgs/icons/ui/OpenIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
-	import { ICONS } from '$lib/icons';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
@@ -110,7 +111,7 @@
 		class="bg-main lg:w-side-menu absolute top-0 left-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 max-lg:hidden"
 	>
 		<div class="flex w-full justify-start gap-2 p-2 py-4">
-			<Icon icon="akar-icons:eye" class="h-7 w-7 text-base" />
+			<AkarIconsEyeIcon class="h-7 w-7 text-base" />
 			<span class="text-base text-lg select-none max-lg:hidden">データプレビュー</span>
 		</div>
 		<div class="flex flex-col items-center justify-start pt-2 text-base">
@@ -140,13 +141,13 @@
 							href={showDataEntry?.metaData.downloadUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							><Icon icon={ICONS.open} class="h-6 w-6" />
+							><UiOpenIcon class="h-6 w-6" />
 							<span>データ提供元サイト</span></a
 						>
 					</div>
 				{/if}
 				<div class="mb-2 flex gap-2 pt-6 pl-2">
-					<Icon icon="tabler:map-pin" class="h-6 w-6" />
+					<TablerMapPinIcon class="h-6 w-6" />
 					<span class="">{showDataEntry?.metaData.location}</span>
 				</div>
 				{#if showDataEntry.metaData.description || showDataEntry.metaData.sourceDataName}

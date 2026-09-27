@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { tick } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
 	import { getRemoteFileName, resolveUploadUrlInput, validateUploadUrlInput } from './upload-url';
 
+	import Icon from '$lib/components/svgs/Icon.svelte';
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import {

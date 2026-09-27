@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from 'embla-carousel';
 	import Autoplay from 'embla-carousel-autoplay';
 	import emblaCarouselSvelte from 'embla-carousel-svelte';
@@ -9,7 +8,7 @@
 	import { getResetLayerEntries } from './context';
 	import RecommendedDataImage from './RecommendedDataImage.svelte';
 
-	import { ICONS } from '$lib/icons';
+	import UiTrashIcon from '$lib/components/svgs/icons/ui/TrashIcon.svelte';
 	import { geoDataEntries } from '$routes/map/data/entries';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { Region } from '$routes/map/data/types/location';
@@ -317,7 +316,7 @@
 				ondrop={handleDeleteDrop}
 			>
 				<div class="flex items-center justify-center gap-2 p-2">
-					<Icon icon={ICONS.trash} class="h-8 w-8" />
+					<UiTrashIcon class="h-8 w-8" />
 					<div class="">ここにドロップで削除</div>
 				</div>
 			</div>

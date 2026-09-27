@@ -1,9 +1,10 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import turfBbox from '@turf/bbox';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
+	import LucideMapPinIcon from '$lib/components/svgs/icons/lucide/MapPinIcon.svelte';
+	import MaterialSymbolsCloseRoundedIcon from '$lib/components/svgs/icons/material-symbols/CloseRoundedIcon.svelte';
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 	import { getPrimaryImageMedia, propData } from '$routes/map/data/entries/_prop_data';
@@ -152,7 +153,7 @@
 				onclick={closeSearchMenu}
 				class="bg-base ml-auto cursor-pointer rounded-full p-2 shadow-md"
 			>
-				<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
+				<MaterialSymbolsCloseRoundedIcon class="text-main h-5 w-5" />
 			</button>
 		</div>
 		{#if searchResults}
@@ -179,7 +180,7 @@
 										/>
 									{:else}
 										<div class="grid h-12 w-12 place-items-center">
-											<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+											<LucideMapPinIcon class="h-8 w-8 shrink-0 text-base" />
 										</div>
 									{/if}
 								</div>
@@ -190,7 +191,7 @@
 							{:else if result.type === 'address'}
 								<div class="grid shrink-0 place-items-center overflow-hidden">
 									<div class="grid h-12 w-12 place-items-center">
-										<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+										<LucideMapPinIcon class="h-8 w-8 shrink-0 text-base" />
 									</div>
 								</div>
 								<div class="flex w-full flex-col justify-center gap-[1px] overflow-hidden">

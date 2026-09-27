@@ -1,11 +1,19 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
+	import { getVisibilityIconName } from '$lib/components/svgs/catalog';
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import EmojioneMonotoneMapOfJapanIcon from '$lib/components/svgs/icons/emojione-monotone/MapOfJapanIcon.svelte';
+	import FxemojiWorldmapIcon from '$lib/components/svgs/icons/fxemoji/WorldmapIcon.svelte';
+	import MdiFileUploadOutlineIcon from '$lib/components/svgs/icons/mdi/FileUploadOutlineIcon.svelte';
+	import PepiconsPencilDotsYIcon from '$lib/components/svgs/icons/pepicons-pencil/DotsYIcon.svelte';
+	import UiDownloadIcon from '$lib/components/svgs/icons/ui/DownloadIcon.svelte';
+	import UiLockOnIcon from '$lib/components/svgs/icons/ui/LockOnIcon.svelte';
+	import UiSettingIcon from '$lib/components/svgs/icons/ui/SettingIcon.svelte';
+	import UiTrashIcon from '$lib/components/svgs/icons/ui/TrashIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
-	import { ICONS, getVisibilityIconName } from '$lib/icons';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { registerInitialEntryStyle } from '$routes/map/data/entries';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
@@ -632,17 +640,17 @@
 				{/if}
 				{#if layerEntry.metaData.location === '全国'}
 					<div class="grid place-items-center">
-						<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
+						<EmojioneMonotoneMapOfJapanIcon class="h-20 w-20 text-base" />
 					</div>
 				{/if}
 				{#if layerEntry.metaData.location === '世界'}
 					<div class="grid place-items-center">
-						<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
+						<FxemojiWorldmapIcon class="[&_path]:fill-base h-20 w-20" />
 					</div>
 				{/if}
 				{#if layerEntry.metaData.isUserUploaded}
 					<div class="grid place-items-center">
-						<Icon icon="mdi:file-upload-outline" class="h-18 w-18 rotate-6 text-base" />
+						<MdiFileUploadOutlineIcon class="h-18 w-18 rotate-6 text-base" />
 					</div>
 				{/if}
 			</div>
@@ -697,12 +705,12 @@
 						</button>
 
 						<button onclick={removeLayer} class="cursor-pointer">
-							<Icon icon={ICONS.trash} class="h-8 w-8" />
+							<UiTrashIcon class="h-8 w-8" />
 						</button>
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
+								<UiLockOnIcon class="h-8 w-8" />
 							</button>
 						{/if}
 
@@ -717,11 +725,11 @@
 								disabled={isDownloading}
 								class="cursor-pointer disabled:cursor-wait disabled:opacity-50"
 							>
-								<Icon icon={ICONS.download} class="h-8 w-8" />
+								<UiDownloadIcon class="h-8 w-8" />
 							</button>
 						{/if}
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon={ICONS.setting} class="ml-4 h-8 w-8" />
+							<UiSettingIcon class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -742,12 +750,12 @@
 
 						<!-- 削除 -->
 						<button onclick={removeLayer} class="cursor-pointer">
-							<Icon icon={ICONS.trash} class="h-8 w-8" />
+							<UiTrashIcon class="h-8 w-8" />
 						</button>
 
 						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
+								<UiLockOnIcon class="h-8 w-8" />
 							</button>
 						{/if}
 
@@ -759,13 +767,13 @@
 								disabled={isDownloading}
 								class="cursor-pointer disabled:cursor-wait disabled:opacity-50"
 							>
-								<Icon icon={ICONS.download} class="h-8 w-8" />
+								<UiDownloadIcon class="h-8 w-8" />
 							</button>
 						{/if}
 
 						<!-- スタイル -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon={ICONS.setting} class="ml-4 h-8 w-8" />
+							<UiSettingIcon class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -782,7 +790,7 @@
 					}}
 					class="grid translate-x-3 place-items-center px-2 py-2"
 				>
-					<Icon icon="pepicons-pencil:dots-y" class="h-8 w-8 text-base" />
+					<PepiconsPencilDotsYIcon class="h-8 w-8 text-base" />
 				</button>
 			{/if}
 		</div>

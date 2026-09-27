@@ -1,11 +1,12 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 
 	import { detectCoordinateOrder } from './search';
 
+	import LucideMapPinIcon from '$lib/components/svgs/icons/lucide/MapPinIcon.svelte';
+	import MdiCrosshairsGpsIcon from '$lib/components/svgs/icons/mdi/CrosshairsGpsIcon.svelte';
 	import { ICON_IMAGE_BASE_PATH } from '$routes/constants';
 	import { DATA_PATH } from '$routes/constants';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
@@ -224,7 +225,7 @@
 										/>
 									{:else}
 										<div class="grid h-12 w-12 place-items-center">
-											<Icon icon="lucide:map-pin" class="h-8 w-8 shrink-0 text-base" />
+											<LucideMapPinIcon class="h-8 w-8 shrink-0 text-base" />
 										</div>
 									{/if}
 								</div>
@@ -243,7 +244,7 @@
 								class="flex w-full cursor-pointer items-center justify-center gap-2 p-2 text-left text-base transition-colors duration-100 hover:bg-gray-800"
 							>
 								<div class="grid shrink-0 place-items-center">
-									<Icon icon="mdi:crosshairs-gps" class="h-8 w-8 shrink-0 text-base" />
+									<MdiCrosshairsGpsIcon class="h-8 w-8 shrink-0 text-base" />
 								</div>
 								<div class="flex w-full flex-col justify-center gap-[1px]">
 									<span class="">{result.name}</span>

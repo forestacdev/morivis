@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { debounce, throttle } from 'es-toolkit';
 	import { tick } from 'svelte';
 	import { onDestroy } from 'svelte';
@@ -8,6 +7,7 @@
 	import RecommendedData from './RecommendedData.svelte';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
+	import EpBackIcon from '$lib/components/svgs/icons/ep/BackIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import { lonLatToPrefectureCode } from '$routes/map/api/address';
 	import Switch from '$routes/map/components/atoms/Switch.svelte';
@@ -315,8 +315,7 @@
 							}}
 							class="bg-base group grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 						>
-							<Icon
-								icon="ep:back"
+							<EpBackIcon
 								class="text-main h-6 w-6 lg:transition-transform lg:duration-150 lg:group-hover:-translate-x-1"
 							/>
 						</button>

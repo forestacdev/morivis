@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onDestroy, onMount } from 'svelte';
 
+	import F7LocationFillIcon from '$lib/components/svgs/icons/f7/LocationFillIcon.svelte';
 	import { GeolocateControl, LngLat, type EaseToOptions } from '$routes/map/utils/maplibre';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -102,8 +102,7 @@
 	class="pointer-events-auto relative grid h-[50px] w-[50px] shrink-0 place-items-center overflow-hidden lg:drop-shadow-lg"
 	bind:this={controlContainer}
 >
-	<Icon
-		icon="f7:location-fill"
+	<F7LocationFillIcon
 		class="absolute h-6 w-6 {controlState === 'waiting'
 			? 'css-rotate text-accent'
 			: controlState === 'active'

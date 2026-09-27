@@ -1,9 +1,12 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
 	import MobileCompass from './MobileCompass.svelte';
 
+	import BasilOther1OutlineIcon from '$lib/components/svgs/icons/basil/Other1OutlineIcon.svelte';
+	import JamLayersFIcon from '$lib/components/svgs/icons/jam/LayersFIcon.svelte';
+	import MaterialSymbolsDataSaverOnRoundedIcon from '$lib/components/svgs/icons/material-symbols/DataSaverOnRoundedIcon.svelte';
+	import PhMapPinAreaFillIcon from '$lib/components/svgs/icons/ph/MapPinAreaFillIcon.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';
 	import { isStreetView, isStyleEdit } from '$routes/stores';
@@ -122,7 +125,7 @@
 						? 'bg-accent'
 						: ''}"
 				>
-					<Icon icon="ph:map-pin-area-fill" class="h-8 w-8" />
+					<PhMapPinAreaFillIcon class="h-8 w-8" />
 				</div>
 
 				<span class="text-xs">地図</span>
@@ -137,7 +140,7 @@
 						? 'bg-accent'
 						: ''}"
 				>
-					<Icon icon="jam:layers-f" class="h-8 w-8" />
+					<JamLayersFIcon class="h-8 w-8" />
 				</div>
 
 				<span class="text-xs">レイヤ</span>
@@ -174,7 +177,7 @@
 						? 'bg-accent'
 						: ''}"
 				>
-					<Icon icon="material-symbols:data-saver-on-rounded" class="h-8 w-8" />
+					<MaterialSymbolsDataSaverOnRoundedIcon class="h-8 w-8" />
 				</div>
 				<span class="text-xs">データ</span>
 			</button>
@@ -188,7 +191,7 @@
 						? 'bg-accent'
 						: ''}"
 				>
-					<Icon icon="basil:other-1-outline" class="h-8 w-8" />
+					<BasilOther1OutlineIcon class="h-8 w-8" />
 				</div>
 				<span class="text-xs">その他</span>
 			</button>

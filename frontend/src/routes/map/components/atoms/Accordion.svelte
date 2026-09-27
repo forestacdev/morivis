@@ -1,9 +1,10 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
 	import { slide } from 'svelte/transition';
 
-	import { ICONS } from '$lib/icons';
+	import { ICONS } from '$lib/components/svgs/catalog';
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import UiArrowUpIcon from '$lib/components/svgs/icons/ui/ArrowUpIcon.svelte';
 
 	interface Props {
 		label: string;
@@ -24,8 +25,7 @@
 			>{label}</span
 		>
 	</div>
-	<Icon
-		icon={ICONS.arrowUp}
+	<UiArrowUpIcon
 		class="h-8 w-8 text-base transition-transform duration-150 {value ? 'rotate-0' : 'rotate-180'}"
 	/>
 

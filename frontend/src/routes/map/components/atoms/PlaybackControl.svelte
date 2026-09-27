@@ -1,11 +1,11 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 
 	import RangeSlider from './RangeSlider.svelte';
 
-	import { ICONS } from '$lib/icons';
+	import UiArrowLeftIcon from '$lib/components/svgs/icons/ui/ArrowLeftIcon.svelte';
+	import UiArrowRightIcon from '$lib/components/svgs/icons/ui/ArrowRightIcon.svelte';
 
 	interface Props {
 		disabled?: boolean;
@@ -85,7 +85,7 @@
 			{disabled}
 			onclick={onPrevious}
 		>
-			<Icon icon={ICONS.arrowLeft} class="h-6 w-6" />
+			<UiArrowLeftIcon class="h-6 w-6" />
 		</button>
 	{/if}
 	<button
@@ -113,7 +113,7 @@
 			{disabled}
 			onclick={onNext}
 		>
-			<Icon icon={ICONS.arrowRight} class="h-6 w-6" />
+			<UiArrowRightIcon class="h-6 w-6" />
 		</button>
 	{/if}
 </div>
