@@ -6,7 +6,7 @@ const S = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
 const R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 
 export const drawingXml = (content: string) =>
-	`<xdr:wsDr xmlns:xdr="${XDR}" xmlns:a="${A}">${content}</xdr:wsDr>`;
+	`<xdr:wsDr xmlns:xdr="${XDR}" xmlns:a="${A}" xmlns:r="${R}">${content}</xdr:wsDr>`;
 export const anchor = (content: string) =>
 	`<xdr:absoluteAnchor><xdr:pos x="95250" y="190500"/><xdr:ext cx="381000" cy="190500"/>${content}</xdr:absoluteAnchor>`;
 export const transform = (attributes = '') =>
@@ -67,4 +67,70 @@ export const cellAnchor = (twoCells: boolean) => {
 	return `<xdr:${tag}><xdr:from>${marker(1, 1)}</xdr:from>${
 		twoCells ? `<xdr:to>${marker(2, 2)}</xdr:to>` : '<xdr:ext cx="609600" cy="190500"/>'
 	}${shape(preset(), '')}</xdr:${tag}>`;
+};
+
+// A synthetic 4 × 2 PNG: red on the left, blue on the right.
+export const testPictureBase64 =
+	'iVBORw0KGgoAAAANSUhEUgAAAAQAAAACCAYAAAB/qH1jAAAAFElEQVR4nGP4z8DwH4Sh1H8GdAEABykP8fcOk50AAAAASUVORK5CYII=';
+export const pixelTransform = (x: number, y: number, width: number, height: number, attrs = '') =>
+	`<a:xfrm ${attrs}><a:off x="${x * 9525}" y="${y * 9525}"/><a:ext cx="${width * 9525}" cy="${
+		height * 9525
+	}"/></a:xfrm>`;
+export const picture = (crop = '', attrs = '') =>
+	`<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="2" name="test-picture"/></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="test-image"/><a:srcRect ${crop}/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr>${
+		pixelTransform(220, 20, 160, 100, attrs)
+	}${preset()}</xdr:spPr></xdr:pic>`;
+export const testTheme =
+	`<a:theme xmlns:a="${A}"><a:themeElements><a:clrScheme name="test"><a:accent1><a:srgbClr val="20C060"/></a:accent1></a:clrScheme><a:fontScheme name="test"><a:majorFont><a:latin typeface="sans-serif"/></a:majorFont><a:minorFont><a:latin typeface="sans-serif"/></a:minorFont></a:fontScheme><a:fmtScheme name="test"><a:fillStyleLst><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:fillStyleLst><a:lnStyleLst><a:ln w="9525"><a:solidFill><a:schemeClr val="phClr"/></a:solidFill></a:ln></a:lnStyleLst></a:fmtScheme></a:themeElements></a:theme>`;
+export const styledShape = () =>
+	shape(
+		preset()
+			+ '<a:solidFill><a:schemeClr val="accent1"/></a:solidFill><a:ln w="19050"><a:solidFill><a:srgbClr val="D02040"/></a:solidFill></a:ln>',
+		pixelTransform(20, 20, 160, 100)
+	).replace('<a:p>', '<a:bodyPr anchor="ctr" wrap="none"/><a:p><a:pPr algn="ctr"/>')
+		.replace(
+			'<a:r>',
+			'<a:r><a:rPr sz="1600" b="1"><a:solidFill><a:srgbClr val="000000"/></a:solidFill></a:rPr>'
+		);
+
+export const appearanceWorkbook = async (
+	options: {
+		imageOnly?: boolean;
+		externalImage?: boolean;
+		missingImage?: boolean;
+		unsafeImage?: boolean;
+	} = {}
+) => {
+	const zip = await JSZip.loadAsync(await drawingWorkbook());
+	const relPath = 'xl/_rels/workbook.xml.rels';
+	zip.file(
+		relPath,
+		(await zip.file(relPath)!.async('string')).replace(
+			'</Relationships>',
+			`<Relationship Id="test-theme" Type="${R}/theme" Target="theme/test-theme.xml"/></Relationships>`
+		)
+	);
+	zip.file('xl/theme/test-theme.xml', testTheme);
+	zip.file(
+		'xl/drawings/test.xml',
+		drawingXml(anchor((options.imageOnly ? '' : styledShape()) + picture()))
+	);
+	zip.file(
+		'xl/drawings/_rels/test.xml.rels',
+		rels(
+			`<Relationship Id="test-image" Type="${R}/image" Target="../media/test.png" ${
+				options.externalImage ? 'TargetMode="External"' : ''
+			}/>`
+		)
+	);
+	if (!options.missingImage) {
+		zip.file(
+			'xl/media/test.png',
+			options.unsafeImage
+				? '<svg xmlns="http://www.w3.org/2000/svg"><script/></svg>'
+				: testPictureBase64,
+			{ base64: !options.unsafeImage }
+		);
+	}
+	return zip.generateAsync({ type: 'arraybuffer' });
 };

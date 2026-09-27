@@ -28,7 +28,7 @@ export const parseXml = (text: string): Element => {
 	return doc.documentElement;
 };
 
-const number = (node: Element | undefined, key: string, fallback = 0): number => {
+export const number = (node: Element | undefined, key: string, fallback = 0): number => {
 	const value = node?.getAttribute(key);
 	if (!value) return fallback;
 	const result = Number(value);
@@ -41,8 +41,8 @@ const textNumber = (node: Element | undefined, name: string): number => {
 	return result;
 };
 
-type Box = { x: number; y: number; width: number; height: number; };
-const EMU_PER_PIXEL = 9525;
+export type Box = { x: number; y: number; width: number; height: number; };
+export const EMU_PER_PIXEL = 9525;
 
 // Cell anchors are used when the drawing has no explicit xfrm position/extent.
 const markerPosition = (marker: Element | undefined, sheet?: Element) => {
@@ -85,7 +85,7 @@ const markerPosition = (marker: Element | undefined, sheet?: Element) => {
 	};
 };
 
-const anchorBox = (anchor: Element, sheet?: Element): Box => {
+export const anchorBox = (anchor: Element, sheet?: Element): Box => {
 	const from = child(anchor, 'pos')
 		? { x: number(child(anchor, 'pos'), 'x'), y: number(child(anchor, 'pos'), 'y') }
 		: markerPosition(child(anchor, 'from'), sheet);
@@ -97,7 +97,7 @@ const anchorBox = (anchor: Element, sheet?: Element): Box => {
 	};
 };
 
-const readBox = (transform: Element | undefined, fallback: () => Box): Box => {
+export const readBox = (transform: Element | undefined, fallback: () => Box): Box => {
 	const offset = child(transform, 'off');
 	const extent = child(transform, 'ext');
 	const base = !offset || !extent ? fallback() : { x: 0, y: 0, width: 0, height: 0 };
@@ -111,7 +111,7 @@ const readBox = (transform: Element | undefined, fallback: () => Box): Box => {
 
 // One matrix avoids depending on SVG transform-list ordering. Flip, then rotate
 // around the bounding-box center, then place the shape in its parent coordinates.
-const matrix = (transform: Element | undefined, box: Box, group = false): string => {
+export const matrix = (transform: Element | undefined, box: Box, group = false): string => {
 	const angle = number(transform, 'rot') / 60000 * Math.PI / 180;
 	const flip = (key: string) =>
 		['1', 'true'].includes(transform?.getAttribute(key) ?? '') ? -1 : 1;
@@ -136,7 +136,7 @@ const matrix = (transform: Element | undefined, box: Box, group = false): string
 	return `matrix(${values.join(' ')})`;
 };
 
-const customPaths = (geometry: Element, box: Box, id: string): string => {
+export const customPaths = (geometry: Element, box: Box, id: string): string => {
 	return children(child(geometry, 'pathLst'), 'path').map((path) => {
 		const width = number(path, 'w', box.width);
 		const height = number(path, 'h', box.height);
@@ -154,16 +154,22 @@ const customPaths = (geometry: Element, box: Box, id: string): string => {
 			const points = children(command, 'pt');
 			if (!kind || points.length !== kind[1]) throw new Error('未対応のパス命令');
 			return `${kind[0]} ${
-				points.map((point) => `${number(point, 'x')} ${number(point, 'y')}`).join(' ')
+				points.map((point) =>
+					`${number(point, 'x') * box.width / (width || 1)} ${
+						number(point, 'y') * box.height / (height || 1)
+					}`
+				).join(' ')
 			}`;
 		});
-		return `<path id="${id}" transform="matrix(${box.width / (width || 1)} 0 0 ${
-			box.height / (height || 1)
-		} 0 0)" d="${commands.join(' ')}"/>`;
+		const fill = path.getAttribute('fill') === 'none' ? ' fill="none"' : '';
+		const stroke = ['0', 'false'].includes(path.getAttribute('stroke') ?? '')
+			? ' stroke="none"'
+			: '';
+		return `<path id="${id}"${fill}${stroke} d="${commands.join(' ')}"/>`;
 	}).join('');
 };
 
-const presetGeometry = (preset: string, box: Box, id: string): string => {
+export const presetGeometry = (preset: string, box: Box, id: string): string => {
 	const { width: w, height: h } = box;
 	const attrs = `id="${id}"`;
 	switch (preset) {

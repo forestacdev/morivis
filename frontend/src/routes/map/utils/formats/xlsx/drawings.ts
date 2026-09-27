@@ -1,14 +1,16 @@
 import JSZip from 'jszip';
 
+import { drawingXmlToAppearance, type XlsxDrawingAppearance } from './drawing-appearance';
+
 import {
 	child,
 	children,
 	drawingXmlToGeojson,
 	parseXml,
-	type XlsxDrawing
+	type XlsxDrawing as XlsxDrawingGeometry
 } from './drawing-geometry';
 
-export type { XlsxDrawing } from './drawing-geometry';
+export type XlsxDrawing = XlsxDrawingGeometry & { appearance: XlsxDrawingAppearance; };
 
 const resolvePart = (source: string, target: string): string => {
 	const parts = target.startsWith('/') ? [] : source.split('/').slice(0, -1);
@@ -19,7 +21,11 @@ const resolvePart = (source: string, target: string): string => {
 	return parts.join('/');
 };
 
-const relationships = async (zip: JSZip, source: string): Promise<Map<string, string>> => {
+const relationships = async (
+	zip: JSZip,
+	source: string,
+	typeSuffix?: string
+): Promise<Map<string, string>> => {
 	const parts = source.split('/');
 	const name = parts.pop();
 	const file = zip.file([...parts, '_rels', `${name}.rels`].join('/'));
@@ -27,7 +33,10 @@ const relationships = async (zip: JSZip, source: string): Promise<Map<string, st
 	const root = parseXml(await file.async('string'));
 	return new Map(
 		children(root, 'Relationship')
-			.filter((item) => item.getAttribute('TargetMode') !== 'External')
+			.filter((item) =>
+				item.getAttribute('TargetMode') !== 'External'
+				&& (!typeSuffix || item.getAttribute('Type')?.endsWith(typeSuffix))
+			)
 			.map((
 				item
 			) => [
@@ -58,6 +67,9 @@ export const readXlsxDrawingWorkbook = async (data: ArrayBuffer): Promise<XlsxDr
 		readPart(workbookPath),
 		relationships(zip, workbookPath)
 	]);
+	const themeRels = await relationships(zip, workbookPath, '/theme');
+	const themePath = [...themeRels.values()][0];
+	const themeXml = themePath ? await readPart(themePath) : undefined;
 	const sheets = children(child(parseXml(workbookXml), 'sheets'), 'sheet');
 	return {
 		sheetNames: sheets.map((sheet) => sheet.getAttribute('name') ?? ''),
@@ -72,13 +84,50 @@ export const readXlsxDrawingWorkbook = async (data: ArrayBuffer): Promise<XlsxDr
 					featureCollection: { type: 'FeatureCollection', features: [] },
 					shapeCount: 0,
 					skippedShapeCount: 0,
-					imageCount: 0
+					imageCount: 0,
+					appearance: {
+						svg: '',
+						width: 0,
+						height: 0,
+						shapeCount: 0,
+						imageCount: 0,
+						skippedImageCount: 0,
+						warnings: []
+					}
 				};
 			}
 			const sheetRels = await relationships(zip, path);
 			const drawingPath = sheetRels.get(relationshipId(drawing));
 			if (!drawingPath) throw new Error('Excelの図面参照先が見つかりません');
-			return drawingXmlToGeojson(await readPart(drawingPath), sheetXml);
+			const drawingXml = await readPart(drawingPath);
+			const imageRels = await relationships(zip, drawingPath, '/image');
+			const images = new Map<string, string>();
+			await Promise.all([...imageRels].map(async ([id, imagePath]) => {
+				const file = zip.file(imagePath);
+				if (!file) return;
+				const bytes = await file.async('uint8array');
+				const mime = rasterImageMime(bytes);
+				if (mime) images.set(id, `data:${mime};base64,${await file.async('base64')}`);
+			}));
+			return {
+				...await drawingXmlToGeojson(drawingXml, sheetXml),
+				appearance: drawingXmlToAppearance(drawingXml, sheetXml, { themeXml, images })
+			};
 		}
 	};
+};
+
+// Do not embed SVG/HTML or arbitrary relationship targets in the generated image.
+const rasterImageMime = (bytes: Uint8Array): string | undefined => {
+	const starts = (signature: number[]) =>
+		signature.every((value, index) => bytes[index] === value);
+	if (starts([137, 80, 78, 71, 13, 10, 26, 10])) return 'image/png';
+	if (starts([255, 216, 255])) return 'image/jpeg';
+	if (starts([71, 73, 70, 56]) && [55, 57].includes(bytes[4]) && bytes[5] === 97) {
+		return 'image/gif';
+	}
+	if (starts([82, 73, 70, 70]) && String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP') {
+		return 'image/webp';
+	}
+	return undefined;
 };

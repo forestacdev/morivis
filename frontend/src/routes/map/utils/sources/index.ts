@@ -98,6 +98,12 @@ export const createSourcesItems = ({
 						if (imageSource) {
 							items[sourceId] = imageSource;
 						}
+					} else if (style.type === 'basemap' && metaData.imageCorners) {
+						items[sourceId] = {
+							type: 'image',
+							url: format.url,
+							coordinates: metaData.imageCorners
+						} satisfies ImageSourceSpecification;
 					} else if (style.type === 'dem') {
 						const visualization = style.visualization;
 						const mode = visualization.mode;

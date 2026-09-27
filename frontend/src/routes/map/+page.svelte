@@ -77,6 +77,7 @@
 	} from '$routes/map/data/entries';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
+	import { createRasterEntry } from '$routes/map/data/entries/raster';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
@@ -517,6 +518,18 @@
 				setUploadedDataEntry(pointCloudEntry);
 				closeGeoRefUi();
 				showNotification('点群の位置を設定しました', 'success');
+				return;
+			}
+
+			if (data.sourceType === 'raster' && data.rasterImage) {
+				const entry = createRasterEntry(data.entryName, data.rasterImage.url, { bounds: bbox });
+				entry.id = data.entryId;
+				entry.metaData.imageCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
+				entry.metaData.attribution = data.rasterImage.attribution;
+				entry.metaData.mapImage = data.previewImageUrl ?? data.rasterImage.url;
+				setUploadedDataEntry(entry);
+				closeGeoRefUi();
+				showNotification('画像の位置を設定しました', 'success');
 				return;
 			}
 

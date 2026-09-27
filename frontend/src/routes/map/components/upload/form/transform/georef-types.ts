@@ -49,6 +49,8 @@ export interface GeoRefData {
 	};
 	imageFile: File;
 	previewImageUrl?: string;
+	/** Already rendered RGBA image; keep its alpha and colors when registering. */
+	rasterImage?: { url: string; attribution: string; };
 	initialCorners?: GeoRefCorners;
 	sourceCorners?: GeoRefCorners;
 	sourceFeatureCollectionId?: string;

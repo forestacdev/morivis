@@ -12,9 +12,11 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import { GeoRefVectorSourceCache } from '$routes/map/utils/cache/georef-vector-source-cache';
 	import type { TabularRow } from '$routes/map/utils/formats/tabular';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import { getXlsxPreview, xlsxFileToGeojson } from '$routes/map/utils/formats/xlsx';
+	import { drawingAppearanceToGeoRefData } from '$routes/map/utils/formats/xlsx/drawing-rasterize';
 	import {
 		readXlsxDrawingWorkbook,
 		type XlsxDrawing,
@@ -60,6 +62,13 @@
 	let workbook = $state.raw<XlsxDrawingWorkbook | null>(null);
 	let drawing = $state.raw<XlsxDrawing | null>(null);
 	let readMode = $state<'drawing' | 'table'>('drawing');
+	let drawingMode = $state<'image' | 'vector'>('image');
+	const hasDrawing = $derived(!!drawing?.appearance.svg || !!drawing?.shapeCount);
+	const appearanceUrl = $derived(
+		drawing?.appearance.svg
+			? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(drawing.appearance.svg)}`
+			: ''
+	);
 	let loadingWorkbook = $state(false);
 	let loadingDrawing = $state(false);
 	let loadingTable = $state(false);
@@ -72,7 +81,9 @@
 		!loading &&
 			!$isProcessing &&
 			(readMode === 'drawing'
-				? !!drawing?.featureCollection.features.length
+				? drawingMode === 'image'
+					? !!drawing?.appearance.svg
+					: !!drawing?.featureCollection.features.length
 				: !!latColumn && !!lonColumn)
 	);
 	const drawingBounds = $derived(
@@ -185,7 +196,8 @@
 			.then((result) => {
 				if (cancelled) return;
 				drawing = result;
-				readMode = result.shapeCount > 0 ? 'drawing' : 'table';
+				readMode = result.appearance.svg || result.shapeCount > 0 ? 'drawing' : 'table';
+				drawingMode = result.appearance.svg ? 'image' : 'vector';
 			})
 			.catch((error) => {
 				if (cancelled) return;
@@ -234,18 +246,31 @@
 	});
 
 	const openDrawingGeoRef = async () => {
-		if (!drawing?.featureCollection.features.length) return;
+		if (!drawing || !canSubmit) return;
+		const current = drawing;
+		const file = sourceFile;
 		isProcessing.set(true);
 		try {
 			const width = Math.max(1, drawingBounds[2] - drawingBounds[0]);
 			const height = Math.max(1, drawingBounds[3] - drawingBounds[1]);
 			const scale = 1024 / Math.max(width, height);
-			const nextData = await featureCollectionToGeoRefData({
-				featureCollection: drawing.featureCollection,
-				entryName: `${entryName} - ${selectedSheet}`,
-				width: Math.max(1, Math.round(width * scale)),
-				height: Math.max(1, Math.round(height * scale))
-			});
+			const nextData =
+				drawingMode === 'image'
+					? await drawingAppearanceToGeoRefData(
+							current.appearance,
+							`${entryName} - ${selectedSheet}`
+						)
+					: await featureCollectionToGeoRefData({
+							featureCollection: drawing.featureCollection,
+							entryName: `${entryName} - ${selectedSheet}`,
+							width: Math.max(1, Math.round(width * scale)),
+							height: Math.max(1, Math.round(height * scale))
+						});
+			if (drawing !== current || sourceFile !== file || showDialogType !== 'xlsx') {
+				if (nextData.sourceFeatureCollectionId)
+					GeoRefVectorSourceCache.remove(nextData.sourceFeatureCollectionId);
+				return;
+			}
 			const map = mapStore.getMap();
 			geoRefData = {
 				...nextData,
@@ -414,7 +439,7 @@
 	{#if loadError || tableError}
 		<p role="alert" class="text-sm text-amber-300">{loadError || tableError}</p>
 	{/if}
-	{#if drawing?.shapeCount}
+	{#if hasDrawing}
 		<div class="flex w-full flex-col gap-1 p-2">
 			<label for="xlsx-read-mode" class="text-sm text-gray-300">読み込む内容</label>
 			<select
@@ -422,41 +447,76 @@
 				bind:value={readMode}
 				class="bg-sub rounded border border-gray-600 p-2 text-white"
 			>
-				<option value="drawing">オートシェイプの図面</option>
+				<option value="drawing">図形・画像の図面</option>
 				<option value="table">セルの表（座標列を指定）</option>
 			</select>
 		</div>
 	{/if}
-	{#if drawing?.skippedShapeCount}
+	{#if readMode === 'drawing' && drawingMode === 'vector' && drawing?.skippedShapeCount}
 		<p class="text-sm text-amber-300">
 			未対応の図形 {drawing.skippedShapeCount} 個は読み込めませんでした。
 		</p>
 	{/if}
-	{#if readMode === 'drawing' && drawing?.shapeCount}
+	{#if drawing && (!hasDrawing || (readMode === 'drawing' && drawingMode === 'image'))}
+		{#if drawing.appearance.skippedImageCount}
+			<p class="text-sm text-amber-300">
+				未対応形式・外部参照・欠落などにより、{drawing.appearance.skippedImageCount} 枚の画像を読み込めませんでした。
+			</p>
+		{/if}
+		{#each drawing.appearance.warnings as warning (warning)}
+			<p class="text-sm text-amber-300">{warning}</p>
+		{/each}
+	{/if}
+	{#if readMode === 'drawing' && hasDrawing && drawing}
 		<div class="flex w-full min-w-0 flex-col gap-3 p-2">
-			<p class="text-sm whitespace-normal text-gray-300">
-				{drawing.shapeCount} 個の図形を線として読み込みます。次の画面で地図上の位置を合わせてください。
-			</p>
-			<svg
-				viewBox={drawingViewBox}
-				role="img"
-				aria-label="Excel図面のプレビュー"
-				class="h-72 w-full rounded bg-white p-3"
+			<label for="xlsx-drawing-mode" class="text-sm text-gray-300">図面の読み込み方</label>
+			<select
+				id="xlsx-drawing-mode"
+				bind:value={drawingMode}
+				class="bg-sub rounded border border-gray-600 p-2 text-white"
 			>
-				<g transform="scale(1,-1)" fill="none" stroke="#2563eb" stroke-width="1">
-					{#each drawing.featureCollection.features as feature, index (index)}
-						<polyline
-							points={(feature.geometry.coordinates as number[][])
-								.map((point) => point.join(','))
-								.join(' ')}
-							vector-effect="non-scaling-stroke"
-						/>
-					{/each}
-				</g>
-			</svg>
-			<p class="text-xs whitespace-normal text-gray-400">
-				塗り・線色・文字の見た目は再現しません。図形内の文字は属性に保存します。埋め込み画像は対象外です。
-			</p>
+				<option value="image" disabled={!drawing.appearance.svg}
+					>図面画像（塗り・線色・文字・画像）</option
+				>
+				<option value="vector" disabled={!drawing.shapeCount}>線（1px・図形ごとの属性付き）</option>
+			</select>
+			{#if drawingMode === 'image'}
+				<p class="text-sm whitespace-normal text-gray-300">
+					{drawing.appearance.shapeCount} 個の図形と {drawing.appearance.imageCount} 枚の画像を、まとめて位置合わせします。
+				</p>
+				<img
+					src={appearanceUrl}
+					alt="Excel図面のプレビュー"
+					class="h-72 w-full rounded bg-white object-contain p-3"
+				/>
+				<p class="text-xs whitespace-normal text-gray-400">
+					透明背景の画像として登録します。文字の折り返しやフォントはExcelと異なる場合があります。
+				</p>
+			{:else}
+				<p class="text-sm whitespace-normal text-gray-300">
+					{drawing.shapeCount} 個の図形を線として読み込みます。次の画面で地図上の位置を合わせてください。
+				</p>
+				<svg
+					viewBox={drawingViewBox}
+					role="img"
+					aria-label="Excel図面のプレビュー"
+					class="h-72 w-full rounded bg-white p-3"
+				>
+					<g transform="scale(1,-1)" fill="none" stroke="#2563eb" stroke-width="1">
+						{#each drawing.featureCollection.features as feature, index (index)}
+							<polyline
+								points={(feature.geometry.coordinates as number[][])
+									.map((point) => point.join(','))
+									.join(' ')}
+								vector-effect="non-scaling-stroke"
+							/>
+						{/each}
+					</g>
+				</svg>
+				<p class="text-xs whitespace-normal text-gray-400">
+					輪郭を1pxの線として登録し、図形内の文字を属性に保存します。塗り・線色・文字・画像の表示には「図面画像」を選んでください。
+				</p>
+			{/if}
 		</div>
 	{:else if !loading && !headers.length && !loadError && !tableError}
 		<p class="text-sm text-gray-400">このシートに読み込める表がありません。</p>

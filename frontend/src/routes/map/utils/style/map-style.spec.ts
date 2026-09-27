@@ -73,6 +73,22 @@ const resources = (): PreparedMapStyle => ({
 });
 
 describe('明示的入力による地図style生成', () => {
+	it('位置合わせ済みの図面画像は四隅を保持し、通常のタイル画像と区別する', () => {
+		const entry = rasterEntry('test-drawing');
+		if (entry.type !== 'raster' || entry.format.type !== 'image') throw new Error('test-type');
+		entry.format.url = 'data:image/png;base64,dGVzdA==';
+		entry.metaData.imageCorners = [[0, 2], [3, 3], [2, 0], [0, 0]];
+		const result = createMapStyle({ ...input(), entries: [entry] }, resources());
+		expect(result.style.sources['test-drawing_source']).toEqual({
+			type: 'image',
+			url: entry.format.url,
+			coordinates: entry.metaData.imageCorners
+		});
+		expect(result.style.layers.find((layer) => layer.id === 'test-drawing')?.type).toBe(
+			'raster'
+		);
+	});
+
 	it('同じ入力で同じ結果を返し、入力entryを変更しない', () => {
 		const state = input();
 		const before = structuredClone(state);

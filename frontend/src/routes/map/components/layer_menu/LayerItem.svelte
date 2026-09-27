@@ -19,6 +19,10 @@
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
+	import {
+		exportGeoreferencedImage,
+		isExportableGeoreferencedImage
+	} from '$routes/map/utils/formats/export/georeferenced-image';
 	import { clearCogViewportImage } from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
@@ -95,6 +99,8 @@
 			layerEntry?.metaData.isUserUploaded
 		);
 	});
+
+	const isImageCustomLayer = $derived(isExportableGeoreferencedImage(layerEntry));
 
 	const isThreeMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
 		return (
@@ -192,6 +198,21 @@
 
 		if (isTiffCustomLayer) {
 			GeoTiffCache.exportRenderedPng(layerEntry.id);
+			return;
+		}
+
+		if (isExportableGeoreferencedImage(layerEntry)) {
+			isDownloading = true;
+			try {
+				await exportGeoreferencedImage(layerEntry);
+			} catch (error) {
+				showNotification(
+					error instanceof Error ? error.message : '図面画像のダウンロードに失敗しました',
+					'error'
+				);
+			} finally {
+				isDownloading = false;
+			}
 			return;
 		}
 
@@ -688,9 +709,11 @@
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						{#if isGeojsonCustomLayer || isTiffCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || isImageCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
 							<button
 								onclick={downloadLayer}
+								aria-label="レイヤーをダウンロード"
+								title={isImageCustomLayer ? '図面画像と位置情報をダウンロード' : 'ダウンロード'}
 								disabled={isDownloading}
 								class="cursor-pointer disabled:cursor-wait disabled:opacity-50"
 							>
@@ -728,9 +751,11 @@
 							</button>
 						{/if}
 
-						{#if isGeojsonCustomLayer || isTiffCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || isImageCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
 							<button
 								onclick={downloadLayer}
+								aria-label="レイヤーをダウンロード"
+								title={isImageCustomLayer ? '図面画像と位置情報をダウンロード' : 'ダウンロード'}
 								disabled={isDownloading}
 								class="cursor-pointer disabled:cursor-wait disabled:opacity-50"
 							>

@@ -96,8 +96,9 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
-XLSXはシート内のオートシェイプを検出すると図面を初期選択し、セルの表にも切り替えられる。
-図面はローカル座標のLineStringに変換し、`featureCollectionToGeoRefData()`から位置合わせへ渡す。
+XLSXはシート内の図形・画像を検出すると図面を初期選択し、セルの表にも切り替えられる。
+図面画像は塗り・線色・文字・埋め込み画像を透明PNGにまとめ、位置合わせ後に通常の画像entryへ四隅とデータURLを保存する。
+線として読み込む場合はローカル座標のLineStringに変換し、`featureCollectionToGeoRefData()`から位置合わせへ渡す。登録時の線幅は1px。
 セルの表は従来どおり緯度・経度列からPointに変換する。
 対応する図形と制限は [Excelパーサー](../frontend/src/routes/map/utils/formats/xlsx/README.md) を参照。
 
