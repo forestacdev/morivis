@@ -6,8 +6,7 @@ import {
 	PUBLIC_BASE_PATH,
 	PUBLIC_DISASTER_LORE_ALL_PATH,
 	PUBLIC_INT_ADD_LAYER_IDS,
-	PUBLIC_STYLES_PATH,
-	PUBLIC_TIMBER_SPECIES_PATH
+	PUBLIC_STYLES_PATH
 } from '$env/static/public';
 
 export const BASE_PATH = PUBLIC_BASE_PATH;
@@ -32,7 +31,7 @@ export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
 export const ICON_IMAGE_BASE_PATH = DATA_PATH + '/images/icons';
 export const STREET_VIEW_DATA_PATH = DATA_PATH + '/street_view';
 export const STREET_VIEW_PANORAMA_PATH = BASE_PATH + '/panorama';
-export const TIMBER_SPECIES_DATA_PATH = PUBLIC_TIMBER_SPECIES_PATH;
+export const TIMBER_SPECIES_DATA_PATH = BASE_PATH + '/timber_species';
 export const DISASTER_LORE_ALL_PATH = PUBLIC_DISASTER_LORE_ALL_PATH;
 export const FONT_DATA_PATH = DATA_PATH + '/font';
 export const STYLES_PATH = PUBLIC_STYLES_PATH;
