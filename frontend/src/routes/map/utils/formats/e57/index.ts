@@ -1,5 +1,6 @@
 import type { LasProjection } from '$routes/map/utils/formats/las';
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
+import type { PointCloudUpAxis } from '../pointcloud/axis';
 
 export const E57_MAX_FILE_BYTES = 256 * 1024 * 1024;
 export const E57_MAX_SOURCE_POINTS = 5_000_000;
@@ -26,7 +27,8 @@ export const validateE57Size = (size: number) => {
 export const parseE57 = (
 	bytes: Uint8Array,
 	convert: E57Converter,
-	maxPoints = E57_MAX_DISPLAY_POINTS
+	maxPoints = E57_MAX_DISPLAY_POINTS,
+	upAxis: PointCloudUpAxis = 'z-up'
 ): E57Result => {
 	validateE57Size(bytes.byteLength);
 	if (new TextDecoder().decode(bytes.subarray(0, 8)) !== 'ASTM-E57') {
@@ -84,7 +86,10 @@ export const parseE57 = (
 		if ((values.length !== 3 && values.length !== 6) || !values.every(Number.isFinite)) {
 			throw new Error('E57の点群データを解釈できません');
 		}
-		const [x, y, z] = values;
+		// pose適用後に右手系を保ってZ-upへ変換する。間引き前に全域のbboxも求める。
+		const x = values[0];
+		const y = upAxis === 'y-up' ? -values[2] : values[1];
+		const z = upAxis === 'y-up' ? values[1] : values[2];
 		minX = Math.min(minX, x);
 		minY = Math.min(minY, y);
 		maxX = Math.max(maxX, x);

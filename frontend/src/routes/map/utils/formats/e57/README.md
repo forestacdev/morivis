@@ -6,6 +6,7 @@
 
 - `web-e57` 1.2.0のWASMを同梱し、専用WorkerでXMLと点群を復号する。変換サービスへのアップロードは行わない。
 - 複数スキャンはpose（回転・平行移動）を適用して1つにまとめる。Cartesian・球面座標、無効点の除外、RGBに対応する。poseはWASM側で適用するため、呼び出し側で二重適用しない。
+- 上方向はZ-up（初期値）・Y-upを選択できる。Y-upはpose適用後の座標を`(x, -z, y)`へ変換する。座標系変換・位置合わせ・登録にはこの座標を使い、bboxも切り替え後の全有効点から求める。
 - RGBのないスキャンが混在する場合は白を補う。画像・パノラマ、法線、時刻、点ごとの属性編集は対象外。
 - `coordinateMetadata`のWKTは既存の座標変換へ渡す。ない・解釈できない場合は、座標値が緯度経度の範囲内でも地理座標と推測しない。
 - 位置の解析中は倍精度を保つ。メートル単位の投影座標は地理原点からの相対座標で登録し、大きな座標値による精度低下を抑える。
@@ -21,4 +22,4 @@
 
 Viteの`web-e57-internal`のaliasで、パッケージ内のJSグルーとWASMを明示的に読み込む。公開入口のWASM直接importを避け、Viteが生成するURLをfetchするため、本番のbase pathでも動く。SharedArrayBufferや配信サーバーの追加ヘッダーは不要。
 
-参照: [web-e57の配布パッケージ](https://www.npmjs.com/package/web-e57)。架空fixtureの内容は[__fixtures__/README.md](./__fixtures__/README.md)を参照。
+参照: [web-e57の配布パッケージ](https://www.npmjs.com/package/web-e57)。架空fixtureの内容は[**fixtures**/README.md](./__fixtures__/README.md)を参照。

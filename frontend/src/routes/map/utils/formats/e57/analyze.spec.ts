@@ -22,6 +22,18 @@ beforeEach(() => {
 });
 
 describe('E57 worker lifecycle', () => {
+	it.each([undefined, 'y-up', 'z-up'] as const)(
+		'選択した上方向 %s をWorkerへ渡す',
+		async upAxis => {
+			const pending = parseE57File(file, new AbortController().signal, upAxis);
+			expect(state.workers[0].postMessage).toHaveBeenCalledWith({
+				file,
+				upAxis: upAxis ?? 'z-up'
+			});
+			state.workers[0].onmessage?.({ data: { result: { pointCount: 2 } } });
+			await expect(pending).resolves.toMatchObject({ pointCount: 2 });
+		}
+	);
 	it('中断時にWorkerを終了し、次の読み込みは独立して実行する', async () => {
 		const controller = new AbortController();
 		const first = parseE57File(file, controller.signal);

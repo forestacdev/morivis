@@ -100,14 +100,14 @@
 	let pendingRegistrationAfterTransform = $state(false);
 	let projectedPointCloud: PointCloudMeterOffsets | null = null;
 	let e57SourcePositions: Float64Array | null = null;
-	let plyUpAxis = $state<PointCloudUpAxis>('z-up');
+	let pointCloudUpAxis = $state<PointCloudUpAxis>('z-up');
 
 	const registrationModeOptions = [
 		{ key: 'pointcloud', name: '点群' },
 		{ key: 'raster', name: 'DEMラスター' },
 		{ key: 'surface', name: '3Dメッシュ' }
 	];
-	const plyUpAxisOptions = [
+	const pointCloudUpAxisOptions = [
 		{ key: 'z-up', name: 'Z-up（測量・点群）' },
 		{ key: 'y-up', name: 'Y-up（3Dモデル系）' }
 	];
@@ -139,7 +139,7 @@
 			const controller = new AbortController();
 			void analyzePointCloud(
 				pointCloudFile,
-				isPlyPointCloudFile(pointCloudFile.name) ? plyUpAxis : 'z-up',
+				canSelectUpAxis(pointCloudFile.name) ? pointCloudUpAxis : 'z-up',
 				controller.signal
 			);
 			return () => controller.abort();
@@ -150,6 +150,8 @@
 	const isTextPointCloudFile = (fileName: string) => /\.(xyz|txt)$/i.test(fileName);
 	const isObjPointCloudFile = (fileName: string) => /\.obj$/i.test(fileName);
 	const isPlyPointCloudFile = (fileName: string) => /\.ply$/i.test(fileName);
+	const canSelectUpAxis = (fileName: string) =>
+		isPlyPointCloudFile(fileName) || isE57File(fileName);
 	const isLasPointCloudFile = (fileName: string) => /\.(las|laz)$/i.test(fileName);
 	const transformPositions = transformPointCloudParallel;
 	const transformPointCloudData = async (
@@ -228,7 +230,7 @@
 
 			let e57MeterCoordinates = false;
 			if (isE57File(file.name)) {
-				const result = await parseE57File(file, signal);
+				const result = await parseE57File(file, signal, upAxis);
 				if (signal.aborted) return;
 				positions = result.positions;
 				e57SourcePositions = result.positions;
@@ -801,9 +803,13 @@
 	{/if}
 
 	{#if analyzed}
-		{#if pointCloudFile && isPlyPointCloudFile(pointCloudFile.name)}
+		{#if pointCloudFile && canSelectUpAxis(pointCloudFile.name)}
 			<div class="w-full p-2">
-				<HorizontalSelectBox label="上方向" bind:group={plyUpAxis} options={plyUpAxisOptions} />
+				<HorizontalSelectBox
+					label="上方向"
+					bind:group={pointCloudUpAxis}
+					options={pointCloudUpAxisOptions}
+				/>
 			</div>
 		{/if}
 

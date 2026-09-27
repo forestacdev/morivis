@@ -1,10 +1,12 @@
+import type { PointCloudUpAxis } from '../pointcloud/axis';
 import { type E57Result, validateE57Size } from '.';
-import type { E57Response } from './worker';
+import type { E57Request, E57Response } from './worker';
 import E57Worker from './worker?worker';
 
 export const parseE57File = (
 	file: File,
-	signal: AbortSignal
+	signal: AbortSignal,
+	upAxis: PointCloudUpAxis = 'z-up'
 ): Promise<E57Result> =>
 	new Promise((resolve, reject) => {
 		if (signal.aborted) {
@@ -36,7 +38,7 @@ export const parseE57File = (
 			reject(new Error('E57の解析結果を受け取れませんでした'));
 		};
 		try {
-			worker.postMessage(file);
+			worker.postMessage({ file, upAxis } satisfies E57Request);
 		} catch (error) {
 			cleanup();
 			reject(error);

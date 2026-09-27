@@ -38,6 +38,27 @@ describe('E57 native decoding', () => {
 		);
 		expect(result.colors).toBeUndefined();
 	});
+	it('Y-upはpose適用後に回転し、RGBと倍精度を保つ', () => {
+		const result = parseE57(fixture('test-multi-scan'), convert, undefined, 'y-up');
+		expect(result.positions).toBeInstanceOf(Float64Array);
+		[11, -3, 2, 0, -4, 22].forEach((value, i) =>
+			expect(result.positions[i]).toBeCloseTo(value, 10)
+		);
+		[0, -4, 11, -3].forEach((value, i) => expect(result.bbox[i]).toBeCloseTo(value, 10));
+		expect([...result.colors!]).toEqual([255, 128, 0, 255, 255, 255]);
+	});
+	it('Y-upの間引き後も回転後の全域bboxを保つ', () => {
+		const result = parseE57(fixture('test-multi-scan'), convert, 1, 'y-up');
+		expect([...result.positions]).toEqual([11, -3, 2]);
+		expect(result.sourcePointCount).toBe(2);
+		[0, -4, 11, -3].forEach((value, i) => expect(result.bbox[i]).toBeCloseTo(value, 10));
+	});
+	it('上方向の切り替えで大きな座標の小数部を丸めない', () => {
+		const precise = (bytes: Uint8Array, format: string) =>
+			format === 'XYZ' ? '1000000.001 2000000.002 3000000.003' : convert(bytes, format);
+		const result = parseE57(fixture('test-multi-scan'), precise, undefined, 'y-up');
+		expect([...result.positions]).toEqual([1000000.001, -3000000.003, 2000000.002]);
+	});
 	it('表示点数を制限しても、元の有効点数と全域のbboxを保つ', () => {
 		const result = parseE57(fixture('test-multi-scan'), convert, 1);
 		expect(result.pointCount).toBe(1);
