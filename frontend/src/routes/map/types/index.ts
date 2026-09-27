@@ -69,6 +69,7 @@ export type CSSCursor =
 // アップロードのダイアログのタイプ
 export type DialogType =
 	| 'raster'
+	| 'video'
 	| 'vector'
 	| 'tileurltype'
 	| 'shp'
@@ -161,6 +162,14 @@ export type UploadFilesInput = UploadFiles | File | FileList | null;
 
 /** 対応形式の表示情報と入力先。形式一覧・ファイル選択はこの定義から生成する。 */
 export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
+	{
+		id: 'video',
+		dialogType: 'video',
+		label: '動画',
+		description: '動画ファイルです。位置合わせして地図上で再生します。',
+		icon: 'mdi:video-outline',
+		extensions: ['.mp4', '.webm', '.mov', '.m4v', '.ogv']
+	},
 	{
 		id: 'raster',
 		dialogType: 'raster',

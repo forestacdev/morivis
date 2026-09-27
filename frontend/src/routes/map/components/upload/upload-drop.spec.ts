@@ -3,6 +3,24 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('動画のドロップ', () => {
+	it.each(['mp4', 'MP4', 'webm', 'mov', 'm4v', 'ogv'])(
+		'%sを動画フォームへ渡す',
+		async extension => {
+			expect(await resolveDroppedFiles(new File(['test'], `test-video.${extension}`)))
+				.toMatchObject({
+					type: 'dialog',
+					dialogType: 'video'
+				});
+		}
+	);
+	it('ファイル選択で動画を選べる', () => {
+		for (const extension of ['.mp4', '.webm', '.mov', '.m4v', '.ogv']) {
+			expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(extension);
+		}
+	});
+});
+
 describe('ASCII Gridのドロップ', () => {
 	it.each(['test-grid.asc', 'test-grid.ASC'])('%sを専用フォームへ渡す', async name => {
 		expect(await resolveDroppedFiles(new File([], name))).toMatchObject({

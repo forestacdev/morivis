@@ -96,6 +96,8 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+動画（MP4・WebM・MOV・M4V・OGV）は `VideoForm.svelte` で先頭フレームを復号し、位置合わせへ進む。確定した四隅と元動画のURLを `RasterVideoEntry` に保持し、video sourceとraster layerで再生する。対応範囲は[動画](../frontend/src/routes/map/utils/formats/video/README.md)を参照。
+
 E57 (`.e57`) は既存の `PointCloudForm.svelte` へ渡す。専用Worker内のWASMで複数スキャンのpose・RGBを反映し、点群entryへ正規化する。埋め込みWKTがない・変換できない場合は座標系指定または位置合わせを使う。
 対応範囲とメモリ上限は [E57](../frontend/src/routes/map/utils/formats/e57/README.md) を参照。
 

@@ -71,6 +71,7 @@ type MorivisLayerEntry =
 代表的な format:
 
 - `image`
+- `video`（四隅で地図上に配置する動画。`RasterBaseMapStyle`で表示する）
 - `pmtiles`
 - `mbtiles`
 - `cog`

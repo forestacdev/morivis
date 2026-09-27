@@ -80,6 +80,7 @@ export interface TileXYZ {
 /** raster entry の配信・格納方式。可視化の種類とは独立して扱う。 */
 export type RasterFormatType =
 	| 'image'
+	| 'video'
 	| 'pmtiles'
 	| 'mbtiles'
 	| 'cog'
@@ -293,6 +294,14 @@ export interface RasterImageEntry<T> extends BaseRasterEntry {
 	style: T;
 }
 
+export interface RasterVideoEntry<T = RasterBaseMapStyle> extends BaseRasterEntry {
+	format: {
+		type: 'video';
+		url: string;
+	};
+	style: T;
+}
+
 export interface RasterPMTilesEntry<T> extends BaseRasterEntry {
 	format: {
 		type: 'pmtiles';
@@ -354,6 +363,7 @@ export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
  */
 export type MorivisRasterEntry<T> =
 	| RasterImageEntry<T>
+	| RasterVideoEntry<T>
 	| RasterPMTilesEntry<T>
 	| RasterMBTilesEntry<T>
 	| RasterCogEntry<T>

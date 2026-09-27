@@ -32,6 +32,10 @@ const tileDialog: DialogDefinition = {
 };
 
 export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDefinition>> = {
+	video: {
+		load: () => import('$routes/map/components/upload/form/VideoForm.svelte'),
+		profile: 'raster-georef'
+	},
 	'ascii-grid': {
 		load: () => import('$routes/map/components/upload/form/AsciiGridForm.svelte'),
 		profile: 'pointcloud-georef'

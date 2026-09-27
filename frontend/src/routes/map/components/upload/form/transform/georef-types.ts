@@ -8,7 +8,7 @@ import type { PointCloudSurfaceOptions } from '$routes/map/utils/formats/pointcl
 import type { GeoRefCorners } from '$routes/map/utils/transform/georef/homography';
 
 export type RasterRegistrationMode = 'raster' | 'mesh';
-export type GeoRefSourceType = 'raster' | 'vector' | 'pointcloud';
+export type GeoRefSourceType = 'raster' | 'vector' | 'pointcloud' | 'video';
 export type GeoRefTransformMode = 'projective' | 'aspect-locked';
 
 export interface GeoRefMeshConfig {

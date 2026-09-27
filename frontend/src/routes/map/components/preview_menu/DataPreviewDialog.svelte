@@ -55,6 +55,9 @@
 	const deleteData = () => {
 		if (showDataEntry) {
 			activeLayerIdsStore.remove(showDataEntry.id);
+			if (showDataEntry.type === 'raster' && showDataEntry.format.type === 'video') {
+				URL.revokeObjectURL(showDataEntry.format.url);
+			}
 			showDataEntry = null;
 		}
 	};

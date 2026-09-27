@@ -111,6 +111,7 @@
 	import { createPointCloudSurfaceEntry } from '$routes/map/utils/formats/pointcloud/surface';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
+	import { createVideoEntry } from '$routes/map/utils/formats/video';
 	import {
 		getPopupImageFieldKey,
 		resolveGeneratedPoiIconUrl,
@@ -518,6 +519,21 @@
 				setUploadedDataEntry(pointCloudEntry);
 				closeGeoRefUi();
 				showNotification('点群の位置を設定しました', 'success');
+				return;
+			}
+
+			if (data.sourceType === 'video') {
+				const url = URL.createObjectURL(data.imageFile);
+				try {
+					const entry = createVideoEntry(data.entryName, url, bbox, corners, data.previewImageUrl);
+					entry.id = data.entryId;
+					setUploadedDataEntry(entry);
+				} catch (cause) {
+					URL.revokeObjectURL(url);
+					throw cause;
+				}
+				closeGeoRefUi();
+				showNotification('動画の位置を設定しました', 'success');
 				return;
 			}
 

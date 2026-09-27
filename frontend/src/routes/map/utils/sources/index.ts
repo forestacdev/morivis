@@ -92,7 +92,13 @@ export const createSourcesItems = ({
 
 		switch (type) {
 			case 'raster': {
-				if (format.type === 'image') {
+				if (format.type === 'video') {
+					items[sourceId] = {
+						type: 'video',
+						urls: [format.url],
+						coordinates: metaData.imageCorners ?? getBoundingBoxCorners(metaData.bounds)
+					};
+				} else if (format.type === 'image') {
 					if (style.type === 'tiff') {
 						const imageSource = prepared[entry.id]?.image;
 						if (imageSource) {
