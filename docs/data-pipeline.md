@@ -96,6 +96,11 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+XLSXはシート内のオートシェイプを検出すると図面を初期選択し、セルの表にも切り替えられる。
+図面はローカル座標のLineStringに変換し、`featureCollectionToGeoRefData()`から位置合わせへ渡す。
+セルの表は従来どおり緯度・経度列からPointに変換する。
+対応する図形と制限は [Excelパーサー](../frontend/src/routes/map/utils/formats/xlsx/README.md) を参照。
+
 CityGMLは専用の `CityGmlForm.svelte` でLODを選び、Workerで建物の面群を標高付きGeoJSON MultiPolygonへ変換する。
 3Dモデルを選ぶと `createCityGmlEntry()` で `GeoJson3DEntry` に正規化し、既存のdeck.gl描画へ渡す。
 2Dを選ぶと `createCityGml2DEntry()` で標高と面積のない面を除き、`createGeoJsonEntry()` で通常のベクターレイヤーに登録する。

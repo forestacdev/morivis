@@ -459,7 +459,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		label: 'Excel',
 		icon: 'mdi:microsoft-excel',
 		description:
-			'Excelの表形式データです。シートと座標列を指定して地点データとして読み込むときに使います。',
+			'Excelの表やオートシェイプによる図面です。座標列から地点を読み込むか、図形を取り出して地図上で位置合わせできます。',
 		extensions: ['.xlsx']
 	},
 	{

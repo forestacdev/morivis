@@ -453,6 +453,21 @@
 				if (!warpedEntry) {
 					throw new Error('GeoRefベクターのエントリ生成に失敗しました');
 				}
+				// 位置合わせの線は未指定なら1px。入力形式が持つスタイルは優先する。
+				const vectorLineWidth = data.vectorLineWidth ?? (data.vectorStyle ? undefined : 1);
+				if (vectorLineWidth != null && warpedEntry.style.type === 'line') {
+					warpedEntry.style.width = {
+						key: '単一',
+						expressions: [
+							{
+								type: 'single',
+								key: '単一',
+								name: '単一',
+								mapping: { value: vectorLineWidth }
+							}
+						]
+					};
+				}
 
 				debugLog.info(
 					`+page finalizeGeoRefEntry ベクター生成: id=${warpedEntry.id}, bounds=${warpedBbox.join(',')}`

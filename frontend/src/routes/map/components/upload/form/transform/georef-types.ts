@@ -53,6 +53,7 @@ export interface GeoRefData {
 	sourceCorners?: GeoRefCorners;
 	sourceFeatureCollectionId?: string;
 	vectorStyle?: VectorStyle;
+	vectorLineWidth?: number;
 	vectorAttribution?: string;
 	allowedTransformModes?: ActiveTransformOptionMode[];
 	registrationMode: RasterRegistrationMode;

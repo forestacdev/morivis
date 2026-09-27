@@ -276,7 +276,7 @@
 		>
 			<div class="group relative flex aspect-square w-full shrink-0 overflow-hidden bg-black">
 				{#await promise then imageResult}
-					{#if imageResult}
+					{#if imageResult && dataEntry}
 						{#if dataEntry.metaData.coverImage && !isImageError}
 							<img
 								src={dataEntry.metaData.coverImage}

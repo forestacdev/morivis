@@ -94,6 +94,7 @@
 			/>
 		{:else if profile === 'vector-zone-georef'}
 			<FormComponent
+				bind:geoRefData
 				bind:showDataEntry
 				bind:showDialogType
 				bind:dropFile
