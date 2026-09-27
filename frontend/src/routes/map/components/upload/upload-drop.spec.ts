@@ -3,6 +3,20 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('FITのドロップ', () => {
+	it.each(['fit', 'FIT'])('%sを専用フォームへ渡す', async extension => {
+		expect(await resolveDroppedFiles(new File(['test'], `test-track.${extension}`)))
+			.toMatchObject({
+				type: 'dialog',
+				dialogType: 'fit'
+			});
+	});
+	it('ファイル選択と形式一覧にFITを含める', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.fit');
+		expect(SUPPORTED_FILE_GROUPS.some(group => group.extensions.includes('.fit'))).toBe(true);
+	});
+});
+
 describe('動画のドロップ', () => {
 	it.each(['mp4', 'MP4', 'webm', 'mov', 'm4v', 'ogv'])(
 		'%sを動画フォームへ渡す',

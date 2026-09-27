@@ -220,6 +220,9 @@ importers:
       fgdb:
         specifier: ^1.0.0
         version: 1.0.0
+      fit-file-parser:
+        specifier: ^5.2.1
+        version: 5.2.1
       flatgeobuf:
         specifier: ^3.36.0
         version: 3.38.0
@@ -3573,6 +3576,9 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
+  buffer@6.0.3:
+    resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
+
   bz2@1.0.1:
     resolution: {integrity: sha512-TRUFsKDme+nCMKa1lMx3dkLGh4KvgmCq8/xh/MTMEXAtjPqSC/NqPTzpy5auBZxrJTJX/yjWM0pHxMbpVGc+UQ==}
 
@@ -4343,6 +4349,9 @@ packages:
   find-up@5.0.0:
     resolution: {integrity: sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==}
     engines: {node: '>=10'}
+
+  fit-file-parser@5.2.1:
+    resolution: {integrity: sha512-7KBHcY9I6GmfpYDq4iL/ESxmMSl5da4MOWBKKXYIZwsK5TLgX7hNAce2O/5ZzHKdSEL58hfDhuEnraXndoWEbQ==}
 
   flat-cache@4.0.1:
     resolution: {integrity: sha512-f7ccFPK3SXFHpx15UIGyRJ/FJQctuKZ0zVuN3frBo4HnK3cay9VEW0R6yPYFHC0AgqhukPzKjq22t5DmAyqGyw==}
@@ -10221,6 +10230,11 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
+  buffer@6.0.3:
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.2.1
+
   bz2@1.0.1: {}
 
   cac@6.7.14: {}
@@ -11181,6 +11195,10 @@ snapshots:
     dependencies:
       locate-path: 6.0.0
       path-exists: 4.0.0
+
+  fit-file-parser@5.2.1:
+    dependencies:
+      buffer: 6.0.3
 
   flat-cache@4.0.1:
     dependencies:

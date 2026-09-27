@@ -192,6 +192,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	mid: 'mif',
 	gpx: 'gpx',
 	tcx: 'tcx',
+	fit: 'fit',
 	osm: 'osm',
 	gml: 'gml',
 	landxml: 'landxml',

@@ -75,6 +75,7 @@ export type DialogType =
 	| 'shp'
 	| 'gpx'
 	| 'tcx'
+	| 'fit'
 	| 'osm'
 	| 'georss'
 	| 'geojson'
@@ -376,6 +377,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description:
 			'トレーニング記録をXMLで表したデータです。運動履歴の軌跡や計測点を表示するときに使います。',
 		extensions: ['.tcx']
+	},
+	{
+		id: 'fit',
+		label: 'FIT',
+		icon: 'mdi:run',
+		description:
+			'GPS機器の移動軌跡や計測値を記録したデータです。経路や時刻・標高・センサー値を地図上で確認するときに使います。',
+		extensions: ['.fit']
 	},
 	{
 		id: 'gdb',
