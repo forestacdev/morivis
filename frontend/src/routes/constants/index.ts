@@ -5,9 +5,7 @@ import type { DataDrivenPropertyValueSpecification } from '$routes/map/utils/map
 import {
 	PUBLIC_BASE_PATH,
 	PUBLIC_DISASTER_LORE_ALL_PATH,
-	PUBLIC_ENTRY_PATH,
 	PUBLIC_INT_ADD_LAYER_IDS,
-	PUBLIC_PANORAMA_PATH,
 	PUBLIC_STYLES_PATH,
 	PUBLIC_TIMBER_SPECIES_PATH
 } from '$env/static/public';
@@ -18,7 +16,7 @@ export const LEGEND_DATA_PATH = DATA_PATH + '/legend';
 export const TABLE_JOIN_DATA_PATH = DATA_PATH + '/table_join';
 export const SVG_PATH = DATA_PATH + '/svg';
 export const SVG_PREFECTURES_PATH = SVG_PATH + '/prefectures';
-export const ENTRY_DATA_PATH = PUBLIC_ENTRY_PATH;
+export const ENTRY_DATA_PATH = BASE_PATH + '/entries';
 export const ENTRY_DEV_DATA_PATH = ENTRY_DATA_PATH + '/_dev';
 export const ENTRY_TIFF_DATA_PATH = ENTRY_DATA_PATH + '/tiff';
 export const ENTRY_COG_DATA_PATH = ENTRY_DATA_PATH + '/cog';
@@ -33,7 +31,7 @@ export const MAP_IMAGE_BASE_PATH = DATA_PATH + '/images/map';
 export const FEATURE_IMAGE_BASE_PATH = DATA_PATH + '/images/feature';
 export const ICON_IMAGE_BASE_PATH = DATA_PATH + '/images/icons';
 export const STREET_VIEW_DATA_PATH = DATA_PATH + '/street_view';
-export const STREET_VIEW_PANORAMA_PATH = PUBLIC_PANORAMA_PATH;
+export const STREET_VIEW_PANORAMA_PATH = BASE_PATH + '/panorama';
 export const TIMBER_SPECIES_DATA_PATH = PUBLIC_TIMBER_SPECIES_PATH;
 export const DISASTER_LORE_ALL_PATH = PUBLIC_DISASTER_LORE_ALL_PATH;
 export const FONT_DATA_PATH = DATA_PATH + '/font';
@@ -80,7 +78,7 @@ export const DEFAULT_SYMBOL_TEXT_FONT: DataDrivenPropertyValueSpecification<stri
 ];
 
 /** アイコン用画像タイルのXYZ */
-export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ; } = {
+export const IMAGE_TILE_XYZ_SETS: { [key: string]: TileXYZ } = {
 	zoom_0: {
 		x: 0,
 		y: 0,

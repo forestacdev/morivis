@@ -27,8 +27,6 @@ type PublicEnvValues = Record<string, string | undefined>;
 
 const CLOUDFRONT_PUBLIC_ENV_RULES: CloudFrontPublicEnvRule[] = [
 	{ envKey: 'PUBLIC_BASE_PATH', proxyPath: '/api/cloudfront-assets' },
-	{ envKey: 'PUBLIC_ENTRY_PATH', proxyPath: '/api/cloudfront-entry' },
-	{ envKey: 'PUBLIC_PANORAMA_PATH', proxyPath: '/api/cloudfront-panorama' },
 	{ envKey: 'PUBLIC_TIMBER_SPECIES_PATH', proxyPath: '/api/cloudfront-timber-species' },
 	{ envKey: 'PUBLIC_DISASTER_LORE_ALL_PATH', proxyPath: '/api/cloudfront-disaster-lore' }
 ];
@@ -170,7 +168,7 @@ export const buildRuntimeProxyRules = (publicEnvValues: PublicEnvValues = {}): P
 export const devProxyTransform = (
 	url: string,
 	publicEnvValues: PublicEnvValues = {}
-): { url: string; } => {
+): { url: string } => {
 	for (const rule of buildRuntimeProxyRules(publicEnvValues)) {
 		if (!url.includes(rule.match)) continue;
 		if (rule.excludeExt?.some((ext) => url.endsWith(ext))) return { url };
@@ -187,7 +185,7 @@ export const buildViteProxyConfig = (publicEnv: Record<string, string | undefine
 	const proxyRules = buildRuntimeProxyRules(publicEnv);
 	const config: Record<
 		string,
-		{ target: string; changeOrigin: boolean; rewrite: (path: string) => string; }
+		{ target: string; changeOrigin: boolean; rewrite: (path: string) => string }
 	> = {};
 
 	for (const rule of proxyRules) {
