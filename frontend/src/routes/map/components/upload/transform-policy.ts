@@ -70,6 +70,8 @@ const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPo
 	model: createPolicy('zone-only', 'georef-only', 'zone'),
 	'gaussian-splat': createPolicy('none', 'georef-only', 'georef'),
 	geopdf: createPolicy('none', 'georef-only', 'georef'),
+	pptx: createPolicy('none', 'georef-only', 'georef'),
+	docx: createPolicy('none', 'georef-only', 'georef'),
 	svg: createPolicy('none', 'georef-only', 'georef'),
 	demxml: createPolicy('none', 'georef-only', 'georef'),
 	netcdf: createPolicy('none', 'georef-only', 'georef')

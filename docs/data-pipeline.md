@@ -124,6 +124,18 @@ CityGMLは専用の `CityGmlForm.svelte` でLODを選び、Workerで建物の面
 | 3D Tiles / タイルデータ | 3D Tiles, PMTiles, MBTiles | URL / ファイルから source metadata を構築 | 通常は CRS 解決不要。PMTiles / MBTiles は source 種別の分岐あり | なし | source / model entry を直接作る | PMTiles protocol, MBTiles reader |
 | リモート配信 / カタログ | WMTS, WCS, GeoZarr, FeatureService, WFS, OGC API Features, STAC, ArcGIS WebMap / service, Raster URL, Vector URL | メタデータ問い合わせや capabilities 解析 | 形式ごとのポリシーに従う | WCS / STAC / vector は必要に応じて preview | 各 Form または `+page.svelte finalizeGeoRefEntry()` | capabilities fetch、STAC / WCS / ArcGIS 解析 |
 
+## Office図面の読み込み
+
+PowerPoint (`.pptx`) とWord (`.docx`) は `OfficeDrawingForm.svelte` を共用する。
+PowerPointはスライド単位、Wordは同じ段落・配置基準の図形単位で選択し、図形・文字・埋め込みラスター画像を取り出す。
+Officeの部品参照と画像検証は `utils/formats/office-drawing/` にまとめ、ExcelのDrawingML描画・PNG化処理を再利用する。
+
+読み込み方は「図面画像」と「オートシェイプの線」から選ぶ。線はローカル座標のFeatureCollectionを既存のベクター位置合わせへ渡し、`vectorLineWidth: 1` で登録する。図形名とテキストは属性に保存する。
+
+画像では `GeoRefData.rasterImage` を位置合わせへ渡し、確定後は既存の `imageCorners` 付き画像レイヤーに正規化する。
+レイヤーメニューの画像ダウンロードから、PNGと位置情報 (`aux.xml`) を取得できる。
+Wordのページ組版やPowerPointのマスター、表、EMF/WMFなどの未対応要素は再現しない。読み込み画面には制限と欠落画像の数を表示する。
+
 ## dialog profile
 
 `dialog-registry.ts` は各 `DialogType` を、Form の性質ごとに profile へ寄せている。  

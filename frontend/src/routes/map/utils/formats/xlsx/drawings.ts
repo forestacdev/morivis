@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { readEmbeddedImages, relationshipId, relationships } from '../office-drawing/package';
 
 import { drawingXmlToAppearance, type XlsxDrawingAppearance } from './drawing-appearance';
 
@@ -11,43 +12,6 @@ import {
 } from './drawing-geometry';
 
 export type XlsxDrawing = XlsxDrawingGeometry & { appearance: XlsxDrawingAppearance; };
-
-const resolvePart = (source: string, target: string): string => {
-	const parts = target.startsWith('/') ? [] : source.split('/').slice(0, -1);
-	for (const part of target.split('/')) {
-		if (part === '..') parts.pop();
-		else if (part && part !== '.') parts.push(part);
-	}
-	return parts.join('/');
-};
-
-const relationships = async (
-	zip: JSZip,
-	source: string,
-	typeSuffix?: string
-): Promise<Map<string, string>> => {
-	const parts = source.split('/');
-	const name = parts.pop();
-	const file = zip.file([...parts, '_rels', `${name}.rels`].join('/'));
-	if (!file) return new Map();
-	const root = parseXml(await file.async('string'));
-	return new Map(
-		children(root, 'Relationship')
-			.filter((item) =>
-				item.getAttribute('TargetMode') !== 'External'
-				&& (!typeSuffix || item.getAttribute('Type')?.endsWith(typeSuffix))
-			)
-			.map((
-				item
-			) => [
-				item.getAttribute('Id') ?? '',
-				resolvePart(source, item.getAttribute('Target') ?? '')
-			])
-	);
-};
-
-const relationshipId = (element: Element): string =>
-	Array.from(element.attributes).find((attr) => attr.localName === 'id')?.value ?? '';
 
 export interface XlsxDrawingWorkbook {
 	sheetNames: string[];
@@ -100,34 +64,11 @@ export const readXlsxDrawingWorkbook = async (data: ArrayBuffer): Promise<XlsxDr
 			const drawingPath = sheetRels.get(relationshipId(drawing));
 			if (!drawingPath) throw new Error('Excelの図面参照先が見つかりません');
 			const drawingXml = await readPart(drawingPath);
-			const imageRels = await relationships(zip, drawingPath, '/image');
-			const images = new Map<string, string>();
-			await Promise.all([...imageRels].map(async ([id, imagePath]) => {
-				const file = zip.file(imagePath);
-				if (!file) return;
-				const bytes = await file.async('uint8array');
-				const mime = rasterImageMime(bytes);
-				if (mime) images.set(id, `data:${mime};base64,${await file.async('base64')}`);
-			}));
+			const images = await readEmbeddedImages(zip, drawingPath);
 			return {
 				...await drawingXmlToGeojson(drawingXml, sheetXml),
 				appearance: drawingXmlToAppearance(drawingXml, sheetXml, { themeXml, images })
 			};
 		}
 	};
-};
-
-// Do not embed SVG/HTML or arbitrary relationship targets in the generated image.
-const rasterImageMime = (bytes: Uint8Array): string | undefined => {
-	const starts = (signature: number[]) =>
-		signature.every((value, index) => bytes[index] === value);
-	if (starts([137, 80, 78, 71, 13, 10, 26, 10])) return 'image/png';
-	if (starts([255, 216, 255])) return 'image/jpeg';
-	if (starts([71, 73, 70, 56]) && [55, 57].includes(bytes[4]) && bytes[5] === 97) {
-		return 'image/gif';
-	}
-	if (starts([82, 73, 70, 70]) && String.fromCharCode(...bytes.slice(8, 12)) === 'WEBP') {
-		return 'image/webp';
-	}
-	return undefined;
 };

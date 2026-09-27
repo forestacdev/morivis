@@ -47,3 +47,8 @@ describe('3Dモデルの座標処理ポリシー', () => {
 		expect(getAllowedTransformModesForIssue('model', 'placement-missing')).toEqual(['georef']);
 	});
 });
+
+it.each(['pptx', 'docx'] as const)('%sの図面は位置合わせで登録する', (format) => {
+	expect(getAllowedTransformModesForIssue(format, 'placement-missing')).toEqual(['georef']);
+	expect(getAllowedTransformModesForIssue(format, 'crs-missing')).toEqual([]);
+});

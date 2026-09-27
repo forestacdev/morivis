@@ -84,6 +84,14 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/XlsxForm.svelte'),
 		profile: 'vector-zone-georef'
 	},
+	pptx: {
+		load: () => import('$routes/map/components/upload/form/OfficeDrawingForm.svelte'),
+		profile: 'raster-georef'
+	},
+	docx: {
+		load: () => import('$routes/map/components/upload/form/OfficeDrawingForm.svelte'),
+		profile: 'raster-georef'
+	},
 	raster: tileDialog,
 	tileurltype: {
 		load: () => import('$routes/map/components/upload/form/TileUrlTypeForm.svelte'),

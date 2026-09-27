@@ -581,6 +581,11 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it.each(['pptx', 'docx'])('%sを図面の登録ダイアログに振り分ける', async (extension) => {
+		const result = await resolveDroppedFiles(createFile(`test-drawing.${extension}`));
+		expect(result).toEqual({ type: 'dialog', dialogType: extension, dropFiles: undefined });
+	});
+
 	it('単一の XLSX は xlsx ダイアログ判定になる', async () => {
 		const result = await resolveDroppedFiles(
 			createFile(

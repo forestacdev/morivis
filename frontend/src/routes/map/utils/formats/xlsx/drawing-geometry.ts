@@ -11,20 +11,20 @@ export const child = (node: Element | undefined, name: string): Element | undefi
 	children(node, name)[0];
 
 export const parseXml = (text: string): Element => {
-	// XLSX parts do not need a DTD. Reject it before passing XML to the parser.
-	if (/<!DOCTYPE/i.test(text)) throw new Error('ExcelのXMLに未対応のDTDが含まれています');
+	// Office drawing parts do not need a DTD. Reject it before passing XML to the parser.
+	if (/<!DOCTYPE/i.test(text)) throw new Error('OfficeのXMLに未対応のDTDが含まれています');
 	const doc = new DOMParser({
 		errorHandler: {
 			warning: () => {},
 			error: () => {
-				throw new Error('ExcelのXMLが不正です');
+				throw new Error('OfficeのXMLが不正です');
 			},
 			fatalError: () => {
-				throw new Error('ExcelのXMLが不正です');
+				throw new Error('OfficeのXMLが不正です');
 			}
 		}
 	}).parseFromString(text, 'text/xml');
-	if (!doc.documentElement) throw new Error('ExcelのXMLが空です');
+	if (!doc.documentElement) throw new Error('OfficeのXMLが空です');
 	return doc.documentElement;
 };
 

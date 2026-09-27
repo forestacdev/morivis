@@ -5,7 +5,8 @@ import type { XlsxDrawingAppearance } from './drawing-appearance';
 /** Bake text and embedded pictures into a transparent PNG before leaving the form. */
 export const drawingAppearanceToGeoRefData = async (
 	appearance: XlsxDrawingAppearance,
-	entryName: string
+	entryName: string,
+	attribution = 'Excel'
 ): Promise<GeoRefData> => {
 	if (!appearance.svg || appearance.width <= 0 || appearance.height <= 0) {
 		throw new Error('読み込める図面がありません');
@@ -23,7 +24,7 @@ export const drawingAppearanceToGeoRefData = async (
 		const image = new Image();
 		await new Promise<void>((resolve, reject) => {
 			image.onload = () => resolve();
-			image.onerror = () => reject(new Error('Excel図面の画像を生成できませんでした'));
+			image.onerror = () => reject(new Error('図面の画像を生成できませんでした'));
 			image.src = url;
 		});
 		const canvas = document.createElement('canvas');
@@ -36,7 +37,7 @@ export const drawingAppearanceToGeoRefData = async (
 		const blob = await new Promise<Blob>((resolve, reject) =>
 			canvas.toBlob((result) => {
 				if (result) resolve(result);
-				else reject(new Error('Excel図面の画像を保存できませんでした'));
+				else reject(new Error('図面の画像を保存できませんでした'));
 			}, 'image/png')
 		);
 		const pixels = context.getImageData(0, 0, width, height).data;
@@ -50,7 +51,7 @@ export const drawingAppearanceToGeoRefData = async (
 		const range = { min: 0, max: 255 };
 		return {
 			sourceType: 'raster',
-			entryId: `xlsx_image_${crypto.randomUUID()}`,
+			entryId: `drawing_image_${crypto.randomUUID()}`,
 			entryName,
 			parsedBands: bands,
 			parsedNodata: null,
@@ -62,7 +63,7 @@ export const drawingAppearanceToGeoRefData = async (
 			multiBandMinMax: { r: { ...range }, g: { ...range }, b: { ...range } },
 			imageFile: new File([blob], `${entryName}.png`, { type: 'image/png' }),
 			previewImageUrl: pngUrl,
-			rasterImage: { url: pngUrl, attribution: 'Excel' },
+			rasterImage: { url: pngUrl, attribution },
 			registrationMode: 'raster',
 			allowRegistrationModeChange: false
 		};

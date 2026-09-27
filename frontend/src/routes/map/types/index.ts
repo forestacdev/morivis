@@ -97,6 +97,8 @@ export type DialogType =
 	| 'csv'
 	| 'tsv'
 	| 'xlsx'
+	| 'pptx'
+	| 'docx'
 	| 'gpkg'
 	| 'sqlite'
 	| 'filegdb'
@@ -461,6 +463,22 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description:
 			'Excelの表やオートシェイプによる図面です。座標列から地点を読み込むか、図形を取り出して地図上で位置合わせできます。',
 		extensions: ['.xlsx']
+	},
+	{
+		id: 'pptx',
+		label: 'PowerPoint図面',
+		icon: 'mdi:microsoft-powerpoint',
+		description:
+			'PowerPointの図形・文字・埋め込み画像です。スライド内の図面を取り出して地図上で位置合わせできます。',
+		extensions: ['.pptx']
+	},
+	{
+		id: 'docx',
+		label: 'Word図面',
+		icon: 'mdi:microsoft-word',
+		description:
+			'Wordの図形・文字・埋め込み画像です。同じ段落に配置された図面を取り出して地図上で位置合わせできます。',
+		extensions: ['.docx']
 	},
 	{
 		id: 'tif',
