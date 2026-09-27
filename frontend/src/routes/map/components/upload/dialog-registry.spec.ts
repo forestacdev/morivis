@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const imports = vi.hoisted(() => ({ gpx: 0, dwg: 0 }));
+vi.mock('./form/EnviBilForm.svelte', () => ({ default: () => {} }));
 vi.mock('./form/AsciiGridForm.svelte', () => ({ default: () => {} }));
 const stepIgesImports = vi.hoisted(() => ({ count: 0 }));
 vi.mock('./form/StepIgesForm.svelte', () => {
@@ -33,6 +34,10 @@ vi.mock('./form/DwgForm.svelte', () => {
 import { dialogRegistry } from './dialog-registry';
 
 describe('dialog registry loading', () => {
+	it('ENVI／ESRI BILに座標系と位置合わせの状態を渡す', async () => {
+		expect(dialogRegistry['envi-bil']!.profile).toBe('pointcloud-georef');
+		expect((await dialogRegistry['envi-bil']!.load()).default).toBeTypeOf('function');
+	});
 	it('ASCII Gridに座標系選択とラスター位置合わせの状態を渡す', async () => {
 		expect(dialogRegistry['ascii-grid']!.profile).toBe('pointcloud-georef');
 		expect((await dialogRegistry['ascii-grid']!.load()).default).toBeTypeOf('function');

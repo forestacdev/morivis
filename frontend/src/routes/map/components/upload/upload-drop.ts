@@ -8,6 +8,7 @@ import type { DialogType } from '$routes/map/types';
 import { isAsciiGridFile } from '$routes/map/utils/formats/ascii-grid/files';
 import { isCityGmlFile } from '$routes/map/utils/formats/citygml/detector';
 import { isCityJsonFile } from '$routes/map/utils/formats/cityjson/detector';
+import { isRawRasterHeader, isRawRasterMain } from '$routes/map/utils/formats/envi-bil/files';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGaussianSplatPlyFile } from '$routes/map/utils/formats/gaussian-splat';
@@ -246,6 +247,13 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	tiff: 'geotiff',
 	tif: 'geotiff',
 	asc: 'ascii-grid',
+	hdr: 'envi-bil',
+	bil: 'envi-bil',
+	bip: 'envi-bil',
+	bsq: 'envi-bil',
+	dat: 'envi-bil',
+	img: 'envi-bil',
+	raw: 'envi-bil',
 	svg: 'svg',
 	png: 'geopdf',
 	webp: 'geopdf',
@@ -275,6 +283,11 @@ const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
+	{
+		id: 'envi-bil-set',
+		match: files => files.some(file => isRawRasterHeader(file) || isRawRasterMain(file)),
+		resolve: async files => createDialogDecision('envi-bil', files)
+	},
 	{
 		id: 'ascii-grid-set',
 		match: files => files.some(isAsciiGridFile),

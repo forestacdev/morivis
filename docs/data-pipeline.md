@@ -388,3 +388,9 @@ morivis では preview と final entry を分けて考える必要がある。
 
 - 型と責務境界: [内部レイヤーモデル](./architecture/entry-model.md)
 - 地図スタイル反映: `Map.svelte`, `stores/map.ts`
+
+
+ENVI／ESRI BIL (`.hdr`と画像本体) は `EnviBilForm.svelte` で同名ファイルを対応付ける。
+WorkerがBIL・BIP・BSQをバンド配列へ展開し、座標系が分かればWGS84へ変換してラスターのエントリー登録へ進む。
+座標系不明時は座標系フォーム、位置情報もない場合は位置合わせへ進む。解析から登録まで共通スクリーンガードを使用する。
+対応範囲は [ENVI／ESRI BIL](../frontend/src/routes/map/utils/formats/envi-bil/README.md) を参照。

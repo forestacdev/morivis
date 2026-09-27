@@ -2,10 +2,13 @@ import { describe, expect, it } from 'vitest';
 
 import { getAllowedTransformModesForIssue, getModelSpatialIssue } from './transform-policy';
 
-it('ASCII Gridは座標系を選択でき、手動の位置合わせも使える', () => {
-	expect(getAllowedTransformModesForIssue('ascii-grid', 'crs-missing')).toEqual(['zone']);
-	expect(getAllowedTransformModesForIssue('ascii-grid', 'placement-missing')).toEqual(['georef']);
-});
+it.each(['ascii-grid', 'envi-bil'] as const)(
+	'%sは座標系を選択でき、手動の位置合わせも使える',
+	format => {
+		expect(getAllowedTransformModesForIssue(format, 'crs-missing')).toEqual(['zone']);
+		expect(getAllowedTransformModesForIssue(format, 'placement-missing')).toEqual(['georef']);
+	}
+);
 
 it.each(['jww', 'cedxm'] as const)('%sは座標系の指定と地図上の位置合わせを選べる', format => {
 	expect(getAllowedTransformModesForIssue(format, 'crs-missing')).toEqual(['zone', 'georef']);

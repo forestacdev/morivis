@@ -36,6 +36,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/VideoForm.svelte'),
 		profile: 'raster-georef'
 	},
+	'envi-bil': {
+		load: () => import('$routes/map/components/upload/form/EnviBilForm.svelte'),
+		profile: 'pointcloud-georef'
+	},
 	'ascii-grid': {
 		load: () => import('$routes/map/components/upload/form/AsciiGridForm.svelte'),
 		profile: 'pointcloud-georef'

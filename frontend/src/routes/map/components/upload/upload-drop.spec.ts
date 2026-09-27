@@ -1379,3 +1379,39 @@ describe('DMとDMIのドロップ', () => {
 		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.dmi');
 	});
 });
+
+describe('ENVI／ESRI BILのドロップ', () => {
+	it.each(['hdr', 'bil', 'BIP', 'bsq', 'dat', 'img', 'raw'])(
+		'%sを専用フォームへ渡す',
+		async ext => {
+			expect(await resolveDroppedFiles(new File([], `test.${ext}`))).toMatchObject({
+				type: 'dialog',
+				dialogType: 'envi-bil'
+			});
+			expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(`.${ext.toLowerCase()}`);
+		}
+	);
+	it('HDR・BIN・PRJをGRIBやShapefileに振り分けない', async () => {
+		const files = ['test.prj', 'test.bin', 'test.hdr'].map(name => new File([], name));
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'envi-bil',
+			dropFiles: files
+		});
+		expect(await resolveDroppedFiles(new File([], 'test.bin'))).toMatchObject({
+			dialogType: 'grib2'
+		});
+	});
+	it('ZIP内の拡張子なし本体とHDRを保持する', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/test.hdr', 'ENVI');
+		zip.file('test-folder/test', new Uint8Array([1]));
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'envi-bil' });
+		if (result.type === 'dialog') {
+			expect(result.dropFiles?.map(file => file.name).sort()).toEqual(['test', 'test.hdr']);
+		}
+	});
+});

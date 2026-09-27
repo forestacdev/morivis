@@ -82,6 +82,7 @@ export type DialogType =
 	| 'wkt'
 	| 'geotiff'
 	| 'ascii-grid'
+	| 'envi-bil'
 	| 'wmts'
 	| 'wcs'
 	| 'geozarr'
@@ -499,6 +500,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.tif', '.tiff']
 	},
 	{
+		id: 'envi-bil',
+		label: 'ENVI／ESRI BIL',
+		icon: 'mdi:image',
+		description:
+			'HDRと画像本体で構成されるラスターデータです。BIL・BIP・BSQの標高や多バンド画像を地図上に表示できます。',
+		extensions: ['.hdr', '.bil', '.bip', '.bsq', '.dat', '.img', '.raw']
+	},
+	{
 		id: 'ascii-grid',
 		label: 'ASCII Grid',
 		icon: 'mdi:grid',
@@ -824,6 +833,12 @@ export const SUPPORTED_FILE_ACCEPT = [
 	'.tiffw',
 	'.pgw',
 	'.jgw',
+	'.blw',
+	'.bpw',
+	'.bqw',
+	'.bilw',
+	'.bipw',
+	'.bsqw',
 	'.wld', // ワールドファイル
 	'.aux.xml',
 	'.mtl',
