@@ -5,6 +5,8 @@
 
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
+	import { readVideoLocation } from '$routes/map/utils/formats/video/location';
+	import { createVideoPointEntry } from '$routes/map/utils/formats/video/point';
 	import { readVideoFile } from '$routes/map/utils/formats/video/read';
 	import { getDefaultGeoRefCorners } from '$routes/map/utils/transform/georef/default-corners';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
@@ -35,8 +37,22 @@
 		error = '';
 		void (async () => {
 			try {
+				const location = await readVideoLocation(source, controller.signal);
 				const data = await readVideoFile(source, controller.signal);
 				if (controller.signal.aborted) return;
+				if (location) {
+					const entry = await createVideoPointEntry(
+						source,
+						location,
+						data.previewImageUrl,
+						controller.signal
+					);
+					geoRefData = null;
+					showDataEntry = entry;
+					showDialogType = null;
+					dropFile = null;
+					return;
+				}
 				const map = mapStore.getMap();
 				geoRefData = {
 					...data,
@@ -62,12 +78,13 @@
 {#if error}
 	<p role="alert" class="text-red-400">{error}</p>
 {:else if file}
-	<p>位置合わせ用のフレームを読み込んでいます。</p>
+	<p>動画の位置情報とプレビューを読み込んでいます。</p>
 {:else}
 	<p>動画ファイルをドロップしてください（MP4・WebM・MOV・M4V・OGV）。</p>
 {/if}
 <p class="py-3 text-sm text-gray-400">
-	先頭フレームで位置合わせした後、動画を無音でループ再生します。
+	位置情報付きのMP4・MOV系動画は撮影位置にポイントを配置し、クリックすると動画を開きます。
+	位置情報がない場合は、先頭フレームで位置合わせした後、地図上で無音・ループ再生します。
 </p>
 <button
 	class="c-btn-sub p-3"

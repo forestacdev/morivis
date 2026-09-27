@@ -163,14 +163,6 @@ export type UploadFilesInput = UploadFiles | File | FileList | null;
 /** 対応形式の表示情報と入力先。形式一覧・ファイル選択はこの定義から生成する。 */
 export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	{
-		id: 'video',
-		dialogType: 'video',
-		label: '動画',
-		description: '動画ファイルです。位置合わせして地図上で再生します。',
-		icon: 'mdi:video-outline',
-		extensions: ['.mp4', '.webm', '.mov', '.m4v', '.ogv']
-	},
-	{
 		id: 'raster',
 		dialogType: 'raster',
 		label: 'ラスタータイル',
@@ -191,8 +183,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'wmts',
 		dialogType: 'wmts',
 		label: 'WMS/WMTS',
-		description:
-			'地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
+		description: '地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
 		icon: 'mdi:layers-outline',
 		extensions: []
 	},
@@ -254,8 +245,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'stac',
 		dialogType: 'stac',
 		label: 'STAC / COG',
-		description:
-			'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
+		description: 'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
 		icon: 'hugeicons:cloud-cog',
 		extensions: []
 	},
@@ -477,7 +467,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'pptx',
-		label: 'PowerPoint図面',
+		label: 'PowerPoint',
 		icon: 'mdi:microsoft-powerpoint',
 		description:
 			'PowerPointの図形・文字・埋め込み画像です。スライド内の図面を取り出して地図上で位置合わせできます。',
@@ -485,7 +475,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'docx',
-		label: 'Word図面',
+		label: 'Word',
 		icon: 'mdi:microsoft-word',
 		description:
 			'Wordの図形・文字・埋め込み画像です。同じ段落に配置された図面を取り出して地図上で位置合わせできます。',
@@ -527,8 +517,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'grib2',
 		label: 'GRIB2 (GPV)',
 		icon: 'mdi:weather-windy',
-		description:
-			'気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
+		description: '気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
 		extensions: ['.grib2', '.grb2', '.grb', '.bin']
 	},
 	{
@@ -589,8 +578,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'dm',
 		label: 'DM',
 		icon: 'mdi:terrain',
-		description:
-			'数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
+		description: '数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
 		extensions: ['.dm', '.dmi']
 	},
 	{
@@ -616,6 +604,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description:
 			'撮影位置をEXIFに持つ写真画像です。位置付き写真を地点として地図に載せるときに使います。',
 		extensions: ['.png', '.jpg', '.jpeg', '.webp']
+	},
+	{
+		id: 'video',
+		dialogType: 'video',
+		label: '動画',
+		description: '動画ファイルです。位置合わせして地図上で再生します。',
+		icon: 'mdi:video-outline',
+		extensions: ['.mp4', '.webm', '.mov', '.m4v', '.ogv']
 	},
 	{
 		id: 'svg',
@@ -675,8 +671,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: '3ds',
 		label: 'Autodesk 3DS',
 		icon: 'mdi:cube-outline',
-		description:
-			'3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
+		description: '3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
 		extensions: ['.3ds']
 	},
 	{
@@ -854,7 +849,7 @@ export interface PoiHighlightMarkerState {
 	type: 'poi';
 	featureId: string | number;
 	point: [number, number];
-	properties: { [key: string]: any; };
+	properties: { [key: string]: any };
 	iconImage?: string | null;
 	iconMarker?: PoiIconMarkerAppearance;
 }
