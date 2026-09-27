@@ -99,6 +99,10 @@
 	let rasterResolution = $state(1024);
 	let pendingRegistrationAfterTransform = $state(false);
 	let projectedPointCloud: PointCloudMeterOffsets | null = null;
+	let projectedRasterSource: {
+		positions: PointCloudSourcePositions;
+		projectionDefinition: string;
+	} | null = null;
 	let e57SourcePositions: Float64Array | null = null;
 	let pointCloudUpAxis = $state<PointCloudUpAxis>('z-up');
 
@@ -191,6 +195,7 @@
 
 		return {
 			bbox,
+			rasterSource: { positions, projectionDefinition },
 			pointCloud: createPointCloudMeterOffsets(positions, projectedOrigin, coordinateOrigin)
 		};
 	};
@@ -221,6 +226,7 @@
 		needsTransform = false;
 		pendingRegistrationAfterTransform = false;
 		projectedPointCloud = null;
+		projectedRasterSource = null;
 
 		try {
 			let positions: PointCloudSourcePositions | null = null;
@@ -363,6 +369,7 @@
 					if (signal.aborted) return;
 					resolvedBbox = transformed.bbox;
 					projectedPointCloud = transformed.pointCloud;
+					projectedRasterSource = transformed.rasterSource;
 					resolvedColors = colors;
 					showNotification(
 						detectedProjection.epsg
@@ -462,6 +469,7 @@
 				);
 				resolvedBbox = transformed.bbox;
 				projectedPointCloud = transformed.pointCloud;
+				projectedRasterSource = transformed.rasterSource;
 				resolvedPositions = null;
 			} else {
 				const transformed = await transformPointCloudData(rawBbox, positions, prjContent);
@@ -620,15 +628,11 @@
 		}
 
 		if (registrationMode === 'raster') {
-			if (!resolvedPositions) {
-				showNotification('自動配置した点群は DEM ラスター化に未対応です', 'warning');
-				return;
-			}
 			isProcessing.set(true);
 
 			try {
 				const { band, width, height, nodata } = await rasterizePointCloudToDemInWorker({
-					positions: resolvedPositions,
+					...(projectedRasterSource ?? { positions: resolvedPositions! }),
 					bbox: resolvedBbox,
 					longEdgePixels: rasterResolution
 				});
@@ -774,6 +778,7 @@
 		resolvedPositions = null;
 		resolvedColors = undefined;
 		projectedPointCloud = null;
+		projectedRasterSource = null;
 		parsedArrayBuffer = null;
 		showDialogType = null;
 		dropFile = null;

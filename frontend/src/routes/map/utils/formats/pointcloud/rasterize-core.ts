@@ -1,5 +1,10 @@
+import proj4 from 'proj4';
+import type { PointCloudSourcePositions } from './coordinate-offsets';
+
 export interface RasterizePointCloudParams {
-	positions: Float32Array;
+	positions: PointCloudSourcePositions;
+	/** 指定時は元の投影座標から経緯度へ変換する。bboxは経緯度で渡す。 */
+	projectionDefinition?: string;
 	bbox: [number, number, number, number];
 	longEdgePixels: number;
 }
@@ -171,9 +176,11 @@ const resolveRasterSize = (
 
 export const rasterizePointCloudToDem = ({
 	positions,
+	projectionDefinition,
 	bbox,
 	longEdgePixels
 }: RasterizePointCloudParams): RasterizePointCloudResult => {
+	const projection = projectionDefinition ? proj4(projectionDefinition, 'EPSG:4326') : null;
 	const { width, height } = resolveRasterSize(bbox, longEdgePixels);
 	const nodata = -9999;
 	const size = width * height;
@@ -193,11 +200,16 @@ export const rasterizePointCloudToDem = ({
 	const influenceRadiusSq = influenceRadius * influenceRadius;
 
 	for (let i = 0; i < positions.length; i += 3) {
-		const x = positions[i];
-		const y = positions[i + 1];
+		let x = positions[i];
+		let y = positions[i + 1];
 		const z = positions[i + 2];
 
 		if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) continue;
+		if (projection) {
+			// 経緯度をFloat32配列に戻さず、倍精度のままセル位置を求める。
+			[x, y] = projection.forward([x, y]);
+			if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+		}
 
 		const normalizedX = (x - minX) / spanX;
 		const normalizedY = (maxY - y) / spanY;
