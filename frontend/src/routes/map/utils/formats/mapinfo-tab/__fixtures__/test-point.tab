@@ -1,0 +1,10 @@
+!table
+!version 300
+!charset WindowsJapanese
+
+Definition Table
+  Type NATIVE Charset "WindowsJapanese"
+  Fields 3
+    name Char (254) ;
+    value Float ;
+    enabled Integer (1) ;

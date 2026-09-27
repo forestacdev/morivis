@@ -1415,3 +1415,35 @@ describe('ENVI／ESRI BILのドロップ', () => {
 		}
 	});
 });
+
+describe('MapInfo TABのドロップ', () => {
+	it.each(['tab', 'TAB', 'map', 'id', 'ind'])('%sを専用フォームへ渡す', async ext => {
+		expect(await resolveDroppedFiles(new File([], `test.${ext}`))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'mapinfo-tab'
+		});
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(`.${ext.toLowerCase()}`);
+	});
+	it('TAB一式をENVIのDATやShapefileのDBFと誤判定しない', async () => {
+		const files = ['test.dat', 'test.dbf', 'test.map', 'test.id', 'test.tab'].map(name =>
+			new File([], name)
+		);
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'mapinfo-tab',
+			dropFiles: files
+		});
+		expect(await resolveDroppedFiles(new File([], 'test.dat'))).toMatchObject({
+			dialogType: 'envi-bil'
+		});
+	});
+	it('ZIP内の一式を保持する', async () => {
+		const zip = new JSZip();
+		for (const ext of ['tab', 'dat', 'map', 'id']) zip.file(`test-folder/test.${ext}`, 'test');
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'mapinfo-tab' });
+		if (result.type === 'dialog') expect(result.dropFiles).toHaveLength(4);
+	});
+});

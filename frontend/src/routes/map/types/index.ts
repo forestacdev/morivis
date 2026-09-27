@@ -138,6 +138,7 @@ export type DialogType =
 	| 'geoparquet'
 	| 'geoarrow'
 	| 'mif'
+	| 'mapinfo-tab'
 	| 'geopdf'
 	| 'mojxml'
 	| 'geophoto'
@@ -298,6 +299,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description:
 			'Apache Arrow系の列指向ベクターデータです。メモリ効率を保って地物や属性を扱うときに使います。',
 		extensions: ['.arrow', '.feather']
+	},
+	{
+		id: 'mapinfo-tab',
+		label: 'MapInfo TAB',
+		icon: 'mdi:vector-polygon',
+		description:
+			'図形・属性・座標系を持つMapInfoのベクターデータです。TABとDAT・MAP・IDをまとめて読み込み、地図上に表示できます。',
+		extensions: ['.tab', '.dat', '.map', '.id', '.ind']
 	},
 	{
 		id: 'mif',

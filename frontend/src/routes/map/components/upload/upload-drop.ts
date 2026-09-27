@@ -1,3 +1,4 @@
+import { isMapInfoTab } from '$routes/map/utils/formats/mapinfo-tab/files';
 import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
 import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
@@ -189,6 +190,10 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	geoparquet: 'geoparquet',
 	arrow: 'geoarrow',
 	feather: 'geoarrow',
+	tab: 'mapinfo-tab',
+	map: 'mapinfo-tab',
+	id: 'mapinfo-tab',
+	ind: 'mapinfo-tab',
 	mif: 'mif',
 	mid: 'mif',
 	gpx: 'gpx',
@@ -283,6 +288,11 @@ const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
+	{
+		id: 'mapinfo-tab-set',
+		match: files => files.some(isMapInfoTab),
+		resolve: async files => createDialogDecision('mapinfo-tab', files)
+	},
 	{
 		id: 'envi-bil-set',
 		match: files => files.some(file => isRawRasterHeader(file) || isRawRasterMain(file)),

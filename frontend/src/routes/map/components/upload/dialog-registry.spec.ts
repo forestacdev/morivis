@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const imports = vi.hoisted(() => ({ gpx: 0, dwg: 0 }));
+vi.mock('./form/MapInfoTabForm.svelte', () => ({ default: () => {} }));
 vi.mock('./form/EnviBilForm.svelte', () => ({ default: () => {} }));
 vi.mock('./form/AsciiGridForm.svelte', () => ({ default: () => {} }));
 const stepIgesImports = vi.hoisted(() => ({ count: 0 }));
@@ -34,6 +35,10 @@ vi.mock('./form/DwgForm.svelte', () => {
 import { dialogRegistry } from './dialog-registry';
 
 describe('dialog registry loading', () => {
+	it('MapInfo TABにベクターの座標系選択・位置合わせを渡す', async () => {
+		expect(dialogRegistry['mapinfo-tab']!.profile).toBe('vector-zone-georef');
+		expect((await dialogRegistry['mapinfo-tab']!.load()).default).toBeTypeOf('function');
+	});
 	it('ENVI／ESRI BILに座標系と位置合わせの状態を渡す', async () => {
 		expect(dialogRegistry['envi-bil']!.profile).toBe('pointcloud-georef');
 		expect((await dialogRegistry['envi-bil']!.load()).default).toBeTypeOf('function');

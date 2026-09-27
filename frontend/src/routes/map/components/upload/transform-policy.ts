@@ -46,6 +46,7 @@ const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPo
 	geojson: createPolicy('zone-or-georef', 'none', 'zone'),
 	wkt: createPolicy('zone-or-georef', 'none', 'zone'),
 	geoparquet: createPolicy('zone-or-georef', 'none', 'zone'),
+	'mapinfo-tab': createPolicy('zone-or-georef', 'georef-only', 'zone'),
 	mif: createPolicy('zone-or-georef', 'none', 'zone'),
 	topojson: createPolicy('zone-or-georef', 'none', 'zone'),
 	gml: createPolicy('zone-or-georef', 'none', 'zone'),

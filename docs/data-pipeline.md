@@ -394,3 +394,9 @@ ENVI／ESRI BIL (`.hdr`と画像本体) は `EnviBilForm.svelte` で同名ファ
 WorkerがBIL・BIP・BSQをバンド配列へ展開し、座標系が分かればWGS84へ変換してラスターのエントリー登録へ進む。
 座標系不明時は座標系フォーム、位置情報もない場合は位置合わせへ進む。解析から登録まで共通スクリーンガードを使用する。
 対応範囲は [ENVI／ESRI BIL](../frontend/src/routes/map/utils/formats/envi-bil/README.md) を参照。
+
+MapInfo TAB (`.tab`・`.dat`/`.dbf`・`.map`・`.id`) は `MapInfoTabForm.svelte` で表を選ぶ。
+専用Worker内のGDALが図形・属性・埋め込み座標系を読み、WGS84へ変換する。
+NonEarthや変換できない座標系は選択フォームへ渡し、必要ならベクターの位置合わせを使う。
+複数種類の図形は種類を選択して通常のvector entryへ登録する。処理中は共通スクリーンガードを表示する。
+対応範囲は [MapInfo TAB](../frontend/src/routes/map/utils/formats/mapinfo-tab/README.md) を参照。

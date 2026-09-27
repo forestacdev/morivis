@@ -189,6 +189,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/GeoArrowForm.svelte'),
 		profile: 'vector-zone'
 	},
+	'mapinfo-tab': {
+		load: () => import('$routes/map/components/upload/form/MapInfoTabForm.svelte'),
+		profile: 'vector-zone-georef'
+	},
 	mif: {
 		load: () => import('$routes/map/components/upload/form/MifForm.svelte'),
 		profile: 'vector-zone-georef'

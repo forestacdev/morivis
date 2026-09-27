@@ -10,9 +10,12 @@ it.each(['ascii-grid', 'envi-bil'] as const)(
 	}
 );
 
-it.each(['jww', 'cedxm'] as const)('%sは座標系の指定と地図上の位置合わせを選べる', format => {
-	expect(getAllowedTransformModesForIssue(format, 'crs-missing')).toEqual(['zone', 'georef']);
-});
+it.each(['jww', 'cedxm', 'mapinfo-tab'] as const)(
+	'%sは座標系の指定と地図上の位置合わせを選べる',
+	format => {
+		expect(getAllowedTransformModesForIssue(format, 'crs-missing')).toEqual(['zone', 'georef']);
+	}
+);
 
 it('Excelの図面は位置合わせへ、表の座標は座標系選択または位置合わせへ進む', () => {
 	expect(getAllowedTransformModesForIssue('xlsx', 'placement-missing')).toEqual(['georef']);

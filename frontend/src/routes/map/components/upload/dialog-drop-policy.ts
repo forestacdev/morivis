@@ -1,6 +1,7 @@
 import type { DialogType, UploadFiles } from '$routes/map/types';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
+import { isMapInfoSidecar } from '$routes/map/utils/formats/mapinfo-tab/files';
 import { mergeMcaUploadFiles } from '$routes/map/utils/formats/mca/upload-grid';
 import { isRasterImageSidecarFile } from '$routes/map/utils/formats/raster/sidecar';
 import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
@@ -109,6 +110,7 @@ const mergeFiles = (currentFiles: UploadFiles, incomingFiles: File[]): File[] =>
 const supplementaryDropMatchers: Partial<
 	Record<Exclude<DialogType, null>, SupplementaryDropMatcher>
 > = {
+	'mapinfo-tab': (_currentFiles, files) => files.length > 0 && files.every(isMapInfoSidecar),
 	sxf: (_currentFiles, files) =>
 		files.length > 0
 		&& files.every(
