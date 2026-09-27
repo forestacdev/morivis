@@ -1,10 +1,9 @@
-import { PUBLIC_BASE_PATH, PUBLIC_DISASTER_LORE_ALL_PATH } from '$env/static/public';
+import { PUBLIC_BASE_PATH } from '$env/static/public';
 import type { ResourceType } from '$routes/map/utils/maplibre';
 import { devProxyTransform } from './proxy';
 
 const runtimePublicEnvValues = {
-	PUBLIC_BASE_PATH,
-	PUBLIC_DISASTER_LORE_ALL_PATH
+	PUBLIC_BASE_PATH
 };
 
 const resolveRuntimeUrl = (url: string): string => {

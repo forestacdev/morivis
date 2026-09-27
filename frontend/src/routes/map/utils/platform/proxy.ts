@@ -26,8 +26,7 @@ interface CloudFrontPublicEnvRule {
 type PublicEnvValues = Record<string, string | undefined>;
 
 const CLOUDFRONT_PUBLIC_ENV_RULES: CloudFrontPublicEnvRule[] = [
-	{ envKey: 'PUBLIC_BASE_PATH', proxyPath: '/api/cloudfront-assets' },
-	{ envKey: 'PUBLIC_DISASTER_LORE_ALL_PATH', proxyPath: '/api/cloudfront-disaster-lore' }
+	{ envKey: 'PUBLIC_BASE_PATH', proxyPath: '/api/cloudfront-assets' }
 ];
 
 const STATIC_PROXY_RULES: ProxyRule[] = [
