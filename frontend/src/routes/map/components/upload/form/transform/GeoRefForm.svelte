@@ -84,6 +84,7 @@
 	interface Props {
 		map: maplibregl.Map;
 		selectedEpsgCode: EpsgCode;
+		suggestedEpsgCode?: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneBboxGeojsonData: FeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>;
 		geoRefData: GeoRefData | null;
@@ -105,6 +106,7 @@
 	let {
 		map,
 		selectedEpsgCode = $bindable(),
+		suggestedEpsgCode,
 		focusBbox = $bindable(),
 		zoneBboxGeojsonData = $bindable(),
 		geoRefData = $bindable(),
@@ -716,6 +718,7 @@
 		}
 
 		const sourceBbox: [number, number, number, number] = [...originalBbox];
+		const suggestedCode = suggestedEpsgCode;
 
 		void (async () => {
 			try {
@@ -830,7 +833,12 @@
 					geometry: { type: 'Point' as const, coordinates: info.coordinates },
 					properties: info.properties
 				}));
-				if (selectablePoints.length > 0) {
+				if (
+					suggestedCode &&
+					selectablePoints.some((point) => point.properties.code === suggestedCode)
+				) {
+					selectedEpsgCode = suggestedCode;
+				} else if (selectablePoints.length > 0) {
 					const nearest = turfNearestPoint([mapCenter.lng, mapCenter.lat], {
 						type: 'FeatureCollection',
 						features: selectablePoints

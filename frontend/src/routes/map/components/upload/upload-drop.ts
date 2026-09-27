@@ -262,6 +262,19 @@ const SXF_SAF_EXTENSION = '.saf';
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
+		id: 'dm-set',
+		match: files => files.some(file => hasAnyExtension(file, ['.dm', '.dmi'])),
+		resolve: async files =>
+			files.some(file => hasExtension(file, '.dm'))
+				? createDialogDecision(
+					'dm',
+					files.filter(file => hasAnyExtension(file, ['.dm', '.dmi']))
+				)
+				: createNotificationDecision(
+					'DMIは座標系の補助ファイルです。DMファイルと一緒に選択してください'
+				)
+	},
+	{
 		id: 'bds-set',
 		match: files => files.some(file => hasExtension(file, '.bds')),
 		resolve: async files =>
@@ -438,6 +451,11 @@ const resolveSingleFile = async (
 	options: UploadDropOptions
 ): Promise<UploadDropDecision> => {
 	const ext = file.name.split('.').pop()?.toLowerCase();
+	if (ext === 'dmi') {
+		return createNotificationDecision(
+			'DMIは座標系の補助ファイルです。DMファイルと一緒に選択してください'
+		);
+	}
 
 	if (ext === 'rik') {
 		try {

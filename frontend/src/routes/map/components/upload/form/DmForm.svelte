@@ -19,10 +19,11 @@
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import type { DMInfo } from '$routes/map/utils/formats/dm';
 	import { analyzeDmFileInWorker } from '$routes/map/utils/formats/dm/analyze';
+	import { findDmIndexFiles, getDmFiles } from '$routes/map/utils/formats/dm/zone';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
-	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -148,17 +149,33 @@
 		}
 	});
 
-	const dmFile = $derived.by(() => {
-		if (!dropFile) return null;
-		return getFirstUploadFile(dropFile);
-	});
+	const dmFiles = $derived(dropFile ? getDmFiles(toUploadFiles(dropFile)) : []);
+	let selectedDmFile = $state<File | null>(null);
+	const dmFile = $derived(
+		selectedDmFile && dmFiles.includes(selectedDmFile) ? selectedDmFile : dmFiles[0]
+	);
+	const indexFiles = $derived(
+		dmFile && dropFile ? findDmIndexFiles(dmFile, toUploadFiles(dropFile)) : []
+	);
+	const zoneSourceLabels = {
+		dmi: 'DMIファイル',
+		index: 'DM内のインデックス',
+		drawing: '図郭番号からの推定'
+	};
 
 	// ファイルドロップ時: DM変換（座標変換なし）→ ジオメトリタイプ確認
 	$effect(() => {
+		let cancelled = false;
 		if (dmFile) {
+			rawGeojson = null;
+			zoneInfo = null;
+			selectedGeometryType = '';
+			geometryTypeOptions = [];
+			classNamesByGeometryType = null;
 			isProcessing.set(true);
-			analyzeDmFileInWorker(dmFile)
+			analyzeDmFileInWorker(dmFile, indexFiles)
 				.then(({ geojson, info }) => {
+					if (cancelled) return;
 					zoneInfo = info;
 					rawGeojson = geojson as unknown as FeatureCollection;
 					const types = getDmGeometryTypes(rawGeojson);
@@ -203,13 +220,18 @@
 					);
 				})
 				.catch((e) => {
+					if (cancelled) return;
 					showNotification('DMファイルの読み込みに失敗しました', 'error');
 					console.error(e);
 				})
 				.finally(() => {
-					isProcessing.set(false);
+					if (!cancelled) isProcessing.set(false);
 				});
 		}
+		return () => {
+			cancelled = true;
+			isProcessing.set(false);
+		};
 	});
 
 	// 「決定」→ 座標系選択UIを表示
@@ -231,6 +253,9 @@
 				featureCollection: rawGeojson,
 				entryName: zoneInfo?.drawingName || dmFile?.name || 'DMデータ'
 			};
+		}
+		if (pendingZoneGeoRefData && zoneInfo?.zone) {
+			pendingZoneGeoRefData.suggestedEpsgCode = String(6668 + zoneInfo.zone) as EpsgCode;
 		}
 		transformOptionMode = 'zone';
 
@@ -330,6 +355,26 @@
 <div
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-4 overflow-x-hidden overflow-y-auto"
 >
+	{#if dmFiles.length > 1}
+		<label class="flex w-full flex-col gap-2 px-2">
+			読み込むDMファイル
+			<select class="rounded bg-gray-700 p-2" bind:value={selectedDmFile}>
+				{#each dmFiles as file (file)}
+					<option value={file}>{file.name}</option>
+				{/each}
+			</select>
+		</label>
+	{/if}
+	{#if zoneInfo?.zone && zoneInfo.zoneSource}
+		<p class="w-full px-2 text-sm text-gray-300">
+			第{zoneInfo.zone}系（{zoneSourceLabels[zoneInfo.zoneSource]}）。
+			次の画面ではJGD2011の候補を選択します。測地系と位置を確認してください。
+		</p>
+	{:else if zoneInfo}
+		<p class="w-full px-2 text-sm text-gray-300">
+			{zoneInfo.zoneWarning ?? '系番号を取得できませんでした。次の画面で座標系を選択してください。'}
+		</p>
+	{/if}
 	{#if zoneInfo?.drawingName}
 		<div class="w-full px-2 text-gray-300">
 			図郭名称: {zoneInfo.drawingName}

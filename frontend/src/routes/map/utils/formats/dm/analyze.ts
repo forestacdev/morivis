@@ -9,16 +9,30 @@ export interface DmAnalyzeResult {
 	info: DMInfo;
 }
 
-export const analyzeDmInWorker = (arrayBuffer: ArrayBuffer): Promise<DmAnalyzeResult> =>
-	runSingleShotWorker<{ arrayBuffer: ArrayBuffer; }, DmWorkerResponse, DmAnalyzeResult>(
+export const analyzeDmInWorker = (
+	arrayBuffer: ArrayBuffer,
+	indexBuffers: ArrayBuffer[] = []
+): Promise<DmAnalyzeResult> =>
+	runSingleShotWorker<
+		{ arrayBuffer: ArrayBuffer; indexBuffers: ArrayBuffer[]; },
+		DmWorkerResponse,
+		DmAnalyzeResult
+	>(
 		DmWorker,
-		{ arrayBuffer },
+		{ arrayBuffer, indexBuffers },
 		{
 			errorPrefix: 'DM worker error',
 			mapResponse: (response) => response as DmAnalyzeResult,
-			transfer: [arrayBuffer]
+			transfer: [arrayBuffer, ...indexBuffers]
 		}
 	);
 
-export const analyzeDmFileInWorker = async (file: File): Promise<DmAnalyzeResult> =>
-	analyzeDmInWorker(await file.arrayBuffer());
+export const analyzeDmFileInWorker = async (
+	file: File,
+	indexFiles: File[] = []
+): Promise<DmAnalyzeResult> => {
+	const [arrayBuffer, ...indexBuffers] = await Promise.all(
+		[file, ...indexFiles].map(input => input.arrayBuffer())
+	);
+	return analyzeDmInWorker(arrayBuffer, indexBuffers);
+};

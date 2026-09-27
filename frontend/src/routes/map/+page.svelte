@@ -1605,6 +1605,7 @@
 				onModelPlacementConfirm={confirmModelGeoreference}
 				onModelPlacementCancel={cancelModelGeoreference}
 				bind:selectedEpsgCode
+				suggestedEpsgCode={pendingZoneGeoRefData?.suggestedEpsgCode}
 				bind:focusBbox
 				bind:zoneBboxGeojsonData
 				bind:geoRefData

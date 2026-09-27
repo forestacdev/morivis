@@ -96,6 +96,11 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+DMは同じディレクトリのDMI、DM内のインデックス、図郭番号の順で系番号の候補を取得する。
+候補は `pendingZoneGeoRefData.suggestedEpsgCode` からZone画面へ渡し、ユーザーの確認後に変換する。
+図形区分31の中庭は、同一図郭の建物外周に完全に含まれる場合に内周へ変換する。
+対応範囲は [DMパーサー](../frontend/src/routes/map/utils/formats/dm/README.md) を参照。
+
 XLSXはシート内の図形・画像を検出すると図面を初期選択し、セルの表にも切り替えられる。
 図面画像は塗り・線色・文字・埋め込み画像を透明PNGにまとめ、位置合わせ後に通常の画像entryへ四隅とデータURLを保存する。
 線として読み込む場合はローカル座標のLineStringに変換し、`featureCollectionToGeoRefData()`から位置合わせへ渡す。登録時の線幅は1px。

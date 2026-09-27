@@ -4,6 +4,7 @@ import { convertDMArrayBufferToGeoJSON, getDMInfoFromArrayBuffer } from '.';
 
 interface DmWorkerRequest {
 	arrayBuffer: ArrayBuffer;
+	indexBuffers: ArrayBuffer[];
 }
 
 interface DmWorkerSuccessResponse {
@@ -17,11 +18,13 @@ interface DmWorkerErrorResponse {
 
 self.onmessage = async (event: MessageEvent<DmWorkerRequest>) => {
 	try {
-		const { arrayBuffer } = event.data;
+		const { arrayBuffer, indexBuffers } = event.data;
 		const [geojson, info] = await Promise.all([
 			convertDMArrayBufferToGeoJSON(arrayBuffer),
-			getDMInfoFromArrayBuffer(arrayBuffer)
+			getDMInfoFromArrayBuffer(arrayBuffer, indexBuffers)
 		]);
+
+		if (geojson.properties) geojson.properties.coordinateSystem = info.zone;
 
 		postMessage(
 			{

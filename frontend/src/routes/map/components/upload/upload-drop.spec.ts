@@ -1257,3 +1257,42 @@ describe('CityJSONのドロップ', () => {
 		});
 	});
 });
+
+describe('DMとDMIのドロップ', () => {
+	it('DMIが先頭でも全DMと補助ファイルを渡す', async () => {
+		const files = ['INDEX.DMI', 'test-a.dm', 'test-b.DM'].map(name => new File([], name));
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'dm',
+			dropFiles: files
+		});
+	});
+	it('DMI単体ではDMとの同時選択を案内する', async () => {
+		const file = new File([], 'INDEX.dmi');
+		for (const input of [file, [file]]) {
+			expect(await resolveDroppedFiles(input)).toMatchObject({
+				type: 'notification',
+				message: expect.stringContaining('DMファイルと一緒')
+			});
+		}
+	});
+	it('ZIP内のDMと同じディレクトリのDMIを保持する', async () => {
+		const zip = new JSZip();
+		zip.file('test-set/INDEX.dmi', 'test');
+		zip.file('test-set/test.dm', 'test');
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-dm.zip')
+		);
+		expect(result).toMatchObject({
+			type: 'dialog',
+			dialogType: 'dm',
+			dropFiles: [
+				expect.objectContaining({ name: 'INDEX.dmi' }),
+				expect.objectContaining({ name: 'test.dm' })
+			]
+		});
+	});
+	it('DMIをファイル選択対象に含める', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.dmi');
+	});
+});

@@ -572,7 +572,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		icon: 'mdi:terrain',
 		description:
 			'数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
-		extensions: ['.dm']
+		extensions: ['.dm', '.dmi']
 	},
 	{
 		id: 'landxml',
