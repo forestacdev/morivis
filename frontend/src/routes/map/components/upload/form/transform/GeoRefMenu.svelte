@@ -81,7 +81,7 @@
 
 	<div class="w-full px-2 text-sm text-gray-300">
 		<p class="mb-2 text-yellow-400">
-			地図上の4つのマーカーをドラッグして画像の範囲を指定してください
+			四隅のマーカーで回転・拡大縮小、画像の内側をドラッグすると全体を移動できます。画像の外側では地図を移動できます。
 		</p>
 		<div class="flex flex-col gap-1 text-xs">
 			<div>範囲: {bboxDisplay}</div>

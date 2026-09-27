@@ -70,6 +70,7 @@
 		type GeoRefCornerKey
 	} from '$routes/map/utils/transform/georef/aspect-locked';
 	import { getDefaultGeoRefCorners } from '$routes/map/utils/transform/georef/default-corners';
+	import { attachGeoRefImageDrag } from '$routes/map/utils/transform/georef/image-drag';
 	import { debugLog } from '$routes/stores/debug';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -678,6 +679,21 @@
 
 		onDragCorner();
 	};
+
+	$effect(() => {
+		if (
+			transformOptionMode !== 'georef' ||
+			!initialized ||
+			!imageUrl ||
+			isModelPlacementActive ||
+			$isProcessing
+		)
+			return;
+		return attachGeoRefImageDrag(map, getCornerCoordinates, (corners) => {
+			setCornerCoordinates(corners);
+			onDragCorner();
+		});
+	});
 
 	$effect(() => {
 		const requestId = ++zoneBuildId;
