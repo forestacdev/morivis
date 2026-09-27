@@ -624,7 +624,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		label: '点群',
 		icon: 'mdi:chart-scatter-plot',
 		description: '多数の座標点で構成された3Dデータです。',
-		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.xyz', '.txt']
+		extensions: ['.copc.laz', '.las', '.laz', '.ply', '.pcd', '.e57', '.xyz', '.txt']
 	},
 	{
 		id: 'spz',

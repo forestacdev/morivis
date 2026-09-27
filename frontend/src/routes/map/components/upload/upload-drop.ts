@@ -251,6 +251,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	rbxlx: 'roblox',
 	rbxl: 'roblox',
 	pcd: 'pointcloud',
+	e57: 'pointcloud',
 	xyz: 'pointcloud',
 	mbtiles: 'mbtiles',
 	nc: 'netcdf',

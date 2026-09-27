@@ -3,6 +3,7 @@
 	import { LASLoader } from '@loaders.gl/las';
 	import { PCDLoader } from '@loaders.gl/pcd';
 	import { PLYLoader } from '@loaders.gl/ply';
+	import proj4 from 'proj4';
 	import { onDestroy, untrack } from 'svelte';
 
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
@@ -10,6 +11,7 @@
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import type { TransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
+	import { beginUploadProcessing } from '$routes/map/components/upload/processing-guard';
 	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
@@ -19,6 +21,7 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { GeoTiffCache, type BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { isCopcFileName, parseCopcFile } from '$routes/map/utils/formats/copc';
+	import { parseE57File } from '$routes/map/utils/formats/e57/analyze';
 	import {
 		encodeAllBandsToTerrarium,
 		getMinMax,
@@ -96,6 +99,7 @@
 	let rasterResolution = $state(1024);
 	let pendingRegistrationAfterTransform = $state(false);
 	let projectedPointCloud: PointCloudMeterOffsets | null = null;
+	let e57SourcePositions: Float64Array | null = null;
 	let plyUpAxis = $state<PointCloudUpAxis>('z-up');
 
 	const registrationModeOptions = [
@@ -110,7 +114,7 @@
 
 	const pointCloudFile = $derived.by(() => {
 		const file = getFirstUploadFile(dropFile);
-		return file && /\.(las|laz|ply|pcd|xyz|txt|obj)$/i.test(file.name) ? file : null;
+		return file && /\.(las|laz|ply|pcd|e57|xyz|txt|obj)$/i.test(file.name) ? file : null;
 	});
 	const getPointCloudEntryName = (fileName: string) => {
 		const matchedExtension = getMatchedExtension(fileName);
@@ -132,13 +136,17 @@
 	$effect(() => {
 		if (pointCloudFile) {
 			entryName = getPointCloudEntryName(pointCloudFile.name);
-			analyzePointCloud(
+			const controller = new AbortController();
+			void analyzePointCloud(
 				pointCloudFile,
-				isPlyPointCloudFile(pointCloudFile.name) ? plyUpAxis : 'z-up'
+				isPlyPointCloudFile(pointCloudFile.name) ? plyUpAxis : 'z-up',
+				controller.signal
 			);
+			return () => controller.abort();
 		}
 	});
 
+	const isE57File = (name: string) => /\.e57$/i.test(name);
 	const isTextPointCloudFile = (fileName: string) => /\.(xyz|txt)$/i.test(fileName);
 	const isObjPointCloudFile = (fileName: string) => /\.obj$/i.test(fileName);
 	const isPlyPointCloudFile = (fileName: string) => /\.ply$/i.test(fileName);
@@ -196,9 +204,11 @@
 		return error.message;
 	};
 
-	const analyzePointCloud = async (file: File, upAxis: PointCloudUpAxis) => {
+	const analyzePointCloud = async (file: File, upAxis: PointCloudUpAxis, signal: AbortSignal) => {
 		surfaceAbort?.abort();
-		isProcessing.set(true);
+		const releaseProcessing = beginUploadProcessing(signal);
+		e57SourcePositions = null;
+		parsedArrayBuffer = null;
 		analyzed = false;
 		pointCount = null;
 		sourcePointCount = null;
@@ -216,8 +226,33 @@
 			let bbox: [number, number, number, number] | null = null;
 			let detectedProjection: ReturnType<typeof getLasProjection> = null;
 
-			if (isCopcFileName(file.name)) {
+			let e57MeterCoordinates = false;
+			if (isE57File(file.name)) {
+				const result = await parseE57File(file, signal);
+				if (signal.aborted) return;
+				positions = result.positions;
+				e57SourcePositions = result.positions;
+				colors = result.colors;
+				pointCount = result.pointCount;
+				sourcePointCount = result.sourcePointCount;
+				bbox = result.bbox;
+				detectedProjection = result.projection;
+				if (detectedProjection?.coordinateType === 'projected') {
+					try {
+						const projection = new proj4.Proj(detectedProjection.definition) as InstanceType<
+							typeof proj4.Proj
+						> & {
+							units?: string;
+							to_meter?: number;
+						};
+						e57MeterCoordinates = projection.units === 'm' || projection.to_meter === 1;
+					} catch {
+						/* 解釈できないCRSは座標系選択へ回す */
+					}
+				}
+			} else if (isCopcFileName(file.name)) {
 				const result = await parseCopcFile(file);
+				if (signal.aborted) return;
 				positions = result.positions;
 				colors = result.colors;
 				pointCount = result.pointCount;
@@ -227,6 +262,7 @@
 			} else if (isTextPointCloudFile(file.name)) {
 				// XYZ テキスト形式
 				const result = await parseXyzFile(file);
+				if (signal.aborted) return;
 				positions = result.positions;
 				colors = result.colors ?? undefined;
 				pointCount = result.pointCount;
@@ -248,6 +284,7 @@
 				}
 			} else if (isObjPointCloudFile(file.name)) {
 				const result = await parseObjPointCloudFile(file);
+				if (signal.aborted) return;
 				positions = result.positions;
 				colors = result.colors ?? undefined;
 				pointCount = result.pointCount;
@@ -270,6 +307,7 @@
 			} else {
 				// LAS/LAZ/PLY/PCD (loaders.gl)
 				const arrayBuffer = await file.arrayBuffer();
+				if (signal.aborted) return;
 				parsedArrayBuffer = arrayBuffer.slice(0);
 				if (isLasPointCloudFile(file.name)) {
 					detectedProjection = getLasProjection(arrayBuffer);
@@ -279,6 +317,7 @@
 					? await parse(arrayBuffer, LASLoader, { las: { fp64: true } })
 					: await parse(arrayBuffer, getLoader(file.name));
 
+				if (signal.aborted) return;
 				const pos = data.attributes?.POSITION?.value;
 				if (pos) {
 					positions =
@@ -311,7 +350,7 @@
 				rawBbox &&
 				positions &&
 				detectedProjection?.coordinateType === 'projected' &&
-				detectedProjection.definition.includes('+units=m')
+				(detectedProjection.definition.includes('+units=m') || e57MeterCoordinates)
 			) {
 				try {
 					const transformed = await createProjectedPointCloud(
@@ -319,6 +358,7 @@
 						positions,
 						detectedProjection.definition
 					);
+					if (signal.aborted) return;
 					resolvedBbox = transformed.bbox;
 					projectedPointCloud = transformed.pointCloud;
 					resolvedColors = colors;
@@ -342,6 +382,7 @@
 						positions,
 						detectedProjection.definition
 					);
+					if (signal.aborted) return;
 					resolvedBbox = transformed.bbox;
 					resolvedPositions = transformed.positions;
 					resolvedColors = colors;
@@ -357,7 +398,7 @@
 				}
 			}
 
-			if (rawBbox && isBboxValid(rawBbox)) {
+			if (rawBbox && !isE57File(file.name) && isBboxValid(rawBbox)) {
 				resolvedBbox = rawBbox;
 				if (positions) resolvedPositions = positions;
 				resolvedColors = colors;
@@ -369,10 +410,11 @@
 				showNotification('位置情報が取得できませんでした', 'error');
 			}
 		} catch (e) {
+			if (signal.aborted) return;
 			showNotification(getPointCloudErrorMessage(e), 'error');
 			console.error(e);
 		} finally {
-			isProcessing.set(false);
+			releaseProcessing();
 		}
 	};
 
@@ -410,9 +452,20 @@
 				return;
 			}
 
-			const transformed = await transformPointCloudData(rawBbox, positions, prjContent);
-			resolvedBbox = transformed.bbox;
-			resolvedPositions = transformed.positions;
+			if (e57SourcePositions && prjContent.includes('+units=m')) {
+				const transformed = await createProjectedPointCloud(
+					rawBbox,
+					e57SourcePositions,
+					prjContent
+				);
+				resolvedBbox = transformed.bbox;
+				projectedPointCloud = transformed.pointCloud;
+				resolvedPositions = null;
+			} else {
+				const transformed = await transformPointCloudData(rawBbox, positions, prjContent);
+				resolvedBbox = transformed.bbox;
+				resolvedPositions = transformed.positions;
+			}
 			needsTransform = false;
 
 			showNotification(
@@ -729,6 +782,12 @@
 	<span class="text-2xl font-bold">点群ファイルの登録</span>
 </div>
 
+{#if pointCloudFile && isE57File(pointCloudFile.name)}
+	<p class="pb-2 text-xs text-gray-400">
+		E57は256 MiB・500万点まで読み込めます。表示は最大100万点に間引きます。
+	</p>
+{/if}
+
 <fieldset
 	disabled={surfaceProcessing}
 	class="c-scroll flex h-full w-full grow flex-col items-center gap-3 overflow-x-hidden overflow-y-auto"
@@ -754,7 +813,7 @@
 			{/if}
 			{#if sourcePointCount !== null && pointCount !== null && pointCount < sourcePointCount}
 				<div class="text-xs text-gray-400">
-					COPC の全 {sourcePointCount.toLocaleString()} 点のうち、表示用に {pointCount.toLocaleString()}
+					全 {sourcePointCount.toLocaleString()} 点のうち、表示用に {pointCount.toLocaleString()}
 					点を読み込みました。
 				</div>
 			{/if}

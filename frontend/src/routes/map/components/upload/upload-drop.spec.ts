@@ -334,6 +334,17 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveDroppedFiles', () => {
+	it('E57をファイル選択対象に含める', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.e57');
+	});
+	it.each(['e57', 'E57'])('E57 .%s を点群フォームへ渡す', async extension => {
+		const file = createFile(`test-cloud.${extension}`);
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'pointcloud',
+			dropFiles: undefined
+		});
+	});
 	it('タイルセットとGLBを含むフォルダは3D Tilesフォームに渡す', async () => {
 		const files = [
 			createPathLikeFile(

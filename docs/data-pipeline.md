@@ -96,6 +96,9 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+E57 (`.e57`) は既存の `PointCloudForm.svelte` へ渡す。専用Worker内のWASMで複数スキャンのpose・RGBを反映し、点群entryへ正規化する。埋め込みWKTがない・変換できない場合は座標系指定または位置合わせを使う。
+対応範囲とメモリ上限は [E57](../frontend/src/routes/map/utils/formats/e57/README.md) を参照。
+
 ASCII Grid (`.asc`) は `AsciiGridForm.svelte` で同名のPRJと対応付け、Workerで格子を解析する。
 PRJが有効ならそのままエントリー登録へ進み、座標系が不明・変換できない場合はZoneを自動で開く。
 PRJまたはZoneで確定した座標系から、セル中心を逆投影してWGS84の格子へ再サンプリングする。
