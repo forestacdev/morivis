@@ -12,6 +12,9 @@ overrides:
   thrift: 0.23.0
   tmp: 0.2.6
 
+patchedDependencies:
+  maplibre-gl@6.4.0: c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93
+
 importers:
 
   .:
@@ -315,7 +318,7 @@ importers:
         version: 0.1.0
       maplibre-gl:
         specifier: ^6.4.0
-        version: 6.4.0
+        version: 6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93)
       moji:
         specifier: ^0.5.1
         version: 0.5.1
@@ -372,7 +375,7 @@ importers:
         version: 1.20.0
       terra-draw-maplibre-gl-adapter:
         specifier: ^1.0.3
-        version: 1.2.3(maplibre-gl@6.4.0)(terra-draw@1.20.0)
+        version: 1.2.3(maplibre-gl@6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93))(terra-draw@1.20.0)
       three:
         specifier: ^0.177.0
         version: 0.177.0
@@ -12185,7 +12188,7 @@ snapshots:
 
   maplibre-contour@0.1.0: {}
 
-  maplibre-gl@6.4.0:
+  maplibre-gl@6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93):
     dependencies:
       '@mapbox/point-geometry': 1.1.0
       '@mapbox/tiny-sdf': 2.2.0
@@ -13423,9 +13426,9 @@ snapshots:
       type-fest: 0.16.0
       unique-string: 2.0.0
 
-  terra-draw-maplibre-gl-adapter@1.2.3(maplibre-gl@6.4.0)(terra-draw@1.20.0):
+  terra-draw-maplibre-gl-adapter@1.2.3(maplibre-gl@6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93))(terra-draw@1.20.0):
     dependencies:
-      maplibre-gl: 6.4.0
+      maplibre-gl: 6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93)
       terra-draw: 1.20.0
 
   terra-draw@1.20.0: {}

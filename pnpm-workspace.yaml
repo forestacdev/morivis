@@ -41,3 +41,6 @@ allowBuilds:
   esbuild: true
   msw: false
   sharp: true
+
+patchedDependencies:
+  maplibre-gl@6.4.0: patches/maplibre-gl@6.4.0.patch
