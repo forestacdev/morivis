@@ -29,6 +29,7 @@ import { getMatchedExtension } from '$routes/map/utils/upload-matchers-common';
 import {
 	areAllPhotoFiles,
 	areAllXmlFiles,
+	CAD_MODEL_FILE_EXTENSIONS,
 	findFirstByExtensions,
 	findFirstSupportedFile,
 	hasAnyExtension,
@@ -225,6 +226,10 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	'3mf': 'model',
 	amf: 'model',
 	stl: 'model',
+	step: 'step-iges',
+	stp: 'step-iges',
+	iges: 'step-iges',
+	igs: 'step-iges',
 	ifc: 'model',
 	pmx: 'model',
 	usd: 'model',
@@ -327,6 +332,15 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 
 			return createDialogDecision('kml');
 		}
+	},
+	{
+		id: 'step-iges-files',
+		match: files => files.some(file => hasAnyExtension(file, CAD_MODEL_FILE_EXTENSIONS)),
+		resolve: async files =>
+			createDialogDecision(
+				'step-iges',
+				files.filter(file => hasAnyExtension(file, CAD_MODEL_FILE_EXTENSIONS))
+			)
 	},
 	{
 		id: 'model-files',

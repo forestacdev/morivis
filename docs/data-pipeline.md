@@ -288,7 +288,12 @@ TIN サーフェスを DEM に焼き直して 2D ラスターとして扱う。
 
 ## 3D モデル配置フロー
 
-3D モデルは、entry 作成前の meta 計算と、three.js 読み込み後の実オブジェクト配置が分かれている。  
+STEP／IGES (`.step/.stp/.iges/.igs`) は `StepIgesForm.svelte` で上方向を選び、`utils/formats/step-iges/worker.ts` でブラウザ内のGLB変換を行う。
+元の単位をメートルへ換算し、部品階層・面色を保ったGLBを `MeshModelForm.svelte` へ渡す。
+以降は既存の `MeshEntry` (`format.type: 'gltf'`) と位置合わせ・描画フローを共用する。
+対応範囲と制限は [STEP／IGES](../frontend/src/routes/map/utils/formats/step-iges/README.md) を参照。
+
+3D モデルは、entry 作成前の meta 計算と、three.js 読み込み後の実オブジェクト配置が分かれている。
 今回の OBJ 対応では、この 2 段階を分けて見ないと挙動を追いにくい。
 
 ```mermaid

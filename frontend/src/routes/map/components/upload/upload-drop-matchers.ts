@@ -3,6 +3,8 @@ import { getMatchedExtension } from '$routes/map/utils/upload-matchers-common';
 const PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.heic', '.heif'];
 const XML_EXTENSION = '.xml';
 
+export const CAD_MODEL_FILE_EXTENSIONS = ['.step', '.stp', '.iges', '.igs'] as const;
+
 export const MODEL_FILE_EXTENSIONS = [
 	'.gltf',
 	'.vrm',

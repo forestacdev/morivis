@@ -500,6 +500,26 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it.each(['test-part.step', 'test-part.STP', 'test-part.iges', 'test-part.IGS'])(
+		'%s はSTEP／IGES変換フォームへ渡す',
+		async name => {
+			expect(await resolveDroppedFiles(createFile(name))).toEqual({
+				type: 'dialog',
+				dialogType: 'step-iges',
+				dropFiles: undefined
+			});
+		}
+	);
+
+	it('STEP／IGESフォルダでは対象モデルだけを選択フォームへ渡す', async () => {
+		const models = [createFile('test-a.step'), createFile('test-b.igs')];
+		expect(await resolveDroppedFiles([createFile('test-note.txt'), ...models])).toEqual({
+			type: 'dialog',
+			dialogType: 'step-iges',
+			dropFiles: models
+		});
+	});
+
 	it.each(['model.usd', 'model.usda', 'model.usdz'])(
 		'%s はモデルダイアログ判定になる',
 		async (fileName) => {

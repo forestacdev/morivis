@@ -128,6 +128,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/MeshModelForm.svelte'),
 		profile: 'model-georef'
 	},
+	'step-iges': {
+		load: () => import('$routes/map/components/upload/form/StepIgesForm.svelte'),
+		profile: 'drop-file'
+	},
 	mca: {
 		load: () => import('$routes/map/components/upload/form/McaForm.svelte'),
 		profile: 'drop-file'

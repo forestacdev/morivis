@@ -322,6 +322,9 @@ importers:
       netcdfjs:
         specifier: ^4.0.0
         version: 4.0.0
+      occt-import-js:
+        specifier: ^0.0.23
+        version: 0.0.23
       ol:
         specifier: ^10.5.0
         version: 10.7.0
@@ -5460,6 +5463,9 @@ packages:
 
   observable-fns@0.6.1:
     resolution: {integrity: sha512-9gRK4+sRWzeN6AOewNBTLXir7Zl/i3GB6Yl26gK4flxz8BXVpD3kt8amREmWNb0mxYOGDotvE5a4N+PtGGKdkg==}
+
+  occt-import-js@0.0.23:
+    resolution: {integrity: sha512-RFfYQXYFX5C1mB1Aywm0ShcUKzXOr/VzTnlzhBSDJOR6YCAPt1HYCzeXWg1vwwjn/cUxwqRNhhtf1dlewoZYCQ==}
 
   ol@10.7.0:
     resolution: {integrity: sha512-122U5gamPqNgLpLOkogFJhgpywvd/5en2kETIDW+Ubfi9lPnZ0G9HWRdG+CX0oP8od2d6u6ky3eewIYYlrVczw==}
@@ -12390,6 +12396,8 @@ snapshots:
       es-object-atoms: 1.1.1
 
   observable-fns@0.6.1: {}
+
+  occt-import-js@0.0.23: {}
 
   ol@10.7.0:
     dependencies:

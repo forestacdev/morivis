@@ -113,6 +113,7 @@ export type DialogType =
 	| 'local-raster-tiles'
 	| 'pmtiles'
 	| 'model'
+	| 'step-iges'
 	| 'mca'
 	| 'roblox'
 	| 'gaussian-splat'
@@ -718,6 +719,14 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		icon: 'mdi:printer-3d',
 		description: '積層造形向けの3Dモデル形式です。造形用の3Dデータを確認するときに使います。',
 		extensions: ['.amf']
+	},
+	{
+		id: 'step-iges',
+		label: 'STEP / IGES',
+		icon: 'mdi:cube-outline',
+		description:
+			'CADの立体・曲面を保持する交換形式です。部材や設備の形状・色を3Dモデルとして読み込むときに使います。',
+		extensions: ['.step', '.stp', '.iges', '.igs']
 	},
 	{
 		id: 'stl',
