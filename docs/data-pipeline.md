@@ -96,6 +96,12 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+ASCII Grid (`.asc`) は `AsciiGridForm.svelte` で同名のPRJと対応付け、Workerで格子を解析する。
+PRJが有効ならそのままエントリー登録へ進み、座標系が不明・変換できない場合はZoneを自動で開く。
+PRJまたはZoneで確定した座標系から、セル中心を逆投影してWGS84の格子へ再サンプリングする。
+ラスターは既存の `GeoTiffCache` と `RasterTiffStyle`、3Dは既存のメッシュ生成へ渡す。座標系不明なら手動の位置合わせも選べる。
+対応範囲は [ASCII Grid](../frontend/src/routes/map/utils/formats/ascii-grid/README.md) を参照。
+
 DMは同じディレクトリのDMI、DM内のインデックス、図郭番号の順で系番号の候補を取得する。
 候補は `pendingZoneGeoRefData.suggestedEpsgCode` からZone画面へ渡し、ユーザーの確認後に変換する。
 図形区分31の中庭は、同一図郭の建物外周に完全に含まれる場合に内周へ変換する。

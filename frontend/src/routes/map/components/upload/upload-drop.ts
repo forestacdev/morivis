@@ -5,6 +5,7 @@ import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
+import { isAsciiGridFile } from '$routes/map/utils/formats/ascii-grid/files';
 import { isCityGmlFile } from '$routes/map/utils/formats/citygml/detector';
 import { isCityJsonFile } from '$routes/map/utils/formats/cityjson/detector';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
@@ -238,6 +239,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	h5: 'hdf5',
 	tiff: 'geotiff',
 	tif: 'geotiff',
+	asc: 'ascii-grid',
 	svg: 'svg',
 	png: 'geopdf',
 	webp: 'geopdf',
@@ -266,6 +268,15 @@ const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
+	{
+		id: 'ascii-grid-set',
+		match: files => files.some(isAsciiGridFile),
+		resolve: async files =>
+			createDialogDecision(
+				'ascii-grid',
+				files.filter(file => isAsciiGridFile(file) || hasExtension(file, '.prj'))
+			)
+	},
 	{
 		id: 'dm-set',
 		match: files => files.some(file => hasAnyExtension(file, ['.dm', '.dmi'])),

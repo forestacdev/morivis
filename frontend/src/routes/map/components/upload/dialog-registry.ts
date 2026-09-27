@@ -32,6 +32,10 @@ const tileDialog: DialogDefinition = {
 };
 
 export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDefinition>> = {
+	'ascii-grid': {
+		load: () => import('$routes/map/components/upload/form/AsciiGridForm.svelte'),
+		profile: 'pointcloud-georef'
+	},
 	bds: {
 		load: () => import('$routes/map/components/upload/form/BdsForm.svelte'),
 		profile: 'drop-file'

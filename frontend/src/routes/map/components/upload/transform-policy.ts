@@ -36,6 +36,7 @@ const createPolicy = (
 });
 
 const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPolicy>> = {
+	'ascii-grid': createPolicy('zone-only', 'georef-only', 'zone'),
 	shp: createPolicy('zone-or-georef', 'none', 'zone'),
 	csv: createPolicy('zone-or-georef', 'none', 'zone'),
 	tsv: createPolicy('zone-or-georef', 'none', 'zone'),

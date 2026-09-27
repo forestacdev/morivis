@@ -1,5 +1,6 @@
 <script lang="ts">
 	import McaRegionGrid from '$routes/map/components/upload/form/McaRegionGrid.svelte';
+	import { beginUploadProcessing } from '$routes/map/components/upload/processing-guard';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { mcaFilesToGlbInWorker } from '$routes/map/utils/formats/mca/analyze';
 	import { validateMcaFileSet } from '$routes/map/utils/formats/mca/batch';
@@ -58,6 +59,7 @@
 		const input = selectedFiles;
 		const controller = new AbortController();
 		conversion = controller;
+		const releaseProcessing = beginUploadProcessing(controller.signal);
 		running = true;
 		errorMessage = '';
 		progress = '地形データを読み込み中…';
@@ -87,6 +89,7 @@
 					error instanceof Error ? error.message : 'Minecraftの地形データを読み込めませんでした。';
 			}
 		} finally {
+			releaseProcessing();
 			if (conversion === controller) {
 				conversion = null;
 				running = false;

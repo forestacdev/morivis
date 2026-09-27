@@ -3,6 +3,26 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('ASCII Gridのドロップ', () => {
+	it.each(['test-grid.asc', 'test-grid.ASC'])('%sを専用フォームへ渡す', async name => {
+		expect(await resolveDroppedFiles(new File([], name))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'ascii-grid'
+		});
+	});
+	it('ASCとPRJをShapefileと誤判定せず同時に渡す', async () => {
+		const files = [new File([], 'test-grid.prj'), new File([], 'test-grid.asc')];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'ascii-grid',
+			dropFiles: files
+		});
+	});
+	it('ファイル選択のacceptにASCを含める', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.asc');
+	});
+});
+
 describe('Robloxのドロップ', () => {
 	it.each(['test-world.rbxl', 'test-world.RBXL', 'test-world.rbxlx', 'test-world.RBXLX'])(
 		'専用フォームへ渡す: %s',

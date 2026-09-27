@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const imports = vi.hoisted(() => ({ gpx: 0, dwg: 0 }));
+vi.mock('./form/AsciiGridForm.svelte', () => ({ default: () => {} }));
 const stepIgesImports = vi.hoisted(() => ({ count: 0 }));
 vi.mock('./form/StepIgesForm.svelte', () => {
 	stepIgesImports.count++;
@@ -32,6 +33,10 @@ vi.mock('./form/DwgForm.svelte', () => {
 import { dialogRegistry } from './dialog-registry';
 
 describe('dialog registry loading', () => {
+	it('ASCII Gridに座標系選択とラスター位置合わせの状態を渡す', async () => {
+		expect(dialogRegistry['ascii-grid']!.profile).toBe('pointcloud-georef');
+		expect((await dialogRegistry['ascii-grid']!.load()).default).toBeTypeOf('function');
+	});
 	it('STEP／IGES変換フォームを選択時だけ読み込む', async () => {
 		expect(stepIgesImports.count).toBe(0);
 		expect(dialogRegistry['step-iges']!.profile).toBe('drop-file');
