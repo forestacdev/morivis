@@ -1,3 +1,4 @@
+import { isJp2File } from '$routes/map/utils/formats/jpeg2000/files';
 import { isMapInfoTab } from '$routes/map/utils/formats/mapinfo-tab/files';
 import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
@@ -191,6 +192,9 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	arrow: 'geoarrow',
 	feather: 'geoarrow',
 	tab: 'mapinfo-tab',
+	jp2: 'jpeg2000',
+	j2w: 'jpeg2000',
+	jp2w: 'jpeg2000',
 	map: 'mapinfo-tab',
 	id: 'mapinfo-tab',
 	ind: 'mapinfo-tab',
@@ -288,6 +292,11 @@ const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
+	{
+		id: 'jpeg2000-set',
+		match: files => files.some(isJp2File),
+		resolve: async files => createDialogDecision('jpeg2000', files)
+	},
 	{
 		id: 'mapinfo-tab-set',
 		match: files => files.some(isMapInfoTab),

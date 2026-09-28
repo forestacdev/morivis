@@ -83,6 +83,7 @@ export type DialogType =
 	| 'geotiff'
 	| 'ascii-grid'
 	| 'envi-bil'
+	| 'jpeg2000'
 	| 'wmts'
 	| 'wcs'
 	| 'geozarr'
@@ -509,6 +510,13 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		extensions: ['.tif', '.tiff']
 	},
 	{
+		id: 'jpeg2000',
+		label: 'JPEG2000／GeoJP2',
+		icon: 'mdi:image',
+		description: 'JPEG2000形式のラスター画像です。埋め込み座標情報や付属ファイルを使い、地図上に表示できます。',
+		extensions: ['.jp2']
+	},
+	{
 		id: 'envi-bil',
 		label: 'ENVI／ESRI BIL',
 		icon: 'mdi:image',
@@ -842,6 +850,8 @@ export const SUPPORTED_FILE_ACCEPT = [
 	'.tiffw',
 	'.pgw',
 	'.jgw',
+	'.j2w',
+	'.jp2w',
 	'.blw',
 	'.bpw',
 	'.bqw',

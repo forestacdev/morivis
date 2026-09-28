@@ -6,14 +6,15 @@ import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
 import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
 import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 import { findCenterTile } from '$routes/map/utils/map/tile';
-import type { RawRaster } from '.';
+import type { RasterGrid } from '../raster/grid';
 
 /** WGS84の等間隔格子を既存の多バンドラスター／メッシュentryへ渡す。 */
 export const createRawRasterEntry = async (
-	grid: RawRaster,
+	grid: RasterGrid,
 	name: string,
 	mode: 'raster' | 'mesh',
-	signal: AbortSignal
+	signal: AbortSignal,
+	attribution = 'ENVI／ESRI BIL'
 ) => {
 	if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
 	const id = `raw_raster_${crypto.randomUUID()}`;
@@ -49,7 +50,7 @@ export const createRawRasterEntry = async (
 			URL.revokeObjectURL(entry.format.url);
 			throw new DOMException('Aborted', 'AbortError');
 		}
-		entry.metaData.attribution = 'ENVI／ESRI BIL';
+		entry.metaData.attribution = attribution;
 		return entry;
 	}
 	try {
@@ -78,7 +79,7 @@ export const createRawRasterEntry = async (
 			format: { type: 'image', url: '' },
 			metaData: {
 				...DEFAULT_CUSTOM_META_DATA,
-				attribution: 'ENVI／ESRI BIL',
+				attribution,
 				name,
 				tileSize: 256,
 				bounds,

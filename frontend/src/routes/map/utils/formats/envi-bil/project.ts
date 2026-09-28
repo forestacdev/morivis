@@ -1,8 +1,8 @@
 import proj4 from 'proj4';
-import type { RawRaster } from '.';
+import type { RasterGrid } from '../raster/grid';
 
 /** 回転を含む元格子のセルへ逆投影し、バンドごとの値・欠損を最近傍で保つ。 */
-export const projectRawRaster = (grid: RawRaster, sourceCrs: string): RawRaster => {
+export const projectRawRaster = <T extends RasterGrid>(grid: T, sourceCrs: string): T => {
 	if (!sourceCrs.trim()) throw new Error('座標系を選択してください');
 	if (!grid.transform) {
 		throw new Error('画像の位置情報がありません。位置合わせを使用してください');

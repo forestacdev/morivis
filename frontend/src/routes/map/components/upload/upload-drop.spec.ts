@@ -1447,3 +1447,32 @@ describe('MapInfo TABのドロップ', () => {
 		if (result.type === 'dialog') expect(result.dropFiles).toHaveLength(4);
 	});
 });
+
+describe('JPEG2000のドロップ', () => {
+	it.each(['jp2', 'JP2', 'j2w', 'jp2w'])('%sを専用フォームへ渡す', async ext => {
+		expect(await resolveDroppedFiles(new File([], `test.${ext}`))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'jpeg2000'
+		});
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(`.${ext.toLowerCase()}`);
+	});
+	it('JP2と付属ファイルをまとめて保持する', async () => {
+		const files = ['test.jp2', 'test.j2w', 'test.prj', 'test.jp2.aux.xml'].map(name =>
+			new File([], name)
+		);
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'jpeg2000',
+			dropFiles: files
+		});
+	});
+	it('ZIPのフォルダと付属ファイルを保持する', async () => {
+		const zip = new JSZip();
+		for (const ext of ['jp2', 'j2w', 'prj']) zip.file(`test-folder/test.${ext}`, 'test');
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'jpeg2000' });
+		if (result.type === 'dialog') expect(result.dropFiles).toHaveLength(3);
+	});
+});

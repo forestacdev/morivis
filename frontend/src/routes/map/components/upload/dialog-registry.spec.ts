@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const imports = vi.hoisted(() => ({ gpx: 0, dwg: 0 }));
+vi.mock('./form/Jpeg2000Form.svelte', () => ({ default: () => {} }));
 vi.mock('./form/MapInfoTabForm.svelte', () => ({ default: () => {} }));
 vi.mock('./form/EnviBilForm.svelte', () => ({ default: () => {} }));
 vi.mock('./form/AsciiGridForm.svelte', () => ({ default: () => {} }));
@@ -35,6 +36,10 @@ vi.mock('./form/DwgForm.svelte', () => {
 import { dialogRegistry } from './dialog-registry';
 
 describe('dialog registry loading', () => {
+	it('JPEG2000に座標系選択とラスター位置合わせを渡す', async () => {
+		expect(dialogRegistry.jpeg2000!.profile).toBe('pointcloud-georef');
+		expect((await dialogRegistry.jpeg2000!.load()).default).toBeTypeOf('function');
+	});
 	it('MapInfo TABにベクターの座標系選択・位置合わせを渡す', async () => {
 		expect(dialogRegistry['mapinfo-tab']!.profile).toBe('vector-zone-georef');
 		expect((await dialogRegistry['mapinfo-tab']!.load()).default).toBeTypeOf('function');

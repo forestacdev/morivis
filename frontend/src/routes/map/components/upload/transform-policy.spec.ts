@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getAllowedTransformModesForIssue, getModelSpatialIssue } from './transform-policy';
 
-it.each(['ascii-grid', 'envi-bil'] as const)(
+it.each(['ascii-grid', 'envi-bil', 'jpeg2000'] as const)(
 	'%sは座標系を選択でき、手動の位置合わせも使える',
 	format => {
 		expect(getAllowedTransformModesForIssue(format, 'crs-missing')).toEqual(['zone']);

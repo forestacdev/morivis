@@ -400,3 +400,8 @@ MapInfo TAB (`.tab`・`.dat`/`.dbf`・`.map`・`.id`) は `MapInfoTabForm.svelte
 NonEarthや変換できない座標系は選択フォームへ渡し、必要ならベクターの位置合わせを使う。
 複数種類の図形は種類を選択して通常のvector entryへ登録する。処理中は共通スクリーンガードを表示する。
 対応範囲は [MapInfo TAB](../frontend/src/routes/map/utils/formats/mapinfo-tab/README.md) を参照。
+
+JPEG2000／GeoJP2 (`.jp2`) は `Jpeg2000Form.svelte` からOpenJPEG Workerへ渡す。
+GeoJP2の埋め込み情報・付属ファイルから座標系と格子位置を読み、共通のラスター再投影・entry生成を使う。
+座標系が不明なら座標系選択、位置情報がなければ位置合わせへ進む。処理中は共通スクリーンガードを表示する。
+対応範囲は [JPEG2000／GeoJP2](../frontend/src/routes/map/utils/formats/jpeg2000/README.md) を参照。

@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => {
 				'three/addons/objects/MarchingCubes.js',
 				'occt-import-js',
 				'gdal3.js',
+				'@cornerstonejs/codec-openjpeg/decodewasmjs',
 				'web-e57-internal/e57_bg.js'
 			]
 		},

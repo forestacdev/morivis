@@ -643,7 +643,7 @@
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
-					attribution: 'GeoTIFF',
+					attribution: data.rasterConfig?.attribution ?? 'GeoTIFF',
 					name: data.entryName || '画像データ',
 					tileSize: 256,
 					bounds: bbox,
@@ -670,7 +670,7 @@
 								index: 0,
 								min: data.bandMinMax.min,
 								max: data.bandMinMax.max,
-								colorMap: 'jet'
+								colorMap: data.rasterConfig?.singleColorMap ?? 'jet'
 							},
 							multi: {
 								r: { index: 0, min: data.multiBandMinMax.r.min, max: data.multiBandMinMax.r.max },
