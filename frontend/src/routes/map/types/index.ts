@@ -4,6 +4,7 @@ import type {
 	ResultCoordinateData,
 	ResultPoiData
 } from '$routes/map/utils/data/search-result';
+import { GEOJSON_SEQUENCE_EXTENSIONS } from '$routes/map/utils/formats/geojsonseq/files';
 import type { MapGeoJSONFeature, PositionAnchor } from '$routes/map/utils/maplibre';
 import { geojson } from 'flatgeobuf';
 export type {
@@ -187,7 +188,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'wmts',
 		dialogType: 'wmts',
 		label: 'WMS/WMTS',
-		description: '地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
+		description:
+			'地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
 		icon: 'mdi:layers-outline',
 		extensions: []
 	},
@@ -249,7 +251,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'stac',
 		dialogType: 'stac',
 		label: 'STAC / COG',
-		description: 'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
+		description:
+			'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
 		icon: 'hugeicons:cloud-cog',
 		extensions: []
 	},
@@ -260,6 +263,15 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		description: 'GeoJSONファイルの読み込みや、GeoJSONテキストの直接入力を行うフォームです。',
 		icon: 'mdi:code-json',
 		extensions: ['.geojson', '.json']
+	},
+	{
+		id: 'geojsonseq',
+		dialogType: 'geojson',
+		label: 'GeoJSONSeq / 行区切りGeoJSON',
+		description:
+			'GeoJSONを改行またはレコード区切りで並べたデータです。地物と属性をまとめて地図上に表示できます。',
+		icon: 'mdi:code-json',
+		extensions: GEOJSON_SEQUENCE_EXTENSIONS
 	},
 	{
 		id: 'wkt',
@@ -513,7 +525,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'jpeg2000',
 		label: 'JPEG2000／GeoJP2',
 		icon: 'mdi:image',
-		description: 'JPEG2000形式のラスター画像です。埋め込み座標情報や付属ファイルを使い、地図上に表示できます。',
+		description:
+			'JPEG2000形式のラスター画像です。埋め込み座標情報や付属ファイルを使い、地図上に表示できます。',
 		extensions: ['.jp2']
 	},
 	{
@@ -552,7 +565,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'grib2',
 		label: 'GRIB2 (GPV)',
 		icon: 'mdi:weather-windy',
-		description: '気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
+		description:
+			'気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。',
 		extensions: ['.grib2', '.grb2', '.grb', '.bin']
 	},
 	{
@@ -613,7 +627,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: 'dm',
 		label: 'DM',
 		icon: 'mdi:terrain',
-		description: '数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
+		description:
+			'数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。',
 		extensions: ['.dm', '.dmi']
 	},
 	{
@@ -706,7 +721,8 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 		id: '3ds',
 		label: 'Autodesk 3DS',
 		icon: 'mdi:cube-outline',
-		description: '3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
+		description:
+			'3D Studio系の3Dモデル形式です。既存の3D資産を地図上で確認するときに使います。',
 		extensions: ['.3ds']
 	},
 	{
@@ -892,7 +908,7 @@ export interface PoiHighlightMarkerState {
 	type: 'poi';
 	featureId: string | number;
 	point: [number, number];
-	properties: { [key: string]: any };
+	properties: { [key: string]: any; };
 	iconImage?: string | null;
 	iconMarker?: PoiIconMarkerAppearance;
 }

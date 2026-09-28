@@ -1,0 +1,8 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {"type":"Feature","id":"test-collection","properties":{"name":"test-collection"},"geometry":{"type":"GeometryCollection","geometries":[{"type":"Point","coordinates":[0,0]},{"type":"GeometryCollection","geometries":[{"type":"LineString","coordinates":[[0,0],[1,1]]}]}]}},
+    {"type":"Feature","properties":null,"geometry":null}
+  ]
+}
+{"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,0]]]}

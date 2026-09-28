@@ -8,6 +8,12 @@
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry, Geometry, GeometryCollection } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
+import {
+	GeoJsonSequenceParseError,
+	geoJsonSequenceTextToGeoJson,
+	isGeoJsonSequenceText
+} from '$routes/map/utils/formats/geojsonseq';
+import { isGeoJsonSequenceFile } from '$routes/map/utils/formats/geojsonseq/files';
 import { geojson as fgb } from 'flatgeobuf';
 
 import type { FeatureMenuData } from '$routes/map/types';
@@ -230,9 +236,11 @@ export const downloadGeojson = (
 export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
 	try {
 		const text = await file.text();
+		if (isGeoJsonSequenceFile(file.name)) return geoJsonSequenceTextToGeoJson(text);
 		return geoJsonTextToGeoJson(text);
 	} catch (error) {
 		console.error('GeoJSON parsing error:', error);
+		if (error instanceof GeoJsonSequenceParseError) throw new GeoJsonParseError(error.message);
 		if (error instanceof GeoJsonParseError) {
 			throw error;
 		}
@@ -245,6 +253,7 @@ export const geoJsonFileToGeoJson = async (file: File): Promise<FeatureCollectio
 
 export const geoJsonTextToGeoJson = (text: string): FeatureCollection => {
 	try {
+		if (isGeoJsonSequenceText(text)) return geoJsonSequenceTextToGeoJson(text);
 		const geojson = JSON.parse(text) as RootGeoJsonWithGeometryCollection;
 
 		if (!geojson || typeof geojson !== 'object' || typeof geojson.type !== 'string') {
@@ -253,6 +262,7 @@ export const geoJsonTextToGeoJson = (text: string): FeatureCollection => {
 
 		return normalizeGeoJsonGeometryCollections(geojson);
 	} catch (error) {
+		if (error instanceof GeoJsonSequenceParseError) throw new GeoJsonParseError(error.message);
 		if (error instanceof GeoJsonParseError) {
 			throw error;
 		}

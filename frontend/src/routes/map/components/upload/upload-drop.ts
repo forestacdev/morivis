@@ -172,6 +172,11 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 
 // 単体ファイルで同期的に決められるものは、ここに拡張子 -> ダイアログ種別として寄せる。
 const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
+	geojsonl: 'geojson',
+	jsonl: 'geojson',
+	ndjson: 'geojson',
+	geojsons: 'geojson',
+	geojsonseq: 'geojson',
 	mp4: 'video',
 	webm: 'video',
 	mov: 'video',

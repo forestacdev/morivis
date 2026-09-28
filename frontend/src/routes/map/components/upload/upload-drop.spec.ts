@@ -3,6 +3,41 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('GeoJSONSeqのドロップ', () => {
+	it.each(['geojsonl', 'jsonl', 'ndjson', 'geojsons', 'geojsonseq', 'NDJSON'])(
+		'%sを既存のGeoJSONフォームへ渡す',
+		async extension => {
+			const file = new File(
+				['{"type":"Point","coordinates":[0,1]}'],
+				`test-features.${extension}`
+			);
+			for (const input of [file, [file, new File(['test'], 'test-note.log')]]) {
+				expect(await resolveDroppedFiles(input)).toMatchObject({
+					type: 'dialog',
+					dialogType: 'geojson'
+				});
+			}
+			expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(`.${extension.toLowerCase()}`);
+		}
+	);
+	it('形式一覧から既存のGeoJSONフォームを開く', () => {
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'geojsonseq'))
+			.toMatchObject({ dialogType: 'geojson' });
+	});
+	it('ZIP内の行区切りGeoJSONも判定する', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/test-features.geojsonl', '{"type":"Point","coordinates":[0,1]}');
+		const file = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-sequence.zip'
+		);
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'geojson'
+		});
+	});
+});
+
 describe('FITのドロップ', () => {
 	it.each(['fit', 'FIT'])('%sを専用フォームへ渡す', async extension => {
 		expect(await resolveDroppedFiles(new File(['test'], `test-track.${extension}`)))
