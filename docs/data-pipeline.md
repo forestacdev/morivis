@@ -48,6 +48,34 @@ flowchart LR
 | `transform-policy.ts` | 形式ごとの `zone` / `georef` 許可方針。 |
 | `components/upload/form/*.svelte` | 各形式の preview / final entry 作成の実装本体。 |
 
+## 容量・処理量の制限
+
+`utils/formats/resource-limits.ts` が共通の容量警告と、各パーサーから移した処理上限の定義元。
+`SUPPORTED_UPLOAD_FORMATS.resourceLimitKeys` は対応する定義への参照で、フォームを共用するOSM XML/PBF、JWW/JWC、SQLite/SQLダンプを同じ制限として扱わない。
+レジストリはUIやデコーダーに依存せず、Workerからも参照できる。
+
+- `maxFileBytes`: ファイル単体の上限。
+- `maxDatasetBytes`: 関連ファイルを合わせた一式の上限。MapInfo TABはTAB・DAT/DBF・MAP・ID・任意のINDを合計する。
+- `maxBatchBytes` / `maxFiles`: 今回処理する全体の容量・ファイル数。BDSとGCDはこの単位で制限する。
+- 展開後のバイト数・地物数・点数・サンプル数・時間は、それぞれのパーサーで同じ定義を参照して検査する。
+- `maxTextLength` はUTF-16コード単位の文字列長。入力ファイルのバイト数とは異なる。
+- 上限の未指定は、明示的な拒否基準がないことを示す。大容量でも処理できるという保証ではない。
+- 形式仕様に由来するヘッダー長などの検証や、ここに移していない構造上の制約は各パーサーに残る。
+
+`checkInputResourceLimits()` は、呼び出し元が組み立てたデータセットをファイル単位・一式・全体の順で検査する。
+上限ちょうどは許可し、超過時に拒否する。上限値は集約前から変更していない。
+
+合計100 MiB以上の続行確認は `components/upload/upload-resource-check.ts` が担当する。
+MCAのみの入力と、必要なタイルを読むフォルダ入力は共通警告を省略する。この免除は各形式の強制上限とは独立している。
+同じFileオブジェクトの一式で承認済みなら再確認せず、追加・差し替え後には再確認する。
+
+Shapefileは同じ相対フォルダ・基本名を一式として扱う。ZIP内の別フォルダにある同名ファイルや、複数セット、同じ拡張子の重複は混ぜない。
+フォームへの段階的な追加と同じ構成ファイルの差し替えは許可する。解析直前にも確定した一式を検査する。
+Shapefileに新しい強制容量上限は設けていない。
+
+通常のZIPアップロードは、展開前の圧縮ファイルに加え、展開後のFile配列でも共通警告を行う。
+キャンセル時はフォームへ進まない。展開後の確認なので、展開中のメモリ使用量を抑える仕組みではない。
+
 ## 読み込みのタイミング
 
 PC・モバイルとも、`showDialogType` が設定されたときに `BaseDialog` を読み込む。

@@ -1,5 +1,6 @@
-export const MAX_TAB_BYTES = 256 * 1024 * 1024;
-export const MAX_TAB_HEADER_BYTES = 1024 * 1024;
+import { assertInputResourceLimits, FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+export const MAX_TAB_BYTES = FORMAT_RESOURCE_LIMITS['mapinfo-tab'].maxDatasetBytes;
+export const MAX_TAB_HEADER_BYTES = FORMAT_RESOURCE_LIMITS['mapinfo-tab'].maxHeaderBytes;
 export const tabPath = (file: File) =>
 	((file as File & { morivisRelativePath?: string; }).morivisRelativePath
 		|| file.webkitRelativePath || file.name).replaceAll('\\', '/');
@@ -61,9 +62,10 @@ export const prepareMapInfoFiles = async (files: File[], tab: File): Promise<Fil
 		find(`${stem}.id`, 'ID'),
 		find(`${stem}.ind`, 'IND', false)
 	];
-	if (members.reduce((sum, file) => sum + (file?.size ?? 0), tab.size) > MAX_TAB_BYTES) {
-		throw new Error('MapInfo TAB一式は256 MiB以下にしてください');
-	}
+	assertInputResourceLimits([{
+		name: tab.name,
+		files: [tab, ...members.filter((file): file is File => !!file)]
+	}], FORMAT_RESOURCE_LIMITS['mapinfo-tab']);
 	const normalized = reference
 		? text.replace(reference[0], `\n  File "table.${extension}"`)
 		: text;

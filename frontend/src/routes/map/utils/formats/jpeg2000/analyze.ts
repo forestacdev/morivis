@@ -1,4 +1,5 @@
 import type { RasterGrid } from '../raster/grid';
+import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
 import type { Jp2Request, Jp2Response } from './worker';
 import Jp2Worker from './worker?worker';
 
@@ -21,7 +22,7 @@ export const runJp2Worker = (request: Jp2Request, signal: AbortSignal): Promise<
 		const timer = setTimeout(() => {
 			cleanup();
 			reject(new Error('JP2の処理が時間内に完了しませんでした。画像を分割してください'));
-		}, 120_000);
+		}, FORMAT_RESOURCE_LIMITS.jpeg2000.timeoutMs);
 		signal.addEventListener('abort', abort, { once: true });
 		worker.onmessage = ({ data }: MessageEvent<Jp2Response>) => {
 			cleanup();

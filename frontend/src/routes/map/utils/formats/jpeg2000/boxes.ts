@@ -1,6 +1,7 @@
-export const MAX_JP2_BYTES = 256 * 1024 * 1024;
-export const MAX_JP2_SAMPLES = 16 * 1024 * 1024;
-export const MAX_METADATA_BYTES = 1024 * 1024;
+import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+export const MAX_JP2_BYTES = FORMAT_RESOURCE_LIMITS.jpeg2000.maxFileBytes;
+export const MAX_JP2_SAMPLES = FORMAT_RESOURCE_LIMITS.jpeg2000.maxSamples;
+export const MAX_METADATA_BYTES = FORMAT_RESOURCE_LIMITS.jpeg2000.maxMetadataBytes;
 const GEO_UUID = 'b14bf8bd083d4b43a5ae8cd7d5a6ce03';
 export interface Jp2Container {
 	codestream: Uint8Array;

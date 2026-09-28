@@ -1187,17 +1187,12 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
-	it('Shapefile 関連ファイルを含む複数ドロップは shp 判定になる', async () => {
-		const result = await resolveDroppedFiles([
-			createFile('roads.shp'),
-			createFile('roads.dbf'),
-			createFile('roads.shx')
-		]);
-
-		expect(result).toEqual({
+	it('Shapefile一式をフォームへ渡す', async () => {
+		const files = ['test.shp', 'test.dbf', 'test.shx'].map(name => createFile(name));
+		expect(await resolveDroppedFiles(files)).toEqual({
 			type: 'dialog',
 			dialogType: 'shp',
-			dropFiles: undefined
+			dropFiles: files
 		});
 	});
 
@@ -1561,5 +1556,38 @@ describe('JPEG2000のドロップ', () => {
 		);
 		expect(result).toMatchObject({ type: 'dialog', dialogType: 'jpeg2000' });
 		if (result.type === 'dialog') expect(result.dropFiles).toHaveLength(3);
+	});
+});
+
+describe('ZIP展開後の容量確認', () => {
+	const zipInput = async (names: string[]) => {
+		const zip = new JSZip();
+		for (const name of names) zip.file(name, 'test-content');
+		return new File(
+			[await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' })],
+			'test.zip'
+		);
+	};
+	it('展開した実際の構成ファイルを確認し、承認後に判定する', async () => {
+		const checkExtractedFiles = vi.fn().mockResolvedValue(true);
+		const result = await resolveDroppedFiles(
+			await zipInput(['test-folder/test.shp', 'test-folder/test.dbf']),
+			{ checkExtractedFiles }
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'shp' });
+		expect(checkExtractedFiles).toHaveBeenCalledOnce();
+		const files = checkExtractedFiles.mock.calls[0][0] as File[];
+		expect(files.map(file => file.size)).toEqual([12, 12]);
+	});
+	it('展開後の確認をキャンセルしたらフォームへ進まない', async () => {
+		expect(
+			await resolveDroppedFiles(await zipInput(['test.shp', 'test.dbf']), {
+				checkExtractedFiles: async () => false
+			})
+		).toEqual({ type: 'cancelled' });
+	});
+	it('ZIP内の別フォルダにある同名セットを混ぜない', async () => {
+		expect(await resolveDroppedFiles(await zipInput(['test-a/test.shp', 'test-b/test.dbf'])))
+			.toMatchObject({ type: 'notification', level: 'error' });
 	});
 });

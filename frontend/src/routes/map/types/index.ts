@@ -5,6 +5,7 @@ import type {
 	ResultPoiData
 } from '$routes/map/utils/data/search-result';
 import { GEOJSON_SEQUENCE_EXTENSIONS } from '$routes/map/utils/formats/geojsonseq/files';
+import type { ResourceLimitKey } from '$routes/map/utils/formats/resource-limits';
 import type { MapGeoJSONFeature, PositionAnchor } from '$routes/map/utils/maplibre';
 import { geojson } from 'flatgeobuf';
 export type {
@@ -151,6 +152,8 @@ export type DialogType =
 	| null;
 
 export interface UploadFormat {
+	/** 同じフォーム内でもPBF/XMLなどで異なる制限を参照できる。 */
+	resourceLimitKeys?: readonly ResourceLimitKey[];
 	id: string;
 	label: string;
 	description: string;
@@ -315,6 +318,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'mapinfo-tab',
+		resourceLimitKeys: ['mapinfo-tab'],
 		label: 'MapInfo TAB',
 		icon: 'mdi:vector-polygon',
 		description:
@@ -330,6 +334,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'bds',
+		resourceLimitKeys: ['bds'],
 		dialogType: 'bds',
 		label: 'SIS BDS',
 		icon: 'mdi:vector-polyline',
@@ -338,6 +343,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'gcd',
+		resourceLimitKeys: ['gcd'],
 		dialogType: 'gcd',
 		label: 'GeoCloud / GeoConic GCD',
 		icon: 'mdi:vector-polyline',
@@ -354,6 +360,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'sqlite',
+		resourceLimitKeys: ['sql-dump'],
 		label: 'SQLite / SQL dump',
 		icon: 'mdi:database-outline',
 		description:
@@ -379,6 +386,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'shp',
+		resourceLimitKeys: ['shp'],
 		label: 'Shapefile',
 		icon: 'mdi:shape-outline',
 		description:
@@ -403,6 +411,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'fit',
+		resourceLimitKeys: ['fit'],
 		label: 'FIT',
 		icon: 'mdi:run',
 		description:
@@ -419,6 +428,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'osm',
+		resourceLimitKeys: ['osm-pbf'],
 		label: 'OpenStreetMap XML / PBF',
 		icon: 'simple-icons:openstreetmap',
 		description:
@@ -523,6 +533,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'jpeg2000',
+		resourceLimitKeys: ['jpeg2000'],
 		label: 'JPEG2000／GeoJP2',
 		icon: 'mdi:image',
 		description:
@@ -531,6 +542,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'envi-bil',
+		resourceLimitKeys: ['envi-bil'],
 		label: 'ENVI／ESRI BIL',
 		icon: 'mdi:image',
 		description:
@@ -594,6 +606,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'jww',
+		resourceLimitKeys: ['jwc'],
 		label: 'Jw_cad (JWW / JWC)',
 		icon: 'mdi:file-outline',
 		description: 'Jw_cadの図面データです。線・文字・塗りつぶしを地図上に配置して利用します。',
@@ -601,6 +614,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'cedxm',
+		resourceLimitKeys: ['cedxm'],
 		label: 'CEDXM',
 		icon: 'mdi:file-outline',
 		description:
@@ -680,6 +694,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'pointcloud',
+		resourceLimitKeys: ['e57'],
 		label: '点群',
 		icon: 'mdi:chart-scatter-plot',
 		description: '多数の座標点で構成された3Dデータです。',
@@ -727,6 +742,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'rik',
+		resourceLimitKeys: ['rik'],
 		label: 'RIKCAD RIK（3DS）',
 		icon: 'mdi:home-city-outline',
 		description:
@@ -834,6 +850,7 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'mca',
+		resourceLimitKeys: ['mca'],
 		dialogType: 'mca',
 		label: 'Minecraft Java (.mca)',
 		icon: 'mdi:minecraft',

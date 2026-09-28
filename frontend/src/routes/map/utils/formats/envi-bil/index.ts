@@ -1,3 +1,4 @@
+import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
 export type GeoTransform = [number, number, number, number, number, number];
 export type RasterBounds = [number, number, number, number];
 export type DataRange = { min: number; max: number; };
@@ -24,9 +25,9 @@ export interface RawRaster extends RawRasterHeader {
 	ranges: DataRange[];
 	bbox: RasterBounds;
 }
-export const MAX_RAW_RASTER_BYTES = 512 * 1024 * 1024;
-export const MAX_RAW_RASTER_SAMPLES = 16 * 1024 * 1024;
-export const MAX_HEADER_BYTES = 1024 * 1024;
+export const MAX_RAW_RASTER_BYTES = FORMAT_RESOURCE_LIMITS['envi-bil'].maxFileBytes;
+export const MAX_RAW_RASTER_SAMPLES = FORMAT_RESOURCE_LIMITS['envi-bil'].maxSamples;
+export const MAX_HEADER_BYTES = FORMAT_RESOURCE_LIMITS['envi-bil'].maxHeaderBytes;
 
 const number = (value: string | undefined, key: string): number => {
 	if (!value?.trim()) throw new Error(`HDRに${key}がありません`);

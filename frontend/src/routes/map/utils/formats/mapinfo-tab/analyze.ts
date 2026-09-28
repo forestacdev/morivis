@@ -1,3 +1,4 @@
+import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
 import type { MapInfoResult } from '.';
 import { prepareMapInfoFiles } from './files';
 import type { MapInfoRequest, MapInfoResponse } from './worker';
@@ -31,7 +32,7 @@ export const runMapInfoWorker = async (
 					'MapInfo TABの処理が時間内に完了しませんでした。ファイルを分割してください'
 				)
 			);
-		}, 120_000);
+		}, FORMAT_RESOURCE_LIMITS['mapinfo-tab'].timeoutMs);
 		signal.addEventListener('abort', abort, { once: true });
 		worker.onmessage = ({ data }: MessageEvent<MapInfoResponse>) => {
 			cleanup();

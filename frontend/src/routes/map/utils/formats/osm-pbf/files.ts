@@ -1,6 +1,7 @@
 import Pbf from 'pbf';
+import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
 
-export const MAX_OSM_PBF_BYTES = 64 * 1024 * 1024;
+export const MAX_OSM_PBF_BYTES = FORMAT_RESOURCE_LIMITS['osm-pbf'].maxFileBytes;
 const MAX_HEADER_BYTES = 64 * 1024;
 const MAX_BLOB_BYTES = 32 * 1024 * 1024;
 

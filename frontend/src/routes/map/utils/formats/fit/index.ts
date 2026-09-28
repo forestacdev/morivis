@@ -1,10 +1,11 @@
 import FitParser, { type ParsedFit } from 'fit-file-parser';
+import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
 
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { PointGeometry } from '$routes/map/types/geometry';
 import type { FeatureProp } from '$routes/map/types/properties';
 
-export const MAX_FIT_BYTES = 64 * 1024 * 1024;
+export const MAX_FIT_BYTES = FORMAT_RESOURCE_LIMITS.fit.maxFileBytes;
 export type FitDataType = 'tracks' | 'track_points' | 'waypoints';
 export type FitParseResult = Record<FitDataType, FeatureCollection> & { skippedRecords: number; };
 type Point = Feature<PointGeometry>;

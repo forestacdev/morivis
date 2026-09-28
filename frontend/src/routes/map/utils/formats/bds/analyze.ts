@@ -1,15 +1,17 @@
 import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 import type { FeatureCollection } from 'geojson';
-import { type BdsParseResult, MAX_BDS_BYTES } from '.';
+import { assertInputResourceLimits, FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { type BdsParseResult } from '.';
 import type { BdsWorkerResponse } from './worker';
 import BdsWorker from './worker?worker';
 
 export const analyzeBdsFiles = async (files: File[]) => {
-	if (!files.length || files.length > 32) throw new Error('BDSは1〜32ファイルを選択してください');
-	if (files.reduce((sum, file) => sum + file.size, 0) > MAX_BDS_BYTES) {
-		throw new Error('BDSの合計サイズは32 MB以下にしてください');
-	}
+	if (!files.length) throw new Error('BDSファイルを選択してください');
+	assertInputResourceLimits(
+		files.map(file => ({ name: file.name, files: [file] })),
+		FORMAT_RESOURCE_LIMITS.bds
+	);
 	const results: FeatureCollection[] = [];
 	const emptyFiles: string[] = [];
 	let totalFeatures = 0;
@@ -33,7 +35,9 @@ export const analyzeBdsFiles = async (files: File[]) => {
 				}
 			);
 			totalFeatures += parsed.geojson.features.length;
-			if (totalFeatures > 500_000) throw new Error('図形数の合計が50万件を超えています');
+			if (totalFeatures > FORMAT_RESOURCE_LIMITS.bds.maxFeatures) {
+				throw new Error('図形数の合計が50万件を超えています');
+			}
 			if (!parsed.geojson.features.length) emptyFiles.push(file.name);
 			results.push(
 				parsed.geojson.features.length

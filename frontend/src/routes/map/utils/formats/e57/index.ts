@@ -1,10 +1,11 @@
 import type { LasProjection } from '$routes/map/utils/formats/las';
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import type { PointCloudUpAxis } from '../pointcloud/axis';
+import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
 
-export const E57_MAX_FILE_BYTES = 256 * 1024 * 1024;
-export const E57_MAX_SOURCE_POINTS = 5_000_000;
-export const E57_MAX_DISPLAY_POINTS = 1_000_000;
+export const E57_MAX_FILE_BYTES = FORMAT_RESOURCE_LIMITS.e57.maxFileBytes;
+export const E57_MAX_SOURCE_POINTS = FORMAT_RESOURCE_LIMITS.e57.maxSourcePoints;
+export const E57_MAX_DISPLAY_POINTS = FORMAT_RESOURCE_LIMITS.e57.maxDisplayPoints;
 export type E57Converter = (bytes: Uint8Array, format: string) => string;
 export interface E57Result {
 	positions: Float64Array;
@@ -27,7 +28,7 @@ export const validateE57Size = (size: number) => {
 export const parseE57 = (
 	bytes: Uint8Array,
 	convert: E57Converter,
-	maxPoints = E57_MAX_DISPLAY_POINTS,
+	maxPoints: number = E57_MAX_DISPLAY_POINTS,
 	upAxis: PointCloudUpAxis = 'z-up'
 ): E57Result => {
 	validateE57Size(bytes.byteLength);

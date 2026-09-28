@@ -3,6 +3,7 @@ import type { FeatureProp } from '$routes/map/types/properties';
 import { DOMParser } from '@xmldom/xmldom';
 import { XMLValidator } from 'fast-xml-parser';
 import type { JwwParseResult } from '../jww';
+import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
 
 type V3 = [number, number, number];
 type V2 = [number, number];
@@ -100,7 +101,9 @@ export const decodeCedxm = (buffer: ArrayBuffer): string => {
 
 /** CEDXM CADIF XML → local metres, 2D geometry + one closed surface set per member. */
 export const parseCedxm = (text: string): CedxmResult => {
-	if (text.length > 64 * 1024 * 1024) throw new Error('CEDXMが64 MiBを超えています');
+	if (text.length > FORMAT_RESOURCE_LIMITS.cedxm.maxTextLength) {
+		throw new Error('CEDXMが64 MiBを超えています');
+	}
 	if (/<!DOCTYPE|<!ENTITY/i.test(text)) {
 		throw new Error('DOCTYPE・ENTITYを含むCEDXMには対応していません');
 	}

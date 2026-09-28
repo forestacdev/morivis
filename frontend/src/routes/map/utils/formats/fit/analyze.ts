@@ -1,9 +1,10 @@
+import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
 import type { FitParseResult } from '.';
 import FitWorker from './worker?worker';
 
 export const analyzeFitFile = async (file: File, signal: AbortSignal): Promise<FitParseResult> => {
 	// SDK本体をmain threadへ読み込まない。
-	if (file.size > 64 * 1024 * 1024) {
+	if (file.size > FORMAT_RESOURCE_LIMITS.fit.maxFileBytes) {
 		throw new Error('FITは64 MiB以下のファイルを選択してください');
 	}
 	signal.throwIfAborted();
@@ -23,7 +24,7 @@ export const analyzeFitFile = async (file: File, signal: AbortSignal): Promise<F
 		const timer = setTimeout(() => {
 			cleanup();
 			reject(new Error('FITの解析がタイムアウトしました'));
-		}, 120_000);
+		}, FORMAT_RESOURCE_LIMITS.fit.timeoutMs);
 		signal.addEventListener('abort', abort, { once: true });
 		worker.onmessage = (
 			event: MessageEvent<{ result: FitParseResult; } | { error: string; }>

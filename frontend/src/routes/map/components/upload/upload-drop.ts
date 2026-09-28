@@ -4,6 +4,7 @@ import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
 import { isOsmPbfFile } from '$routes/map/utils/formats/osm-pbf/files';
 import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
+import { getShapefileDataset } from '$routes/map/utils/formats/shp/files';
 import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
 
@@ -46,6 +47,7 @@ import {
 } from './upload-drop-matchers';
 
 export type UploadDropDecision =
+	| { type: 'cancelled'; }
 	| {
 		type: 'dialog';
 		dialogType: DialogType;
@@ -75,7 +77,10 @@ type UploadDropRule = {
 	resolve: (files: File[], options: UploadDropOptions) => Promise<UploadDropDecision>;
 };
 
-export type UploadDropOptions = { mobile?: boolean; };
+export type UploadDropOptions = {
+	mobile?: boolean;
+	checkExtractedFiles?: (files: File[]) => Promise<boolean>;
+};
 
 // FileManager 側で state 更新しやすいよう、判定結果を UI 遷移の形にそろえる。
 const createDialogDecision = (
@@ -458,7 +463,13 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
 		id: 'shapefile-set',
 		match: (files) => files.some(isShapeFileRelated),
-		resolve: async () => createDialogDecision('shp')
+		resolve: async files => {
+			try {
+				return createDialogDecision('shp', getShapefileDataset(files).files);
+			} catch (error) {
+				return createNotificationDecision((error as Error).message);
+			}
+		}
 	},
 	{
 		id: 'gtfs-text-set',
@@ -546,6 +557,11 @@ const resolveSingleFile = async (
 		try {
 			const extracted = await unzipFiles(file);
 			if (extracted.length > 0) {
+				if (
+					options.checkExtractedFiles && !(await options.checkExtractedFiles(extracted))
+				) {
+					return { type: 'cancelled' };
+				}
 				return await resolveDroppedFiles(extracted, options);
 			}
 		} catch {
