@@ -1,5 +1,6 @@
 import type { FeatureCollection } from '$routes/map/types/geojson';
-import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { formatOsmPbf } from './definition';
+
 import { MAX_OSM_PBF_BYTES } from './files';
 import OsmPbfWorker from './worker?worker';
 
@@ -22,7 +23,7 @@ export const analyzeOsmPbf = (file: File, signal: AbortSignal): Promise<FeatureC
 		const timer = setTimeout(() => {
 			cleanup();
 			reject(new Error('OSM PBFの解析が時間内に完了しませんでした。範囲を分割してください'));
-		}, FORMAT_RESOURCE_LIMITS['osm-pbf'].timeoutMs);
+		}, formatOsmPbf.limits.timeoutMs);
 		signal.addEventListener('abort', abort, { once: true });
 		worker.onmessage = (
 			{ data }: MessageEvent<{ result: FeatureCollection; } | { error: string; }>

@@ -1,7 +1,9 @@
-import { assertInputResourceLimits, FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { hasFormatExtension } from '../format-definition';
+import { assertInputResourceLimits } from '../resource-limits';
+import { formatShp } from './definition';
 
 export const isShapefileMember = (file: File): boolean =>
-	/\.(shp|dbf|shx|prj|cpg)$/i.test(file.name);
+	hasFormatExtension(file.name, formatShp.extensions);
 
 /** ZIP・フォルダの相対パスを優先し、別フォルダの同名セットを混ぜない。 */
 export const getShapefileDatasetKey = (file: File): string => {
@@ -21,6 +23,6 @@ export const getShapefileDataset = (input: readonly File[]) => {
 		throw new Error('Shapefileの同じ拡張子のファイルが重複しています');
 	}
 	const dataset = { name: keys.values().next().value ?? 'Shapefile', files };
-	assertInputResourceLimits([dataset], FORMAT_RESOURCE_LIMITS.shp);
+	assertInputResourceLimits([dataset], formatShp.limits);
 	return dataset;
 };

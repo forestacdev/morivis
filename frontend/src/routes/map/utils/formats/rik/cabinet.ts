@@ -1,4 +1,5 @@
-import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { formatRik } from './definition';
+
 export interface CabinetFile {
 	path: string;
 	size: number;
@@ -25,9 +26,9 @@ export type CabinetRuntimeFactory = (options: {
 	printErr: (message: string) => void;
 }) => Promise<CabinetRuntime>;
 
-export const MAX_RIK_BYTES = FORMAT_RESOURCE_LIMITS.rik.maxFileBytes;
-const MAX_EXPANDED_BYTES = FORMAT_RESOURCE_LIMITS.rik.maxExpandedBytes;
-const MAX_FILES = FORMAT_RESOURCE_LIMITS.rik.maxFiles;
+export const MAX_RIK_BYTES = formatRik.limits.maxFileBytes;
+const MAX_EXPANDED_BYTES = formatRik.limits.maxExpandedBytes;
+const MAX_FILES = formatRik.limits.maxFiles;
 
 export const normalizeRikPath = (path: string): string => {
 	const normalized = path.replace(/\\/g, '/').replace(/^(\.\/)+/, '');

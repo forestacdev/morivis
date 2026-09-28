@@ -1,11 +1,19 @@
-import { assertInputResourceLimits, FORMAT_RESOURCE_LIMITS } from '../resource-limits';
-export const MAX_TAB_BYTES = FORMAT_RESOURCE_LIMITS['mapinfo-tab'].maxDatasetBytes;
-export const MAX_TAB_HEADER_BYTES = FORMAT_RESOURCE_LIMITS['mapinfo-tab'].maxHeaderBytes;
+import { hasFormatExtension } from '../format-definition';
+import { assertInputResourceLimits } from '../resource-limits';
+import { formatMapinfoTab } from './definition';
+export const MAX_TAB_BYTES = formatMapinfoTab.limits.maxDatasetBytes;
+export const MAX_TAB_HEADER_BYTES = formatMapinfoTab.limits.maxHeaderBytes;
 export const tabPath = (file: File) =>
 	((file as File & { morivisRelativePath?: string; }).morivisRelativePath
 		|| file.webkitRelativePath || file.name).replaceAll('\\', '/');
-export const isMapInfoTab = (file: File) => /\.tab$/i.test(file.name);
-export const isMapInfoSidecar = (file: File) => /\.(dat|map|id|ind|dbf)$/i.test(file.name);
+export const isMapInfoTab = (file: File) =>
+	hasFormatExtension(file.name, formatMapinfoTab.files.mainExtensions);
+export const isMapInfoSidecar = (file: File) =>
+	hasFormatExtension(file.name, [
+		...formatMapinfoTab.files.attributeExtensions,
+		...formatMapinfoTab.files.requiredExtensions,
+		...formatMapinfoTab.files.optionalExtensions
+	]);
 
 /** ヘッダーの文字コードを維持したままASCIIのFile参照だけを置換する。 */
 const binaryText = (bytes: Uint8Array) => {
@@ -58,24 +66,30 @@ export const prepareMapInfoFiles = async (files: File[], tab: File): Promise<Fil
 	find(tabName, 'TAB');
 	const members = [
 		find(dataPath, extension.toUpperCase()),
-		find(`${stem}.map`, 'MAP'),
-		find(`${stem}.id`, 'ID'),
-		find(`${stem}.ind`, 'IND', false)
+		...formatMapinfoTab.files.requiredExtensions.map(extension =>
+			find(stem + extension, extension.slice(1).toUpperCase())
+		),
+		...formatMapinfoTab.files.optionalExtensions.map(extension =>
+			find(stem + extension, extension.slice(1).toUpperCase(), false)
+		)
 	];
 	assertInputResourceLimits([{
 		name: tab.name,
 		files: [tab, ...members.filter((file): file is File => !!file)]
-	}], FORMAT_RESOURCE_LIMITS['mapinfo-tab']);
+	}], formatMapinfoTab.limits);
 	const normalized = reference
 		? text.replace(reference[0], `\n  File "table.${extension}"`)
 		: text;
 	const output = [
 		new File([Uint8Array.from(normalized, char => char.charCodeAt(0))], 'table.tab')
 	];
+	const memberExtensions = [
+		extension,
+		...formatMapinfoTab.files.requiredExtensions.map(ext => ext.slice(1)),
+		...formatMapinfoTab.files.optionalExtensions.map(ext => ext.slice(1))
+	];
 	for (const [index, file] of members.entries()) {
-		if (file) {
-			output.push(new File([file], `table.${[extension, 'map', 'id', 'ind'][index]}`));
-		}
+		if (file) output.push(new File([file], `table.${memberExtensions[index]}`));
 	}
 	return output;
 };

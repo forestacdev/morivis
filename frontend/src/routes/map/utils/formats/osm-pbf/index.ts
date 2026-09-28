@@ -1,4 +1,5 @@
-import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { formatOsmPbf } from './definition';
+
 /**
  * Format spec:
  * - https://github.com/openstreetmap/OSM-binary/tree/master/osmpbf
@@ -11,8 +12,8 @@ import type initGdalJs from 'gdal3.js';
 
 export type OsmPbfGdal = Awaited<ReturnType<typeof initGdalJs>>;
 const LAYERS = ['points', 'lines', 'multilinestrings', 'multipolygons', 'other_relations'];
-const MAX_FEATURES = FORMAT_RESOURCE_LIMITS['osm-pbf'].maxFeatures;
-const MAX_OUTPUT_BYTES = FORMAT_RESOURCE_LIMITS['osm-pbf'].maxOutputBytes;
+const MAX_FEATURES = formatOsmPbf.limits.maxFeatures;
+const MAX_OUTPUT_BYTES = formatOsmPbf.limits.maxOutputBytes;
 
 /** GDALの5レイヤーを共通のWGS84ベクターへ結合する。 */
 export const convertOsmPbf = async (

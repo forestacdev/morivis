@@ -1,9 +1,13 @@
+import { hasFormatExtension } from '../format-definition';
+import { formatEnviBil } from './definition';
 export const rawRasterPath = (file: File) =>
 	((file as File & { morivisRelativePath?: string; }).morivisRelativePath
 		|| file.webkitRelativePath || file.name)
 		.replaceAll('\\', '/').toLowerCase();
-export const isRawRasterHeader = (file: File) => /\.hdr$/i.test(file.name);
-export const isRawRasterMain = (file: File) => /\.(bil|bip|bsq)$/i.test(file.name);
+export const isRawRasterHeader = (file: File) =>
+	hasFormatExtension(file.name, formatEnviBil.files.headerExtensions);
+export const isRawRasterMain = (file: File) =>
+	hasFormatExtension(file.name, formatEnviBil.files.mainExtensions);
 
 export interface RawRasterFiles {
 	header: File;
@@ -22,7 +26,7 @@ export const findRawRasterFiles = (files: File[], header: File): RawRasterFiles 
 	const candidates = files.filter(file => {
 		const name = rawRasterPath(file);
 		return name === stem
-			|| (/\.(bil|bip|bsq|dat|img|raw|bin)$/i.test(name)
+			|| (hasFormatExtension(name, formatEnviBil.files.dataExtensions)
 				&& name.replace(/\.[^.]+$/, '') === stem);
 	});
 	if (candidates.length === 0) {

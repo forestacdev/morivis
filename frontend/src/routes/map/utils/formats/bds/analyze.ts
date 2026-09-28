@@ -1,8 +1,9 @@
 import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 import type { FeatureCollection } from 'geojson';
-import { assertInputResourceLimits, FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { assertInputResourceLimits } from '../resource-limits';
 import { type BdsParseResult } from '.';
+import { formatBds } from './definition';
 import type { BdsWorkerResponse } from './worker';
 import BdsWorker from './worker?worker';
 
@@ -10,7 +11,7 @@ export const analyzeBdsFiles = async (files: File[]) => {
 	if (!files.length) throw new Error('BDSファイルを選択してください');
 	assertInputResourceLimits(
 		files.map(file => ({ name: file.name, files: [file] })),
-		FORMAT_RESOURCE_LIMITS.bds
+		formatBds.limits
 	);
 	const results: FeatureCollection[] = [];
 	const emptyFiles: string[] = [];
@@ -35,7 +36,7 @@ export const analyzeBdsFiles = async (files: File[]) => {
 				}
 			);
 			totalFeatures += parsed.geojson.features.length;
-			if (totalFeatures > FORMAT_RESOURCE_LIMITS.bds.maxFeatures) {
+			if (totalFeatures > formatBds.limits.maxFeatures) {
 				throw new Error('図形数の合計が50万件を超えています');
 			}
 			if (!parsed.geojson.features.length) emptyFiles.push(file.name);

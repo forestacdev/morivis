@@ -1,9 +1,9 @@
 import type { Feature, FeatureCollection, LineString, MultiLineString, Position } from 'geojson';
-import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { formatGcd } from './definition';
 
-export const MAX_GCD_BYTES = FORMAT_RESOURCE_LIMITS.gcd.maxFileBytes;
-const MAX_FEATURES = FORMAT_RESOURCE_LIMITS.gcd.maxFeatures;
-const MAX_VERTICES = FORMAT_RESOURCE_LIMITS.gcd.maxVertices;
+export const MAX_GCD_BYTES = formatGcd.limits.maxFileBytes;
+const MAX_FEATURES = formatGcd.limits.maxFeatures;
+const MAX_VERTICES = formatGcd.limits.maxVertices;
 const fail = (message: string): never => {
 	throw new Error(`GCD: ${message}`);
 };

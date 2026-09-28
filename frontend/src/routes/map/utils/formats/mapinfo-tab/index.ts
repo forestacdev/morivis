@@ -1,6 +1,6 @@
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
-import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { formatMapinfoTab } from './definition';
 
 export interface MapInfoResult {
 	geojson: FeatureCollection;
@@ -8,8 +8,8 @@ export interface MapInfoResult {
 	spatialStatus: 'resolved' | 'crs-missing';
 	omittedCount: number;
 }
-export const MAX_TAB_FEATURES = FORMAT_RESOURCE_LIMITS['mapinfo-tab'].maxFeatures;
-export const MAX_TAB_VERTICES = FORMAT_RESOURCE_LIMITS['mapinfo-tab'].maxVertices;
+export const MAX_TAB_FEATURES = formatMapinfoTab.limits.maxFeatures;
+export const MAX_TAB_VERTICES = formatMapinfoTab.limits.maxVertices;
 
 /** GDALの出力でも範囲外・空ジオメトリを確認し、属性だけの行数を通知する。 */
 export const normalizeMapInfoGeoJson = (value: unknown, geographic: boolean) => {

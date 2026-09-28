@@ -2,8 +2,9 @@ import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 import type { FeatureCollection } from 'geojson';
-import { assertInputResourceLimits, FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { assertInputResourceLimits } from '../resource-limits';
 import { type GcdParseResult } from '.';
+import { formatGcd } from './definition';
 import type { GcdWorkerResponse } from './worker';
 import GcdWorker from './worker?worker';
 
@@ -12,7 +13,7 @@ export const analyzeGcdFiles = async (files: File[]): Promise<FeatureCollection>
 	if (!files.length) throw new Error('GCDファイルを選択してください');
 	assertInputResourceLimits(
 		files.map(file => ({ name: file.name, files: [file] })),
-		FORMAT_RESOURCE_LIMITS.gcd
+		formatGcd.limits
 	);
 	const results: FeatureCollection[] = [];
 	for (const file of files) {

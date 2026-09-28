@@ -1,10 +1,6 @@
-export const GEOJSON_SEQUENCE_EXTENSIONS = [
-	'.geojsonl',
-	'.jsonl',
-	'.ndjson',
-	'.geojsons',
-	'.geojsonseq'
-];
+import { hasFormatExtension } from '../format-definition';
+import { formatGeojsonseq } from './definition';
 
+export const GEOJSON_SEQUENCE_EXTENSIONS = formatGeojsonseq.extensions;
 export const isGeoJsonSequenceFile = (name: string): boolean =>
-	GEOJSON_SEQUENCE_EXTENSIONS.some(extension => name.toLowerCase().endsWith(extension));
+	hasFormatExtension(name, GEOJSON_SEQUENCE_EXTENSIONS);

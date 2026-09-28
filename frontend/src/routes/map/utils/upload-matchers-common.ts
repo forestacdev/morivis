@@ -1,10 +1,11 @@
-import { SUPPORTED_FILE_EXTENSIONS, type UploadFiles } from '$routes/map/types';
+import type { UploadFiles } from '$routes/map/types';
+import { FORMAT_FILE_EXTENSIONS } from './formats/registry';
 
 const TILE_URL_EXTENSIONS = ['.geojson', '.pbf', '.mvt', '.png', '.jpg', '.jpeg', '.webp', '.avif'];
 
 export const getMatchedExtension = (fileName: string): string | null => {
 	const lowerFileName = fileName.toLowerCase();
-	const sortedExtensions = [...SUPPORTED_FILE_EXTENSIONS].sort((a, b) => b.length - a.length);
+	const sortedExtensions = [...FORMAT_FILE_EXTENSIONS].sort((a, b) => b.length - a.length);
 	return sortedExtensions.find((ext) => lowerFileName.endsWith(ext)) ?? null;
 };
 

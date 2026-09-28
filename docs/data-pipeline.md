@@ -42,7 +42,9 @@ flowchart LR
 
 | ファイル | 役割 |
 | --- | --- |
-| `types/index.ts` | `DialogType` と `SUPPORTED_UPLOAD_FORMATS`。形式名・説明・アイコン・拡張子・入力フォームの定義元。`SUPPORTED_FILE_GROUPS` とファイル選択用の拡張子一覧もここから生成する。 |
+| `utils/formats/<format>/definition.ts` | 拡張子・関連ファイル構成・容量や処理量の制限。UIやパーサーを読み込まない静的定義。 |
+| `utils/formats/registry.ts` | 形式IDから定義を引く対応表。全形式を集める。 |
+| `types/index.ts` | `DialogType` と形式の表示名・説明・アイコン・表示順・入力フォーム。技術定義から拡張子を取得して `SUPPORTED_UPLOAD_FORMATS`・`SUPPORTED_FILE_GROUPS`・ファイル選択用一覧を生成する。 |
 | `upload-drop.ts` | ファイルや URL をどの `DialogType` に振り分けるかの定義元。OBJ の軽量事前検査結果のような形式別メタデータもここで `File` に一時付与する。 |
 | `dialog-registry.ts` | `DialogType -> Form の動的 import / profile` の対応表。 |
 | `transform-policy.ts` | 形式ごとの `zone` / `georef` 許可方針。 |
@@ -50,9 +52,19 @@ flowchart LR
 
 ## 容量・処理量の制限
 
-`utils/formats/resource-limits.ts` が共通の容量警告と、各パーサーから移した処理上限の定義元。
-`SUPPORTED_UPLOAD_FORMATS.resourceLimitKeys` は対応する定義への参照で、フォームを共用するOSM XML/PBF、JWW/JWC、SQLite/SQLダンプを同じ制限として扱わない。
-レジストリはUIやデコーダーに依存せず、Workerからも参照できる。
+形式ごとの上限は `utils/formats/<format>/definition.ts` の `limits` に置く。
+`utils/formats/resource-limits.ts` は共通の容量警告の閾値・検査関数・入力上限の型を持ち、形式別の数値表は持たない。
+
+UIの表示項目は既存の形式IDで `FORMAT_DEFINITIONS` を参照する。`resourceLimitKeys` による別表との手書きの対応付けは不要。
+フォームを共用するOSM XML/PBF、JWW/JWC、SQLite/SQLダンプ、点群/E57では、制限を持つ形式の定義を `variants` で参照する。
+親項目に子形式の上限を適用しない。Workerやパーサーは必要な `definition.ts` だけを直接importし、全形式のレジストリやUIの表示情報を読み込まない。
+
+`extensions` は形式一覧からのファイル選択に使う拡張子。`files` は関連ファイルを扱う既存リゾルバーの構成情報で、必須・任意・本体・属性ファイルなどを区別する。
+例えばShapefileの拡張子は必須3ファイルと任意のPRJ/CPGから生成し、ファイル判定も同じ定義を参照する。
+TABのヘッダー参照や、OSM PBFとMVTを区別する内容判定などの処理は各形式の実装に残す。拡張子一覧だけで形式を確定しない。
+
+アイコン・説明文・表示順は `types/index.ts`、フォームの動的importは `dialog-registry.ts` に残す。
+技術定義はこれらを参照せず、UIから技術定義へ一方向に依存する。
 
 - `maxFileBytes`: ファイル単体の上限。
 - `maxDatasetBytes`: 関連ファイルを合わせた一式の上限。MapInfo TABはTAB・DAT/DBF・MAP・ID・任意のINDを合計する。

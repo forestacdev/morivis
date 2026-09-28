@@ -1,8 +1,12 @@
+import { hasFormatExtension } from '../format-definition';
+import { formatJpeg2000 } from './definition';
 export const jp2Path = (file: File) =>
 	((file as File & { morivisRelativePath?: string; }).morivisRelativePath
 		|| file.webkitRelativePath || file.name).replaceAll('\\', '/');
-export const isJp2File = (file: File) => /\.jp2$/i.test(file.name);
-export const isJp2Sidecar = (file: File) => /\.(j2w|jp2w|wld|prj|aux\.xml)$/i.test(file.name);
+export const isJp2File = (file: File) =>
+	hasFormatExtension(file.name, formatJpeg2000.files.mainExtensions);
+export const isJp2Sidecar = (file: File) =>
+	hasFormatExtension(file.name, formatJpeg2000.files.optionalExtensions);
 export interface Jp2Files {
 	image: File;
 	world?: File;

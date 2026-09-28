@@ -1,4 +1,5 @@
-import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { formatMca } from './definition';
+
 /** Java版のbig-endian NBT。long arrayはビット列のまま保持し、精度を落とさない。 */
 export interface NbtLongArray {
 	kind: 'long-array';
@@ -24,7 +25,7 @@ export const asCompound = (value: NbtValue | undefined): NbtCompound | undefined
 		? value as NbtCompound
 		: undefined;
 
-export const MAX_NBT_BYTES = FORMAT_RESOURCE_LIMITS.mca.maxNbtBytes;
+export const MAX_NBT_BYTES = formatMca.limits.maxNbtBytes;
 
 export const readNbt = (bytes: Uint8Array): NbtCompound => {
 	if (bytes.byteLength > MAX_NBT_BYTES) {

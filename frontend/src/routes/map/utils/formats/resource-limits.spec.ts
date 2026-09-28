@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { checkInputResourceLimits, FORMAT_RESOURCE_LIMITS, MiB } from './resource-limits';
+import { FORMAT_DEFINITIONS } from './registry';
+import { checkInputResourceLimits, MiB } from './resource-limits';
 
 const file = (name: string, size: number) => ({ name, size });
 
@@ -42,23 +43,24 @@ describe('input resource limits', () => {
 	});
 	it('BDSとGCDは複数ファイルの合計で拒否する', () => {
 		for (const key of ['bds', 'gcd'] as const) {
-			const size = FORMAT_RESOURCE_LIMITS[key].maxBatchBytes / 2;
+			const size = FORMAT_DEFINITIONS[key].limits.maxBatchBytes / 2;
 			const datasets = [0, 1].map(index => ({
 				name: `test-${index}`,
 				files: [file(`test-${index}.${key}`, size)]
 			}));
-			expect(checkInputResourceLimits(datasets, FORMAT_RESOURCE_LIMITS[key])).toBeNull();
+			expect(checkInputResourceLimits(datasets, FORMAT_DEFINITIONS[key].limits)).toBeNull();
 			datasets[1].files[0].size += 1;
-			expect(checkInputResourceLimits(datasets, FORMAT_RESOURCE_LIMITS[key])).toMatchObject({
-				scope: 'batch'
-			});
+			expect(checkInputResourceLimits(datasets, FORMAT_DEFINITIONS[key].limits))
+				.toMatchObject({
+					scope: 'batch'
+				});
 		}
 	});
 	it('Shapefileには新しい強制容量上限を追加しない', () => {
 		expect(
 			checkInputResourceLimits(
 				[{ name: 'test', files: [file('test.shp', 512 * MiB)] }],
-				FORMAT_RESOURCE_LIMITS.shp
+				FORMAT_DEFINITIONS.shp.limits
 			)
 		).toBeNull();
 	});
@@ -67,7 +69,7 @@ describe('input resource limits', () => {
 			name: 'test',
 			files: Array.from({ length: 33 }, (_, i) => file(`test-${i}.bds`, 1))
 		}];
-		expect(checkInputResourceLimits(datasets, FORMAT_RESOURCE_LIMITS.bds)).toMatchObject({
+		expect(checkInputResourceLimits(datasets, FORMAT_DEFINITIONS.bds.limits)).toMatchObject({
 			scope: 'file-count',
 			actual: 33,
 			limit: 32

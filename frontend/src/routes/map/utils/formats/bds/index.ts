@@ -6,9 +6,9 @@ import type {
 	Point,
 	Position
 } from 'geojson';
-import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { formatBds } from './definition';
 
-export const MAX_BDS_BYTES = FORMAT_RESOURCE_LIMITS.bds.maxFileBytes;
+export const MAX_BDS_BYTES = formatBds.limits.maxFileBytes;
 const MAX_ELEMENTS = 500_000;
 const VERSIONS: Record<number, number> = {
 	[-373]: 5,

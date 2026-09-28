@@ -1,4 +1,5 @@
-import { FORMAT_RESOURCE_LIMITS } from '../resource-limits';
+import { formatJwc } from './definition';
+
 // JWC fixed2389/fixed2421 layouts adapted from ezjww (MIT); see LICENSE.ezjww and README.md.
 import { convertJwCadDocument, type JwwParseResult } from '../jww';
 import type { JwwEntity, JwwHeader } from '../jww/reader';
@@ -49,7 +50,7 @@ export const parseJwc = (buffer: ArrayBuffer): JwwParseResult => {
 		if (!Number.isFinite(value)) invalid('座標・寸法の数値が不正です');
 		return value;
 	};
-	if (bytes.length > FORMAT_RESOURCE_LIMITS.jwc.maxFileBytes) invalid('64 MiBを超えています');
+	if (bytes.length > formatJwc.limits.maxFileBytes) invalid('64 MiBを超えています');
 	range(0, 40);
 	const floatScales = bytes[22] === 102;
 	if (!floatScales && bytes[22] !== 46) invalid('未対応のJWCヘッダーです');

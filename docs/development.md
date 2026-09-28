@@ -101,7 +101,8 @@ pnpm --dir frontend exec playwright test
 
 ## 実装の参照先
 
-- 入力形式の定義: `frontend/src/routes/map/types/index.ts` の `SUPPORTED_UPLOAD_FORMATS`
+- 入力形式の定義: `frontend/src/routes/map/utils/formats/<format>/definition.ts` と `registry.ts`
+- 形式一覧の表示情報: `frontend/src/routes/map/types/index.ts`。技術定義と組み合わせて `SUPPORTED_UPLOAD_FORMATS` を生成する
 - ファイル判定: `components/upload/upload-drop.ts` と `upload-drop-matchers.ts`
 - フォームの遅延ロード: `components/upload/dialog-registry.ts`
 - 座標系選択・位置合わせの許可: `components/upload/transform-policy.ts`
