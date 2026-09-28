@@ -419,11 +419,11 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = [
 	},
 	{
 		id: 'osm',
-		label: 'OpenStreetMap XML',
+		label: 'OpenStreetMap XML / PBF',
 		icon: 'simple-icons:openstreetmap',
 		description:
-			'OpenStreetMapのXML形式データです。OSMのノードやウェイ、リレーションを読み込むときに使います。',
-		extensions: ['.osm']
+			'OpenStreetMapのXML・PBF形式データです。ノード・ウェイ・リレーションを地図上に表示できます。',
+		extensions: ['.osm', '.osm.pbf', '.pbf']
 	},
 	{
 		id: 'georss',

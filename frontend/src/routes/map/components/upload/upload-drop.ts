@@ -2,6 +2,7 @@ import { isJp2File } from '$routes/map/utils/formats/jpeg2000/files';
 import { isMapInfoTab } from '$routes/map/utils/formats/mapinfo-tab/files';
 import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
+import { isOsmPbfFile } from '$routes/map/utils/formats/osm-pbf/files';
 import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
 import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
@@ -705,6 +706,15 @@ export const resolveDroppedFiles = async (
 		return createDialogDecision('local-raster-tiles', files);
 	}
 	if (files.some(isMltFile)) return createDialogDecision('local-mlt', files);
+	// OSM PBFとMVTは拡張子が重なるため、タイル判定の前にBlobHeaderを確認する。
+	const pbfFiles = files.filter(file => /\.pbf$/i.test(file.name));
+	const osmPbfMatches = await Promise.all(pbfFiles.map(isOsmPbfFile));
+	if (osmPbfMatches.some(Boolean)) {
+		if (pbfFiles.length !== 1) {
+			return createNotificationDecision('OSM PBFは1ファイルずつ読み込んでください');
+		}
+		return createDialogDecision('osm', pbfFiles);
+	}
 	if (isLocalMvtInput(files)) return createDialogDecision('local-mvt', files);
 	const cityJsonCandidates = files.filter(file => /\.(?:json|cityjson)$/i.test(file.name));
 	if (cityJsonCandidates.length) {

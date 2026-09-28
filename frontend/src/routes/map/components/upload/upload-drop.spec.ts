@@ -3,6 +3,58 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('OSM PBFのドロップ', () => {
+	const bytes = readFileSync(
+		new URL('../../utils/formats/osm-pbf/__fixtures__/test-dense.osm.pbf', import.meta.url)
+	);
+	it.each(['test-map.osm.pbf', 'test-map.OSM.PBF', 'test-map.pbf'])(
+		'%sをMVTと区別して既存のOSMフォームへ渡す',
+		async name => {
+			const file = new File([bytes], name);
+			for (const input of [file, [file]]) {
+				expect(await resolveDroppedFiles(input)).toEqual({
+					type: 'dialog',
+					dialogType: 'osm',
+					dropFiles: [file]
+				});
+			}
+		}
+	);
+	it('ZIP内のOSM PBFも同じ判定を通す', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/test-map.osm.pbf', bytes);
+		const file = new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-map.zip');
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'osm'
+		});
+	});
+	it('複数OSMやOSMとMVTの混在を黙って一部だけ取り込まない', async () => {
+		const osm = new File([bytes], 'test-map.osm.pbf');
+		for (
+			const second of [new File([bytes], 'test-second.pbf'), new File(['test-tile'], '1.pbf')]
+		) {
+			expect(await resolveDroppedFiles([osm, second])).toMatchObject({
+				type: 'notification'
+			});
+		}
+	});
+	it('通常のタイルPBFとOSM XMLは従来のフォームへ渡す', async () => {
+		expect(await resolveDroppedFiles(new File(['test-tile'], '1.pbf'))).toMatchObject({
+			dialogType: 'local-mvt'
+		});
+		expect(await resolveDroppedFiles(new File(['<osm/>'], 'test-map.osm'))).toMatchObject({
+			dialogType: 'osm'
+		});
+	});
+	it('対応形式一覧とファイル選択に複合拡張子を含める', () => {
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'osm')?.extensions).toContain(
+			'.osm.pbf'
+		);
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.osm.pbf');
+	});
+});
+
 describe('GeoJSONSeqのドロップ', () => {
 	it.each(['geojsonl', 'jsonl', 'ndjson', 'geojsons', 'geojsonseq', 'NDJSON'])(
 		'%sを既存のGeoJSONフォームへ渡す',

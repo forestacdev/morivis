@@ -96,6 +96,10 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+OSM PBF（`.osm.pbf`、OSMヘッダーを持つ`.pbf`）は、MVT判定より先にOSMフォームへ振り分ける。
+専用WorkerのGDALでWGS84のGeoJSONへ変換し、OSM XMLとジオメトリ選択・ベクター登録を共用する。
+容量上限と対応範囲は [OSM PBF](../frontend/src/routes/map/utils/formats/osm-pbf/README.md) を参照。
+
 GeoJSONSeq / 行区切りGeoJSONは専用パーサーでFeatureCollectionへまとめ、既存の `GeoJsonForm.svelte` へ接続する。
 改行区切りとRFC 8142のRS区切りを扱い、ジオメトリ選択・座標変換・位置合わせ・2D/3D登録をGeoJSONと共用する。
 対応範囲とメモリ上の制約は [GeoJSONSeq](../frontend/src/routes/map/utils/formats/geojsonseq/README.md) を参照。
