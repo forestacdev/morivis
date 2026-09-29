@@ -104,6 +104,11 @@ const STATIC_PROXY_RULES: ProxyRule[] = [
 		proxyPath: '/api/copernicus-eopf'
 	},
 	{
+		match: 'https://ows.digitalearth.africa/',
+		target: 'https://ows.digitalearth.africa',
+		proxyPath: '/api/digitalearth-africa'
+	},
+	{
 		match: 'ahocevar.com',
 		target: 'https://ahocevar.com',
 		proxyPath: '/api/ahocevar'

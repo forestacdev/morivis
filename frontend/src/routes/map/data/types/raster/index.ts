@@ -27,6 +27,8 @@ interface ImageLegendCategory {
 }
 export interface ImageLegend {
 	type: 'image';
+	/** 記号ごとの凡例か、文字を含む凡例画像全体か。省略時は記号として表示する。 */
+	layout?: 'symbols' | 'images';
 	categories: ImageLegendCategory[];
 }
 export interface CategoryLegend {

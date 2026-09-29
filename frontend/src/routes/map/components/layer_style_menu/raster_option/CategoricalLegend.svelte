@@ -65,14 +65,28 @@
 				<h2 class="mt-4 text-base">{category.name}</h2>
 				<div class="flex flex-col gap-2">
 					{#each category.urls as url, j (`${category.labels[j] ?? url}-${url}`)}
-						<li class="flex items-center gap-2">
-							<div
-								class="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-black bg-white p-2"
-							>
-								<img src={url} alt={category.labels[j]} class="aspect-square object-contain" />
-							</div>
-							<span class="text-sm">{category.labels[j]} </span>
-						</li>
+						{#if style.legend.layout === 'images'}
+							<li>
+								<a href={url} target="_blank" rel="noopener noreferrer" class="block">
+									<img
+										src={url}
+										alt={category.labels[j]}
+										class="h-auto max-w-full rounded-lg bg-white p-2"
+										loading="lazy"
+									/>
+									<span class="text-sm underline">{category.labels[j]}（別タブで開く）</span>
+								</a>
+							</li>
+						{:else}
+							<li class="flex items-center gap-2">
+								<div
+									class="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-black bg-white p-2"
+								>
+									<img src={url} alt={category.labels[j]} class="aspect-square object-contain" />
+								</div>
+								<span class="text-sm">{category.labels[j]} </span>
+							</li>
+						{/if}
 					{/each}
 				</div>
 			{/each}
