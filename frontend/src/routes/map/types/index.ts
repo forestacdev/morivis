@@ -194,8 +194,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'wmts',
 		dialogType: 'wmts',
 		label: 'WMS/WMTS',
-		description:
-			'地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
+		description: '地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
 		icon: 'mdi:layers-outline'
 	},
 	{
@@ -250,8 +249,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'stac',
 		dialogType: 'stac',
 		label: 'STAC / COG',
-		description:
-			'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
+		description: 'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
 		icon: 'hugeicons:cloud-cog'
 	},
 	{
@@ -266,7 +264,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'geojsonseq',
 		dialogType: 'geojson',
 		showInFormList: false,
-		label: 'GeoJSONSeq / 行区切りGeoJSON',
+		label: 'GeoJSONSeq',
 		description:
 			'GeoJSONを改行またはレコード区切りで並べたデータです。地物と属性をまとめて地図上に表示できます。',
 		icon: 'mdi:code-json'
@@ -526,8 +524,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'grib2',
 		label: 'GRIB2 (GPV)',
 		icon: 'mdi:weather-windy',
-		description:
-			'気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。'
+		description: '気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。'
 	},
 	{
 		id: 'zip',
@@ -587,8 +584,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'dm',
 		label: 'DM',
 		icon: 'mdi:terrain',
-		description:
-			'数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。'
+		description: '数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。'
 	},
 	{
 		id: 'landxml',
@@ -601,8 +597,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'mojxml',
 		label: '法務局地図XML',
 		icon: 'mdi:map-legend',
-		description:
-			'登記所備付地図のXMLデータです。筆界や地番を含む地籍情報を表示するときに使います。'
+		description: '登記所備付地図のXMLデータです。筆界や地番を含む地籍情報を表示するときに使います。'
 	},
 	{
 		id: 'geophoto',
@@ -628,8 +623,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'pdf',
 		label: 'GeoPDF',
 		icon: 'mdi:file-pdf-box',
-		description:
-			'位置情報を持つPDF地図です。紙地図由来のラスタやベクターを読み込むときに使います。'
+		description: '位置情報を持つPDF地図です。紙地図由来のラスタやベクターを読み込むときに使います。'
 	},
 	{
 		id: 'pointcloud',
@@ -778,14 +772,16 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 	}
 ];
 
-export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = UPLOAD_FORMAT_PRESENTATIONS.map(format => ({
-	...format,
-	extensions: [...FORMAT_DEFINITIONS[format.id].extensions]
-}));
+export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = UPLOAD_FORMAT_PRESENTATIONS.map(
+	(format) => ({
+		...format,
+		extensions: [...FORMAT_DEFINITIONS[format.id].extensions]
+	})
+);
 
 /** フォーム一覧の入口。共用フォームへ集約した形式もファイル判定には残す。 */
 export const UPLOAD_FORM_FORMATS = SUPPORTED_UPLOAD_FORMATS.filter(
-	format => format.showInFormList !== false
+	(format) => format.showInFormList !== false
 );
 
 /** ローカルファイルを受け付ける形式。 */
@@ -800,8 +796,8 @@ export const SUPPORTED_FILE_EXTENSIONS = SUPPORTED_FILE_GROUPS.flatMap((g) => g.
 export const SUPPORTED_FILE_ACCEPT = [
 	...new Set([
 		...SUPPORTED_FILE_EXTENSIONS,
-		...Object.values(FORMAT_DEFINITIONS).flatMap((format: FormatDefinition) =>
-			format.files?.optionalExtensions ?? []
+		...Object.values(FORMAT_DEFINITIONS).flatMap(
+			(format: FormatDefinition) => format.files?.optionalExtensions ?? []
 		)
 	])
 ].join(',');
@@ -827,7 +823,7 @@ export interface PoiHighlightMarkerState {
 	type: 'poi';
 	featureId: string | number;
 	point: [number, number];
-	properties: { [key: string]: any; };
+	properties: { [key: string]: any };
 	iconImage?: string | null;
 	iconMarker?: PoiIconMarkerAppearance;
 }

@@ -25,7 +25,11 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		bounds: [3.329595, 44.074747, 14.278255, 49.200438],
 		downloadUrl: 'https://www.swisstopo.admin.ch/en/satelliteimage-swisseo-s2-sr',
 		// 観測軌道によって表示範囲が変わるため、スイス全域を含むタイルを使う。
-		xyzImageTile: { x: 16, y: 11, z: 5 }
+		xyzImageTile: {
+			x: 1060,
+			y: 724,
+			z: 11
+		}
 	},
 	interaction: {
 		...DEFAULT_RASTER_BASEMAP_INTERACTION
