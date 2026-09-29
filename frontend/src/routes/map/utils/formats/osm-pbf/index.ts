@@ -35,7 +35,8 @@ export const convertOsmPbf = async (
 			) {
 				throw new Error('OSM PBFとして読み込めませんでした');
 			}
-			const output = await gdal.ogr2ogr(dataset, ['-f', 'GeoJSON', layer], `osm_${layer}`);
+			// 前レイヤーのGeoJSONは取り込み済みなので、同じ出力先を再利用してWASM内に残さない。
+			const output = await gdal.ogr2ogr(dataset, ['-f', 'GeoJSON', layer], 'osm_features');
 			assertNoErrors();
 			const bytes = await gdal.getFileBytes(output);
 			outputBytes += bytes.byteLength;

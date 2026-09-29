@@ -2,7 +2,7 @@
 	"shp": {},
 	"osm-pbf": {
 		"maxFileBytes": 67108864,
-		"maxOutputBytes": 134217728,
+		"maxOutputBytes": 268435456,
 		"maxFeatures": 500000,
 		"timeoutMs": 120000
 	},

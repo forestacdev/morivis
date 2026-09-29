@@ -6,7 +6,7 @@ export const formatOsmPbf = {
 	extensions: ['.osm.pbf', '.pbf'],
 	limits: {
 		maxFileBytes: 64 * MiB,
-		maxOutputBytes: 128 * MiB,
+		maxOutputBytes: 256 * MiB,
 		maxFeatures: 500_000,
 		timeoutMs: 120_000
 	}

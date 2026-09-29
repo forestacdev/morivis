@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { convertOsmPbf, type OsmPbfGdal } from '.';
 import { isOsmPbfFile, MAX_OSM_PBF_BYTES, validateOsmPbfFile } from './files';
+import { OSM_PBF_GDAL_ENV } from './gdal-config';
 
 const require = createRequire(import.meta.url);
 const fixtureUrl = (name: string) => new URL(`./__fixtures__/${name}.osm.pbf`, import.meta.url);
@@ -11,6 +12,7 @@ const fixtureFile = (name = 'test-dense', filename = `${name}.osm.pbf`) =>
 	new File([readFileSync(fixtureUrl(name))], filename);
 let gdal: OsmPbfGdal;
 let errors: string[] = [];
+let sqliteSpills: string[] = [];
 beforeAll(async () => {
 	const fetch = globalThis.fetch;
 	vi.stubGlobal('fetch', undefined);
@@ -19,8 +21,13 @@ beforeAll(async () => {
 			path: 'node_modules/gdal3.js/dist/package',
 			dest: '.svelte-kit/osm-pbf-tests',
 			useWorker: false,
+			// 架空fixtureで一時SQLiteのファイル移行を通し、unlinkによるI/Oエラーを検出する。
+			env: { ...OSM_PBF_GDAL_ENV, OSM_MAX_TMPFILE_SIZE: '0', CPL_DEBUG: 'OSM' },
 			logHandler: () => {},
-			errorHandler: (message: string) => errors.push(message)
+			errorHandler: (message: string) => {
+				if (/ERROR|Parsing error|An error occurred/i.test(message)) errors.push(message);
+				if (/sqlite too big for RAM/.test(message)) sqliteSpills.push(message);
+			}
 		});
 	} finally {
 		vi.stubGlobal('fetch', fetch);
@@ -29,6 +36,7 @@ beforeAll(async () => {
 
 const convert = async (name: string) => {
 	errors = [];
+	sqliteSpills = [];
 	await validateOsmPbfFile(fixtureFile(name));
 	return convertOsmPbf(gdal, fileURLToPath(fixtureUrl(name)), () => {
 		if (errors.length) throw new Error(errors.join('\n'));
@@ -67,6 +75,15 @@ describe('OSM PBFの実デコーダー', () => {
 	it('同じエンジンで読み直しても地物が欠落しない', async () => {
 		expect(await convert('test-raw')).toEqual(await convert('test-dense'));
 	});
+	it('一時SQLiteがファイルへ移行しても最後まで変換できる', async () => {
+		const result = await convert('test-spill');
+		expect(sqliteSpills.length).toBeGreaterThan(0);
+		expect(result.features).toHaveLength(150001);
+		expect(result.features.at(-1)).toMatchObject({
+			id: 'way/150099',
+			properties: { building: 'yes' }
+		});
+	}, 20000);
 	it('空のOSMを成功として登録しない', async () => {
 		await expect(convert('test-empty')).rejects.toThrow('描画可能な地物がありません');
 	});

@@ -3,6 +3,7 @@ import dataUrl from 'gdal3.js/dist/package/gdal3WebAssembly.data?url';
 import wasmUrl from 'gdal3.js/dist/package/gdal3WebAssembly.wasm?url';
 import { convertOsmPbf } from '.';
 import { validateOsmPbfFile } from './files';
+import { OSM_PBF_GDAL_ENV } from './gdal-config';
 
 self.onmessage = async ({ data: file }: MessageEvent<File>) => {
 	try {
@@ -11,7 +12,7 @@ self.onmessage = async ({ data: file }: MessageEvent<File>) => {
 		const gdal = await initGdalJs({
 			useWorker: false,
 			paths: { wasm: wasmUrl, data: dataUrl },
-			env: { PROJ_NETWORK: 'OFF' },
+			env: OSM_PBF_GDAL_ENV,
 			logHandler: () => {},
 			errorHandler: message => {
 				if (/ERROR|Parsing error|An error occurred/i.test(message)) failure = message;

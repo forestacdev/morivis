@@ -85,3 +85,16 @@ for (const dense of [false, true]) {
 writeFileSync(new URL('./test-empty.osm.pbf', import.meta.url), block('OSMHeader', header(false), false));
 writeFileSync(new URL('./test-unsupported.osm.pbf', import.meta.url),
 	block('OSMHeader', concat(header(false), string(4, 'test-unsupported-feature')), false));
+
+// SQLiteのサイズ判定はMiB単位のため、閾値0でも1 MiBを超えるway索引が必要。
+// 同じ架空の四角形を繰り返し、実データを使わず一時DBのファイル移行を再現する。
+const spillBlocks = [
+	block('OSMHeader', header(true), true),
+	block('OSMData', primitive(denseNodes()), true)
+];
+for (let start = 0; start < 150000; start += 1000) {
+	spillBlocks.push(block('OSMData', primitive(concat(...Array.from({ length: 1000 }, (_, i) =>
+		way(100 + start + i, [1, 2, 3, 4, 1], { building: 'yes' })
+	))), true));
+}
+writeFileSync(new URL('./test-spill.osm.pbf', import.meta.url), concat(...spillBlocks));
