@@ -33,11 +33,11 @@
 			{#each style.legend.colors as color, i (`${style.legend.labels[i] ?? color}-${color}`)}
 				<li style="display: flex; align-items: center; margin-bottom: 5px;">
 					<span
-						class="rounded-md border border-black"
+						class="shrink-0 rounded-md border border-black"
 						style="width: 20px; height: 20px; background-color: {color}; margin-right: 10px; display: inline-block;"
 					>
 					</span>
-					<span>{style.legend.labels[i]}</span>
+					<span class="min-w-0 flex-1 break-words">{style.legend.labels[i]}</span>
 				</li>
 			{/each}
 		</ul>
