@@ -34,6 +34,7 @@
 	import { clearCogViewportImage } from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
+	import { canFocusLayer } from '$routes/map/utils/map/focus-layer';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { retainLocalTilesetEntry } from '$routes/map/utils/tiles3d/local-files';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
@@ -310,6 +311,8 @@
 		activeLayerIdsStore.remove(layerEntry.id);
 		selectedLayerId.set('');
 	};
+
+	const showFocusButton = $derived(canFocusLayer(layerEntry));
 
 	// レイヤーのフォーカス
 	const focusLayer = () => {
@@ -708,7 +711,7 @@
 							<UiTrashIcon class="h-8 w-8" />
 						</button>
 
-						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
+						{#if showFocusButton}
 							<button class="cursor-pointer" onclick={focusLayer}>
 								<UiLockOnIcon class="h-8 w-8" />
 							</button>
@@ -753,7 +756,7 @@
 							<UiTrashIcon class="h-8 w-8" />
 						</button>
 
-						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
+						{#if showFocusButton}
 							<button class="cursor-pointer" onclick={focusLayer}>
 								<UiLockOnIcon class="h-8 w-8" />
 							</button>

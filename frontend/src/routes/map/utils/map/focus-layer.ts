@@ -1,4 +1,21 @@
+import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import type { MorivisLayerEntry } from '$routes/map/data/types';
+
+/** 「世界」の分類でも、対象範囲が世界全体より狭ければフォーカスできる。 */
+export const canFocusLayer = (entry: Pick<MorivisLayerEntry, 'metaData'>): boolean => {
+	const { location, bounds } = entry.metaData;
+	if (location === '全国') return false;
+	if (location !== '世界') return true;
+
+	const [west, south, east, north] = bounds;
+	if (![west, south, east, north].every(Number.isFinite) || south > north) return false;
+	const [worldWest, worldSouth, worldEast, worldNorth] = WEB_MERCATOR_WORLD_BBOX;
+	// Web Mercatorの最大緯度を小数6桁などで保存した場合の丸め差を許容する。
+	const epsilon = 1e-6;
+	return east - west < worldEast - worldWest - epsilon
+		|| south > worldSouth + epsilon
+		|| north < worldNorth - epsilon;
+};
 
 interface SinglePointFocus {
 	center: [number, number];
