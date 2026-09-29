@@ -84,6 +84,7 @@ export type DialogType =
 	| 'wkt'
 	| 'geotiff'
 	| 'ascii-grid'
+	| 'hgt'
 	| 'envi-bil'
 	| 'jpeg2000'
 	| 'wmts'
@@ -494,6 +495,13 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		icon: 'mdi:grid',
 		description:
 			'標高や解析値を格子状に記録したテキスト形式です。ASCと同名のPRJを読み込んでラスターや3Dメッシュとして表示できます。'
+	},
+	{
+		id: 'hgt',
+		label: 'SRTM HGT',
+		icon: 'mdi:terrain',
+		description:
+			'標高を16ビットの格子で記録したバイナリ形式です。ファイル名の緯度経度を使い、ラスターや3Dメッシュとして表示できます。'
 	},
 	{
 		id: 'h5',

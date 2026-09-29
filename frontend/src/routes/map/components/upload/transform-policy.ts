@@ -36,6 +36,7 @@ const createPolicy = (
 });
 
 const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPolicy>> = {
+	hgt: createPolicy('none', 'georef-only', 'georef'),
 	video: createPolicy('none', 'georef-only', 'georef'),
 	'envi-bil': createPolicy('zone-only', 'georef-only', 'zone'),
 	jpeg2000: createPolicy('zone-only', 'georef-only', 'zone'),

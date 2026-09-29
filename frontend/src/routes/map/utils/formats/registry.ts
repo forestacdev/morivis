@@ -39,6 +39,7 @@ import { formatGpx } from './gpx/definition';
 import { formatGrib2 } from './grib2/definition';
 import { formatZip } from './gtfs/definition';
 import { formatH5 } from './hdf5/definition';
+import { formatHgt } from './hgt/definition';
 import { formatBz2 } from './hrit/definition';
 import { formatIfc } from './ifc/definition';
 import { formatJpeg2000 } from './jpeg2000/definition';
@@ -129,6 +130,7 @@ export const FORMAT_DEFINITIONS = {
 	'jpeg2000': formatJpeg2000,
 	'envi-bil': formatEnviBil,
 	'ascii-grid': formatAsciiGrid,
+	'hgt': formatHgt,
 	'h5': formatH5,
 	'nc': formatNc,
 	'grib2': formatGrib2,

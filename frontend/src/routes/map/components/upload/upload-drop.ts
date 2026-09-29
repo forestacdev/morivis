@@ -18,6 +18,7 @@ import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGaussianSplatPlyFile } from '$routes/map/utils/formats/gaussian-splat';
 import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
+import { isHgtFile } from '$routes/map/utils/formats/hgt';
 import { isLikelyHritFile } from '$routes/map/utils/formats/hrit';
 import { extractModelFromKml, extractModelFromKmz } from '$routes/map/utils/formats/kml';
 import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
@@ -267,6 +268,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	tiff: 'geotiff',
 	tif: 'geotiff',
 	asc: 'ascii-grid',
+	hgt: 'hgt',
 	hdr: 'envi-bil',
 	bil: 'envi-bil',
 	bip: 'envi-bil',
@@ -317,6 +319,11 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 		id: 'envi-bil-set',
 		match: files => files.some(file => isRawRasterHeader(file) || isRawRasterMain(file)),
 		resolve: async files => createDialogDecision('envi-bil', files)
+	},
+	{
+		id: 'hgt-set',
+		match: files => files.some(isHgtFile),
+		resolve: async files => createDialogDecision('hgt', files.filter(isHgtFile))
 	},
 	{
 		id: 'ascii-grid-set',

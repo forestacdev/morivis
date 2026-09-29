@@ -1591,3 +1591,47 @@ describe('ZIP展開後の容量確認', () => {
 			.toMatchObject({ type: 'notification', level: 'error' });
 	});
 });
+
+describe('SRTM HGTのドロップ', () => {
+	it.each(['N00E000.test-grid.hgt', 's01w001.test-grid.HGT', 'test-renamed.hgt'])(
+		'%sを専用フォームへ渡す',
+		async name => {
+			const file = new File([], name);
+			for (const input of [file, [file]]) {
+				expect(await resolveDroppedFiles(input)).toMatchObject({
+					type: 'dialog',
+					dialogType: 'hgt'
+				});
+			}
+		}
+	);
+	it('複数タイルは選択候補をすべてフォームへ渡す', async () => {
+		const files = ['N00E000.test-grid.hgt', 'N00E001.test-grid.hgt'].map(name =>
+			new File([], name)
+		);
+		expect(await resolveDroppedFiles([new File([], 'test-note.txt'), ...files])).toEqual({
+			type: 'dialog',
+			dialogType: 'hgt',
+			dropFiles: files
+		});
+	});
+	it('ZIP内のHGTも同じ導線へ渡す', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/N00E000.test-grid.hgt', 'test');
+		const file = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-grid.hgt.zip'
+		);
+		const decision = await resolveDroppedFiles(file);
+		expect(decision).toMatchObject({ type: 'dialog', dialogType: 'hgt' });
+		if (decision.type === 'dialog') {
+			expect(decision.dropFiles?.[0].name).toBe('N00E000.test-grid.hgt');
+		}
+	});
+	it('形式一覧とファイル選択にHGTを含める', () => {
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'hgt')?.extensions).toEqual([
+			'.hgt'
+		]);
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.hgt');
+	});
+});

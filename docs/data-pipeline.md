@@ -157,6 +157,13 @@ PRJまたはZoneで確定した座標系から、セル中心を逆投影してW
 ラスターは既存の `GeoTiffCache` と `RasterTiffStyle`、3Dは既存のメッシュ生成へ渡す。座標系不明なら手動の位置合わせも選べる。
 対応範囲は [ASCII Grid](../frontend/src/routes/map/utils/formats/ascii-grid/README.md) を参照。
 
+SRTM HGT (`.hgt`) は `HgtForm.svelte` からWorkerで標高格子を解析する。
+1度タイルの1201×1201・1801×3601・3601×3601に対応し、ファイル名からWGS84の位置を復元する。
+解析後にダイアログでGeoTIFFと共通の切り替えUIからラスター／3Dメッシュを選び、「決定」を押す。位置を復元できれば選んだ方法でそのまま登録へ進み、位置を取得できない名前では表示方法を引き継いで既存の位置合わせへ進む。
+ラスターはピクセル外縁、3Dメッシュは端の標本点の範囲で登録する。
+単体の容量上限は形式の`definition.ts`に置き、規定サイズを読み込み前にも検査する。
+対応範囲は [SRTM HGT](../frontend/src/routes/map/utils/formats/hgt/README.md) を参照。
+
 DMは同じディレクトリのDMI、DM内のインデックス、図郭番号の順で系番号の候補を取得する。
 候補は `pendingZoneGeoRefData.suggestedEpsgCode` からZone画面へ渡し、ユーザーの確認後に変換する。
 図形区分31の中庭は、同一図郭の建物外周に完全に含まれる場合に内周へ変換する。

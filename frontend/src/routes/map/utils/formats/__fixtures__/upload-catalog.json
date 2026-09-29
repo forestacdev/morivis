@@ -318,6 +318,12 @@
 		]
 	},
 	{
+		"id": "hgt",
+		"extensions": [
+			".hgt"
+		]
+	},
+	{
 		"id": "h5",
 		"extensions": [
 			".h5"
