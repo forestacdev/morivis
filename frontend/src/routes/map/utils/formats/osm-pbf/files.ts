@@ -2,8 +2,8 @@ import Pbf from 'pbf';
 import { formatOsmPbf } from './definition';
 
 export const MAX_OSM_PBF_BYTES = formatOsmPbf.limits.maxFileBytes;
-const MAX_HEADER_BYTES = 64 * 1024;
-const MAX_BLOB_BYTES = 32 * 1024 * 1024;
+export const MAX_HEADER_BYTES = 64 * 1024;
+export const MAX_BLOB_BYTES = 32 * 1024 * 1024;
 
 export const isOsmPbfFileName = (name: string) => /\.osm\.pbf$/i.test(name);
 
@@ -35,8 +35,11 @@ export const isOsmPbfFile = async (file: File): Promise<boolean> => {
 	}
 };
 
-/** GDALが末尾の欠損を部分成功として扱う前に、全ブロックの境界を確認する。 */
-export const validateOsmPbfFile = async (file: File): Promise<void> => {
+/** ファイル全体を複製せず、検査済みのBlob範囲を順番に渡す。 */
+export const visitOsmPbfBlobs = async (
+	file: File,
+	visit?: (blob: Blob, type: string) => Promise<void>
+): Promise<void> => {
 	if (file.size > MAX_OSM_PBF_BYTES) {
 		throw new Error('OSM PBFは64 MiB以下に分割して読み込んでください');
 	}
@@ -55,9 +58,13 @@ export const validateOsmPbfFile = async (file: File): Promise<void> => {
 		if (count > 0 && header.type !== 'OSMData') {
 			throw new Error('OSM PBFに未対応のブロックがあります');
 		}
-		offset += 4 + size + header.size;
+		const start = offset + 4 + size;
+		offset = start + header.size;
 		if (offset > file.size) throw new Error('OSM PBFのデータブロックが欠損しています');
+		await visit?.(file.slice(start, offset), header.type);
 		count++;
 	}
 	if (!count) throw new Error('OSM PBFファイルが空です');
 };
+
+export const validateOsmPbfFile = (file: File) => visitOsmPbfBlobs(file);

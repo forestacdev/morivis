@@ -7,7 +7,10 @@ export const formatOsmPbf = {
 	limits: {
 		maxFileBytes: 64 * MiB,
 		maxOutputBytes: 256 * MiB,
-		maxFeatures: 500_000,
+		maxFeatures: 1_000_000,
+		maxSourcePoints: 5_000_000,
+		maxVertices: 10_000_000,
+		maxExpandedBytes: 512 * MiB,
 		timeoutMs: 120_000
 	}
 } as const satisfies FormatDefinition;

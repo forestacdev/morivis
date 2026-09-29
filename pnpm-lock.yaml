@@ -88,6 +88,9 @@ importers:
       '@maplibre/mlt':
         specifier: 1.1.12
         version: 1.1.12
+      '@osmix/pbf':
+        specifier: 0.0.9
+        version: 0.0.9
       '@pixiv/three-vrm':
         specifier: ^3.5.5
         version: 3.5.5(three@0.177.0)
@@ -2255,6 +2258,9 @@ packages:
 
   '@open-draft/until@2.1.0':
     resolution: {integrity: sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==}
+
+  '@osmix/pbf@0.0.9':
+    resolution: {integrity: sha512-jUdyYdj+aOfL4saYnPpQOjXalgpJIYOTqX/2GRCqwIFRJqspXiED08eusRAi3hvstTLEsjpFvNQKUrVKMW580g==}
 
   '@oxc-parser/binding-android-arm-eabi@0.133.0':
     resolution: {integrity: sha512-l/44caGse+VpnY9gx0yvvc5QnnG3yG1FO3KZgYvNL1GZrfK86zIwAOgGEVlxDyRymzrU/KHiblPFpevKOmJmUA==}
@@ -8883,6 +8889,10 @@ snapshots:
       outvariant: 1.4.3
 
   '@open-draft/until@2.1.0': {}
+
+  '@osmix/pbf@0.0.9':
+    dependencies:
+      pbf: 4.0.1
 
   '@oxc-parser/binding-android-arm-eabi@0.133.0':
     optional: true

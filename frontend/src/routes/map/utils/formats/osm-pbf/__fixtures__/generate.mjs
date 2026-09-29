@@ -86,8 +86,7 @@ writeFileSync(new URL('./test-empty.osm.pbf', import.meta.url), block('OSMHeader
 writeFileSync(new URL('./test-unsupported.osm.pbf', import.meta.url),
 	block('OSMHeader', concat(header(false), string(4, 'test-unsupported-feature')), false));
 
-// SQLiteのサイズ判定はMiB単位のため、閾値0でも1 MiBを超えるway索引が必要。
-// 同じ架空の四角形を繰り返し、実データを使わず一時DBのファイル移行を再現する。
+// 同じ架空の四角形を繰り返し、多数のブロック間参照と15万件の出力を検証する。
 const spillBlocks = [
 	block('OSMHeader', header(true), true),
 	block('OSMData', primitive(denseNodes()), true)
@@ -98,3 +97,52 @@ for (let start = 0; start < 150000; start += 1000) {
 	))), true));
 }
 writeFileSync(new URL('./test-spill.osm.pbf', import.meta.url), concat(...spillBlocks));
+
+// 専用デコーダーへの切り替えで必要な境界条件。
+const save = (name, ...groups) => writeFileSync(new URL(`./${name}.osm.pbf`, import.meta.url), concat(
+	block('OSMHeader', header(true), true),
+	...groups.map(group => block('OSMData', primitive(group), true))
+));
+save('test-tagless-dense', bytes(2, concat(
+	packed(1, [1, 1], true), packed(8, [0, 1e7], true), packed(9, [0, 1e7], true)
+)), way(10, [1, 2], { highway: 'path' }));
+save('test-bad-dense-count', bytes(2, concat(
+	packed(1, [1, 1], true), packed(8, [0], true), packed(9, [0, 1e7], true)
+)));
+save('test-bad-dense-tags', bytes(2, concat(
+	packed(1, [1], true), packed(8, [0], true), packed(9, [0], true), packed(10, [1, 2])
+)));
+save('test-bad-tag-index', bytes(1, concat(
+	uint(1, zigzag(9)), packed(2, [999]), packed(3, [1]), uint(8, 0), uint(9, 0)
+)));
+save('test-missing-coordinate', bytes(1, concat(uint(1, zigzag(9)), uint(8, 0))));
+save('test-duplicate-id', nodeMessages(), nodeMessages());
+save('test-unsafe-id', bytes(1, concat(uint(1, 2n ** 55n), uint(8, 0), uint(9, 0))));
+save('test-missing-node', nodeMessages(), way(10, [1, 999, 2], { highway: 'path' }));
+save('test-bad-message', concat(Buffer.from([10, 100]), Buffer.from([8, 2])));
+const offsetNode = bytes(1, concat(uint(1, zigzag(9)), tags(pointTags), uint(8, zigzag(2000000)), uint(9, zigzag(3000000))));
+writeFileSync(new URL('./test-offset.osm.pbf', import.meta.url), concat(
+	block('OSMHeader', header(false), false),
+	block('OSMData', concat(primitive(offsetNode), uint(17, 1000), uint(19, BigInt.asUintN(64, -1000000000n)), uint(20, 1000000000)), false)
+));
+writeFileSync(new URL('./test-history.osm.pbf', import.meta.url), block('OSMHeader', concat(header(false), string(4, 'HistoricalInformation')), false));
+strings.push('route', 'restriction', 'from', 'to', 'via', 'test-route', 'test-restriction');
+const rel = (id, attributes, members) => bytes(4, concat(
+	uint(1, id), tags(attributes), packed(8, members.map(m => sid(m[2]))),
+	packed(9, delta(members.map(m => m[1])), true), packed(10, members.map(m => m[0]))
+));
+save('test-relations', nodeMessages(), ways, concat(
+	rel(30, { type: 'route', name: 'test-route' }, [[1, 10, '']]),
+	rel(31, { type: 'restriction', name: 'test-restriction' }, [[1, 10, 'from'], [0, 2, 'via'], [1, 11, 'to']])
+));
+save('test-relation-cycle', nodeMessages(), rel(30, { type: 'restriction' }, [[2, 30, '']]));
+save('test-bad-relation', nodeMessages(), bytes(4, concat(uint(1, 30), packed(9, [10], true))));
+// Blobのraw_size検査と圧縮方式の拒否。外枠は正しいままにする。
+const invalidBlob = (name, blob) => {
+	const h = concat(string(1, 'OSMHeader'), uint(3, blob.length));
+	const length = Buffer.alloc(4); length.writeUInt32BE(h.length);
+	writeFileSync(new URL(`./${name}.osm.pbf`, import.meta.url), concat(length, h, blob));
+};
+invalidBlob('test-zlib-size', concat(uint(2, 1), bytes(3, deflateSync(header(true)))));
+invalidBlob('test-oversize-blob', concat(uint(2, 32 * 1024 * 1024), bytes(3, deflateSync(header(true)))));
+invalidBlob('test-lzma', concat(uint(2, 1), bytes(4, Buffer.from([0]))));

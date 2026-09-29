@@ -3,7 +3,10 @@
 	"osm-pbf": {
 		"maxFileBytes": 67108864,
 		"maxOutputBytes": 268435456,
-		"maxFeatures": 500000,
+		"maxFeatures": 1000000,
+		"maxSourcePoints": 5000000,
+		"maxVertices": 10000000,
+		"maxExpandedBytes": 536870912,
 		"timeoutMs": 120000
 	},
 	"fit": {
