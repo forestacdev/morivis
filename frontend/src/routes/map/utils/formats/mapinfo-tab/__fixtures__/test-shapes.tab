@@ -1,0 +1,13 @@
+!table
+!version 900
+!charset Neutral
+
+Definition Table
+  Type NATIVE Charset "Neutral"
+  Fields 6
+    name Char (24) ;
+    count Integer ;
+    amount Decimal (10,2) ;
+    active Char (1) ;
+    day Date ;
+    clock Time ;

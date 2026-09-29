@@ -235,9 +235,6 @@ importers:
       fuse.js:
         specifier: ^7.0.0
         version: 7.1.0
-      gdal3.js:
-        specifier: 2.8.1
-        version: 2.8.1
       geojson-vt:
         specifier: ^4.0.2
         version: 4.0.2
@@ -3910,9 +3907,6 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
-  detect-node@2.1.0:
-    resolution: {integrity: sha512-T0NIuQpnTvFDATNuHN5roPwSBG83rFsuO+MXXH9/3N1eFbn4wcPjttvjMLEPWJ0RGUYgQE7cGgS3tNxbqCGM7g==}
-
   devalue@5.8.1:
     resolution: {integrity: sha512-4CXDYRBGqN+57wVJkuXBYmpAVUSg3L6JAQa/DFqm238G73E1wuyc/JhGQJzN7vUf/CMphYau2zXbfWzDR5aTEw==}
 
@@ -4446,9 +4440,6 @@ packages:
 
   fzstd@0.1.1:
     resolution: {integrity: sha512-dkuVSOKKwh3eas5VkJy1AW1vFpet8TA/fGmVA5krThl8YcOVE/8ZIoEA1+U1vEn5ckxxhLirSdY837azmbaNHA==}
-
-  gdal3.js@2.8.1:
-    resolution: {integrity: sha512-Zg3T0vyDAPJ7kyyhyjhmG2OvUg7Xpn+Uh9+hTMIKXj4JDrJPERTrA8Q9wpthtqX9yvaftg7aS9YIrot4p7cNLA==}
 
   generator-function@2.0.1:
     resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
@@ -10571,8 +10562,6 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
-  detect-node@2.1.0: {}
-
   devalue@5.8.1: {}
 
   dir-glob@3.0.1:
@@ -11317,11 +11306,6 @@ snapshots:
   fuse.js@7.1.0: {}
 
   fzstd@0.1.1: {}
-
-  gdal3.js@2.8.1:
-    dependencies:
-      detect-node: 2.1.0
-      xml-js: 1.6.11
 
   generator-function@2.0.1: {}
 

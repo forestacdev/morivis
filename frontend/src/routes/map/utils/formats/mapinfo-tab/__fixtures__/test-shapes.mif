@@ -1,0 +1,69 @@
+Version 650
+Charset "WindowsLatin1"
+Delimiter ","
+CoordSys Earth Projection 1, 104
+Columns 6
+  name Char(24)
+  count SmallInt
+  amount Decimal(10,2)
+  active Logical
+  day Date
+  clock Time
+Data
+Point 2 3
+Symbol(35,0,12)
+Line 1 2 4 5
+Pline Multiple 2
+3
+1 1
+2 2
+3 1
+2
+4 4
+5 5
+Region 3
+5
+1 1
+4 1
+4 4
+1 4
+1 1
+5
+2 2
+2 3
+3 3
+3 2
+2 2
+5
+6 1
+7 1
+7 2
+6 2
+6 1
+Multipoint 3
+1 2
+3 4
+5 6
+Collection 3
+Region 1
+5
+1 1
+2 1
+2 2
+1 2
+1 1
+Pline 3
+3 3
+4 5
+5 3
+Multipoint 2
+6 6
+7 7
+Rect 1 2 4 5
+RoundRect 1 2 5 6 1
+Ellipse 1 2 5 6
+Arc 1 2 5 6 20 160
+Text "test-label"
+1 2 4 3
+Font("Arial",0,10,0)
+Angle 30

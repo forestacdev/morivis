@@ -28,9 +28,9 @@ DGN読み込みの実行時にはGDAL・WASM・仮想ファイルシステムを
 
 ## 検証
 
-`__fixtures__/generate.mjs`は同梱GDALのseedから架空の2D／3D図面を生成する。
+`__fixtures__/generate.mjs`は外部の`ogr2ogr` CLIとそのseedから架空の2D／3D図面を再生成する任意の開発用スクリプト。アプリ・テスト・ビルドにはGDALは不要。
 `__fixtures__/builders.ts`と`generate-extra.ts`は、曲線・円弧・複合図形・座標補正・原点を含む架空のISFFレコードを生成する。
-テストでは同梱GDALを比較対象としてのみ使い、座標・図形と既存属性を照合する。
+テストではGDAL 3.8.4で取得してGit管理した`*.expected.json`と座標・図形を照合する。再生成した期待値は差分を確認して更新する。
 実データは回帰テストへ組み込まない。
 
 参照実装とライセンスは [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) を参照。

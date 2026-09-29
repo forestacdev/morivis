@@ -24,7 +24,6 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 	const lazyPrecacheIgnores = [
 		'**/*.wasm',
-		'**/gdal3WebAssembly*.data',
 		'client/_app/immutable/workers/**',
 		'client/{draco,basis,rhino3dm,web-ifc,vendor}/**'
 	];
@@ -36,7 +35,6 @@ export default defineConfig(({ mode }) => {
 			include: [
 				'three/addons/objects/MarchingCubes.js',
 				'occt-import-js',
-				'gdal3.js',
 				'@cornerstonejs/codec-openjpeg/decodewasmjs',
 				'web-e57-internal/e57_bg.js'
 			]

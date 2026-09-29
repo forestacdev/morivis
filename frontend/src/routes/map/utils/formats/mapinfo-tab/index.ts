@@ -4,14 +4,15 @@ import { formatMapinfoTab } from './definition';
 
 export interface MapInfoResult {
 	geojson: FeatureCollection;
-	sourceWkt: string;
+	/** 埋め込みCRSのproj4定義。不明・NonEarthの場合は空文字。 */
+	sourceCrs: string;
 	spatialStatus: 'resolved' | 'crs-missing';
 	omittedCount: number;
 }
 export const MAX_TAB_FEATURES = formatMapinfoTab.limits.maxFeatures;
 export const MAX_TAB_VERTICES = formatMapinfoTab.limits.maxVertices;
 
-/** GDALの出力でも範囲外・空ジオメトリを確認し、属性だけの行数を通知する。 */
+/** パーサー出力の範囲外・空ジオメトリを確認し、属性だけの行数を通知する。 */
 export const normalizeMapInfoGeoJson = (value: unknown, geographic: boolean) => {
 	if (
 		!value || typeof value !== 'object' || !('type' in value)

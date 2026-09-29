@@ -1,0 +1,103 @@
+{
+	"type": "FeatureCollection",
+	"name": "elements",
+	"features": [
+		{
+			"type": "Feature",
+			"properties": {
+				"Type": 17,
+				"Level": 1,
+				"GraphicGroup": 0,
+				"ColorIndex": 3,
+				"Weight": 0,
+				"Style": 0,
+				"Text": "test-label",
+				"ULink": {
+					"24162": [
+						{
+							"size": 16,
+							"raw": [
+								"0x1007",
+								"0x5e62",
+								"0x0f81",
+								"0x0000",
+								"0x0000",
+								"0x0000",
+								"0x0000",
+								"0x0000"
+							],
+							"type": "unknown"
+						}
+					]
+				}
+			},
+			"geometry": { "type": "Point", "coordinates": [2.0, 3.0] }
+		},
+		{
+			"type": "Feature",
+			"properties": {
+				"Type": 4,
+				"Level": 2,
+				"GraphicGroup": 0,
+				"ColorIndex": 4,
+				"Weight": 2,
+				"Style": 0,
+				"ULink": {
+					"24162": [
+						{
+							"size": 16,
+							"raw": [
+								"0x1007",
+								"0x5e62",
+								"0x0f81",
+								"0x0000",
+								"0x0000",
+								"0x0000",
+								"0x0000",
+								"0x0000"
+							],
+							"type": "unknown"
+						}
+					]
+				}
+			},
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [[0.0, 0.0], [10.0, 20.0], [30.0, 10.0]]
+			}
+		},
+		{
+			"type": "Feature",
+			"properties": {
+				"Type": 6,
+				"Level": 3,
+				"GraphicGroup": 0,
+				"ColorIndex": 5,
+				"Weight": 0,
+				"Style": 0,
+				"ULink": {
+					"24162": [
+						{
+							"size": 16,
+							"raw": [
+								"0x1007",
+								"0x5e62",
+								"0x0f81",
+								"0x0000",
+								"0x0000",
+								"0x0000",
+								"0x0000",
+								"0x0000"
+							],
+							"type": "unknown"
+						}
+					]
+				}
+			},
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0], [0.0, 0.0]]]
+			}
+		}
+	]
+}

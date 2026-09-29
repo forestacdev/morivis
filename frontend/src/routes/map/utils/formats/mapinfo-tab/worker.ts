@@ -1,6 +1,3 @@
-import initGdalJs from 'gdal3.js';
-import dataUrl from 'gdal3.js/dist/package/gdal3WebAssembly.data?url';
-import wasmUrl from 'gdal3.js/dist/package/gdal3WebAssembly.wasm?url';
 import type { MapInfoResult } from '.';
 import { convertMapInfoTab } from './convert';
 
@@ -12,14 +9,7 @@ export type MapInfoResponse = { result: MapInfoResult; } | { error: string; };
 
 self.onmessage = async ({ data }: MessageEvent<MapInfoRequest>) => {
 	try {
-		const gdal = await initGdalJs({
-			useWorker: false,
-			paths: { wasm: wasmUrl, data: dataUrl },
-			env: { PROJ_NETWORK: 'OFF' },
-			logHandler: () => {},
-			errorHandler: () => {}
-		});
-		const result = await convertMapInfoTab(gdal, data.files, data.sourceCrs);
+		const result = await convertMapInfoTab(data.files, data.sourceCrs);
 		postMessage({ result } satisfies MapInfoResponse);
 	} catch (error) {
 		const message = error instanceof Error

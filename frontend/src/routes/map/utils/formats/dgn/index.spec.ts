@@ -1,47 +1,21 @@
-import type initGdalJs from 'gdal3.js';
 import { readFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
 import proj4 from 'proj4';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDgn } from '.';
 import { convertDgn } from './convert';
 import { formatDgn } from './definition';
 import { checkDgnSize, validateDgnBytes } from './files';
 
-const require = createRequire(import.meta.url);
 const fixture = (name = 'test-2d.dgn') => new URL(`./__fixtures__/${name}`, import.meta.url);
 const source = JSON.parse(readFileSync(fixture('test-source.geojson'), 'utf8'));
-let gdal: Awaited<ReturnType<typeof initGdalJs>>;
-beforeAll(async () => {
-	const fetch = globalThis.fetch;
-	vi.stubGlobal('fetch', undefined);
-	try {
-		gdal = await require('gdal3.js/node')({
-			path: 'node_modules/gdal3.js/dist/package',
-			dest: '.svelte-kit/dgn-tests',
-			useWorker: false,
-			env: { PROJ_NETWORK: 'OFF' },
-			logHandler: () => {}
-		});
-	} finally {
-		vi.stubGlobal('fetch', fetch);
-	}
-});
-const oracle = async (name: string) => {
-	const { datasets } = await gdal.open(fileURLToPath(fixture(name)));
-	try {
-		const out = await gdal.ogr2ogr(datasets[0], ['-f', 'GeoJSON', '-dim', 'XY'], 'test-oracle');
-		return JSON.parse(new TextDecoder().decode(await gdal.getFileBytes(out)));
-	} finally {
-		for (const dataset of datasets) await gdal.close(dataset);
-	}
-};
+// 既存の架空fixtureをGDAL 3.8.4で変換した固定期待値。テスト実行時のGDAL依存はない。
+const oracle = (name: string) =>
+	JSON.parse(readFileSync(fixture(name.replace('.dgn', '.expected.json')), 'utf8'));
 
 describe('DGN V7 TypeScriptパーサー', () => {
-	it('円弧・曲線・座標補正・複合線・複合面をGDALと比較する', async () => {
+	it('円弧・曲線・座標補正・複合線・複合面を保存した参照結果と比較する', async () => {
 		const result = parseDgn(readFileSync(fixture('test-curves.dgn')));
-		const reference = await oracle('test-curves.dgn');
+		const reference = oracle('test-curves.dgn');
 		expect(result.geojson.features).toHaveLength(7);
 		expect(reference.features).toHaveLength(7);
 		const compare = (a: unknown, b: unknown): void => {
@@ -62,7 +36,7 @@ describe('DGN V7 TypeScriptパーサー', () => {
 		'%sの線・面・文字をGDALと同じ座標で読む',
 		async name => {
 			const result = parseDgn(readFileSync(fixture(name)));
-			const reference = await oracle(name);
+			const reference = oracle(name);
 			expect(result.geojson.features.map(f => f.geometry)).toEqual(
 				reference.features.map((f: { geometry: unknown; }) => f.geometry)
 			);
