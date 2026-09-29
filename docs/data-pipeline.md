@@ -164,6 +164,8 @@ SRTM HGT (`.hgt`) は `HgtForm.svelte` からWorkerで標高格子を解析す�
 単体の容量上限は形式の`definition.ts`に置き、規定サイズを読み込み前にも検査する。
 対応範囲は [SRTM HGT](../frontend/src/routes/map/utils/formats/hgt/README.md) を参照。
 
+ラスター由来の地形メッシュは、GLBのY正方向を高さとして生成する。地図表示の軸補正はentryの`transform.baseRotationX`で行い、モデルビューではGLBをそのまま上向きに表示する。標高の色分けも正の高さを参照する。
+
 DMは同じディレクトリのDMI、DM内のインデックス、図郭番号の順で系番号の候補を取得する。
 候補は `pendingZoneGeoRefData.suggestedEpsgCode` からZone画面へ渡し、ユーザーの確認後に変換する。
 図形区分31の中庭は、同一図郭の建物外周に完全に含まれる場合に内周へ変換する。

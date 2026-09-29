@@ -308,10 +308,9 @@ export const buildRasterMeshGeometry = async ({
 			const { lng, lat } = interpolateOnQuad(quadCorners, u, v);
 			const merc = maplibregl.MercatorCoordinate.fromLngLat([lng, lat], 0);
 
-			positions[posIndex] = -(merc.x - centerMerc.x) / meterUnit;
-			// Three.js レイヤー側で Y 軸を反転しているため、
-			// ラスターメッシュは高さを負方向で焼いて上向きにそろえる。
-			positions[posIndex + 1] = -heights[vertexIndex];
+			// GLBはY-upで保持し、地図固有の軸補正はentryのtransformで行う。
+			positions[posIndex] = (merc.x - centerMerc.x) / meterUnit;
+			positions[posIndex + 1] = heights[vertexIndex];
 			positions[posIndex + 2] = (merc.y - centerMerc.y) / meterUnit;
 			uvs[vertexIndex * 2] = 0.5;
 			uvs[vertexIndex * 2 + 1] = normalizedHeights[vertexIndex];
@@ -345,7 +344,6 @@ export const buildRasterMeshGeometry = async ({
 	geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 	geometry.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
 	geometry.setIndex(indices);
-	geometry.applyMatrix4(new THREE.Matrix4().makeRotationY(Math.PI / 1));
 	geometry.computeVertexNormals();
 
 	const material = new THREE.MeshStandardMaterial({
@@ -399,7 +397,7 @@ export const createRasterMeshEntry = async (
 			wireframe: false,
 			showThroughTerrain: false,
 			color: '#ffffff',
-			shading: { ...DEFAULT_MESH_SHADING },
+			shading: { ...DEFAULT_MESH_SHADING, elevationDeg: 0 },
 			heightColorRamp: {
 				enabled: true,
 				colorMap: 'jet',
@@ -407,9 +405,10 @@ export const createRasterMeshEntry = async (
 				max: maxHeight,
 				sourceMin: minHeight,
 				sourceMax: maxHeight,
-				sourceSign: -1
+				sourceSign: 1
 			},
 			transformOptions: {
+				georeference: false,
 				scale: false,
 				rotation: false,
 				heightScale: true,
@@ -421,6 +420,7 @@ export const createRasterMeshEntry = async (
 				altitude: 0,
 				heightOffset: 0,
 				heightScale: 1,
+				baseRotationX: -180,
 				scale: 1,
 				rotationX: 0,
 				rotationY: 0,
