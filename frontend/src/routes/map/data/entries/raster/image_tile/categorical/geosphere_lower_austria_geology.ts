@@ -1,5 +1,6 @@
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
+import legend from './_legends/geosphere_lower_austria_geology';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'geosphere_lower_austria_geology',
@@ -21,23 +22,12 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		tileSize: 256,
 		bounds: [14.332393, 46.749651, 17.331995, 48.999514],
 		downloadUrl: 'https://gis.geosphere.at/maps/rest/services/geologie/nied_200/MapServer',
-		xyzImageTile: { x: 139, y: 89, z: 8 }
+		xyzImageTile: { x: 139, y: 88, z: 8 }
 	},
 	interaction: { clickable: false },
 	style: {
 		...DEFAULT_RASTER_CATEGORICAL_STYLE,
-		legend: {
-			type: 'image',
-			layout: 'images',
-			categories: [{
-				name: '提供元の凡例',
-				urls: [
-					'https://gis.geosphere.at/maps/services/geologie/nied_200/MapServer/WMSServer?SERVICE=WMS&REQUEST=GetLegendGraphic&VERSION=1.3.0&FORMAT=image/png&LAYER=0',
-					'https://gis.geosphere.at/maps/services/geologie/nied_200/MapServer/WMSServer?SERVICE=WMS&REQUEST=GetLegendGraphic&VERSION=1.3.0&FORMAT=image/png&LAYER=1'
-				],
-				labels: ['岩石・地層（ドイツ語）', '地質構造（ドイツ語）']
-			}]
-		}
+		legend
 	}
 };
 

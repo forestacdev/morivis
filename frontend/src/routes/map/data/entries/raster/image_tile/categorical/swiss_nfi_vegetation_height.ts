@@ -1,6 +1,20 @@
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
+// 提供元の凡例に合わせた植生高の区分と色。
+// https://api3.geo.admin.ch/static/images/legends/ch.bafu.landesforstinventar-vegetationshoehenmodell_sentinel_de.png
+const VEGETATION_HEIGHT_CATEGORIES = [
+	['#ffffff', '0–1 m'],
+	['#ffffab', '1–2 m'],
+	['#ffff57', '2–3 m'],
+	['#ecfc00', '3–5 m'],
+	['#abf500', '5–15 m'],
+	['#66eb00', '15–20 m'],
+	['#00c91e', '20–30 m'],
+	['#009e8c', '30–40 m'],
+	['#00695c', '40–65 m']
+] as const;
+
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'swiss_nfi_vegetation_height',
 	type: 'raster',
@@ -28,15 +42,10 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	style: {
 		...DEFAULT_RASTER_CATEGORICAL_STYLE,
 		legend: {
-			type: 'image',
-			layout: 'images',
-			categories: [{
-				name: '提供元の凡例',
-				urls: [
-					'https://api3.geo.admin.ch/static/images/legends/ch.bafu.landesforstinventar-vegetationshoehenmodell_sentinel_de.png'
-				],
-				labels: ['植生高（m・ドイツ語）']
-			}]
+			type: 'category',
+			name: '植生高（m）',
+			colors: VEGETATION_HEIGHT_CATEGORIES.map(([color]) => color),
+			labels: VEGETATION_HEIGHT_CATEGORIES.map(([, label]) => label)
 		}
 	}
 };

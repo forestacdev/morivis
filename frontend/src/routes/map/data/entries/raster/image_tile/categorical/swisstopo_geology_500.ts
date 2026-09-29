@@ -1,5 +1,6 @@
 import { DEFAULT_RASTER_CATEGORICAL_STYLE } from '$routes/map/data/entries/raster/_style';
 import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
+import legend from './_legends/swisstopo_geology_500';
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'swisstopo_geology_500',
@@ -26,17 +27,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	interaction: { clickable: false },
 	style: {
 		...DEFAULT_RASTER_CATEGORICAL_STYLE,
-		legend: {
-			type: 'image',
-			layout: 'images',
-			categories: [{
-				name: '提供元の凡例',
-				urls: [
-					'https://api3.geo.admin.ch/static/images/legends/ch.swisstopo.geologie-geologische_karte_de.png'
-				],
-				labels: ['地質凡例（ドイツ語）']
-			}]
-		}
+		legend
 	}
 };
 

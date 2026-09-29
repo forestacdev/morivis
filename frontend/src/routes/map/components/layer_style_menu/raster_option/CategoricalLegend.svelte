@@ -82,9 +82,14 @@
 								<div
 									class="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-black bg-white p-2"
 								>
-									<img src={url} alt={category.labels[j]} class="aspect-square object-contain" />
+									<img
+										src={url}
+										alt={category.labels[j]}
+										class="aspect-square object-contain"
+										loading="lazy"
+									/>
 								</div>
-								<span class="text-sm">{category.labels[j]} </span>
+								<span class="min-w-0 flex-1 break-words text-sm">{category.labels[j]} </span>
 							</li>
 						{/if}
 					{/each}
