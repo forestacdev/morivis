@@ -283,6 +283,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		profile: 'vector-zone-georef',
 		fixedHeight: true
 	},
+	dgn: {
+		load: () => import('$routes/map/components/upload/form/DgnForm.svelte'),
+		profile: 'vector-zone-georef'
+	},
 	dxf: {
 		load: () => import('$routes/map/components/upload/form/DxfForm.svelte'),
 		profile: 'vector-zone-georef',

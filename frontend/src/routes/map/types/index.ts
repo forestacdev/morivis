@@ -97,6 +97,7 @@ export type DialogType =
 	| 'drm'
 	| 'dwg'
 	| 'dxf'
+	| 'dgn'
 	| 'jww'
 	| 'cedxm'
 	| 'sxf'
@@ -543,6 +544,13 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		label: 'DXF / DWG',
 		icon: 'mdi:vector-square',
 		description: 'CAD図面を表す形式です。図面上の線や注記を地図上で確認するときに使います。'
+	},
+	{
+		id: 'dgn',
+		label: 'MicroStation DGN V7',
+		icon: 'mdi:vector-square',
+		description:
+			'MicroStation V7のCAD図面です。線・面・文字位置を2Dで読み込み、座標系の指定や位置合わせで地図上に配置します。'
 	},
 	{
 		id: 'jww',

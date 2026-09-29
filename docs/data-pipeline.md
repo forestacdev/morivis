@@ -462,3 +462,8 @@ JPEG2000／GeoJP2 (`.jp2`) は `Jpeg2000Form.svelte` からOpenJPEG Workerへ渡
 GeoJP2の埋め込み情報・付属ファイルから座標系と格子位置を読み、共通のラスター再投影・entry生成を使う。
 座標系が不明なら座標系選択、位置情報がなければ位置合わせへ進む。処理中は共通スクリーンガードを表示する。
 対応範囲は [JPEG2000／GeoJP2](../frontend/src/routes/map/utils/formats/jpeg2000/README.md) を参照。
+
+MicroStation DGN V7 (`.dgn`) は `DgnForm.svelte` で図形の種類とレベルを選ぶ。
+専用Worker内のTypeScriptパーサーで2Dベクターへ変換し、既存の座標系辞書とproj4でWGS84へ変換するか、共通の位置合わせへ渡す。DGNの読み込みにはGDALを使わない。
+V8は未対応として案内し、容量制限とキャンセルは形式定義・共通処理ガードに接続する。
+対応範囲は [DGN V7](../frontend/src/routes/map/utils/formats/dgn/README.md) を参照。

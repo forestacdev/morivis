@@ -60,6 +60,7 @@ const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPo
 	ogcapifeatures: createPolicy('zone-or-georef', 'none', 'zone'),
 	dm: createPolicy('zone-or-georef', 'none', 'zone'),
 	dwg: createPolicy('zone-or-georef', 'none', 'zone'),
+	dgn: createPolicy('zone-or-georef', 'georef-only', 'zone'),
 	dxf: createPolicy('zone-or-georef', 'none', 'zone'),
 	jww: createPolicy('zone-or-georef', 'none', 'zone'),
 	cedxm: createPolicy('zone-or-georef', 'none', 'zone'),

@@ -11,6 +11,7 @@ import { formatCitygml } from './citygml/definition';
 import { formatCityjson } from './cityjson/definition';
 import { formatCsv } from './csv/definition';
 import { formatDae } from './dae/definition';
+import { formatDgn } from './dgn/definition';
 import { formatDm } from './dm/definition';
 import { formatDocx } from './docx/definition';
 import { formatDrc } from './drc/definition';
@@ -137,6 +138,7 @@ export const FORMAT_DEFINITIONS = {
 	'zip': formatZip,
 	'bz2': formatBz2,
 	'dxf': formatDxf,
+	'dgn': formatDgn,
 	'jww': formatJww,
 	'cedxm': formatCedxm,
 	'sim': formatSim,

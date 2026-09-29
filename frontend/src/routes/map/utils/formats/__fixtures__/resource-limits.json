@@ -74,5 +74,12 @@
 	},
 	"local-raster-tiles": {
 		"skipBatchWarning": true
+	},
+	"dgn": {
+		"maxFileBytes": 67108864,
+		"maxOutputBytes": 134217728,
+		"maxFeatures": 500000,
+		"maxVertices": 5000000,
+		"timeoutMs": 120000
 	}
 }

@@ -58,6 +58,7 @@ describe('format definitions', () => {
 	it('既存の制限値を変更せず各定義へ移す', () => {
 		const actual = {
 			shp: FORMAT_DEFINITIONS.shp.limits,
+			dgn: FORMAT_DEFINITIONS.dgn.limits,
 			'osm-pbf': formatOsmPbf.limits,
 			fit: FORMAT_DEFINITIONS.fit.limits,
 			jwc: formatJwc.limits,

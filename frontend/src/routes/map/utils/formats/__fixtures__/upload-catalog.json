@@ -367,6 +367,12 @@
 		]
 	},
 	{
+		"id": "dgn",
+		"extensions": [
+			".dgn"
+		]
+	},
+	{
 		"id": "jww",
 		"extensions": [
 			".jww",

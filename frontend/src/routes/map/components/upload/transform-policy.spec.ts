@@ -10,7 +10,7 @@ it.each(['ascii-grid', 'envi-bil', 'jpeg2000'] as const)(
 	}
 );
 
-it.each(['jww', 'cedxm', 'mapinfo-tab'] as const)(
+it.each(['jww', 'cedxm', 'mapinfo-tab', 'dgn'] as const)(
 	'%sは座標系の指定と地図上の位置合わせを選べる',
 	format => {
 		expect(getAllowedTransformModesForIssue(format, 'crs-missing')).toEqual(['zone', 'georef']);

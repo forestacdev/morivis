@@ -1635,3 +1635,33 @@ describe('SRTM HGTのドロップ', () => {
 		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.hgt');
 	});
 });
+
+describe('DGNのドロップ', () => {
+	it.each(['test-drawing.dgn', 'test-drawing.DGN'])('%sを専用フォームへ渡す', async name => {
+		const file = new File(['test'], name);
+		for (const input of [file, [file]]) {
+			expect(await resolveDroppedFiles(input)).toMatchObject({
+				type: 'dialog',
+				dialogType: 'dgn'
+			});
+		}
+	});
+	it('ファイル選択とZIP展開からも読み込める', async () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.dgn');
+		const zip = new JSZip();
+		zip.file('test-folder/test-drawing.dgn', 'test');
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-drawing.zip')
+			)
+		).toMatchObject({ dialogType: 'dgn' });
+	});
+	it('複数図面を先頭だけ読み込まない', async () => {
+		expect(
+			await resolveDroppedFiles([
+				new File(['test'], 'test-a.dgn'),
+				new File(['test'], 'test-b.dgn')
+			])
+		).toMatchObject({ type: 'notification' });
+	});
+});

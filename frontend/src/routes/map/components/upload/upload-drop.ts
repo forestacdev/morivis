@@ -225,6 +225,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	dm: 'dm',
 	dwg: 'dwg',
 	dxf: 'dxf',
+	dgn: 'dgn',
 	jww: 'jww',
 	jwc: 'jww',
 	sfc: 'sxf',
@@ -305,6 +306,16 @@ const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
+	{
+		id: 'dgn-file',
+		match: files => files.some(file => hasExtension(file, '.dgn')),
+		resolve: async files =>
+			files.length === 1
+				? createDialogDecision('dgn', files)
+				: createNotificationDecision(
+					'DGNは1ファイルずつ読み込んでください。参照図面の結合は未対応です'
+				)
+	},
 	{
 		id: 'jpeg2000-set',
 		match: files => files.some(isJp2File),
