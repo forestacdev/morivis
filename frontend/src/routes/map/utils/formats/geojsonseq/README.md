@@ -1,7 +1,7 @@
 # GeoJSONSeq / 行区切りGeoJSON
 
 `.geojsonl`・`.jsonl`・`.ndjson`・`.geojsons`・`.geojsonseq`を既存のGeoJSONフォームへ渡す。
-形式一覧、ファイル選択、ドロップ、ZIP内のファイルに対応する。
+形式一覧ではGeoJSONの入口にまとめる。ファイル選択、ドロップ、ZIP内のファイルに対応する。
 GeoJSONフォームのテキスト入力や`.json`・`.geojson`でも、先頭のRSまたは行ごとに完結したGeoJSONから判定する。
 
 - 改行区切り（LF / CRLF）と、RFC 8142のRS（U+001E）区切りに対応。RS区切りではレコード内の改行を許容する。

@@ -10,7 +10,7 @@
 	import {
 		SUPPORTED_FILE_ACCEPT,
 		SUPPORTED_FILE_GROUPS,
-		SUPPORTED_UPLOAD_FORMATS,
+		UPLOAD_FORM_FORMATS,
 		type UploadFormat,
 		type DialogType,
 		type UploadFiles
@@ -319,7 +319,7 @@
 			</div>
 
 			<div class="c-scroll grid grid-cols-2 gap-3 overflow-y-auto pr-1 md:grid-cols-3">
-				{#each SUPPORTED_UPLOAD_FORMATS as item (item.id)}
+				{#each UPLOAD_FORM_FORMATS as item (item.id)}
 					<button
 						onclick={() => openFormatItem(item)}
 						class="bg-base hover:bg-accent group relative flex min-h-[160px] cursor-pointer flex-col gap-2 overflow-hidden rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"

@@ -158,6 +158,8 @@ export interface UploadFormatPresentation {
 	label: string;
 	description: string;
 	icon: string;
+	/** falseの場合は共用フォームの説明に含め、フォーム一覧へ単独表示しない。 */
+	showInFormList?: boolean;
 	/** 指定がない形式は、拡張子で絞り込んだファイル選択を開く。 */
 	dialogType?: Exclude<DialogType, null>;
 }
@@ -256,12 +258,14 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'geojson',
 		dialogType: 'geojson',
 		label: 'GeoJSON',
-		description: 'GeoJSONファイルの読み込みや、GeoJSONテキストの直接入力を行うフォームです。',
+		description:
+			'GeoJSON・GeoJSONSeq（行区切りGeoJSON）に対応しています。ファイルの読み込みやテキストの直接入力ができます。',
 		icon: 'mdi:code-json'
 	},
 	{
 		id: 'geojsonseq',
 		dialogType: 'geojson',
+		showInFormList: false,
 		label: 'GeoJSONSeq / 行区切りGeoJSON',
 		description:
 			'GeoJSONを改行またはレコード区切りで並べたデータです。地物と属性をまとめて地図上に表示できます。',
@@ -778,6 +782,11 @@ export const SUPPORTED_UPLOAD_FORMATS: UploadFormat[] = UPLOAD_FORMAT_PRESENTATI
 	...format,
 	extensions: [...FORMAT_DEFINITIONS[format.id].extensions]
 }));
+
+/** フォーム一覧の入口。共用フォームへ集約した形式もファイル判定には残す。 */
+export const UPLOAD_FORM_FORMATS = SUPPORTED_UPLOAD_FORMATS.filter(
+	format => format.showInFormList !== false
+);
 
 /** ローカルファイルを受け付ける形式。 */
 export const SUPPORTED_FILE_GROUPS: SupportedFileGroup[] = SUPPORTED_UPLOAD_FORMATS.filter(

@@ -1,4 +1,8 @@
-import { SUPPORTED_FILE_ACCEPT, SUPPORTED_UPLOAD_FORMATS } from '$routes/map/types';
+import {
+	SUPPORTED_FILE_ACCEPT,
+	SUPPORTED_UPLOAD_FORMATS,
+	UPLOAD_FORM_FORMATS
+} from '$routes/map/types';
 import { describe, expect, it } from 'vitest';
 import previousLimits from './__fixtures__/resource-limits.json';
 import catalog from './__fixtures__/upload-catalog.json';
@@ -22,6 +26,13 @@ describe('format definitions', () => {
 		for (const [id, definition] of Object.entries(FORMAT_DEFINITIONS)) {
 			expect(definition.id).toBe(id);
 		}
+	});
+	it('GeoJSONと行区切りGeoJSONのフォーム入口を1つにまとめる', () => {
+		const items = UPLOAD_FORM_FORMATS.filter(format => format.dialogType === 'geojson');
+		expect(items.map(format => format.id)).toEqual(['geojson']);
+		expect(items[0].description).toContain('GeoJSONSeq');
+		expect(SUPPORTED_UPLOAD_FORMATS.find(format => format.id === 'geojsonseq')?.extensions)
+			.toEqual(FORMAT_DEFINITIONS.geojsonseq.extensions);
 	});
 	it('関連ファイルを含むファイル選択の対応範囲を維持する', () => {
 		const sidecars = [
