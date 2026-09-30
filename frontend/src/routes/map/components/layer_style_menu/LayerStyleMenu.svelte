@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 
+	import InfoControl from './InfoControl.svelte';
 	import ModelOptionMenu from './ModelOptionMenu.svelte';
 	import OpacityControl from './OpacityControl.svelte';
 
@@ -116,6 +117,8 @@
 						{#if layerEntry.type === 'model'}
 							<ModelOptionMenu bind:layerEntry bind:showColorOption bind:showDimensionOption />
 						{/if}
+
+						<InfoControl {layerEntry} />
 					</div>
 					<!-- フォグ -->
 					<div
