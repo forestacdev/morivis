@@ -390,6 +390,8 @@ flowchart LR
 
 ## worker 境界
 
+GeoTIFFの読み込みは `utils/formats/geotiff/reader.ts` を入口にする。ZSTD（Compression=50000）の追加デコーダを各Workerでも登録し、最初のZSTDブロックの展開時に既存の `zstd-codec` を遅延ロードする。Predictorの復元はgeotiff.jsの `BaseDecoder` に任せる。COGのRange取得とローカルファイルの解析で同じデコーダを使う。
+
 重い処理はなるべく worker に逃がしている。設計上ここを明示しておくと、フリーズ調査がしやすい。
 
 | 処理 | 主な実装 |

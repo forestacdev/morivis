@@ -5,7 +5,9 @@
  * ラスターデータを geotiff.js の HTTP Range request で効率的に読み取る。
  */
 import { resolveCogProxyUrl } from '$routes/map/utils/platform/request';
-import { fromUrl, type GeoTIFF, type GeoTIFFImage } from 'geotiff';
+import type { GeoTIFF, GeoTIFFImage } from 'geotiff';
+
+import { fromUrl } from '$routes/map/utils/formats/geotiff/reader';
 import proj4 from 'proj4';
 import { buildTriangulation, type Triangle } from './triangulation';
 
@@ -369,95 +371,63 @@ export const CogTileManager = {
 			tileLatMax
 		];
 
-		let result: TileResult;
+		// 経緯度のCOGもWebメルカトルへ変換し、切り出し範囲の位置を保持する。
+		const { triangles, sourceExtent } = buildTriangulation(targetExtent, projName, [
+			tileSize,
+			tileSize
+		]);
 
-		if (projName) {
-			// --- 投影CRS: 三角形メッシュでリプロジェクション ---
-			const { triangles, sourceExtent } = buildTriangulation(targetExtent, projName);
+		// ソース範囲をピクセルウィンドウに変換
+		const cogXRange = nativeBbox[2] - nativeBbox[0];
+		const cogYRange = nativeBbox[3] - nativeBbox[1];
 
-			// ソース範囲をピクセルウィンドウに変換
-			const cogXRange = nativeBbox[2] - nativeBbox[0];
-			const cogYRange = nativeBbox[3] - nativeBbox[1];
+		const pxLeft = Math.floor(((sourceExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth);
+		const pxRight = Math.ceil(((sourceExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth);
+		const pxTop = Math.floor(((nativeBbox[3] - sourceExtent[3]) / cogYRange) * imgHeight);
+		const pxBottom = Math.ceil(((nativeBbox[3] - sourceExtent[1]) / cogYRange) * imgHeight);
 
-			const pxLeft = Math.floor(((sourceExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth);
-			const pxRight = Math.ceil(((sourceExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth);
-			const pxTop = Math.floor(((nativeBbox[3] - sourceExtent[3]) / cogYRange) * imgHeight);
-			const pxBottom = Math.ceil(((nativeBbox[3] - sourceExtent[1]) / cogYRange) * imgHeight);
+		const winLeft = Math.max(0, pxLeft);
+		const winTop = Math.max(0, pxTop);
+		const winRight = Math.min(imgWidth, pxRight);
+		const winBottom = Math.min(imgHeight, pxBottom);
 
-			const winLeft = Math.max(0, pxLeft);
-			const winTop = Math.max(0, pxTop);
-			const winRight = Math.min(imgWidth, pxRight);
-			const winBottom = Math.min(imgHeight, pxBottom);
+		const winWidth = winRight - winLeft;
+		const winHeight = winBottom - winTop;
+		if (winWidth <= 0 || winHeight <= 0) return null;
 
-			const winWidth = winRight - winLeft;
-			const winHeight = winBottom - winTop;
-			if (winWidth <= 0 || winHeight <= 0) return null;
+		// ソーステクスチャのサイズ（タイルサイズに近い解像度を確保）
+		const srcSize = Math.min(tileSize * 2, Math.max(winWidth, winHeight));
+		const srcWidth = Math.min(srcSize, winWidth);
+		const srcHeight = Math.min(srcSize, winHeight);
 
-			// ソーステクスチャのサイズ（タイルサイズに近い解像度を確保）
-			const srcSize = Math.min(tileSize * 2, Math.max(winWidth, winHeight));
-			const srcWidth = Math.min(srcSize, winWidth);
-			const srcHeight = Math.min(srcSize, winHeight);
+		const rasters = await image.readRasters({
+			window: [winLeft, winTop, winRight, winBottom],
+			width: srcWidth,
+			height: srcHeight
+		});
 
-			const rasters = await image.readRasters({
-				window: [winLeft, winTop, winRight, winBottom],
-				width: srcWidth,
-				height: srcHeight
-			});
-
-			const bands: (Float32Array | Uint8Array | Uint16Array)[] = [];
-			for (let i = 0; i < rasters.length; i++) {
-				bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
-			}
-
-			// 三角形のソース座標をテクスチャUV (0-1) に変換
-			const actualLeft = nativeBbox[0] + (winLeft / imgWidth) * cogXRange;
-			const actualRight = nativeBbox[0] + (winRight / imgWidth) * cogXRange;
-			const actualTop = nativeBbox[3] - (winTop / imgHeight) * cogYRange;
-			const actualBottom = nativeBbox[3] - (winBottom / imgHeight) * cogYRange;
-			const actXRange = actualRight - actualLeft;
-			const actYRange = actualTop - actualBottom;
-
-			const uvTriangles: Triangle[] = triangles.map((tri) => ({
-				target: tri.target,
-				source: tri.source.map(([sx, sy]) => [
-					(sx - actualLeft) / actXRange,
-					(actualTop - sy) / actYRange // Y反転（テクスチャは上が0）
-				]) as [number, number][]
-			}));
-
-			result = { bands, srcWidth, srcHeight, triangles: uvTriangles };
-		} else {
-			// --- EPSG:4326: 単純な矩形切り出し ---
-			const cogXRange = nativeBbox[2] - nativeBbox[0];
-			const cogYRange = nativeBbox[3] - nativeBbox[1];
-
-			const pxLeft = Math.floor(((tileLonMin - nativeBbox[0]) / cogXRange) * imgWidth);
-			const pxRight = Math.ceil(((tileLonMax - nativeBbox[0]) / cogXRange) * imgWidth);
-			const pxTop = Math.floor(((nativeBbox[3] - tileLatMax) / cogYRange) * imgHeight);
-			const pxBottom = Math.ceil(((nativeBbox[3] - tileLatMin) / cogYRange) * imgHeight);
-
-			const winLeft = Math.max(0, pxLeft);
-			const winTop = Math.max(0, pxTop);
-			const winRight = Math.min(imgWidth, pxRight);
-			const winBottom = Math.min(imgHeight, pxBottom);
-
-			const winWidth = winRight - winLeft;
-			const winHeight = winBottom - winTop;
-			if (winWidth <= 0 || winHeight <= 0) return null;
-
-			const rasters = await image.readRasters({
-				window: [winLeft, winTop, winRight, winBottom],
-				width: tileSize,
-				height: tileSize
-			});
-
-			const bands: (Float32Array | Uint8Array | Uint16Array)[] = [];
-			for (let i = 0; i < rasters.length; i++) {
-				bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
-			}
-
-			result = { bands, srcWidth: tileSize, srcHeight: tileSize, triangles: null };
+		const bands: (Float32Array | Uint8Array | Uint16Array)[] = [];
+		for (let i = 0; i < rasters.length; i++) {
+			bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
 		}
+
+		// 三角形のソース座標をテクスチャUV (0-1) に変換
+		const actualLeft = nativeBbox[0] + (winLeft / imgWidth) * cogXRange;
+		const actualRight = nativeBbox[0] + (winRight / imgWidth) * cogXRange;
+		const actualTop = nativeBbox[3] - (winTop / imgHeight) * cogYRange;
+		const actualBottom = nativeBbox[3] - (winBottom / imgHeight) * cogYRange;
+		const actXRange = actualRight - actualLeft;
+		const actYRange = actualTop - actualBottom;
+
+		const uvTriangles: Triangle[] = triangles.map((tri) => ({
+			target: tri.target,
+			source: tri.source.map(([sx, sy]) => [
+				(sx - actualLeft) / actXRange,
+				(actualTop - sy) / actYRange // Y反転（テクスチャは上が0）
+			]) as [number, number][]
+		}));
+
+		const result = { bands, srcWidth, srcHeight, triangles: uvTriangles };
 
 		tileCacheSet(cacheKey, result);
 		return result;
@@ -494,65 +464,17 @@ export const CogTileManager = {
 		const imgWidth = image.getWidth();
 		const imgHeight = image.getHeight();
 
-		if (projName) {
-			const { triangles, sourceExtent } = buildTriangulation(targetExtent, projName);
-			const cogXRange = nativeBbox[2] - nativeBbox[0];
-			const cogYRange = nativeBbox[3] - nativeBbox[1];
-
-			const pxLeft = Math.floor(((sourceExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth);
-			const pxRight = Math.ceil(((sourceExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth);
-			const pxTop = Math.floor(((nativeBbox[3] - sourceExtent[3]) / cogYRange) * imgHeight);
-			const pxBottom = Math.ceil(((nativeBbox[3] - sourceExtent[1]) / cogYRange) * imgHeight);
-
-			const winLeft = Math.max(0, pxLeft);
-			const winTop = Math.max(0, pxTop);
-			const winRight = Math.min(imgWidth, pxRight);
-			const winBottom = Math.min(imgHeight, pxBottom);
-			const winWidth = winRight - winLeft;
-			const winHeight = winBottom - winTop;
-			if (winWidth <= 0 || winHeight <= 0) return null;
-
-			const rasters = await image.readRasters({
-				window: [winLeft, winTop, winRight, winBottom],
-				width: targetWidth,
-				height: targetHeight
-			});
-
-			const bands: (Float32Array | Uint8Array | Uint16Array)[] = [];
-			for (let i = 0; i < rasters.length; i++) {
-				bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
-			}
-
-			const actualLeft = nativeBbox[0] + (winLeft / imgWidth) * cogXRange;
-			const actualRight = nativeBbox[0] + (winRight / imgWidth) * cogXRange;
-			const actualTop = nativeBbox[3] - (winTop / imgHeight) * cogYRange;
-			const actualBottom = nativeBbox[3] - (winBottom / imgHeight) * cogYRange;
-			const actXRange = Math.max(1e-9, actualRight - actualLeft);
-			const actYRange = Math.max(1e-9, actualTop - actualBottom);
-
-			const uvTriangles: Triangle[] = triangles.map((tri) => ({
-				target: tri.target,
-				source: tri.source.map(([sx, sy]) => [
-					(sx - actualLeft) / actXRange,
-					(actualTop - sy) / actYRange
-				]) as [number, number][]
-			}));
-
-			return {
-				bands,
-				srcWidth: targetWidth,
-				srcHeight: targetHeight,
-				triangles: uvTriangles
-			};
-		}
-
+		const { triangles, sourceExtent } = buildTriangulation(targetExtent, projName, [
+			targetWidth,
+			targetHeight
+		]);
 		const cogXRange = nativeBbox[2] - nativeBbox[0];
 		const cogYRange = nativeBbox[3] - nativeBbox[1];
 
-		const pxLeft = Math.floor(((targetExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth);
-		const pxRight = Math.ceil(((targetExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth);
-		const pxTop = Math.floor(((nativeBbox[3] - targetExtent[3]) / cogYRange) * imgHeight);
-		const pxBottom = Math.ceil(((nativeBbox[3] - targetExtent[1]) / cogYRange) * imgHeight);
+		const pxLeft = Math.floor(((sourceExtent[0] - nativeBbox[0]) / cogXRange) * imgWidth);
+		const pxRight = Math.ceil(((sourceExtent[2] - nativeBbox[0]) / cogXRange) * imgWidth);
+		const pxTop = Math.floor(((nativeBbox[3] - sourceExtent[3]) / cogYRange) * imgHeight);
+		const pxBottom = Math.ceil(((nativeBbox[3] - sourceExtent[1]) / cogYRange) * imgHeight);
 
 		const winLeft = Math.max(0, pxLeft);
 		const winTop = Math.max(0, pxTop);
@@ -573,7 +495,27 @@ export const CogTileManager = {
 			bands.push(rasters[i] as Float32Array | Uint8Array | Uint16Array);
 		}
 
-		return { bands, srcWidth: targetWidth, srcHeight: targetHeight, triangles: null };
+		const actualLeft = nativeBbox[0] + (winLeft / imgWidth) * cogXRange;
+		const actualRight = nativeBbox[0] + (winRight / imgWidth) * cogXRange;
+		const actualTop = nativeBbox[3] - (winTop / imgHeight) * cogYRange;
+		const actualBottom = nativeBbox[3] - (winBottom / imgHeight) * cogYRange;
+		const actXRange = Math.max(1e-9, actualRight - actualLeft);
+		const actYRange = Math.max(1e-9, actualTop - actualBottom);
+
+		const uvTriangles: Triangle[] = triangles.map((tri) => ({
+			target: tri.target,
+			source: tri.source.map(([sx, sy]) => [
+				(sx - actualLeft) / actXRange,
+				(actualTop - sy) / actYRange
+			]) as [number, number][]
+		}));
+
+		return {
+			bands,
+			srcWidth: targetWidth,
+			srcHeight: targetHeight,
+			triangles: uvTriangles
+		};
 	},
 
 	/** メタデータを取得 */

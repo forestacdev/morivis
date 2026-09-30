@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { fromUrl } from 'geotiff';
 	import { slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
@@ -28,6 +27,7 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import { fromUrl } from '$routes/map/utils/formats/geotiff/reader';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import {
 		detectStacSourceType,

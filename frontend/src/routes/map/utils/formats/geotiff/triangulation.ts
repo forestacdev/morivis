@@ -20,8 +20,8 @@ export interface TriangulationResult {
 	sourceExtent: [number, number, number, number];
 }
 
-/** 誤差閾値（タイル正規化座標空間、約0.5ピクセル / 256 ≈ 0.002） */
-const ERROR_THRESHOLD = 0.002;
+/** 出力画像上での許容誤差（ピクセル） */
+const ERROR_PIXELS = 0.5;
 
 /** 最大分割深度 */
 const MAX_SUBDIVISION = 10;
@@ -30,11 +30,13 @@ const MAX_SUBDIVISION = 10;
  * ターゲットタイルの三角形メッシュを生成する
  *
  * @param targetExtent ターゲットタイルのWGS84範囲 [lonMin, latMin, lonMax, latMax]
- * @param projName ソースCRSのproj4定義名（例: "EPSG:32654"）。nullなら変換不要。
+ * @param projName ソースCRSのproj4定義名（例: "EPSG:32654"）。nullなら経緯度。
+ * @param targetSize 出力画像の幅と高さ（ピクセル）
  */
 export const buildTriangulation = (
 	targetExtent: [number, number, number, number],
-	projName: string | null
+	projName: string | null,
+	targetSize: [number, number] = [256, 256]
 ): TriangulationResult => {
 	const [lonMin, latMin, lonMax, latMax] = targetExtent;
 
@@ -46,10 +48,12 @@ export const buildTriangulation = (
 		}
 		: (lon: number, lat: number): [number, number] => [lon, lat];
 
-	// 正規化座標 (0-1) → 経緯度
+	// 画面上のYは緯度ではなくWebメルカトル座標に対して等間隔。
+	const northY = proj4('EPSG:4326', 'EPSG:3857', [0, latMax])[1];
+	const southY = proj4('EPSG:4326', 'EPSG:3857', [0, latMin])[1];
 	const toGeo = (nx: number, ny: number): [number, number] => [
 		lonMin + nx * (lonMax - lonMin),
-		latMax - ny * (latMax - latMin) // Y軸は上が0
+		proj4('EPSG:3857', 'EPSG:4326', [0, northY + ny * (southY - northY)])[1]
 	];
 
 	// ソース座標を取得（キャッシュ付き）
@@ -78,26 +82,30 @@ export const buildTriangulation = (
 		const s01 = getSourceCoord(x0, y1);
 		const s11 = getSourceCoord(x1, y1);
 
-		// 中心のソース座標（実際の変換結果）
-		const sCenter = getSourceCoord(cx, cy);
-
-		// 線形補間による中心の推定値
-		const interpX = (s00[0] + s10[0] + s01[0] + s11[0]) / 4;
-		const interpY = (s00[1] + s10[1] + s01[1] + s11[1]) / 4;
-
-		// ソース空間での誤差（正規化座標空間に変換して判定）
-		// ソース空間の範囲に対する相対誤差をターゲット空間に換算
-		const quadSize = Math.max(x1 - x0, y1 - y0);
-		const sourceRange = Math.max(
-			Math.abs(s10[0] - s00[0]),
-			Math.abs(s01[1] - s00[1]),
-			1 // ゼロ除算防止
+		const corners = [s00, s10, s01, s11];
+		const rangeX = Math.max(
+			1e-12,
+			Math.max(...corners.map(p => p[0])) - Math.min(...corners.map(p => p[0]))
 		);
-		const errX = (Math.abs(sCenter[0] - interpX) / sourceRange) * quadSize;
-		const errY = (Math.abs(sCenter[1] - interpY) / sourceRange) * quadSize;
-		const error = Math.max(errX, errY);
+		const rangeY = Math.max(
+			1e-12,
+			Math.max(...corners.map(p => p[1])) - Math.min(...corners.map(p => p[1]))
+		);
+		// 中心だけでは赤道をまたぐ対称な範囲の非線形性を検出できない。
+		// 三角形の対角線上の1/4・1/2・3/4点で、実際の補間誤差を測る。
+		let error = 0;
+		for (const t of [0.25, 0.5, 0.75]) {
+			const actual = getSourceCoord(x1 - t * (x1 - x0), y0 + t * (y1 - y0));
+			const interpX = s10[0] + t * (s01[0] - s10[0]);
+			const interpY = s10[1] + t * (s01[1] - s10[1]);
+			error = Math.max(
+				error,
+				Math.abs(actual[0] - interpX) / rangeX * (x1 - x0) * targetSize[0],
+				Math.abs(actual[1] - interpY) / rangeY * (y1 - y0) * targetSize[1]
+			);
+		}
 
-		if (depth < MAX_SUBDIVISION && error > ERROR_THRESHOLD) {
+		if (depth < MAX_SUBDIVISION && error > ERROR_PIXELS) {
 			// 分割
 			const isWide = x1 - x0 >= y1 - y0;
 			if (isWide) {
@@ -111,8 +119,6 @@ export const buildTriangulation = (
 		}
 
 		// 分割不要 → 2つの三角形に分解
-		const sMid = getSourceCoord(cx, cy);
-
 		// 左上三角形
 		triangles.push({
 			target: [
