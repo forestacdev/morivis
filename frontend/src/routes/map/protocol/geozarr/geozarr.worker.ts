@@ -1,18 +1,18 @@
-import type { VoxelRegionRequest, VoxelRegionData } from './voxels';
 /// <reference lib="webworker" />
 import type { LocalGeoZarrInput } from '$routes/map/utils/formats/geozarr/local';
 import {
 	configureGeoZarrRuntime,
-	readGeoZarrVoxelRegion,
 	geozarrProtocol,
 	inspectGeoZarr,
 	listGeoZarrArrayCandidates,
 	mountLocalGeoZarr,
+	readGeoZarrVoxelRegion,
 	registerGeoZarr,
 	releaseLocalGeoZarr,
 	unregisterGeoZarr
 } from './runtime';
 import type { GeoZarrRegistrationInput } from './runtime';
+import type { VoxelRegionData, VoxelRegionRequest } from './voxels';
 
 declare const self: DedicatedWorkerGlobalScope;
 const protocol = geozarrProtocol('geozarr');
@@ -62,7 +62,10 @@ self.onmessage = async (
 				unregisterGeoZarr(input.entryId);
 				break;
 			case 'voxel-region':
-				value = await readGeoZarrVoxelRegion(input as unknown as VoxelRegionRequest, controller.signal);
+				value = await readGeoZarrVoxelRegion(
+					input as unknown as VoxelRegionRequest,
+					controller.signal
+				);
 				break;
 			case 'tile':
 				value = await protocol.request({ url: input.url }, controller);
@@ -73,7 +76,10 @@ self.onmessage = async (
 		controller.signal.throwIfAborted();
 		const cells = (value as VoxelRegionData | undefined)?.cells;
 		const bytes = (value as { data?: Uint8Array; } | undefined)?.data;
-		self.postMessage({ id: data.id, value }, bytes ? [bytes.buffer as ArrayBuffer] : cells ? [cells.buffer as ArrayBuffer] : []);
+		self.postMessage(
+			{ id: data.id, value },
+			bytes ? [bytes.buffer as ArrayBuffer] : cells ? [cells.buffer as ArrayBuffer] : []
+		);
 	} catch (error) {
 		self.postMessage({
 			id: data.id,

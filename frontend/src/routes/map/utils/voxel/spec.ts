@@ -9,9 +9,14 @@ export const createVoxelSpec = (entry: GeoZarrVoxelEntry) => {
 	const band = entry.style.visualization.uniformsData.single;
 	const [min, max] = getAdjustableRangeValue(band.range, band.min, band.max);
 	return {
-		id: entry.id, url: entry.format.url, arrayPath: entry.format.arrayPath,
-		visible: entry.style.visible, opacity: entry.style.opacity,
-		colorMap: band.colorMap, min, max,
+		id: entry.id,
+		url: entry.format.url,
+		arrayPath: entry.format.arrayPath,
+		visible: entry.style.visible,
+		opacity: entry.style.opacity,
+		colorMap: band.colorMap,
+		min,
+		max,
 		threshold: Math.max(0, entry.style.volume?.threshold ?? 0),
 		heightScale: Math.max(0.1, Math.min(20, entry.style.volume?.heightScale ?? 1))
 	};

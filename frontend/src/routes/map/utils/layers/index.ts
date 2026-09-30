@@ -166,6 +166,10 @@ export const createLayersItems = ({
 				// ラスターレイヤー
 
 				case 'raster': {
+					if (
+						entry.format.type === 'geozarr' && style.type === 'tiff'
+						&& style.volume?.type === 'voxel'
+					) break;
 					if (interaction.clickable) clickableRaster.push(layerId);
 
 					if (style.type === 'basemap') {

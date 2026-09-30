@@ -616,7 +616,7 @@
 		clickableVectorIds.set(result.metadata.clickableVectorIds);
 		clickableRasterIds.set(result.metadata.clickableRasterIds);
 		mapAttributions.set(result.metadata.attributions);
-		mapStore.setStyle(result.style);
+		mapStore.setStyle(result.style, result.voxelSpecs);
 		entries.filter(isViewportCogEntry).forEach((entry) => {
 			markCogViewportReady(entry.id);
 		});

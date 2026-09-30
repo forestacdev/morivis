@@ -29,6 +29,11 @@ import type {
 } from '$routes/map/utils/maplibre';
 import { getModelOverlayBeforeId } from '$routes/map/utils/three/model-overlay-order';
 import { Tiles3DLayerManager, TILES_3D_LAYER_ID } from '$routes/map/utils/tiles3d/layer-manager';
+import {
+	GEOZARR_VOXEL_LAYER_ID,
+	GeoZarrVoxelLayerManager
+} from '$routes/map/utils/voxel/layer-manager';
+import type { VoxelSpec } from '$routes/map/utils/voxel/spec';
 import { Protocol } from 'pmtiles';
 import { type Writable, writable } from 'svelte/store';
 
@@ -412,6 +417,8 @@ const createMapStore = () => {
 	let deckOverlay: MapboxOverlay | null = null;
 	let isDeckOverlayAdded = false;
 	const tiles3dManager = new Tiles3DLayerManager();
+	const voxelManager = new GeoZarrVoxelLayerManager();
+	let voxelSpecs: VoxelSpec[] = [];
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
 
@@ -534,6 +541,7 @@ const createMapStore = () => {
 
 			ensureHighlightAnimationImages(map);
 			ensureTiles3DLayer();
+			ensureVoxelLayer();
 			isStyleLoadEvent.set(map);
 		});
 
@@ -815,9 +823,11 @@ const createMapStore = () => {
 	};
 
 	// Method for setting map style
-	const setStyle = (style: StyleSpecification) => {
+	const setStyle = (style: StyleSpecification, nextVoxelSpecs: VoxelSpec[] = []) => {
 		if (!map || !isMapValid(map)) return;
 		setStyleEvent.set(style);
+		voxelSpecs = nextVoxelSpecs;
+		voxelManager.setSpecs(voxelSpecs);
 		map.setStyle(style, {
 			// preserveDrawingBuffer: true, // スタイル変更後も描画バッファを保持
 			transformStyle: (previous, next) => {
@@ -828,6 +838,7 @@ const createMapStore = () => {
 			}
 		});
 		ensureTiles3DLayer();
+		ensureVoxelLayer();
 		// custom layerはstyleの差分更新でも残るため、ガイド追加・削除後の順序を合わせる。
 		if (map.getLayer('3d-model-layer')) {
 			map.moveLayer('3d-model-layer', getModelOverlayBeforeId(map.getStyle().layers));
@@ -924,6 +935,18 @@ const createMapStore = () => {
 			if (map?.getLayer(TILES_3D_LAYER_ID)) map.removeLayer(TILES_3D_LAYER_ID);
 			tiles3dManager.dispose();
 		} else ensureTiles3DLayer();
+	};
+
+	const ensureVoxelLayer = () => {
+		if (!map || !isMapValid(map)) return;
+		if (!voxelSpecs.length) {
+			if (map.getLayer(GEOZARR_VOXEL_LAYER_ID)) map.removeLayer(GEOZARR_VOXEL_LAYER_ID);
+			voxelManager.dispose();
+			return;
+		}
+		const before = getModelOverlayBeforeId(map.getStyle().layers);
+		if (!map.getLayer(GEOZARR_VOXEL_LAYER_ID)) map.addLayer(voxelManager.createLayer(), before);
+		else map.moveLayer(GEOZARR_VOXEL_LAYER_ID, before);
 	};
 
 	const refreshTiles3D = () => setTiles3DStyleEntries(Array.from(currentTiles3dEntries.values()));
@@ -1687,6 +1710,8 @@ const createMapStore = () => {
 		}
 		releaseThreeLayer();
 		setTiles3DStyleEntries([]);
+		voxelSpecs = [];
+		ensureVoxelLayer();
 
 		map.remove();
 		releaseRegionalMeshProtocol();

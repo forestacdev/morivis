@@ -5,8 +5,8 @@ export const formatGeoZarr = {
 	id: 'geozarr',
 	extensions: [],
 	limits: {
-		maxVoxelsPerRegion: 250_000,
-		maxVisibleVoxelRegions: 12,
+		maxVoxelsPerRegion: 125_000,
+		maxDetailVoxelRegions: 4,
 		maxConcurrentVoxelReads: 2,
 		maxSamples: 4 * 1024 * 1024,
 		maxExpandedBytes: 64 * MiB,

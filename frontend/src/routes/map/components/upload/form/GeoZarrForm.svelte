@@ -3,6 +3,7 @@
 	import { slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import TextForm from '$routes/map/components/atoms/TextForm.svelte';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
@@ -44,6 +45,7 @@
 		dropFile = null
 	}: Props = $props();
 
+	let registrationMode = $state('raster');
 	let localUrl = $state('');
 	let localName = $state('');
 	let registered = false;
@@ -177,6 +179,10 @@
 				forms.arrayPath,
 				forms.bbox || null
 			);
+			if (registrationMode === 'voxel' && !inspected.gpm?.height)
+				throw new Error(
+					'この配列にはボクセル表示に必要な地域・高度情報がありません。2D表示を選んでください。'
+				);
 			analyzed = inspected;
 			needsManualBbox = false;
 
@@ -188,6 +194,7 @@
 				bboxText: forms.bbox || null,
 				metadata: inspected
 			});
+
 			const sampleRanges =
 				metadata.sampleRanges.length > 0 ? metadata.sampleRanges : [{ min: 0, max: 1 }];
 			const entry: RasterGeoZarrEntry<RasterTiffStyle | RasterCategoricalStyle> = {
@@ -205,7 +212,9 @@
 					...(metadata.gpm
 						? {
 								description:
-									'地域別の降水量配列です。高度方向の最大値や指定高度の断面を地図上に色分けして表示します。'
+									registrationMode === 'voxel'
+										? '地域別の降水量配列です。高度ごとの値をボクセルで立体表示します。'
+										: '地域別の降水量配列です。高度方向の最大値や指定高度の断面を地図上に色分けして表示します。'
 							}
 						: {}),
 					name:
@@ -242,6 +251,9 @@
 						}
 					: {
 							type: 'tiff',
+							...(registrationMode === 'voxel'
+								? { volume: { type: 'voxel' as const, threshold: 0, heightScale: 1 } }
+								: {}),
 							opacity: 1.0,
 							visible: true,
 							visualization: {
@@ -314,12 +326,14 @@
 	};
 
 	const onArrayPathChange = () => {
+		registrationMode = 'raster';
 		forms.bbox = '';
 		analyzed = null;
 		needsManualBbox = false;
 	};
 
 	const onUrlChange = () => {
+		registrationMode = 'raster';
 		candidates = [];
 		candidatesLoaded = false;
 		forms.arrayPath = '';
@@ -389,6 +403,22 @@
 			error={errors.arrayPath}
 			onInput={onArrayPathChange}
 		/>
+	{/if}
+
+	{#if selectedCandidate?.columnMaximum || analyzed?.gpm?.height}
+		<HorizontalSelectBox
+			label="登録方法"
+			options={[
+				{ key: 'raster', name: '2D表示' },
+				{ key: 'voxel', name: 'ボクセル表示' }
+			]}
+			bind:group={registrationMode}
+		/>
+		{#if registrationMode === 'voxel'}
+			<p class="text-sm text-gray-300">
+				高度ごとの値を立体の箱で表示します。値が0または欠損のセルは表示しません。地図を傾けると高さを確認できます。
+			</p>
+		{/if}
 	{/if}
 
 	{#if selectedCandidate}

@@ -14,6 +14,9 @@ export interface FormatDefinition {
 		readonly maxHeaderBytes?: number;
 		readonly maxMetadataBytes?: number;
 		readonly maxSamples?: number;
+		readonly maxVoxelsPerRegion?: number;
+		readonly maxDetailVoxelRegions?: number;
+		readonly maxConcurrentVoxelReads?: number;
 		readonly maxExpandedBytes?: number;
 		readonly maxNbtBytes?: number;
 		readonly maxSections?: number;

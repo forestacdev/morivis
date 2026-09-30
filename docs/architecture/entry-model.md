@@ -80,6 +80,7 @@ type MorivisLayerEntry =
 
 `RasterDemStyle` は `relief / slope / aspect / curvature / shadow` のような可視化モードを持ち、
 `RasterTiffStyle` は `single / multi / twi / slope / aspect / tpi / topex` のようなバンド可視化モードを持つ。
+高度付きZarr格子のボクセル表示は `RasterTiffStyle.volume` で指定する。元データは格子なのでraster entryのまま扱い、地域チャンク・インスタンスメッシュは専用runtimeに保持する。
 
 ### Model
 

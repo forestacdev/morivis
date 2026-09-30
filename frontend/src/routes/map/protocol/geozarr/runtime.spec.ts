@@ -9,6 +9,7 @@ import {
 	inspectGeoZarr,
 	listGeoZarrArrayCandidates,
 	mountLocalGeoZarr,
+	readGeoZarrVoxelRegion,
 	registerGeoZarr,
 	releaseLocalGeoZarr,
 	unregisterGeoZarr
@@ -231,6 +232,24 @@ describe('Zarrの実パーサーからタイル生成まで', () => {
 			expect(lastPixels.some(value => value > 0)).toBe(true);
 			for (const read of detailReads) expect(read).not.toHaveBeenCalled();
 			expect(metadata.gpm?.height).toEqual({ min: 0, max: 2000, step: 1000 });
+			const voxel = await readGeoZarrVoxelRegion({
+				entryId: 'test-entry',
+				url,
+				arrayPath: 'detail',
+				region: 0,
+				overview: false
+			}, new AbortController().signal);
+			expect(voxel.cells.length).toBe(4 * 7);
+			const overview = await readGeoZarrVoxelRegion({
+				entryId: 'test-entry',
+				url,
+				arrayPath: 'detail',
+				region: 0,
+				overview: true
+			}, new AbortController().signal);
+			expect(overview.cells.length).toBe(7);
+			expect(overview.cells[6]).toBe(2);
+
 			const tile =
 				'geozarr://tile?entryId=test-entry&x=13&y=10&z=5&min=0&max=8&gpmMode=height';
 			await geozarrProtocol('geozarr').request(

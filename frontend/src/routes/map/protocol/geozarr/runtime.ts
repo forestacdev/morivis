@@ -1,4 +1,3 @@
-import { createVoxelCells, type VoxelRegionRequest } from './voxels';
 import { formatGeoZarr } from '$routes/map/utils/formats/geozarr/definition';
 import {
 	createLocalGeoZarrStore,
@@ -14,6 +13,7 @@ import {
 } from './gpm';
 import { coordinateAxis, type GeoZarrGrid, gridPixel, tileGridWindow, tileLatitude } from './grid';
 import { normalizeGeoZarrUrl } from './url';
+import { createVoxelCells, type VoxelRegionRequest } from './voxels';
 export { normalizeGeoZarrUrl } from './url';
 import * as tilebelt from '@mapbox/tilebelt';
 import proj4 from 'proj4';
@@ -1542,19 +1542,30 @@ export const readGeoZarrVoxelRegion = async (input: VoxelRegionRequest, signal: 
 		state = zarrRegistry.get(input.entryId);
 	}
 	signal.throwIfAborted();
-	if (!state?.gpm?.height) throw new Error('このZarrにはボクセル表示用の地域・高度情報がありません');
+	if (!state?.gpm?.height) {
+		throw new Error('このZarrにはボクセル表示用の地域・高度情報がありません');
+	}
 	let layout = state.gpm, array = state.array;
-	if (!Number.isInteger(input.region) || !layout.regions[input.region]) throw new Error('Zarrの地域番号が不正です');
+	if (!Number.isInteger(input.region) || !layout.regions[input.region]) {
+		throw new Error('Zarrの地域番号が不正です');
+	}
 	if (input.overview && layout.overviewPath && layout.overviewDimensions) {
 		array = (await openGeoZarrArray(state.url, layout.overviewPath)).array;
 		validateGpmArray(array, layout.regions.length, layout.overviewDimensions);
 		layout = { ...layout, dimensions: layout.overviewDimensions };
 	}
 	const [nx, ny, nz] = layout.dimensions;
-	const reader = array as GeoZarrArrayNode & { getChunk: (position: number[], options: { signal: AbortSignal }) => Promise<{ data: ArrayLike<number>; stride: number[] }> };
+	const reader = array as GeoZarrArrayNode & {
+		getChunk: (
+			position: number[],
+			options: { signal: AbortSignal; }
+		) => Promise<{ data: ArrayLike<number>; stride: number[]; }>;
+	};
 	const chunk = await reader.getChunk([input.region, 0, 0, 0], { signal });
 	signal.throwIfAborted();
-	if ([nx * ny * nz, nx * ny, nx, 1].some((value, i) => value !== chunk.stride[i])) throw new Error('Zarrのボクセル配列順が不正です');
+	if ([nx * ny * nz, nx * ny, nx, 1].some((value, i) => value !== chunk.stride[i])) {
+		throw new Error('Zarrのボクセル配列順が不正です');
+	}
 	return createVoxelCells(layout, input.region, chunk.data);
 };
 

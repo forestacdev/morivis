@@ -1,4 +1,3 @@
-import type { VoxelRegionData, VoxelRegionRequest } from './voxels';
 import { PUBLIC_BASE_PATH } from '$env/static/public';
 import { getLocalZarrPath, type LocalGeoZarrInput } from '$routes/map/utils/formats/geozarr/local';
 import type {
@@ -7,6 +6,7 @@ import type {
 	GeoZarrRegistrationMeta
 } from './runtime';
 import { normalizeGeoZarrUrl } from './url';
+import type { VoxelRegionData, VoxelRegionRequest } from './voxels';
 export type { GeoZarrArrayCandidate, GeoZarrRegistrationMeta } from './runtime';
 export { normalizeGeoZarrUrl } from './url';
 

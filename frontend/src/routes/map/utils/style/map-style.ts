@@ -22,6 +22,7 @@ import type {
 import type { EpsgCode } from '$routes/map/utils/proj/dict';
 import { createSourcesItems, type PreparedSourceData } from '$routes/map/utils/sources';
 import { MODEL_OVERLAY_METADATA_KEY } from '$routes/map/utils/three/model-overlay-order';
+import { createVoxelSpec, isGeoZarrVoxelEntry } from '$routes/map/utils/voxel/spec';
 import type { BaseMapType } from '$routes/stores/layers';
 import type { FeatureCollection } from 'geojson';
 
@@ -405,6 +406,10 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 	};
 	return {
 		style: mapStyle,
+		voxelSpecs: [
+			...(!isIsolatedPreview ? entries.filter(e => e.id !== showDataEntry?.id) : []),
+			...(showDataEntry ? [showDataEntry] : [])
+		].filter(isGeoZarrVoxelEntry).map(createVoxelSpec),
 		metadata: {
 			clickableVectorIds: mainResult.clickableVectorIds,
 			clickableRasterIds: mainResult.clickableRasterIds,
