@@ -71,7 +71,13 @@
 	let selectedLayerId = $state<string>('');
 
 	// MapServer状態
-	let mapServerInfo = $state<ArcGisMapServerInfo | null>(null);
+	let mapServerInfo = $state.raw<ArcGisMapServerInfo | null>(null);
+	const legendCount = $derived(
+		mapServerInfo?.legend?.categories.reduce(
+			(count, category) => count + category.urls.length,
+			0
+		) ?? 0
+	);
 
 	// WebMap状態
 	let webMapLayers = $state<ArcGisWebMapLayer[]>([]);
@@ -130,7 +136,7 @@
 	 */
 	const isMapServerUrl = (url: string): boolean => {
 		const cleaned = url.replace(/\/+$/, '').split('?')[0];
-		return cleaned.endsWith('/MapServer') || /\/MapServer\/\d+$/.test(cleaned);
+		return /\/MapServer(?:\/\d+)?$/i.test(cleaned);
 	};
 
 	/**
@@ -197,7 +203,7 @@
 				}
 			} else if (isMapServerUrl(url)) {
 				// MapServer URL
-				await fetchMapServerInfo(url);
+				await fetchMapServerInfo(rawUrl);
 			} else {
 				// FeatureServer URL
 				await fetchFeatureServerInfo(url);
@@ -384,7 +390,17 @@
 			bounds: mapServerInfo.bounds
 		});
 
-		showDataEntry = entry;
+		showDataEntry = mapServerInfo.legend
+			? {
+					...entry,
+					style: {
+						type: 'categorical',
+						opacity: entry.style.opacity,
+						visible: entry.style.visible,
+						legend: mapServerInfo.legend
+					}
+				}
+			: entry;
 		showDialogType = null;
 		showNotification('MapServerレイヤーを登録しました', 'success');
 	};
@@ -561,6 +577,13 @@
 				<div class="mt-1 text-xs text-gray-400">
 					<div>ズーム: {mapServerInfo.minZoom} - {mapServerInfo.maxZoom}</div>
 					<div>タイルサイズ: {mapServerInfo.tileSize}px</div>
+					{#if mapServerInfo.legendStatus === 'available'}
+						<div>凡例: {legendCount}項目を自動登録します</div>
+					{:else if mapServerInfo.legendStatus === 'unavailable'}
+						<div>凡例を取得できませんでした。凡例なしで登録できます。</div>
+					{:else}
+						<div>表示対象の凡例はありません</div>
+					{/if}
 					{#if mapServerInfo.description}
 						<div class="mt-1">{mapServerInfo.description}</div>
 					{/if}
