@@ -4,4 +4,4 @@ import { addDecoder } from 'geotiff';
 // WASMはZSTD圧縮のブロックを実際に読むまでロードしない。
 addDecoder(50000, async () => (await import('./zstd-decoder')).ZstdDecoder);
 
-export { fromArrayBuffer, fromUrl } from 'geotiff';
+export { fromArrayBuffer, fromUrl, GeoTIFF } from 'geotiff';

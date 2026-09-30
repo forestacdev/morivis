@@ -83,3 +83,39 @@ describe('COG切り出し画像の配置', () => {
 		expect(readRasters).not.toHaveBeenCalled();
 	});
 });
+
+describe('COG登録時のプレビュー取得', () => {
+	it.each([1, 2])(
+		'画像数%dでも大きな画像の読み込み窓を512画素までに制限する',
+		async (imageCount) => {
+			const readRasters = vi.fn(async () => [new Float32Array(512 * 512).fill(7)]);
+			const image = {
+				getWidth: () => 8192,
+				getHeight: () => 4096,
+				getSamplesPerPixel: () => 1,
+				getGDALNoData: () => null,
+				getBoundingBox: () => [0, 0, 20, 40],
+				getGeoKeys: () => ({ GeographicTypeGeoKey: 4326 }),
+				getTileWidth: () => 256,
+				readRasters
+			};
+			const overview = { ...image, getWidth: () => 2048, getHeight: () => 1024 };
+			vi.mocked(fromUrl).mockResolvedValue({
+				getImage: async (index = 0) => index === 0 ? image : overview,
+				getImageCount: async () => imageCount
+			} as unknown as GeoTIFF);
+			const result = await CogTileManager.register(
+				entryId,
+				'https://test-cog.invalid/test-preview.tif'
+			);
+			expect(readRasters).toHaveBeenCalledExactlyOnceWith({
+				window: imageCount === 1 ? [3840, 1792, 4352, 2304] : [768, 256, 1280, 768],
+				width: 512,
+				height: 512
+			});
+			expect(result.sampleWidth).toBe(512);
+			expect(result.sampleHeight).toBe(512);
+			expect(result.sampleBands[0]).toHaveLength(512 * 512);
+		}
+	);
+});

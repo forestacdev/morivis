@@ -14,6 +14,7 @@ export type DialogProfile =
 	| 'feature-service'
 	| 'remote-wmts'
 	| 'remote-arcgis'
+	| 'remote-stac'
 	| 'remote-geozarr'
 	| 'tiles'
 	| 'wcs'
@@ -86,7 +87,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	},
 	stac: {
 		load: () => import('$routes/map/components/upload/form/StacForm.svelte'),
-		profile: 'simple'
+		profile: 'remote-stac'
 	},
 	arcgis: {
 		load: () => import('$routes/map/components/upload/form/ArcGisForm.svelte'),

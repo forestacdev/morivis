@@ -160,6 +160,7 @@ type UploadUrlDialogTarget =
 	| 'pendingTileUrl'
 	| 'remoteTiles3dUrl'
 	| 'remotePmtilesUrl'
+	| 'remoteStacUrl'
 	| 'remoteWmtsUrl'
 	| 'remoteArcGisUrl'
 	| 'remoteFeatureServiceUrl';
@@ -250,6 +251,26 @@ const templateRules: UploadUrlRule[] = [
 
 // パス末尾や拡張子だけで判断できるルール群。
 const extensionRules: UploadUrlRule[] = [
+	{
+		id: 'remote-tiff',
+		match: (_context, features) =>
+			/\.(tif|tiff|geotiff)$/i.test(features.remoteFileNameFromTemplateUrl ?? ''),
+		resolve: async (context) => {
+			try {
+				const { probeCogUrl } = await import('$routes/map/utils/formats/geotiff/probe-cog');
+				return await probeCogUrl(context.requestUrl) === 'cog'
+					? createDialogDecision('stac', 'remoteStacUrl', context.requestUrl)
+					: { type: 'remote-file', requestUrl: context.requestUrl };
+			} catch (error) {
+				return {
+					type: 'error',
+					message: error instanceof Error
+						? `TIFF URLを確認できませんでした: ${error.message}`
+						: 'TIFF URLを確認できませんでした'
+				};
+			}
+		}
+	},
 	{
 		id: 'arcgis-service',
 		matchAll: [isArcGisService],

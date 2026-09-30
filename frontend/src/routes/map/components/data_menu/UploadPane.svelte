@@ -31,6 +31,7 @@
 		remoteWmtsUrl: string | null;
 		remoteFeatureServiceUrl: string | null;
 		remoteArcGisUrl: string | null;
+		remoteStacUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -46,6 +47,7 @@
 		remoteWmtsUrl = $bindable(),
 		remoteFeatureServiceUrl = $bindable(),
 		remoteArcGisUrl = $bindable(),
+		remoteStacUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -64,35 +66,35 @@
 	const isUrlInputValid = $derived(trimmedInputUrl.length > 0 && !urlInputError);
 
 	const inputRemoteFile = async () => {
+		if (isLoadingUrl) return;
 		hasTouchedUrlInput = true;
-
-		// URLの種別判定は upload-url.ts に集約し、ここでは結果に応じて state を更新する。
-		const resolved = await resolveUploadUrlInput(trimmedInputUrl);
-
-		if (resolved.type === 'error') {
-			showNotification(resolved.message, 'error');
-			return;
-		}
-
-		if (resolved.type === 'dialog') {
-			// 既知のURL種別に当たった場合は、対応フォームへ必要な値を渡して終了する。
-			showDialogType = resolved.dialogType;
-			if (resolved.target === 'remoteRasterUrl') remoteRasterUrl = resolved.value;
-			if (resolved.target === 'remoteVectorUrl') remoteVectorUrl = resolved.value;
-			if (resolved.target === 'pendingTileUrl') pendingTileUrl = resolved.value;
-			if (resolved.target === 'remoteTiles3dUrl') remoteTiles3dUrl = resolved.value;
-			if (resolved.target === 'remotePmtilesUrl') remotePmtilesUrl = resolved.value;
-			if (resolved.target === 'remoteWmtsUrl') remoteWmtsUrl = resolved.value;
-			if (resolved.target === 'remoteFeatureServiceUrl') remoteFeatureServiceUrl = resolved.value;
-			if (resolved.target === 'remoteArcGisUrl') remoteArcGisUrl = resolved.value;
-			inputUrl = '';
-			hasTouchedUrlInput = false;
-			return;
-		}
-
 		isLoadingUrl = true;
 		isProcessing.set(true);
 		try {
+			// URLの種別判定は upload-url.ts に集約し、ここでは結果に応じて state を更新する。
+			const resolved = await resolveUploadUrlInput(trimmedInputUrl);
+
+			if (resolved.type === 'error') {
+				showNotification(resolved.message, 'error');
+				return;
+			}
+
+			if (resolved.type === 'dialog') {
+				// 既知のURL種別に当たった場合は、対応フォームへ必要な値を渡して終了する。
+				showDialogType = resolved.dialogType;
+				if (resolved.target === 'remoteRasterUrl') remoteRasterUrl = resolved.value;
+				if (resolved.target === 'remoteVectorUrl') remoteVectorUrl = resolved.value;
+				if (resolved.target === 'pendingTileUrl') pendingTileUrl = resolved.value;
+				if (resolved.target === 'remoteTiles3dUrl') remoteTiles3dUrl = resolved.value;
+				if (resolved.target === 'remotePmtilesUrl') remotePmtilesUrl = resolved.value;
+				if (resolved.target === 'remoteWmtsUrl') remoteWmtsUrl = resolved.value;
+				if (resolved.target === 'remoteFeatureServiceUrl') remoteFeatureServiceUrl = resolved.value;
+				if (resolved.target === 'remoteArcGisUrl') remoteArcGisUrl = resolved.value;
+				if (resolved.target === 'remoteStacUrl') remoteStacUrl = resolved.value;
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
 			// upload-url.ts が remote-file を返した場合だけ、ここで実ファイルを取得する。
 			const response = await fetchWithDevProxy(resolved.requestUrl);
 			if (!response.ok) {

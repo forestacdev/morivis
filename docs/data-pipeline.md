@@ -36,6 +36,13 @@ flowchart LR
 | `BaseDialog.svelte` / `DialogRenderer.svelte` | `showDialogType` と `dialog-registry.ts` をもとに対象 Form を選び、profile に応じて必要な bind 状態を渡す。 |
 | `components/upload/form/*.svelte` | 形式ごとの解析、座標系判定、preview 準備、最終 entry 作成を担当する。 |
 
+### TIFF URLの自動振り分け
+
+共通URL欄では `upload-url.ts` が `.tif` / `.tiff` / `.geotiff` をサービス問い合わせより先に判定する。タイルURLテンプレートは既存のタイル登録を優先する。
+`geotiff/probe-cog.ts` が64 KiB単位のRange取得で位置情報・内部タイル・縮小画像を調べ、COG登録に適する場合は `remote-stac` profileで `StacForm.svelte` にURLを渡す。画素の復号は判定時には行わず、取得量4 MiB・待ち時間20秒・後続IFD 16個までに制限する。これはOGCの完全なCOG適合性検査ではない。
+
+通常TIFFやRange非対応（HTTP 200）は従来のファイル取得へ進む。通信失敗、不正な部分応答、判定上限超過ではエラーを表示し、全体取得へ自動で切り替えない。COG登録へ進んだ後にプレビュー用画素を取得し、最小オーバービューの中央から最大512×512画素を読む。サムネイルと初期の値域はその標本に基づく。
+
 ## 定義元
 
 対応形式が増えたので、どこを真実の定義として見るかを明示しておく。
@@ -218,7 +225,7 @@ Wordのページ組版やPowerPointのマスター、表、EMF/WMFなどの未�
 
 | profile | 典型的な形式 | 役割 |
 | --- | --- | --- |
-| `simple` | STAC, ArcGIS | `dropFile` を持たず、URL や内部状態だけで完結する。 |
+| `simple` | ArcGIS | `dropFile` を持たず、URL や内部状態だけで完結する。 |
 | `drop-file` | GPX, TCX, GDB, GTFS, HRIT, HDF5, MF-JSON, LocationHistory, DRM | 受け取ったファイルをそのまま解析して entry を作る。 |
 | `vector-zone` | GeoArrow | Zone は使うが GeoRef には流さない。 |
 | `vector-zone-georef` | GeoJSON, Shapefile, GeoParquet, DXF, GML, MojXML など | Zone と GeoRef の両方を取りうる。 |
@@ -226,7 +233,7 @@ Wordのページ組版やPowerPointのマスター、表、EMF/WMFなどの未�
 | `raster-georef` | DEM XML, NetCDF, GeoPDF | 主に GeoRef で配置を確定する。 |
 | `pointcloud-georef` | GeoTIFF, PointCloud, LandXML | Zone と GeoRef の両方を持ち、場合によって raster / mesh / pointcloud に分岐する。 |
 | `model-georef` | GLB 系 | モデル配置や Zone を扱う。 |
-| `remote-*` / `feature-service` / `wcs` | WMTS, GeoZarr, Raster URL, FeatureService など | URL や remote metadata を起点に source / entry を作る。 |
+| `remote-*` / `feature-service` / `wcs` | STAC / COG, WMTS, GeoZarr, Raster URL, FeatureService など | URL や remote metadata を起点に source / entry を作る。 |
 
 ## TransformOptionForm の責務
 

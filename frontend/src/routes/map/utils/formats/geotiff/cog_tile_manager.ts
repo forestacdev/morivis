@@ -279,7 +279,16 @@ export const CogTileManager = {
 
 		// サンプルmin/max（最小オーバービューまたはフル解像度が小さければそれ自体から）
 		const sampleImage = lowestOvr ? images[images.length - 1] : fullImage;
-		const sampleRasters = await sampleImage.readRasters();
+		// 縮小画像がない/大きい場合も、サムネイルのために全画素を読まない。
+		const sampleWidth = Math.min(512, sampleImage.getWidth());
+		const sampleHeight = Math.min(512, sampleImage.getHeight());
+		const sampleLeft = Math.floor((sampleImage.getWidth() - sampleWidth) / 2);
+		const sampleTop = Math.floor((sampleImage.getHeight() - sampleHeight) / 2);
+		const sampleRasters = await sampleImage.readRasters({
+			window: [sampleLeft, sampleTop, sampleLeft + sampleWidth, sampleTop + sampleHeight],
+			width: sampleWidth,
+			height: sampleHeight
+		});
 		const sampleRanges: CogMetadata['sampleRanges'] = [];
 		for (let i = 0; i < numBands; i++) {
 			const band = sampleRasters[i] as Float32Array | Uint8Array | Uint16Array;
@@ -311,8 +320,6 @@ export const CogTileManager = {
 			projName: resolvedProjName
 		});
 
-		const sampleWidth = sampleImage.getWidth();
-		const sampleHeight = sampleImage.getHeight();
 		const sampleBands: ArrayLike<number>[] = [];
 		for (let i = 0; i < numBands; i++) {
 			sampleBands.push(sampleRasters[i] as Float32Array | Uint8Array | Uint16Array);
