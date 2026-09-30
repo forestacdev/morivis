@@ -11,6 +11,16 @@
  * - 認証なしでも多くのエンドポイントが利用可能
  */
 
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
+
+const fetchINaturalist = async (url: string): Promise<Response> => {
+	const response = await fetchWithDevProxy(url);
+	if (!response.ok) {
+		throw new Error(`iNaturalist API: HTTP ${response.status} ${response.statusText}`);
+	}
+	return response;
+};
+
 // ============================================================
 // 型定義
 // ============================================================
@@ -228,7 +238,7 @@ export const searchTaxa = async (
 	}
 
 	try {
-		const response = await fetch(`https://api.inaturalist.org/v1/taxa/autocomplete?${params}`);
+		const response = await fetchINaturalist(`https://api.inaturalist.org/v1/taxa/autocomplete?${params}`);
 		const data: INatSearchResponse<INatTaxon> = await response.json();
 		return data.results || [];
 	} catch (error) {
@@ -264,7 +274,7 @@ export const getTaxonById = async (id: number): Promise<INatTaxon | null> => {
 
 	const request = (async () => {
 		try {
-			const response = await fetch(`https://api.inaturalist.org/v1/taxa/${id}?locale=ja`);
+			const response = await fetchINaturalist(`https://api.inaturalist.org/v1/taxa/${id}?locale=ja`);
 			const data: INatSearchResponse<INatTaxon> = await response.json();
 			const taxon = data.results?.[0] || null;
 			setLruCache(taxonByIdCache, cacheKey, taxon);
@@ -380,7 +390,7 @@ export const searchObservations = async (options?: {
 	}
 
 	try {
-		const response = await fetch(`https://api.inaturalist.org/v1/observations?${params}`);
+		const response = await fetchINaturalist(`https://api.inaturalist.org/v1/observations?${params}`);
 		const data: INatSearchResponse<INatObservation> = await response.json();
 		return data.results || [];
 	} catch (error) {
@@ -397,7 +407,7 @@ export const searchObservations = async (options?: {
  */
 export const getObservationById = async (id: number): Promise<INatObservation | null> => {
 	try {
-		const response = await fetch(`https://api.inaturalist.org/v1/observations/${id}?locale=ja`);
+		const response = await fetchINaturalist(`https://api.inaturalist.org/v1/observations/${id}?locale=ja`);
 		const data: INatSearchResponse<INatObservation> = await response.json();
 		return data.results?.[0] || null;
 	} catch (error) {
@@ -476,7 +486,7 @@ export const searchPlaces = async (
 	}
 
 	try {
-		const response = await fetch(
+		const response = await fetchINaturalist(
 			`https://api.inaturalist.org/v1/places/autocomplete?${params}`
 		);
 		const data: INatSearchResponse<INatPlace> = await response.json();
@@ -506,7 +516,7 @@ export const getNearbyPlaces = async (
 	});
 
 	try {
-		const response = await fetch(`https://api.inaturalist.org/v1/places/nearby?${params}`);
+		const response = await fetchINaturalist(`https://api.inaturalist.org/v1/places/nearby?${params}`);
 		const data = await response.json();
 		// nearbyは standard と community の2種類を返す
 		return [...(data.results?.standard || []), ...(data.results?.community || [])];

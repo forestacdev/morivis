@@ -31,6 +31,11 @@ const CLOUDFRONT_PUBLIC_ENV_RULES: CloudFrontPublicEnvRule[] = [
 
 const STATIC_PROXY_RULES: ProxyRule[] = [
 	{
+		match: 'https://api.inaturalist.org/',
+		target: 'https://api.inaturalist.org',
+		proxyPath: '/api/inaturalist'
+	},
+	{
 		match: 'https://assetdelivery.roblox.com/',
 		target: 'https://assetdelivery.roblox.com',
 		proxyPath: '/api/roblox-assets'
