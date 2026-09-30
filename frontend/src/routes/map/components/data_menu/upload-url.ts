@@ -161,6 +161,7 @@ type UploadUrlDialogTarget =
 	| 'remoteTiles3dUrl'
 	| 'remotePmtilesUrl'
 	| 'remoteStacUrl'
+	| 'remoteGeoZarrUrl'
 	| 'remoteWmtsUrl'
 	| 'remoteArcGisUrl'
 	| 'remoteFeatureServiceUrl';
@@ -251,6 +252,15 @@ const templateRules: UploadUrlRule[] = [
 
 // パス末尾や拡張子だけで判断できるルール群。
 const extensionRules: UploadUrlRule[] = [
+	{
+		id: 'remote-geozarr',
+		match: (context) =>
+			/(?:\.zarr(?:\/.*)?|\/(?:\.zmetadata|\.zgroup|\.zarray|zarr\.json))\/?$/i.test(
+				decodeURIComponent(new URL(context.requestUrl).pathname)
+			),
+		resolve: (context) =>
+			createDialogDecision('geozarr', 'remoteGeoZarrUrl', context.requestUrl)
+	},
 	{
 		id: 'remote-tiff',
 		match: (_context, features) =>

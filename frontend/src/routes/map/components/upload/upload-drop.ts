@@ -1,3 +1,4 @@
+import { isGeoZarrZip, isLocalGeoZarrFolder } from '$routes/map/utils/formats/geozarr/local';
 import { isJp2File } from '$routes/map/utils/formats/jpeg2000/files';
 import { isMapInfoTab } from '$routes/map/utils/formats/mapinfo-tab/files';
 import { isMltFile } from '$routes/map/utils/formats/mlt';
@@ -568,6 +569,7 @@ const resolveSingleFile = async (
 	}
 
 	if (ext === 'zip') {
+		if (await isGeoZarrZip(file)) return createDialogDecision('geozarr', [file]);
 		if (await isGtfsZip(file)) {
 			return createDialogDecision('gtfs');
 		}
@@ -724,6 +726,7 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
+	if (isLocalGeoZarrFolder(files)) return createDialogDecision('geozarr', files);
 	// MCAは同じワールドのリージョン一式を専用フォームへ渡す。
 	if (files.some((file) => hasExtension(file, '.mca'))) {
 		return files.every(file => hasExtension(file, '.mca'))

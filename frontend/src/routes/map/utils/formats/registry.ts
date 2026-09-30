@@ -33,6 +33,7 @@ import { formatParquet } from './geoparquet/definition';
 import { formatPdf } from './geopdf/definition';
 import { formatGeorss } from './georss/definition';
 import { formatTif } from './geotiff/definition';
+import { formatGeoZarr } from './geozarr/definition';
 import { formatGlb } from './gltf/definition';
 import { formatGml } from './gml/definition';
 import { formatGpkg } from './gpkg/definition';
@@ -96,6 +97,7 @@ export const FORMAT_DEFINITIONS = {
 	'mbtiles': formatMbtiles,
 	'3dtiles': format3dtiles,
 	'stac': formatStac,
+	'geozarr': formatGeoZarr,
 	'geojson': formatGeojson,
 	'geojsonseq': formatGeojsonseq,
 	'wkt': formatWkt,

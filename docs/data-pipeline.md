@@ -143,6 +143,11 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+Zarr / GeoZarrは共通URL欄または `GeoZarrForm.svelte` で配列を選び、`RasterGeoZarrEntry` に登録する。
+メタ情報取得・チャンク展開・タイル描画は専用Workerで処理する。座標軸の向きと元の投影を保持してMapLibreの画素中心へ再サンプリングし、取得共有・キャンセル・容量上限をruntime内で管理する。
+対応範囲は [Zarr / GeoZarr](../frontend/src/routes/map/utils/formats/geozarr/README.md) を参照。
+
+
 OSM PBF（`.osm.pbf`、OSMヘッダーを持つ`.pbf`）は、MVT判定より先にOSMフォームへ振り分ける。
 専用Workerで`@osmix/pbf`によるデコードと`osmtogeojson`による図形組み立てを行い、WGS84のGeoJSONへ変換する。GDALは使わず、OSM XMLとジオメトリ選択・ベクター登録を共用する。
 容量上限と対応範囲は [OSM PBF](../frontend/src/routes/map/utils/formats/osm-pbf/README.md) を参照。
@@ -476,3 +481,5 @@ MicroStation DGN V7 (`.dgn`) は `DgnForm.svelte` で図形の種類とレベル
 専用Worker内のTypeScriptパーサーで2Dベクターへ変換し、既存の座標系辞書とproj4でWGS84へ変換するか、共通の位置合わせへ渡す。DGNの読み込みにはGDALを使わない。
 V8は未対応として案内し、容量制限とキャンセルは形式定義・共通処理ガードに接続する。
 対応範囲は [DGN V7](../frontend/src/routes/map/utils/formats/dgn/README.md) を参照。
+
+Zarrのフォルダー・ZIPは共通ドロップ判定から `GeoZarrForm.svelte` へ渡す。フォルダーの相対パスを保持し、ZIPは一般の全展開処理より先に判定する。ローカルStoreをWorkerへ接続し、配列選択・登録・描画はURL入力と共用する。ローカルFile参照はruntimeだけに保持し、ページ再読み込み後は再登録する。

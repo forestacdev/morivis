@@ -3,6 +3,7 @@ import type { RasterImageEntry, RasterTiffStyle } from '$routes/map/data/types/r
 import type { FeatureCollection } from '$routes/map/types/geojson';
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 import { JoinDataCache } from '$routes/map/utils/cache/join-data-cache';
+import { getLayerWatchStyleTarget } from '$routes/map/utils/raster/dimension-runtime';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createSourcesItems } from './index';
 import { getRasterTiffImageSource, prepareSourceData } from './prepare';
@@ -244,4 +245,41 @@ describe('ソースの非同期準備', () => {
 		applyRasterVisualizationUpdates([entry], [update]);
 		expect(entry.style.visualization.uniformsData.single.max).toBe(50);
 	});
+});
+
+it('Zarrの高度切り替えを地図の更新監視とタイルURLの両方へ反映する', () => {
+	const entry = {
+		id: 'test-height',
+		type: 'raster',
+		format: { type: 'geozarr', url: 'https://example.test/test.zarr', arrayPath: 'detail' },
+		metaData: { bounds: [-40, 40, 40, 60], minZoom: 0, maxZoom: 24, tileSize: 256 },
+		style: {
+			type: 'tiff',
+			visible: true,
+			opacity: 1,
+			visualization: {
+				mode: 'single',
+				uniformsData: {
+					single: { index: 0, min: 0, max: 8, colorMap: 'jet' }
+				}
+			}
+		}
+	} as MorivisLayerEntry;
+	const getUrl = () => {
+		const source = createSourcesItems({
+			entries: [entry],
+			prepared: {},
+			mode: 'main',
+			baseMap: null
+		})['test-height_source'];
+		if (source.type !== 'raster') throw new Error('raster source expected');
+		return new URL(source.tiles![0]);
+	};
+	const before = getLayerWatchStyleTarget(entry);
+	expect(getUrl().searchParams.get('gpmMode')).toBe('max');
+	if (entry.type !== 'raster') throw new Error('raster entry expected');
+	entry.state = { vertical: { mode: 'height', height: 1000 } };
+	expect(getLayerWatchStyleTarget(entry)).not.toEqual(before);
+	expect(getUrl().searchParams.get('gpmMode')).toBe('height');
+	expect(getUrl().searchParams.get('gpmHeight')).toBe('1000');
 });

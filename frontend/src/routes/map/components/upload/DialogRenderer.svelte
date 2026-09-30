@@ -153,7 +153,9 @@
 		{:else if profile === 'remote-wmts'}
 			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteWmtsUrl />
 		{:else if profile === 'remote-geozarr'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteGeoZarrUrl />
+			{#key dropFile}
+				<FormComponent bind:showDataEntry bind:showDialogType bind:remoteGeoZarrUrl {dropFile} />
+			{/key}
 		{:else if profile === 'tiles'}
 			<FormComponent
 				bind:showDataEntry

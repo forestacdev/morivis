@@ -136,6 +136,9 @@ export const getRasterDimensionRuntimeUpdates = (
 
 export const getLayerWatchStyleTarget = (entry: MorivisLayerEntry) => {
 	return {
-		...entry.style
+		...entry.style,
+		...(entry.type === 'raster' && entry.format.type === 'geozarr'
+			? { vertical: entry.state?.vertical }
+			: {})
 	};
 };

@@ -63,6 +63,10 @@
 		"extensions": []
 	},
 	{
+		"id": "geozarr",
+		"extensions": []
+	},
+	{
 		"id": "geojson",
 		"extensions": [
 			".geojson",

@@ -1,3 +1,5 @@
+import { formatGeoZarr } from '$routes/map/utils/formats/geozarr/definition';
+import { isLocalGeoZarrFolder } from '$routes/map/utils/formats/geozarr/local';
 import { formatMca } from '$routes/map/utils/formats/mca/definition';
 import { isMvtFile, parseMvtPath } from '$routes/map/utils/formats/mvt';
 import { isLocalRasterTileFolder } from '$routes/map/utils/formats/raster-tiles';
@@ -21,6 +23,7 @@ export const checkLargeDroppedFiles = async (files: File | File[]): Promise<bool
 	const fileList = [...new Set(Array.isArray(files) ? files : [files])];
 	const totalSize = fileList.reduce((sum, file) => sum + file.size, 0);
 	if (totalSize < DEFAULT_UPLOAD_WARNING_BYTES) return true;
+	if (isLocalGeoZarrFolder(fileList) && formatGeoZarr.limits.skipBatchWarning) return true;
 	// MCAは逐次展開し、生成メッシュ量を専用フォームの面数上限で管理する。
 	if (
 		fileList.every(file => /\.mca$/i.test(file.name))

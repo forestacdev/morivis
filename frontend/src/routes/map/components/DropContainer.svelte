@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 
+	import { showNotification } from '$routes/stores/notification';
+
 	interface Props {
 		class?: string;
 		onDragover?: (e: DragEvent) => void;
@@ -68,8 +70,12 @@
 	const collectDroppedItemFiles = async (items: DataTransferItemList): Promise<File[]> => {
 		const files: File[] = [];
 
-		for (const item of Array.from(items)) {
-			const entry = item.webkitGetAsEntry?.();
+		// DataTransferはイベント中に確保する。await後には取得できないブラウザーがある。
+		const inputs = Array.from(items, (item) => ({
+			entry: item.webkitGetAsEntry?.(),
+			file: item.getAsFile()
+		}));
+		for (const { entry, file } of inputs) {
 			if (entry?.isDirectory) {
 				files.push(
 					...(await readDirectoryRecursive(entry as FileSystemDirectoryEntry, entry.name))
@@ -82,32 +88,12 @@
 				continue;
 			}
 
-			const file = item.getAsFile();
 			if (file) {
 				files.push(file);
 			}
 		}
 
 		return files;
-	};
-
-	const mergeDroppedFiles = (primaryFiles: File[], fallbackFiles: FileList): File[] => {
-		const mergedFiles: File[] = [];
-		const seen = new Set<string>();
-
-		const pushFile = (file: File) => {
-			const relativePath =
-				(file as File & { morivisRelativePath?: string }).morivisRelativePath ?? '';
-			const key = `${relativePath}:${file.name}:${file.size}:${file.lastModified}`;
-			if (seen.has(key)) return;
-			seen.add(key);
-			mergedFiles.push(file);
-		};
-
-		primaryFiles.forEach(pushFile);
-		Array.from(fallbackFiles).forEach(pushFile);
-
-		return mergedFiles;
 	};
 
 	// ドラッグ中のイベント
@@ -153,12 +139,17 @@
 		}
 
 		if (items && items.length > 0) {
-			const collectedFiles = await collectDroppedItemFiles(items);
-			const mergedFiles = mergeDroppedFiles(collectedFiles, dataTransfer.files);
-			if (mergedFiles.length > 0) {
-				onDropFile?.(mergedFiles);
-				return;
+			try {
+				const collectedFiles = await collectDroppedItemFiles(items);
+				if (collectedFiles.length) onDropFile?.(collectedFiles);
+				else showNotification('フォルダー内にファイルがありません', 'info');
+			} catch {
+				showNotification(
+					'フォルダーを読み取れませんでした。フォルダー選択またはZIPで再登録してください',
+					'error'
+				);
 			}
+			return;
 		}
 
 		const files = dataTransfer.files;

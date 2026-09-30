@@ -222,6 +222,8 @@ export interface MultiBandData {
 }
 
 export interface RasterTiffStyle extends BaseRasterStyle {
+	/** 高度付き格子の立体表示。未指定時は2Dラスター。 */
+	volume?: { type: 'voxel'; threshold: number; heightScale: number; };
 	type: 'tiff';
 	resampling?: 'nearest' | 'linear';
 	visualization: {
@@ -250,6 +252,8 @@ export type RasterDiscreteDimension = SharedDiscreteDimension;
 export type RasterDimensionState = SharedDimensionState;
 
 export interface RasterEntryState {
+	/** 高度方向の集約または指定高度（m）の水平断面。 */
+	vertical?: { mode: 'max' | 'height'; height: number; };
 	dimension?: RasterDimensionState;
 }
 
@@ -268,6 +272,8 @@ export interface RasterCategoryProperties {
 }
 
 export interface RasterProperties {
+	/** 高度軸の範囲（上端は含まない）と格子間隔。単位はm。 */
+	vertical?: { min: number; max: number; step: number; };
 	temporal?: RasterTemporalProperties;
 	bands?: RasterBandProperties;
 	categories?: RasterCategoryProperties;
@@ -348,6 +354,8 @@ export interface RasterGeoZarrEntry<T> extends BaseRasterEntry {
 		type: 'geozarr';
 		url: string;
 		arrayPath?: string;
+		/** 位置情報がない配列に利用者が指定した経緯度範囲。 */
+		bbox?: [number, number, number, number];
 	};
 	style: T;
 }

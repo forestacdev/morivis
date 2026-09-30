@@ -194,7 +194,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'wmts',
 		dialogType: 'wmts',
 		label: 'WMS/WMTS',
-		description: '地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
+		description:
+			'地図配信サービスのURLです。公開されている配信レイヤーを追加するときに使います。',
 		icon: 'mdi:layers-outline'
 	},
 	{
@@ -249,8 +250,17 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'stac',
 		dialogType: 'stac',
 		label: 'STAC / COG',
-		description: 'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
+		description:
+			'STAC API や COG のURLです。衛星画像やラスターデータを参照するときに使います。',
 		icon: 'hugeicons:cloud-cog'
+	},
+	{
+		id: 'geozarr',
+		dialogType: 'geozarr',
+		label: 'Zarr / GeoZarr',
+		icon: 'mdi:grid',
+		description:
+			'多次元の数値配列をチャンクに分けて配信するデータです。公開URL・フォルダー・ZIPから配列を選び、地図上に色分けして表示します。'
 	},
 	{
 		id: 'geojson',
@@ -524,7 +534,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'grib2',
 		label: 'GRIB2 (GPV)',
 		icon: 'mdi:weather-windy',
-		description: '気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。'
+		description:
+			'気象格子データの配信形式です。予報値や解析値を地図上で確認するときに使います。'
 	},
 	{
 		id: 'zip',
@@ -584,7 +595,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'dm',
 		label: 'DM',
 		icon: 'mdi:terrain',
-		description: '数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。'
+		description:
+			'数値地形図を表現した測量データです。地形図由来の地物を読み込むときに使います。'
 	},
 	{
 		id: 'landxml',
@@ -597,7 +609,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'mojxml',
 		label: '法務局地図XML',
 		icon: 'mdi:map-legend',
-		description: '登記所備付地図のXMLデータです。筆界や地番を含む地籍情報を表示するときに使います。'
+		description:
+			'登記所備付地図のXMLデータです。筆界や地番を含む地籍情報を表示するときに使います。'
 	},
 	{
 		id: 'geophoto',
@@ -623,7 +636,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'pdf',
 		label: 'GeoPDF',
 		icon: 'mdi:file-pdf-box',
-		description: '位置情報を持つPDF地図です。紙地図由来のラスタやベクターを読み込むときに使います。'
+		description:
+			'位置情報を持つPDF地図です。紙地図由来のラスタやベクターを読み込むときに使います。'
 	},
 	{
 		id: 'pointcloud',
@@ -823,7 +837,7 @@ export interface PoiHighlightMarkerState {
 	type: 'poi';
 	featureId: string | number;
 	point: [number, number];
-	properties: { [key: string]: any };
+	properties: { [key: string]: any; };
 	iconImage?: string | null;
 	iconMarker?: PoiIconMarkerAppearance;
 }

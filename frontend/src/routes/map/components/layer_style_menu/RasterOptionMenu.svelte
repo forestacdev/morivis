@@ -2,6 +2,7 @@
 	import CategoricalLegend from './raster_option/CategoricalLegend.svelte';
 	import DemOption from './raster_option/DemOption.svelte';
 	import DimensionSelector from './raster_option/DimensionSelector.svelte';
+	import GeoZarrHeightOption from './raster_option/GeoZarrHeightOption.svelte';
 	import RasterPresetPulldownBox from './raster_option/RasterPresetPulldownBox.svelte';
 	import TiffOption from './raster_option/TiffOption.svelte';
 	import Accordion from '../atoms/Accordion.svelte';
@@ -76,6 +77,9 @@
 	});
 </script>
 
+{#if layerEntry.format.type === 'geozarr' && layerEntry.properties?.vertical}
+	<GeoZarrHeightOption bind:layerEntry />
+{/if}
 {#if getRasterDimension(layerEntry)}
 	<DimensionSelector bind:layerEntry bind:showDimensionOption />
 {/if}

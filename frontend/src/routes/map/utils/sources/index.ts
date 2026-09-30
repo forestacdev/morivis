@@ -340,20 +340,26 @@ export const createSourcesItems = ({
 						coordinates: getBoundingBoxCorners(metaData.bounds)
 					} satisfies ImageSourceSpecification;
 				} else if (format.type === 'geozarr') {
+					const sourceQuery = `url=${encodeURIComponent(format.url)}&arrayPath=${
+						encodeURIComponent(format.arrayPath ?? '')
+					}&bbox=${encodeURIComponent(format.bbox?.join(',') ?? '')}&gpmMode=${
+						entry.state?.vertical?.mode ?? 'max'
+					}&gpmHeight=${entry.state?.vertical?.height ?? 0}`;
 					if (style.type === 'categorical' && style.legend.type === 'category') {
 						const categoricalValues = entry.properties?.categories?.values.join('|')
 							?? style.legend.labels.map((_, index) => index).join('|');
 						const categoricalColors = style.legend.colors.join('|');
-						const tileUrl =
-							`geozarr://tile?entryId=${entry.id}&mode=categorical&bandIndex=0&values=${
-								encodeURIComponent(
-									categoricalValues
-								)
-							}&colors=${
-								encodeURIComponent(
-									categoricalColors
-								)
-							}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+						const tileUrl = `geozarr://tile?entryId=${
+							encodeURIComponent(entry.id)
+						}&${sourceQuery}&mode=categorical&bandIndex=0&values=${
+							encodeURIComponent(
+								categoricalValues
+							)
+						}&colors=${
+							encodeURIComponent(
+								categoricalColors
+							)
+						}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
 
 						items[sourceId] = {
 							type: 'raster',
@@ -372,8 +378,9 @@ export const createSourcesItems = ({
 						if (mode === 'single') {
 							const u = visualization.uniformsData.single;
 							const [uMin, uMax] = getAdjustableRangeValue(u.range, u.min, u.max);
-							tileUrl =
-								`geozarr://tile?entryId=${entry.id}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${uMin}&max=${uMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+							tileUrl = `geozarr://tile?entryId=${
+								encodeURIComponent(entry.id)
+							}&${sourceQuery}&mode=single&bandIndex=${u.index}&colorMap=${u.colorMap}&min=${uMin}&max=${uMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
 						} else {
 							const u = visualization.uniformsData.multi;
 							const [rMin, rMax] = getAdjustableRangeValue(
@@ -391,8 +398,9 @@ export const createSourcesItems = ({
 								u.b.min,
 								u.b.max
 							);
-							tileUrl =
-								`geozarr://tile?entryId=${entry.id}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${rMin}&rMax=${rMax}&gMin=${gMin}&gMax=${gMax}&bMin=${bMin}&bMax=${bMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
+							tileUrl = `geozarr://tile?entryId=${
+								encodeURIComponent(entry.id)
+							}&${sourceQuery}&mode=multi&rIndex=${u.r.index}&gIndex=${u.g.index}&bIndex=${u.b.index}&rMin=${rMin}&rMax=${rMax}&gMin=${gMin}&gMax=${gMax}&bMin=${bMin}&bMax=${bMax}&tileSize=${metaData.tileSize}&x={x}&y={y}&z={z}`;
 						}
 
 						items[sourceId] = {

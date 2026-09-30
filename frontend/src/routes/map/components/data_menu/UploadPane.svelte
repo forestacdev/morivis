@@ -91,6 +91,7 @@
 				if (resolved.target === 'remoteFeatureServiceUrl') remoteFeatureServiceUrl = resolved.value;
 				if (resolved.target === 'remoteArcGisUrl') remoteArcGisUrl = resolved.value;
 				if (resolved.target === 'remoteStacUrl') remoteStacUrl = resolved.value;
+				if (resolved.target === 'remoteGeoZarrUrl') remoteGeoZarrUrl = resolved.value;
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
@@ -133,19 +134,6 @@
 	const handleDroppedFiles = async (files: File[]) => {
 		if (!files || files.length === 0) return;
 
-		// 単一ZIPファイルの場合は展開
-		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
-			try {
-				const extracted = await extractZipFiles(files[0]);
-				if (extracted.length > 0) {
-					dropFile = extracted;
-					return;
-				}
-			} catch {
-				// 展開失敗時は通常フローへ
-			}
-		}
-
 		dropFile = files;
 	};
 
@@ -170,30 +158,6 @@
 		await openFilteredFilePicker(item.extensions.join(','));
 	};
 	let isDragover = $state(false);
-	const setRelativePath = (file: File, relativePath: string) => {
-		Object.defineProperty(file, 'morivisRelativePath', {
-			value: relativePath,
-			configurable: true
-		});
-		return file;
-	};
-
-	/** ZIPファイルを展開してFile配列にする */
-	const extractZipFiles = async (zipFile: File): Promise<File[]> => {
-		const JSZip = (await import('jszip')).default;
-		const zip = await JSZip.loadAsync(zipFile);
-		const files: File[] = [];
-		const entries: [string, import('jszip').JSZipObject][] = [];
-		zip.forEach((path, entry) => {
-			if (!entry.dir) entries.push([path, entry]);
-		});
-		for (const [path, entry] of entries) {
-			const blob = await entry.async('blob');
-			const fileName = path.split('/').pop() ?? path;
-			files.push(setRelativePath(new File([blob], fileName, { type: blob.type }), path));
-		}
-		return files;
-	};
 </script>
 
 <div class="flex h-full grow flex-col gap-4 p-4 text-white">
@@ -205,7 +169,7 @@
 			: 'border-dashed bg-black/70'}"
 	>
 		<div class="grid place-items-center gap-6">
-			<span class="text-3xl select-none">ここにファイルをドロップしてください </span>
+			<span class="text-3xl select-none">ここにファイル・フォルダーをドロップしてください </span>
 
 			<label
 				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
@@ -218,6 +182,12 @@
 					class="hidden"
 					onchange={(e) => inputFile(e)}
 				/>
+			</label>
+			<label
+				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
+			>
+				<span>フォルダーを選択</span>
+				<input type="file" webkitdirectory multiple class="hidden" onchange={inputFile} />
 			</label>
 			<input
 				bind:this={formListFileInput}

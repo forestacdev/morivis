@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
@@ -16,12 +17,16 @@
 		listGeoZarrArrayCandidates,
 		normalizeGeoZarrUrl,
 		registerGeoZarr,
+		prepareLocalGeoZarr,
+		releaseLocalGeoZarr,
 		type GeoZarrArrayCandidate,
 		type GeoZarrRegistrationMeta
 	} from '$routes/map/protocol/geozarr';
-	import type { DialogType } from '$routes/map/types';
+	import type { DialogType, UploadFiles } from '$routes/map/types';
+	import { getLocalZarrPath } from '$routes/map/utils/formats/geozarr/local';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
+	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -29,20 +34,26 @@
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
 		remoteGeoZarrUrl: string | null;
+		dropFile?: UploadFiles;
 	}
 
 	let {
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
-		remoteGeoZarrUrl = $bindable()
+		remoteGeoZarrUrl = $bindable(),
+		dropFile = null
 	}: Props = $props();
+
+	let localUrl = $state('');
+	let localName = $state('');
+	let registered = false;
 
 	const validation = yup.object().shape({
 		url: yup
 			.string()
 			.required('URLを入力してください。')
 			.test('url-format', 'URLの形式が正しくありません', (value) => {
-				return !value || !!normalizeHttpUrlInput(value);
+				return !value || (localUrl && value === localUrl) || !!normalizeHttpUrlInput(value);
 			}),
 		arrayPath: yup.string(),
 		bbox: yup.string()
@@ -73,16 +84,23 @@
 	const shouldShowManualArrayPath = $derived(candidatesLoaded && candidates.length === 0);
 	const canRegister = $derived(
 		candidatesLoaded &&
-			!!forms.arrayPath &&
 			!isSubmitDisabled &&
 			!isRegistering &&
 			(!needsManualBbox || !!forms.bbox.trim())
 	);
-	$effect(() => {
-		if (remoteGeoZarrUrl) {
+	onMount(() => {
+		const files = toUploadFiles(dropFile);
+		if (files.length) {
+			localUrl = prepareLocalGeoZarr(files);
+			localName = getLocalZarrPath(files[0]).split('/')[0];
+			forms.url = localUrl;
+		} else if (remoteGeoZarrUrl) {
 			forms.url = normalizeGeoZarrUrl(remoteGeoZarrUrl);
 			remoteGeoZarrUrl = null;
 		}
+		return () => {
+			if (localUrl && !registered) releaseLocalGeoZarr(localUrl);
+		};
 	});
 
 	$effect(() => {
@@ -108,7 +126,7 @@
 		isProcessing.set(true);
 
 		try {
-			const normalizedUrl = normalizeHttpUrlInput(forms.url);
+			const normalizedUrl = localUrl || normalizeHttpUrlInput(forms.url);
 			if (!normalizedUrl) {
 				showNotification('URLの形式が正しくありません', 'error');
 				return;
@@ -149,7 +167,7 @@
 		isRegistering = true;
 
 		try {
-			const normalizedUrl = normalizeHttpUrlInput(forms.url);
+			const normalizedUrl = localUrl || normalizeHttpUrlInput(forms.url);
 			if (!normalizedUrl) {
 				showNotification('URLの形式が正しくありません', 'error');
 				return;
@@ -161,9 +179,6 @@
 			);
 			analyzed = inspected;
 			needsManualBbox = false;
-			if (!forms.bbox) {
-				forms.bbox = inspected.bbox.join(', ');
-			}
 
 			const entryId = `geozarr_${crypto.randomUUID()}`;
 			const metadata = await registerGeoZarr({
@@ -181,12 +196,23 @@
 				format: {
 					type: 'geozarr',
 					url: metadata.url,
-					arrayPath: metadata.arrayPath || undefined
+					arrayPath: metadata.arrayPath || undefined,
+					...(forms.bbox ? { bbox: metadata.bbox } : {})
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
 					attribution: 'GeoZarr',
-					name: metadata.arrayPath.split('/').pop() || normalizedUrl.split('/').pop() || 'GeoZarr',
+					...(metadata.gpm
+						? {
+								description:
+									'地域別の降水量配列です。高度方向の最大値や指定高度の断面を地図上に色分けして表示します。'
+							}
+						: {}),
+					name:
+						metadata.arrayPath.split('/').pop() ||
+						localName ||
+						normalizedUrl.split('/').pop() ||
+						'GeoZarr',
 					tileSize: 256,
 					bounds: metadata.bbox,
 					minZoom: 0,
@@ -194,6 +220,7 @@
 					xyzImageTile: findCenterTile(metadata.bbox)
 				},
 				properties: {
+					...(metadata.gpm?.height ? { vertical: metadata.gpm.height } : {}),
 					bands: {
 						numBands: metadata.numBands,
 						sampleRanges
@@ -248,6 +275,7 @@
 						}
 			};
 
+			registered = true;
 			showDataEntry = entry;
 			showDialogType = null;
 			remoteGeoZarrUrl = null;
@@ -286,6 +314,7 @@
 	};
 
 	const onArrayPathChange = () => {
+		forms.bbox = '';
 		analyzed = null;
 		needsManualBbox = false;
 	};
@@ -307,11 +336,23 @@
 <div class="flex flex-col gap-4 overflow-y-auto pr-1">
 	<h2 class="text-lg font-bold">GeoZarr を追加</h2>
 	<p class="text-sm leading-relaxed text-gray-300">
-		公開された GeoZarr 配列を URL から追加します。root が group の場合は配列パスも入力してください。
-		bbox が自動判定できないときだけ `minx,miny,maxx,maxy` を補います。
+		Zarrのフォルダー・ZIP、または公開URLから追加します。グループの場合は表示する配列を選びます。
+		位置を判定できない場合は、西端・南端・東端・北端の経緯度を入力します。
+		{#if selectedCandidate?.columnMaximum}
+			この配列は地域ごとに配置し、高度方向の最大値を表示します。登録後に指定高度の断面へ切り替えられます。detailは縮小表示時にoverviewを使います。
+		{:else}
+			時間や高度を含む配列は、先頭の断面を表示します。
+		{/if}
 	</p>
 
-	<TextForm label="URL" bind:value={forms.url} error={errors.url} onInput={onUrlChange} />
+	{#if localUrl}
+		<p class="break-all text-sm">読み込み元: {localName}</p>
+		<p class="text-xs text-gray-400">
+			ローカルデータはアップロードされません。ページを再読み込みした場合は再登録してください。
+		</p>
+	{:else}
+		<TextForm label="URL" bind:value={forms.url} error={errors.url} onInput={onUrlChange} />
+	{/if}
 	{#if needsManualBbox}
 		<TextForm label="bbox" bind:value={forms.bbox} error={errors.bbox} onInput={onBboxChange} />
 	{/if}
@@ -327,18 +368,17 @@
 			>
 				{#each candidates as candidate (candidate.arrayPath)}
 					<option value={candidate.arrayPath}>
-						[{categoryLabel(candidate.category)}] {candidate.arrayPath}
+						[{categoryLabel(candidate.category)}] {candidate.arrayPath || 'ルート配列'}
 					</option>
 				{/each}
 			</select>
 			<p class="text-xs leading-relaxed text-gray-400">
-				`measurements` は画像本体、`quality` は品質情報、`conditions` は補助データ、 `coordinates`
-				は座標軸です。
+				画像本体を選んでください。品質情報・座標軸は補助データです。
 			</p>
 		</div>
 	{:else if shouldShowManualArrayPath}
 		<div class="rounded-lg border border-gray-700 bg-black/20 p-3 text-sm text-gray-300">
-			配列候補を一覧できませんでした。必要なら配列パスを手入力してください。
+			配列候補を一覧できませんでした。配列パスを手入力してください。URLが配列そのものを指す場合は空欄で登録できます。
 		</div>
 	{/if}
 
@@ -366,7 +406,7 @@
 					</span>
 				{/if}
 			</div>
-			<div class="mt-2 break-all">配列: {selectedCandidate.arrayPath}</div>
+			<div class="mt-2 break-all">配列: {selectedCandidate.arrayPath || 'ルート配列'}</div>
 			<div>グループ: {selectedCandidate.groupPath}</div>
 			{#if selectedCandidate.longName}
 				<div>説明: {selectedCandidate.longName}</div>

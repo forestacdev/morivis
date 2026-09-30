@@ -49,6 +49,20 @@ describe('resolveUploadUrlInput', () => {
 		}
 	);
 
+	it.each([
+		'https://test-zarr.invalid/test.zarr',
+		'https://test-zarr.invalid/test.zarr/temperature/zarr.json?key=test',
+		'https://test-zarr.invalid/data/.zmetadata'
+	])('Zarr URLをファイル取得せず専用フォームへ渡す: %s', async url => {
+		expect(await resolveUploadUrlInput(url)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'geozarr',
+			target: 'remoteGeoZarrUrl',
+			value: url
+		});
+		expect(parseWmsCapabilities).not.toHaveBeenCalled();
+	});
+
 	it('通常TIFFはサービス探索をせずファイル取り込みへ進む', async () => {
 		vi.mocked(probeCogUrl).mockResolvedValue('geotiff');
 		const url = 'https://example.com/test.tif';

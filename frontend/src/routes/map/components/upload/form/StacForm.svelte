@@ -507,7 +507,8 @@
 			format: {
 				type: 'geozarr',
 				url: metadata.url,
-				arrayPath: metadata.arrayPath || undefined
+				arrayPath: metadata.arrayPath || undefined,
+				bbox: metadata.bbox
 			},
 			metaData: {
 				...DEFAULT_CUSTOM_META_DATA,
@@ -520,6 +521,7 @@
 				xyzImageTile: findCenterTile(resolvedBbox)
 			},
 			properties: {
+				...(metadata.gpm?.height ? { vertical: metadata.gpm.height } : {}),
 				bands: {
 					numBands: metadata.numBands,
 					sampleRanges
