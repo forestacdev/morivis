@@ -171,24 +171,26 @@
 		<div class="grid place-items-center gap-6">
 			<span class="text-3xl select-none">ここにファイル・フォルダーをドロップしてください </span>
 
-			<label
-				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
-			>
-				<span>またはファイルを選択</span>
-				<input
-					type="file"
-					multiple
-					accept={SUPPORTED_FILE_ACCEPT}
-					class="hidden"
-					onchange={(e) => inputFile(e)}
-				/>
-			</label>
-			<label
-				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
-			>
-				<span>フォルダーを選択</span>
-				<input type="file" webkitdirectory multiple class="hidden" onchange={inputFile} />
-			</label>
+			<div class="flex items-center justify-center gap-4">
+				<label
+					class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
+				>
+					<span>ファイルを選択</span>
+					<input
+						type="file"
+						multiple
+						accept={SUPPORTED_FILE_ACCEPT}
+						class="hidden"
+						onchange={(e) => inputFile(e)}
+					/>
+				</label>
+				<label
+					class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
+				>
+					<span>フォルダーを選択</span>
+					<input type="file" webkitdirectory multiple class="hidden" onchange={inputFile} />
+				</label>
+			</div>
 			<input
 				bind:this={formListFileInput}
 				type="file"
