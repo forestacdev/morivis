@@ -2,19 +2,19 @@ import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
 import { runSingleShotWorker } from '$routes/map/utils/worker/run-single-shot';
 import type { FeatureCollection } from 'geojson';
-import { type GcdParseResult, MAX_GCD_BYTES } from '.';
+import { assertInputResourceLimits } from '../resource-limits';
+import { type GcdParseResult } from '.';
+import { formatGcd } from './definition';
 import type { GcdWorkerResponse } from './worker';
 import GcdWorker from './worker?worker';
 
 /** ファイルごとの座標系で変換してから結合する。ひとつでも失敗したら登録しない。 */
 export const analyzeGcdFiles = async (files: File[]): Promise<FeatureCollection> => {
-	if (!files.length || files.length > 32) throw new Error('GCDは1〜32ファイルを選択してください');
-	if (
-		files.some(file => file.size > MAX_GCD_BYTES)
-		|| files.reduce((sum, file) => sum + file.size, 0) > MAX_GCD_BYTES
-	) {
-		throw new Error('GCDの合計サイズは128 MB以下にしてください');
-	}
+	if (!files.length) throw new Error('GCDファイルを選択してください');
+	assertInputResourceLimits(
+		files.map(file => ({ name: file.name, files: [file] })),
+		formatGcd.limits
+	);
 	const results: FeatureCollection[] = [];
 	for (const file of files) {
 		try {

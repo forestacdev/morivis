@@ -1,39 +1,12 @@
-import { HIGHLIGHT_LAYER_COLOR } from '$routes/constants';
-import { getAdjustableRangeDomain, getAdjustableRangeValue } from '$routes/map/data/types';
-import {
-	type GaussianSplatEntry,
-	type IfcPartColorProfile,
-	type MeshEntry,
-	type MeshStyle,
-	type ModelTransformStyle,
-	type ThreeModelEntry
+import type {
+	IfcPartColorProfile,
+	MeshEntry,
+	MeshStyle,
+	ModelTransformStyle,
+	ThreeModelEntry
 } from '$routes/map/data/types/model';
-import type { ModelPartData } from '$routes/map/data/types/model';
-import { takeGaussianSplatData } from '$routes/map/utils/formats/gaussian-splat/cache';
-import { parseGaussianSplatInWorker } from '$routes/map/utils/formats/gaussian-splat/gaussian-splat-parallel';
-import { parseUsdArrayBuffer } from '$routes/map/utils/formats/usd';
 import type { CustomLayerInterface, Map as MapLibreMap } from '$routes/map/utils/maplibre';
-import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
-import { ColorMapManager } from '$routes/map/utils/style/color-mapping';
-import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
-import {
-	applyFbxCurveGeometricTransform,
-	parseFbxModelAttributes,
-	resolveFbxModelAttributes,
-	setFbxCurveVisibility
-} from '$routes/map/utils/three/fbx-attributes';
-import {
-	createFbxTextMeshes,
-	isGeneratedFbxTextTexture,
-	setFbxTextStyle
-} from '$routes/map/utils/three/fbx-text';
-import { applyFbxTextureFallback } from '$routes/map/utils/three/fbx-textures';
-import {
-	applyGaussianSplatStyle,
-	createGaussianSplatObject
-} from '$routes/map/utils/three/gaussian-splat-renderer';
-import { configureIfcWasmPath } from '$routes/map/utils/three/ifc-wasm-path';
-import { minecraftMaterialState } from '$routes/map/utils/three/minecraft-material';
+import { applyGaussianSplatStyle } from '$routes/map/utils/three/gaussian-splat-renderer';
 import {
 	getInitialModelAnimationState,
 	isEmbeddedModelAnimationClip,
@@ -41,310 +14,50 @@ import {
 	isVpdModelAnimationClip,
 	isVrmaModelAnimationClip
 } from '$routes/map/utils/three/model-animation';
-import {
-	getIfcAttributes,
-	getModelObjectAttributes,
-	type ModelAttributes
-} from '$routes/map/utils/three/model-attributes';
-import { getModelViewAxisRotationX } from '$routes/map/utils/three/model-axis';
-import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
-import { createEdgeUvGeometry } from '$routes/map/utils/three/model-edge-uv';
-import { createModelHighlightMaterial } from '$routes/map/utils/three/model-highlight';
-import { isLowerDetailLodUrl, resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
-import { getModelPartColor } from '$routes/map/utils/three/model-part-style';
-import {
-	getModelScaleFromHandleDrag,
-	getModelScaleHandles,
-	getOppositeModelScaleHandle,
-	isModelPlacementBoundsHit,
-	keepModelPlacementAboveGround,
-	type ModelPlacementTransform,
-	type ModelScaleHandleKey,
-	preserveModelLocalPointPosition
-} from '$routes/map/utils/three/model-placement-scale';
-import { getEffectiveModelScale, normalizeModelScale } from '$routes/map/utils/three/model-scale';
-import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
-import {
-	calculateModelTransform,
-	type ModelTransform
-} from '$routes/map/utils/three/model-transform';
-import { resolveModelViewFloorY } from '$routes/map/utils/three/model-view-floor';
+import { getIfcAttributes, type ModelAttributes } from '$routes/map/utils/three/model-attributes';
+import { resolveModelLodUrl } from '$routes/map/utils/three/model-lod';
+import type { ModelPlacementTransform } from '$routes/map/utils/three/model-placement-scale';
+import type { ModelTransform } from '$routes/map/utils/three/model-transform';
 import { centerObjectToLocalOrigin } from '$routes/map/utils/three/object-normalization';
-import {
-	createPlacementPreviewObject,
-	disposePlacementPreviewObject,
-	getPlacementPreviewBounds,
-	getPlacementPreviewBoundsKey,
-	renderPlacementPreviewPass
-} from '$routes/map/utils/three/placement-preview';
 import {
 	applyPmxAnimationClip,
 	clearPmxAnimationClip,
 	type LoadedPmxModel,
-	loadPmxAnimationClip,
-	loadPmxModel
+	loadPmxAnimationClip
 } from '$routes/map/utils/three/pmx-loader';
 import {
 	applyPmxMorphState,
 	getPmxMorphCatalog,
 	normalizePmxMorphWeights
 } from '$routes/map/utils/three/pmx-morphs';
-import { finalizeRuntimeModelObject } from '$routes/map/utils/three/runtime-model-finalize';
-import {
-	createVrmLoader,
-	getVrmFromGltf,
-	loadVrmAnimationClip,
-	rotateVrm0IfNeeded
-} from '$routes/map/utils/three/vrm-loader';
+import { loadVrmAnimationClip } from '$routes/map/utils/three/vrm-loader';
 import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
 import { removePmxMorphCatalog, setPmxMorphCatalog } from '$routes/stores/pmx-morphs';
 import type { VRM } from '@pixiv/three-vrm';
 import type { ThreeMmdAnimation } from '@yohawing/three-mmd-loader/three';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
-import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
+import { buildMercatorModelMatrix } from './mercator-model-matrix';
+import { ModelInteractionController } from './model-interaction-controller';
+import { loadWebIfcModule, ModelLoader } from './model-loader';
+import { ModelMaterials } from './model-materials';
+import { ModelPlacementController } from './model-placement-controller';
+import { ModelRenderer } from './model-renderer';
+import { isMeshModelEntry, type LoadedModel } from './model-runtime-types';
 
-const DRACO_DECODER_PATH = resolveStaticAssetPath('/draco/gltf/');
-const KTX2_TRANSCODER_PATH = resolveStaticAssetPath('/basis/');
-const RHINO3DM_LIBRARY_PATH = resolveStaticAssetPath('/rhino3dm/');
-const MODEL_VIEW_FPS_MOVEMENT_SPEED_DIVISOR = 5;
-const MODEL_VIEW_FPS_MIN_MOVEMENT_SPEED = 1;
-const MODEL_VIEW_INITIAL_CAMERA_DISTANCE_SCALE = 0.75;
 const MMD_ANIMATION_FRAME_RATE = 30;
-const normalizeRadians = (angle: number) => Math.atan2(Math.sin(angle), Math.cos(angle));
-let rhino3dmLoaderModulePromise:
-	| Promise<
-		typeof import('three/addons/loaders/3DMLoader.js')
-	>
-	| null = null;
-let ifcLoaderModulePromise: Promise<typeof import('web-ifc-three/IFCLoader.js')> | null = null;
-let webIfcModulePromise: Promise<typeof import('web-ifc')> | null = null;
-let tdsLoaderModulePromise: Promise<typeof import('./tds-loader')> | null = null;
-let colladaLoaderModulePromise:
-	| Promise<
-		typeof import('three/addons/loaders/ColladaLoader.js')
-	>
-	| null = null;
-let fbxLoaderModulePromise: Promise<typeof import('three/addons/loaders/FBXLoader.js')> | null =
-	null;
-let threeMfLoaderModulePromise: Promise<typeof import('three/addons/loaders/3MFLoader.js')> | null =
-	null;
-let amfLoaderModulePromise: Promise<typeof import('three/addons/loaders/AMFLoader.js')> | null =
-	null;
-let stlFormatModulePromise: Promise<typeof import('$routes/map/utils/formats/stl')> | null = null;
-
-const isBinaryGltfBuffer = (buffer: ArrayBuffer) => {
-	if (buffer.byteLength < 4) return false;
-	const magic = new Uint8Array(buffer, 0, 4);
-	return magic[0] === 0x67 && magic[1] === 0x6c && magic[2] === 0x54 && magic[3] === 0x46;
-};
-
-const resolveResourceUrl = (resourceUrls: Record<string, string>, url: string) => {
-	const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
-	const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
-	const fileName = normalizedUrl.split('/').pop() ?? '';
-	return (
-		resourceUrls[normalizedUrl]
-			?? resourceUrls[relativeWithoutRoot]
-			?? resourceUrls[fileName]
-			?? url
-	);
-};
-
-const loadRhino3dmLoaderModule = async () => {
-	if (!rhino3dmLoaderModulePromise) {
-		rhino3dmLoaderModulePromise = import('three/addons/loaders/3DMLoader.js');
-	}
-	return rhino3dmLoaderModulePromise;
-};
-
-const loadIfcLoaderModule = async () => {
-	if (!ifcLoaderModulePromise) {
-		ifcLoaderModulePromise = import('web-ifc-three/IFCLoader.js');
-	}
-	return ifcLoaderModulePromise;
-};
-
-const loadWebIfcModule = async () => {
-	if (!webIfcModulePromise) {
-		webIfcModulePromise = import('web-ifc');
-	}
-	return webIfcModulePromise;
-};
-
-const loadTdsLoaderModule = async () => {
-	if (!tdsLoaderModulePromise) {
-		tdsLoaderModulePromise = import('./tds-loader');
-	}
-	return tdsLoaderModulePromise;
-};
-
-const loadColladaLoaderModule = async () => {
-	if (!colladaLoaderModulePromise) {
-		colladaLoaderModulePromise = import('three/addons/loaders/ColladaLoader.js');
-	}
-	return colladaLoaderModulePromise;
-};
-
-const loadFbxLoaderModule = async () => {
-	if (!fbxLoaderModulePromise) {
-		fbxLoaderModulePromise = import('three/addons/loaders/FBXLoader.js');
-	}
-	return fbxLoaderModulePromise;
-};
-
-const loadThreeMfLoaderModule = async () => {
-	if (!threeMfLoaderModulePromise) {
-		threeMfLoaderModulePromise = import('three/addons/loaders/3MFLoader.js');
-	}
-	return threeMfLoaderModulePromise;
-};
-
-const loadAmfLoaderModule = async () => {
-	if (!amfLoaderModulePromise) {
-		amfLoaderModulePromise = import('three/addons/loaders/AMFLoader.js');
-	}
-	return amfLoaderModulePromise;
-};
-
-const loadStlFormatModule = async () => {
-	if (!stlFormatModulePromise) {
-		stlFormatModulePromise = import('$routes/map/utils/formats/stl');
-	}
-	return stlFormatModulePromise;
-};
-
-interface LoadedModel {
-	entry: ThreeModelEntry;
-	object: THREE.Object3D;
-	transform: ModelTransform;
-	mixer?: THREE.AnimationMixer;
-	actions?: THREE.AnimationAction[];
-	lastClipIndex?: number;
-	lastAnimationLoop?: boolean;
-	lastAnimationPlaying?: boolean;
-	mmd?: {
-		model: LoadedPmxModel;
-		animations: Map<number, ThreeMmdAnimation>;
-		morphCatalog: ReturnType<typeof getPmxMorphCatalog>;
-		morphStateKey?: string;
-		morphOverridesActive?: boolean;
-		activeClipIndex?: number;
-		loadingClipIndex?: number;
-		elapsedSeconds: number;
-		durationSeconds?: number;
-		lastPlaying?: boolean;
-	};
-	vrm?: VRM;
-	vrmAnimation?: {
-		mixer: THREE.AnimationMixer;
-		clips: Map<number, THREE.AnimationClip>;
-		actions: Map<number, THREE.AnimationAction>;
-		activeClipIndex?: number;
-		activeAction?: THREE.AnimationAction;
-		loadingClipIndex?: number;
-		lastLoop?: boolean;
-		lastPlaying?: boolean;
-	};
-	lod?: {
-		activeUrl: string;
-		failedUrl?: string;
-		pendingLoad?: Promise<void>;
-		pendingUrl?: string;
-	};
-	resolveAttributes?: (hit: THREE.Intersection<THREE.Object3D>) => Promise<ModelAttributes>;
-}
-
-const isMeshModelEntry = (entry: ThreeModelEntry): entry is MeshEntry<MeshStyle> =>
-	entry.style.type === 'mesh';
-
-const isGaussianSplatEntry = (entry: ThreeModelEntry): entry is GaussianSplatEntry =>
-	entry.style.type === 'gaussian-splat';
 
 const getMmdAnimationDurationSeconds = (animation: ThreeMmdAnimation) => {
 	const maxFrame = animation.animation.kind === 'vmd' ? animation.animation.metadata.maxFrame : 0;
 	return maxFrame > 0 ? maxFrame / MMD_ANIMATION_FRAME_RATE : undefined;
 };
 
-export interface PickedModelFeature {
-	entryId: string;
-	objectId: string;
-	objectName: string;
-	isLowerDetailLod?: false;
-	propId?: string;
-	attributes: ModelAttributes;
-	part?: ModelPartData;
-}
-
-export interface PickedLowerDetailLod {
-	entryId: string;
-	isLowerDetailLod: true;
-}
-
-interface ModelHighlight {
-	mesh: THREE.Mesh;
-	fill: THREE.Mesh;
-	outline?: THREE.LineSegments;
-	geometry: THREE.BufferGeometry;
-	expressId?: number;
-}
-
-export interface ModelViewCameraOptions {
-	type: 'orthographic' | 'perspective';
-	position: [number, number, number];
-	direction: [number, number, number];
-	up: [number, number, number];
-	viewToWorldScale?: number;
-	fieldOfView?: number;
-}
-
-export interface ModelViewSession {
-	camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
-	canvas: HTMLCanvasElement;
-	container: HTMLElement;
-	movementSpeed: number;
-	getTarget: () => THREE.Vector3;
-	resetView: () => void;
-	resize: () => void;
-}
-
-interface ActiveModelView {
-	entryIds: Set<string>;
-	camera: THREE.PerspectiveCamera | THREE.OrthographicCamera;
-	target: THREE.Vector3;
-	floorGrid: THREE.GridHelper;
-	highlightVisibility: Map<THREE.Object3D, boolean>;
-	axisWrappers: Array<{
-		object: THREE.Object3D;
-		parent: THREE.Object3D;
-		wrapper: THREE.Group;
-	}>;
-	modelGroupVisible: boolean;
-	previewVisible: boolean;
-}
-
-const CLICKABLE_MODEL_FORMATS = new Set<MeshEntry<MeshStyle>['format']['type']>([
-	'fbx',
-	'vrml',
-	'obj',
-	'gltf',
-	'vrm',
-	'3ds',
-	'dae',
-	'3dm',
-	'drc',
-	'3mf',
-	'amf',
-	'stl',
-	'ifc',
-	'pmx',
-	'usd'
-]);
+export type {
+	ModelViewCameraOptions,
+	ModelViewSession,
+	PickedLowerDetailLod,
+	PickedModelFeature
+} from './model-interaction-controller';
 const IFC_ATTRIBUTE_BATCH_SIZE = 32;
 
 const getIfcPartColorProfile = (entry: MeshEntry<MeshStyle>): IfcPartColorProfile | undefined =>
@@ -354,99 +67,58 @@ const getIfcPartColorProfile = (entry: MeshEntry<MeshStyle>): IfcPartColorProfil
 
 /**
  * Three.js レイヤーマネージャー
- * scene/camera/renderer は一度だけ初期化し、モデルの追加/削除のみを行う
+ * モデル登録とアニメーションを管理し、読み込み・描画・操作のライフサイクルをつなぐ。
  */
 export class ThreeJsLayerManager {
-	private camera: THREE.Camera | null = null;
-	private scene: THREE.Scene | null = null;
-	private modelGroup: THREE.Group | null = null;
-	private previewModelGroup: THREE.Group | null = null;
-	private renderer: THREE.WebGLRenderer | null = null;
-	private placementLabelRenderer: CSS2DRenderer | null = null;
-	private placementLabelSize = { width: 0, height: 0 };
-	private placementTransformChangeHandler: ((transform: ModelPlacementTransform) => void) | null =
-		null;
-	private placementMoveDrag: {
-		pointerId: number;
-		startClientX: number;
-		startClientY: number;
-		startAnchorX: number;
-		startAnchorY: number;
-		startTransform: ModelPlacementTransform;
-		dragPanWasEnabled: boolean;
-		previousCursor: string;
-	} | null = null;
-	private overlayRenderTarget: THREE.WebGLRenderTarget | null = null;
-	private overlayScene: THREE.Scene | null = null;
-	private overlayCamera: THREE.OrthographicCamera | null = null;
-	private map: MapLibreMap | null = null;
-	private loadedModels: Map<string, LoadedModel> = new Map();
-	private dracoLoader = new DRACOLoader();
-	private ktx2Loader = new KTX2Loader();
-	private loader = new GLTFLoader();
-	private isInitialized = false;
-	private colorMapManager = new ColorMapManager();
-	private lastRenderTimeMs: number | null = null;
-	private repaintBurstHandle: number | null = null;
-	private lastMapProjectionMatrix: THREE.Matrix4 | null = null;
-	private selectedModelHighlights: ModelHighlight[] = [];
-	private ifcPartAttributeLoads = new Map<string, Promise<number>>();
-	private highDetailModelLoads = new Set<string>();
-	private activeModelView: ActiveModelView | null = null;
-	private placementPreview: {
-		entryId: string;
-		object: THREE.Group;
-		handles: THREE.Group;
-		localBounds: ReturnType<typeof getPlacementPreviewBounds>;
-		transform: ModelTransform;
-		boundsKey: string;
-		styleTransform: ModelPlacementTransform;
-	} | null = null;
+	private readonly modelRenderer = new ModelRenderer();
+	private readonly placement = new ModelPlacementController({
+		isModelViewActive: () => this.activeModelView !== null,
+		onModelTransform: (entryId, style) => this.setModelTransform(entryId, style)
+	});
+	private calculateTransform = (style: ModelTransformStyle): ModelTransform => ({
+		matrix: buildMercatorModelMatrix(style.transform, Boolean(this.map?.getTerrain()))
+	});
 
-	constructor() {
-		this.dracoLoader.setDecoderPath(DRACO_DECODER_PATH);
-		this.ktx2Loader.setTranscoderPath(KTX2_TRANSCODER_PATH);
-		this.loader.setDRACOLoader(this.dracoLoader);
-		this.loader.setKTX2Loader(this.ktx2Loader);
+	private readonly modelLoader = new ModelLoader();
+	private readonly materials = new ModelMaterials();
+	private get camera() {
+		return this.modelRenderer.camera;
+	}
+	private get scene() {
+		return this.modelRenderer.scene;
+	}
+	private get modelGroup() {
+		return this.modelRenderer.modelGroup;
+	}
+	private get previewModelGroup() {
+		return this.modelRenderer.previewModelGroup;
+	}
+	private get renderer() {
+		return this.modelRenderer.renderer;
 	}
 
-	private createGltfLoader = (manager?: THREE.LoadingManager) => {
-		const loader = new GLTFLoader(manager);
-		loader.setDRACOLoader(this.dracoLoader);
-		loader.setKTX2Loader(this.ktx2Loader);
-		return loader;
-	};
+	private map: MapLibreMap | null = null;
+	private loadedModels: Map<string, LoadedModel> = new Map();
+	private pendingModelLoads = new Map<string, { token: symbol; type: 'main' | 'preview'; }>();
+	private readonly interaction = new ModelInteractionController(
+		this.modelRenderer,
+		this.loadedModels
+	);
+
+	private lastRenderTimeMs: number | null = null;
+	private repaintBurstHandle: number | null = null;
+
+	private ifcPartAttributeLoads = new Map<string, Promise<number>>();
+	private highDetailModelLoads = new Set<string>();
+	private get activeModelView() {
+		return this.interaction.view;
+	}
 
 	private getModelLodUrl = (entry: MeshEntry<MeshStyle>) => {
 		return resolveModelLodUrl(
 			entry.format.url,
 			entry.format.lods,
 			this.map?.getZoom() ?? Number.POSITIVE_INFINITY
-		);
-	};
-
-	private isLowerDetailLod = (loaded: LoadedModel) => {
-		if (
-			!isMeshModelEntry(loaded.entry)
-			|| loaded.entry.format.type !== 'gltf'
-			|| !loaded.entry.format.lods?.length
-		) {
-			return false;
-		}
-
-		return isLowerDetailLodUrl(loaded.lod?.activeUrl, loaded.entry.format.url);
-	};
-
-	private loadGltf = (url: string) => {
-		return new Promise<{ animations: THREE.AnimationClip[]; scene: THREE.Group; }>(
-			(resolve, reject) => {
-				this.loader.load(
-					url,
-					(gltf) => resolve({ animations: gltf.animations, scene: gltf.scene }),
-					undefined,
-					(error) => reject(error instanceof Error ? error : new Error(String(error)))
-				);
-			}
 		);
 	};
 
@@ -465,8 +137,8 @@ export class ThreeJsLayerManager {
 			return loaded.lod.pendingLoad ?? Promise.resolve();
 		}
 
-		const pendingLoad = this.loadGltf(nextUrl)
-			.then(({ animations, scene }) => {
+		const pendingLoad = this.modelLoader.load(loaded.entry, { lodUrl: nextUrl })
+			.then(({ animations, object: scene }) => {
 				const current = this.loadedModels.get(loaded.entry.id);
 				if (current !== loaded || current.lod?.pendingUrl !== nextUrl) {
 					this.disposeModelObject(scene);
@@ -481,21 +153,12 @@ export class ThreeJsLayerManager {
 					return;
 				}
 
-				finalizeRuntimeModelObject(scene, {
-					formatType: loaded.entry.format.type,
-					georeference: loaded.entry.format.georeference,
-					normalizeToLocalOrigin: loaded.entry.format.normalizeToLocalOrigin,
-					upAxis: loaded.entry.format.upAxis
-				});
 				this.applyStyleToObject(scene, loaded.entry.style, loaded.entry.format.type);
 				scene.visible = previousObject.visible;
 				scene.userData.entryId = loaded.entry.id;
 
 				if (
-					this.selectedModelHighlights.some(
-						(highlight) =>
-							previousObject.getObjectById(highlight.mesh.id) === highlight.mesh
-					)
+					this.interaction.hasHighlightIn(previousObject)
 				) {
 					this.clearModelHighlight();
 				}
@@ -548,1001 +211,34 @@ export class ThreeJsLayerManager {
 		});
 	};
 
-	private createEdgeOverlayMaterial = (style: MeshStyle): THREE.ShaderMaterial => {
-		const edgeUniforms = resolveMeshEdgeUniforms(style);
-		const material = new THREE.ShaderMaterial({
-			uniforms: {
-				uEdgeColor: { value: edgeUniforms.color },
-				uEdgeThickness: { value: edgeUniforms.thickness },
-				uSilhouetteWidthPx: { value: edgeUniforms.silhouetteWidthPx },
-				uEdgeOpacity: { value: edgeUniforms.opacity }
-			},
-			vertexShader: `
-				varying vec2 vUv;
-				varying vec3 vModelPosition;
-				varying vec3 vViewNormal;
-				varying vec3 vViewPosition;
-				#include <morphtarget_pars_vertex>
-				#include <skinning_pars_vertex>
-
-				void main() {
-					#include <beginnormal_vertex>
-					#include <morphnormal_vertex>
-					#include <skinbase_vertex>
-					#include <skinnormal_vertex>
-					vec3 transformed = vec3(position);
-					#include <morphtarget_vertex>
-					#include <skinning_vertex>
-					vUv = uv;
-					vModelPosition = transformed;
-					vViewNormal = normalize(normalMatrix * objectNormal);
-					vec4 viewPosition = modelViewMatrix * vec4(transformed, 1.0);
-					vViewPosition = viewPosition.xyz;
-					gl_Position = projectionMatrix * viewPosition;
-				}
-			`,
-			fragmentShader: `
-				uniform vec3 uEdgeColor;
-				uniform float uEdgeThickness;
-				uniform float uSilhouetteWidthPx;
-				uniform float uEdgeOpacity;
-				varying vec2 vUv;
-				varying vec3 vModelPosition;
-				varying vec3 vViewNormal;
-				varying vec3 vViewPosition;
-
-				float edgeDistanceInModelSpace(vec2 uv, vec3 modelPosition) {
-					vec2 uvDx = dFdx(uv);
-					vec2 uvDy = dFdy(uv);
-					float determinant = uvDx.x * uvDy.y - uvDx.y * uvDy.x;
-					if (abs(determinant) < 0.000001) return 1000000.0;
-
-					// UV 1.0あたりのモデル座標上の長さを、画面微分から接線として復元する。
-					vec3 positionDx = dFdx(modelPosition);
-					vec3 positionDy = dFdy(modelPosition);
-					vec3 tangentU = (positionDx * uvDy.y - positionDy * uvDx.y) / determinant;
-					vec3 tangentV = (positionDy * uvDx.x - positionDx * uvDy.x) / determinant;
-					vec2 edgeDistanceUv = abs(fract(uv - 0.5) - 0.5);
-					return min(
-						edgeDistanceUv.x * length(tangentU),
-						edgeDistanceUv.y * length(tangentV)
-					);
-				}
-
-				float silhouetteAlpha() {
-					vec3 normalDirection = normalize(vViewNormal);
-					vec3 viewDirection = normalize(-vViewPosition);
-					float facing = abs(dot(normalDirection, viewDirection));
-					float pixelWidth = max(fwidth(facing), 0.00001);
-					return 1.0 - smoothstep(0.0, pixelWidth * uSilhouetteWidthPx, facing);
-				}
-
-				void main() {
-					float distanceToEdge = edgeDistanceInModelSpace(vUv, vModelPosition);
-					// fwidthは太さの決定には使わず、境界のアンチエイリアス幅だけに使う。
-					float antialiasWidth = max(fwidth(distanceToEdge), 0.00001);
-					float uvEdgeAlpha = 1.0 - smoothstep(
-						uEdgeThickness - antialiasWidth,
-						uEdgeThickness + antialiasWidth,
-						distanceToEdge
-					);
-					float alpha = max(uvEdgeAlpha, silhouetteAlpha());
-					if (alpha <= 0.001) discard;
-					gl_FragColor = vec4(uEdgeColor, alpha * uEdgeOpacity);
-				}
-			`,
-			transparent: true,
-			// 面や他モデルに隠れない、最前面用の描画パスとして扱う。
-			depthTest: false,
-			depthWrite: false,
-			side: THREE.DoubleSide
-		});
-		material.userData.morivisEdgeOverlayMaterial = true;
-		return material;
-	};
-
-	private updateEdgeOverlayMaterial = (material: THREE.Material, style: MeshStyle) => {
-		if (
-			!(material instanceof THREE.ShaderMaterial)
-			|| material.userData.morivisEdgeOverlayMaterial !== true
-		) {
-			return false;
-		}
-
-		const edgeUniforms = resolveMeshEdgeUniforms(style);
-		material.uniforms.uEdgeColor.value.copy(edgeUniforms.color);
-		material.uniforms.uEdgeThickness.value = edgeUniforms.thickness;
-		material.uniforms.uSilhouetteWidthPx.value = edgeUniforms.silhouetteWidthPx;
-		material.uniforms.uEdgeOpacity.value = edgeUniforms.opacity;
-		return true;
-	};
-
-	private createEdgeOverlay = (
-		mesh: THREE.Mesh,
-		materials: THREE.Material[],
-		edgeGeometry: THREE.BufferGeometry,
-		usesGeneratedUv: boolean
-	) => {
-		const sourceSkinnedMesh = mesh as THREE.SkinnedMesh;
-		const overlayMaterial = Array.isArray(mesh.material) ? materials : materials[0];
-		let overlay: THREE.Mesh;
-		if (sourceSkinnedMesh.isSkinnedMesh) {
-			const skinnedOverlay = new THREE.SkinnedMesh(edgeGeometry, overlayMaterial);
-			skinnedOverlay.bindMode = sourceSkinnedMesh.bindMode;
-			skinnedOverlay.bind(sourceSkinnedMesh.skeleton, sourceSkinnedMesh.bindMatrix);
-			skinnedOverlay.morphTargetInfluences = sourceSkinnedMesh.morphTargetInfluences;
-			skinnedOverlay.morphTargetDictionary = sourceSkinnedMesh.morphTargetDictionary;
-			overlay = skinnedOverlay;
-		} else {
-			overlay = new THREE.Mesh(edgeGeometry, overlayMaterial);
-			overlay.morphTargetInfluences = mesh.morphTargetInfluences;
-			overlay.morphTargetDictionary = mesh.morphTargetDictionary;
-		}
-		overlay.name = 'morivis-uv-edge-overlay';
-		overlay.userData.morivisEdgeOverlay = true;
-		overlay.userData.morivisGeneratedEdgeUv = usesGeneratedUv;
-		overlay.raycast = () => undefined;
-		overlay.renderOrder = 10_000;
-		mesh.add(overlay);
-		return overlay;
-	};
-
-	private disposeEdgeOverlay = (mesh: THREE.Mesh, overlay: THREE.Mesh) => {
-		mesh.remove(overlay);
-		const materials = Array.isArray(overlay.material) ? overlay.material : [overlay.material];
-		materials.forEach((material) => material.dispose());
-		if (overlay.userData.morivisGeneratedEdgeUv === true) {
-			overlay.geometry.dispose();
-		}
-	};
-
-	private syncEdgeOverlay = (mesh: THREE.Mesh, style: MeshStyle) => {
-		const overlay = mesh.children.find(
-			(child) => child.userData.morivisEdgeOverlay === true
-		) as THREE.Mesh | undefined;
-		const edgeGeometry = !overlay && style.edge?.enabled
-			? createEdgeUvGeometry(mesh.geometry)
-			: null;
-		const enabled = Boolean(style.edge?.enabled) && (overlay != null || edgeGeometry != null);
-		if (!enabled) {
-			if (!overlay) return;
-			this.disposeEdgeOverlay(mesh, overlay);
-			return;
-		}
-
-		const materialCount = Array.isArray(mesh.material) ? mesh.material.length : 1;
-		if (!overlay) {
-			if (!edgeGeometry) return;
-			const materials = Array.from(
-				{ length: materialCount },
-				() => this.createEdgeOverlayMaterial(style)
-			);
-			this.createEdgeOverlay(mesh, materials, edgeGeometry.geometry, edgeGeometry.generated);
-			return;
-		}
-
-		const currentMaterials = Array.isArray(overlay.material)
-			? overlay.material
-			: [overlay.material];
-		if (
-			currentMaterials.length === materialCount
-			&& currentMaterials.every((material) => this.updateEdgeOverlayMaterial(material, style))
-		) {
-			return;
-		}
-
-		currentMaterials.forEach((material) => material.dispose());
-		const nextMaterials = Array.from(
-			{ length: materialCount },
-			() => this.createEdgeOverlayMaterial(style)
-		);
-		overlay.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
-	};
-
-	private createShaderMaterial = (
-		sourceMaterial: THREE.Material,
-		style: MeshStyle,
-		objectPartColor?: string,
-		useIndexedPartColors = false
-	): THREE.ShaderMaterial => {
-		const shadingUniforms = resolveMeshShadingUniforms(style);
-		const sourceAlpha = minecraftMaterialState(sourceMaterial, style.opacity);
-		const objectPartIsTransparent = objectPartColor === 'transparent';
-		const baseColor = new THREE.Color(
-			objectPartIsTransparent ? style.color : objectPartColor ?? style.color
-		);
-		if (
-			objectPartColor == null
-			&& 'color' in sourceMaterial
-			&& sourceMaterial.color instanceof THREE.Color
-		) {
-			baseColor.multiply(sourceMaterial.color);
-		}
-
-		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
-			? sourceMaterial.map
-			: null;
-		const colorRamp = style.heightColorRamp;
-		const [colorRampMin, colorRampMax] = getAdjustableRangeValue(
-			colorRamp?.range,
-			colorRamp?.min,
-			colorRamp?.max,
-			0,
-			1
-		);
-		const [colorRampSourceMin, colorRampSourceMax] = getAdjustableRangeDomain(
-			colorRamp?.range,
-			colorRamp?.sourceMin ?? colorRamp?.min,
-			colorRamp?.sourceMax ?? colorRamp?.max,
-			0,
-			1
-		);
-		const colorRampArray = colorRamp?.enabled
-			? this.colorMapManager.createColorArray(colorRamp.colorMap)
-			: null;
-		const colorRampRgbaArray = colorRampArray != null
-			? new Uint8Array(
-				Array.from({ length: 256 * 4 }, (_, i) => {
-					const colorIndex = Math.floor(i / 4);
-					const channel = i % 4;
-					if (channel === 3) return 255;
-					return colorRampArray[colorIndex * 3 + channel] ?? 0;
-				})
-			)
-			: null;
-		const colorRampTexture = colorRamp?.enabled && colorRampMax > colorRampMin
-			? new THREE.DataTexture(
-				colorRampRgbaArray,
-				1,
-				256,
-				THREE.RGBAFormat,
-				THREE.UnsignedByteType
-			)
-			: null;
-		const partColorTexture = useIndexedPartColors ? this.createPartColorTexture(style) : null;
-		if (colorRampTexture) {
-			colorRampTexture.colorSpace = THREE.SRGBColorSpace;
-			colorRampTexture.minFilter = THREE.LinearFilter;
-			colorRampTexture.magFilter = THREE.LinearFilter;
-			colorRampTexture.wrapS = THREE.ClampToEdgeWrapping;
-			colorRampTexture.wrapT = THREE.ClampToEdgeWrapping;
-			colorRampTexture.generateMipmaps = false;
-			colorRampTexture.flipY = false;
-			colorRampTexture.unpackAlignment = 1;
-			colorRampTexture.needsUpdate = true;
-		}
-
-		const material = new THREE.ShaderMaterial({
-			vertexColors: 'vertexColors' in sourceMaterial && sourceMaterial.vertexColors === true,
-			uniforms: {
-				uBaseColor: { value: baseColor },
-				uOpacity: { value: style.opacity },
-				uSourceOpacity: { value: sourceAlpha.sourceOpacity },
-				uSourceAlphaTest: { value: sourceAlpha.alphaTest },
-				uAmbientStrength: { value: shadingUniforms.ambientStrength },
-				uShadeStrength: { value: shadingUniforms.shadeStrength },
-				uLightDirection: { value: shadingUniforms.lightDirection },
-				uMap: { value: map },
-				uUseMap: { value: Boolean(map) },
-				uColorRamp: { value: colorRampTexture },
-				uUseHeightColorRamp: { value: Boolean(colorRampTexture) },
-				uUseObjectPartColor: { value: objectPartColor != null },
-				uObjectPartOpacity: { value: objectPartIsTransparent ? 0 : 1 },
-				uUsePartColors: { value: useIndexedPartColors },
-				uPartColorPalette: { value: partColorTexture },
-				uPartColorPaletteSize: { value: partColorTexture?.image.width ?? 1 },
-				uHeightRampMin: { value: colorRampMin },
-				uHeightRampMax: { value: colorRampMax },
-				uHeightRampSourceMin: { value: colorRampSourceMin },
-				uHeightRampSourceMax: { value: colorRampSourceMax }
-			},
-			vertexShader: `
-				attribute float morivisPartColorIndex;
-				varying vec3 vNormal;
-				centroid varying vec2 vUv;
-				varying float vPartColorIndex;
-				#include <morphtarget_pars_vertex>
-				#include <skinning_pars_vertex>
-				#include <color_pars_vertex>
-
-				void main() {
-					#include <color_vertex>
-					vec3 objectNormal = vec3(normal);
-					#include <morphnormal_vertex>
-					#include <skinbase_vertex>
-					#include <skinnormal_vertex>
-					vNormal = normalize(normalMatrix * objectNormal);
-					vec3 transformed = vec3(position);
-					#include <morphtarget_vertex>
-					#include <skinning_vertex>
-					vUv = uv;
-					vPartColorIndex = morivisPartColorIndex;
-					gl_Position = projectionMatrix * modelViewMatrix * vec4(transformed, 1.0);
-				}
-			`,
-			fragmentShader: `
-				uniform vec3 uBaseColor;
-				uniform float uOpacity;
-				uniform float uSourceOpacity;
-				uniform float uSourceAlphaTest;
-				uniform float uAmbientStrength;
-				uniform float uShadeStrength;
-				uniform vec3 uLightDirection;
-				uniform sampler2D uMap;
-				uniform bool uUseMap;
-				uniform sampler2D uColorRamp;
-				uniform bool uUseHeightColorRamp;
-				uniform bool uUseObjectPartColor;
-				uniform float uObjectPartOpacity;
-				uniform bool uUsePartColors;
-				uniform sampler2D uPartColorPalette;
-				uniform float uPartColorPaletteSize;
-				uniform float uHeightRampMin;
-				uniform float uHeightRampMax;
-				uniform float uHeightRampSourceMin;
-				uniform float uHeightRampSourceMax;
-
-				varying vec3 vNormal;
-				// MSAAの画素中心が微小な面の外にある場合も、アトラスの隣の画像を拾わない。
-				centroid varying vec2 vUv;
-				varying float vPartColorIndex;
-				#include <color_pars_fragment>
-
-				void main() {
-					vec4 texel = uUseMap ? texture2D(uMap, vUv) : vec4(1.0);
-					#if defined( USE_COLOR_ALPHA )
-						texel *= vColor;
-					#elif defined( USE_COLOR )
-						texel.rgb *= vColor;
-					#endif
-					if (texel.a < uSourceAlphaTest) discard;
-					float sourceDenominator = max(uHeightRampSourceMax - uHeightRampSourceMin, 0.000001);
-					float selectedMin = clamp(
-						(uHeightRampMin - uHeightRampSourceMin) / sourceDenominator,
-						0.0,
-						1.0
-					);
-					float selectedMax = clamp(
-						(uHeightRampMax - uHeightRampSourceMin) / sourceDenominator,
-						0.0,
-						1.0
-					);
-					float rampDenominator = max(selectedMax - selectedMin, 0.000001);
-					float rampValue = clamp((vUv.y - selectedMin) / rampDenominator, 0.0, 1.0);
-					vec3 rampColor = texture2D(uColorRamp, vec2(0.5, rampValue)).rgb;
-					vec3 partColor = texture2D(
-						uPartColorPalette,
-						vec2((vPartColorIndex + 0.5) / uPartColorPaletteSize, 0.5)
-					).rgb;
-					vec3 surfaceColor = uUsePartColors
-						? partColor
-						: (
-							uUseObjectPartColor
-								? uBaseColor
-								: (uUseHeightColorRamp ? rampColor : (uBaseColor * texel.rgb))
-						);
-					vec3 normalDir = normalize(vNormal);
-					float diffuse = max(dot(normalDir, normalize(uLightDirection)), 0.0);
-					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
-					vec3 shadedColor = surfaceColor * shade;
-					float objectPartOpacity = uUseObjectPartColor ? uObjectPartOpacity : 1.0;
-					float alpha = texel.a * uOpacity * uSourceOpacity * objectPartOpacity;
-
-					if (alpha <= 0.001) discard;
-
-					gl_FragColor = vec4(shadedColor, alpha);
-					#include <colorspace_fragment>
-				}
-			`,
-			transparent: sourceAlpha.transparent,
-			depthWrite: sourceAlpha.depthWrite,
-			wireframe: style.wireframe,
-			side: THREE.DoubleSide
-		});
-		material.userData.morivisShaderShading = true;
-		material.userData.morivisMinecraftMaterial = sourceAlpha.enabled;
-		material.userData.colorRampTexture = colorRampTexture;
-		material.userData.morivisPartColorPalette = partColorTexture;
-		return material;
-	};
-
-	private getPartPaletteColors = (style: MeshStyle) => {
-		const expression = style.partColors?.expressions.find(
-			(candidate) => candidate.key === style.partColors?.key
-		);
-		if (!expression) return [style.color];
-		if (expression.type === 'match') {
-			return [expression.noData?.value ?? style.color, ...expression.mapping.values];
-		}
-		if (expression.type === 'step') {
-			return [style.color, ...generateNumberAndColorMap(expression.mapping).values];
-		}
-		return [style.color];
-	};
-
-	private createPartColorTexture = (style: MeshStyle) => {
-		if (!style.partColors?.show) return null;
-		const colors = this.getPartPaletteColors(style);
-		const data = new Uint8Array(colors.length * 4);
-		colors.forEach((color, index) => {
-			const value = new THREE.Color(color);
-			data.set([value.r * 255, value.g * 255, value.b * 255, 255], index * 4);
-		});
-		const texture = new THREE.DataTexture(data, colors.length, 1, THREE.RGBAFormat);
-		// THREE.Colorでリニア化した値を格納しているため、サンプリング時のsRGB再変換を避ける。
-		texture.colorSpace = THREE.NoColorSpace;
-		texture.minFilter = THREE.NearestFilter;
-		texture.magFilter = THREE.NearestFilter;
-		texture.generateMipmaps = false;
-		texture.needsUpdate = true;
-		return texture;
-	};
-
-	private updatePartColorPalette = (material: THREE.Material, style: MeshStyle) => {
-		if (!(material instanceof THREE.ShaderMaterial)) return false;
-		const texture = material.userData.morivisPartColorPalette;
-		if (!(texture instanceof THREE.DataTexture)) return false;
-		const colors = this.getPartPaletteColors(style);
-		if (texture.image.width !== colors.length) return false;
-		const data = texture.image.data as Uint8Array;
-		colors.forEach((color, index) => {
-			const value = new THREE.Color(color);
-			data.set([value.r * 255, value.g * 255, value.b * 255, 255], index * 4);
-		});
-		texture.needsUpdate = true;
-		material.uniforms.uOpacity.value = style.opacity;
-		material.uniforms.uUsePartColors.value = Boolean(style.partColors?.show);
-		material.wireframe = style.wireframe;
-		return true;
-	};
-
-	private updateShaderMaterialUniforms = (
-		sourceMaterial: THREE.Material,
-		material: THREE.Material,
-		style: MeshStyle,
-		objectPartColor?: string,
-		useIndexedPartColors = false
-	) => {
-		if (
-			!(material instanceof THREE.ShaderMaterial)
-			|| material.userData.morivisShaderShading !== true
-		) {
-			return false;
-		}
-
-		const shadingUniforms = resolveMeshShadingUniforms(style);
-		const objectPartIsTransparent = objectPartColor === 'transparent';
-		const baseColor = new THREE.Color(
-			objectPartIsTransparent ? style.color : objectPartColor ?? style.color
-		);
-		if (
-			objectPartColor == null
-			&& 'color' in sourceMaterial
-			&& sourceMaterial.color instanceof THREE.Color
-		) {
-			baseColor.multiply(sourceMaterial.color);
-		}
-		const map = 'map' in sourceMaterial && sourceMaterial.map instanceof THREE.Texture
-			? sourceMaterial.map
-			: null;
-		material.uniforms.uBaseColor.value.copy(baseColor);
-		material.uniforms.uOpacity.value = style.opacity;
-		const sourceAlpha = minecraftMaterialState(sourceMaterial, style.opacity);
-		material.uniforms.uSourceOpacity.value = sourceAlpha.sourceOpacity;
-		material.uniforms.uSourceAlphaTest.value = sourceAlpha.alphaTest;
-		material.transparent = sourceAlpha.transparent;
-		material.depthWrite = sourceAlpha.depthWrite;
-		material.uniforms.uAmbientStrength.value = shadingUniforms.ambientStrength;
-		material.uniforms.uShadeStrength.value = shadingUniforms.shadeStrength;
-		material.uniforms.uLightDirection.value.copy(shadingUniforms.lightDirection);
-		material.uniforms.uMap.value = map;
-		material.uniforms.uUseMap.value = Boolean(map);
-		material.uniforms.uUseObjectPartColor.value = objectPartColor != null;
-		material.uniforms.uObjectPartOpacity.value = objectPartIsTransparent ? 0 : 1;
-		material.uniforms.uUsePartColors.value = useIndexedPartColors;
-		material.wireframe = style.wireframe;
-		return true;
-	};
-
-	private applyStyleToMesh = (
-		mesh: THREE.Mesh,
-		style: MeshStyle,
-		_formatType?: MeshEntry<MeshStyle>['format']['type']
-	) => {
-		const currentMaterials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-		const originalMaterials = (mesh.userData.originalMaterials as THREE.Material[] | undefined)
-			?? currentMaterials.map((material) =>
-				typeof material.clone === 'function'
-					? material.clone()
-					: new THREE.MeshBasicMaterial()
-			);
-
-		if (!mesh.userData.originalMaterials) {
-			mesh.userData.originalMaterials = originalMaterials;
-		}
-
-		const usePartColorMaterial = Boolean(style.partColors?.show)
-			&& mesh.geometry.getAttribute('morivisPartColorIndex') != null;
-		const objectPartColor = usePartColorMaterial
-			? undefined
-			: getModelPartColor(style.partColors, getModelObjectAttributes(mesh));
-		this.syncEdgeOverlay(mesh, style);
-		const hasExistingShaderMaterials = currentMaterials.every((material, index) =>
-			this.updateShaderMaterialUniforms(
-				originalMaterials[index],
-				material,
-				style,
-				objectPartColor,
-				usePartColorMaterial
-			)
-		);
-		if (hasExistingShaderMaterials && !style.heightColorRamp?.enabled) {
-			currentMaterials.forEach((material) => {
-				const shaderMaterial = material as THREE.ShaderMaterial;
-				shaderMaterial.uniforms.uUseHeightColorRamp.value = false;
-			});
-			if (
-				!usePartColorMaterial
-				|| currentMaterials.every((material) =>
-					this.updatePartColorPalette(material, style)
-				)
-			) {
-				currentMaterials.forEach((material) => {
-					const shaderMaterial = material as THREE.ShaderMaterial;
-					shaderMaterial.uniforms.uUsePartColors.value = usePartColorMaterial;
-				});
-				return;
-			}
-		}
-
-		// 陰影の有無で材質種別を変えると、部材数の多いモデルでGPUプログラムの再構築と切替が増える。
-		// 常に同じシェーダーを使い、通常の陰影切替はuniform値だけを更新する。
-		const nextMaterials = originalMaterials.map((sourceMaterial) =>
-			this.createShaderMaterial(
-				sourceMaterial,
-				style,
-				objectPartColor,
-				usePartColorMaterial
-			)
-		);
-
-		mesh.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
-		currentMaterials.forEach((material) => {
-			const colorRampTexture = material.userData?.colorRampTexture;
-			if (colorRampTexture instanceof THREE.Texture) {
-				colorRampTexture.dispose();
-			}
-			if (typeof material.dispose === 'function') material.dispose();
-		});
-	};
-
 	private applyStyleToObject = (
 		object: THREE.Object3D,
 		style: MeshStyle,
 		formatType?: MeshEntry<MeshStyle>['format']['type']
 	) => {
-		if (formatType === 'fbx') {
-			setFbxCurveVisibility(object, style.showFbxCurves !== false);
-			setFbxTextStyle(object, style.showFbxText !== false, style.opacity);
-		}
-		object.traverse((child) => {
-			if (
-				(child as THREE.Mesh).isMesh
-				&& !child.userData.morivisSelectionHighlight
-				&& !child.userData.morivisEdgeOverlay
-				&& !child.userData.morivisFbxText
-			) {
-				this.applyStyleToMesh(child as THREE.Mesh, style, formatType);
-			}
-		});
+		this.materials.applyStyleToObject(object, style, formatType);
 		this.map?.triggerRepaint();
 	};
 
-	private applyIfcPartColors = async (object: THREE.Object3D, style: MeshStyle) => {
-		const ifcModel = object as THREE.Object3D & {
-			modelID?: number;
-			ifcManager?: {
-				getIfcType: (modelId: number, expressId: number) => string | Promise<string>;
-			} | null;
-		};
-		if (ifcModel.modelID == null || !ifcModel.ifcManager) return;
-		style.partColors ??= { key: 'IFC クラス', show: false, expressions: [] };
-		if (!style.partColors.show) return;
+	private applyIfcPartColors = (object: THREE.Object3D, style: MeshStyle) =>
+		this.materials.applyIfcPartColors(object, style);
 
-		const expressIds = new Set<number>();
-		object.traverse((child) => {
-			if (!(child as THREE.Mesh).isMesh) return;
-			const attribute = (child as THREE.Mesh).geometry.getAttribute('expressID');
-			for (let index = 0; attribute && index < attribute.count; index += 1) {
-				expressIds.add(attribute.getX(index));
-			}
-		});
-		const cachedClasses = object.userData.morivisIfcClasses as Map<number, string> | undefined;
-		const classesByExpressId = cachedClasses ?? new Map<number, string>();
-		if (!cachedClasses) {
-			const ids = Array.from(expressIds);
-			for (let offset = 0; offset < ids.length; offset += IFC_ATTRIBUTE_BATCH_SIZE) {
-				const results = await Promise.allSettled(
-					ids.slice(offset, offset + IFC_ATTRIBUTE_BATCH_SIZE).map(async (expressId) => {
-						return {
-							expressId,
-							ifcType: await ifcModel.ifcManager!.getIfcType(
-								ifcModel.modelID!,
-								expressId
-							)
-						};
-					})
-				);
-				results.forEach((result) => {
-					if (result.status !== 'fulfilled') return;
-					classesByExpressId.set(result.value.expressId, result.value.ifcType);
-				});
-			}
-			object.userData.morivisIfcClasses = classesByExpressId;
-		}
-		if (style.partColors.expressions.length === 0) {
-			const expressions = buildVectorTileColorExpressions({
-				id: 'ifc-parts',
-				fields: {},
-				attributes: [
-					{
-						attribute: 'IFC クラス',
-						values: Array.from(new Set(classesByExpressId.values()))
-					}
-				]
-			});
-			if (expressions.length > 0) {
-				style.partColors.key = expressions[0].key;
-				style.partColors.expressions = expressions;
-			}
-		}
-		const partColors = style.partColors;
-		if (!partColors?.show) return;
-
-		object.traverse((child) => {
-			if (!(child as THREE.Mesh).isMesh) return;
-			const mesh = child as THREE.Mesh;
-			const expressIdAttribute = mesh.geometry.getAttribute('expressID');
-			if (!expressIdAttribute) return;
-			const expression = partColors.expressions.find(
-				(candidate) => candidate.key === partColors.key
-			);
-			if (!expression || expression.type !== 'match') return;
-			const categoryIndexes = new Map(
-				expression.mapping.categories.map((category, index) => [category, index + 1])
-			);
-			const signature = `${expression.key}\u0000${
-				expression.mapping.categories.join('\u0000')
-			}`;
-			if (mesh.geometry.userData.morivisPartColorSignature === signature) return;
-			const colorIndexes = new Float32Array(expressIdAttribute.count);
-			for (let index = 0; index < expressIdAttribute.count; index += 1) {
-				const partAttributes = object.userData.morivisIfcPartAttributes as
-					| Map<number, ModelAttributes>
-					| undefined;
-				const value = expression.key === 'IFC クラス'
-					? classesByExpressId.get(expressIdAttribute.getX(index))
-					: partAttributes?.get(expressIdAttribute.getX(index))?.[expression.key];
-				colorIndexes[index] =
-					categoryIndexes.get(typeof value === 'boolean' ? String(value) : (value ?? ''))
-						?? 0;
-			}
-			mesh.geometry.setAttribute(
-				'morivisPartColorIndex',
-				new THREE.BufferAttribute(colorIndexes, 1)
-			);
-			mesh.geometry.userData.morivisPartColorSignature = signature;
-		});
-	};
-
-	clearModelHighlight(): void {
-		if (this.selectedModelHighlights.length === 0) return;
-
-		this.selectedModelHighlights.forEach((highlight) => {
-			highlight.fill.removeFromParent();
-			(highlight.fill.material as THREE.Material).dispose();
-			if (highlight.geometry !== highlight.mesh.geometry) highlight.geometry.dispose();
-			if (highlight.outline) {
-				highlight.outline.removeFromParent();
-				highlight.outline.geometry.dispose();
-				(highlight.outline.material as THREE.Material).dispose();
-			}
-		});
-		this.selectedModelHighlights = [];
-		this.map?.triggerRepaint();
-	}
+	clearModelHighlight = (
+		...args: Parameters<ModelInteractionController['clearModelHighlight']>
+	): ReturnType<ModelInteractionController['clearModelHighlight']> =>
+		this.interaction.clearModelHighlight(...args);
 
 	/** BCF が保持する IFC GlobalId から、読み込み済みIFCの対象部材をハイライトする。 */
-	async highlightIfcGlobalId(globalId: string): Promise<string | null> {
-		const entryIds = await this.highlightIfcGlobalIds([globalId]);
-		return entryIds[0] ?? null;
-	}
+	highlightIfcGlobalId = (
+		...args: Parameters<ModelInteractionController['highlightIfcGlobalId']>
+	): ReturnType<ModelInteractionController['highlightIfcGlobalId']> =>
+		this.interaction.highlightIfcGlobalId(...args);
 
 	/** BCFの選択部材をまとめてハイライトする。 */
-	async highlightIfcGlobalIds(globalIds: string[]): Promise<string[]> {
-		const requestedIds = new Set(globalIds.map((globalId) => globalId.trim()).filter(Boolean));
-		if (requestedIds.size === 0) return [];
-
-		const targets: { entryId: string; mesh: THREE.Mesh; expressId: number; }[] = [];
-		for (const loaded of this.loadedModels.values()) {
-			if (loaded.entry.format.type !== 'ifc') continue;
-			const index = await this.getIfcGlobalIdIndex(loaded);
-			requestedIds.forEach((globalId) => {
-				const target = index.get(globalId);
-				if (target) targets.push({ entryId: loaded.entry.id, ...target });
-			});
-		}
-
-		if (targets.length === 0) return [];
-		this.clearModelHighlight();
-		targets.forEach((target) => this.addModelHighlight(target.mesh, target.expressId));
-		this.map?.triggerRepaint();
-		return Array.from(new Set(targets.map((target) => target.entryId)));
-	}
-
-	private getIfcGlobalIdIndex = async (loaded: LoadedModel) => {
-		const model = loaded.object as THREE.Object3D & {
-			modelID?: number;
-			ifcManager?: {
-				getItemProperties: (
-					modelId: number,
-					expressId: number
-				) => Promise<Record<string, unknown>>;
-			} | null;
-		};
-		const cached = model.userData.morivisIfcGlobalIdIndex as
-			| Map<string, { expressId: number; mesh: THREE.Mesh; }>
-			| undefined;
-		if (cached) return cached;
-
-		const index = new Map<string, { expressId: number; mesh: THREE.Mesh; }>();
-		if (model.modelID == null || !model.ifcManager) return index;
-
-		const meshesByExpressId = new Map<number, THREE.Mesh>();
-		model.traverse((child) => {
-			if (!(child as THREE.Mesh).isMesh) return;
-			const mesh = child as THREE.Mesh;
-			const expressIds = mesh.geometry.getAttribute('expressID');
-			for (let index = 0; expressIds && index < expressIds.count; index += 1) {
-				meshesByExpressId.set(expressIds.getX(index), mesh);
-			}
-		});
-
-		const expressIds = Array.from(meshesByExpressId.keys());
-		for (let offset = 0; offset < expressIds.length; offset += 50) {
-			const batch = expressIds.slice(offset, offset + 50);
-			const results = await Promise.allSettled(
-				batch.map(async (expressId) => {
-					const item = await model.ifcManager!.getItemProperties(
-						model.modelID!,
-						expressId
-					);
-					const globalIdValue = item.GlobalId;
-					const globalId = globalIdValue && typeof globalIdValue === 'object'
-							&& 'value' in globalIdValue
-						? globalIdValue.value
-						: globalIdValue;
-					const mesh = meshesByExpressId.get(expressId);
-					return typeof globalId === 'string' && mesh
-						? { globalId, expressId, mesh }
-						: null;
-				})
-			);
-			results.forEach((result) => {
-				if (result.status !== 'fulfilled' || result.value == null) return;
-				index.set(result.value.globalId, result.value);
-			});
-		}
-
-		model.userData.morivisIfcGlobalIdIndex = index;
-		return index;
-	};
-
-	private getIfcHighlightGeometry = (mesh: THREE.Mesh, expressId: number) => {
-		const sourceGeometry = mesh.geometry;
-		const expressIds = sourceGeometry.getAttribute('expressID');
-		if (!expressIds) return null;
-		const sourceIndex = sourceGeometry.getIndex();
-		const vertexCount = sourceIndex?.count ?? sourceGeometry.getAttribute('position').count;
-		const indices: number[] = [];
-		for (let offset = 0; offset < vertexCount; offset += 3) {
-			const firstVertex = sourceIndex ? sourceIndex.getX(offset) : offset;
-			if (expressIds.getX(firstVertex) !== expressId) continue;
-			indices.push(
-				sourceIndex ? sourceIndex.getX(offset) : offset,
-				sourceIndex ? sourceIndex.getX(offset + 1) : offset + 1,
-				sourceIndex ? sourceIndex.getX(offset + 2) : offset + 2
-			);
-		}
-		if (indices.length === 0) return null;
-		const geometry = sourceGeometry.clone();
-		geometry.clearGroups();
-		geometry.setIndex(indices);
-		return geometry;
-	};
-
-	private getModelPartNode = (object: THREE.Object3D) => {
-		let current: THREE.Object3D | null = object;
-		while (current) {
-			const propId = current.userData._prop_id;
-			if (typeof propId === 'string' && propId) return { id: propId, object: current };
-			current = current.parent;
-		}
-		return undefined;
-	};
-
-	private getModelPartId = (object: THREE.Object3D) => this.getModelPartNode(object)?.id;
-
-	private getModelPartMeshes = (mesh: THREE.Mesh) => {
-		const partNode = this.getModelPartNode(mesh)?.object;
-		if (!partNode) return [mesh];
-		const partMeshes: THREE.Mesh[] = [];
-		partNode.traverse((child) => {
-			if (
-				(child as THREE.Mesh).isMesh
-				&& !child.userData.morivisSelectionHighlight
-				&& !child.userData.morivisEdgeOverlay
-			) {
-				partMeshes.push(child as THREE.Mesh);
-			}
-		});
-		return partMeshes.length > 0 ? partMeshes : [mesh];
-	};
-
-	private highlightModelMeshes = (meshes: THREE.Mesh[], expressId?: number) => {
-		if (
-			this.selectedModelHighlights.length === meshes.length
-			&& this.selectedModelHighlights.every(
-				(highlight, index) =>
-					highlight.mesh === meshes[index] && highlight.expressId === expressId
-			)
-		) {
-			return;
-		}
-		this.clearModelHighlight();
-		meshes.forEach((mesh) => this.addModelHighlight(mesh, expressId));
-		this.map?.triggerRepaint();
-	};
-
-	private addModelHighlight = (mesh: THREE.Mesh, expressId?: number) => {
-		const geometry = expressId == null
-			? mesh.geometry
-			: (this.getIfcHighlightGeometry(mesh, expressId) ?? mesh.geometry);
-
-		const fillMaterial = createModelHighlightMaterial();
-		const sourceSkinnedMesh = mesh as THREE.SkinnedMesh;
-		let fill: THREE.Mesh;
-		if (sourceSkinnedMesh.isSkinnedMesh) {
-			const skinnedFill = new THREE.SkinnedMesh(geometry, fillMaterial);
-			skinnedFill.bindMode = sourceSkinnedMesh.bindMode;
-			skinnedFill.bind(sourceSkinnedMesh.skeleton, sourceSkinnedMesh.bindMatrix);
-			skinnedFill.morphTargetInfluences = sourceSkinnedMesh.morphTargetInfluences;
-			skinnedFill.morphTargetDictionary = sourceSkinnedMesh.morphTargetDictionary;
-			fill = skinnedFill;
-		} else {
-			fill = new THREE.Mesh(geometry, fillMaterial);
-			fill.morphTargetInfluences = mesh.morphTargetInfluences;
-			fill.morphTargetDictionary = mesh.morphTargetDictionary;
-		}
-		fill.name = 'morivis-fbx-highlight-fill';
-		fill.userData.morivisSelectionHighlight = true;
-		fill.raycast = () => undefined;
-
-		const outline = sourceSkinnedMesh.isSkinnedMesh
-			? undefined
-			: new THREE.LineSegments(
-				new THREE.EdgesGeometry(geometry, 20),
-				new THREE.LineBasicMaterial({ color: HIGHLIGHT_LAYER_COLOR, depthWrite: false })
-			);
-		if (outline) {
-			outline.name = 'morivis-fbx-highlight-outline';
-			outline.userData.morivisSelectionHighlight = true;
-			outline.raycast = () => undefined;
-		}
-
-		mesh.add(fill);
-		if (outline) mesh.add(outline);
-		this.selectedModelHighlights.push({ mesh, fill, outline, geometry, expressId });
-	};
-
-	private resolvePickedObjectName = (object: THREE.Object3D, root: THREE.Object3D) => {
-		let current: THREE.Object3D | null = object;
-		while (current && current !== root) {
-			const originalName = current.userData.originalName;
-			if (typeof originalName === 'string' && originalName) return originalName;
-			if (current.name) return current.name;
-			current = current.parent;
-		}
-
-		if ((object as THREE.Mesh).isMesh) {
-			const meshMaterial = (object as THREE.Mesh).material as
-				| THREE.Material
-				| THREE.Material[];
-			const materials = Array.isArray(meshMaterial) ? meshMaterial : [meshMaterial];
-			const materialName = materials.find((material) => material.name)?.name;
-			if (materialName) return materialName;
-		}
-
-		return '名称なし';
-	};
-
-	private getIfcExpressId = (
-		model: THREE.Object3D,
-		hit: THREE.Intersection<THREE.Object3D>
-	): number | undefined => {
-		const ifcModel = model as THREE.Object3D & {
-			ifcManager?: {
-				getExpressId: (geometry: THREE.BufferGeometry, faceIndex: number) => number;
-			} | null;
-		};
-		const mesh = hit.object as THREE.Mesh;
-		if (!ifcModel.ifcManager || !mesh.geometry || hit.faceIndex == null) return undefined;
-		return ifcModel.ifcManager.getExpressId(mesh.geometry, hit.faceIndex);
-	};
-
-	private resolveIfcAttributes = async (
-		model: THREE.Object3D,
-		hit: THREE.Intersection<THREE.Object3D>
-	): Promise<ModelAttributes> => {
-		const ifcModel = model as THREE.Object3D & {
-			modelID?: number;
-			ifcManager?: {
-				getItemProperties: (
-					modelId: number,
-					expressId: number
-				) => Promise<Record<string, unknown>>;
-				getPropertySets: (
-					modelId: number,
-					expressId: number,
-					recursive?: boolean
-				) => Promise<Record<string, unknown>[]>;
-				getTypeProperties: (
-					modelId: number,
-					expressId: number,
-					recursive?: boolean
-				) => Promise<Record<string, unknown>[]>;
-				getIfcType: (modelId: number, expressId: number) => string | Promise<string>;
-			} | null;
-		};
-		const expressId = this.getIfcExpressId(model, hit);
-		if (ifcModel.modelID == null || expressId == null || !ifcModel.ifcManager) return {};
-		const cachedAttributes = (
-			model.userData.morivisIfcPartAttributes as Map<number, ModelAttributes> | undefined
-		)?.get(expressId);
-		const [itemResult, propertySetsResult, typePropertiesResult, ifcTypeResult] = await Promise
-			.allSettled([
-				ifcModel.ifcManager.getItemProperties(ifcModel.modelID, expressId),
-				ifcModel.ifcManager.getPropertySets(ifcModel.modelID, expressId, true),
-				ifcModel.ifcManager.getTypeProperties(ifcModel.modelID, expressId, true),
-				ifcModel.ifcManager.getIfcType(ifcModel.modelID, expressId)
-			]);
-		const item = itemResult.status === 'fulfilled' ? itemResult.value : {};
-		const propertySets = propertySetsResult.status === 'fulfilled'
-			? propertySetsResult.value
-			: [];
-		const typeProperties = typePropertiesResult.status === 'fulfilled'
-			? typePropertiesResult.value
-			: [];
-		const ifcType = ifcTypeResult.status === 'fulfilled' ? ifcTypeResult.value : undefined;
-		if (!import.meta.env.PROD) {
-			const failed = [itemResult, propertySetsResult, typePropertiesResult, ifcTypeResult]
-				.filter(
-					(result) => result.status === 'rejected'
-				);
-			if (failed.length > 0) {
-				console.warn('[IFC属性] 一部の属性取得に失敗しました', {
-					expressId,
-					failedCount: failed.length,
-					errors: failed.map((result) => String((result as PromiseRejectedResult).reason))
-				});
-			}
-		}
-		return {
-			...cachedAttributes,
-			...getIfcAttributes(expressId, item, [...propertySets, ...typeProperties]),
-			...(ifcType ? { 'IFC クラス': ifcType } : {})
-		};
-	};
+	highlightIfcGlobalIds = (
+		...args: Parameters<ModelInteractionController['highlightIfcGlobalIds']>
+	): ReturnType<ModelInteractionController['highlightIfcGlobalIds']> =>
+		this.interaction.highlightIfcGlobalIds(...args);
 
 	private requestRepaintBurst = (frameCount = 90) => {
 		if (typeof window === 'undefined') {
@@ -1895,480 +591,23 @@ export class ThreeJsLayerManager {
 		};
 	};
 
-	private setOnlyEntryVisible = (
-		entryId: string,
-		visible: boolean,
-		targetObject?: THREE.Object3D
-	) => {
-		const applyVisibility = (group: THREE.Group | null) => {
-			if (!group) return;
-			group.traverse((child) => {
-				if (child.userData.entryId) {
-					child.visible = targetObject
-						? child === targetObject && visible
-						: child.userData.entryId === entryId && visible;
-				}
-			});
-		};
-
-		applyVisibility(this.modelGroup);
-		applyVisibility(this.previewModelGroup);
-	};
-
-	private restoreModelDepthState = (object: THREE.Object3D) => {
-		object.traverse((child) => {
-			if (!(child as THREE.Mesh).isMesh) return;
-
-			const mesh = child as THREE.Mesh;
-			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-			materials.forEach((material) => {
-				const originalDepthState = material.userData.morivisDepthState as
-					| { depthTest: boolean; depthWrite: boolean; }
-					| undefined;
-				if (!originalDepthState) return;
-
-				material.depthTest = originalDepthState.depthTest;
-				material.depthWrite = originalDepthState.depthWrite;
-				delete material.userData.morivisDepthState;
-			});
-		});
-	};
-
-	private renderOverlayModel = (loaded: LoadedModel, mapProjectionMatrix: THREE.Matrix4) => {
-		if (!this.renderer || !this.scene || !this.camera || !this.overlayRenderTarget) return;
-		if (!this.overlayScene || !this.overlayCamera) return;
-
-		const renderTargetSize = this.renderer.getDrawingBufferSize(new THREE.Vector2());
-		if (
-			this.overlayRenderTarget.width !== renderTargetSize.x
-			|| this.overlayRenderTarget.height !== renderTargetSize.y
-		) {
-			this.overlayRenderTarget.setSize(renderTargetSize.x, renderTargetSize.y);
-		}
-
-		this.restoreModelDepthState(loaded.object);
-		this.camera.projectionMatrix = mapProjectionMatrix.clone().multiply(
-			loaded.transform.matrix
-		);
-		this.setOnlyEntryVisible(
-			loaded.entry.id,
-			loaded.entry.style.visible ?? true,
-			loaded.object
-		);
-
-		this.renderer.resetState();
-		this.renderer.setRenderTarget(this.overlayRenderTarget);
-		this.renderer.clear();
-		this.renderer.render(this.scene, this.camera);
-
-		this.renderer.resetState();
-		this.renderer.setRenderTarget(null);
-		this.renderer.render(this.overlayScene, this.overlayCamera);
-	};
-
-	private ensurePlacementLabelRenderer = () => {
-		if (!this.map || this.placementLabelRenderer) return;
-
-		const renderer = new CSS2DRenderer();
-		const element = renderer.domElement;
-		element.style.position = 'absolute';
-		element.style.inset = '0';
-		element.style.pointerEvents = 'none';
-		element.style.zIndex = '3';
-		element.style.display = 'none';
-		this.map.getCanvasContainer().appendChild(element);
-		this.placementLabelRenderer = renderer;
-	};
-
-	private removePlacementLabelRenderer = () => {
-		this.placementLabelRenderer?.domElement.remove();
-		this.placementLabelRenderer = null;
-		this.placementLabelSize = { width: 0, height: 0 };
-	};
-
-	private getPlacementClientPoint = (
-		localPosition: [number, number, number],
-		modelTransform = this.placementPreview?.transform
-	): [number, number] | null => {
-		if (!this.map || !this.lastMapProjectionMatrix || !this.placementPreview) return null;
-		if (!modelTransform) return null;
-
-		const canvasRect = this.map.getCanvas().getBoundingClientRect();
-		const projectionMatrix = this.lastMapProjectionMatrix
-			.clone()
-			.multiply(modelTransform.matrix);
-		const projected = new THREE.Vector3(...localPosition).applyMatrix4(projectionMatrix);
-		if (![projected.x, projected.y].every(Number.isFinite)) return null;
-
-		return [
-			canvasRect.left + ((projected.x + 1) / 2) * canvasRect.width,
-			canvasRect.top + ((1 - projected.y) / 2) * canvasRect.height
-		];
-	};
-
-	private isPlacementPreviewHit = (event: PointerEvent) => {
-		if (!this.map || !this.lastMapProjectionMatrix || !this.placementPreview) return false;
-		const canvasRect = this.map.getCanvas().getBoundingClientRect();
-		return isModelPlacementBoundsHit({
-			canvasHeight: canvasRect.height,
-			canvasWidth: canvasRect.width,
-			clientX: event.clientX - canvasRect.left,
-			clientY: event.clientY - canvasRect.top,
-			localBounds: this.placementPreview.localBounds,
-			localToClipMatrix: this.lastMapProjectionMatrix
-				.clone()
-				.multiply(this.placementPreview.transform.matrix)
-		});
-	};
-
-	private finishPlacementMoveDrag = () => {
-		const drag = this.placementMoveDrag;
-		if (!drag) return;
-		const canvas = this.map?.getCanvas();
-		if (canvas?.hasPointerCapture(drag.pointerId)) canvas.releasePointerCapture(drag.pointerId);
-		if (canvas) canvas.style.cursor = drag.previousCursor;
-		if (drag.dragPanWasEnabled) this.map?.dragPan.enable();
-		this.placementMoveDrag = null;
-	};
-
-	private handlePlacementPointerDown = (event: PointerEvent) => {
-		if (
-			event.button !== 0
-			|| this.activeModelView
-			|| !this.map
-			|| !this.placementPreview
-			|| !this.isPlacementPreviewHit(event)
-		) {
-			return;
-		}
-
-		const canvas = this.map.getCanvas();
-		const startAnchor = this.map.project([
-			this.placementPreview.styleTransform.lng,
-			this.placementPreview.styleTransform.lat
-		]);
-		const dragPanWasEnabled = this.map.dragPan.isEnabled();
-		if (dragPanWasEnabled) this.map.dragPan.disable();
-		this.placementMoveDrag = {
-			pointerId: event.pointerId,
-			startClientX: event.clientX,
-			startClientY: event.clientY,
-			startAnchorX: startAnchor.x,
-			startAnchorY: startAnchor.y,
-			startTransform: { ...this.placementPreview.styleTransform },
-			dragPanWasEnabled,
-			previousCursor: canvas.style.cursor
-		};
-		canvas.style.cursor = 'grabbing';
-		canvas.setPointerCapture(event.pointerId);
-		event.preventDefault();
-		event.stopImmediatePropagation();
-	};
-
-	private handlePlacementPointerMove = (event: PointerEvent) => {
-		const drag = this.placementMoveDrag;
-		if (!drag || drag.pointerId !== event.pointerId || !this.map) return;
-		const lngLat = this.map.unproject([
-			drag.startAnchorX + event.clientX - drag.startClientX,
-			drag.startAnchorY + event.clientY - drag.startClientY
-		]);
-		this.placementTransformChangeHandler?.({
-			...drag.startTransform,
-			lng: lngLat.lng,
-			lat: lngLat.lat
-		});
-		event.preventDefault();
-		event.stopImmediatePropagation();
-	};
-
-	private handlePlacementPointerEnd = (event: PointerEvent) => {
-		if (this.placementMoveDrag?.pointerId !== event.pointerId) return;
-		event.preventDefault();
-		event.stopImmediatePropagation();
-		this.finishPlacementMoveDrag();
-	};
-
-	private addPlacementPointerListeners = () => {
-		const canvas = this.map?.getCanvas();
-		if (!canvas) return;
-		canvas.addEventListener('pointerdown', this.handlePlacementPointerDown, true);
-		canvas.addEventListener('pointermove', this.handlePlacementPointerMove, true);
-		canvas.addEventListener('pointerup', this.handlePlacementPointerEnd, true);
-		canvas.addEventListener('pointercancel', this.handlePlacementPointerEnd, true);
-	};
-
-	private removePlacementPointerListeners = () => {
-		const canvas = this.map?.getCanvas();
-		if (!canvas) return;
-		this.finishPlacementMoveDrag();
-		canvas.removeEventListener('pointerdown', this.handlePlacementPointerDown, true);
-		canvas.removeEventListener('pointermove', this.handlePlacementPointerMove, true);
-		canvas.removeEventListener('pointerup', this.handlePlacementPointerEnd, true);
-		canvas.removeEventListener('pointercancel', this.handlePlacementPointerEnd, true);
-	};
-
-	private resolvePlacementYRotation = ({
-		draggedLocalPosition,
-		fixedClientPosition,
-		fixedLocalPosition,
-		startAngle,
-		startTransform
-	}: {
-		draggedLocalPosition: [number, number, number];
-		fixedClientPosition: [number, number];
-		fixedLocalPosition: [number, number, number];
-		startAngle: number;
-		startTransform: ModelPlacementTransform;
-	}): number => {
-		const terrainEnabled = Boolean(this.map?.getTerrain());
-		const rotatedTransform = preserveModelLocalPointPosition({
-			fixedLocalPosition,
-			startTransform,
-			nextTransform: { ...startTransform, rotationY: startTransform.rotationY + 1 },
-			terrainEnabled
-		});
-		const draggedClientPosition = this.getPlacementClientPoint(
-			draggedLocalPosition,
-			calculateModelTransform({ transform: rotatedTransform })
-		);
-		if (!draggedClientPosition) {
-			return THREE.MathUtils.RAD2DEG;
-		}
-
-		const angle = Math.atan2(
-			draggedClientPosition[1] - fixedClientPosition[1],
-			draggedClientPosition[0] - fixedClientPosition[0]
-		);
-		const screenRadiansPerDegree = normalizeRadians(angle - startAngle);
-		if (Math.abs(screenRadiansPerDegree) <= 1e-6) {
-			return THREE.MathUtils.RAD2DEG;
-		}
-
-		return 1 / screenRadiansPerDegree;
-	};
-
-	private startPlacementTransformDrag = (
-		event: PointerEvent,
-		element: HTMLButtonElement,
-		handleKey: ModelScaleHandleKey,
-		draggedLocalPosition: [number, number, number],
-		localBounds: ReturnType<typeof getPlacementPreviewBounds>
-	) => {
-		if (event.button !== 0 || !this.placementPreview) return;
-		const oppositeHandle = getOppositeModelScaleHandle(localBounds, handleKey);
-		const fixedClientPosition = this.getPlacementClientPoint(oppositeHandle.position);
-		if (!fixedClientPosition) return;
-
-		const elementRect = element.getBoundingClientRect();
-		const handleCenterX = elementRect.left + elementRect.width / 2;
-		const handleCenterY = elementRect.top + elementRect.height / 2;
-		const pointerOffsetX = event.clientX - handleCenterX;
-		const pointerOffsetY = event.clientY - handleCenterY;
-		const startVector: [number, number] = [
-			handleCenterX - fixedClientPosition[0],
-			handleCenterY - fixedClientPosition[1]
-		];
-		const startDistance = Math.hypot(startVector[0], startVector[1]);
-		if (startDistance <= Number.EPSILON) return;
-
-		const pointerId = event.pointerId;
-		const startTransform = { ...this.placementPreview.styleTransform };
-		const startAngle = Math.atan2(startVector[1], startVector[0]);
-		const degreesPerScreenRadian = this.resolvePlacementYRotation({
-			draggedLocalPosition,
-			fixedClientPosition,
-			fixedLocalPosition: oppositeHandle.position,
-			startAngle,
-			startTransform
-		});
-		const terrainEnabled = Boolean(this.map?.getTerrain());
-		const startEffectiveScale = getEffectiveModelScale(startTransform);
-		const handlePointerMove = (moveEvent: PointerEvent) => {
-			if (moveEvent.pointerId !== pointerId) return;
-			moveEvent.preventDefault();
-			moveEvent.stopPropagation();
-			const currentVector: [number, number] = [
-				moveEvent.clientX - pointerOffsetX - fixedClientPosition[0],
-				moveEvent.clientY - pointerOffsetY - fixedClientPosition[1]
-			];
-			const currentDistance = Math.hypot(currentVector[0], currentVector[1]);
-			const currentAngle = Math.atan2(currentVector[1], currentVector[0]);
-			const nextScale = normalizeModelScale(
-				getModelScaleFromHandleDrag({
-					currentDistance,
-					startDistance,
-					startScale: startEffectiveScale
-				})
-			);
-			const nextTransform = {
-				...startTransform,
-				...nextScale,
-				rotationY: startTransform.rotationY
-					+ normalizeRadians(currentAngle - startAngle) * degreesPerScreenRadian
-			};
-			const anchoredTransform = preserveModelLocalPointPosition({
-				fixedLocalPosition: oppositeHandle.position,
-				nextTransform,
-				startTransform,
-				terrainEnabled
-			});
-			this.placementTransformChangeHandler?.(
-				keepModelPlacementAboveGround({
-					groundAltitudeAt: (lng, lat) =>
-						terrainEnabled ? (this.map?.queryTerrainElevation([lng, lat]) ?? 0) : 0,
-					localBounds,
-					transform: anchoredTransform,
-					terrainEnabled
-				})
-			);
-		};
-		const finishPointerDrag = (finishEvent: PointerEvent) => {
-			if (finishEvent.pointerId !== pointerId) return;
-			finishEvent.preventDefault();
-			finishEvent.stopPropagation();
-			element.removeEventListener('pointermove', handlePointerMove);
-			element.removeEventListener('pointerup', finishPointerDrag);
-			element.removeEventListener('pointercancel', finishPointerDrag);
-			if (element.hasPointerCapture(pointerId)) element.releasePointerCapture(pointerId);
-		};
-
-		event.preventDefault();
-		event.stopPropagation();
-		element.setPointerCapture(pointerId);
-		element.addEventListener('pointermove', handlePointerMove);
-		element.addEventListener('pointerup', finishPointerDrag);
-		element.addEventListener('pointercancel', finishPointerDrag);
-	};
-
-	private createPlacementScaleHandles = (
-		bounds: ReturnType<typeof getPlacementPreviewBounds>
-	) => {
-		const group = new THREE.Group();
-		getModelScaleHandles(bounds).forEach(({ key, position }) => {
-			const element = document.createElement('button');
-			element.type = 'button';
-			element.ariaLabel = `モデル範囲の頂点 ${key}`;
-			element.title = 'ドラッグしてモデル全体を拡大・縮小';
-			element.style.width = '18px';
-			element.style.height = '18px';
-			element.style.padding = '0';
-			element.style.border = '2px solid white';
-			element.style.borderRadius = '50%';
-			element.style.background = '#45a17f';
-			element.style.boxShadow = '0 1px 5px rgb(0 0 0 / 65%)';
-			element.style.cursor = 'nwse-resize';
-			element.style.pointerEvents = 'auto';
-			element.style.touchAction = 'none';
-			element.addEventListener('pointerdown', (event) => {
-				this.startPlacementTransformDrag(event, element, key, position, bounds);
-			});
-
-			const handle = new CSS2DObject(element);
-			handle.name = `model-placement-scale-${key}`;
-			handle.position.set(position[0], position[1], position[2]);
-			group.add(handle);
-		});
-		return group;
-	};
-
-	private disposePlacementScaleHandles = (handles: THREE.Group) => {
-		// Group を Scene から外すだけでは、子の CSS2DObject に removed が通知されず
-		// DOM 要素が CSS2DRenderer 内に残るため、先に子要素を明示的に外す。
-		handles.clear();
-		handles.removeFromParent();
-	};
-
-	private renderPlacementScaleHandles = (mapProjectionMatrix: THREE.Matrix4) => {
-		if (
-			!this.map
-			|| !this.scene
-			|| !this.camera
-			|| !this.placementPreview
-			|| !this.placementLabelRenderer
-		) {
-			if (this.placementLabelRenderer) {
-				this.placementLabelRenderer.domElement.style.display = 'none';
-			}
-			return;
-		}
-
-		const canvas = this.map.getCanvas();
-		const width = canvas.clientWidth;
-		const height = canvas.clientHeight;
-		if (width !== this.placementLabelSize.width || height !== this.placementLabelSize.height) {
-			this.placementLabelRenderer.setSize(width, height);
-			this.placementLabelSize = { width, height };
-		}
-
-		this.placementLabelRenderer.domElement.style.display = 'block';
-		this.camera.projectionMatrix = mapProjectionMatrix
-			.clone()
-			.multiply(this.placementPreview.transform.matrix);
-		this.placementLabelRenderer.render(this.scene, this.camera);
-	};
-
 	setPlacementTransformChangeHandler = (
 		handler: ((transform: ModelPlacementTransform) => void) | null
 	): void => {
-		this.placementTransformChangeHandler = handler;
+		this.placement.setPlacementTransformChangeHandler(handler);
 	};
 
-	setPlacementPreview(
+	setPlacementPreview = (
 		entry: ThreeModelEntry,
 		style = entry.style,
-		{ showTransformHandles = true }: { showTransformHandles?: boolean; } = {}
-	): void {
-		if (!this.scene) return;
-		const bounds = getPlacementPreviewBounds(entry);
-		const boundsKey = `${getPlacementPreviewBoundsKey(bounds)}:${showTransformHandles}`;
-		if (
-			!this.placementPreview
-			|| this.placementPreview.entryId !== entry.id
-			|| this.placementPreview.boundsKey !== boundsKey
-		) {
-			if (this.placementPreview) {
-				this.scene.remove(this.placementPreview.object);
-				this.disposePlacementScaleHandles(this.placementPreview.handles);
-				disposePlacementPreviewObject(this.placementPreview.object);
-			}
-			const object = createPlacementPreviewObject(bounds);
-			const handles = showTransformHandles
-				? this.createPlacementScaleHandles(bounds)
-				: new THREE.Group();
-			this.scene.add(object, handles);
-			this.placementPreview = {
-				entryId: entry.id,
-				object,
-				handles,
-				localBounds: bounds,
-				transform: calculateModelTransform(style),
-				boundsKey,
-				styleTransform: { ...style.transform }
-			};
-		} else {
-			this.placementPreview.transform = calculateModelTransform(style);
-			this.placementPreview.styleTransform = { ...style.transform };
-		}
-		this.setModelTransform(entry.id, style);
-		this.map?.triggerRepaint();
-	}
+		options: { showTransformHandles?: boolean; } = {}
+	): void => {
+		this.placement.setPlacementPreview(entry, style, options);
+	};
 
-	clearPlacementPreview(): void {
-		this.finishPlacementMoveDrag();
-		const preview = this.placementPreview;
-		if (preview) {
-			this.scene?.remove(preview.object);
-			this.disposePlacementScaleHandles(preview.handles);
-			disposePlacementPreviewObject(preview.object);
-			this.placementPreview = null;
-		}
-		if (this.placementLabelRenderer) {
-			// 過去のプレビューなどから残留した CSS2D 要素も確実に破棄する。
-			this.placementLabelRenderer.domElement.replaceChildren();
-			this.placementLabelRenderer.domElement.style.display = 'none';
-		}
-		if (preview) this.map?.triggerRepaint();
-	}
+	clearPlacementPreview = (): void => {
+		this.placement.clearPlacementPreview();
+	};
 
 	private updateAnimations = () => {
 		const nowMs = performance.now();
@@ -2432,183 +671,48 @@ export class ThreeJsLayerManager {
 		return hasPlayingAnimation;
 	};
 
-	private renderActiveModelView = () => {
-		if (!this.scene || !this.renderer || !this.activeModelView) return;
-
-		const setViewVisibility = (group: THREE.Group | null) => {
-			if (!group) return;
-			group.traverse((child) => {
-				const entryId = child.userData.entryId as string | undefined;
-				if (!entryId) return;
-				const loaded = this.loadedModels.get(entryId);
-				child.visible = loaded?.object === child
-					&& this.activeModelView!.entryIds.has(entryId)
-					&& (loaded.entry.style.visible ?? true);
-			});
-		};
-		setViewVisibility(this.modelGroup);
-		setViewVisibility(this.previewModelGroup);
-		this.renderer.resetState();
-		this.renderer.setRenderTarget(null);
-		this.renderer.setClearColor(0x000000, 0);
-		this.renderer.clear(true, true, true);
-		this.renderer.render(this.scene, this.activeModelView.camera);
-		this.renderer.setClearColor(0x000000, 0);
-		this.renderer.resetState();
-	};
-
 	/** カスタムレイヤーを作成（初期化用） */
-	createLayer(): CustomLayerInterface {
-		return {
-			id: '3d-model-layer',
-			type: 'custom',
-			renderingMode: '3d',
-
-			onAdd: (map, gl) => {
-				this.map = map;
-				if (!this.isInitialized) {
-					this.camera = new THREE.Camera();
-					this.scene = new THREE.Scene();
-					this.modelGroup = new THREE.Group();
-					this.previewModelGroup = new THREE.Group();
-					this.scene.add(this.modelGroup);
-					this.scene.add(this.previewModelGroup);
-
-					this.renderer = new THREE.WebGLRenderer({
-						canvas: map.getCanvas(),
-						context: gl,
-						antialias: true
-					});
-					this.ktx2Loader.detectSupport(this.renderer);
-					this.renderer.autoClear = false;
-					this.renderer.setClearColor(0x000000, 0);
-					this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-					this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-					this.renderer.toneMappingExposure = 1.0;
-					this.overlayRenderTarget = new THREE.WebGLRenderTarget(1, 1, {
-						depthBuffer: true,
-						stencilBuffer: false
-					});
-					this.overlayScene = new THREE.Scene();
-					this.overlayCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-					const overlayMaterial = new THREE.MeshBasicMaterial({
-						map: this.overlayRenderTarget.texture,
-						transparent: true,
-						depthTest: false,
-						depthWrite: false,
-						toneMapped: false
-					});
-					this.overlayScene.add(
-						new THREE.Mesh(new THREE.PlaneGeometry(2, 2), overlayMaterial)
-					);
-
-					// 全体を均一に明るくしすぎず、空と地面からの回り込みだけを薄く入れる。
-					const hemiLight = new THREE.HemisphereLight(0xeef3fb, 0x5a6470, 0.45);
-					this.scene.add(hemiLight);
-
-					// 主光源は少し高い位置から当てて、地形や建物の面変化を読みやすくする。
-					const keyLight = new THREE.DirectionalLight(0xfff6e8, 1.5);
-					keyLight.position.set(1.4, 2.2, 1.1);
-					this.scene.add(keyLight);
-
-					// 反対側は弱い補助光だけにして、陰影を潰さない。
-					const fillLight = new THREE.DirectionalLight(0xdbe7f6, 0.22);
-					fillLight.position.set(-1.2, 1.1, -0.9);
-					this.scene.add(fillLight);
-
-					this.isInitialized = true;
-				}
-				this.ensurePlacementLabelRenderer();
-				this.removePlacementPointerListeners();
-				this.addPlacementPointerListeners();
-			},
-
-			render: (_gl, args) => {
-				if (!this.scene || !this.camera || !this.renderer) return;
-				if (this.loadedModels.size === 0 && !this.placementPreview) {
-					if (this.placementLabelRenderer) {
-						this.placementLabelRenderer.domElement.style.display = 'none';
-					}
-					return;
-				}
-				if (this.placementPreview) this.placementPreview.object.visible = false;
-				this.lastMapProjectionMatrix = new THREE.Matrix4().fromArray(
-					args.defaultProjectionData.mainMatrix
-				);
-				const mapProjectionMatrix = this.lastMapProjectionMatrix;
-				const hasPlayingAnimation = this.updateAnimations();
-				if (this.activeModelView) {
-					if (this.placementLabelRenderer) {
-						this.placementLabelRenderer.domElement.style.display = 'none';
-					}
-					this.renderActiveModelView();
-					if (hasPlayingAnimation) this.map?.triggerRepaint();
-					return;
-				}
+	createLayer = (): CustomLayerInterface => ({
+		id: '3d-model-layer',
+		type: 'custom',
+		renderingMode: '3d',
+		onAdd: (map, gl) => {
+			this.map = map;
+			this.interaction.attach(map);
+			this.modelRenderer.initialize(map.getCanvas(), gl);
+			this.modelLoader.detectSupport(this.renderer!);
+			this.placement.attach(map, this.scene!, this.camera!);
+		},
+		render: (_gl, args) => {
+			if (!this.scene || !this.camera || !this.renderer) return;
+			this.placement.hide();
+			if (this.loadedModels.size === 0 && !this.placement.hasPreview) return;
+			const projection = new THREE.Matrix4().fromArray(args.defaultProjectionData.mainMatrix);
+			this.interaction.setProjection(projection);
+			this.placement.setProjection(projection);
+			const hasPlayingAnimation = this.updateAnimations();
+			if (this.activeModelView) {
+				this.modelRenderer.renderActiveModelView(this.loadedModels, this.activeModelView);
+			} else {
 				this.updateModelLods();
-
-				if (this.placementPreview) {
-					this.setOnlyEntryVisible('', false);
-					renderPlacementPreviewPass({
-						camera: this.camera,
-						object: this.placementPreview.object,
-						projectionMatrix: mapProjectionMatrix
-							.clone()
-							.multiply(this.placementPreview.transform.matrix),
-						renderer: this.renderer,
-						scene: this.scene
-					});
-					this.renderPlacementScaleHandles(mapProjectionMatrix);
-				} else if (this.placementLabelRenderer) {
-					this.placementLabelRenderer.domElement.style.display = 'none';
+				if (this.placement.hasPreview) {
+					this.modelRenderer.setOnlyEntryVisible('', false);
+					this.placement.render(projection, this.renderer);
 				}
-
-				this.loadedModels.forEach((loaded) => {
-					if (isMeshModelEntry(loaded.entry) && loaded.entry.style.showThroughTerrain) {
-						return;
-					}
-					if (isGaussianSplatEntry(loaded.entry)) {
-						applyGaussianSplatStyle(
-							loaded.object,
-							loaded.entry.style,
-							this.map?.getCanvas().clientHeight
-						);
-					}
-					this.restoreModelDepthState(loaded.object);
-
-					const modelMatrix = loaded.transform.matrix.clone();
-					const projectionMatrix = mapProjectionMatrix.clone();
-					this.camera!.projectionMatrix = projectionMatrix.multiply(modelMatrix);
-
-					this.setOnlyEntryVisible(
-						loaded.entry.id,
-						loaded.entry.style.visible ?? true,
-						loaded.object
-					);
-
-					this.renderer!.resetState();
-					this.renderer!.render(this.scene!, this.camera!);
-				});
-
-				this.loadedModels.forEach((loaded) => {
-					if (!isMeshModelEntry(loaded.entry) || !loaded.entry.style.showThroughTerrain) {
-						return;
-					}
-					this.renderOverlayModel(loaded, mapProjectionMatrix);
-				});
-
-				if (hasPlayingAnimation) {
-					this.map?.triggerRepaint();
-				}
-			},
-
-			onRemove: () => {
-				this.removePlacementPointerListeners();
-				this.removePlacementLabelRenderer();
-				this.clearAllModels();
+				this.modelRenderer.renderModels(
+					this.loadedModels,
+					projection,
+					this.map?.getCanvas().clientHeight
+				);
 			}
-		};
-	}
+			if (hasPlayingAnimation) this.map?.triggerRepaint();
+		},
+		onRemove: () => {
+			this.interaction.detach();
+			this.placement.detach();
+			this.clearAllModels();
+		}
+	});
 
 	/** モデルを追加。プレビューに同じIDのモデルがあれば再利用する */
 	addModel(entry: ThreeModelEntry, _type: 'main' | 'preview' = 'main'): Promise<void> {
@@ -2618,7 +722,7 @@ export class ThreeJsLayerManager {
 				return;
 			}
 
-			const transform = calculateModelTransform(entry.style);
+			const transform = this.calculateTransform(entry.style);
 
 			if (_type === 'main') {
 				const existing = this.loadedModels.get(entry.id);
@@ -2646,6 +750,8 @@ export class ThreeJsLayerManager {
 				}
 			}
 
+			const loadToken = Symbol(entry.id);
+			this.pendingModelLoads.set(entry.id, { token: loadToken, type: _type });
 			const onModelLoaded = async (
 				model: THREE.Group | THREE.Object3D,
 				animations: THREE.AnimationClip[] = [],
@@ -2665,6 +771,12 @@ export class ThreeJsLayerManager {
 					applyGaussianSplatStyle(model, entry.style, this.map?.getCanvas().clientHeight);
 				}
 
+				if (this.pendingModelLoads.get(entry.id)?.token !== loadToken) {
+					this.disposeModelObject(model);
+					resolve();
+					return;
+				}
+				this.pendingModelLoads.delete(entry.id);
 				model.visible = entry.style.visible ?? true;
 				model.userData.entryId = entry.id;
 				const loaded: LoadedModel = {
@@ -2726,488 +838,26 @@ export class ThreeJsLayerManager {
 				resolve();
 			};
 
-			if (isGaussianSplatEntry(entry)) {
-				const cachedData = takeGaussianSplatData(entry.id);
-				if (cachedData) {
-					void onModelLoaded(createGaussianSplatObject(cachedData, entry.style));
-					return;
+			this.modelLoader.load(entry, {
+				lodUrl: isMeshModelEntry(entry) ? this.getModelLodUrl(entry) : undefined,
+				onResourcesLoaded: () => {
+					if (this.map) this.requestRepaintBurst(180);
 				}
-				fetch(entry.format.url)
-					.then(async (response) => {
-						if (!response.ok) {
-							throw new Error(
-								`3D Gaussian Splattingを取得できません: ${response.status} ${response.statusText}`
-							);
-						}
-						return await parseGaussianSplatInWorker(
-							await response.arrayBuffer(),
-							entry.format.encoding
-						);
-					})
-					.then((data) => onModelLoaded(createGaussianSplatObject(data, entry.style)))
-					.catch((error) =>
-						reject(error instanceof Error ? error : new Error(String(error)))
-					);
-				return;
-			}
-
-			const finalizeLoadedModel = (object: THREE.Object3D) => {
-				finalizeRuntimeModelObject(object, {
-					formatType: entry.format.type,
-					georeference: entry.format.georeference,
-					normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
-					upAxis: entry.format.upAxis
-				});
-			};
-
-			const finalizeAndLoadModel = (
-				object: THREE.Object3D,
-				animations: THREE.AnimationClip[] = [],
-				resolveAttributes?: (
-					hit: THREE.Intersection<THREE.Object3D>
-				) => Promise<ModelAttributes>,
-				mmdModel?: LoadedPmxModel,
-				vrm?: VRM,
-				lodUrl?: string
-			) => {
-				finalizeLoadedModel(object);
-				vrm?.update(0);
-				void onModelLoaded(object, animations, resolveAttributes, mmdModel, vrm, lodUrl)
-					.catch((
-						error
-					) => reject(error instanceof Error ? error : new Error(String(error))));
-			};
-
-			const createManagedLoaderContext = () => {
-				const manager = new THREE.LoadingManager();
-				manager.onLoad = () => {
-					this.requestRepaintBurst(180);
-				};
-				return manager;
-			};
-
-			if (entry.format.type === 'obj') {
-				const manager = createManagedLoaderContext();
-				const resourceUrls = entry.format.resourceUrls;
-				if (resourceUrls) {
-					manager.setURLModifier((url) => {
-						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
-						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
-						const fileName = normalizedUrl.split('/').pop() ?? '';
-						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
-						);
-					});
+			}).then(asset =>
+				onModelLoaded(
+					asset.object,
+					asset.animations,
+					asset.resolveAttributes,
+					asset.mmdModel,
+					asset.vrm,
+					asset.lodUrl
+				)
+			).catch(error => {
+				if (this.pendingModelLoads.get(entry.id)?.token === loadToken) {
+					this.pendingModelLoads.delete(entry.id);
 				}
-				const objLoader = new OBJLoader(manager);
-				const loadObj = () => {
-					objLoader.load(
-						entry.format.url,
-						(obj) => finalizeAndLoadModel(obj),
-						undefined,
-						(error) => reject(error)
-					);
-				};
-
-				if (entry.format.mtlUrl) {
-					const mtlLoader = new MTLLoader(manager);
-					mtlLoader.setMaterialOptions({ side: THREE.DoubleSide });
-					mtlLoader.setResourcePath('');
-					mtlLoader.load(
-						entry.format.mtlUrl,
-						(materials) => {
-							materials.preload();
-							objLoader.setMaterials(materials);
-							loadObj();
-						},
-						undefined,
-						() => loadObj()
-					);
-				} else {
-					loadObj();
-				}
-			} else if (entry.format.type === '3ds') {
-				const manager = createManagedLoaderContext();
-				const resourceUrls = entry.format.resourceUrls;
-				if (resourceUrls) {
-					manager.setURLModifier((url) => {
-						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
-						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
-						const fileName = normalizedUrl.split('/').pop() ?? '';
-						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
-						);
-					});
-				}
-				loadTdsLoaderModule()
-					.then(({ TDSLoader }) => {
-						const tdsLoader = new TDSLoader(manager);
-						if (!resourceUrls) {
-							try {
-								tdsLoader.setResourcePath(new URL('./', entry.format.url).href);
-							} catch {
-								// blob URL などは URL 基底を組めないので、そのままロードする。
-							}
-						}
-						tdsLoader.load(
-							entry.format.url,
-							(object) => finalizeAndLoadModel(object),
-							undefined,
-							(error) => reject(error)
-						);
-					})
-					.catch((error) => reject(error));
-			} else if (entry.format.type === 'dae') {
-				const manager = createManagedLoaderContext();
-				const resourceUrls = entry.format.resourceUrls;
-				if (resourceUrls) {
-					manager.setURLModifier((url) => {
-						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
-						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
-						const fileName = normalizedUrl.split('/').pop() ?? '';
-						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
-						);
-					});
-				}
-				loadColladaLoaderModule()
-					.then(({ ColladaLoader }) => {
-						const colladaLoader = new ColladaLoader(manager);
-						colladaLoader.load(
-							entry.format.url,
-							(collada) =>
-								finalizeAndLoadModel(collada.scene, collada.scene.animations),
-							undefined,
-							(error) => reject(error)
-						);
-					})
-					.catch((error) => reject(error));
-			} else if (entry.format.type === '3dm') {
-				const manager = createManagedLoaderContext();
-				const resourceUrls = entry.format.resourceUrls;
-				if (resourceUrls) {
-					manager.setURLModifier((url) => {
-						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
-						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
-						const fileName = normalizedUrl.split('/').pop() ?? '';
-						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
-						);
-					});
-				}
-				loadRhino3dmLoaderModule()
-					.then(({ Rhino3dmLoader }) => {
-						const rhinoLoader = new Rhino3dmLoader(manager);
-						rhinoLoader.setLibraryPath(RHINO3DM_LIBRARY_PATH);
-						rhinoLoader.load(
-							entry.format.url,
-							(object) => finalizeAndLoadModel(object),
-							undefined,
-							(error) => reject(error)
-						);
-					})
-					.catch((error) => reject(error));
-			} else if (entry.format.type === 'vrml') {
-				const manager = createManagedLoaderContext();
-				void fetch(entry.format.url)
-					.then(async (response) => {
-						if (!response.ok) {
-							throw new Error(`VRMLファイルを取得できません: ${response.status}`);
-						}
-						const { parseVrmlText } = await import('$routes/map/utils/formats/vrml');
-						const resourcePath = /^https?:/i.test(entry.format.url)
-							? new URL('./', entry.format.url).href
-							: '';
-						return parseVrmlText(await response.text(), {
-							manager,
-							resourceUrls: entry.format.resourceUrls,
-							resourcePath: entry.format.resourceUrls ? '' : resourcePath
-						});
-					})
-					.then((object) => finalizeAndLoadModel(object))
-					.catch((error) => reject(error));
-			} else if (entry.format.type === 'fbx') {
-				const manager = createManagedLoaderContext();
-				const resourceUrls = entry.format.resourceUrls;
-				if (resourceUrls) {
-					manager.setURLModifier((url) => {
-						const normalizedUrl = url.replace(/\\/g, '/').toLowerCase();
-						const relativeWithoutRoot = normalizedUrl.split('/').slice(1).join('/');
-						const fileName = normalizedUrl.split('/').pop() ?? '';
-						return (
-							resourceUrls[normalizedUrl]
-								?? resourceUrls[relativeWithoutRoot]
-								?? resourceUrls[fileName]
-								?? url
-						);
-					});
-				}
-				loadFbxLoaderModule()
-					.then(async ({ FBXLoader }) => {
-						const fbxLoader = new FBXLoader(manager);
-						let resourcePath = '';
-						if (!resourceUrls) {
-							try {
-								resourcePath = new URL('./', entry.format.url).href;
-							} catch {
-								// blob URL などは URL 基底を組めないので、そのまま解析する。
-							}
-						}
-
-						const response = await fetch(entry.format.url);
-						if (!response.ok) {
-							throw new Error(
-								`Failed to fetch FBX: ${response.status} ${response.statusText}`
-							);
-						}
-
-						const buffer = await response.arrayBuffer();
-						const object = fbxLoader.parse(buffer, resourcePath);
-						const fallbackTextureResult = applyFbxTextureFallback(object, resourceUrls);
-						const attributesByModelId = parseFbxModelAttributes(buffer);
-						const geometricTransformCurveCount = applyFbxCurveGeometricTransform(
-							object,
-							attributesByModelId
-						);
-						const generatedTextCount = createFbxTextMeshes(object, attributesByModelId);
-						let modelIdCount = 0;
-						let matchedAttributeCount = 0;
-						object.traverse((child) => {
-							const modelId = (child as THREE.Object3D & { ID?: number; }).ID;
-							if (modelId == null) return;
-							modelIdCount += 1;
-							const attributes = attributesByModelId[String(modelId)];
-							if (attributes) {
-								child.userData.morivisFbxAttributes = attributes;
-								matchedAttributeCount += 1;
-							}
-						});
-						if (!import.meta.env.PROD) {
-							console.info('[FBX属性] 読み込み結果', {
-								attributeModelCount: Object.keys(attributesByModelId).length,
-								modelIdCount,
-								matchedAttributeCount,
-								geometricTransformCurveCount,
-								generatedTextCount,
-								fallbackTextureMaterialCount:
-									fallbackTextureResult.mappedMaterialCount,
-								fallbackTextureMappings: fallbackTextureResult.mappings,
-								resourceTextureFiles: Object.keys(resourceUrls ?? {}).filter(
-									(path) => !path.includes('/')
-								)
-							});
-						}
-						finalizeAndLoadModel(
-							object,
-							(
-								object as THREE.Group & {
-									animations?: THREE.AnimationClip[];
-								}
-							).animations ?? []
-						);
-					})
-					.catch((error) => reject(error));
-			} else if (entry.format.type === 'gltf') {
-				const gltfUrl = this.getModelLodUrl(entry);
-				const resourceUrls = entry.format.resourceUrls;
-				if (!resourceUrls) {
-					this.loader.load(
-						gltfUrl,
-						(gltf) =>
-							finalizeAndLoadModel(
-								gltf.scene,
-								gltf.animations,
-								undefined,
-								undefined,
-								undefined,
-								gltfUrl
-							),
-						undefined,
-						(error) => reject(error)
-					);
-				} else {
-					const manager = createManagedLoaderContext();
-					manager.setURLModifier((url) => resolveResourceUrl(resourceUrls, url));
-					const loader = this.createGltfLoader(manager);
-
-					fetch(gltfUrl)
-						.then(async (response) => {
-							if (!response.ok) {
-								throw new Error(
-									`Failed to fetch glTF: ${response.status} ${response.statusText}`
-								);
-							}
-
-							const buffer = await response.arrayBuffer();
-							const data = isBinaryGltfBuffer(buffer)
-								? buffer
-								: new TextDecoder().decode(buffer);
-
-							loader.parse(
-								data,
-								'',
-								(gltf) =>
-									finalizeAndLoadModel(
-										gltf.scene,
-										gltf.animations,
-										undefined,
-										undefined,
-										undefined,
-										gltfUrl
-									),
-								(error) =>
-									reject(
-										error instanceof Error ? error : new Error(String(error))
-									)
-							);
-						})
-						.catch((error) => reject(error));
-				}
-			} else if (entry.format.type === 'vrm') {
-				const manager = createManagedLoaderContext();
-				createVrmLoader(this.dracoLoader, manager, this.ktx2Loader)
-					.then((loader) => {
-						loader.load(
-							entry.format.url,
-							(gltf) => {
-								try {
-									const vrm = getVrmFromGltf(gltf);
-									void rotateVrm0IfNeeded(vrm)
-										.then(() =>
-											finalizeAndLoadModel(
-												vrm.scene,
-												gltf.animations,
-												undefined,
-												undefined,
-												vrm
-											)
-										)
-										.catch((error) =>
-											reject(
-												error instanceof Error
-													? error
-													: new Error(String(error))
-											)
-										);
-								} catch (error) {
-									reject(
-										error instanceof Error ? error : new Error(String(error))
-									);
-								}
-							},
-							undefined,
-							(error) => reject(error)
-						);
-					})
-					.catch((error) => reject(error));
-			} else if (entry.format.type === 'drc') {
-				this.dracoLoader.load(
-					entry.format.url,
-					(geometry) => {
-						if (!geometry.getAttribute('normal')) {
-							geometry.computeVertexNormals();
-						}
-						finalizeAndLoadModel(
-							new THREE.Mesh(
-								geometry,
-								new THREE.MeshStandardMaterial({ color: '#ffffff' })
-							)
-						);
-					},
-					undefined,
-					(error) => reject(error)
-				);
-			} else if (entry.format.type === '3mf') {
-				loadThreeMfLoaderModule()
-					.then(({ ThreeMFLoader }) => {
-						const loader = new ThreeMFLoader();
-						loader.load(
-							entry.format.url,
-							(object) => finalizeAndLoadModel(object),
-							undefined,
-							(error) => reject(error)
-						);
-					})
-					.catch((error) => reject(error));
-			} else if (entry.format.type === 'amf') {
-				loadAmfLoaderModule()
-					.then(({ AMFLoader }) => {
-						const loader = new AMFLoader();
-						loader.load(
-							entry.format.url,
-							(object) => finalizeAndLoadModel(object),
-							undefined,
-							(error) => reject(error)
-						);
-					})
-					.catch((error) => reject(error));
-			} else if (entry.format.type === 'stl') {
-				Promise.all([fetch(entry.format.url), loadStlFormatModule()])
-					.then(async ([response, { parseStlArrayBuffer }]) => {
-						if (!response.ok) {
-							throw new Error(
-								`STLを取得できません: ${response.status} ${response.statusText}`
-							);
-						}
-						return parseStlArrayBuffer(await response.arrayBuffer());
-					})
-					.then((object) => finalizeAndLoadModel(object))
-					.catch((error) =>
-						reject(error instanceof Error ? error : new Error(String(error)))
-					);
-			} else if (entry.format.type === 'ifc') {
-				loadIfcLoaderModule()
-					.then(({ IFCLoader }) => {
-						const loader = new IFCLoader();
-						return configureIfcWasmPath(loader.ifcManager).then(() => {
-							loader.load(
-								entry.format.url,
-								(object) =>
-									finalizeAndLoadModel(
-										object,
-										[],
-										(hit) => this.resolveIfcAttributes(object, hit)
-									),
-								undefined,
-								(error) => reject(error)
-							);
-						});
-					})
-					.catch((error) => reject(error));
-			} else if (entry.format.type === 'pmx') {
-				loadPmxModel(entry.format.url, entry.format.resourceUrls)
-					.then((mmdModel) =>
-						finalizeAndLoadModel(mmdModel.model.root, [], undefined, mmdModel)
-					)
-					.catch((error) => reject(error));
-			} else if (entry.format.type === 'usd') {
-				fetch(entry.format.url)
-					.then(async (response) => {
-						if (!response.ok) {
-							throw new Error(
-								`USDを取得できません: ${response.status} ${response.statusText}`
-							);
-						}
-						return parseUsdArrayBuffer(
-							await response.arrayBuffer(),
-							entry.format.url
-						);
-					})
-					.then((object) => finalizeAndLoadModel(object))
-					.catch((error) => reject(error));
-			}
+				reject(error);
+			});
 		});
 	}
 
@@ -3221,53 +871,23 @@ export class ThreeJsLayerManager {
 			const loaded = this.loadedModels.get(entry.id);
 			if (!loaded) return;
 
-			const transform = calculateModelTransform(entry.style);
+			const transform = this.calculateTransform(entry.style);
 			loaded.transform = transform;
 			loaded.entry = entry;
 			this.syncAnimationState(loaded);
 		});
 	}
 
-	private disposeModelObject = (object: THREE.Object3D) => {
-		const disposedTextures = new Set<THREE.Texture>();
-		object.traverse((child) => {
-			if (!(child as THREE.Mesh).isMesh && !(child as THREE.Points).isPoints) return;
-
-			const drawable = child as THREE.Mesh | THREE.Points;
-			if (
-				!drawable.userData.morivisEdgeOverlay
-				|| drawable.userData.morivisGeneratedEdgeUv === true
-			) {
-				drawable.geometry.dispose();
-			}
-			const materials = Array.isArray(drawable.material)
-				? drawable.material
-				: [drawable.material];
-			materials.forEach((material) => {
-				const map = (material as THREE.MeshBasicMaterial).map;
-				if (
-					map && isGeneratedFbxTextTexture(map) && !disposedTextures.has(map)
-				) {
-					map.dispose();
-					disposedTextures.add(map);
-				}
-				material.dispose();
-			});
-			const originalMaterials = drawable.userData.originalMaterials as
-				| THREE.Material[]
-				| undefined;
-			originalMaterials?.forEach((material) => material.dispose());
-		});
-	};
+	private disposeModelObject = (object: THREE.Object3D) =>
+		this.materials.disposeModelObject(object);
 
 	/** モデルを削除 */
 	removeModel(entryId: string): void {
+		this.pendingModelLoads.delete(entryId);
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
 		if (
-			this.selectedModelHighlights.some(
-				(highlight) => loaded.object.getObjectById(highlight.mesh.id) === highlight.mesh
-			)
+			this.interaction.hasHighlightIn(loaded.object)
 		) {
 			this.clearModelHighlight();
 		}
@@ -3281,6 +901,7 @@ export class ThreeJsLayerManager {
 
 	/** すべてのモデルを削除 */
 	clearAllModels(): void {
+		this.pendingModelLoads.clear();
 		this.loadedModels.forEach((_, entryId) => {
 			this.removeModel(entryId);
 		});
@@ -3542,7 +1163,7 @@ export class ThreeJsLayerManager {
 		const loaded = this.loadedModels.get(entry.id);
 		if (!loaded) return;
 		loaded.entry = entry;
-		loaded.transform = calculateModelTransform(entry.style);
+		loaded.transform = this.calculateTransform(entry.style);
 		if (isMeshModelEntry(entry)) {
 			if (entry.format.type === 'ifc') {
 				await this.applyIfcPartColors(loaded.object, entry.style);
@@ -3557,7 +1178,7 @@ export class ThreeJsLayerManager {
 	setModelTransform(entryId: string, style: ModelTransformStyle): void {
 		const loaded = this.loadedModels.get(entryId);
 		if (!loaded) return;
-		const newTransform = calculateModelTransform(style);
+		const newTransform = this.calculateTransform(style);
 		loaded.transform = newTransform;
 		loaded.entry = { ...loaded.entry, style } as ThreeModelEntry;
 		this.syncAnimationState(loaded);
@@ -3655,213 +1276,20 @@ export class ThreeJsLayerManager {
 	}
 
 	/** 既存の MapLibre/Three.js 描画コンテキストで単体ビューを開始する。 */
-	openModelView(
-		entryIds: string[],
-		initialCamera?: ModelViewCameraOptions,
-		includeHighlights = false
-	): ModelViewSession | null {
-		if (
-			!this.scene || !this.renderer || !this.map || !this.modelGroup
-			|| !this.previewModelGroup
-		) {
-			return null;
-		}
-		const canvas = this.map.getCanvas();
-		const loaded = entryIds
-			.map((entryId) => this.loadedModels.get(entryId))
-			.filter((model): model is LoadedModel => model != null);
-		if (loaded.length === 0) return null;
-		const isPlySplatOnlyView = loaded.every((model) =>
-			isGaussianSplatEntry(model.entry) && model.entry.format.encoding !== 'spz'
-		);
+	openModelView = (
+		...args: Parameters<ModelInteractionController['openModelView']>
+	): ReturnType<ModelInteractionController['openModelView']> =>
+		this.interaction.openModelView(...args);
 
-		this.closeModelView();
-		const axisWrappers = loaded.flatMap((model) => {
-			if (!isMeshModelEntry(model.entry)) return [];
-			const rotationX = getModelViewAxisRotationX(
-				model.entry.format.type,
-				model.entry.style.transform.baseRotationX
-			);
-			const parent = model.object.parent;
-			if (rotationX === 0 || !parent) return [];
+	requestModelViewRepaint = (
+		...args: Parameters<ModelInteractionController['requestModelViewRepaint']>
+	): ReturnType<ModelInteractionController['requestModelViewRepaint']> =>
+		this.interaction.requestModelViewRepaint(...args);
 
-			const wrapper = new THREE.Group();
-			wrapper.rotation.x = THREE.MathUtils.degToRad(rotationX);
-			parent.add(wrapper);
-			wrapper.add(model.object);
-			return [{ object: model.object, parent, wrapper }];
-		});
-		const bounds = new THREE.Box3();
-		loaded.forEach((model) => {
-			model.object.updateWorldMatrix(true, true);
-			bounds.expandByObject(model.object);
-		});
-		if (bounds.isEmpty()) {
-			axisWrappers.forEach(({ object, parent, wrapper }) => {
-				wrapper.remove(object);
-				parent.add(object);
-				wrapper.parent?.remove(wrapper);
-			});
-			return null;
-		}
-		const modelSize = bounds.getSize(new THREE.Vector3());
-		const largestDimension = Math.max(modelSize.x, modelSize.y, modelSize.z, 1);
-		const floorGridSize = Math.max(modelSize.x, modelSize.z, 1) * 2;
-		const floorGrid = new THREE.GridHelper(floorGridSize, 20, '#64748b', '#cbd5e1');
-		const floorOffset = Math.max(largestDimension * 0.0001, 0.00001);
-		const modelCenter = bounds.getCenter(new THREE.Vector3());
-		const floorY = resolveModelViewFloorY(
-			bounds,
-			loaded.map((model) => model.entry.properties?.modelView?.floorY)
-		);
-		floorGrid.position.set(modelCenter.x, floorY - floorOffset, modelCenter.z);
-		const floorGridMaterials = Array.isArray(floorGrid.material)
-			? floorGrid.material
-			: [floorGrid.material];
-		floorGridMaterials.forEach((material) => {
-			material.transparent = true;
-			material.opacity = 0.55;
-			material.depthWrite = false;
-		});
-
-		const camera: THREE.PerspectiveCamera | THREE.OrthographicCamera =
-			initialCamera?.type === 'orthographic'
-				? new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 1_000_000)
-				: new THREE.PerspectiveCamera(45, 1, 0.01, 1_000_000);
-		const activeModelView: ActiveModelView = {
-			entryIds: new Set(loaded.map((model) => model.entry.id)),
-			camera,
-			target: new THREE.Vector3(),
-			floorGrid,
-			highlightVisibility: new Map(),
-			axisWrappers,
-			modelGroupVisible: this.modelGroup.visible,
-			previewVisible: this.previewModelGroup.visible
-		};
-		this.activeModelView = activeModelView;
-		this.scene.add(floorGrid);
-		this.modelGroup.visible = true;
-		this.previewModelGroup.visible = false;
-		loaded.forEach((model) => {
-			model.object.traverse((child) => {
-				if (!child.userData.morivisSelectionHighlight) return;
-				activeModelView.highlightVisibility.set(child, child.visible);
-				child.visible = includeHighlights;
-			});
-		});
-
-		const fitModel = () => {
-			const center = bounds.getCenter(new THREE.Vector3());
-			const distance = (largestDimension / (2 * Math.tan(THREE.MathUtils.degToRad(45 / 2))))
-				* MODEL_VIEW_INITIAL_CAMERA_DISTANCE_SCALE;
-
-			camera.near = Math.max(largestDimension / 10_000, 0.001);
-			camera.far = Math.max(largestDimension * 100, 1_000);
-			// 3DGS PLYはMapLibreの画面座標と上下が逆になるため、単体ビューだけ上方向を反転する。
-			camera.up.set(0, isPlySplatOnlyView ? -1 : 1, 0);
-			camera.position.copy(center).add(new THREE.Vector3(distance, distance * 0.7, distance));
-			camera.lookAt(center);
-			if (camera instanceof THREE.PerspectiveCamera) {
-				camera.fov = 45;
-			} else {
-				const halfSize = largestDimension * 0.65;
-				camera.top = halfSize;
-				camera.bottom = -halfSize;
-			}
-			activeModelView.target.copy(center);
-			this.resizeModelView();
-		};
-
-		fitModel();
-		if (initialCamera) {
-			camera.position.set(...initialCamera.position);
-			camera.up.set(...initialCamera.up);
-			activeModelView.target
-				.set(...initialCamera.position)
-				.add(new THREE.Vector3(...initialCamera.direction));
-			if (camera instanceof THREE.PerspectiveCamera && initialCamera.fieldOfView) {
-				camera.fov = initialCamera.fieldOfView;
-			}
-			if (camera instanceof THREE.OrthographicCamera && initialCamera.viewToWorldScale) {
-				const halfScale = initialCamera.viewToWorldScale / 2;
-				camera.top = halfScale;
-				camera.bottom = -halfScale;
-			}
-			this.resizeModelView();
-		}
-		this.map.triggerRepaint();
-
-		return {
-			camera,
-			canvas,
-			container: this.map.getContainer(),
-			movementSpeed: Math.max(
-				largestDimension / MODEL_VIEW_FPS_MOVEMENT_SPEED_DIVISOR,
-				MODEL_VIEW_FPS_MIN_MOVEMENT_SPEED
-			),
-			getTarget: () => activeModelView.target.clone(),
-			resetView: fitModel,
-			resize: this.resizeModelView
-		};
-	}
-
-	private resizeModelView = () => {
-		const activeModelView = this.activeModelView;
-		const map = this.map;
-		if (!activeModelView || !map) return;
-
-		const container = map.getContainer();
-		if (container.clientWidth === 0 || container.clientHeight === 0) {
-			return;
-		}
-
-		// WebGLキャンバスはMapLibreと共有しているため、描画バッファのサイズ変更もMapLibreに任せる。
-		map.resize();
-
-		const { camera } = activeModelView;
-		const aspect = container.clientWidth / container.clientHeight;
-		if (camera instanceof THREE.PerspectiveCamera) {
-			camera.aspect = aspect;
-		} else {
-			const halfHeight = (camera.top - camera.bottom) / 2;
-			camera.left = -halfHeight * aspect;
-			camera.right = halfHeight * aspect;
-		}
-		camera.updateProjectionMatrix();
-		map.triggerRepaint();
-	};
-
-	requestModelViewRepaint(): void {
-		if (this.activeModelView) this.map?.triggerRepaint();
-	}
-
-	closeModelView(): void {
-		const activeModelView = this.activeModelView;
-		if (!activeModelView) return;
-
-		activeModelView.highlightVisibility.forEach((visible, highlight) => {
-			highlight.visible = visible;
-		});
-		activeModelView.axisWrappers.forEach(({ object, parent, wrapper }) => {
-			wrapper.remove(object);
-			parent.add(object);
-			wrapper.parent?.remove(wrapper);
-		});
-		this.scene?.remove(activeModelView.floorGrid);
-		activeModelView.floorGrid.dispose();
-		if (this.modelGroup) {
-			this.modelGroup.visible = activeModelView.modelGroupVisible;
-		}
-		if (this.previewModelGroup) {
-			this.previewModelGroup.visible = activeModelView.previewVisible;
-		}
-		this.setOnlyEntryVisible('', false);
-		this.loadedModels.forEach((loaded) => {
-			loaded.object.visible = loaded.entry.style.visible ?? true;
-		});
-		this.activeModelView = null;
-		this.map?.triggerRepaint();
-	}
+	closeModelView = (
+		...args: Parameters<ModelInteractionController['closeModelView']>
+	): ReturnType<ModelInteractionController['closeModelView']> =>
+		this.interaction.closeModelView(...args);
 
 	async exportModelAsGlb(entryId: string): Promise<ArrayBuffer> {
 		const loaded = this.loadedModels.get(entryId);
@@ -3926,6 +1354,11 @@ export class ThreeJsLayerManager {
 
 	/** プレビューモデルをクリア（確定しない場合） */
 	clearPreview(entryId?: string): void {
+		this.pendingModelLoads.forEach((load, id) => {
+			if (load.type === 'preview' && (!entryId || id === entryId)) {
+				this.pendingModelLoads.delete(id);
+			}
+		});
 		if (!this.previewModelGroup) return;
 
 		if (entryId) {
@@ -3945,43 +1378,24 @@ export class ThreeJsLayerManager {
 	}
 
 	/** 完全に破棄（ページ離脱時など） */
-	dispose(): void {
-		this.clearModelHighlight();
-		this.removePlacementPointerListeners();
-		this.clearPlacementPreview();
-		this.removePlacementLabelRenderer();
-		this.placementTransformChangeHandler = null;
-		this.clearAllModels();
-		this.overlayRenderTarget?.dispose();
-		this.overlayScene?.traverse((child) => {
-			if (!(child as THREE.Mesh).isMesh) return;
-			const mesh = child as THREE.Mesh;
-			mesh.geometry.dispose();
-			const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-			materials.forEach((material) => material.dispose());
-		});
-		if (this.renderer) {
-			this.renderer.dispose();
-			this.renderer = null;
+	dispose = (): void => {
+		this.interaction.detach();
+		if (this.repaintBurstHandle != null && typeof window !== 'undefined') {
+			window.cancelAnimationFrame(this.repaintBurstHandle);
 		}
-		this.ktx2Loader.dispose();
-		this.modelGroup = null;
-		this.previewModelGroup = null;
-		this.overlayRenderTarget = null;
-		this.overlayScene = null;
-		this.overlayCamera = null;
+		this.repaintBurstHandle = null;
+		this.placement.dispose();
+		this.clearAllModels();
+		this.modelRenderer.dispose();
+		this.modelLoader.dispose();
 		this.loadedModels.clear();
-		this.scene = null;
-		this.camera = null;
 		this.map = null;
-		this.isInitialized = false;
 		this.lastRenderTimeMs = null;
-		this.lastMapProjectionMatrix = null;
-	}
+	};
 
 	/** 初期化済みかどうか */
 	get initialized(): boolean {
-		return this.isInitialized;
+		return this.modelRenderer.initialized;
 	}
 
 	/** ロード済みモデルのIDリスト */
@@ -3989,218 +1403,14 @@ export class ThreeJsLayerManager {
 		return Array.from(this.loadedModels.keys());
 	}
 
-	private createPickedModelFeature = async (
-		loaded: LoadedModel,
-		hit: THREE.Intersection<THREE.Object3D>
-	): Promise<PickedModelFeature> => {
-		const fbxAttributeObject = resolveFbxModelAttributes(hit.object, loaded.object);
-		const expressId = loaded.entry.format.type === 'ifc'
-			? this.getIfcExpressId(loaded.object, hit)
-			: undefined;
-		let formatAttributes: ModelAttributes = Object.fromEntries(
-			Object.entries(fbxAttributeObject.attributes ?? {}).map(([key, value]) => [
-				key,
-				Array.isArray(value) ? value.join(', ') : value
-			])
-		);
-		if (loaded.resolveAttributes) {
-			try {
-				formatAttributes = {
-					...formatAttributes,
-					...(await loaded.resolveAttributes(hit))
-				};
-			} catch (error) {
-				console.warn('[モデル属性] 形式固有属性の取得に失敗しました', error);
-			}
-		}
-		const attributeObject = loaded.entry.format.type === 'fbx'
-			? fbxAttributeObject.object
-			: hit.object;
-		const objectId = expressId ?? (attributeObject as THREE.Object3D & { ID?: number; }).ID
-			?? attributeObject.id;
-		const hitMesh = hit.object as THREE.Mesh;
-		const propId = this.getModelPartId(hit.object);
-		const part = propId ? loaded.entry.properties?.detailsById?.[propId] : undefined;
-		this.highlightModelMeshes(
-			expressId == null ? this.getModelPartMeshes(hitMesh) : [hitMesh],
-			expressId
-		);
-		const attributes = {
-			...getModelObjectAttributes(hit.object),
-			...formatAttributes,
-			...part?.attributes
-		};
-		delete attributes._prop_id;
-		return {
-			entryId: loaded.entry.id,
-			objectId: String(objectId),
-			objectName: this.resolvePickedObjectName(attributeObject, loaded.object),
-			propId,
-			attributes,
-			part
-		};
-	};
+	pickModelInActiveView = (
+		...args: Parameters<ModelInteractionController['pickModelInActiveView']>
+	): ReturnType<ModelInteractionController['pickModelInActiveView']> =>
+		this.interaction.pickModelInActiveView(...args);
 
-	private isSelectedModelIntersection = (
-		loaded: LoadedModel,
-		intersection: THREE.Intersection<THREE.Object3D>
-	) => {
-		const selectedHighlights = this.selectedModelHighlights.filter(
-			(highlight) => highlight.mesh === intersection.object
-		);
-		if (selectedHighlights.length === 0) return false;
-		if (loaded.entry.format.type !== 'ifc') return true;
-
-		// IFC は複数部材が同じ Mesh を共有するため、選択済みの Express ID だけを除外する。
-		const expressId = this.getIfcExpressId(loaded.object, intersection);
-		return selectedHighlights.some((highlight) => highlight.expressId === expressId);
-	};
-
-	async pickModelInActiveView(point: {
-		clientX: number;
-		clientY: number;
-	}): Promise<PickedModelFeature | null> {
-		const activeModelView = this.activeModelView;
-		const canvas = this.map?.getCanvas();
-		if (!activeModelView || !canvas) return null;
-
-		const rect = canvas.getBoundingClientRect();
-		if (rect.width === 0 || rect.height === 0) return null;
-		const raycaster = new THREE.Raycaster();
-		raycaster.setFromCamera(
-			new THREE.Vector2(
-				((point.clientX - rect.left) / rect.width) * 2 - 1,
-				1 - ((point.clientY - rect.top) / rect.height) * 2
-			),
-			activeModelView.camera
-		);
-		const targetEntries = Array.from(this.loadedModels.values()).filter(
-			(loaded) =>
-				activeModelView.entryIds.has(loaded.entry.id)
-				&& isMeshModelEntry(loaded.entry)
-				&& CLICKABLE_MODEL_FORMATS.has(loaded.entry.format.type)
-				&& (loaded.entry.style.visible ?? true)
-		);
-		let closest: { loaded: LoadedModel; hit: THREE.Intersection<THREE.Object3D>; } | null =
-			null;
-		for (const loaded of targetEntries) {
-			const hit = raycaster
-				.intersectObject(loaded.object, true)
-				.find(
-					(intersection) =>
-						!intersection.object.userData.morivisSelectionHighlight
-						&& !this.isSelectedModelIntersection(loaded, intersection)
-				);
-			if (hit && (!closest || hit.distance < closest.hit.distance)) {
-				closest = { loaded, hit };
-			}
-		}
-		if (!closest) return null;
-
-		return this.createPickedModelFeature(closest.loaded, closest.hit);
-	}
-
-	async pickModel(
-		point: { x: number; y: number; }
-	): Promise<PickedModelFeature | PickedLowerDetailLod | null> {
-		if (!import.meta.env.PROD) console.info('[モデル pick] 開始', { point });
-		if (!this.map || !this.lastMapProjectionMatrix) {
-			if (!import.meta.env.PROD) {
-				console.info('[モデル pick] 未初期化', {
-					hasMap: Boolean(this.map),
-					hasProjectionMatrix: Boolean(this.lastMapProjectionMatrix)
-				});
-			}
-			return null;
-		}
-		const mapProjectionMatrix = this.lastMapProjectionMatrix;
-		const canvas = this.map.getCanvas();
-		if (canvas.clientWidth === 0 || canvas.clientHeight === 0) {
-			if (!import.meta.env.PROD) console.info('[モデル pick] canvas サイズが不正です');
-			return null;
-		}
-		const raycaster = new THREE.Raycaster();
-		const ndc = new THREE.Vector2(
-			(point.x / canvas.clientWidth) * 2 - 1,
-			1 - (point.y / canvas.clientHeight) * 2
-		);
-		const targetEntries = Array.from(this.loadedModels.values()).filter(
-			(loaded) =>
-				isMeshModelEntry(loaded.entry)
-				&& CLICKABLE_MODEL_FORMATS.has(loaded.entry.format.type)
-				&& loaded.entry.style.visible
-		);
-		if (!import.meta.env.PROD) {
-			console.info('[モデル pick] 開始', {
-				point,
-				ndc: ndc.toArray(),
-				canvas: [canvas.clientWidth, canvas.clientHeight],
-				targetEntryIds: targetEntries.map((loaded) => loaded.entry.id)
-			});
-		}
-		if (targetEntries.length === 0) {
-			if (!import.meta.env.PROD) {
-				console.info('[モデル pick] null: クリック対象のモデルがありません', {
-					loadedModels: Array.from(this.loadedModels.values()).map((loaded) => ({
-						id: loaded.entry.id,
-						format: loaded.entry.format.type,
-						clickable: loaded.entry.interaction.clickable,
-						visible: loaded.entry.style.visible
-					}))
-				});
-			}
-			return null;
-		}
-		let closest: {
-			distance: number;
-			loaded: LoadedModel;
-			hit: THREE.Intersection<THREE.Object3D>;
-		} | null = null;
-		for (const loaded of targetEntries) {
-			const inverse = mapProjectionMatrix.clone().multiply(loaded.transform.matrix).invert();
-			const origin = new THREE.Vector3(ndc.x, ndc.y, -1).applyMatrix4(inverse);
-			const target = new THREE.Vector3(ndc.x, ndc.y, 1).applyMatrix4(inverse);
-			raycaster.ray.set(origin, target.sub(origin).normalize());
-			const wasVisible = loaded.object.visible;
-			loaded.object.visible = true;
-			const hit = raycaster
-				.intersectObject(loaded.object, true)
-				.find(
-					(intersection) =>
-						this.isLowerDetailLod(loaded)
-						|| !this.isSelectedModelIntersection(loaded, intersection)
-				);
-			loaded.object.visible = wasVisible;
-			if (!import.meta.env.PROD) {
-				console.info('[モデル pick] 判定結果', {
-					entryId: loaded.entry.id,
-					rayOrigin: origin.toArray(),
-					rayDirection: raycaster.ray.direction.toArray(),
-					hit: hit
-						? {
-							distance: hit.distance,
-							objectId: (hit.object as THREE.Object3D & { ID?: number; }).ID,
-							objectName: hit.object.userData.originalName ?? hit.object.name,
-							hasAttributes: Boolean(hit.object.userData.morivisFbxAttributes)
-						}
-						: null
-				});
-			}
-			if (hit && (!closest || hit.distance < closest.distance)) {
-				closest = { distance: hit.distance, loaded, hit };
-			}
-		}
-		if (!closest) {
-			if (!import.meta.env.PROD) {
-				console.info('[モデル pick] null: レイがメッシュに命中しませんでした');
-			}
-			return null;
-		}
-		if (this.isLowerDetailLod(closest.loaded)) {
-			return { entryId: closest.loaded.entry.id, isLowerDetailLod: true };
-		}
-		return this.createPickedModelFeature(closest.loaded, closest.hit);
-	}
+	pickModel = (
+		...args: Parameters<ModelInteractionController['pickModel']>
+	): ReturnType<ModelInteractionController['pickModel']> => this.interaction.pickModel(...args);
 }
 
 export const threeJsManager = new ThreeJsLayerManager();

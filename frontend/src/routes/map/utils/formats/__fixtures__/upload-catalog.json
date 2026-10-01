@@ -1,0 +1,601 @@
+[
+	{
+		"id": "raster",
+		"extensions": [
+			".png",
+			".jpg",
+			".jpeg",
+			".webp"
+		]
+	},
+	{
+		"id": "vector",
+		"extensions": [
+			".mvt",
+			".pbf",
+			".mvt.gz",
+			".pbf.gz",
+			".mlt",
+			".mlt.gz"
+		]
+	},
+	{
+		"id": "wmts",
+		"extensions": []
+	},
+	{
+		"id": "wcs",
+		"extensions": []
+	},
+	{
+		"id": "featureservice",
+		"extensions": []
+	},
+	{
+		"id": "arcgis",
+		"extensions": []
+	},
+	{
+		"id": "pmtiles",
+		"extensions": [
+			".pmtiles"
+		]
+	},
+	{
+		"id": "mbtiles",
+		"extensions": [
+			".mbtiles"
+		]
+	},
+	{
+		"id": "3dtiles",
+		"extensions": [
+			".json",
+			".b3dm",
+			".i3dm",
+			".pnts",
+			".cmpt",
+			".subtree"
+		]
+	},
+	{
+		"id": "stac",
+		"extensions": []
+	},
+	{
+		"id": "geozarr",
+		"extensions": []
+	},
+	{
+		"id": "geojson",
+		"extensions": [
+			".geojson",
+			".json"
+		]
+	},
+	{
+		"id": "geojsonseq",
+		"extensions": [
+			".geojsonl",
+			".jsonl",
+			".ndjson",
+			".geojsons",
+			".geojsonseq"
+		]
+	},
+	{
+		"id": "wkt",
+		"extensions": [
+			".wkt",
+			".ewkt"
+		]
+	},
+	{
+		"id": "topojson",
+		"extensions": [
+			".topojson"
+		]
+	},
+	{
+		"id": "fgb",
+		"extensions": [
+			".fgb"
+		]
+	},
+	{
+		"id": "parquet",
+		"extensions": [
+			".parquet",
+			".geoparquet"
+		]
+	},
+	{
+		"id": "geoarrow",
+		"extensions": [
+			".arrow",
+			".feather"
+		]
+	},
+	{
+		"id": "mapinfo-tab",
+		"extensions": [
+			".tab",
+			".dat",
+			".map",
+			".id",
+			".ind"
+		]
+	},
+	{
+		"id": "mif",
+		"extensions": [
+			".mif",
+			".mid"
+		]
+	},
+	{
+		"id": "bds",
+		"extensions": [
+			".bds"
+		]
+	},
+	{
+		"id": "gcd",
+		"extensions": [
+			".gcd"
+		]
+	},
+	{
+		"id": "gpkg",
+		"extensions": [
+			".gpkg"
+		]
+	},
+	{
+		"id": "sqlite",
+		"extensions": [
+			".sqlite",
+			".sqlite3",
+			".db",
+			".db3",
+			".sql"
+		]
+	},
+	{
+		"id": "filegdb",
+		"extensions": [
+			".gdbtable",
+			".gdbtablx",
+			".gdbindexes",
+			".gdbindex",
+			".atx",
+			".spx",
+			".cdf",
+			".freelist"
+		]
+	},
+	{
+		"id": "shp",
+		"extensions": [
+			".shp",
+			".dbf",
+			".shx",
+			".prj",
+			".cpg"
+		]
+	},
+	{
+		"id": "gpx",
+		"extensions": [
+			".gpx"
+		]
+	},
+	{
+		"id": "tcx",
+		"extensions": [
+			".tcx"
+		]
+	},
+	{
+		"id": "fit",
+		"extensions": [
+			".fit"
+		]
+	},
+	{
+		"id": "gdb",
+		"extensions": [
+			".gdb"
+		]
+	},
+	{
+		"id": "osm",
+		"extensions": [
+			".osm",
+			".osm.pbf",
+			".pbf"
+		]
+	},
+	{
+		"id": "georss",
+		"extensions": [
+			".georss",
+			".rss",
+			".atom"
+		]
+	},
+	{
+		"id": "sfc",
+		"extensions": [
+			".sfc"
+		]
+	},
+	{
+		"id": "gml",
+		"extensions": [
+			".gml",
+			".xml"
+		]
+	},
+	{
+		"id": "cityjson",
+		"extensions": [
+			".city.json",
+			".cityjson",
+			".json"
+		]
+	},
+	{
+		"id": "citygml",
+		"extensions": [
+			".citygml",
+			".gml",
+			".xml"
+		]
+	},
+	{
+		"id": "kml",
+		"extensions": [
+			".kml",
+			".kmz"
+		]
+	},
+	{
+		"id": "csv",
+		"extensions": [
+			".csv"
+		]
+	},
+	{
+		"id": "tsv",
+		"extensions": [
+			".tsv"
+		]
+	},
+	{
+		"id": "xlsx",
+		"extensions": [
+			".xlsx"
+		]
+	},
+	{
+		"id": "pptx",
+		"extensions": [
+			".pptx"
+		]
+	},
+	{
+		"id": "docx",
+		"extensions": [
+			".docx"
+		]
+	},
+	{
+		"id": "tif",
+		"extensions": [
+			".tif",
+			".tiff"
+		]
+	},
+	{
+		"id": "jpeg2000",
+		"extensions": [
+			".jp2"
+		]
+	},
+	{
+		"id": "envi-bil",
+		"extensions": [
+			".hdr",
+			".bil",
+			".bip",
+			".bsq",
+			".dat",
+			".img",
+			".raw"
+		]
+	},
+	{
+		"id": "ascii-grid",
+		"extensions": [
+			".asc"
+		]
+	},
+	{
+		"id": "hgt",
+		"extensions": [
+			".hgt"
+		]
+	},
+	{
+		"id": "h5",
+		"extensions": [
+			".h5"
+		]
+	},
+	{
+		"id": "nc",
+		"extensions": [
+			".nc",
+			".nc4"
+		]
+	},
+	{
+		"id": "grib2",
+		"extensions": [
+			".grib2",
+			".grb2",
+			".grb",
+			".bin"
+		]
+	},
+	{
+		"id": "zip",
+		"extensions": [
+			".zip"
+		]
+	},
+	{
+		"id": "bz2",
+		"extensions": [
+			".bz2",
+			".lrit",
+			".hrit"
+		]
+	},
+	{
+		"id": "dxf",
+		"extensions": [
+			".dxf",
+			".dwg"
+		]
+	},
+	{
+		"id": "dgn",
+		"extensions": [
+			".dgn"
+		]
+	},
+	{
+		"id": "jww",
+		"extensions": [
+			".jww",
+			".jwc"
+		]
+	},
+	{
+		"id": "cedxm",
+		"extensions": [
+			".xml"
+		]
+	},
+	{
+		"id": "sim",
+		"extensions": [
+			".sim"
+		]
+	},
+	{
+		"id": "mt",
+		"extensions": [
+			".mt"
+		]
+	},
+	{
+		"id": "dm",
+		"extensions": [
+			".dm",
+			".dmi"
+		]
+	},
+	{
+		"id": "landxml",
+		"extensions": [
+			".landxml"
+		]
+	},
+	{
+		"id": "mojxml",
+		"extensions": [
+			".xml"
+		]
+	},
+	{
+		"id": "geophoto",
+		"extensions": [
+			".png",
+			".jpg",
+			".jpeg",
+			".webp"
+		]
+	},
+	{
+		"id": "video",
+		"extensions": [
+			".mp4",
+			".webm",
+			".mov",
+			".m4v",
+			".ogv"
+		]
+	},
+	{
+		"id": "svg",
+		"extensions": [
+			".svg"
+		]
+	},
+	{
+		"id": "pdf",
+		"extensions": [
+			".pdf"
+		]
+	},
+	{
+		"id": "pointcloud",
+		"extensions": [
+			".copc.laz",
+			".las",
+			".laz",
+			".ply",
+			".pcd",
+			".e57",
+			".xyz",
+			".txt"
+		]
+	},
+	{
+		"id": "spz",
+		"extensions": [
+			".spz"
+		]
+	},
+	{
+		"id": "glb",
+		"extensions": [
+			".glb",
+			".gltf"
+		]
+	},
+	{
+		"id": "usd",
+		"extensions": [
+			".usd",
+			".usda",
+			".usdz"
+		]
+	},
+	{
+		"id": "obj",
+		"extensions": [
+			".obj"
+		]
+	},
+	{
+		"id": "3ds",
+		"extensions": [
+			".3ds"
+		]
+	},
+	{
+		"id": "rik",
+		"extensions": [
+			".rik"
+		]
+	},
+	{
+		"id": "dae",
+		"extensions": [
+			".dae"
+		]
+	},
+	{
+		"id": "3dm",
+		"extensions": [
+			".3dm"
+		]
+	},
+	{
+		"id": "vrml",
+		"extensions": [
+			".wrl",
+			".vrml"
+		]
+	},
+	{
+		"id": "fbx",
+		"extensions": [
+			".fbx"
+		]
+	},
+	{
+		"id": "drc",
+		"extensions": [
+			".drc"
+		]
+	},
+	{
+		"id": "3mf",
+		"extensions": [
+			".3mf"
+		]
+	},
+	{
+		"id": "amf",
+		"extensions": [
+			".amf"
+		]
+	},
+	{
+		"id": "step-iges",
+		"extensions": [
+			".step",
+			".stp",
+			".iges",
+			".igs"
+		]
+	},
+	{
+		"id": "stl",
+		"extensions": [
+			".stl"
+		]
+	},
+	{
+		"id": "ifc",
+		"extensions": [
+			".ifc"
+		]
+	},
+	{
+		"id": "bcf",
+		"extensions": [
+			".bcf"
+		]
+	},
+	{
+		"id": "vrm",
+		"extensions": [
+			".vrm"
+		]
+	},
+	{
+		"id": "pmx",
+		"extensions": [
+			".pmx"
+		]
+	},
+	{
+		"id": "mca",
+		"extensions": [
+			".mca"
+		]
+	},
+	{
+		"id": "roblox",
+		"extensions": [
+			".rbxl",
+			".rbxlx"
+		]
+	}
+]

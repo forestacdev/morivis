@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('$routes/map/utils/formats/geotiff/probe-cog', () => ({ probeCogUrl: vi.fn() }));
+
 vi.mock('$routes/map/utils/formats/ogc-api-features', () => ({
 	parseOgcApiFeaturesService: vi.fn()
 }));
@@ -17,6 +19,7 @@ vi.mock('$routes/map/utils/formats/wmts', () => ({
 	parseWmtsCapabilities: vi.fn()
 }));
 
+import { probeCogUrl } from '$routes/map/utils/formats/geotiff/probe-cog';
 import { parseOgcApiFeaturesService } from '$routes/map/utils/formats/ogc-api-features';
 import { parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
 import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
@@ -26,6 +29,61 @@ import { getRemoteFileName, resolveUploadUrlInput } from './upload-url';
 describe('resolveUploadUrlInput', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+	});
+
+	it.each(['test.tif', 'test.TIFF?key=test#test', 'test%2Etif'])(
+		'TIFFはサービス問い合わせ前に部分取得で判定する: %s',
+		async (path) => {
+			vi.mocked(probeCogUrl).mockResolvedValue('cog');
+			const url = `https://example.com/${path}`;
+			expect(await resolveUploadUrlInput(url)).toMatchObject({
+				type: 'dialog',
+				dialogType: 'stac',
+				target: 'remoteStacUrl'
+			});
+			expect(probeCogUrl).toHaveBeenCalledOnce();
+			expect(parseWmtsCapabilities).not.toHaveBeenCalled();
+			expect(parseWmsCapabilities).not.toHaveBeenCalled();
+			expect(parseWfsCapabilities).not.toHaveBeenCalled();
+			expect(parseOgcApiFeaturesService).not.toHaveBeenCalled();
+		}
+	);
+
+	it.each([
+		'https://test-zarr.invalid/test.zarr',
+		'https://test-zarr.invalid/test.zarr/temperature/zarr.json?key=test',
+		'https://test-zarr.invalid/data/.zmetadata'
+	])('Zarr URLをファイル取得せず専用フォームへ渡す: %s', async url => {
+		expect(await resolveUploadUrlInput(url)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'geozarr',
+			target: 'remoteGeoZarrUrl',
+			value: url
+		});
+		expect(parseWmsCapabilities).not.toHaveBeenCalled();
+	});
+
+	it('通常TIFFはサービス探索をせずファイル取り込みへ進む', async () => {
+		vi.mocked(probeCogUrl).mockResolvedValue('geotiff');
+		const url = 'https://example.com/test.tif';
+		expect(await resolveUploadUrlInput(url)).toEqual({ type: 'remote-file', requestUrl: url });
+		expect(parseWmtsCapabilities).not.toHaveBeenCalled();
+	});
+
+	it('TIFF判定の通信失敗時は全体ダウンロードへ進まない', async () => {
+		vi.mocked(probeCogUrl).mockRejectedValue(new Error('test-network-error'));
+		expect(await resolveUploadUrlInput('https://example.com/test.tif')).toMatchObject({
+			type: 'error'
+		});
+		expect(parseWmtsCapabilities).not.toHaveBeenCalled();
+	});
+
+	it('TIFFのXYZテンプレートは単体COGと判定しない', async () => {
+		expect(await resolveUploadUrlInput('https://example.com/{z}/{x}/{y}.tif')).toMatchObject({
+			type: 'dialog',
+			dialogType: 'tileurltype'
+		});
+		expect(probeCogUrl).not.toHaveBeenCalled();
 	});
 
 	it.each([

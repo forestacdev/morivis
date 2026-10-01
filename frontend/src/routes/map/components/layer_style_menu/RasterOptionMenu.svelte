@@ -2,8 +2,10 @@
 	import CategoricalLegend from './raster_option/CategoricalLegend.svelte';
 	import DemOption from './raster_option/DemOption.svelte';
 	import DimensionSelector from './raster_option/DimensionSelector.svelte';
+	import GeoZarrHeightOption from './raster_option/GeoZarrHeightOption.svelte';
 	import RasterPresetPulldownBox from './raster_option/RasterPresetPulldownBox.svelte';
 	import TiffOption from './raster_option/TiffOption.svelte';
+	import VoxelOption from './raster_option/VoxelOption.svelte';
 	import Accordion from '../atoms/Accordion.svelte';
 
 	import ColorPicker from '$routes/map/components/atoms/ColorPicker.svelte';
@@ -76,6 +78,11 @@
 	});
 </script>
 
+{#if layerEntry.format.type === 'geozarr' && style.type === 'tiff' && style.volume}
+	<VoxelOption bind:layerEntry={layerEntry as MorivisRasterEntry<RasterTiffStyle>} />
+{:else if layerEntry.format.type === 'geozarr' && layerEntry.properties?.vertical}
+	<GeoZarrHeightOption bind:layerEntry />
+{/if}
 {#if getRasterDimension(layerEntry)}
 	<DimensionSelector bind:layerEntry bind:showDimensionOption />
 {/if}

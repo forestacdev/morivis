@@ -30,7 +30,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 		url: 'https://cyberjapandata.gsi.go.jp/xyz/ndvi_250m{morivis:dimension}/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '植生指標データ 250m',
+		name: '全国 植生指標データ 250m',
 		sourceDataName: '全国植生指標データ（250m）',
 		downloadUrl: 'https://www.gsi.go.jp/kankyochiri/ndvi-Modis_download.html',
 		attribution: '国土地理院',

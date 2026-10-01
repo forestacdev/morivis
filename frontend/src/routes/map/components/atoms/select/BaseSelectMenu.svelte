@@ -1,7 +1,9 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
 	import { fly } from 'svelte/transition';
+
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import IconamoonArrowDown2DuotoneIcon from '$lib/components/svgs/icons/iconamoon/ArrowDown2DuotoneIcon.svelte';
 
 	export interface SelectMenuItem {
 		key: string | number;
@@ -95,7 +97,7 @@
 					<span class="truncate">{selectedItem.name}</span>
 				</div>
 			{/if}
-			<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7 shrink-0" />
+			<IconamoonArrowDown2DuotoneIcon class="h-7 w-7 shrink-0" />
 		</button>
 		{#if showPullDown}
 			<div
@@ -143,7 +145,7 @@
 							class="border-sub bg-sub pointer-events-auto cursor-pointer rounded-full border px-3 text-sm text-white transition-colors duration-150 lg:hover:bg-white lg:hover:text-black"
 							onclick={scrollToNextBlock}
 						>
-							<Icon icon="iconamoon:arrow-down-2-duotone" class="h-7 w-7 shrink-0" />
+							<IconamoonArrowDown2DuotoneIcon class="h-7 w-7 shrink-0" />
 						</button>
 					</div>
 				{/if}

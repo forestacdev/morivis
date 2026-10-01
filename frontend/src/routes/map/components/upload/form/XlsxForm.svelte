@@ -6,16 +6,28 @@
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
+	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
+	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import { createGeoJsonEntry } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
+	import { GeoRefVectorSourceCache } from '$routes/map/utils/cache/georef-vector-source-cache';
 	import type { TabularRow } from '$routes/map/utils/formats/tabular';
+	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
 	import { getXlsxPreview, xlsxFileToGeojson } from '$routes/map/utils/formats/xlsx';
+	import { drawingAppearanceToGeoRefData } from '$routes/map/utils/formats/xlsx/drawing-rasterize';
+	import {
+		readXlsxDrawingWorkbook,
+		type XlsxDrawing,
+		type XlsxDrawingWorkbook
+	} from '$routes/map/utils/formats/xlsx/drawings';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
+	import { getDefaultGeoRefCorners } from '$routes/map/utils/transform/georef/default-corners';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
+	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -28,6 +40,7 @@
 		focusBbox: [number, number, number, number] | null;
 		zoneConfirmedEpsg: EpsgCode | null;
 		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
+		geoRefData: GeoRefData | null;
 	}
 
 	let {
@@ -38,16 +51,47 @@
 		selectedEpsgCode = $bindable(),
 		focusBbox = $bindable(),
 		zoneConfirmedEpsg = $bindable(),
-		pendingZoneGeoRefData = $bindable()
+		pendingZoneGeoRefData = $bindable(),
+		geoRefData = $bindable()
 	}: Props = $props();
 
 	let headers = $state<string[]>([]);
 	let previewRows = $state<TabularRow[]>([]);
 	let sheetNames = $state<string[]>([]);
 	let selectedSheet = $state<string>('');
-	let loadedFileName = $state<string>('');
+	let workbook = $state.raw<XlsxDrawingWorkbook | null>(null);
+	let drawing = $state.raw<XlsxDrawing | null>(null);
+	let readMode = $state<'drawing' | 'table'>('drawing');
+	let drawingMode = $state<'image' | 'vector'>('image');
+	const hasDrawing = $derived(!!drawing?.appearance.svg || !!drawing?.shapeCount);
+	const appearanceUrl = $derived(
+		drawing?.appearance.svg
+			? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(drawing.appearance.svg)}`
+			: ''
+	);
+	let loadingWorkbook = $state(false);
+	let loadingDrawing = $state(false);
+	let loadingTable = $state(false);
+	let loadError = $state('');
+	let tableError = $state('');
 	let latColumn = $state<string>('');
 	let lonColumn = $state<string>('');
+	const loading = $derived(loadingWorkbook || loadingDrawing || loadingTable);
+	const canSubmit = $derived(
+		!loading &&
+			!$isProcessing &&
+			(readMode === 'drawing'
+				? drawingMode === 'image'
+					? !!drawing?.appearance.svg
+					: !!drawing?.featureCollection.features.length
+				: !!latColumn && !!lonColumn)
+	);
+	const drawingBounds = $derived(
+		drawing?.featureCollection.features.length ? turfBbox(drawing.featureCollection) : [0, 0, 1, 1]
+	);
+	const drawingViewBox = $derived(
+		`${drawingBounds[0]} ${-drawingBounds[3]} ${Math.max(1, drawingBounds[2] - drawingBounds[0])} ${Math.max(1, drawingBounds[3] - drawingBounds[1])}`
+	);
 	let rawGeojson: FeatureCollection | null = null;
 	let previewTableContainer = $state<HTMLDivElement | null>(null);
 
@@ -101,49 +145,162 @@
 	};
 
 	$effect(() => {
-		const currentFileName = sourceFile?.name ?? '';
-		if (currentFileName && currentFileName !== loadedFileName) {
-			loadedFileName = currentFileName;
-			selectedSheet = '';
-			sheetNames = [];
-			headers = [];
-			previewRows = [];
-			latColumn = '';
-			lonColumn = '';
-			rawGeojson = null;
-		}
+		const file = sourceFile;
+		let cancelled = false;
+		workbook = null;
+		drawing = null;
+		selectedSheet = '';
+		sheetNames = [];
+		headers = [];
+		previewRows = [];
+		latColumn = '';
+		lonColumn = '';
+		rawGeojson = null;
+		loadError = '';
+		loadingWorkbook = false;
+		if (!file) return;
+		loadingWorkbook = true;
+		file
+			.arrayBuffer()
+			.then(readXlsxDrawingWorkbook)
+			.then((result) => {
+				if (cancelled) return;
+				workbook = result;
+				sheetNames = result.sheetNames;
+				selectedSheet = result.sheetNames[0] ?? '';
+			})
+			.catch((error) => {
+				if (!cancelled)
+					loadError =
+						error instanceof Error ? error.message : 'Excelファイルの読み込みに失敗しました';
+			})
+			.finally(() => {
+				if (!cancelled) loadingWorkbook = false;
+			});
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	$effect(() => {
-		if (!sourceFile) return;
-
-		isProcessing.set(true);
-		getXlsxPreview(sourceFile, selectedSheet || undefined)
-			.then((preview) => {
-				const guessedLatColumn = guessColumn(preview.headers, LAT_PATTERNS);
-				const guessedLonColumn = guessColumn(preview.headers, LON_PATTERNS);
-
-				headers = preview.headers;
-				previewRows = preview.rows;
-				sheetNames = preview.sheetNames;
-				latColumn = guessedLatColumn;
-				lonColumn = guessedLonColumn;
-				void snapPreviewToAutoSelectedColumn(preview.headers, [guessedLatColumn, guessedLonColumn]);
-
-				if (selectedSheet !== preview.activeSheet) {
-					selectedSheet = preview.activeSheet;
-				}
+		const currentWorkbook = workbook;
+		const sheet = selectedSheet;
+		let cancelled = false;
+		drawing = null;
+		loadingDrawing = false;
+		if (!currentWorkbook || !sheet) return;
+		loadingDrawing = true;
+		loadError = '';
+		currentWorkbook
+			.readSheet(sheet)
+			.then((result) => {
+				if (cancelled) return;
+				drawing = result;
+				readMode = result.appearance.svg || result.shapeCount > 0 ? 'drawing' : 'table';
+				drawingMode = result.appearance.svg ? 'image' : 'vector';
 			})
 			.catch((error) => {
-				showNotification('Excelファイルの読み込みに失敗しました', 'error');
-				console.error(error);
+				if (cancelled) return;
+				loadError = error instanceof Error ? error.message : '図面の読み込みに失敗しました';
+				readMode = 'table';
 			})
 			.finally(() => {
-				isProcessing.set(false);
+				if (!cancelled) loadingDrawing = false;
 			});
+		return () => {
+			cancelled = true;
+		};
 	});
 
+	$effect(() => {
+		const file = sourceFile;
+		const sheet = selectedSheet;
+		let cancelled = false;
+		headers = [];
+		previewRows = [];
+		latColumn = '';
+		lonColumn = '';
+		tableError = '';
+		loadingTable = false;
+		if (!file || !sheet || readMode !== 'table') return;
+		loadingTable = true;
+		getXlsxPreview(file, sheet)
+			.then((preview) => {
+				if (cancelled) return;
+				headers = preview.headers;
+				previewRows = preview.rows;
+				latColumn = guessColumn(preview.headers, LAT_PATTERNS);
+				lonColumn = guessColumn(preview.headers, LON_PATTERNS);
+				void snapPreviewToAutoSelectedColumn(preview.headers, [latColumn, lonColumn]);
+			})
+			.catch((error) => {
+				if (!cancelled)
+					tableError = error instanceof Error ? error.message : '表の読み込みに失敗しました';
+			})
+			.finally(() => {
+				if (!cancelled) loadingTable = false;
+			});
+		return () => {
+			cancelled = true;
+		};
+	});
+
+	const openDrawingGeoRef = async () => {
+		if (!drawing || !canSubmit) return;
+		const current = drawing;
+		const file = sourceFile;
+		isProcessing.set(true);
+		try {
+			const width = Math.max(1, drawingBounds[2] - drawingBounds[0]);
+			const height = Math.max(1, drawingBounds[3] - drawingBounds[1]);
+			const scale = 1024 / Math.max(width, height);
+			const nextData =
+				drawingMode === 'image'
+					? await drawingAppearanceToGeoRefData(
+							current.appearance,
+							`${entryName} - ${selectedSheet}`
+						)
+					: await featureCollectionToGeoRefData({
+							featureCollection: drawing.featureCollection,
+							entryName: `${entryName} - ${selectedSheet}`,
+							width: Math.max(1, Math.round(width * scale)),
+							height: Math.max(1, Math.round(height * scale))
+						});
+			if (drawing !== current || sourceFile !== file || showDialogType !== 'xlsx') {
+				if (nextData.sourceFeatureCollectionId)
+					GeoRefVectorSourceCache.remove(nextData.sourceFeatureCollectionId);
+				return;
+			}
+			const map = mapStore.getMap();
+			geoRefData = {
+				...nextData,
+				vectorLineWidth: 1,
+				vectorAttribution: 'Excel',
+				allowedTransformModes: getAllowedTransformModesForIssue('xlsx', 'placement-missing'),
+				initialCorners: map
+					? getDefaultGeoRefCorners(map, nextData.imageWidth, nextData.imageHeight)
+					: nextData.initialCorners
+			};
+			pendingZoneGeoRefData = null;
+			focusBbox = null;
+			transformOptionMode = 'georef';
+			showDialogType = null;
+		} catch (error) {
+			showNotification(
+				error instanceof Error ? error.message : '図面の位置合わせを開始できませんでした',
+				'error'
+			);
+		} finally {
+			isProcessing.set(false);
+		}
+	};
+
 	const processFile = () => {
+		if (!canSubmit) return;
+		if (readMode === 'drawing') {
+			void openDrawingGeoRef();
+			return;
+		}
 		if (!sourceFile || !latColumn || !lonColumn) return;
 
 		isProcessing.set(true);
@@ -181,6 +338,10 @@
 				}
 			})
 			.catch((error) => {
+				showNotification(
+					error instanceof Error ? error.message : 'Excelファイルの変換に失敗しました',
+					'error'
+				);
 				console.error(error);
 			})
 			.finally(() => {
@@ -272,7 +433,95 @@
 		</div>
 	{/if}
 
-	{#if headers.length > 0}
+	{#if loading}
+		<p class="text-sm text-gray-300">Excelを読み込み中...</p>
+	{/if}
+	{#if loadError || tableError}
+		<p role="alert" class="text-sm text-amber-300">{loadError || tableError}</p>
+	{/if}
+	{#if hasDrawing}
+		<div class="flex w-full flex-col gap-1 p-2">
+			<label for="xlsx-read-mode" class="text-sm text-gray-300">読み込む内容</label>
+			<select
+				id="xlsx-read-mode"
+				bind:value={readMode}
+				class="bg-sub rounded border border-gray-600 p-2 text-white"
+			>
+				<option value="drawing">図形・画像の図面</option>
+				<option value="table">セルの表（座標列を指定）</option>
+			</select>
+		</div>
+	{/if}
+	{#if readMode === 'drawing' && drawingMode === 'vector' && drawing?.skippedShapeCount}
+		<p class="text-sm text-amber-300">
+			未対応の図形 {drawing.skippedShapeCount} 個は読み込めませんでした。
+		</p>
+	{/if}
+	{#if drawing && (!hasDrawing || (readMode === 'drawing' && drawingMode === 'image'))}
+		{#if drawing.appearance.skippedImageCount}
+			<p class="text-sm text-amber-300">
+				未対応形式・外部参照・欠落などにより、{drawing.appearance.skippedImageCount} 枚の画像を読み込めませんでした。
+			</p>
+		{/if}
+		{#each drawing.appearance.warnings as warning (warning)}
+			<p class="text-sm text-amber-300">{warning}</p>
+		{/each}
+	{/if}
+	{#if readMode === 'drawing' && hasDrawing && drawing}
+		<div class="flex w-full min-w-0 flex-col gap-3 p-2">
+			<label for="xlsx-drawing-mode" class="text-sm text-gray-300">図面の読み込み方</label>
+			<select
+				id="xlsx-drawing-mode"
+				bind:value={drawingMode}
+				class="bg-sub rounded border border-gray-600 p-2 text-white"
+			>
+				<option value="image" disabled={!drawing.appearance.svg}
+					>図面画像（塗り・線色・文字・画像）</option
+				>
+				<option value="vector" disabled={!drawing.shapeCount}>線（1px・図形ごとの属性付き）</option>
+			</select>
+			{#if drawingMode === 'image'}
+				<p class="text-sm whitespace-normal text-gray-300">
+					{drawing.appearance.shapeCount} 個の図形と {drawing.appearance.imageCount} 枚の画像を、まとめて位置合わせします。
+				</p>
+				<img
+					src={appearanceUrl}
+					alt="Excel図面のプレビュー"
+					class="h-72 w-full rounded bg-white object-contain p-3"
+				/>
+				<p class="text-xs whitespace-normal text-gray-400">
+					透明背景の画像として登録します。文字の折り返しやフォントはExcelと異なる場合があります。
+				</p>
+			{:else}
+				<p class="text-sm whitespace-normal text-gray-300">
+					{drawing.shapeCount} 個の図形を線として読み込みます。次の画面で地図上の位置を合わせてください。
+				</p>
+				<svg
+					viewBox={drawingViewBox}
+					role="img"
+					aria-label="Excel図面のプレビュー"
+					class="h-72 w-full rounded bg-white p-3"
+				>
+					<g transform="scale(1,-1)" fill="none" stroke="#2563eb" stroke-width="1">
+						{#each drawing.featureCollection.features as feature, index (index)}
+							<polyline
+								points={(feature.geometry.coordinates as number[][])
+									.map((point) => point.join(','))
+									.join(' ')}
+								vector-effect="non-scaling-stroke"
+							/>
+						{/each}
+					</g>
+				</svg>
+				<p class="text-xs whitespace-normal text-gray-400">
+					輪郭を1pxの線として登録し、図形内の文字を属性に保存します。塗り・線色・文字・画像の表示には「図面画像」を選んでください。
+				</p>
+			{/if}
+		</div>
+	{:else if !loading && !headers.length && !loadError && !tableError}
+		<p class="text-sm text-gray-400">このシートに読み込める表がありません。</p>
+	{/if}
+	{#if readMode === 'table' && headers.length > 0}
 		<div class="flex w-full flex-col gap-4 p-2">
 			{#if previewRows.length > 0}
 				<div
@@ -350,13 +599,11 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={processFile}
-		disabled={$isProcessing || !latColumn || !lonColumn}
-		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		!latColumn ||
-		!lonColumn
+		disabled={!canSubmit}
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {!canSubmit
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>
-		決定
+		{readMode === 'drawing' ? '位置合わせへ' : '決定'}
 	</button>
 </div>

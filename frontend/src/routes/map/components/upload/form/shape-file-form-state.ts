@@ -1,3 +1,5 @@
+import { getShapefileDataset } from '$routes/map/utils/formats/shp/files';
+
 export type ShpFormSchema = {
 	shpFile: File | null;
 	dbfFile: File | null;
@@ -95,5 +97,22 @@ export const mergeShapeRelatedFiles = (
 	state: ShapeFileFormState,
 	files: File[]
 ): ShapeFileFormState => {
-	return files.reduce((currentState, file) => mergeShapeRelatedFile(currentState, file), state);
+	const incoming = getShapefileDataset(files);
+	// 一括ドロップ内の混在を検出してから状態を更新する。失敗時には元の選択を保つ。
+	const next = incoming.files.reduce(
+		(currentState, file) => mergeShapeRelatedFile(currentState, file),
+		state
+	);
+	getShapefileDataset(getShapeSelectedFiles(next));
+	return next;
 };
+
+export const getShapeSelectedFiles = (state: ShapeFileFormState): File[] =>
+	[
+		state.forms.shpFile,
+		state.forms.dbfFile,
+		state.forms.shxFile,
+		state.forms.prjFile,
+		state.cpgFile
+	]
+		.filter((file): file is File => file !== null);

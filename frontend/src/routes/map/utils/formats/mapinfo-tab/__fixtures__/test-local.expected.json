@@ -1,0 +1,27 @@
+{
+	"type": "FeatureCollection",
+	"name": "test-local",
+	"features": [
+		{
+			"type": "Feature",
+			"properties": { "name": "架空ポイント", "value": 12.5, "enabled": 1 },
+			"geometry": { "type": "Point", "coordinates": [2.5, 1.25] }
+		},
+		{
+			"type": "Feature",
+			"properties": { "name": "test-line", "value": -2.0, "enabled": 0 },
+			"geometry": { "type": "LineString", "coordinates": [[2.5, 1.25], [2.502, 1.252]] }
+		},
+		{
+			"type": "Feature",
+			"properties": { "name": "test-region", "value": 0.0, "enabled": 1 },
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [
+					[[2.5, 1.25], [2.504, 1.25], [2.504, 1.254], [2.5, 1.254], [2.5, 1.25]],
+					[[2.501, 1.251], [2.501, 1.252], [2.502, 1.252], [2.502, 1.251], [2.501, 1.251]]
+				]
+			}
+		}
+	]
+}

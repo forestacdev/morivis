@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
+	import Icon from '$lib/components/svgs/Icon.svelte';
 	interface Props {
 		label?: string;
 		value: number;

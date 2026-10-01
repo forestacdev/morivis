@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-
+	import LsiconDataFilledIcon from '$lib/components/svgs/icons/lsicon/DataFilledIcon.svelte';
 	import type { RasterCategoricalStyle } from '$routes/map/data/types/raster';
 
 	interface Props {
@@ -24,7 +23,7 @@
 </script>
 
 <div class="mt-8 flex items-center gap-1 text-base text-lg">
-	<Icon icon="lsicon:data-filled" class="h-6 w-6" />
+	<LsiconDataFilledIcon class="h-6 w-6" />
 	<span>凡例</span>
 </div>
 <div class="mt-2 flex-1 shrink-0 rounded-lg p-2 mix-blend-normal">
@@ -34,11 +33,11 @@
 			{#each style.legend.colors as color, i (`${style.legend.labels[i] ?? color}-${color}`)}
 				<li style="display: flex; align-items: center; margin-bottom: 5px;">
 					<span
-						class="rounded-md border border-black"
+						class="shrink-0 rounded-md border border-black"
 						style="width: 20px; height: 20px; background-color: {color}; margin-right: 10px; display: inline-block;"
 					>
 					</span>
-					<span>{style.legend.labels[i]}</span>
+					<span class="min-w-0 flex-1 break-words">{style.legend.labels[i]}</span>
 				</li>
 			{/each}
 		</ul>
@@ -66,14 +65,33 @@
 				<h2 class="mt-4 text-base">{category.name}</h2>
 				<div class="flex flex-col gap-2">
 					{#each category.urls as url, j (`${category.labels[j] ?? url}-${url}`)}
-						<li class="flex items-center gap-2">
-							<div
-								class="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-black bg-white p-2"
-							>
-								<img src={url} alt={category.labels[j]} class="aspect-square object-contain" />
-							</div>
-							<span class="text-sm">{category.labels[j]} </span>
-						</li>
+						{#if style.legend.layout === 'images'}
+							<li>
+								<a href={url} target="_blank" rel="noopener noreferrer" class="block">
+									<img
+										src={url}
+										alt={category.labels[j]}
+										class="h-auto max-w-full rounded-lg bg-white p-2"
+										loading="lazy"
+									/>
+									<span class="text-sm underline">{category.labels[j]}（別タブで開く）</span>
+								</a>
+							</li>
+						{:else}
+							<li class="flex items-center gap-2">
+								<div
+									class="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-black bg-white p-2"
+								>
+									<img
+										src={url}
+										alt={category.labels[j]}
+										class="aspect-square object-contain"
+										loading="lazy"
+									/>
+								</div>
+								<span class="min-w-0 flex-1 break-words text-sm">{category.labels[j]} </span>
+							</li>
+						{/if}
 					{/each}
 				</div>
 			{/each}

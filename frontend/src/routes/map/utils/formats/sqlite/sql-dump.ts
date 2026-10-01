@@ -1,4 +1,5 @@
 import type { Database, SqlJsStatic, SqlValue } from 'sql.js';
+import { formatSqlDump } from './sql-dump-definition';
 
 type SqlDumpColumn = {
 	name: string;
@@ -41,7 +42,7 @@ const SQLITE_HEADER = new TextEncoder().encode('SQLite format 3\0');
 
 // SQL は実行せず値だけを再構築するが、巨大入力によるブラウザ停止も避ける。
 const SQL_DUMP_LIMITS = {
-	textLength: 256 * 1024 * 1024,
+	textLength: formatSqlDump.limits.maxTextLength,
 	tableCount: 1024,
 	columnCountPerTable: 4096,
 	rowCount: 2_000_000,

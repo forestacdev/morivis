@@ -1,5 +1,8 @@
 ## このディレクトリの文書
 
+- [開発・検証](./development.md)
+  ワークスペース構成、セットアップ、検証コマンド、CIの起動条件。
+
 - [内部レイヤーモデル](./architecture/entry-model.md)
   `MorivisLayerEntry` の役割、分類軸、責務境界、描画系への変換段階を整理した設計メモ。
 

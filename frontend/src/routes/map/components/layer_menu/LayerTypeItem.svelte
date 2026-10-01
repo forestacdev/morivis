@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { flip } from 'svelte/animate';
 	import { fly, slide, scale } from 'svelte/transition';
 
+	import Icon from '$lib/components/svgs/Icon.svelte';
 	import LayerItem from '$routes/map/components/layer_menu/LayerItem.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { FeatureMenuData } from '$routes/map/types';

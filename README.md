@@ -54,8 +54,8 @@ It began from the idea that students, trainees, and future practitioners should 
 ## Rendering Stack
 
 - [`MapLibre GL JS`](https://maplibre.org/projects/gl-js/) for the main 2D map and style-driven layer rendering
-- [`deck.gl`](https://deck.gl/) for 3D Tiles overlays and large data-driven visualization
-- [`three.js`](https://threejs.org/) for mesh rendering and custom 3D map layers
+- [`deck.gl`](https://deck.gl/) for point clouds and data-driven vector visualization
+- [`three.js`](https://threejs.org/) for mesh rendering, custom 3D map layers, and 3D Tiles through `3d-tiles-renderer`
 - `WebGL workers` for Terrarium encoding, raster derivatives, reprojection, and heavy parsing
 
 ## Data Flow
@@ -86,6 +86,10 @@ This project is in alpha.
 - APIs may change without notice.
 - Data structures and internal format pipelines are still evolving.
 - Some parts of the project cover broad or experimental workflows, so regression risk remains until test coverage improves.
+
+## Development
+
+See [development and verification](docs/development.md) for workspace setup, local checks, and CI. Dependencies are installed from the repository root using the root `pnpm-lock.yaml`. PR checks run type checking, lint, build, Vitest, and Chromium browser tests.
 
 ## Author
 

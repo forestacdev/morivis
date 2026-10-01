@@ -1,0 +1,88 @@
+{
+	"shp": {},
+	"osm-pbf": {
+		"maxFileBytes": 67108864,
+		"maxOutputBytes": 268435456,
+		"maxFeatures": 1000000,
+		"maxSourcePoints": 5000000,
+		"maxVertices": 10000000,
+		"maxExpandedBytes": 536870912,
+		"timeoutMs": 120000
+	},
+	"fit": {
+		"maxFileBytes": 67108864,
+		"timeoutMs": 120000
+	},
+	"jwc": {
+		"maxFileBytes": 67108864
+	},
+	"bds": {
+		"maxFileBytes": 33554432,
+		"maxBatchBytes": 33554432,
+		"maxFiles": 32,
+		"maxFeatures": 500000
+	},
+	"gcd": {
+		"maxFileBytes": 134217728,
+		"maxBatchBytes": 134217728,
+		"maxFiles": 32,
+		"maxFeatures": 200000,
+		"maxVertices": 2000000
+	},
+	"e57": {
+		"maxFileBytes": 268435456,
+		"maxSourcePoints": 5000000,
+		"maxDisplayPoints": 1000000
+	},
+	"mapinfo-tab": {
+		"maxDatasetBytes": 268435456,
+		"maxHeaderBytes": 1048576,
+		"maxFeatures": 500000,
+		"maxVertices": 5000000,
+		"timeoutMs": 120000
+	},
+	"jpeg2000": {
+		"maxFileBytes": 268435456,
+		"maxSamples": 16777216,
+		"maxMetadataBytes": 1048576,
+		"timeoutMs": 120000
+	},
+	"rik": {
+		"maxFileBytes": 268435456,
+		"maxExpandedBytes": 536870912,
+		"maxFiles": 4096
+	},
+	"mca": {
+		"maxFileBytes": 268435456,
+		"maxNbtBytes": 33554432,
+		"maxSections": 32768,
+		"skipBatchWarning": true
+	},
+	"envi-bil": {
+		"maxFileBytes": 536870912,
+		"maxHeaderBytes": 1048576,
+		"maxSamples": 16777216
+	},
+	"cedxm": {
+		"maxTextLength": 67108864
+	},
+	"sql-dump": {
+		"maxTextLength": 268435456
+	},
+	"local-3dtiles": {
+		"skipBatchWarning": true
+	},
+	"local-mvt": {
+		"skipBatchWarning": true
+	},
+	"local-raster-tiles": {
+		"skipBatchWarning": true
+	},
+	"dgn": {
+		"maxFileBytes": 67108864,
+		"maxOutputBytes": 134217728,
+		"maxFeatures": 500000,
+		"maxVertices": 5000000,
+		"timeoutMs": 120000
+	}
+}

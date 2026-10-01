@@ -57,8 +57,16 @@ const normalizeFeatureCollection = (
 		}))
 });
 
-export const osmFileToGeoJson = async (file: File): Promise<FeatureCollection> => {
+export const osmFileToGeoJson = async (
+	file: File,
+	signal = new AbortController().signal
+): Promise<FeatureCollection> => {
 	try {
+		signal.throwIfAborted();
+		if (/\.pbf$/i.test(file.name)) {
+			const { analyzeOsmPbf } = await import('$routes/map/utils/formats/osm-pbf/analyze');
+			return await analyzeOsmPbf(file, signal);
+		}
 		const text = await file.text();
 		const xml = await parseOsmXml(text);
 		const geojson = osmtogeojson(xml, {
@@ -72,6 +80,10 @@ export const osmFileToGeoJson = async (file: File): Promise<FeatureCollection> =
 
 		return normalized;
 	} catch (error) {
+		if (signal.aborted) throw signal.reason;
+		if (/\.pbf$/i.test(file.name) && error instanceof Error) {
+			throw new OsmParseError(error.message);
+		}
 		console.error('OSM parsing error:', error);
 
 		if (error instanceof OsmParseError) {

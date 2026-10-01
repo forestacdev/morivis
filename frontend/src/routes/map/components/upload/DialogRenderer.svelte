@@ -27,6 +27,7 @@
 		remoteWmtsUrl: string | null;
 		remoteFeatureServiceUrl: string | null;
 		remoteArcGisUrl: string | null;
+		remoteStacUrl: string | null;
 		pendingTileUrl: string | null;
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
@@ -51,6 +52,7 @@
 		remoteWmtsUrl = $bindable(),
 		remoteFeatureServiceUrl = $bindable(),
 		remoteArcGisUrl = $bindable(),
+		remoteStacUrl = $bindable(),
 		pendingTileUrl = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = false,
@@ -94,6 +96,7 @@
 			/>
 		{:else if profile === 'vector-zone-georef'}
 			<FormComponent
+				bind:geoRefData
 				bind:showDataEntry
 				bind:showDialogType
 				bind:dropFile
@@ -143,12 +146,16 @@
 				bind:pendingZoneGeoRefData
 				{selectedEpsgCode}
 			/>
+		{:else if profile === 'remote-stac'}
+			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteStacUrl />
 		{:else if profile === 'remote-arcgis'}
 			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteArcGisUrl />
 		{:else if profile === 'remote-wmts'}
 			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteWmtsUrl />
 		{:else if profile === 'remote-geozarr'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteGeoZarrUrl />
+			{#key dropFile}
+				<FormComponent bind:showDataEntry bind:showDialogType bind:remoteGeoZarrUrl {dropFile} />
+			{/key}
 		{:else if profile === 'tiles'}
 			<FormComponent
 				bind:showDataEntry

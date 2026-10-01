@@ -15,6 +15,7 @@ export const rasterizePointCloudToDemInWorker = (
 		RasterizePointCloudWorker,
 		{
 			positions: params.positions,
+			projectionDefinition: params.projectionDefinition,
 			bbox: [...params.bbox] as [number, number, number, number],
 			longEdgePixels: params.longEdgePixels
 		},

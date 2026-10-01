@@ -1,17 +1,25 @@
+import { isGeoZarrZip, isLocalGeoZarrFolder } from '$routes/map/utils/formats/geozarr/local';
+import { isJp2File } from '$routes/map/utils/formats/jpeg2000/files';
+import { isMapInfoTab } from '$routes/map/utils/formats/mapinfo-tab/files';
 import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
+import { isOsmPbfFile } from '$routes/map/utils/formats/osm-pbf/files';
 import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
+import { getShapefileDataset } from '$routes/map/utils/formats/shp/files';
 import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
 
 import type { DialogType } from '$routes/map/types';
+import { isAsciiGridFile } from '$routes/map/utils/formats/ascii-grid/files';
 import { isCityGmlFile } from '$routes/map/utils/formats/citygml/detector';
 import { isCityJsonFile } from '$routes/map/utils/formats/cityjson/detector';
+import { isRawRasterHeader, isRawRasterMain } from '$routes/map/utils/formats/envi-bil/files';
 import { hasExifGps } from '$routes/map/utils/formats/exif';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGaussianSplatPlyFile } from '$routes/map/utils/formats/gaussian-splat';
 import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import { isGtfsZip } from '$routes/map/utils/formats/gtfs';
+import { isHgtFile } from '$routes/map/utils/formats/hgt';
 import { isLikelyHritFile } from '$routes/map/utils/formats/hrit';
 import { extractModelFromKml, extractModelFromKmz } from '$routes/map/utils/formats/kml';
 import { isLocationHistoryFile } from '$routes/map/utils/formats/location-history';
@@ -29,6 +37,7 @@ import { getMatchedExtension } from '$routes/map/utils/upload-matchers-common';
 import {
 	areAllPhotoFiles,
 	areAllXmlFiles,
+	CAD_MODEL_FILE_EXTENSIONS,
 	findFirstByExtensions,
 	findFirstSupportedFile,
 	hasAnyExtension,
@@ -40,6 +49,7 @@ import {
 } from './upload-drop-matchers';
 
 export type UploadDropDecision =
+	| { type: 'cancelled'; }
 	| {
 		type: 'dialog';
 		dialogType: DialogType;
@@ -69,7 +79,10 @@ type UploadDropRule = {
 	resolve: (files: File[], options: UploadDropOptions) => Promise<UploadDropDecision>;
 };
 
-export type UploadDropOptions = { mobile?: boolean; };
+export type UploadDropOptions = {
+	mobile?: boolean;
+	checkExtractedFiles?: (files: File[]) => Promise<boolean>;
+};
 
 // FileManager 側で state 更新しやすいよう、判定結果を UI 遷移の形にそろえる。
 const createDialogDecision = (
@@ -167,11 +180,23 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 
 // 単体ファイルで同期的に決められるものは、ここに拡張子 -> ダイアログ種別として寄せる。
 const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
+	geojsonl: 'geojson',
+	jsonl: 'geojson',
+	ndjson: 'geojson',
+	geojsons: 'geojson',
+	geojsonseq: 'geojson',
+	mp4: 'video',
+	webm: 'video',
+	mov: 'video',
+	m4v: 'video',
+	ogv: 'video',
 	bds: 'bds',
 	gcd: 'gcd',
 	csv: 'csv',
 	tsv: 'tsv',
 	xlsx: 'xlsx',
+	pptx: 'pptx',
+	docx: 'docx',
 	wkt: 'wkt',
 	ewkt: 'wkt',
 	topojson: 'topojson',
@@ -179,10 +204,18 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	geoparquet: 'geoparquet',
 	arrow: 'geoarrow',
 	feather: 'geoarrow',
+	tab: 'mapinfo-tab',
+	jp2: 'jpeg2000',
+	j2w: 'jpeg2000',
+	jp2w: 'jpeg2000',
+	map: 'mapinfo-tab',
+	id: 'mapinfo-tab',
+	ind: 'mapinfo-tab',
 	mif: 'mif',
 	mid: 'mif',
 	gpx: 'gpx',
 	tcx: 'tcx',
+	fit: 'fit',
 	osm: 'osm',
 	gml: 'gml',
 	landxml: 'landxml',
@@ -193,6 +226,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	dm: 'dm',
 	dwg: 'dwg',
 	dxf: 'dxf',
+	dgn: 'dgn',
 	jww: 'jww',
 	jwc: 'jww',
 	sfc: 'sxf',
@@ -223,6 +257,10 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	'3mf': 'model',
 	amf: 'model',
 	stl: 'model',
+	step: 'step-iges',
+	stp: 'step-iges',
+	iges: 'step-iges',
+	igs: 'step-iges',
 	ifc: 'model',
 	pmx: 'model',
 	usd: 'model',
@@ -231,6 +269,15 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	h5: 'hdf5',
 	tiff: 'geotiff',
 	tif: 'geotiff',
+	asc: 'ascii-grid',
+	hgt: 'hgt',
+	hdr: 'envi-bil',
+	bil: 'envi-bil',
+	bip: 'envi-bil',
+	bsq: 'envi-bil',
+	dat: 'envi-bil',
+	img: 'envi-bil',
+	raw: 'envi-bil',
 	svg: 'svg',
 	png: 'geopdf',
 	webp: 'geopdf',
@@ -242,6 +289,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	rbxlx: 'roblox',
 	rbxl: 'roblox',
 	pcd: 'pointcloud',
+	e57: 'pointcloud',
 	xyz: 'pointcloud',
 	mbtiles: 'mbtiles',
 	nc: 'netcdf',
@@ -259,6 +307,58 @@ const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
+	{
+		id: 'dgn-file',
+		match: files => files.some(file => hasExtension(file, '.dgn')),
+		resolve: async files =>
+			files.length === 1
+				? createDialogDecision('dgn', files)
+				: createNotificationDecision(
+					'DGNは1ファイルずつ読み込んでください。参照図面の結合は未対応です'
+				)
+	},
+	{
+		id: 'jpeg2000-set',
+		match: files => files.some(isJp2File),
+		resolve: async files => createDialogDecision('jpeg2000', files)
+	},
+	{
+		id: 'mapinfo-tab-set',
+		match: files => files.some(isMapInfoTab),
+		resolve: async files => createDialogDecision('mapinfo-tab', files)
+	},
+	{
+		id: 'envi-bil-set',
+		match: files => files.some(file => isRawRasterHeader(file) || isRawRasterMain(file)),
+		resolve: async files => createDialogDecision('envi-bil', files)
+	},
+	{
+		id: 'hgt-set',
+		match: files => files.some(isHgtFile),
+		resolve: async files => createDialogDecision('hgt', files.filter(isHgtFile))
+	},
+	{
+		id: 'ascii-grid-set',
+		match: files => files.some(isAsciiGridFile),
+		resolve: async files =>
+			createDialogDecision(
+				'ascii-grid',
+				files.filter(file => isAsciiGridFile(file) || hasExtension(file, '.prj'))
+			)
+	},
+	{
+		id: 'dm-set',
+		match: files => files.some(file => hasAnyExtension(file, ['.dm', '.dmi'])),
+		resolve: async files =>
+			files.some(file => hasExtension(file, '.dm'))
+				? createDialogDecision(
+					'dm',
+					files.filter(file => hasAnyExtension(file, ['.dm', '.dmi']))
+				)
+				: createNotificationDecision(
+					'DMIは座標系の補助ファイルです。DMファイルと一緒に選択してください'
+				)
+	},
 	{
 		id: 'bds-set',
 		match: files => files.some(file => hasExtension(file, '.bds')),
@@ -312,6 +412,15 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 
 			return createDialogDecision('kml');
 		}
+	},
+	{
+		id: 'step-iges-files',
+		match: files => files.some(file => hasAnyExtension(file, CAD_MODEL_FILE_EXTENSIONS)),
+		resolve: async files =>
+			createDialogDecision(
+				'step-iges',
+				files.filter(file => hasAnyExtension(file, CAD_MODEL_FILE_EXTENSIONS))
+			)
 	},
 	{
 		id: 'model-files',
@@ -373,7 +482,13 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 	{
 		id: 'shapefile-set',
 		match: (files) => files.some(isShapeFileRelated),
-		resolve: async () => createDialogDecision('shp')
+		resolve: async files => {
+			try {
+				return createDialogDecision('shp', getShapefileDataset(files).files);
+			} catch (error) {
+				return createNotificationDecision((error as Error).message);
+			}
+		}
 	},
 	{
 		id: 'gtfs-text-set',
@@ -436,6 +551,11 @@ const resolveSingleFile = async (
 	options: UploadDropOptions
 ): Promise<UploadDropDecision> => {
 	const ext = file.name.split('.').pop()?.toLowerCase();
+	if (ext === 'dmi') {
+		return createNotificationDecision(
+			'DMIは座標系の補助ファイルです。DMファイルと一緒に選択してください'
+		);
+	}
 
 	if (ext === 'rik') {
 		try {
@@ -449,6 +569,7 @@ const resolveSingleFile = async (
 	}
 
 	if (ext === 'zip') {
+		if (await isGeoZarrZip(file)) return createDialogDecision('geozarr', [file]);
 		if (await isGtfsZip(file)) {
 			return createDialogDecision('gtfs');
 		}
@@ -456,6 +577,11 @@ const resolveSingleFile = async (
 		try {
 			const extracted = await unzipFiles(file);
 			if (extracted.length > 0) {
+				if (
+					options.checkExtractedFiles && !(await options.checkExtractedFiles(extracted))
+				) {
+					return { type: 'cancelled' };
+				}
 				return await resolveDroppedFiles(extracted, options);
 			}
 		} catch {
@@ -600,6 +726,7 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
+	if (isLocalGeoZarrFolder(files)) return createDialogDecision('geozarr', files);
 	// MCAは同じワールドのリージョン一式を専用フォームへ渡す。
 	if (files.some((file) => hasExtension(file, '.mca'))) {
 		return files.every(file => hasExtension(file, '.mca'))
@@ -616,6 +743,15 @@ export const resolveDroppedFiles = async (
 		return createDialogDecision('local-raster-tiles', files);
 	}
 	if (files.some(isMltFile)) return createDialogDecision('local-mlt', files);
+	// OSM PBFとMVTは拡張子が重なるため、タイル判定の前にBlobHeaderを確認する。
+	const pbfFiles = files.filter(file => /\.pbf$/i.test(file.name));
+	const osmPbfMatches = await Promise.all(pbfFiles.map(isOsmPbfFile));
+	if (osmPbfMatches.some(Boolean)) {
+		if (pbfFiles.length !== 1) {
+			return createNotificationDecision('OSM PBFは1ファイルずつ読み込んでください');
+		}
+		return createDialogDecision('osm', pbfFiles);
+	}
 	if (isLocalMvtInput(files)) return createDialogDecision('local-mvt', files);
 	const cityJsonCandidates = files.filter(file => /\.(?:json|cityjson)$/i.test(file.name));
 	if (cityJsonCandidates.length) {

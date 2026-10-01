@@ -61,7 +61,7 @@ export const createRasterMeshEntryInWorker = async (
 			wireframe: false,
 			showThroughTerrain: false,
 			color: '#ffffff',
-			shading: { ...DEFAULT_MESH_SHADING },
+			shading: { ...DEFAULT_MESH_SHADING, elevationDeg: 0 },
 			heightColorRamp: {
 				enabled: true,
 				colorMap: 'jet',
@@ -69,9 +69,10 @@ export const createRasterMeshEntryInWorker = async (
 				max: maxHeight,
 				sourceMin: minHeight,
 				sourceMax: maxHeight,
-				sourceSign: -1
+				sourceSign: 1
 			},
 			transformOptions: {
+				georeference: false,
 				scale: false,
 				rotation: false,
 				heightScale: true,
@@ -83,6 +84,7 @@ export const createRasterMeshEntryInWorker = async (
 				altitude: 0,
 				heightOffset: 0,
 				heightScale: 1,
+				baseRotationX: -180,
 				scale: 1,
 				rotationX: 0,
 				rotationY: 0,

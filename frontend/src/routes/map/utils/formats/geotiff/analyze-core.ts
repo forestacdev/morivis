@@ -1,4 +1,4 @@
-import { fromArrayBuffer } from 'geotiff';
+import { fromArrayBuffer } from '$routes/map/utils/formats/geotiff/reader';
 import type { ReadRasterResult, TypedArray } from 'geotiff';
 
 import { getMinMax, parseRasterBands } from '.';

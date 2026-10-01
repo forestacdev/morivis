@@ -36,7 +36,9 @@
 		showDimensionOption = $bindable()
 	}: Props = $props();
 
-	const dataRanges = $derived(GeoTiffCache.getDataRanges(layerEntry.id));
+	const dataRanges = $derived(
+		GeoTiffCache.getDataRanges(layerEntry.id) ?? layerEntry.properties?.bands?.sampleRanges
+	);
 
 	const numBands = $derived(layerEntry.properties?.bands?.numBands ?? 1);
 

@@ -1,12 +1,11 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-
 	import FeaturePanelHeader from './FeaturePanelHeader.svelte';
 	import FeaturePanelLoading from './FeaturePanelLoading.svelte';
 	import FeaturePanelSummaryBody from './FeaturePanelSummaryBody.svelte';
 	import FeaturePanelTabs from './FeaturePanelTabs.svelte';
 	import { getReferencePoiDetails } from './reference-poi-details';
 
+	import Icon from '$lib/components/svgs/Icon.svelte';
 	import type { FeatureMenuData } from '$routes/map/types';
 
 	let { data }: { data: FeatureMenuData } = $props();

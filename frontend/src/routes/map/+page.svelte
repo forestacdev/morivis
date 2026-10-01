@@ -77,6 +77,7 @@
 	} from '$routes/map/data/entries';
 	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
 	import { createPointCloudEntry } from '$routes/map/data/entries/model';
+	import { createRasterEntry } from '$routes/map/data/entries/raster';
 	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
 	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
@@ -110,6 +111,7 @@
 	import { createPointCloudSurfaceEntry } from '$routes/map/utils/formats/pointcloud/surface';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
+	import { createVideoEntry } from '$routes/map/utils/formats/video';
 	import {
 		getPopupImageFieldKey,
 		resolveGeneratedPoiIconUrl,
@@ -220,6 +222,7 @@
 	let remoteWmtsUrl = $state<string | null>(null);
 	let remoteFeatureServiceUrl = $state<string | null>(null);
 	let remoteArcGisUrl = $state<string | null>(null);
+	let remoteStacUrl = $state<string | null>(null);
 	let pendingTileUrl = $state<string | null>(null);
 
 	let isStyleEditEntry = $derived.by(() => {
@@ -453,6 +456,21 @@
 				if (!warpedEntry) {
 					throw new Error('GeoRefベクターのエントリ生成に失敗しました');
 				}
+				// 位置合わせの線は未指定なら1px。入力形式が持つスタイルは優先する。
+				const vectorLineWidth = data.vectorLineWidth ?? (data.vectorStyle ? undefined : 1);
+				if (vectorLineWidth != null && warpedEntry.style.type === 'line') {
+					warpedEntry.style.width = {
+						key: '単一',
+						expressions: [
+							{
+								type: 'single',
+								key: '単一',
+								name: '単一',
+								mapping: { value: vectorLineWidth }
+							}
+						]
+					};
+				}
 
 				debugLog.info(
 					`+page finalizeGeoRefEntry ベクター生成: id=${warpedEntry.id}, bounds=${warpedBbox.join(',')}`
@@ -502,6 +520,33 @@
 				setUploadedDataEntry(pointCloudEntry);
 				closeGeoRefUi();
 				showNotification('点群の位置を設定しました', 'success');
+				return;
+			}
+
+			if (data.sourceType === 'video') {
+				const url = URL.createObjectURL(data.imageFile);
+				try {
+					const entry = createVideoEntry(data.entryName, url, bbox, corners, data.previewImageUrl);
+					entry.id = data.entryId;
+					setUploadedDataEntry(entry);
+				} catch (cause) {
+					URL.revokeObjectURL(url);
+					throw cause;
+				}
+				closeGeoRefUi();
+				showNotification('動画の位置を設定しました', 'success');
+				return;
+			}
+
+			if (data.sourceType === 'raster' && data.rasterImage) {
+				const entry = createRasterEntry(data.entryName, data.rasterImage.url, { bounds: bbox });
+				entry.id = data.entryId;
+				entry.metaData.imageCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
+				entry.metaData.attribution = data.rasterImage.attribution;
+				entry.metaData.mapImage = data.previewImageUrl ?? data.rasterImage.url;
+				setUploadedDataEntry(entry);
+				closeGeoRefUi();
+				showNotification('画像の位置を設定しました', 'success');
 				return;
 			}
 
@@ -599,7 +644,7 @@
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
-					attribution: 'GeoTIFF',
+					attribution: data.rasterConfig?.attribution ?? 'GeoTIFF',
 					name: data.entryName || '画像データ',
 					tileSize: 256,
 					bounds: bbox,
@@ -626,7 +671,7 @@
 								index: 0,
 								min: data.bandMinMax.min,
 								max: data.bandMinMax.max,
-								colorMap: 'jet'
+								colorMap: data.rasterConfig?.singleColorMap ?? 'jet'
 							},
 							multi: {
 								r: { index: 0, min: data.multiBandMinMax.r.min, max: data.multiBandMinMax.r.max },
@@ -1491,6 +1536,7 @@
 					bind:remoteWmtsUrl
 					bind:remoteFeatureServiceUrl
 					bind:remoteArcGisUrl
+					bind:remoteStacUrl
 					bind:pendingTileUrl
 				/>
 			{/if}
@@ -1551,6 +1597,7 @@
 				bind:remoteWmtsUrl
 				bind:remoteFeatureServiceUrl
 				bind:remoteArcGisUrl
+				bind:remoteStacUrl
 				bind:pendingTileUrl
 				bind:transformOptionMode
 				bind:focusBbox
@@ -1577,6 +1624,7 @@
 				onModelPlacementConfirm={confirmModelGeoreference}
 				onModelPlacementCancel={cancelModelGeoreference}
 				bind:selectedEpsgCode
+				suggestedEpsgCode={pendingZoneGeoRefData?.suggestedEpsgCode}
 				bind:focusBbox
 				bind:zoneBboxGeojsonData
 				bind:geoRefData

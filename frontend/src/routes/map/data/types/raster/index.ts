@@ -27,6 +27,8 @@ interface ImageLegendCategory {
 }
 export interface ImageLegend {
 	type: 'image';
+	/** 記号ごとの凡例か、文字を含む凡例画像全体か。省略時は記号として表示する。 */
+	layout?: 'symbols' | 'images';
 	categories: ImageLegendCategory[];
 }
 export interface CategoryLegend {
@@ -80,6 +82,7 @@ export interface TileXYZ {
 /** raster entry の配信・格納方式。可視化の種類とは独立して扱う。 */
 export type RasterFormatType =
 	| 'image'
+	| 'video'
 	| 'pmtiles'
 	| 'mbtiles'
 	| 'cog'
@@ -219,6 +222,13 @@ export interface MultiBandData {
 }
 
 export interface RasterTiffStyle extends BaseRasterStyle {
+	/** 高度付き格子の立体表示。未指定時は2Dラスター。 */
+	volume?: {
+		type: 'voxel' | 'volume';
+		threshold: number;
+		heightScale: number;
+		density?: number;
+	};
 	type: 'tiff';
 	resampling?: 'nearest' | 'linear';
 	visualization: {
@@ -247,6 +257,8 @@ export type RasterDiscreteDimension = SharedDiscreteDimension;
 export type RasterDimensionState = SharedDimensionState;
 
 export interface RasterEntryState {
+	/** 高度方向の集約または指定高度（m）の水平断面。 */
+	vertical?: { mode: 'max' | 'height'; height: number; };
 	dimension?: RasterDimensionState;
 }
 
@@ -265,6 +277,8 @@ export interface RasterCategoryProperties {
 }
 
 export interface RasterProperties {
+	/** 高度軸の範囲（上端は含まない）と格子間隔。単位はm。 */
+	vertical?: { min: number; max: number; step: number; };
 	temporal?: RasterTemporalProperties;
 	bands?: RasterBandProperties;
 	categories?: RasterCategoryProperties;
@@ -288,6 +302,14 @@ interface BaseRasterEntry {
 export interface RasterImageEntry<T> extends BaseRasterEntry {
 	format: {
 		type: 'image';
+		url: string;
+	};
+	style: T;
+}
+
+export interface RasterVideoEntry<T = RasterBaseMapStyle> extends BaseRasterEntry {
+	format: {
+		type: 'video';
 		url: string;
 	};
 	style: T;
@@ -337,6 +359,8 @@ export interface RasterGeoZarrEntry<T> extends BaseRasterEntry {
 		type: 'geozarr';
 		url: string;
 		arrayPath?: string;
+		/** 位置情報がない配列に利用者が指定した経緯度範囲。 */
+		bbox?: [number, number, number, number];
 	};
 	style: T;
 }
@@ -354,6 +378,7 @@ export interface RasterImageGroupEntry<T> extends BaseRasterEntry {
  */
 export type MorivisRasterEntry<T> =
 	| RasterImageEntry<T>
+	| RasterVideoEntry<T>
 	| RasterPMTilesEntry<T>
 	| RasterMBTilesEntry<T>
 	| RasterCogEntry<T>

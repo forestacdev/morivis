@@ -20,7 +20,7 @@
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
-	import { getFirstUploadFile, toUploadFiles } from '$routes/map/utils/upload-matchers-common';
+	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -61,20 +61,25 @@
 		return getFirstUploadFile(dropFile);
 	});
 
-	const entryName = $derived(osmFile?.name.replace(/\.[^.]+$/, '') ?? 'OSMデータ');
+	const entryName = $derived(osmFile?.name.replace(/(?:\.osm)?\.pbf$|\.osm$/i, '') ?? 'OSMデータ');
 
 	$effect(() => {
 		if (osmFile) {
+			const controller = new AbortController();
+			rawGeojson = null;
+			selectedGeometryType = '';
+			geometryTypeOptions = [];
 			isProcessing.set(true);
-			osmFileToGeoJson(osmFile)
-				.then((geojson) => {
+			osmFileToGeoJson(osmFile, controller.signal)
+				.then(async (geojson) => {
+					if (controller.signal.aborted) return;
 					rawGeojson = geojson as unknown as FeatureCollection;
 					const types = getGeometryTypes(rawGeojson);
 
 					if (types.length === 1) {
 						selectedGeometryType = types[0];
 						geometryTypeOptions = [];
-						processGeojson();
+						await processGeojson(controller.signal);
 					} else {
 						geometryTypeOptions = types.map((type) => ({
 							key: type,
@@ -84,6 +89,7 @@
 					}
 				})
 				.catch((error) => {
+					if (controller.signal.aborted) return;
 					showNotification(
 						error instanceof OsmParseError ? error.message : 'OSMファイルの読み込みに失敗しました',
 						'error'
@@ -91,12 +97,16 @@
 					console.error(error);
 				})
 				.finally(() => {
-					isProcessing.set(false);
+					if (!controller.signal.aborted) isProcessing.set(false);
 				});
+			return () => {
+				controller.abort();
+				isProcessing.set(false);
+			};
 		}
 	});
 
-	const processGeojson = async () => {
+	const processGeojson = async (signal?: AbortSignal) => {
 		let filtered = rawGeojson;
 		if (rawGeojson && selectedGeometryType) {
 			filtered = filterByGeometryType(rawGeojson, selectedGeometryType as VectorEntryGeometryType);
@@ -128,6 +138,7 @@
 			{ attribution: 'OpenStreetMap' }
 		);
 
+		if (signal?.aborted) return;
 		if (entry) {
 			showDataEntry = entry;
 			showDialogType = null;
@@ -224,7 +235,7 @@
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
-		onclick={processGeojson}
+		onclick={() => processGeojson()}
 		disabled={$isProcessing || !selectedGeometryType}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
 		!selectedGeometryType

@@ -4,11 +4,19 @@ on:
   pull_request:
     paths:
       - "frontend/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".npmrc"
       - ".github/workflows/frontend-vitest.yml"
+
+permissions:
+  contents: read
 
 jobs:
   vitest:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -19,11 +27,11 @@ jobs:
         with:
           node-version: "24"
           cache: "pnpm"
-          cache-dependency-path: "frontend/pnpm-lock.yaml"
+          cache-dependency-path: "pnpm-lock.yaml"
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Prepare environment
+        run: cp frontend/.env.example frontend/.env
       - name: Run Vitest
-        working-directory: frontend
-        run: |
-          pnpm install --frozen-lockfile
-          cp .env.example .env
-          pnpm run test:unit -- --run
+        run: pnpm --dir frontend exec vitest run

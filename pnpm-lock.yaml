@@ -12,6 +12,9 @@ overrides:
   thrift: 0.23.0
   tmp: 0.2.6
 
+patchedDependencies:
+  maplibre-gl@6.4.0: c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93
+
 importers:
 
   .:
@@ -34,6 +37,9 @@ importers:
       3d-tiles-renderer:
         specifier: 0.5.2
         version: 0.5.2(three@0.177.0)
+      '@cornerstonejs/codec-openjpeg':
+        specifier: 1.3.6
+        version: 1.3.6
       '@deck.gl/core':
         specifier: ^9.2.5
         version: 9.2.5
@@ -49,48 +55,6 @@ importers:
       '@geoarrow/deck.gl-layers':
         specifier: 0.3.0
         version: 0.3.0(2d415fb19033fb72ffd036b87c1b68c0)
-      '@iconify-json/akar-icons':
-        specifier: ^1.2.7
-        version: 1.2.7
-      '@iconify-json/bx':
-        specifier: ^1.2.3
-        version: 1.2.3
-      '@iconify-json/circum':
-        specifier: ^1.2.2
-        version: 1.2.2
-      '@iconify-json/ep':
-        specifier: ^1.2.4
-        version: 1.2.4
-      '@iconify-json/ic':
-        specifier: ^1.2.4
-        version: 1.2.4
-      '@iconify-json/iconamoon':
-        specifier: ^1.2.2
-        version: 1.2.2
-      '@iconify-json/iconoir':
-        specifier: ^1.2.10
-        version: 1.2.10
-      '@iconify-json/majesticons':
-        specifier: ^1.2.4
-        version: 1.2.4
-      '@iconify-json/material-symbols':
-        specifier: ^1.2.66
-        version: 1.2.66
-      '@iconify-json/mdi':
-        specifier: ^1.2.3
-        version: 1.2.3
-      '@iconify-json/stash':
-        specifier: ^1.2.4
-        version: 1.2.4
-      '@iconify-json/streamline-ultimate':
-        specifier: ^1.2.2
-        version: 1.2.2
-      '@iconify-json/uil':
-        specifier: ^1.2.3
-        version: 1.2.3
-      '@iconify/utils':
-        specifier: ^3.1.0
-        version: 3.1.0
       '@loaders.gl/arrow':
         specifier: 4.3.4
         version: 4.3.4(@loaders.gl/core@4.3.4)
@@ -124,6 +88,9 @@ importers:
       '@maplibre/mlt':
         specifier: 1.1.12
         version: 1.1.12
+      '@osmix/pbf':
+        specifier: 0.0.9
+        version: 0.0.9
       '@pixiv/three-vrm':
         specifier: ^3.5.5
         version: 3.5.5(three@0.177.0)
@@ -259,6 +226,9 @@ importers:
       fgdb:
         specifier: ^1.0.0
         version: 1.0.0
+      fit-file-parser:
+        specifier: ^5.2.1
+        version: 5.2.1
       flatgeobuf:
         specifier: ^3.36.0
         version: 3.38.0
@@ -315,13 +285,16 @@ importers:
         version: 0.1.0
       maplibre-gl:
         specifier: ^6.4.0
-        version: 6.4.0
+        version: 6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93)
       moji:
         specifier: ^0.5.1
         version: 0.5.1
       netcdfjs:
         specifier: ^4.0.0
         version: 4.0.0
+      occt-import-js:
+        specifier: ^0.0.23
+        version: 0.0.23
       ol:
         specifier: ^10.5.0
         version: 10.7.0
@@ -369,7 +342,7 @@ importers:
         version: 1.20.0
       terra-draw-maplibre-gl-adapter:
         specifier: ^1.0.3
-        version: 1.2.3(maplibre-gl@6.4.0)(terra-draw@1.20.0)
+        version: 1.2.3(maplibre-gl@6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93))(terra-draw@1.20.0)
       three:
         specifier: ^0.177.0
         version: 0.177.0
@@ -385,6 +358,9 @@ importers:
       vt-pbf:
         specifier: ^3.1.3
         version: 3.1.3
+      web-e57:
+        specifier: 1.2.0
+        version: 1.2.0
       web-ifc:
         specifier: ^0.0.77
         version: 0.0.77
@@ -434,9 +410,6 @@ importers:
       '@gltf-transform/functions':
         specifier: ^4.4.2
         version: 4.4.2
-      '@iconify/svelte':
-        specifier: ^4.1.0
-        version: 4.2.0(svelte@5.55.7(@typescript-eslint/types@8.48.1))
       '@playwright/test':
         specifier: ^1.45.3
         version: 1.57.0
@@ -622,9 +595,6 @@ packages:
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
-
-  '@antfu/install-pkg@1.1.0':
-    resolution: {integrity: sha512-MGQsmw10ZyI+EJo45CdSER4zEb+p31LpDAFp2Z3gkSd1yqVZGi0Ebx++YTEMonJy4oChEMLsxZ64j8FH6sSqtQ==}
 
   '@apideck/better-ajv-errors@0.3.7':
     resolution: {integrity: sha512-TajUJwGWbDwkCx/CZi7tRE8PVB7simCvKJfHUsSdvps+aTM/PDPP4gkLmKnc+x3CE//y9i/nj74GqdL/hwk7Iw==}
@@ -1139,6 +1109,10 @@ packages:
 
   '@canvas/image-data@1.1.0':
     resolution: {integrity: sha512-QdObRRjRbcXGmM1tmJ+MrHcaz1MftF2+W7YI+MsphnsCrmtyfS0d5qJbk0MeSbUeyM/jCb0hmnkXPsy026L7dA==}
+
+  '@cornerstonejs/codec-openjpeg@1.3.6':
+    resolution: {integrity: sha512-bSdZXF+2GxfBkWHUr7yGLQtIwbAm9wOl3e4ARee/9Z9lfKyVqhUCixI6+ZjIn9YKTIuDcn/NZNK94XEUg1SBtw==}
+    engines: {node: '>=0.14'}
 
   '@deck.gl/aggregation-layers@9.3.2':
     resolution: {integrity: sha512-aOzCmJHPYM95aFEW7s3lyFibTSP+T/fYqCP2RxHyi/IxQwROwJTDrKyn/qPw5GvzZOIgFVxlR1Qc9RY8qYRFBw==}
@@ -1677,56 +1651,6 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
-
-  '@iconify-json/akar-icons@1.2.7':
-    resolution: {integrity: sha512-cw44dCnZgGhm6Tywxm0WALAnDB9AyGkDk7kiLMo2B/Ayt7duZu/uyrsqb55weWUN8Ge2sQAOl8MRtT6bFcLzPg==}
-
-  '@iconify-json/bx@1.2.3':
-    resolution: {integrity: sha512-ihvX+2d688otgW7MAvUEdKVln+fZ28BJTlygazKUU/+RCODWT+2KObjAHe8+KPs4VhC8V6Tgoy1qrX0Myn/upA==}
-
-  '@iconify-json/circum@1.2.2':
-    resolution: {integrity: sha512-lIC4xg4p62SValfSiUnrcuLKYf2rpgDydlGu9V3PwO7rVfNB4P1gMgt/Hqs7M0ttDEBC6hSxxMlXDfQGNXmVqA==}
-
-  '@iconify-json/ep@1.2.4':
-    resolution: {integrity: sha512-dtKOueYp1CRxAUW+GayIiuHqOlELfO0W3QiHOH4NjvKtBn2uxZbByIKQ+7B1Hj+AgZrhWTie3QKYkZn+VQVZrw==}
-
-  '@iconify-json/ic@1.2.4':
-    resolution: {integrity: sha512-pzPMmrZrBQuwT7nmtrYdkttun8KalRGgZPIL1Ny9KpF2zjRGIUPN+npTfuD3lrgO/OnSwAoJWuekQwBpt/Cqrw==}
-
-  '@iconify-json/iconamoon@1.2.2':
-    resolution: {integrity: sha512-Xn7YeSDniPgutPr0qil/iQwQelq975OYQ/i2twGjcK4DjGOXBrBC+6q45WtVuQbFfXzM7bgijv4yVnxy0OqUdQ==}
-
-  '@iconify-json/iconoir@1.2.10':
-    resolution: {integrity: sha512-NnbdB9S5G++6wE5aEZhzpFR0HRcaZFSbJJIHOGF2axaNVKnSUs4NBW2z0uhZnM00iUkiK848Sp81EZPg52DL+w==}
-
-  '@iconify-json/majesticons@1.2.4':
-    resolution: {integrity: sha512-8h6zfqN/8eKLNGcHzJd8LZ+vI6aC2MIGq+QTNoYD/H98TL1N/s8ufxal54OkzIsemylXxWLj+NLd0wXDLlVIIg==}
-
-  '@iconify-json/material-symbols@1.2.66':
-    resolution: {integrity: sha512-pgZmK8RBAaYjfHnR0DcUDraduiJwjGDi4FwCXp89ecyNfs6fcL8j+TJ+Xqkyv6v7c31j/4OlL5ly86ATT6yTpA==}
-
-  '@iconify-json/mdi@1.2.3':
-    resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
-
-  '@iconify-json/stash@1.2.4':
-    resolution: {integrity: sha512-EO3iJTRdhrJPuNE11ZXk6KwIpQYrnOXCPtcKnklsBt8aSABseZ74caHua25ksl5MZfQi3nEuKgpqm6mxgQPOGg==}
-
-  '@iconify-json/streamline-ultimate@1.2.2':
-    resolution: {integrity: sha512-0Vz9UHgMrmRUYt3JFqm0E6PDdroItVqK4fKf3T72jVwS2MAmc8dcqvCy+f0hzOVzJfo3G34ejFA9Y8l/K44hTQ==}
-
-  '@iconify-json/uil@1.2.3':
-    resolution: {integrity: sha512-if91+UBhDQc6glPsIaXecGIcXnbQZfEO4Gdv89TV2xQ+V5e9GWbY5rNl2fsKZd8COsRQ5lRQAKimVQVL0CZZVg==}
-
-  '@iconify/svelte@4.2.0':
-    resolution: {integrity: sha512-fEl0T7SAPonK7xk6xUlRPDmFDZVDe2Z7ZstlqeDS/sS8ve2uyU+Qa8rTWbIqzZJlRvONkK5kVXiUf9nIc+6OOQ==}
-    peerDependencies:
-      svelte: '>4.0.0'
-
-  '@iconify/types@2.0.0':
-    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
-
-  '@iconify/utils@3.1.0':
-    resolution: {integrity: sha512-Zlzem1ZXhI1iHeeERabLNzBHdOa4VhQbqAcOQaMKuTuyZCpwKbC2R4Dd0Zo3g9EAc+Y4fiarO8HIHRAth7+skw==}
 
   '@img/colour@1.0.0':
     resolution: {integrity: sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw==}
@@ -2331,6 +2255,9 @@ packages:
 
   '@open-draft/until@2.1.0':
     resolution: {integrity: sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==}
+
+  '@osmix/pbf@0.0.9':
+    resolution: {integrity: sha512-jUdyYdj+aOfL4saYnPpQOjXalgpJIYOTqX/2GRCqwIFRJqspXiED08eusRAi3hvstTLEsjpFvNQKUrVKMW580g==}
 
   '@oxc-parser/binding-android-arm-eabi@0.133.0':
     resolution: {integrity: sha512-l/44caGse+VpnY9gx0yvvc5QnnG3yG1FO3KZgYvNL1GZrfK86zIwAOgGEVlxDyRymzrU/KHiblPFpevKOmJmUA==}
@@ -3450,11 +3377,6 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  acorn@8.16.0:
-    resolution: {integrity: sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
-
   acorn@8.17.0:
     resolution: {integrity: sha512-xRQbDb9BnwDafYNn6Vwl839DYVjqXYb1XVGtWAZ1kcDc6iwAL4hg3B1dZlRiuENFeO2H53gFG3in621AdERVAg==}
     engines: {node: '>=0.4.0'}
@@ -3667,6 +3589,9 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
+  buffer@6.0.3:
+    resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
+
   bz2@1.0.1:
     resolution: {integrity: sha512-TRUFsKDme+nCMKa1lMx3dkLGh4KvgmCq8/xh/MTMEXAtjPqSC/NqPTzpy5auBZxrJTJX/yjWM0pHxMbpVGc+UQ==}
 
@@ -3796,9 +3721,6 @@ packages:
   concat-stream@2.0.0:
     resolution: {integrity: sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==}
     engines: {'0': node >= 6.0}
-
-  confbox@0.1.8:
-    resolution: {integrity: sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w==}
 
   consola@3.4.2:
     resolution: {integrity: sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA==}
@@ -4440,6 +4362,9 @@ packages:
   find-up@5.0.0:
     resolution: {integrity: sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==}
     engines: {node: '>=10'}
+
+  fit-file-parser@5.2.1:
+    resolution: {integrity: sha512-7KBHcY9I6GmfpYDq4iL/ESxmMSl5da4MOWBKKXYIZwsK5TLgX7hNAce2O/5ZzHKdSEL58hfDhuEnraXndoWEbQ==}
 
   flat-cache@4.0.1:
     resolution: {integrity: sha512-f7ccFPK3SXFHpx15UIGyRJ/FJQctuKZ0zVuN3frBo4HnK3cay9VEW0R6yPYFHC0AgqhukPzKjq22t5DmAyqGyw==}
@@ -5336,9 +5261,6 @@ packages:
   mjolnir.js@3.0.0:
     resolution: {integrity: sha512-siX3YCG7N2HnmN1xMH3cK4JkUZJhbkhRFJL+G5N1vH0mh1t5088rJknIoqDFWDIU6NPGvRRgLnYW3ZHjSMEBLA==}
 
-  mlly@1.8.2:
-    resolution: {integrity: sha512-d+ObxMQFmbt10sretNDytwt85VrbkhhUA/JBGm1MPaWJ65Cl4wOgLaB1NYvJSZ0Ef03MMEU/0xpPMXUIQ29UfA==}
-
   moji@0.5.1:
     resolution: {integrity: sha512-xYylXOjBS9mE/d690InK3Y74NpE0El0TmAKDmKJveWk9jds/0Tl7MQP4yhavS0U64diEq+5ey2905nhCpIHE+Q==}
 
@@ -5461,6 +5383,9 @@ packages:
   observable-fns@0.6.1:
     resolution: {integrity: sha512-9gRK4+sRWzeN6AOewNBTLXir7Zl/i3GB6Yl26gK4flxz8BXVpD3kt8amREmWNb0mxYOGDotvE5a4N+PtGGKdkg==}
 
+  occt-import-js@0.0.23:
+    resolution: {integrity: sha512-RFfYQXYFX5C1mB1Aywm0ShcUKzXOr/VzTnlzhBSDJOR6YCAPt1HYCzeXWg1vwwjn/cUxwqRNhhtf1dlewoZYCQ==}
+
   ol@10.7.0:
     resolution: {integrity: sha512-122U5gamPqNgLpLOkogFJhgpywvd/5en2kETIDW+Ubfi9lPnZ0G9HWRdG+CX0oP8od2d6u6ky3eewIYYlrVczw==}
 
@@ -5523,9 +5448,6 @@ packages:
 
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
-
-  package-manager-detector@1.6.0:
-    resolution: {integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==}
 
   pako@1.0.11:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
@@ -5632,9 +5554,6 @@ packages:
   pkg-dir@4.2.0:
     resolution: {integrity: sha512-HRDzbaKjC+AOWVXxAU/x54COGeIv9eb+6CkDSQoNTt4XyWoIJvuPsXizxu/Fr23EiekbtZwmh1IcIG/l/a10GQ==}
     engines: {node: '>=8'}
-
-  pkg-types@1.3.1:
-    resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
 
   playwright-core@1.57.0:
     resolution: {integrity: sha512-agTcKlMw/mjBWOnD6kFZttAAGHgi/Nw0CZ2o6JqWSbMlI219lAFLZZCyqByTsvVAJq5XA5H8cA6PrvBRpBWEuQ==}
@@ -6497,10 +6416,6 @@ packages:
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
 
-  tinyexec@1.1.1:
-    resolution: {integrity: sha512-VKS/ZaQhhkKFMANmAOhhXVoIfBXblQxGX1myCQ2faQrfmobMftXeJPcZGp0gS07ocvGJWDLZGyOZDadDBqYIJg==}
-    engines: {node: '>=18'}
-
   tinyglobby@0.2.15:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
     engines: {node: '>=12.0.0'}
@@ -6677,9 +6592,6 @@ packages:
 
   uc.micro@2.1.0:
     resolution: {integrity: sha512-ARDJmphmdvUk6Glw7y9DQ2bFkKBHwQHLi2lsaH6PPmz/Ka9sFOBsBluozhDltWmnv9u/cF6Rt87znRTPV+yp/A==}
-
-  ufo@1.6.3:
-    resolution: {integrity: sha512-yDJTmhydvl5lJzBmy/hyOAA0d+aqCBuwl818haVdYCRrWV84o7YyeVm4QlVHStqNrrJSTb6jKuFAVqAFsr+K3Q==}
 
   unbash@3.0.0:
     resolution: {integrity: sha512-FeFPZ/WFT0mbRCuydiZzpPFlrYN8ZUpphQKoq4EeElVIYjYyGzPMxQR/simUwCOJIyVhpFk4RbtyO7RuMpMnHA==}
@@ -6898,6 +6810,9 @@ packages:
   walk-up-path@4.0.0:
     resolution: {integrity: sha512-3hu+tD8YzSLGuFYtPRb48vdhKMi0KQV5sn+uWr8+7dMEq/2G/dtLrdDinkLjqq5TIbIBjYJ4Ax/n3YiaW7QM8A==}
     engines: {node: 20 || >=22}
+
+  web-e57@1.2.0:
+    resolution: {integrity: sha512-Y4wiWBgHZ/KF+IMl93apZogOuHlPQjTWcDJI7rL360h4T3dnytibkmFYcWeu5hk915H/n0/CaFD8n/gyE8piew==}
 
   web-ifc-three@0.0.126:
     resolution: {integrity: sha512-P2/jcuSZvpLnGiLcd1H+8N01oWuyIjmU5zUy/rzx8HTrbJn7FCE6uC4SFJyYvmxwN6+uFCRmEvzHkfHrdJzpcQ==}
@@ -7146,11 +7061,6 @@ snapshots:
       three: 0.177.0
 
   '@alloc/quick-lru@5.2.0': {}
-
-  '@antfu/install-pkg@1.1.0':
-    dependencies:
-      package-manager-detector: 1.6.0
-      tinyexec: 1.1.1
 
   '@apideck/better-ajv-errors@0.3.7(ajv@8.20.0)':
     dependencies:
@@ -7825,6 +7735,8 @@ snapshots:
 
   '@canvas/image-data@1.1.0': {}
 
+  '@cornerstonejs/codec-openjpeg@1.3.6': {}
+
   '@deck.gl/aggregation-layers@9.3.2(@deck.gl/core@9.2.5)(@deck.gl/layers@9.2.11(@deck.gl/core@9.2.5)(@loaders.gl/core@4.3.4)(@luma.gl/core@9.2.5)(@luma.gl/engine@9.2.5(@luma.gl/core@9.2.5)(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5))))(@luma.gl/core@9.2.5)(@luma.gl/engine@9.2.5(@luma.gl/core@9.2.5)(@luma.gl/shadertools@9.2.5(@luma.gl/core@9.2.5)))':
     dependencies:
       '@deck.gl/core': 9.2.5
@@ -8256,71 +8168,6 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
-
-  '@iconify-json/akar-icons@1.2.7':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/bx@1.2.3':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/circum@1.2.2':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/ep@1.2.4':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/ic@1.2.4':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/iconamoon@1.2.2':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/iconoir@1.2.10':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/majesticons@1.2.4':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/material-symbols@1.2.66':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/mdi@1.2.3':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/stash@1.2.4':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/streamline-ultimate@1.2.2':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify-json/uil@1.2.3':
-    dependencies:
-      '@iconify/types': 2.0.0
-
-  '@iconify/svelte@4.2.0(svelte@5.55.7(@typescript-eslint/types@8.48.1))':
-    dependencies:
-      '@iconify/types': 2.0.0
-      svelte: 5.55.7(@typescript-eslint/types@8.48.1)
-
-  '@iconify/types@2.0.0': {}
-
-  '@iconify/utils@3.1.0':
-    dependencies:
-      '@antfu/install-pkg': 1.1.0
-      '@iconify/types': 2.0.0
-      mlly: 1.8.2
 
   '@img/colour@1.0.0': {}
 
@@ -9033,6 +8880,10 @@ snapshots:
       outvariant: 1.4.3
 
   '@open-draft/until@2.1.0': {}
+
+  '@osmix/pbf@0.0.9':
+    dependencies:
+      pbf: 4.0.1
 
   '@oxc-parser/binding-android-arm-eabi@0.133.0':
     optional: true
@@ -10166,8 +10017,6 @@ snapshots:
 
   acorn@8.15.0: {}
 
-  acorn@8.16.0: {}
-
   acorn@8.17.0: {}
 
   acorn@8.18.0: {}
@@ -10400,6 +10249,11 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
+  buffer@6.0.3:
+    dependencies:
+      base64-js: 1.5.1
+      ieee754: 1.2.1
+
   bz2@1.0.1: {}
 
   cac@6.7.14: {}
@@ -10531,8 +10385,6 @@ snapshots:
       inherits: 2.0.4
       readable-stream: 3.6.2
       typedarray: 0.0.6
-
-  confbox@0.1.8: {}
 
   consola@3.4.2: {}
 
@@ -11363,6 +11215,10 @@ snapshots:
       locate-path: 6.0.0
       path-exists: 4.0.0
 
+  fit-file-parser@5.2.1:
+    dependencies:
+      buffer: 6.0.3
+
   flat-cache@4.0.1:
     dependencies:
       flatted: 3.3.3
@@ -12173,7 +12029,7 @@ snapshots:
 
   maplibre-contour@0.1.0: {}
 
-  maplibre-gl@6.4.0:
+  maplibre-gl@6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93):
     dependencies:
       '@mapbox/point-geometry': 1.1.0
       '@mapbox/tiny-sdf': 2.2.0
@@ -12252,13 +12108,6 @@ snapshots:
   minipass@7.1.3: {}
 
   mjolnir.js@3.0.0: {}
-
-  mlly@1.8.2:
-    dependencies:
-      acorn: 8.16.0
-      pathe: 2.0.3
-      pkg-types: 1.3.1
-      ufo: 1.6.3
 
   moji@0.5.1:
     dependencies:
@@ -12391,6 +12240,8 @@ snapshots:
 
   observable-fns@0.6.1: {}
 
+  occt-import-js@0.0.23: {}
+
   ol@10.7.0:
     dependencies:
       '@types/rbush': 4.0.0
@@ -12519,8 +12370,6 @@ snapshots:
 
   package-json-from-dist@1.0.1: {}
 
-  package-manager-detector@1.6.0: {}
-
   pako@1.0.11: {}
 
   pako@2.1.0: {}
@@ -12608,12 +12457,6 @@ snapshots:
   pkg-dir@4.2.0:
     dependencies:
       find-up: 4.1.0
-
-  pkg-types@1.3.1:
-    dependencies:
-      confbox: 0.1.8
-      mlly: 1.8.2
-      pathe: 2.0.3
 
   playwright-core@1.57.0: {}
 
@@ -13409,9 +13252,9 @@ snapshots:
       type-fest: 0.16.0
       unique-string: 2.0.0
 
-  terra-draw-maplibre-gl-adapter@1.2.3(maplibre-gl@6.4.0)(terra-draw@1.20.0):
+  terra-draw-maplibre-gl-adapter@1.2.3(maplibre-gl@6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93))(terra-draw@1.20.0):
     dependencies:
-      maplibre-gl: 6.4.0
+      maplibre-gl: 6.4.0(patch_hash=c5bcce9265258ba67f0c693f84529efd58d10a6499bf6959cb4225430efb4f93)
       terra-draw: 1.20.0
 
   terra-draw@1.20.0: {}
@@ -13482,8 +13325,6 @@ snapshots:
   tinybench@2.9.0: {}
 
   tinyexec@0.3.2: {}
-
-  tinyexec@1.1.1: {}
 
   tinyglobby@0.2.15:
     dependencies:
@@ -13670,8 +13511,6 @@ snapshots:
   typical@7.3.0: {}
 
   uc.micro@2.1.0: {}
-
-  ufo@1.6.3: {}
 
   unbash@3.0.0: {}
 
@@ -13890,6 +13729,8 @@ snapshots:
       xml-name-validator: 3.0.0
 
   walk-up-path@4.0.0: {}
+
+  web-e57@1.2.0: {}
 
   web-ifc-three@0.0.126(three@0.177.0):
     dependencies:

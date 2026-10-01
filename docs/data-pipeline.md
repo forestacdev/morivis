@@ -36,17 +36,64 @@ flowchart LR
 | `BaseDialog.svelte` / `DialogRenderer.svelte` | `showDialogType` と `dialog-registry.ts` をもとに対象 Form を選び、profile に応じて必要な bind 状態を渡す。 |
 | `components/upload/form/*.svelte` | 形式ごとの解析、座標系判定、preview 準備、最終 entry 作成を担当する。 |
 
+### TIFF URLの自動振り分け
+
+共通URL欄では `upload-url.ts` が `.tif` / `.tiff` / `.geotiff` をサービス問い合わせより先に判定する。タイルURLテンプレートは既存のタイル登録を優先する。
+`geotiff/probe-cog.ts` が64 KiB単位のRange取得で位置情報・内部タイル・縮小画像を調べ、COG登録に適する場合は `remote-stac` profileで `StacForm.svelte` にURLを渡す。画素の復号は判定時には行わず、取得量4 MiB・待ち時間20秒・後続IFD 16個までに制限する。これはOGCの完全なCOG適合性検査ではない。
+
+通常TIFFやRange非対応（HTTP 200）は従来のファイル取得へ進む。通信失敗、不正な部分応答、判定上限超過ではエラーを表示し、全体取得へ自動で切り替えない。COG登録へ進んだ後にプレビュー用画素を取得し、最小オーバービューの中央から最大512×512画素を読む。サムネイルと初期の値域はその標本に基づく。
+
 ## 定義元
 
 対応形式が増えたので、どこを真実の定義として見るかを明示しておく。
 
 | ファイル | 役割 |
 | --- | --- |
-| `types/index.ts` | `DialogType` と `SUPPORTED_UPLOAD_FORMATS`。形式名・説明・アイコン・拡張子・入力フォームの定義元。`SUPPORTED_FILE_GROUPS` とファイル選択用の拡張子一覧もここから生成する。 |
+| `utils/formats/<format>/definition.ts` | 拡張子・関連ファイル構成・容量や処理量の制限。UIやパーサーを読み込まない静的定義。 |
+| `utils/formats/registry.ts` | 形式IDから定義を引く対応表。全形式を集める。 |
+| `types/index.ts` | `DialogType` と形式の表示名・説明・アイコン・表示順・入力フォーム。技術定義から拡張子を取得して `SUPPORTED_UPLOAD_FORMATS`・`SUPPORTED_FILE_GROUPS`・ファイル選択用一覧を生成する。 |
 | `upload-drop.ts` | ファイルや URL をどの `DialogType` に振り分けるかの定義元。OBJ の軽量事前検査結果のような形式別メタデータもここで `File` に一時付与する。 |
 | `dialog-registry.ts` | `DialogType -> Form の動的 import / profile` の対応表。 |
 | `transform-policy.ts` | 形式ごとの `zone` / `georef` 許可方針。 |
 | `components/upload/form/*.svelte` | 各形式の preview / final entry 作成の実装本体。 |
+
+## 容量・処理量の制限
+
+形式ごとの上限は `utils/formats/<format>/definition.ts` の `limits` に置く。
+`utils/formats/resource-limits.ts` は共通の容量警告の閾値・検査関数・入力上限の型を持ち、形式別の数値表は持たない。
+
+UIの表示項目は既存の形式IDで `FORMAT_DEFINITIONS` を参照する。`resourceLimitKeys` による別表との手書きの対応付けは不要。
+フォームを共用するOSM XML/PBF、JWW/JWC、SQLite/SQLダンプ、点群/E57では、制限を持つ形式の定義を `variants` で参照する。
+親項目に子形式の上限を適用しない。Workerやパーサーは必要な `definition.ts` だけを直接importし、全形式のレジストリやUIの表示情報を読み込まない。
+
+`extensions` は形式一覧からのファイル選択に使う拡張子。`files` は関連ファイルを扱う既存リゾルバーの構成情報で、必須・任意・本体・属性ファイルなどを区別する。
+例えばShapefileの拡張子は必須3ファイルと任意のPRJ/CPGから生成し、ファイル判定も同じ定義を参照する。
+TABのヘッダー参照や、OSM PBFとMVTを区別する内容判定などの処理は各形式の実装に残す。拡張子一覧だけで形式を確定しない。
+
+アイコン・説明文・表示順は `types/index.ts`、フォームの動的importは `dialog-registry.ts` に残す。
+技術定義はこれらを参照せず、UIから技術定義へ一方向に依存する。
+
+- `maxFileBytes`: ファイル単体の上限。
+- `maxDatasetBytes`: 関連ファイルを合わせた一式の上限。MapInfo TABはTAB・DAT/DBF・MAP・ID・任意のINDを合計する。
+- `maxBatchBytes` / `maxFiles`: 今回処理する全体の容量・ファイル数。BDSとGCDはこの単位で制限する。
+- 展開後のバイト数・地物数・点数・サンプル数・時間は、それぞれのパーサーで同じ定義を参照して検査する。
+- `maxTextLength` はUTF-16コード単位の文字列長。入力ファイルのバイト数とは異なる。
+- 上限の未指定は、明示的な拒否基準がないことを示す。大容量でも処理できるという保証ではない。
+- 形式仕様に由来するヘッダー長などの検証や、ここに移していない構造上の制約は各パーサーに残る。
+
+`checkInputResourceLimits()` は、呼び出し元が組み立てたデータセットをファイル単位・一式・全体の順で検査する。
+上限ちょうどは許可し、超過時に拒否する。上限値は集約前から変更していない。
+
+合計100 MiB以上の続行確認は `components/upload/upload-resource-check.ts` が担当する。
+MCAのみの入力と、必要なタイルを読むフォルダ入力は共通警告を省略する。この免除は各形式の強制上限とは独立している。
+同じFileオブジェクトの一式で承認済みなら再確認せず、追加・差し替え後には再確認する。
+
+Shapefileは同じ相対フォルダ・基本名を一式として扱う。ZIP内の別フォルダにある同名ファイルや、複数セット、同じ拡張子の重複は混ぜない。
+フォームへの段階的な追加と同じ構成ファイルの差し替えは許可する。解析直前にも確定した一式を検査する。
+Shapefileに新しい強制容量上限は設けていない。
+
+通常のZIPアップロードは、展開前の圧縮ファイルに加え、展開後のFile配列でも共通警告を行う。
+キャンセル時はフォームへ進まない。展開後の確認なので、展開中のメモリ使用量を抑える仕組みではない。
 
 ## 読み込みのタイミング
 
@@ -96,6 +143,52 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+Zarr / GeoZarrは共通URL欄または `GeoZarrForm.svelte` で配列を選び、`RasterGeoZarrEntry` に登録する。
+メタ情報取得・チャンク展開・タイル描画は専用Workerで処理する。座標軸の向きと元の投影を保持してMapLibreの画素中心へ再サンプリングし、取得共有・キャンセル・容量上限をruntime内で管理する。
+対応範囲は [Zarr / GeoZarr](../frontend/src/routes/map/utils/formats/geozarr/README.md) を参照。
+
+
+OSM PBF（`.osm.pbf`、OSMヘッダーを持つ`.pbf`）は、MVT判定より先にOSMフォームへ振り分ける。
+専用Workerで`@osmix/pbf`によるデコードと`osmtogeojson`による図形組み立てを行い、WGS84のGeoJSONへ変換する。GDALは使わず、OSM XMLとジオメトリ選択・ベクター登録を共用する。
+容量上限と対応範囲は [OSM PBF](../frontend/src/routes/map/utils/formats/osm-pbf/README.md) を参照。
+
+GeoJSONSeq / 行区切りGeoJSONは専用パーサーでFeatureCollectionへまとめ、既存の `GeoJsonForm.svelte` へ接続する。
+改行区切りとRFC 8142のRS区切りを扱い、ジオメトリ選択・座標変換・位置合わせ・2D/3D登録をGeoJSONと共用する。
+対応範囲とメモリ上の制約は [GeoJSONSeq](../frontend/src/routes/map/utils/formats/geojsonseq/README.md) を参照。
+
+FIT (`.fit`) は `FitForm.svelte` から専用WorkerでGPS記録を解析する。軌跡・計測点・コースポイントを選び、WGS84のGeoJSONを通常のvector entryとして登録する。座標系指定は不要で、解析・登録中はスクリーンガードを表示する。対応範囲は [FIT](../frontend/src/routes/map/utils/formats/fit/README.md) を参照。
+
+動画（MP4・WebM・MOV・M4V・OGV）は `VideoForm.svelte` で位置タグと先頭フレームを読む。MP4・MOV系の撮影位置を取得できた場合は、詳細画面に動画を持つGeoJSONポイントとして登録へ進む。位置情報がない場合は位置合わせへ進む。確定した四隅と元動画のURLを `RasterVideoEntry` に保持し、video sourceとraster layerで再生する。対応範囲は[動画](../frontend/src/routes/map/utils/formats/video/README.md)を参照。
+
+E57 (`.e57`) は既存の `PointCloudForm.svelte` へ渡す。専用Worker内のWASMで複数スキャンのpose・RGBを反映し、点群entryへ正規化する。埋め込みWKTがない・変換できない場合は座標系指定または位置合わせを使う。
+対応範囲とメモリ上限は [E57](../frontend/src/routes/map/utils/formats/e57/README.md) を参照。
+
+ASCII Grid (`.asc`) は `AsciiGridForm.svelte` で同名のPRJと対応付け、Workerで格子を解析する。
+PRJが有効ならそのままエントリー登録へ進み、座標系が不明・変換できない場合はZoneを自動で開く。
+PRJまたはZoneで確定した座標系から、セル中心を逆投影してWGS84の格子へ再サンプリングする。
+ラスターは既存の `GeoTiffCache` と `RasterTiffStyle`、3Dは既存のメッシュ生成へ渡す。座標系不明なら手動の位置合わせも選べる。
+対応範囲は [ASCII Grid](../frontend/src/routes/map/utils/formats/ascii-grid/README.md) を参照。
+
+SRTM HGT (`.hgt`) は `HgtForm.svelte` からWorkerで標高格子を解析する。
+1度タイルの1201×1201・1801×3601・3601×3601に対応し、ファイル名からWGS84の位置を復元する。
+解析後にダイアログでGeoTIFFと共通の切り替えUIからラスター／3Dメッシュを選び、「決定」を押す。位置を復元できれば選んだ方法でそのまま登録へ進み、位置を取得できない名前では表示方法を引き継いで既存の位置合わせへ進む。
+ラスターはピクセル外縁、3Dメッシュは端の標本点の範囲で登録する。
+単体の容量上限は形式の`definition.ts`に置き、規定サイズを読み込み前にも検査する。
+対応範囲は [SRTM HGT](../frontend/src/routes/map/utils/formats/hgt/README.md) を参照。
+
+ラスター由来の地形メッシュは、GLBのY正方向を高さとして生成する。地図表示の軸補正はentryの`transform.baseRotationX`で行い、モデルビューではGLBをそのまま上向きに表示する。標高の色分けも正の高さを参照する。
+
+DMは同じディレクトリのDMI、DM内のインデックス、図郭番号の順で系番号の候補を取得する。
+候補は `pendingZoneGeoRefData.suggestedEpsgCode` からZone画面へ渡し、ユーザーの確認後に変換する。
+図形区分31の中庭は、同一図郭の建物外周に完全に含まれる場合に内周へ変換する。
+対応範囲は [DMパーサー](../frontend/src/routes/map/utils/formats/dm/README.md) を参照。
+
+XLSXはシート内の図形・画像を検出すると図面を初期選択し、セルの表にも切り替えられる。
+図面画像は塗り・線色・文字・埋め込み画像を透明PNGにまとめ、位置合わせ後に通常の画像entryへ四隅とデータURLを保存する。
+線として読み込む場合はローカル座標のLineStringに変換し、`featureCollectionToGeoRefData()`から位置合わせへ渡す。登録時の線幅は1px。
+セルの表は従来どおり緯度・経度列からPointに変換する。
+対応する図形と制限は [Excelパーサー](../frontend/src/routes/map/utils/formats/xlsx/README.md) を参照。
+
 CityGMLは専用の `CityGmlForm.svelte` でLODを選び、Workerで建物の面群を標高付きGeoJSON MultiPolygonへ変換する。
 3Dモデルを選ぶと `createCityGmlEntry()` で `GeoJson3DEntry` に正規化し、既存のdeck.gl描画へ渡す。
 2Dを選ぶと `createCityGml2DEntry()` で標高と面積のない面を除き、`createGeoJsonEntry()` で通常のベクターレイヤーに登録する。
@@ -114,9 +207,21 @@ CityGMLは専用の `CityGmlForm.svelte` でLODを選び、Workerで建物の面
 | 科学技術・衛星ラスタ | DEM XML, NetCDF, GRIB2, HDF5, HRIT/LRIT | バンド配列や観測画像へ展開 | 形式ごとに自動、または GeoRef / Zone | `createRasterGeoRefData()` | 各 Form または `+page.svelte finalizeGeoRefEntry()` | 解析 worker、Terrarium 変換、3Dメッシュ化 |
 | 点群 | LAS, LAZ, COPC, PLY, PCD, XYZ, OBJ 点群 | positions / colors / pointCount を生成 | bbox が不正なら Zone。登録方法で raster / pointcloud に分岐 | 点群 GeoRef は pointcloud 用 `geoRefData`。DEM 化は raster 用 `geoRefData` | `PointCloudForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | 点群解析、DEM ラスタライズ、GeoRef 点群変形 |
 | TIN / サーフェス | LandXML | TIN, breakline, point 群を解析。必要に応じて DEM 化 | Zone または GeoRef | ラスター preview または mesh 準備 | `LandXmlForm.svelte` または `+page.svelte finalizeGeoRefEntry()` | rasterize worker、3Dメッシュ化 |
-| 3D モデル | GLB, OBJ, 3DS, DAE, 3DM, FBX, DRC, 3MF, AMF, STL, IFC | three.js 系が扱える URL / Blob に正規化。OBJ は `# COORDINATE_SYSTEM` コメントから投影 EPSG を先読みできる。STL はアップロード時に Z-up / Y-up を指定する | 埋め込み配置が解ければ自動。無ければ Zone または手動配置 | なし | 各 3D Form がモデル entry を直接作る | `model-bounds-parallel` 系で bounds / resolvedPlacement を算出し、runtime では `three/layer-manager.ts` が georeference と正規化を適用 |
+| 3D モデル | GLB, OBJ, 3DS, DAE, 3DM, FBX, DRC, 3MF, AMF, STL, IFC | three.js 系が扱える URL / Blob に正規化。OBJ は `# COORDINATE_SYSTEM` コメントから投影 EPSG を先読みできる。STL はアップロード時に Z-up / Y-up を指定する | 埋め込み配置が解ければ自動。無ければ Zone または手動配置 | なし | 各 3D Form がモデル entry を直接作る | `model-bounds-parallel` 系で bounds / resolvedPlacement を算出し、runtime では `three/model-loader.ts` が georeference と正規化を適用 |
 | 3D Tiles / タイルデータ | 3D Tiles, PMTiles, MBTiles | URL / ファイルから source metadata を構築 | 通常は CRS 解決不要。PMTiles / MBTiles は source 種別の分岐あり | なし | source / model entry を直接作る | PMTiles protocol, MBTiles reader |
 | リモート配信 / カタログ | WMTS, WCS, GeoZarr, FeatureService, WFS, OGC API Features, STAC, ArcGIS WebMap / service, Raster URL, Vector URL | メタデータ問い合わせや capabilities 解析 | 形式ごとのポリシーに従う | WCS / STAC / vector は必要に応じて preview | 各 Form または `+page.svelte finalizeGeoRefEntry()` | capabilities fetch、STAC / WCS / ArcGIS 解析 |
+
+## Office図面の読み込み
+
+PowerPoint (`.pptx`) とWord (`.docx`) は `OfficeDrawingForm.svelte` を共用する。
+PowerPointはスライド単位、Wordは同じ段落・配置基準の図形単位で選択し、図形・文字・埋め込みラスター画像を取り出す。
+Officeの部品参照と画像検証は `utils/formats/office-drawing/` にまとめ、ExcelのDrawingML描画・PNG化処理を再利用する。
+
+読み込み方は「図面画像」と「オートシェイプの線」から選ぶ。線はローカル座標のFeatureCollectionを既存のベクター位置合わせへ渡し、`vectorLineWidth: 1` で登録する。図形名とテキストは属性に保存する。
+
+画像では `GeoRefData.rasterImage` を位置合わせへ渡し、確定後は既存の `imageCorners` 付き画像レイヤーに正規化する。
+レイヤーメニューの画像ダウンロードから、PNGと位置情報 (`aux.xml`) を取得できる。
+Wordのページ組版やPowerPointのマスター、表、EMF/WMFなどの未対応要素は再現しない。読み込み画面には制限と欠落画像の数を表示する。
 
 ## dialog profile
 
@@ -125,7 +230,7 @@ CityGMLは専用の `CityGmlForm.svelte` でLODを選び、Workerで建物の面
 
 | profile | 典型的な形式 | 役割 |
 | --- | --- | --- |
-| `simple` | STAC, ArcGIS | `dropFile` を持たず、URL や内部状態だけで完結する。 |
+| `simple` | ArcGIS | `dropFile` を持たず、URL や内部状態だけで完結する。 |
 | `drop-file` | GPX, TCX, GDB, GTFS, HRIT, HDF5, MF-JSON, LocationHistory, DRM | 受け取ったファイルをそのまま解析して entry を作る。 |
 | `vector-zone` | GeoArrow | Zone は使うが GeoRef には流さない。 |
 | `vector-zone-georef` | GeoJSON, Shapefile, GeoParquet, DXF, GML, MojXML など | Zone と GeoRef の両方を取りうる。 |
@@ -133,7 +238,7 @@ CityGMLは専用の `CityGmlForm.svelte` でLODを選び、Workerで建物の面
 | `raster-georef` | DEM XML, NetCDF, GeoPDF | 主に GeoRef で配置を確定する。 |
 | `pointcloud-georef` | GeoTIFF, PointCloud, LandXML | Zone と GeoRef の両方を持ち、場合によって raster / mesh / pointcloud に分岐する。 |
 | `model-georef` | GLB 系 | モデル配置や Zone を扱う。 |
-| `remote-*` / `feature-service` / `wcs` | WMTS, GeoZarr, Raster URL, FeatureService など | URL や remote metadata を起点に source / entry を作る。 |
+| `remote-*` / `feature-service` / `wcs` | STAC / COG, WMTS, GeoZarr, Raster URL, FeatureService など | URL や remote metadata を起点に source / entry を作る。 |
 
 ## TransformOptionForm の責務
 
@@ -265,7 +370,12 @@ TIN サーフェスを DEM に焼き直して 2D ラスターとして扱う。
 
 ## 3D モデル配置フロー
 
-3D モデルは、entry 作成前の meta 計算と、three.js 読み込み後の実オブジェクト配置が分かれている。  
+STEP／IGES (`.step/.stp/.iges/.igs`) は `StepIgesForm.svelte` で上方向を選び、`utils/formats/step-iges/worker.ts` でブラウザ内のGLB変換を行う。
+元の単位をメートルへ換算し、部品階層・面色を保ったGLBを `MeshModelForm.svelte` へ渡す。
+以降は既存の `MeshEntry` (`format.type: 'gltf'`) と位置合わせ・描画フローを共用する。
+対応範囲と制限は [STEP／IGES](../frontend/src/routes/map/utils/formats/step-iges/README.md) を参照。
+
+3D モデルは、entry 作成前の meta 計算と、three.js 読み込み後の実オブジェクト配置が分かれている。
 今回の OBJ 対応では、この 2 段階を分けて見ないと挙動を追いにくい。
 
 ```mermaid
@@ -288,9 +398,11 @@ flowchart LR
 - `upload-drop.ts` はこの判定結果を `morivisProjectedModelEpsg` として `File` に一時付与する。複数ファイルの OBJ 一式でも単体 OBJ でも同じ扱いで、Form 側に追加の状態を増やさず引き渡せる。
 - `MeshModelForm.svelte` は `computeUploadedModelMetaInWorker()` に `projectedModelEpsg` を渡し、bounds、unit scale、skinned mesh 情報、`resolvedPlacement` をまとめて計算する。`resolvedPlacement` が返れば `entry.format.georeference` と `style.transform` に反映してそのまま登録へ進む。
 - 投影座標つき OBJ はローカル軸の向きがそのままだと縦向きに見えるケースがあるので、登録時に `baseRotationX = 90` を補正値として入れる。
-- 実オブジェクトへの地理配置は worker ではなく runtime 側で行う。`three/layer-manager.ts` が各 loader の直後に `finalizeRuntimeModelObject()` を通し、`entry.format.georeference` があれば projected 座標原点と単位を反映し、無ければ形式別の単位補正や local origin 正規化を適用する。
+- 実オブジェクトへの地理配置は worker ではなく runtime 側で行う。`three/model-loader.ts` が各形式の loader の直後に `finalizeRuntimeModelObject()` を通し、`entry.format.georeference` があれば projected 座標原点と単位を反映し、無ければ形式別の単位補正や local origin 正規化を適用する。
 
 ## worker 境界
+
+GeoTIFFの読み込みは `utils/formats/geotiff/reader.ts` を入口にする。ZSTD（Compression=50000）の追加デコーダを各Workerでも登録し、最初のZSTDブロックの展開時に既存の `zstd-codec` を遅延ロードする。Predictorの復元はgeotiff.jsの `BaseDecoder` に任せる。COGのRange取得とローカルファイルの解析で同じデコーダを使う。
 
 重い処理はなるべく worker に逃がしている。設計上ここを明示しておくと、フリーズ調査がしやすい。
 
@@ -347,3 +459,27 @@ morivis では preview と final entry を分けて考える必要がある。
 
 - 型と責務境界: [内部レイヤーモデル](./architecture/entry-model.md)
 - 地図スタイル反映: `Map.svelte`, `stores/map.ts`
+
+
+ENVI／ESRI BIL (`.hdr`と画像本体) は `EnviBilForm.svelte` で同名ファイルを対応付ける。
+WorkerがBIL・BIP・BSQをバンド配列へ展開し、座標系が分かればWGS84へ変換してラスターのエントリー登録へ進む。
+座標系不明時は座標系フォーム、位置情報もない場合は位置合わせへ進む。解析から登録まで共通スクリーンガードを使用する。
+対応範囲は [ENVI／ESRI BIL](../frontend/src/routes/map/utils/formats/envi-bil/README.md) を参照。
+
+MapInfo TAB (`.tab`・`.dat`/`.dbf`・`.map`・`.id`) は `MapInfoTabForm.svelte` で表を選ぶ。
+専用Worker内のTypeScriptパーサーが図形・属性・埋め込み座標系を読み、既存のproj4でWGS84へ変換する。GDALの実行時依存はない。
+NonEarthや変換できない座標系は選択フォームへ渡し、必要ならベクターの位置合わせを使う。
+複数種類の図形は種類を選択して通常のvector entryへ登録する。処理中は共通スクリーンガードを表示する。
+対応範囲は [MapInfo TAB](../frontend/src/routes/map/utils/formats/mapinfo-tab/README.md) を参照。
+
+JPEG2000／GeoJP2 (`.jp2`) は `Jpeg2000Form.svelte` からOpenJPEG Workerへ渡す。
+GeoJP2の埋め込み情報・付属ファイルから座標系と格子位置を読み、共通のラスター再投影・entry生成を使う。
+座標系が不明なら座標系選択、位置情報がなければ位置合わせへ進む。処理中は共通スクリーンガードを表示する。
+対応範囲は [JPEG2000／GeoJP2](../frontend/src/routes/map/utils/formats/jpeg2000/README.md) を参照。
+
+MicroStation DGN V7 (`.dgn`) は `DgnForm.svelte` で図形の種類とレベルを選ぶ。
+専用Worker内のTypeScriptパーサーで2Dベクターへ変換し、既存の座標系辞書とproj4でWGS84へ変換するか、共通の位置合わせへ渡す。DGNの読み込みにはGDALを使わない。
+V8は未対応として案内し、容量制限とキャンセルは形式定義・共通処理ガードに接続する。
+対応範囲は [DGN V7](../frontend/src/routes/map/utils/formats/dgn/README.md) を参照。
+
+Zarrのフォルダー・ZIPは共通ドロップ判定から `GeoZarrForm.svelte` へ渡す。フォルダーの相対パスを保持し、ZIPは一般の全展開処理より先に判定する。ローカルStoreをWorkerへ接続し、配列選択・登録・描画はURL入力と共用する。ローカルFile参照はruntimeだけに保持し、ページ再読み込み後は再登録する。

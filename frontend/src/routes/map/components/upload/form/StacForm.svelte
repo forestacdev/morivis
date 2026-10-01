@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fromUrl } from 'geotiff';
+	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
@@ -28,6 +28,7 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
+	import { fromUrl } from '$routes/map/utils/formats/geotiff/reader';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import {
 		detectStacSourceType,
@@ -56,13 +57,24 @@
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		showDialogType: DialogType;
+		remoteStacUrl: string | null;
 	}
 
-	let { showDataEntry = $bindable(), showDialogType = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		showDialogType = $bindable(),
+		remoteStacUrl = $bindable()
+	}: Props = $props();
+	let autoCogRegistration = false;
 
 	/** URLがCOG直リンクかどうかを判定 */
-	const isCogUrl = (url: string): boolean =>
-		/\.(tif|tiff|geotiff)(\?.*)?$/i.test(url.split('#')[0]);
+	const isCogUrl = (url: string): boolean => {
+		try {
+			return /\.(tif|tiff|geotiff)$/i.test(decodeURIComponent(new URL(url).pathname));
+		} catch {
+			return false;
+		}
+	};
 
 	const urlValidation = yup.object().shape({
 		url: yup
@@ -149,7 +161,7 @@
 		];
 
 		const MAX_SIZE = 4096;
-		const useTiledMode = fullWidth > MAX_SIZE || fullHeight > MAX_SIZE;
+		const useTiledMode = autoCogRegistration || fullWidth > MAX_SIZE || fullHeight > MAX_SIZE;
 
 		if (useTiledMode) {
 			statusText = `タイル方式で読み込み中... (${fullWidth}x${fullHeight})`;
@@ -495,7 +507,8 @@
 			format: {
 				type: 'geozarr',
 				url: metadata.url,
-				arrayPath: metadata.arrayPath || undefined
+				arrayPath: metadata.arrayPath || undefined,
+				bbox: metadata.bbox
 			},
 			metaData: {
 				...DEFAULT_CUSTOM_META_DATA,
@@ -508,6 +521,7 @@
 				xyzImageTile: findCenterTile(resolvedBbox)
 			},
 			properties: {
+				...(metadata.gpm?.height ? { vertical: metadata.gpm.height } : {}),
 				bands: {
 					numBands: metadata.numBands,
 					sampleRanges
@@ -603,7 +617,7 @@
 			const { fullWidth, fullHeight, numBands, sampleRanges } = cogMetadata;
 
 			const MAX_SIZE = 4096;
-			const useTiledMode = fullWidth > MAX_SIZE || fullHeight > MAX_SIZE;
+			const useTiledMode = autoCogRegistration || fullWidth > MAX_SIZE || fullHeight > MAX_SIZE;
 
 			if (useTiledMode) {
 				// タイル方式: CogTileManagerに登録済み、RasterCogEntryを作成
@@ -793,6 +807,13 @@
 		else if (step === 'items' && sourceType !== 'api') step = 'browse';
 		else if (step === 'collection' || step === 'browse') step = 'url';
 	};
+	onMount(() => {
+		if (!remoteStacUrl) return;
+		apiUrl = remoteStacUrl;
+		remoteStacUrl = null;
+		autoCogRegistration = true;
+		void connect();
+	});
 </script>
 
 <div class="flex shrink-0 items-center justify-between overflow-auto pb-4">

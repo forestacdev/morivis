@@ -1,7 +1,6 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-
-	import { getVisibilityIconName } from '$lib/icons';
+	import { getVisibilityIconName } from '$lib/components/svgs/catalog';
+	import Icon from '$lib/components/svgs/Icon.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { Opacity } from '$routes/map/data/types';
 	import type { ThreeModelEntry } from '$routes/map/data/types/model';

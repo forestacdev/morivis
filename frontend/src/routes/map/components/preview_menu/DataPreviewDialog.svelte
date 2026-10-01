@@ -55,6 +55,18 @@
 	const deleteData = () => {
 		if (showDataEntry) {
 			activeLayerIdsStore.remove(showDataEntry.id);
+			if (showDataEntry.type === 'raster' && showDataEntry.format.type === 'video') {
+				URL.revokeObjectURL(showDataEntry.format.url);
+			}
+			if (showDataEntry.type === 'vector') {
+				for (const detail of Object.values(showDataEntry.properties.detailsById ?? {})) {
+					for (const media of detail.medias ?? []) {
+						if (media.type === 'video' && media.url.startsWith('blob:')) {
+							URL.revokeObjectURL(media.url);
+						}
+					}
+				}
+			}
 			showDataEntry = null;
 		}
 	};

@@ -36,13 +36,19 @@ const createPolicy = (
 });
 
 const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPolicy>> = {
+	hgt: createPolicy('none', 'georef-only', 'georef'),
+	video: createPolicy('none', 'georef-only', 'georef'),
+	'envi-bil': createPolicy('zone-only', 'georef-only', 'zone'),
+	jpeg2000: createPolicy('zone-only', 'georef-only', 'zone'),
+	'ascii-grid': createPolicy('zone-only', 'georef-only', 'zone'),
 	shp: createPolicy('zone-or-georef', 'none', 'zone'),
 	csv: createPolicy('zone-or-georef', 'none', 'zone'),
 	tsv: createPolicy('zone-or-georef', 'none', 'zone'),
-	xlsx: createPolicy('zone-or-georef', 'none', 'zone'),
+	xlsx: createPolicy('zone-or-georef', 'georef-only', 'zone'),
 	geojson: createPolicy('zone-or-georef', 'none', 'zone'),
 	wkt: createPolicy('zone-or-georef', 'none', 'zone'),
 	geoparquet: createPolicy('zone-or-georef', 'none', 'zone'),
+	'mapinfo-tab': createPolicy('zone-or-georef', 'georef-only', 'zone'),
 	mif: createPolicy('zone-or-georef', 'none', 'zone'),
 	topojson: createPolicy('zone-or-georef', 'none', 'zone'),
 	gml: createPolicy('zone-or-georef', 'none', 'zone'),
@@ -54,6 +60,7 @@ const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPo
 	ogcapifeatures: createPolicy('zone-or-georef', 'none', 'zone'),
 	dm: createPolicy('zone-or-georef', 'none', 'zone'),
 	dwg: createPolicy('zone-or-georef', 'none', 'zone'),
+	dgn: createPolicy('zone-or-georef', 'georef-only', 'zone'),
 	dxf: createPolicy('zone-or-georef', 'none', 'zone'),
 	jww: createPolicy('zone-or-georef', 'none', 'zone'),
 	cedxm: createPolicy('zone-or-georef', 'none', 'zone'),
@@ -70,6 +77,8 @@ const DIALOG_TRANSFORM_POLICIES: Partial<Record<TransformDialogType, TransformPo
 	model: createPolicy('zone-only', 'georef-only', 'zone'),
 	'gaussian-splat': createPolicy('none', 'georef-only', 'georef'),
 	geopdf: createPolicy('none', 'georef-only', 'georef'),
+	pptx: createPolicy('none', 'georef-only', 'georef'),
+	docx: createPolicy('none', 'georef-only', 'georef'),
 	svg: createPolicy('none', 'georef-only', 'georef'),
 	demxml: createPolicy('none', 'georef-only', 'georef'),
 	netcdf: createPolicy('none', 'georef-only', 'georef')

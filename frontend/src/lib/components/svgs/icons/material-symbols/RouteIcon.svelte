@@ -1,0 +1,13 @@
+<script lang="ts">
+	import Svg from '../../Svg.svelte';
+	import type { IconProps } from '../../types';
+	// svelte-ignore custom_element_props_identifier
+	let props: IconProps = $props();
+</script>
+
+<Svg {...props} viewBox="0 0 24 24" aspectRatio={1}>
+	<path
+		fill="currentColor"
+		d="M6.175 19.825Q5 18.65 5 17V8.825Q4.125 8.5 3.563 7.738T3 6q0-1.25.875-2.125T6 3t2.125.875T9 6q0 .975-.562 1.738T7 8.825V17q0 .825.588 1.413T9 19t1.413-.587T11 17V7q0-1.65 1.175-2.825T15 3t2.825 1.175T19 7v8.175q.875.325 1.438 1.088T21 18q0 1.25-.875 2.125T18 21t-2.125-.875T15 18q0-.975.563-1.75T17 15.175V7q0-.825-.587-1.412T15 5t-1.412.588T13 7v10q0 1.65-1.175 2.825T9 21t-2.825-1.175"
+	/>
+</Svg>

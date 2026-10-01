@@ -59,3 +59,39 @@ describe('checkLargeDroppedFiles', () => {
 		expect(showConfirmDialog).not.toHaveBeenCalled();
 	});
 });
+
+describe('ファイル一式の容量確認', () => {
+	const sized = (name: string, mib: number) => {
+		const file = new File(['test'], name);
+		Object.defineProperty(file, 'size', { value: mib * 1024 * 1024 });
+		return file;
+	};
+	beforeEach(() => vi.clearAllMocks());
+	it('100 MiB未満は確認せず、合計100 MiBちょうどで確認する', async () => {
+		vi.mocked(showConfirmDialog).mockResolvedValue(true);
+		const shp = sized('test.shp', 60);
+		expect(await checkLargeDroppedFiles([shp, sized('test.dbf', 39)])).toBe(true);
+		expect(showConfirmDialog).not.toHaveBeenCalled();
+		expect(await checkLargeDroppedFiles([shp, sized('test.dbf', 40)])).toBe(true);
+		expect(showConfirmDialog).toHaveBeenCalledOnce();
+	});
+	it('承認済みの一式は再確認せず、追加・差し替え後は再確認する', async () => {
+		vi.mocked(showConfirmDialog).mockResolvedValue(true);
+		const shp = sized('test.shp', 60);
+		const dbf = sized('test.dbf', 40);
+		await checkLargeDroppedFiles([shp, dbf]);
+		await checkLargeDroppedFiles([dbf, shp]);
+		expect(showConfirmDialog).toHaveBeenCalledTimes(1);
+		await checkLargeDroppedFiles([shp, dbf, sized('test.shx', 1)]);
+		expect(showConfirmDialog).toHaveBeenCalledTimes(2);
+		await checkLargeDroppedFiles([shp, sized('test.dbf', 40)]);
+		expect(showConfirmDialog).toHaveBeenCalledTimes(3);
+	});
+	it('キャンセルを承認として記録しない', async () => {
+		vi.mocked(showConfirmDialog).mockResolvedValue(false);
+		const files = [sized('test.shp', 60), sized('test.dbf', 40)];
+		expect(await checkLargeDroppedFiles(files)).toBe(false);
+		expect(await checkLargeDroppedFiles(files)).toBe(false);
+		expect(showConfirmDialog).toHaveBeenCalledTimes(2);
+	});
+});

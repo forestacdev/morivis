@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 
+	import Fa6SolidStreetViewIcon from '$lib/components/svgs/icons/fa6-solid/StreetViewIcon.svelte';
 	import { isBBoxInside } from '$routes/map/utils/map/bbox';
 	import type { LngLatBoundsLike } from '$routes/map/utils/maplibre';
 	import { showStreetViewLayer } from '$routes/stores/layers';
@@ -36,10 +36,7 @@
 	onclick={toggleLayer}
 	class="pointer-events-auto grid h-[50px] w-[50px] shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg"
 >
-	<Icon
-		icon="fa6-solid:street-view"
-		class="h-7 w-7 {$showStreetViewLayer ? 'text-accent' : 'text-base'}"
-	/>
+	<Fa6SolidStreetViewIcon class="h-7 w-7 {$showStreetViewLayer ? 'text-accent' : 'text-base'}" />
 </button>
 
 <style>

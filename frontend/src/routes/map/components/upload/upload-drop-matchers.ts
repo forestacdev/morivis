@@ -1,28 +1,34 @@
+import { FORMAT_DEFINITIONS } from '$routes/map/utils/formats/registry';
+import { isShapefileMember } from '$routes/map/utils/formats/shp/files';
 import { getMatchedExtension } from '$routes/map/utils/upload-matchers-common';
 
 const PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.heic', '.heif'];
 const XML_EXTENSION = '.xml';
 
-export const MODEL_FILE_EXTENSIONS = [
-	'.gltf',
-	'.vrm',
-	'.obj',
-	'.3ds',
-	'.dae',
-	'.3dm',
-	'.fbx',
-	'.wrl',
-	'.vrml',
-	'.drc',
-	'.3mf',
-	'.amf',
-	'.stl',
-	'.ifc',
-	'.pmx',
-	'.usd',
-	'.usda',
-	'.usdz'
+export const CAD_MODEL_FILE_EXTENSIONS = FORMAT_DEFINITIONS['step-iges'].extensions;
+
+const MODEL_FORMATS = [
+	'glb',
+	'vrm',
+	'obj',
+	'3ds',
+	'dae',
+	'3dm',
+	'fbx',
+	'vrml',
+	'drc',
+	'3mf',
+	'amf',
+	'stl',
+	'ifc',
+	'pmx',
+	'usd'
 ] as const;
+// GLB単体は別の判定経路で扱う。対応拡張子は各形式の定義から取得する。
+export const MODEL_FILE_EXTENSIONS = MODEL_FORMATS.flatMap(
+	id => [...FORMAT_DEFINITIONS[id].extensions]
+)
+	.filter(extension => extension !== '.glb');
 
 // ディレクトリドロップ時は仮想的な相対パスを優先し、拡張子判定を安定させる。
 export const getPathLikeName = (file: File): string => {
@@ -52,8 +58,7 @@ export const hasKnownExtension = (file: File): boolean => {
 };
 
 // Shapefile は複数拡張子の集合で扱うため、どれか1つでもあれば関連ファイルとみなす。
-export const isShapeFileRelated = (file: File): boolean =>
-	/\.(shp|dbf|prj|shx|cpg)$/i.test(file.name);
+export const isShapeFileRelated = isShapefileMember;
 
 // GTFS テキスト一式かどうかを、最低限必要な主要ファイル名で見る。
 export const isGtfsTextSet = (files: File[]): boolean => {

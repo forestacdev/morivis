@@ -188,9 +188,10 @@ export const POI_CATEGORY_LABELS_JA: Readonly<Record<string, string>> = {
 };
 
 /** 詳細分類→大分類の順に訳語を探す。元の属性値は変更しない。 */
-export const getPoiCategoryLabel = (
-	properties: { subclass?: unknown; class?: unknown; }
-): string => {
+export const getPoiCategoryLabel = (properties: {
+	subclass?: unknown;
+	class?: unknown;
+}): string => {
 	for (const value of [properties.subclass, properties.class]) {
 		if (typeof value !== 'string') continue;
 		const key = value.trim();

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import chroma from 'chroma-js';
 	import { fly } from 'svelte/transition';
 
+	import MdiBloodTransparentIcon from '$lib/components/svgs/icons/mdi/BloodTransparentIcon.svelte';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import type { SpritePatternId } from '$routes/map/data/types/vector/pattern';
 	import type { VectorLayerType } from '$routes/map/data/types/vector/style';
@@ -321,8 +321,7 @@
 									showColorPallet = false;
 								}}
 								aria-label="透明"
-								><Icon icon="mdi:blood-transparent" class="h-6 w-6" /><span class="text-sm"
-									>透明色</span
+								><MdiBloodTransparentIcon class="h-6 w-6" /><span class="text-sm">透明色</span
 								></button
 							>
 						</div>

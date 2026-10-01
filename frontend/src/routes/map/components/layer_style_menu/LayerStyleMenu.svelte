@@ -1,11 +1,12 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
+	import InfoControl from './InfoControl.svelte';
 	import ModelOptionMenu from './ModelOptionMenu.svelte';
 	import OpacityControl from './OpacityControl.svelte';
 
-	import { ICONS } from '$lib/icons';
+	import UiCloseIcon from '$lib/components/svgs/icons/ui/CloseIcon.svelte';
+	import UiResetIcon from '$lib/components/svgs/icons/ui/ResetIcon.svelte';
 	import RasterOptionMenu from '$routes/map/components/layer_style_menu/RasterOptionMenu.svelte';
 	import VectorOptionMenu from '$routes/map/components/layer_style_menu/VectorOptionMenu.svelte';
 	import { getInitialEntryStyle } from '$routes/map/data/entries';
@@ -86,7 +87,7 @@
 						class="bg-base text-main ml-auto grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 						title="スタイルをリセット"
 					>
-						<Icon icon={ICONS.reset} class="h-5 w-5" />
+						<UiResetIcon class="h-5 w-5" />
 					</button>
 					<button
 						onclick={() => {
@@ -96,7 +97,7 @@
 						}}
 						class="bg-base text-main grid shrink-0 cursor-pointer place-items-center rounded-full p-2"
 					>
-						<Icon icon={ICONS.close} class="h-5 w-5" />
+						<UiCloseIcon class="h-5 w-5" />
 					</button>
 				</div>
 
@@ -116,6 +117,8 @@
 						{#if layerEntry.type === 'model'}
 							<ModelOptionMenu bind:layerEntry bind:showColorOption bind:showDimensionOption />
 						{/if}
+
+						<InfoControl {layerEntry} />
 					</div>
 					<!-- フォグ -->
 					<div

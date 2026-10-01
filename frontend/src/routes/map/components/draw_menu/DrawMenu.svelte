@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 	import ColorPicker, { ChromeVariant } from 'svelte-awesome-color-picker';
 	import {
@@ -15,6 +14,8 @@
 	} from 'terra-draw';
 	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import MaterialSymbolsDownloadRoundedIcon from '$lib/components/svgs/icons/material-symbols/DownloadRoundedIcon.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/map/types/draw';
 	import { downloadGeojson } from '$routes/map/utils/formats/geojson';
@@ -282,7 +283,7 @@
 				onclick={() => (drawGeojsonData ? downloadGeojson(drawGeojsonData) : null)}
 				class="c-btn-confirm max-w-[300px]"
 			>
-				<Icon icon="material-symbols:save-alt-rounded" class="h-8 w-8" />
+				<MaterialSymbolsDownloadRoundedIcon class="h-8 w-8" />
 				<span class="text-sm">エクスポート</span>
 			</button>
 		{/if}

@@ -1,0 +1,88 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Level": 1,
+        "ColorIndex": 3,
+        "Text": "test-label"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2,
+          3,
+          4
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Level": 2,
+        "ColorIndex": 4,
+        "Weight": 2
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            0,
+            0,
+            1
+          ],
+          [
+            10,
+            20,
+            2
+          ],
+          [
+            30,
+            10,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Level": 3,
+        "ColorIndex": 5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              10,
+              0,
+              0
+            ],
+            [
+              10,
+              10,
+              0
+            ],
+            [
+              0,
+              10,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

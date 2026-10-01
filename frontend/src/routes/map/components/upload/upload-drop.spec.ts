@@ -3,6 +3,145 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('OSM PBFのドロップ', () => {
+	const bytes = readFileSync(
+		new URL('../../utils/formats/osm-pbf/__fixtures__/test-dense.osm.pbf', import.meta.url)
+	);
+	it.each(['test-map.osm.pbf', 'test-map.OSM.PBF', 'test-map.pbf'])(
+		'%sをMVTと区別して既存のOSMフォームへ渡す',
+		async name => {
+			const file = new File([bytes], name);
+			for (const input of [file, [file]]) {
+				expect(await resolveDroppedFiles(input)).toEqual({
+					type: 'dialog',
+					dialogType: 'osm',
+					dropFiles: [file]
+				});
+			}
+		}
+	);
+	it('ZIP内のOSM PBFも同じ判定を通す', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/test-map.osm.pbf', bytes);
+		const file = new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-map.zip');
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'osm'
+		});
+	});
+	it('複数OSMやOSMとMVTの混在を黙って一部だけ取り込まない', async () => {
+		const osm = new File([bytes], 'test-map.osm.pbf');
+		for (
+			const second of [new File([bytes], 'test-second.pbf'), new File(['test-tile'], '1.pbf')]
+		) {
+			expect(await resolveDroppedFiles([osm, second])).toMatchObject({
+				type: 'notification'
+			});
+		}
+	});
+	it('通常のタイルPBFとOSM XMLは従来のフォームへ渡す', async () => {
+		expect(await resolveDroppedFiles(new File(['test-tile'], '1.pbf'))).toMatchObject({
+			dialogType: 'local-mvt'
+		});
+		expect(await resolveDroppedFiles(new File(['<osm/>'], 'test-map.osm'))).toMatchObject({
+			dialogType: 'osm'
+		});
+	});
+	it('対応形式一覧とファイル選択に複合拡張子を含める', () => {
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'osm')?.extensions).toContain(
+			'.osm.pbf'
+		);
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.osm.pbf');
+	});
+});
+
+describe('GeoJSONSeqのドロップ', () => {
+	it.each(['geojsonl', 'jsonl', 'ndjson', 'geojsons', 'geojsonseq', 'NDJSON'])(
+		'%sを既存のGeoJSONフォームへ渡す',
+		async extension => {
+			const file = new File(
+				['{"type":"Point","coordinates":[0,1]}'],
+				`test-features.${extension}`
+			);
+			for (const input of [file, [file, new File(['test'], 'test-note.log')]]) {
+				expect(await resolveDroppedFiles(input)).toMatchObject({
+					type: 'dialog',
+					dialogType: 'geojson'
+				});
+			}
+			expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(`.${extension.toLowerCase()}`);
+		}
+	);
+	it('形式一覧から既存のGeoJSONフォームを開く', () => {
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'geojsonseq'))
+			.toMatchObject({ dialogType: 'geojson' });
+	});
+	it('ZIP内の行区切りGeoJSONも判定する', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/test-features.geojsonl', '{"type":"Point","coordinates":[0,1]}');
+		const file = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-sequence.zip'
+		);
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'geojson'
+		});
+	});
+});
+
+describe('FITのドロップ', () => {
+	it.each(['fit', 'FIT'])('%sを専用フォームへ渡す', async extension => {
+		expect(await resolveDroppedFiles(new File(['test'], `test-track.${extension}`)))
+			.toMatchObject({
+				type: 'dialog',
+				dialogType: 'fit'
+			});
+	});
+	it('ファイル選択と形式一覧にFITを含める', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.fit');
+		expect(SUPPORTED_FILE_GROUPS.some(group => group.extensions.includes('.fit'))).toBe(true);
+	});
+});
+
+describe('動画のドロップ', () => {
+	it.each(['mp4', 'MP4', 'webm', 'mov', 'm4v', 'ogv'])(
+		'%sを動画フォームへ渡す',
+		async extension => {
+			expect(await resolveDroppedFiles(new File(['test'], `test-video.${extension}`)))
+				.toMatchObject({
+					type: 'dialog',
+					dialogType: 'video'
+				});
+		}
+	);
+	it('ファイル選択で動画を選べる', () => {
+		for (const extension of ['.mp4', '.webm', '.mov', '.m4v', '.ogv']) {
+			expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(extension);
+		}
+	});
+});
+
+describe('ASCII Gridのドロップ', () => {
+	it.each(['test-grid.asc', 'test-grid.ASC'])('%sを専用フォームへ渡す', async name => {
+		expect(await resolveDroppedFiles(new File([], name))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'ascii-grid'
+		});
+	});
+	it('ASCとPRJをShapefileと誤判定せず同時に渡す', async () => {
+		const files = [new File([], 'test-grid.prj'), new File([], 'test-grid.asc')];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'ascii-grid',
+			dropFiles: files
+		});
+	});
+	it('ファイル選択のacceptにASCを含める', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.asc');
+	});
+});
+
 describe('Robloxのドロップ', () => {
 	it.each(['test-world.rbxl', 'test-world.RBXL', 'test-world.rbxlx', 'test-world.RBXLX'])(
 		'専用フォームへ渡す: %s',
@@ -314,6 +453,17 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveDroppedFiles', () => {
+	it('E57をファイル選択対象に含める', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.e57');
+	});
+	it.each(['e57', 'E57'])('E57 .%s を点群フォームへ渡す', async extension => {
+		const file = createFile(`test-cloud.${extension}`);
+		expect(await resolveDroppedFiles(file)).toEqual({
+			type: 'dialog',
+			dialogType: 'pointcloud',
+			dropFiles: undefined
+		});
+	});
 	it('タイルセットとGLBを含むフォルダは3D Tilesフォームに渡す', async () => {
 		const files = [
 			createPathLikeFile(
@@ -500,6 +650,26 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
+	it.each(['test-part.step', 'test-part.STP', 'test-part.iges', 'test-part.IGS'])(
+		'%s はSTEP／IGES変換フォームへ渡す',
+		async name => {
+			expect(await resolveDroppedFiles(createFile(name))).toEqual({
+				type: 'dialog',
+				dialogType: 'step-iges',
+				dropFiles: undefined
+			});
+		}
+	);
+
+	it('STEP／IGESフォルダでは対象モデルだけを選択フォームへ渡す', async () => {
+		const models = [createFile('test-a.step'), createFile('test-b.igs')];
+		expect(await resolveDroppedFiles([createFile('test-note.txt'), ...models])).toEqual({
+			type: 'dialog',
+			dialogType: 'step-iges',
+			dropFiles: models
+		});
+	});
+
 	it.each(['model.usd', 'model.usda', 'model.usdz'])(
 		'%s はモデルダイアログ判定になる',
 		async (fileName) => {
@@ -579,6 +749,11 @@ describe('resolveDroppedFiles', () => {
 			dialogType: 'gaussian-splat',
 			dropFiles: undefined
 		});
+	});
+
+	it.each(['pptx', 'docx'])('%sを図面の登録ダイアログに振り分ける', async (extension) => {
+		const result = await resolveDroppedFiles(createFile(`test-drawing.${extension}`));
+		expect(result).toEqual({ type: 'dialog', dialogType: extension, dropFiles: undefined });
 	});
 
 	it('単一の XLSX は xlsx ダイアログ判定になる', async () => {
@@ -1012,17 +1187,12 @@ describe('resolveDroppedFiles', () => {
 		});
 	});
 
-	it('Shapefile 関連ファイルを含む複数ドロップは shp 判定になる', async () => {
-		const result = await resolveDroppedFiles([
-			createFile('roads.shp'),
-			createFile('roads.dbf'),
-			createFile('roads.shx')
-		]);
-
-		expect(result).toEqual({
+	it('Shapefile一式をフォームへ渡す', async () => {
+		const files = ['test.shp', 'test.dbf', 'test.shx'].map(name => createFile(name));
+		expect(await resolveDroppedFiles(files)).toEqual({
 			type: 'dialog',
 			dialogType: 'shp',
-			dropFiles: undefined
+			dropFiles: files
 		});
 	});
 
@@ -1250,5 +1420,248 @@ describe('CityJSONのドロップ', () => {
 			dialogType: 'cityjson',
 			dropFiles: [file]
 		});
+	});
+});
+
+describe('DMとDMIのドロップ', () => {
+	it('DMIが先頭でも全DMと補助ファイルを渡す', async () => {
+		const files = ['INDEX.DMI', 'test-a.dm', 'test-b.DM'].map(name => new File([], name));
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'dm',
+			dropFiles: files
+		});
+	});
+	it('DMI単体ではDMとの同時選択を案内する', async () => {
+		const file = new File([], 'INDEX.dmi');
+		for (const input of [file, [file]]) {
+			expect(await resolveDroppedFiles(input)).toMatchObject({
+				type: 'notification',
+				message: expect.stringContaining('DMファイルと一緒')
+			});
+		}
+	});
+	it('ZIP内のDMと同じディレクトリのDMIを保持する', async () => {
+		const zip = new JSZip();
+		zip.file('test-set/INDEX.dmi', 'test');
+		zip.file('test-set/test.dm', 'test');
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-dm.zip')
+		);
+		expect(result).toMatchObject({
+			type: 'dialog',
+			dialogType: 'dm',
+			dropFiles: [
+				expect.objectContaining({ name: 'INDEX.dmi' }),
+				expect.objectContaining({ name: 'test.dm' })
+			]
+		});
+	});
+	it('DMIをファイル選択対象に含める', () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.dmi');
+	});
+});
+
+describe('ENVI／ESRI BILのドロップ', () => {
+	it.each(['hdr', 'bil', 'BIP', 'bsq', 'dat', 'img', 'raw'])(
+		'%sを専用フォームへ渡す',
+		async ext => {
+			expect(await resolveDroppedFiles(new File([], `test.${ext}`))).toMatchObject({
+				type: 'dialog',
+				dialogType: 'envi-bil'
+			});
+			expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(`.${ext.toLowerCase()}`);
+		}
+	);
+	it('HDR・BIN・PRJをGRIBやShapefileに振り分けない', async () => {
+		const files = ['test.prj', 'test.bin', 'test.hdr'].map(name => new File([], name));
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'envi-bil',
+			dropFiles: files
+		});
+		expect(await resolveDroppedFiles(new File([], 'test.bin'))).toMatchObject({
+			dialogType: 'grib2'
+		});
+	});
+	it('ZIP内の拡張子なし本体とHDRを保持する', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/test.hdr', 'ENVI');
+		zip.file('test-folder/test', new Uint8Array([1]));
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'envi-bil' });
+		if (result.type === 'dialog') {
+			expect(result.dropFiles?.map(file => file.name).sort()).toEqual(['test', 'test.hdr']);
+		}
+	});
+});
+
+describe('MapInfo TABのドロップ', () => {
+	it.each(['tab', 'TAB', 'map', 'id', 'ind'])('%sを専用フォームへ渡す', async ext => {
+		expect(await resolveDroppedFiles(new File([], `test.${ext}`))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'mapinfo-tab'
+		});
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(`.${ext.toLowerCase()}`);
+	});
+	it('TAB一式をENVIのDATやShapefileのDBFと誤判定しない', async () => {
+		const files = ['test.dat', 'test.dbf', 'test.map', 'test.id', 'test.tab'].map(name =>
+			new File([], name)
+		);
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'mapinfo-tab',
+			dropFiles: files
+		});
+		expect(await resolveDroppedFiles(new File([], 'test.dat'))).toMatchObject({
+			dialogType: 'envi-bil'
+		});
+	});
+	it('ZIP内の一式を保持する', async () => {
+		const zip = new JSZip();
+		for (const ext of ['tab', 'dat', 'map', 'id']) zip.file(`test-folder/test.${ext}`, 'test');
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'mapinfo-tab' });
+		if (result.type === 'dialog') expect(result.dropFiles).toHaveLength(4);
+	});
+});
+
+describe('JPEG2000のドロップ', () => {
+	it.each(['jp2', 'JP2', 'j2w', 'jp2w'])('%sを専用フォームへ渡す', async ext => {
+		expect(await resolveDroppedFiles(new File([], `test.${ext}`))).toMatchObject({
+			type: 'dialog',
+			dialogType: 'jpeg2000'
+		});
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(`.${ext.toLowerCase()}`);
+	});
+	it('JP2と付属ファイルをまとめて保持する', async () => {
+		const files = ['test.jp2', 'test.j2w', 'test.prj', 'test.jp2.aux.xml'].map(name =>
+			new File([], name)
+		);
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'jpeg2000',
+			dropFiles: files
+		});
+	});
+	it('ZIPのフォルダと付属ファイルを保持する', async () => {
+		const zip = new JSZip();
+		for (const ext of ['jp2', 'j2w', 'prj']) zip.file(`test-folder/test.${ext}`, 'test');
+		const result = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'jpeg2000' });
+		if (result.type === 'dialog') expect(result.dropFiles).toHaveLength(3);
+	});
+});
+
+describe('ZIP展開後の容量確認', () => {
+	const zipInput = async (names: string[]) => {
+		const zip = new JSZip();
+		for (const name of names) zip.file(name, 'test-content');
+		return new File(
+			[await zip.generateAsync({ type: 'arraybuffer', compression: 'DEFLATE' })],
+			'test.zip'
+		);
+	};
+	it('展開した実際の構成ファイルを確認し、承認後に判定する', async () => {
+		const checkExtractedFiles = vi.fn().mockResolvedValue(true);
+		const result = await resolveDroppedFiles(
+			await zipInput(['test-folder/test.shp', 'test-folder/test.dbf']),
+			{ checkExtractedFiles }
+		);
+		expect(result).toMatchObject({ type: 'dialog', dialogType: 'shp' });
+		expect(checkExtractedFiles).toHaveBeenCalledOnce();
+		const files = checkExtractedFiles.mock.calls[0][0] as File[];
+		expect(files.map(file => file.size)).toEqual([12, 12]);
+	});
+	it('展開後の確認をキャンセルしたらフォームへ進まない', async () => {
+		expect(
+			await resolveDroppedFiles(await zipInput(['test.shp', 'test.dbf']), {
+				checkExtractedFiles: async () => false
+			})
+		).toEqual({ type: 'cancelled' });
+	});
+	it('ZIP内の別フォルダにある同名セットを混ぜない', async () => {
+		expect(await resolveDroppedFiles(await zipInput(['test-a/test.shp', 'test-b/test.dbf'])))
+			.toMatchObject({ type: 'notification', level: 'error' });
+	});
+});
+
+describe('SRTM HGTのドロップ', () => {
+	it.each(['N00E000.test-grid.hgt', 's01w001.test-grid.HGT', 'test-renamed.hgt'])(
+		'%sを専用フォームへ渡す',
+		async name => {
+			const file = new File([], name);
+			for (const input of [file, [file]]) {
+				expect(await resolveDroppedFiles(input)).toMatchObject({
+					type: 'dialog',
+					dialogType: 'hgt'
+				});
+			}
+		}
+	);
+	it('複数タイルは選択候補をすべてフォームへ渡す', async () => {
+		const files = ['N00E000.test-grid.hgt', 'N00E001.test-grid.hgt'].map(name =>
+			new File([], name)
+		);
+		expect(await resolveDroppedFiles([new File([], 'test-note.txt'), ...files])).toEqual({
+			type: 'dialog',
+			dialogType: 'hgt',
+			dropFiles: files
+		});
+	});
+	it('ZIP内のHGTも同じ導線へ渡す', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/N00E000.test-grid.hgt', 'test');
+		const file = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-grid.hgt.zip'
+		);
+		const decision = await resolveDroppedFiles(file);
+		expect(decision).toMatchObject({ type: 'dialog', dialogType: 'hgt' });
+		if (decision.type === 'dialog') {
+			expect(decision.dropFiles?.[0].name).toBe('N00E000.test-grid.hgt');
+		}
+	});
+	it('形式一覧とファイル選択にHGTを含める', () => {
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'hgt')?.extensions).toEqual([
+			'.hgt'
+		]);
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.hgt');
+	});
+});
+
+describe('DGNのドロップ', () => {
+	it.each(['test-drawing.dgn', 'test-drawing.DGN'])('%sを専用フォームへ渡す', async name => {
+		const file = new File(['test'], name);
+		for (const input of [file, [file]]) {
+			expect(await resolveDroppedFiles(input)).toMatchObject({
+				type: 'dialog',
+				dialogType: 'dgn'
+			});
+		}
+	});
+	it('ファイル選択とZIP展開からも読み込める', async () => {
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.dgn');
+		const zip = new JSZip();
+		zip.file('test-folder/test-drawing.dgn', 'test');
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-drawing.zip')
+			)
+		).toMatchObject({ dialogType: 'dgn' });
+	});
+	it('複数図面を先頭だけ読み込まない', async () => {
+		expect(
+			await resolveDroppedFiles([
+				new File(['test'], 'test-a.dgn'),
+				new File(['test'], 'test-b.dgn')
+			])
+		).toMatchObject({ type: 'notification' });
 	});
 });

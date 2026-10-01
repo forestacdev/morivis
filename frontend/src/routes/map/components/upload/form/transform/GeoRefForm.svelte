@@ -70,6 +70,7 @@
 		type GeoRefCornerKey
 	} from '$routes/map/utils/transform/georef/aspect-locked';
 	import { getDefaultGeoRefCorners } from '$routes/map/utils/transform/georef/default-corners';
+	import { attachGeoRefImageDrag } from '$routes/map/utils/transform/georef/image-drag';
 	import { debugLog } from '$routes/stores/debug';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
@@ -83,6 +84,7 @@
 	interface Props {
 		map: maplibregl.Map;
 		selectedEpsgCode: EpsgCode;
+		suggestedEpsgCode?: EpsgCode;
 		focusBbox: [number, number, number, number] | null;
 		zoneBboxGeojsonData: FeatureCollection<PolygonGeometry | PointGeometry, EpsgInfoWithCode>;
 		geoRefData: GeoRefData | null;
@@ -104,6 +106,7 @@
 	let {
 		map,
 		selectedEpsgCode = $bindable(),
+		suggestedEpsgCode,
 		focusBbox = $bindable(),
 		zoneBboxGeojsonData = $bindable(),
 		geoRefData = $bindable(),
@@ -680,6 +683,21 @@
 	};
 
 	$effect(() => {
+		if (
+			transformOptionMode !== 'georef' ||
+			!initialized ||
+			!imageUrl ||
+			isModelPlacementActive ||
+			$isProcessing
+		)
+			return;
+		return attachGeoRefImageDrag(map, getCornerCoordinates, (corners) => {
+			setCornerCoordinates(corners);
+			onDragCorner();
+		});
+	});
+
+	$effect(() => {
 		const requestId = ++zoneBuildId;
 		const currentMap = map;
 
@@ -700,6 +718,7 @@
 		}
 
 		const sourceBbox: [number, number, number, number] = [...originalBbox];
+		const suggestedCode = suggestedEpsgCode;
 
 		void (async () => {
 			try {
@@ -814,7 +833,12 @@
 					geometry: { type: 'Point' as const, coordinates: info.coordinates },
 					properties: info.properties
 				}));
-				if (selectablePoints.length > 0) {
+				if (
+					suggestedCode &&
+					selectablePoints.some((point) => point.properties.code === suggestedCode)
+				) {
+					selectedEpsgCode = suggestedCode;
+				} else if (selectablePoints.length > 0) {
 					const nearest = turfNearestPoint([mapCenter.lng, mapCenter.lat], {
 						type: 'FeatureCollection',
 						features: selectablePoints

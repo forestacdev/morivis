@@ -1,3 +1,4 @@
+import proj4 from 'proj4';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -10,41 +11,40 @@ import {
 	parseBboxFromAttrs,
 	parseProjectionCodeFromAttrs,
 	resolveGeoZarrFallbackRange
-} from '.';
+} from './runtime';
 
 describe('GeoZarr bbox helpers', () => {
 	it('spatial:bbox を属性から読める', () => {
 		expect(
 			parseBboxFromAttrs({
-				'spatial:bbox': [600005, 7890245, 709795, 8000035]
+				'spatial:bbox': [-100, -100, 100, 100]
 			})
-		).toEqual([600005, 7890245, 709795, 8000035]);
+		).toEqual([-100, -100, 100, 100]);
 	});
 
 	it('proj:code を EPSG コードとして読める', () => {
-		expect(parseProjectionCodeFromAttrs({ 'proj:code': 'EPSG:32625' })).toBe('EPSG:32625');
+		expect(parseProjectionCodeFromAttrs({ 'proj:code': 'EPSG:3857' })).toBe('EPSG:3857');
 		expect(
 			parseProjectionCodeFromAttrs({
-				crs: 'http://www.opengis.net/def/crs/EPSG/0/32625'
+				crs: 'http://www.opengis.net/def/crs/EPSG/0/3857'
 			})
-		).toBe('EPSG:32625');
+		).toBe('EPSG:3857');
 	});
 
 	it('投影座標の bbox を WGS84 に正規化できる', () => {
-		const bbox = normalizeGeoZarrBbox([600005, 7890245, 709795, 8000035], 'EPSG:32625');
+		const bbox = normalizeGeoZarrBbox([-100, -100, 100, 100], 'EPSG:3857');
 
-		expect(bbox[0]).toBeCloseTo(-30.2336868, 5);
-		expect(bbox[1]).toBeCloseTo(71.0252446, 5);
-		expect(bbox[2]).toBeCloseTo(-26.9065947, 5);
-		expect(bbox[3]).toBeCloseTo(72.0778477, 5);
+		const lower = proj4('EPSG:3857', 'EPSG:4326', [-100, -100]);
+		const upper = proj4('EPSG:3857', 'EPSG:4326', [100, 100]);
+		expect(bbox).toEqual([...lower, ...upper]);
 	});
 
 	it('.zmetadata URL を dataset root に正規化できる', () => {
 		expect(
 			normalizeGeoZarrUrl(
-				'https://us-west-2.opendata.source.coop/pangeo/geozarr-examples/TCI.zarr/.zmetadata'
+				'https://test-zarr.invalid/test-grid.zarr/.zmetadata'
 			)
-		).toBe('https://us-west-2.opendata.source.coop/pangeo/geozarr-examples/TCI.zarr');
+		).toBe('https://test-zarr.invalid/test-grid.zarr');
 	});
 });
 
@@ -82,17 +82,17 @@ describe('GeoZarr sample range helpers', () => {
 		]);
 	});
 
-	it('ECMWF dew_point_temperature_2m のような全球データでは複数 window の min/max を合成する', () => {
+	it('架空の全球配列では複数 window の min/max を合成する', () => {
 		const merged = mergeBandDataRanges([
-			{ min: -30.625, max: -8.5 },
-			{ min: -33.25, max: -19.875 },
-			{ min: -57.5, max: -0.2734375 },
-			{ min: -57, max: -2.984375 },
-			{ min: -5.0625, max: 26.125 }
+			{ min: -30, max: -8.5 },
+			{ min: -35, max: -20 },
+			{ min: -60, max: -1 },
+			{ min: -57, max: -3 },
+			{ min: -5, max: 25 }
 		]);
 
-		expect(merged.min).toBe(-57.5);
-		expect(merged.max).toBe(26.125);
+		expect(merged.min).toBe(-60);
+		expect(merged.max).toBe(25);
 	});
 
 	it('小さい配列では重複しない window だけを返す', () => {
@@ -115,7 +115,7 @@ describe('GeoZarr sample range helpers', () => {
 	it('sample range が狭すぎるときは fallback で広げる', () => {
 		expect(
 			mergeSampleRangeWithFallback(
-				{ min: -5.0625, max: 26.125 },
+				{ min: -5, max: 25 },
 				{ min: -60, max: 30 }
 			)
 		).toEqual({ min: -60, max: 30 });

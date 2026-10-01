@@ -1,0 +1,12 @@
+ENVI
+samples = 3
+lines = 2
+bands = 3
+header offset = 0
+file type = ENVI Standard
+data type = 2
+interleave = bil
+byte order = 0
+data ignore value = -9999
+map info = {Geographic Lat/Lon, 1, 1, 2.5, 1.25, 0.001, 0.001, WGS-84, units=Degrees}
+default bands = {3, 2, 1}

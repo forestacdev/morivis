@@ -1,5 +1,5 @@
+import { fromArrayBuffer } from '$routes/map/utils/formats/geotiff/reader';
 import * as tilebelt from '@mapbox/tilebelt';
-import { fromArrayBuffer } from 'geotiff';
 
 import { convertCanvasToResult } from '$routes/map/protocol/farbling';
 import { buildWcsGetCoverageUrl } from '$routes/map/utils/formats/wcs';

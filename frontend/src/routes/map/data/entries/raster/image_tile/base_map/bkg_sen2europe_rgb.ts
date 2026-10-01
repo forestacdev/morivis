@@ -10,7 +10,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://sgx.geodatenzentrum.de/wms_sen2europe?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=rgb&STYLES=&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=TRUE&TIME={morivis:dimension}'
 	},
 	metaData: {
-		name: 'Sen2Europe RGB',
+		name: 'ヨーロッパ Sentinel-2衛星画像（BKG）',
 		sourceDataName: 'BKG Sen2Europe / Copernicus Sentinel-2',
 		description:
 			'Sentinel-2の衛星画像を加工して作成した、ヨーロッパの解像度10mのRGBモザイク画像。2018年・2021年の画像を切り替え、土地被覆の確認や背景地図として利用できる。',

@@ -325,7 +325,12 @@ const getDefaultStyle = (
 	labelsConfig: ReturnType<typeof createLabelsExpressions>
 ): VectorStyle => {
 	if (entryGeometryType === 'Point') {
-		return { ...DEFAULT_VECTOR_POINT_STYLE, colors: colorsConfig, labels: labelsConfig };
+		return {
+			...DEFAULT_VECTOR_POINT_STYLE,
+			outline: { ...DEFAULT_VECTOR_POINT_STYLE.outline },
+			colors: colorsConfig,
+			labels: labelsConfig
+		};
 	} else if (entryGeometryType === 'LineString') {
 		return { ...DEFAULT_VECTOR_LINE_STYLE, colors: colorsConfig, labels: labelsConfig };
 	} else {

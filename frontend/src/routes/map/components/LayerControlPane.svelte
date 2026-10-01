@@ -1,7 +1,8 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fly } from 'svelte/transition';
 
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import MaterialSymbolsCloseRoundedIcon from '$lib/components/svgs/icons/material-symbols/CloseRoundedIcon.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
 	import PlaneGridSettings from '$routes/map/components/PlaneGridSettings.svelte';
 	import { baseMapList } from '$routes/map/utils/layers/base_map';
@@ -136,7 +137,7 @@
 			<div class="flex w-full justify-between">
 				<span>ベースマップ</span>
 				<button onclick={() => (showMenu = false)} class="cursor-pointer text-base">
-					<Icon icon="material-symbols:close-rounded" class="h-6 w-6" />
+					<MaterialSymbolsCloseRoundedIcon class="h-6 w-6" />
 				</button>
 			</div>
 			<div class="grid w-full grid-cols-3 items-center justify-center gap-x-2">

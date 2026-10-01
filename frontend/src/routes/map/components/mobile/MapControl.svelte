@@ -1,6 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-
 	import Compass from '$routes/map/components/map_control/Compass.svelte';
 	import GeolocateControl from '$routes/map/components/map_control/GeolocateControl.svelte';
 	import ScaleControl from '$routes/map/components/map_control/ScaleControl.svelte';

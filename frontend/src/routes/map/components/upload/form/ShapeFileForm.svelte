@@ -4,6 +4,7 @@
 	import { fade, slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
+	import { checkLargeDroppedFiles } from '../upload-resource-check';
 	import {
 		createEmptyShapeFileFormState,
 		type ShpFormSchema,
@@ -23,6 +24,7 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
 	import { shpFileToGeojson, readCpgEncoding } from '$routes/map/utils/formats/shp';
+	import { getShapefileDataset } from '$routes/map/utils/formats/shp/files';
 	import { isBboxValid, isBbox2D } from '$routes/map/utils/map/bbox';
 	import { readPrjFileContent } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -118,17 +120,21 @@
 		);
 
 	const setFiles = (dropFile: UploadFilesInput) => {
-		const nextState = mergeShapeRelatedFiles(
-			{
-				forms,
-				cpgFile,
-				cpgName
-			},
-			toFiles(dropFile)
-		);
-		forms = nextState.forms;
-		cpgFile = nextState.cpgFile;
-		cpgName = nextState.cpgName;
+		try {
+			const nextState = mergeShapeRelatedFiles(
+				{
+					forms,
+					cpgFile,
+					cpgName
+				},
+				toFiles(dropFile)
+			);
+			forms = nextState.forms;
+			cpgFile = nextState.cpgFile;
+			cpgName = nextState.cpgName;
+		} catch (error) {
+			showNotification((error as Error).message, 'error');
+		}
 	};
 
 	const isShapeFileRelated = (file: UploadFilesInput): boolean => {
@@ -145,13 +151,14 @@
 	let isDisabled = $state<boolean>(true);
 	let errors = $state<Partial<Record<keyof ShpFormSchema, string>>>({});
 
-	// セット済みの全ファイル名（cpg含む）のベース名が一致するかチェック
+	// 個別のファイル選択も含め、フォルダ・基本名が同じ一式であることを確認する。
 	const hasFilenameMatchError = $derived.by(() => {
-		const names = [forms.shpName, forms.dbfName, forms.shxName, forms.prjName, cpgName];
-		const baseNames = names.filter((n) => n).map((n) => n.replace(/\.[^.]+$/, ''));
-		if (baseNames.length < 2) return '';
-		const allMatch = baseNames.every((b) => b === baseNames[0]);
-		return allMatch ? '' : '各ファイル名が一致しません';
+		try {
+			getShapefileDataset(getSelectedFiles());
+			return '';
+		} catch (error) {
+			return (error as Error).message;
+		}
 	});
 
 	$effect(() => {
@@ -177,7 +184,24 @@
 			});
 	});
 
+	const checkSelectedFiles = async () => {
+		try {
+			const dataset = getShapefileDataset(getSelectedFiles());
+			if (!(await checkLargeDroppedFiles(dataset.files))) return false;
+			// 確認中に追加・差し替えされた選択を、未確認のまま解析しない。
+			const current = getSelectedFiles();
+			return (
+				current.length === dataset.files.length &&
+				current.every((file) => dataset.files.includes(file))
+			);
+		} catch (error) {
+			showNotification((error as Error).message, 'error');
+			return false;
+		}
+	};
+
 	const setEntryData = async (_prjContent: string) => {
+		if (!(await checkSelectedFiles())) return;
 		isProcessing.set(true);
 		const encoding = cpgFile ? await readCpgEncoding(cpgFile) : undefined;
 		const geojsonData = await shpFileToGeojson(
@@ -219,6 +243,7 @@
 	const registration = async () => {
 		// NOTE: .shxファイルは仕様必須であるが、この処理では使用しないため、バリデーションから除外
 		if (!forms.shpFile || !forms.dbfFile || !forms.shxFile) return;
+		if (!(await checkSelectedFiles())) return;
 
 		if (!forms.prjFile) {
 			// 世界測地系かどうかを確認

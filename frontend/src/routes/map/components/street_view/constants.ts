@@ -1,8 +1,8 @@
-import { PUBLIC_PANORAMA_PATH } from '$env/static/public';
+import { STREET_VIEW_PANORAMA_PATH } from '$routes/constants';
 import { checkPc } from '$routes/map/utils/platform/viewport';
 import * as THREE from 'three';
 
-export const PANORAMA_IMAGE_URL = PUBLIC_PANORAMA_PATH + '/';
+export const PANORAMA_IMAGE_URL = STREET_VIEW_PANORAMA_PATH + '/';
 
 export const IN_CAMERA_FOV = checkPc() ? 75 : 100; // 初期FOV
 export const OUT_CAMERA_FOV = 150;

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fade } from 'svelte/transition';
 
+	import MajesticonsClipboardLineIcon from '$lib/components/svgs/icons/majesticons/ClipboardLineIcon.svelte';
 	import { formatFieldValue } from '$routes/map/data/types/vector/properties';
 	import type { FieldDef } from '$routes/map/data/types/vector/properties';
 	import { checkPc } from '$routes/map/utils/platform/viewport';
@@ -53,7 +53,7 @@
 			<span class="min-w-0 break-all">{formattedValue}</span>
 			{#if isHover}
 				<div transition:fade={{ duration: 100 }} class="absolute right-0 grid place-items-center">
-					<Icon icon="majesticons:clipboard-line" class="mr-2 h-6 w-6 shrink-0 text-base" />
+					<MajesticonsClipboardLineIcon class="mr-2 h-6 w-6 shrink-0 text-base" />
 				</div>
 			{/if}
 		</button>

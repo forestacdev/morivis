@@ -1,6 +1,4 @@
 <script lang="ts">
-	import JSZip from 'jszip';
-
 	import { resolveDroppedFiles } from './upload-drop';
 	import { applyUploadDropDecision, checkLargeDroppedFiles } from './upload-drop-actions';
 
@@ -36,7 +34,14 @@
 		// 大きなファイルの確認
 		if (!(await checkLargeDroppedFiles(file))) return;
 
-		const decision = await resolveDroppedFiles(file, { mobile: $isMobile });
+		const decision = await resolveDroppedFiles(file, {
+			mobile: $isMobile,
+			checkExtractedFiles: checkLargeDroppedFiles
+		});
+		if (decision.type === 'cancelled') {
+			dropFile = null;
+			return;
+		}
 		applyUploadDropDecision(decision, {
 			map,
 			setDropFile: (files) => {

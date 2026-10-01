@@ -1,16 +1,16 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { tick } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
 	import { getRemoteFileName, resolveUploadUrlInput, validateUploadUrlInput } from './upload-url';
 
+	import Icon from '$lib/components/svgs/Icon.svelte';
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import {
 		SUPPORTED_FILE_ACCEPT,
 		SUPPORTED_FILE_GROUPS,
-		SUPPORTED_UPLOAD_FORMATS,
+		UPLOAD_FORM_FORMATS,
 		type UploadFormat,
 		type DialogType,
 		type UploadFiles
@@ -31,6 +31,7 @@
 		remoteWmtsUrl: string | null;
 		remoteFeatureServiceUrl: string | null;
 		remoteArcGisUrl: string | null;
+		remoteStacUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -46,6 +47,7 @@
 		remoteWmtsUrl = $bindable(),
 		remoteFeatureServiceUrl = $bindable(),
 		remoteArcGisUrl = $bindable(),
+		remoteStacUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -64,35 +66,36 @@
 	const isUrlInputValid = $derived(trimmedInputUrl.length > 0 && !urlInputError);
 
 	const inputRemoteFile = async () => {
+		if (isLoadingUrl) return;
 		hasTouchedUrlInput = true;
-
-		// URLの種別判定は upload-url.ts に集約し、ここでは結果に応じて state を更新する。
-		const resolved = await resolveUploadUrlInput(trimmedInputUrl);
-
-		if (resolved.type === 'error') {
-			showNotification(resolved.message, 'error');
-			return;
-		}
-
-		if (resolved.type === 'dialog') {
-			// 既知のURL種別に当たった場合は、対応フォームへ必要な値を渡して終了する。
-			showDialogType = resolved.dialogType;
-			if (resolved.target === 'remoteRasterUrl') remoteRasterUrl = resolved.value;
-			if (resolved.target === 'remoteVectorUrl') remoteVectorUrl = resolved.value;
-			if (resolved.target === 'pendingTileUrl') pendingTileUrl = resolved.value;
-			if (resolved.target === 'remoteTiles3dUrl') remoteTiles3dUrl = resolved.value;
-			if (resolved.target === 'remotePmtilesUrl') remotePmtilesUrl = resolved.value;
-			if (resolved.target === 'remoteWmtsUrl') remoteWmtsUrl = resolved.value;
-			if (resolved.target === 'remoteFeatureServiceUrl') remoteFeatureServiceUrl = resolved.value;
-			if (resolved.target === 'remoteArcGisUrl') remoteArcGisUrl = resolved.value;
-			inputUrl = '';
-			hasTouchedUrlInput = false;
-			return;
-		}
-
 		isLoadingUrl = true;
 		isProcessing.set(true);
 		try {
+			// URLの種別判定は upload-url.ts に集約し、ここでは結果に応じて state を更新する。
+			const resolved = await resolveUploadUrlInput(trimmedInputUrl);
+
+			if (resolved.type === 'error') {
+				showNotification(resolved.message, 'error');
+				return;
+			}
+
+			if (resolved.type === 'dialog') {
+				// 既知のURL種別に当たった場合は、対応フォームへ必要な値を渡して終了する。
+				showDialogType = resolved.dialogType;
+				if (resolved.target === 'remoteRasterUrl') remoteRasterUrl = resolved.value;
+				if (resolved.target === 'remoteVectorUrl') remoteVectorUrl = resolved.value;
+				if (resolved.target === 'pendingTileUrl') pendingTileUrl = resolved.value;
+				if (resolved.target === 'remoteTiles3dUrl') remoteTiles3dUrl = resolved.value;
+				if (resolved.target === 'remotePmtilesUrl') remotePmtilesUrl = resolved.value;
+				if (resolved.target === 'remoteWmtsUrl') remoteWmtsUrl = resolved.value;
+				if (resolved.target === 'remoteFeatureServiceUrl') remoteFeatureServiceUrl = resolved.value;
+				if (resolved.target === 'remoteArcGisUrl') remoteArcGisUrl = resolved.value;
+				if (resolved.target === 'remoteStacUrl') remoteStacUrl = resolved.value;
+				if (resolved.target === 'remoteGeoZarrUrl') remoteGeoZarrUrl = resolved.value;
+				inputUrl = '';
+				hasTouchedUrlInput = false;
+				return;
+			}
 			// upload-url.ts が remote-file を返した場合だけ、ここで実ファイルを取得する。
 			const response = await fetchWithDevProxy(resolved.requestUrl);
 			if (!response.ok) {
@@ -131,19 +134,6 @@
 	const handleDroppedFiles = async (files: File[]) => {
 		if (!files || files.length === 0) return;
 
-		// 単一ZIPファイルの場合は展開
-		if (files.length === 1 && files[0].name.toLowerCase().endsWith('.zip')) {
-			try {
-				const extracted = await extractZipFiles(files[0]);
-				if (extracted.length > 0) {
-					dropFile = extracted;
-					return;
-				}
-			} catch {
-				// 展開失敗時は通常フローへ
-			}
-		}
-
 		dropFile = files;
 	};
 
@@ -168,30 +158,6 @@
 		await openFilteredFilePicker(item.extensions.join(','));
 	};
 	let isDragover = $state(false);
-	const setRelativePath = (file: File, relativePath: string) => {
-		Object.defineProperty(file, 'morivisRelativePath', {
-			value: relativePath,
-			configurable: true
-		});
-		return file;
-	};
-
-	/** ZIPファイルを展開してFile配列にする */
-	const extractZipFiles = async (zipFile: File): Promise<File[]> => {
-		const JSZip = (await import('jszip')).default;
-		const zip = await JSZip.loadAsync(zipFile);
-		const files: File[] = [];
-		const entries: [string, import('jszip').JSZipObject][] = [];
-		zip.forEach((path, entry) => {
-			if (!entry.dir) entries.push([path, entry]);
-		});
-		for (const [path, entry] of entries) {
-			const blob = await entry.async('blob');
-			const fileName = path.split('/').pop() ?? path;
-			files.push(setRelativePath(new File([blob], fileName, { type: blob.type }), path));
-		}
-		return files;
-	};
 </script>
 
 <div class="flex h-full grow flex-col gap-4 p-4 text-white">
@@ -203,20 +169,28 @@
 			: 'border-dashed bg-black/70'}"
 	>
 		<div class="grid place-items-center gap-6">
-			<span class="text-3xl select-none">ここにファイルをドロップしてください </span>
+			<span class="text-3xl select-none">ここにファイル・フォルダーをドロップしてください </span>
 
-			<label
-				class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
-			>
-				<span>またはファイルを選択</span>
-				<input
-					type="file"
-					multiple
-					accept={SUPPORTED_FILE_ACCEPT}
-					class="hidden"
-					onchange={(e) => inputFile(e)}
-				/>
-			</label>
+			<div class="flex items-center justify-center gap-4">
+				<label
+					class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
+				>
+					<span>ファイルを選択</span>
+					<input
+						type="file"
+						multiple
+						accept={SUPPORTED_FILE_ACCEPT}
+						class="hidden"
+						onchange={(e) => inputFile(e)}
+					/>
+				</label>
+				<label
+					class="bg-base hover:bg-accent grid cursor-pointer place-items-center rounded-full p-4 text-black transition-colors hover:text-white"
+				>
+					<span>フォルダーを選択</span>
+					<input type="file" webkitdirectory multiple class="hidden" onchange={inputFile} />
+				</label>
+			</div>
 			<input
 				bind:this={formListFileInput}
 				type="file"
@@ -319,7 +293,7 @@
 			</div>
 
 			<div class="c-scroll grid grid-cols-2 gap-3 overflow-y-auto pr-1 md:grid-cols-3">
-				{#each SUPPORTED_UPLOAD_FORMATS as item (item.id)}
+				{#each UPLOAD_FORM_FORMATS as item (item.id)}
 					<button
 						onclick={() => openFormatItem(item)}
 						class="bg-base hover:bg-accent group relative flex min-h-[160px] cursor-pointer flex-col gap-2 overflow-hidden rounded-lg px-4 py-3 text-left text-sm text-black transition-colors select-none hover:text-white"
@@ -353,7 +327,7 @@
 	}
 
 	.marquee-track {
-		animation: marquee 50s linear infinite;
+		animation: marquee 100s linear infinite;
 	}
 
 	@keyframes marquee {

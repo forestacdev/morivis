@@ -1,12 +1,12 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
-
 	import GaussianSplatOption from './model_option/GaussianSplatOption.svelte';
 	import GeoArrowOption from './model_option/GeoArrowOption.svelte';
 	import MeshOption from './model_option/MeshOption.svelte';
 	import PointCloudOption from './model_option/PoinbtCloudOption..svelte';
 	import Tiles3DMeshOption from './model_option/Tiles3DMeshOption.svelte';
 
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import MdiMapMarkerRadiusOutlineIcon from '$lib/components/svgs/icons/mdi/MapMarkerRadiusOutlineIcon.svelte';
 	import type {
 		MorivisModelEntry,
 		DeckVectorEntry,
@@ -116,7 +116,7 @@
 						modelGeoreferenceRequest.set(layerEntry.id);
 					}}
 				>
-					<Icon icon="mdi:map-marker-move" class="h-5 w-5" />
+					<MdiMapMarkerRadiusOutlineIcon class="h-5 w-5" />
 					位置合わせをする
 				</button>
 			{/if}

@@ -1,8 +1,7 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { fade, scale } from 'svelte/transition';
 
-	import { ICONS } from '$lib/icons';
+	import UiCloseIcon from '$lib/components/svgs/icons/ui/CloseIcon.svelte';
 	import { getMorivisContributors, type GitHubContributor } from '$routes/map/api/github';
 	import { entries } from '$routes/map/data/entries';
 	import { getAttribution } from '$routes/map/data/entries/_meta_data/_attribution';
@@ -100,7 +99,7 @@
 					onclick={() => showInfoDialog.set(false)}
 					class="bg-base cursor-pointer rounded-full p-2"
 				>
-					<Icon icon={ICONS.close} class="text-main h-4 w-4" />
+					<UiCloseIcon class="text-main h-4 w-4" />
 				</button>
 			</div>
 			<div class="flex-flex-col c-scroll overflow-x-hidden overflow-y-auto pr-2">

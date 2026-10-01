@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onMount, onDestroy } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import * as THREE from 'three';
@@ -13,6 +12,8 @@
 
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
+	import AkarIconsInfoFillIcon from '$lib/components/svgs/icons/akar-icons/InfoFillIcon.svelte';
+	import MdiGithubIcon from '$lib/components/svgs/icons/mdi/GithubIcon.svelte';
 	import { checkToTermsAccepted } from '$routes/map/utils/platform/terms-storage';
 	import { isBlocked } from '$routes/stores/ui';
 
@@ -273,13 +274,13 @@
 				href="https://github.com/forestacdev/morivis"
 				target="_blank"
 				rel="noopener noreferrer"
-				><Icon icon="mdi:github" class="h-8 w-8" />
+				><MdiGithubIcon class="h-8 w-8" />
 			</a>
 			<button
 				class="pointer-events-auto flex cursor-pointer items-center text-white"
 				onclick={toggleInfoDialog}
 			>
-				<Icon icon="akar-icons:info-fill" class="h-7 w-7" />
+				<AkarIconsInfoFillIcon class="h-7 w-7" />
 			</button>
 		</div>
 		<a

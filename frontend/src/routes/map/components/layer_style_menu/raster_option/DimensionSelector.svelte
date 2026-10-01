@@ -27,7 +27,7 @@
 		getRasterDimension,
 		getRasterDimensionRuntimeUpdates
 	} from '$routes/map/utils/raster/dimension-runtime';
-	import { getRasterTiffImageSource } from '$routes/map/utils/sources';
+	import { getRasterTiffImageSource } from '$routes/map/utils/sources/prepare';
 	import {
 		getVectorDimension,
 		getVectorDimensionRuntimeUpdates

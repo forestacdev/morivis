@@ -26,14 +26,15 @@ interface CloudFrontPublicEnvRule {
 type PublicEnvValues = Record<string, string | undefined>;
 
 const CLOUDFRONT_PUBLIC_ENV_RULES: CloudFrontPublicEnvRule[] = [
-	{ envKey: 'PUBLIC_BASE_PATH', proxyPath: '/api/cloudfront-assets' },
-	{ envKey: 'PUBLIC_ENTRY_PATH', proxyPath: '/api/cloudfront-entry' },
-	{ envKey: 'PUBLIC_PANORAMA_PATH', proxyPath: '/api/cloudfront-panorama' },
-	{ envKey: 'PUBLIC_TIMBER_SPECIES_PATH', proxyPath: '/api/cloudfront-timber-species' },
-	{ envKey: 'PUBLIC_DISASTER_LORE_ALL_PATH', proxyPath: '/api/cloudfront-disaster-lore' }
+	{ envKey: 'PUBLIC_BASE_PATH', proxyPath: '/api/cloudfront-assets' }
 ];
 
 const STATIC_PROXY_RULES: ProxyRule[] = [
+	{
+		match: 'https://api.inaturalist.org/',
+		target: 'https://api.inaturalist.org',
+		proxyPath: '/api/inaturalist'
+	},
 	{
 		match: 'https://assetdelivery.roblox.com/',
 		target: 'https://assetdelivery.roblox.com',
@@ -106,6 +107,11 @@ const STATIC_PROXY_RULES: ProxyRule[] = [
 		match: 'api.explorer.eopf.copernicus.eu',
 		target: 'https://api.explorer.eopf.copernicus.eu',
 		proxyPath: '/api/copernicus-eopf'
+	},
+	{
+		match: 'https://ows.digitalearth.africa/',
+		target: 'https://ows.digitalearth.africa',
+		proxyPath: '/api/digitalearth-africa'
 	},
 	{
 		match: 'ahocevar.com',

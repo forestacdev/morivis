@@ -1,0 +1,42 @@
+{
+	"type": "FeatureCollection",
+	"name": "test-projected",
+	"features": [
+		{
+			"type": "Feature",
+			"properties": { "name": "架空ポイント", "value": 12.5, "enabled": 1 },
+			"geometry": { "type": "Point", "coordinates": [278298.71999999997206, 139160.4] }
+		},
+		{
+			"type": "Feature",
+			"properties": { "name": "test-line", "value": -2.0, "enabled": 0 },
+			"geometry": {
+				"type": "LineString",
+				"coordinates": [[278298.71999999997206, 139160.4], [278521.38, 139383.09]]
+			}
+		},
+		{
+			"type": "Feature",
+			"properties": { "name": "test-region", "value": 0.0, "enabled": 1 },
+			"geometry": {
+				"type": "Polygon",
+				"coordinates": [
+					[
+						[278298.71999999997206, 139160.4],
+						[278744.01, 139160.4],
+						[278744.01, 139605.78],
+						[278298.71999999997206, 139605.78],
+						[278298.71999999997206, 139160.4]
+					],
+					[
+						[278410.049999999988358, 139271.75],
+						[278410.049999999988358, 139383.09],
+						[278521.38, 139383.09],
+						[278521.38, 139271.75],
+						[278410.049999999988358, 139271.75]
+					]
+				]
+			}
+		}
+	]
+}

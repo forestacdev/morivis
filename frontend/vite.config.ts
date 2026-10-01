@@ -31,7 +31,14 @@ export default defineConfig(({ mode }) => {
 	return {
 		// Worker-only dependencies must be ready before the first conversion, or Vite
 		// reloads the page on discovery and discards the user's uploaded point cloud.
-		optimizeDeps: { include: ['three/addons/objects/MarchingCubes.js'] },
+		optimizeDeps: {
+			include: [
+				'three/addons/objects/MarchingCubes.js',
+				'occt-import-js',
+				'@cornerstonejs/codec-openjpeg/decodewasmjs',
+				'web-e57-internal/e57_bg.js'
+			]
+		},
 		plugins: [
 			diaperCssOverridePlugin,
 			robloxAssetsPlugin(env.ROBLOX_API_KEY),
@@ -135,6 +142,8 @@ export default defineConfig(({ mode }) => {
 		},
 		resolve: {
 			alias: {
+				// web-e57の公開入口はWASMを直接importするため、明示的に初期化する。
+				'web-e57-internal': path.resolve('./node_modules/web-e57'),
 				$map: path.resolve('./src/routes/map'),
 				$routes: path.resolve('./src/routes')
 			}

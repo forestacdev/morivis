@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import type { Snippet } from 'svelte';
 	import { fly, scale } from 'svelte/transition';
 
+	import MaterialSymbolsCloseRoundedIcon from '$lib/components/svgs/icons/material-symbols/CloseRoundedIcon.svelte';
 	import { checkPc } from '$routes/map/utils/platform/viewport';
 
 	interface Props {
@@ -22,7 +22,7 @@
 			{@render headerActions()}
 		{/if}
 		<button onclick={onClose} class="bg-base ml-auto shrink-0 cursor-pointer rounded-full p-2">
-			<Icon icon="material-symbols:close-rounded" class="text-main h-5 w-5" />
+			<MaterialSymbolsCloseRoundedIcon class="text-main h-5 w-5" />
 		</button>
 	</div>
 

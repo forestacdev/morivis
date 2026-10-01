@@ -1,4 +1,4 @@
-import { fromArrayBuffer } from 'geotiff';
+import { fromArrayBuffer } from '$routes/map/utils/formats/geotiff/reader';
 import initSqlJs, { type Database } from 'sql.js';
 
 // ---- 型定義 ----

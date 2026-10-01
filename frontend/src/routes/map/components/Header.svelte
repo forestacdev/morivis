@@ -1,9 +1,11 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import Fuse from 'fuse.js';
 	import { onMount } from 'svelte';
 
-	import { ICONS } from '$lib/icons';
+	import MdiFitToScreenOutlineIcon from '$lib/components/svgs/icons/mdi/FitToScreenOutlineIcon.svelte';
+	import MdiGamepadVariantOutlineIcon from '$lib/components/svgs/icons/mdi/GamepadVariantOutlineIcon.svelte';
+	import UiMenuIcon from '$lib/components/svgs/icons/ui/MenuIcon.svelte';
+	import UiSearchIcon from '$lib/components/svgs/icons/ui/SearchIcon.svelte';
 	import { DATA_PATH } from '$routes/constants';
 	import { addressSearch, addressCodeToAddress } from '$routes/map/api/address';
 	import { getPostcodeInfo } from '$routes/map/api/postcode';
@@ -289,7 +291,7 @@
 					disabled={$isProcessing}
 					class="flex cursor-pointer items-center justify-start gap-2 rounded-r-full bg-black p-2 px-4 text-base transition-colors delay-100 duration-100"
 				>
-					<Icon icon={ICONS.search} class="transition-[width, height] h-6 w-6 duration-100" />
+					<UiSearchIcon class="transition-[width, height] h-6 w-6 duration-100" />
 				</button>
 			</div>
 		{/if}
@@ -312,7 +314,7 @@
 				class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base drop-shadow-lg duration-100"
 				onclick={() => showOtherMenu.set(true)}
 			>
-				<Icon icon={ICONS.menu} class="h-8 w-8" />
+				<UiMenuIcon class="h-8 w-8" />
 			</button>
 		</div>
 	{/if}
@@ -328,7 +330,7 @@
 					aria-pressed={modelViewFpsMode}
 					aria-label="FPS操作を切り替える"
 				>
-					<Icon icon="mdi:gamepad-variant-outline" class="h-6 w-6" />
+					<MdiGamepadVariantOutlineIcon class="h-6 w-6" />
 					FPS操作
 				</button>
 			{/if}
@@ -339,7 +341,7 @@
 					aria-label="表示を初期位置に戻す"
 					title="表示を戻す"
 				>
-					<Icon icon="mdi:fit-to-screen-outline" class="h-6 w-6" />
+					<MdiFitToScreenOutlineIcon class="h-6 w-6" />
 				</button>
 			{/if}
 		</div>

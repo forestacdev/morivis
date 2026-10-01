@@ -22,6 +22,7 @@
 		geoJsonFileToGeoJson,
 		geoJsonTextToGeoJson
 	} from '$routes/map/utils/formats/geojson';
+	import { GEOJSON_SEQUENCE_EXTENSIONS } from '$routes/map/utils/formats/geojsonseq/files';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -402,7 +403,7 @@
 					ondrop={onDropFile}
 				>
 					<span class="text-base font-bold select-none">
-						ここにGeoJSON/FlatGeobufファイルをドロップ
+						ここにGeoJSON・GeoJSONSeq・FlatGeobufファイルをドロップ
 					</span>
 					<button class="c-btn-confirm min-w-[180px] p-3 text-base" onclick={openFilePicker}>
 						ファイルを選択
@@ -410,7 +411,7 @@
 					<input
 						bind:this={fileInput}
 						type="file"
-						accept=".geojson,.json,.fgb"
+						accept={['.geojson', '.json', '.fgb', ...GEOJSON_SEQUENCE_EXTENSIONS].join(',')}
 						class="hidden"
 						onchange={onFileChange}
 					/>
@@ -433,6 +434,7 @@
 				</label>
 				<label class="flex flex-col gap-2">
 					<span class="text-base font-bold select-none">GeoJSONテキスト</span>
+					<span class="text-sm text-gray-300">行区切りGeoJSON・GeoJSONSeqも入力できます。</span>
 					<textarea
 						class="bg-base text-main min-h-[220px] w-full rounded-lg p-3 font-mono text-sm focus:outline-0"
 						bind:value={inputText}

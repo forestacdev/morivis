@@ -31,7 +31,11 @@
  *     https://github.com/Orbitalnet-incs/dmprovider/tree/main
  */
 
+import Encoding from 'encoding-japanese';
+
 import { getClassName } from './classCode';
+import { attachCourtyardHoles } from './courtyard';
+import { resolveDmZone } from './zone';
 
 const DM_DEBUG = false;
 
@@ -64,8 +68,8 @@ export interface DMGeoJSON {
 	type: 'FeatureCollection';
 	features: DMFeature[];
 	properties?: {
-		coordinateSystem: number; // 平面直角座標系 系番号
-		epsgCode: number; // EPSG コード (6668 + 系番号)
+		coordinateSystem: number | null; // 平面直角座標系 系番号（不明ならnull）
+		epsgCode: number | null; // 系番号だけでは測地系を確定できないためnull
 		planningOrganization: string;
 		mapLevel: number;
 	};
@@ -93,11 +97,33 @@ const toMeters = (rawValue: number, mapLevel: number): number => {
 // ============================================================
 
 // 行を固定位置でパース (1-indexed, bytes)
+const shiftJisDecoder = new TextDecoder('shift-jis');
+const decodeByteString = (value: string): string =>
+	shiftJisDecoder.decode(Uint8Array.from(value, char => char.charCodeAt(0)));
+
 const substr = (line: string, start: number, length: number): string =>
-	line.substring(start - 1, start - 1 + length).trim();
+	decodeByteString(line.substring(start - 1, start - 1 + length)).trim();
+
+// 数値フィールドのsubstring位置をバイト位置と一致させ、文字列フィールドだけ復号する。
+const toRecordLines = (input: string | Uint8Array): string[] => {
+	const bytes = typeof input === 'string'
+		? new Uint8Array(
+			Encoding.convert(Encoding.stringToCode(input), {
+				from: 'UNICODE',
+				to: 'SJIS',
+				type: 'array'
+			})
+		)
+		: input;
+	const chunks: string[] = [];
+	for (let offset = 0; offset < bytes.length; offset += 8192) {
+		chunks.push(String.fromCharCode(...bytes.subarray(offset, offset + 8192)));
+	}
+	return chunks.join('').split(/\r?\n/);
+};
 
 const parseIntField = (line: string, start: number, length: number): number =>
-	parseInt(substr(line, start, length), 10) || 0;
+	parseInt(line.substring(start - 1, start - 1 + length).trim(), 10) || 0;
 
 const normalizeAngle = (angle: number): number => {
 	let normalized = angle % 360;
@@ -398,7 +424,7 @@ interface DrawingRecord {
 	originY: number; // m
 	topRightX: number; // m (右上X座標、0の場合は未取得)
 	topRightY: number; // m (右上Y座標、0の場合は未取得)
-	coordUnit: number; // 座標値単位 (1=mm, 10=cm, 1000=m)
+	coordUnit: number; // 座標値単位 (1=mm, 10=cm, 999=m)
 	version: number;
 }
 
@@ -423,6 +449,7 @@ interface ElementRecord {
 	dataTypeCode: string; // 元のデータタイプコード (0-9)
 	elementId: number;
 	coordinateCount: number;
+	figureType?: number; // 図形区分（31=中庭線）
 	dataKubun: number;
 	actualDataType: number;
 	precisionType: number;
@@ -466,27 +493,15 @@ type ParsedRecord =
 // ============================================================
 
 const parseIndexRecord = (line: string): IndexRecord => {
-	// バイト位置は仕様書の図に基づく
-	// [1-2] "I " 固定
-	// [3-4] 座標系番号 I2
-	// [5-34] 計画機関名 A30
-	// [35-38] 図郭数 I4
-	// [39-42] 図郭識別番号レコード数 I4
-	// [43-44] 使用分類コード数 I2(or I3)
-	// [45] 転位処理フラグ I1
-	// [46] 間断処理フラグ I1
-	// [47-50] 西暦年号 I4
-	// [51-80] 作業規程名 A30
-	// [81] バージョン I1
-	// [82] 空き領域区分 I1
+	// A2, I2, A30, I3, I2, I4, I1, I1, I4, A30, I1, I1, 3X
 	return {
 		type: 'INDEX',
 		coordSystem: parseIntField(line, 3, 2),
 		planningOrg: substr(line, 5, 30),
-		drawingCount: parseIntField(line, 35, 4),
-		drawingIdRecordCount: parseIntField(line, 39, 4),
-		classCodeCount: parseIntField(line, 43, 3),
-		version: parseIntField(line, 81, 1)
+		drawingCount: parseIntField(line, 35, 3),
+		drawingIdRecordCount: parseIntField(line, 38, 2),
+		classCodeCount: parseIntField(line, 40, 4),
+		version: parseIntField(line, 80, 1)
 	};
 };
 
@@ -528,7 +543,7 @@ const parseDrawingRecord = (line: string): DrawingRecord => {
 //   ※拡張DMでは左下座標の直後に右上座標が続き、座標値単位は[45-47]に位置する
 //
 // 座標値単位と除算器(coordUnitDivisor)の対応:
-//   1(mm)→1000, 10(cm)→100, 1000(m)→1
+//   1(mm)→1000, 10(cm)→100, 999(m)→1
 //   取得できない場合は mapLevel から推定するフォールバックが適用される
 
 const parseDrawingCoordRecord = (
@@ -642,7 +657,7 @@ const parseCoord2DRecord = (line: string): CoordRecord2D => {
 		const start = 3 + i * 20;
 		const xStr = line.substring(start - 1, start + 9).trim();
 		const yStr = line.substring(start + 9, start + 19).trim();
-		if (xStr === '' || xStr === '0000000000') break;
+		if (xStr === '') break;
 		const x = parseInt(xStr, 10);
 		const y = parseInt(yStr, 10);
 		if (!isNaN(x) && !isNaN(y)) {
@@ -703,39 +718,19 @@ const EXT_DATA_TYPE_MAP: Record<string, string> = {
 const parseExtElementRecord = (
 	line: string
 ): ElementRecord & { embeddedX?: number; embeddedY?: number; } => {
-	// 拡張DM 要素レコード
-	// [1]    "E" 固定
-	// [2]    データタイプ (1=面,2=線,3=円,4=円弧,5=点,6=方向,7=注記)
-	// [3-6]  分類コード A4
-	// [7]    空白
-	// [8]    実データ区分 I1
-	// [9-12] 間断区分 I4
-	// [13-16] 要素識別番号 I4
-	// [17]   精度区分 I1
-	// [18-19] 予備 I2
-	// [20]   座標次元 (0=埋込, 2=2D, 3=3D, 4=注記座標)
-	// [21-23] 地図情報レベルコード等
-	// [24-27] フラグ等
-	// [28-31] 座標数 I4
-	// [32-35] 座標レコード数 I4
-	// [36-42] X座標 I7 (点・注記等で座標埋込時)
-	// [43-49] Y座標 I7 (点・注記等で座標埋込時)
+	// E1〜E7: 分類(3-6), 要素ID(13-16), 階層(17-18), 図形区分(19-20),
+	// 実データ区分(21), 精度(22-23), 注記区分(24), 転位(25-26), 間断(27)。
 	const dataTypeCode = line.substring(1, 2);
-	const classCode = line.substring(2, 6).trim().padStart(4, '0');
-	const elementId = parseInt(line.substring(12, 16).trim(), 10) || 0;
-	const coordDimension = line.substring(20, 21).trim();
-	const coordinateCount = parseInt(line.substring(27, 31).trim(), 10) || 0;
-	const is3D = coordDimension === '3';
-
-	// 点(5)や注記(7)など座標が埋め込まれている場合
+	const classCode = substr(line, 3, 4).padStart(4, '0');
+	const elementId = parseIntField(line, 13, 4);
+	const coordinateCount = parseIntField(line, 28, 4);
+	const is3D = substr(line, 21, 1) === '3';
 	let embeddedX: number | undefined;
 	let embeddedY: number | undefined;
-	const xStr = line.substring(35, 42).trim();
-	const yStr = line.substring(42, 49).trim();
-	if (xStr !== '' && xStr !== '0') {
-		const x = parseInt(xStr, 10);
-		const y = parseInt(yStr, 10);
-		if (!isNaN(x) && !isNaN(y) && (x !== 0 || y !== 0)) {
+	if ((dataTypeCode === '5' && coordinateCount === 0) || dataTypeCode === '7') {
+		const x = Number.parseInt(substr(line, 36, 7), 10);
+		const y = Number.parseInt(substr(line, 43, 7), 10);
+		if (Number.isFinite(x) && Number.isFinite(y)) {
 			embeddedX = x;
 			embeddedY = y;
 		}
@@ -748,11 +743,12 @@ const parseExtElementRecord = (
 		dataTypeCode,
 		elementId,
 		coordinateCount,
-		dataKubun: parseInt(line.substring(7, 8).trim(), 10) || 0,
-		actualDataType: parseInt(line.substring(7, 8).trim(), 10) || 0,
-		precisionType: parseInt(line.substring(16, 17).trim(), 10) || 0,
-		kandan: parseInt(line.substring(8, 12).trim(), 10) || 0,
-		teni: 0,
+		figureType: parseIntField(line, 19, 2),
+		dataKubun: parseIntField(line, 21, 1),
+		actualDataType: parseIntField(line, 21, 1),
+		precisionType: parseIntField(line, 22, 2),
+		kandan: parseIntField(line, 27, 1),
+		teni: parseIntField(line, 25, 2),
 		is3D,
 		embeddedX,
 		embeddedY
@@ -760,14 +756,14 @@ const parseExtElementRecord = (
 };
 
 // 拡張DM 座標レコード（Eレコードの座標次元[20]に応じて2D/3Dを切り替え）
-// 座標値 0 はパディング（無効値）。単位は図郭座標行の座標値単位フィールドにより決定。
+// 0も有効な座標。末尾の余剰値は要素のデータ数で切り詰める。単位は図郭座標行で決定。
 //
 // 2D (座標次元='2'): 7バイト×2値(X,Y)=14バイト/座標 × 最大6座標 = 84バイト/行
 //   [1-7]X1 [8-14]Y1 [15-21]X2 [22-28]Y2 ... [71-77]X6 [78-84]Y6
 //
 // 3D (座標次元='3'): 7バイト×3値(X,Y,Z)=21バイト/座標 × 最大4座標 = 84バイト/行
 //   [1-7]X1 [8-14]Y1 [15-21]Z1 [22-28]X2 ... [64-70]X4 [71-77]Y4 [78-84]Z4
-//   ※等高線など標高情報を持つ要素で使用。Z値は標高。GeoJSON変換時はX,Yのみ使用。
+//   ※Z値は標高属性へ保存し、ジオメトリは平面座標へ変換する。
 
 const parseExtCoord2DRecord = (line: string): CoordRecord2D => {
 	// 7バイト×2値(X,Y) × 最大6座標/行
@@ -777,10 +773,10 @@ const parseExtCoord2DRecord = (line: string): CoordRecord2D => {
 		const yStart = xStart + 7;
 		const xStr = line.substring(xStart, xStart + 7).trim();
 		const yStr = line.substring(yStart, yStart + 7).trim();
-		if (xStr === '' || xStr === '0') break;
+		if (xStr === '') break;
 		const x = parseInt(xStr, 10);
 		const y = parseInt(yStr, 10);
-		if (!isNaN(x) && !isNaN(y) && (x !== 0 || y !== 0)) {
+		if (!isNaN(x) && !isNaN(y)) {
 			coords.push([x, y]);
 		} else {
 			break;
@@ -797,11 +793,11 @@ const parseExtCoord3DRecord = (line: string): CoordRecord3D => {
 		const xStr = line.substring(offset, offset + 7).trim();
 		const yStr = line.substring(offset + 7, offset + 14).trim();
 		const zStr = line.substring(offset + 14, offset + 21).trim();
-		if (xStr === '' || xStr === '0') break;
+		if (xStr === '') break;
 		const x = parseInt(xStr, 10);
 		const y = parseInt(yStr, 10);
 		const z = parseInt(zStr, 10);
-		if (!isNaN(x) && !isNaN(y) && (x !== 0 || y !== 0)) {
+		if (!isNaN(x) && !isNaN(y)) {
 			coords.push([x, y, isNaN(z) ? 0 : z]);
 		} else {
 			break;
@@ -814,15 +810,15 @@ const parseExtAnnotationDataRecord = (line: string): AnnotationRecord => {
 	// 拡張DM 注記データレコード (E7レコードの次行)
 	// 角度や文字高、テキストなどが含まれる
 	// フォーマットはファイルによって異なるが、テキスト部分を抽出
-	const text = line.substring(18).trim();
+	const text = substr(line, 21, 64);
 	return {
 		type: 'ANNOTATION',
 		x: 0,
 		y: 0,
-		angle: parseInt(line.substring(0, 7).trim(), 10) || 0,
-		height: parseInt(line.substring(11, 15).trim(), 10) || 0,
+		angle: parseIntField(line, 2, 7) * 10,
+		height: parseIntField(line, 9, 5),
 		text,
-		tateyoko: parseInt(line.substring(7, 8).trim(), 10) || 0
+		tateyoko: parseIntField(line, 1, 1)
 	};
 };
 
@@ -833,29 +829,15 @@ const parseExtAnnotationDataRecord = (line: string): AnnotationRecord => {
 //   旧DM:   I レコード(座標系番号), F 要素レコード(pos17にデータタイプ),
 //           D2/D3 座標レコード(10バイトフィールド×最大4ペア/行),
 //           座標単位は mapLevel に依存, 変換: 生値→toMeters()→絶対座標
-//   拡張DM: I レコードなし, E1〜E7 要素レコード(データタイプ1桁),
+//   拡張DM: E1〜E7 要素レコード(データタイプ1桁)、Iレコードの併存もある。
 //           座標レコード(プレフィックスなし, 7バイト×最大6ペア(2D)/4組(3D)/行),
 //           座標単位は図郭座標行の座標値単位フィールドに依存,
 //           変換: 図郭原点(m) + 座標値/coordUnitDivisor→絶対座標
 //
-// 判定: E1〜E7 で始まるレコードがあれば拡張DM、F / I レコードがあれば旧DM
+// 判定: インデックスの有無によらずEレコードの存在で判定する。
 // ============================================================
 
-const isExtendedDM = (text: string): boolean => {
-	const lines = text.split(/\r?\n/);
-	for (const line of lines) {
-		if (line.length < 2) continue;
-		const trimmed = line.trimEnd();
-		if (trimmed === '') continue;
-		// 拡張DMの特徴: Eレコード（E1～E7）が存在する
-		if (/^E[1-7]/.test(trimmed)) return true;
-		// 旧DMの特徴: F レコードが存在する
-		if (trimmed.startsWith('F ')) return false;
-		// I レコードが存在すれば旧DM
-		if (trimmed.startsWith('I ')) return false;
-	}
-	return false;
-};
+const isExtendedDM = (lines: string[]): boolean => lines.some(line => /^E[1-8]/.test(line));
 
 // ============================================================
 // メインパーサー: DM テキスト → ParsedRecord[]
@@ -866,9 +848,9 @@ interface ParseResult {
 	isExtended: boolean;
 }
 
-const parseRecords = (text: string): ParseResult => {
-	const extended = isExtendedDM(text);
-	const lines = text.split(/\r?\n/);
+const parseRecords = (text: string | Uint8Array): ParseResult => {
+	const lines = toRecordLines(text);
+	const extended = isExtendedDM(lines);
 	const records: ParsedRecord[] = [];
 
 	// 拡張DM用: 直前のEレコードが注記(E7)だったかを追跡
@@ -886,6 +868,10 @@ const parseRecords = (text: string): ParseResult => {
 		const recordType = line.substring(0, 2);
 
 		try {
+			if (recordType === 'I ') {
+				records.push(parseIndexRecord(line));
+				continue;
+			}
 			if (extended) {
 				// ---- 拡張DM ----
 				if (recordType === 'M ') {
@@ -930,7 +916,10 @@ const parseRecords = (text: string): ParseResult => {
 
 				if (afterMRecord === 0) {
 					if (recordType === 'H ') {
-						records.push(parseGroupHeaderRecord(line));
+						records.push({
+							...parseGroupHeaderRecord(line),
+							classCode: substr(line, 3, 4)
+						});
 						lastWasExtAnnotation = false;
 					} else if (line.charAt(0) === 'E' && /^E[1-7]/.test(line)) {
 						const extElem = parseExtElementRecord(line);
@@ -944,7 +933,7 @@ const parseRecords = (text: string): ParseResult => {
 						}
 						lastWasExtAnnotation = extElem.dataType === '注記';
 						lastElementIs3D = extElem.is3D === true;
-					} else if (line.charAt(0) === ' ' || /^[0-9]/.test(line)) {
+					} else if (line.charAt(0) === ' ' || /^[0-9+-]/.test(line)) {
 						// 座標レコードまたは注記データレコード
 						if (lastWasExtAnnotation) {
 							// 注記データレコード
@@ -1044,7 +1033,10 @@ export interface ConvertOptions {
  * const text = iconv.decode(buffer, 'shift-jis');
  * const geojson = convertDMtoGeoJSON(text);
  */
-export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {}): DMGeoJSON => {
+export const convertDMtoGeoJSON = (
+	dmText: string | Uint8Array,
+	options: ConvertOptions = {}
+): DMGeoJSON => {
 	const { includeAnnotations = true, coordinatePrecision = 8 } = options;
 
 	const precision = Math.pow(10, coordinatePrecision);
@@ -1053,7 +1045,6 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 	const features: DMFeature[] = [];
 
 	// パース状態
-	let coordSystem = 0; // 0 = 未確定（後で推定または旧DMデフォルト適用）
 	let mapLevel = 2500;
 	let currentDrawingId = '';
 	let currentClassCode = '';
@@ -1067,7 +1058,7 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 	// 拡張DM: 図郭原点（メートル単位）
 	let figureOriginX = 0;
 	let figureOriginY = 0;
-	// 拡張DM: 座標値単位 (1=mm, 10=cm, 1000=m), デフォルト1(mm)
+	// 拡張DM: 座標値単位 (1=mm, 10=cm, 999=m), デフォルト1(mm)
 	let coordUnitDivisor = 1000; // mm→m
 
 	// 座標をメートル単位の平面直角座標に変換（WGS84変換は呼び出し側で行う）
@@ -1105,6 +1096,7 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 			layer: currentClassCode,
 			mapLevel,
 			drawingId: currentDrawingId,
+			figureType: currentElementRecord.figureType,
 			dataKubun: currentElementRecord.dataKubun,
 			actualDataType: currentElementRecord.actualDataType,
 			precisionType: currentElementRecord.precisionType,
@@ -1114,6 +1106,10 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 
 		let geometry: DMFeature['geometry'] | null = null;
 
+		if (coordsExpected > 0) {
+			coordBuffer = coordBuffer.slice(0, coordsExpected);
+			coord3DBuffer = coord3DBuffer.slice(0, coordsExpected);
+		}
 		const rawCoords = is3D
 			? coord3DBuffer.map(([x, y]) => toAbsoluteMeters(x, y))
 			: coordBuffer.map(([x, y]) => toAbsoluteMeters(x, y));
@@ -1212,7 +1208,6 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 	for (const record of records) {
 		switch (record.type) {
 			case 'INDEX': {
-				coordSystem = record.coordSystem || 9;
 				planningOrg = record.planningOrg;
 				break;
 			}
@@ -1226,14 +1221,14 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 					mapLevel = record.mapLevel || mapLevel;
 				}
 				// 図郭座標レコード (originX/originY) から図郭原点を取得
-				if (isExtended && (record.originX !== 0 || record.originY !== 0)) {
+				if (isExtended && !record.drawingId) {
 					figureOriginX = record.originX;
 					figureOriginY = record.originY;
 				}
-				// 座標値単位から除算器を決定 (1=mm→/1000, 10=cm→/100, 1000=m→/1)
+				// 座標値単位から除算器を決定 (1=mm→/1000, 10=cm→/100, 999=m→/1)
 				if (isExtended) {
 					if (record.coordUnit > 0) {
-						if (record.coordUnit >= 1000) {
+						if (record.coordUnit >= 999) {
 							coordUnitDivisor = 1; // m単位
 						} else if (record.coordUnit >= 10) {
 							coordUnitDivisor = 100; // cm単位
@@ -1289,7 +1284,10 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 
 			case 'ANNOTATION': {
 				if (!includeAnnotations) break;
-				const [e, n] = toAbsoluteMeters(record.x, record.y);
+				const [x, y] = isExtended
+					? (coordBuffer[0] ?? [record.x, record.y])
+					: [record.x, record.y];
+				const [e, n] = toAbsoluteMeters(x, y);
 				features.push({
 					type: 'Feature',
 					geometry: {
@@ -1327,7 +1325,7 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 	// 最後の要素をフラッシュ
 	flushFeature();
 	// FeatureCollectionとして返す前に、分割された等高線だけを地物寄りの形へまとめ直す。
-	const normalizedFeatures = mergeContourFeatures(features);
+	const normalizedFeatures = mergeContourFeatures(attachCourtyardHoles(features));
 
 	if (DM_DEBUG) {
 		console.debug('[DM] convertDMtoGeoJSON result', {
@@ -1336,17 +1334,18 @@ export const convertDMtoGeoJSON = (dmText: string, options: ConvertOptions = {})
 		});
 	}
 
-	// 系番号が未確定の場合のフォールバック
-	if (coordSystem === 0) {
-		coordSystem = isExtended ? 2 : 9;
-	}
+	const zone = resolveDmZone(
+		[],
+		records.filter(record => record.type === 'INDEX').map(record => record.coordSystem),
+		records.filter(record => record.type === 'DRAWING').map(record => record.drawingId)
+	);
 
 	return {
 		type: 'FeatureCollection',
 		features: normalizedFeatures,
 		properties: {
-			coordinateSystem: coordSystem,
-			epsgCode: 6668 + coordSystem,
+			coordinateSystem: zone.zone,
+			epsgCode: null,
 			planningOrganization: planningOrg,
 			mapLevel
 		}
@@ -1385,14 +1384,16 @@ export const convertDMArrayBufferToGeoJSON = async (
 	buffer: ArrayBuffer,
 	options?: ConvertOptions
 ): Promise<DMGeoJSON> => {
-	const text = decodeShiftJIS(buffer);
-	return convertDMtoGeoJSON(text, options);
+	return convertDMtoGeoJSON(new Uint8Array(buffer), options);
 };
 
 /** 系番号の情報 */
 export interface DMInfo {
 	/** INDEXレコードの系番号（存在する場合） */
 	indexZone: number | null;
+	zone: number | null;
+	zoneSource: 'dmi' | 'index' | 'drawing' | null;
+	zoneWarning: string | null;
 	/** 図郭名称 */
 	drawingName: string;
 	/** 図郭の平面直角座標bbox [originX, originY, topRightX, topRightY] */
@@ -1408,9 +1409,11 @@ export const getDMInfo = async (file: File): Promise<DMInfo> => {
 	return getDMInfoFromArrayBuffer(buffer);
 };
 
-export const getDMInfoFromArrayBuffer = async (buffer: ArrayBuffer): Promise<DMInfo> => {
-	const text = decodeShiftJIS(buffer);
-	const { records, isExtended } = parseRecords(text);
+export const getDMInfoFromArrayBuffer = async (
+	buffer: ArrayBuffer,
+	indexBuffers: ArrayBuffer[] = []
+): Promise<DMInfo> => {
+	const { records } = parseRecords(new Uint8Array(buffer));
 
 	let indexZone: number | null = null;
 	let drawingName = '';
@@ -1423,10 +1426,31 @@ export const getDMInfoFromArrayBuffer = async (buffer: ArrayBuffer): Promise<DMI
 		if (record.type === 'DRAWING' && record.drawingName && !drawingName) {
 			drawingName = record.drawingName;
 		}
-		if (record.type === 'DRAWING' && record.originX !== 0 && record.topRightX !== 0 && !bbox) {
+		if (
+			record.type === 'DRAWING' && record.topRightX > record.originX
+			&& record.topRightY > record.originY && !bbox
+		) {
 			bbox = [record.originX, record.originY, record.topRightX, record.topRightY];
 		}
 	}
 
-	return { indexZone, drawingName, bbox };
+	const indexZones = records.filter(record => record.type === 'INDEX').map(record =>
+		record.coordSystem
+	);
+	const dmiZones = indexBuffers.flatMap(buffer =>
+		parseRecords(new Uint8Array(buffer)).records
+			.filter(record => record.type === 'INDEX').map(record => record.coordSystem)
+	);
+	const drawingIds = records.filter(record => record.type === 'DRAWING').map(record =>
+		record.drawingId
+	);
+	const resolved = resolveDmZone(dmiZones, indexZones, drawingIds);
+	return {
+		indexZone,
+		drawingName,
+		bbox,
+		zone: resolved.zone,
+		zoneSource: resolved.source,
+		zoneWarning: resolved.warning
+	};
 };

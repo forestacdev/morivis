@@ -264,3 +264,12 @@ describe('resolveOpenDialogDrop', () => {
 		});
 	});
 });
+
+it('MapInfo TABを開いてから不足していたDAT・MAP・IDを追加できる', async () => {
+	const tab = new File([], 'test.tab');
+	const incoming = ['dat', 'map', 'id'].map(ext => new File([], `test.${ext}`));
+	expect(await resolveOpenDialogDrop('mapinfo-tab', [tab], incoming)).toEqual({
+		type: 'stay',
+		dropFiles: [tab, ...incoming]
+	});
+});

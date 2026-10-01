@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { beginUploadProcessing } from '$routes/map/components/upload/processing-guard';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { robloxFileToGlbInWorker } from '$routes/map/utils/formats/roblox/analyze';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
@@ -18,6 +19,7 @@
 		void retry;
 		if (!input || !/\.rbxlx?$/i.test(input.name)) return;
 		const controller = new AbortController();
+		const releaseProcessing = beginUploadProcessing(controller.signal);
 		errorMessage = '';
 		void robloxFileToGlbInWorker(input, controller.signal)
 			.then((result) => {
@@ -39,7 +41,8 @@
 				if (!controller.signal.aborted)
 					errorMessage =
 						error instanceof Error ? error.message : 'ワールドを読み込めませんでした。';
-			});
+			})
+			.finally(releaseProcessing);
 		return () => controller.abort();
 	});
 	const cancel = () => {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '../app.css';
-	import Icon from '@iconify/svelte';
+
 	import { delay } from 'es-toolkit';
 	import { onMount } from 'svelte';
 	// @ts-expect-error - virtual module provided by @vite-pwa/sveltekit
@@ -15,8 +15,8 @@
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import PwaManualDialog from '$lib/components/PwaManualDialog.svelte';
 	import ScreenGuard from '$lib/components/ScreenGuard.svelte';
+	import UiMobileIcon from '$lib/components/svgs/icons/ui/MobileIcon.svelte';
 	import TermsOfServiceDialog from '$lib/components/TermsOfServiceDialog.svelte';
-	import { ICONS } from '$lib/icons';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { isBlocked, isMobile } from '$routes/stores/ui';
 
@@ -119,7 +119,7 @@
 {#if deviceType === 'mobile' && !$isMobile}
 	<div class="bg-main absolute z-100 flex h-full w-full items-center justify-center text-base">
 		<p class="text-2xl">端末を縦向きにしてください。</p>
-		<Icon icon={ICONS.mobile} class="h-16 w-16" />
+		<UiMobileIcon class="h-16 w-16" />
 	</div>
 {/if}
 {#if isInitialized}

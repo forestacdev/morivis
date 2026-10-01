@@ -200,6 +200,7 @@ export function createGeoJsonPointEntry(
 		interaction: { clickable: true },
 		style: {
 			...DEFAULT_VECTOR_POINT_STYLE,
+			outline: { ...DEFAULT_VECTOR_POINT_STYLE.outline },
 			opacity,
 			colors: colorsStyle,
 			radius: radiusStyle,

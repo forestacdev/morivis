@@ -14,6 +14,7 @@ export type DialogProfile =
 	| 'feature-service'
 	| 'remote-wmts'
 	| 'remote-arcgis'
+	| 'remote-stac'
 	| 'remote-geozarr'
 	| 'tiles'
 	| 'wcs'
@@ -32,6 +33,26 @@ const tileDialog: DialogDefinition = {
 };
 
 export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDefinition>> = {
+	jpeg2000: {
+		load: () => import('$routes/map/components/upload/form/Jpeg2000Form.svelte'),
+		profile: 'pointcloud-georef'
+	},
+	video: {
+		load: () => import('$routes/map/components/upload/form/VideoForm.svelte'),
+		profile: 'raster-georef'
+	},
+	'envi-bil': {
+		load: () => import('$routes/map/components/upload/form/EnviBilForm.svelte'),
+		profile: 'pointcloud-georef'
+	},
+	hgt: {
+		load: () => import('$routes/map/components/upload/form/HgtForm.svelte'),
+		profile: 'raster-georef'
+	},
+	'ascii-grid': {
+		load: () => import('$routes/map/components/upload/form/AsciiGridForm.svelte'),
+		profile: 'pointcloud-georef'
+	},
 	bds: {
 		load: () => import('$routes/map/components/upload/form/BdsForm.svelte'),
 		profile: 'drop-file'
@@ -66,7 +87,7 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	},
 	stac: {
 		load: () => import('$routes/map/components/upload/form/StacForm.svelte'),
-		profile: 'simple'
+		profile: 'remote-stac'
 	},
 	arcgis: {
 		load: () => import('$routes/map/components/upload/form/ArcGisForm.svelte'),
@@ -83,6 +104,14 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	xlsx: {
 		load: () => import('$routes/map/components/upload/form/XlsxForm.svelte'),
 		profile: 'vector-zone-georef'
+	},
+	pptx: {
+		load: () => import('$routes/map/components/upload/form/OfficeDrawingForm.svelte'),
+		profile: 'raster-georef'
+	},
+	docx: {
+		load: () => import('$routes/map/components/upload/form/OfficeDrawingForm.svelte'),
+		profile: 'raster-georef'
 	},
 	raster: tileDialog,
 	tileurltype: {
@@ -119,6 +148,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	model: {
 		load: () => import('$routes/map/components/upload/form/MeshModelForm.svelte'),
 		profile: 'model-georef'
+	},
+	'step-iges': {
+		load: () => import('$routes/map/components/upload/form/StepIgesForm.svelte'),
+		profile: 'drop-file'
 	},
 	mca: {
 		load: () => import('$routes/map/components/upload/form/McaForm.svelte'),
@@ -165,6 +198,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/GeoArrowForm.svelte'),
 		profile: 'vector-zone'
 	},
+	'mapinfo-tab': {
+		load: () => import('$routes/map/components/upload/form/MapInfoTabForm.svelte'),
+		profile: 'vector-zone-georef'
+	},
 	mif: {
 		load: () => import('$routes/map/components/upload/form/MifForm.svelte'),
 		profile: 'vector-zone-georef'
@@ -209,6 +246,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/TcxForm.svelte'),
 		profile: 'drop-file'
 	},
+	fit: {
+		load: () => import('$routes/map/components/upload/form/FitForm.svelte'),
+		profile: 'drop-file'
+	},
 	filegdb: {
 		load: () => import('$routes/map/components/upload/form/FileGdbForm.svelte'),
 		profile: 'drop-file'
@@ -242,6 +283,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/DwgForm.svelte'),
 		profile: 'vector-zone-georef',
 		fixedHeight: true
+	},
+	dgn: {
+		load: () => import('$routes/map/components/upload/form/DgnForm.svelte'),
+		profile: 'vector-zone-georef'
 	},
 	dxf: {
 		load: () => import('$routes/map/components/upload/form/DxfForm.svelte'),

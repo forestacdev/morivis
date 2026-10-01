@@ -1,11 +1,19 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { onMount } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
+	import { getVisibilityIconName } from '$lib/components/svgs/catalog';
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import EmojioneMonotoneMapOfJapanIcon from '$lib/components/svgs/icons/emojione-monotone/MapOfJapanIcon.svelte';
+	import FxemojiWorldmapIcon from '$lib/components/svgs/icons/fxemoji/WorldmapIcon.svelte';
+	import MdiFileUploadOutlineIcon from '$lib/components/svgs/icons/mdi/FileUploadOutlineIcon.svelte';
+	import PepiconsPencilDotsYIcon from '$lib/components/svgs/icons/pepicons-pencil/DotsYIcon.svelte';
+	import UiDownloadIcon from '$lib/components/svgs/icons/ui/DownloadIcon.svelte';
+	import UiLockOnIcon from '$lib/components/svgs/icons/ui/LockOnIcon.svelte';
+	import UiSettingIcon from '$lib/components/svgs/icons/ui/SettingIcon.svelte';
+	import UiTrashIcon from '$lib/components/svgs/icons/ui/TrashIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
-	import { ICONS, getVisibilityIconName } from '$lib/icons';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import { registerInitialEntryStyle } from '$routes/map/data/entries';
 	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
@@ -19,9 +27,14 @@
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getLayerIcon, type LayerType } from '$routes/map/utils/entries';
+	import {
+		exportGeoreferencedImage,
+		isExportableGeoreferencedImage
+	} from '$routes/map/utils/formats/export/georeferenced-image';
 	import { clearCogViewportImage } from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { clearWcsViewportImage } from '$routes/map/utils/formats/wcs/runtime';
+	import { canFocusLayer } from '$routes/map/utils/map/focus-layer';
 	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
 	import { retainLocalTilesetEntry } from '$routes/map/utils/tiles3d/local-files';
 	import { selectedLayerId, isStyleEdit } from '$routes/stores';
@@ -95,6 +108,8 @@
 			layerEntry?.metaData.isUserUploaded
 		);
 	});
+
+	const isImageCustomLayer = $derived(isExportableGeoreferencedImage(layerEntry));
 
 	const isThreeMeshEntry = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> => {
 		return (
@@ -195,6 +210,21 @@
 			return;
 		}
 
+		if (isExportableGeoreferencedImage(layerEntry)) {
+			isDownloading = true;
+			try {
+				await exportGeoreferencedImage(layerEntry);
+			} catch (error) {
+				showNotification(
+					error instanceof Error ? error.message : '図面画像のダウンロードに失敗しました',
+					'error'
+				);
+			} finally {
+				isDownloading = false;
+			}
+			return;
+		}
+
 		if (isThreeMeshEntry(layerEntry)) {
 			isDownloading = true;
 			try {
@@ -281,6 +311,8 @@
 		activeLayerIdsStore.remove(layerEntry.id);
 		selectedLayerId.set('');
 	};
+
+	const showFocusButton = $derived(canFocusLayer(layerEntry));
 
 	// レイヤーのフォーカス
 	const focusLayer = () => {
@@ -611,17 +643,17 @@
 				{/if}
 				{#if layerEntry.metaData.location === '全国'}
 					<div class="grid place-items-center">
-						<Icon icon="emojione-monotone:map-of-japan" class="h-20 w-20 text-base" />
+						<EmojioneMonotoneMapOfJapanIcon class="h-20 w-20 text-base" />
 					</div>
 				{/if}
 				{#if layerEntry.metaData.location === '世界'}
 					<div class="grid place-items-center">
-						<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-20 w-20" />
+						<FxemojiWorldmapIcon class="[&_path]:fill-base h-20 w-20" />
 					</div>
 				{/if}
 				{#if layerEntry.metaData.isUserUploaded}
 					<div class="grid place-items-center">
-						<Icon icon="mdi:file-upload-outline" class="h-18 w-18 rotate-6 text-base" />
+						<MdiFileUploadOutlineIcon class="h-18 w-18 rotate-6 text-base" />
 					</div>
 				{/if}
 			</div>
@@ -676,29 +708,31 @@
 						</button>
 
 						<button onclick={removeLayer} class="cursor-pointer">
-							<Icon icon={ICONS.trash} class="h-8 w-8" />
+							<UiTrashIcon class="h-8 w-8" />
 						</button>
 
-						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
+						{#if showFocusButton}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
+								<UiLockOnIcon class="h-8 w-8" />
 							</button>
 						{/if}
 
 						<!-- <button onclick={copyLayer}>
 							<Icon icon="lucide:copy" />
 						</button> -->
-						{#if isGeojsonCustomLayer || isTiffCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || isImageCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
 							<button
 								onclick={downloadLayer}
+								aria-label="レイヤーをダウンロード"
+								title={isImageCustomLayer ? '図面画像と位置情報をダウンロード' : 'ダウンロード'}
 								disabled={isDownloading}
 								class="cursor-pointer disabled:cursor-wait disabled:opacity-50"
 							>
-								<Icon icon={ICONS.download} class="h-8 w-8" />
+								<UiDownloadIcon class="h-8 w-8" />
 							</button>
 						{/if}
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon={ICONS.setting} class="ml-4 h-8 w-8" />
+							<UiSettingIcon class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -719,28 +753,30 @@
 
 						<!-- 削除 -->
 						<button onclick={removeLayer} class="cursor-pointer">
-							<Icon icon={ICONS.trash} class="h-8 w-8" />
+							<UiTrashIcon class="h-8 w-8" />
 						</button>
 
-						{#if layerEntry.metaData.location !== '全国' && layerEntry.metaData.location !== '世界'}
+						{#if showFocusButton}
 							<button class="cursor-pointer" onclick={focusLayer}>
-								<Icon icon={ICONS.lockOn} class="h-8 w-8" />
+								<UiLockOnIcon class="h-8 w-8" />
 							</button>
 						{/if}
 
-						{#if isGeojsonCustomLayer || isTiffCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
+						{#if isGeojsonCustomLayer || isTiffCustomLayer || isImageCustomLayer || (isExportableThreeMeshEntry(layerEntry) && !import.meta.env.PROD)}
 							<button
 								onclick={downloadLayer}
+								aria-label="レイヤーをダウンロード"
+								title={isImageCustomLayer ? '図面画像と位置情報をダウンロード' : 'ダウンロード'}
 								disabled={isDownloading}
 								class="cursor-pointer disabled:cursor-wait disabled:opacity-50"
 							>
-								<Icon icon={ICONS.download} class="h-8 w-8" />
+								<UiDownloadIcon class="h-8 w-8" />
 							</button>
 						{/if}
 
 						<!-- スタイル -->
 						<button onclick={editLayer} class="mr-4 ml-auto cursor-pointer">
-							<Icon icon={ICONS.setting} class="ml-4 h-8 w-8" />
+							<UiSettingIcon class="ml-4 h-8 w-8" />
 						</button>
 						<!-- <button onclick={infoLayer} class="cursor-pointer">
 							<Icon icon="akar-icons:info" class="h-8 w-8" />
@@ -757,7 +793,7 @@
 					}}
 					class="grid translate-x-3 place-items-center px-2 py-2"
 				>
-					<Icon icon="pepicons-pencil:dots-y" class="h-8 w-8 text-base" />
+					<PepiconsPencilDotsYIcon class="h-8 w-8 text-base" />
 				</button>
 			{/if}
 		</div>

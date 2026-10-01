@@ -1,9 +1,11 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { scale } from 'svelte/transition';
 	import VirtualList from 'svelte-tiny-virtual-list';
 
-	import { ICONS } from '$lib/icons';
+	import MaterialSymbolsAddIcon from '$lib/components/svgs/icons/material-symbols/AddIcon.svelte';
+	import MaterialSymbolsDataSaverOnRoundedIcon from '$lib/components/svgs/icons/material-symbols/DataSaverOnRoundedIcon.svelte';
+	import StreamlineSadFaceIcon from '$lib/components/svgs/icons/streamline/SadFaceIcon.svelte';
+	import UiCloseIcon from '$lib/components/svgs/icons/ui/CloseIcon.svelte';
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import UploadPane from '$routes/map/components/data_menu/UploadPane.svelte';
@@ -32,6 +34,7 @@
 		remoteWmtsUrl: string | null;
 		remoteFeatureServiceUrl: string | null;
 		remoteArcGisUrl: string | null;
+		remoteStacUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -47,6 +50,7 @@
 		remoteWmtsUrl = $bindable(),
 		remoteFeatureServiceUrl = $bindable(),
 		remoteArcGisUrl = $bindable(),
+		remoteStacUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -210,7 +214,7 @@
 			style="padding-top: env(safe-area-inset-top);"
 		>
 			<div class="flex items-center gap-2 text-base max-lg:hidden">
-				<Icon icon="material-symbols:data-saver-on-rounded" class="h-10 w-10" />
+				<MaterialSymbolsDataSaverOnRoundedIcon class="h-10 w-10" />
 				<span class="text-lg select-none">データカタログ</span>
 			</div>
 
@@ -230,7 +234,7 @@
 							disabled={!searchWord}
 							class="absolute top-[5px] right-2 grid cursor-pointer place-items-center"
 						>
-							<Icon icon={ICONS.close} class="h-8 w-8 text-gray-400" />
+							<UiCloseIcon class="h-8 w-8 text-gray-400" />
 						</button>
 					{/if}
 				</div>
@@ -321,7 +325,7 @@
 			{#if filterDataEntries.length === 0}
 				<div class="flex h-full w-full justify-center items-center">
 					<div class="flex flex-col items-center gap-4">
-						<Icon icon="streamline:sad-face" class="h-16 w-16 text-base opacity-95" />
+						<StreamlineSadFaceIcon class="h-16 w-16 text-base opacity-95" />
 						<span class="text-2xl text-base">データが見つかりません</span>
 					</div>
 				</div>
@@ -340,6 +344,7 @@
 				bind:remoteWmtsUrl
 				bind:remoteFeatureServiceUrl
 				bind:remoteArcGisUrl
+				bind:remoteStacUrl
 				bind:pendingTileUrl
 			/>
 		{/if}
@@ -353,7 +358,7 @@
 				class="absolute right-6 bg-accent grid cursor-pointer place-items-center rounded-full p-2 text-white shadow-2xl"
 				style="bottom: calc(90px + env(safe-area-inset-bottom));"
 			>
-				<Icon icon="material-symbols:add" class=" h-8 w-8" />
+				<MaterialSymbolsAddIcon class=" h-8 w-8" />
 				<span class="sr-only">ファイルをアップロード</span>
 				<input
 					type="file"

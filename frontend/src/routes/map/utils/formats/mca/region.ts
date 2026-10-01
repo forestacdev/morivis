@@ -1,11 +1,13 @@
+import { formatMca } from './definition';
+
 import { resolveMcaMaxFaces } from './limits';
 import { asCompound, MAX_NBT_BYTES, type NbtLongArray, type NbtValue, readNbt } from './nbt';
 import { type McaOptions, type McaProgress, type McaRegion, sectionKey } from './types';
 import { isMcaRegionPositionValid } from './world-placement';
 
 const SECTOR_BYTES = 4096;
-const MAX_SECTION_COUNT = 32_768;
-export const MAX_REGION_BYTES = 256 * 1024 * 1024;
+const MAX_SECTION_COUNT = formatMca.limits.maxSections;
+export const MAX_REGION_BYTES = formatMca.limits.maxFileBytes;
 
 export const validateMcaOptions = (options: McaOptions) => {
 	resolveMcaMaxFaces(options.maxFaces);

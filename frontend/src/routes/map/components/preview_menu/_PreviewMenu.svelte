@@ -1,9 +1,15 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import DOMPurify from 'dompurify';
 	import { fade, fly, scale } from 'svelte/transition';
 
 	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
+	import Icon from '$lib/components/svgs/Icon.svelte';
+	import AkarIconsEyeIcon from '$lib/components/svgs/icons/akar-icons/EyeIcon.svelte';
+	import EmojioneMonotoneMapOfJapanIcon from '$lib/components/svgs/icons/emojione-monotone/MapOfJapanIcon.svelte';
+	import FxemojiWorldmapIcon from '$lib/components/svgs/icons/fxemoji/WorldmapIcon.svelte';
+	import MajesticonsOpenIcon from '$lib/components/svgs/icons/majesticons/OpenIcon.svelte';
+	import TablerMapPinIcon from '$lib/components/svgs/icons/tabler/MapPinIcon.svelte';
+	import TablerTagFilledIcon from '$lib/components/svgs/icons/tabler/TagFilledIcon.svelte';
 	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
@@ -63,7 +69,7 @@
 		class="bg-main lg:w-side-menu absolute top-0 left-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 max-lg:hidden"
 	>
 		<div class="flex w-full justify-start gap-2 p-2 py-4">
-			<Icon icon="akar-icons:eye" class="h-7 w-7 text-base" />
+			<AkarIconsEyeIcon class="h-7 w-7 text-base" />
 			<span class="text-base text-lg select-none max-lg:hidden">データプレビュー</span>
 		</div>
 		<div class="flex h-full flex-col text-base">
@@ -106,7 +112,7 @@
 							href={showDataEntry?.metaData.downloadUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							><Icon icon="majesticons:open" class="h-6 w-6" />
+							><MajesticonsOpenIcon class="h-6 w-6" />
 							<span>データ提供元サイト</span></a
 						>
 					{/if}
@@ -127,13 +133,13 @@
 					{/if}
 					{#if showDataEntry.metaData.location === '全国'}
 						<div class="grid aspect-square w-full place-items-center">
-							<Icon icon="emojione-monotone:map-of-japan" class="h-full w-full text-base" />
+							<EmojioneMonotoneMapOfJapanIcon class="h-full w-full text-base" />
 							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 						</div>
 					{/if}
 					{#if showDataEntry.metaData.location === '世界'}
 						<div class="grid aspect-square w-full place-items-center">
-							<Icon icon="fxemoji:worldmap" class="[&_path]:fill-base h-full w-full" />
+							<FxemojiWorldmapIcon class="[&_path]:fill-base h-full w-full" />
 							<!-- <span class="absolute text-base text-xs">{dataEntry.metaData.location}</span> -->
 						</div>
 					{/if}
@@ -157,14 +163,14 @@
 				{/if}
 
 				<div class="mb-2 flex gap-2">
-					<Icon icon="tabler:map-pin" class="h-6 w-6" />
+					<TablerMapPinIcon class="h-6 w-6" />
 					<span class="">{showDataEntry?.metaData.location}</span>
 				</div>
 
 				<!-- タグ -->
 				<div class="flex gap-2 py-2">
 					<div class="flex gap-1">
-						<Icon icon="tabler:tag-filled" class="h-6 w-6" />
+						<TablerTagFilledIcon class="h-6 w-6" />
 					</div>
 					<div class="flex items-center gap-1 text-gray-300">
 						{#each showDataEntry?.metaData.tags as tag}

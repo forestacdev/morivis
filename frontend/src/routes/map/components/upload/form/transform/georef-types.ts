@@ -1,6 +1,6 @@
 import type { ActiveTransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 import type { Opacity } from '$routes/map/data/types';
-import type { RasterDiscreteDimension } from '$routes/map/data/types/raster';
+import type { ColorMapType, RasterDiscreteDimension } from '$routes/map/data/types/raster';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
 import type { RasterBands } from '$routes/map/utils/formats/geotiff';
@@ -8,7 +8,7 @@ import type { PointCloudSurfaceOptions } from '$routes/map/utils/formats/pointcl
 import type { GeoRefCorners } from '$routes/map/utils/transform/georef/homography';
 
 export type RasterRegistrationMode = 'raster' | 'mesh';
-export type GeoRefSourceType = 'raster' | 'vector' | 'pointcloud';
+export type GeoRefSourceType = 'raster' | 'vector' | 'pointcloud' | 'video';
 export type GeoRefTransformMode = 'projective' | 'aspect-locked';
 
 export interface GeoRefMeshConfig {
@@ -49,10 +49,14 @@ export interface GeoRefData {
 	};
 	imageFile: File;
 	previewImageUrl?: string;
+	/** Already rendered RGBA image; keep its alpha and colors when registering. */
+	rasterImage?: { url: string; attribution: string; };
+	rasterConfig?: { attribution?: string; singleColorMap?: ColorMapType; };
 	initialCorners?: GeoRefCorners;
 	sourceCorners?: GeoRefCorners;
 	sourceFeatureCollectionId?: string;
 	vectorStyle?: VectorStyle;
+	vectorLineWidth?: number;
 	vectorAttribution?: string;
 	allowedTransformModes?: ActiveTransformOptionMode[];
 	registrationMode: RasterRegistrationMode;
