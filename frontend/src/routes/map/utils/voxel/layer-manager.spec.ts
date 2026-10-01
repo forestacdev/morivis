@@ -10,6 +10,7 @@ import type { VoxelSpec } from './spec';
 const mocks = vi.hoisted(() => ({
 	registerGeoZarr: vi.fn(),
 	readGeoZarrVoxelRegion: vi.fn(),
+	readGeoZarrVolumeRegion: vi.fn(),
 	render: vi.fn(),
 	dispose: vi.fn()
 }));
@@ -34,6 +35,8 @@ const layout = () =>
 		{ shape: [2, 2, 2, 2], chunks: [1, 2, 2, 2], dtype: 'float32' }
 	)!;
 const spec: VoxelSpec = {
+	type: 'voxel',
+	density: 2,
 	id: 'test-voxel',
 	url: 'https://example.test/test.zarr',
 	arrayPath: 'detail',
@@ -45,6 +48,10 @@ const spec: VoxelSpec = {
 	threshold: 0,
 	heightScale: 1
 };
+const fakeGl = () => ({
+	getParameter: () => 2048,
+	getExtension: () => ({})
+} as unknown as WebGL2RenderingContext);
 const fakeMap = () => ({
 	getCanvas: () => ({}),
 	on: vi.fn(),
@@ -73,7 +80,7 @@ describe('ボクセルruntimeの更新と破棄', () => {
 			map = fakeMap(),
 			layer = manager.createLayer();
 		manager.setSpecs([spec]);
-		layer.onAdd!(map as unknown as MapLibreMap, {} as WebGL2RenderingContext);
+		layer.onAdd!(map as unknown as MapLibreMap, fakeGl());
 		await vi.waitFor(() => expect(mocks.readGeoZarrVoxelRegion).toHaveBeenCalledTimes(2));
 		const meshes: InstancedMesh[] = [];
 		mocks.render.mockImplementation(scene => meshes.push(scene.children[0]));
@@ -119,7 +126,7 @@ describe('ボクセルruntimeの更新と破棄', () => {
 			map = fakeMap(),
 			layer = manager.createLayer();
 		manager.setSpecs([spec]);
-		layer.onAdd!(map as unknown as MapLibreMap, {} as WebGL2RenderingContext);
+		layer.onAdd!(map as unknown as MapLibreMap, fakeGl());
 		await vi.waitFor(() => expect(signals.length).toBe(2));
 		manager.dispose();
 		expect(signals.every(s => s.aborted)).toBe(true);

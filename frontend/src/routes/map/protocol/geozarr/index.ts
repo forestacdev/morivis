@@ -6,6 +6,7 @@ import type {
 	GeoZarrRegistrationMeta
 } from './runtime';
 import { normalizeGeoZarrUrl } from './url';
+import type { VolumeRegionData } from './volume';
 import type { VoxelRegionData, VoxelRegionRequest } from './voxels';
 export type { GeoZarrArrayCandidate, GeoZarrRegistrationMeta } from './runtime';
 export { normalizeGeoZarrUrl } from './url';
@@ -102,6 +103,8 @@ export const registerGeoZarr = async (input: GeoZarrRegistrationInput) => {
 };
 export const readGeoZarrVoxelRegion = (input: VoxelRegionRequest, signal: AbortSignal) =>
 	send<VoxelRegionData>('voxel-region', input, signal);
+export const readGeoZarrVolumeRegion = (input: VoxelRegionRequest, signal: AbortSignal) =>
+	send<VolumeRegionData>('volume-region', input, signal);
 export const unregisterGeoZarr = (entryId: string) => {
 	if (worker) void send('unregister', { entryId }).catch(() => {});
 	const url = entrySources.get(entryId);

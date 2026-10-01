@@ -168,7 +168,7 @@ export const createLayersItems = ({
 				case 'raster': {
 					if (
 						entry.format.type === 'geozarr' && style.type === 'tiff'
-						&& style.volume?.type === 'voxel'
+						&& (style.volume?.type === 'voxel' || style.volume?.type === 'volume')
 					) break;
 					if (interaction.clickable) clickableRaster.push(layerId);
 

@@ -6,6 +6,7 @@ import {
 	inspectGeoZarr,
 	listGeoZarrArrayCandidates,
 	mountLocalGeoZarr,
+	readGeoZarrVolumeRegion,
 	readGeoZarrVoxelRegion,
 	registerGeoZarr,
 	releaseLocalGeoZarr,
@@ -67,6 +68,12 @@ self.onmessage = async (
 					controller.signal
 				);
 				break;
+			case 'volume-region':
+				value = await readGeoZarrVolumeRegion(
+					input as unknown as VoxelRegionRequest,
+					controller.signal
+				);
+				break;
 			case 'tile':
 				value = await protocol.request({ url: input.url }, controller);
 				break;
@@ -76,9 +83,16 @@ self.onmessage = async (
 		controller.signal.throwIfAborted();
 		const cells = (value as VoxelRegionData | undefined)?.cells;
 		const bytes = (value as { data?: Uint8Array; } | undefined)?.data;
+		const values = (value as { values?: Float32Array; } | undefined)?.values;
 		self.postMessage(
 			{ id: data.id, value },
-			bytes ? [bytes.buffer as ArrayBuffer] : cells ? [cells.buffer as ArrayBuffer] : []
+			bytes
+				? [bytes.buffer as ArrayBuffer]
+				: cells
+				? [cells.buffer as ArrayBuffer]
+				: values instanceof Float32Array
+				? [values.buffer as ArrayBuffer]
+				: []
 		);
 	} catch (error) {
 		self.postMessage({

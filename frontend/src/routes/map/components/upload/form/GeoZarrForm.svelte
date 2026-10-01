@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import * as yup from 'yup';
 
@@ -18,6 +18,7 @@
 		listGeoZarrArrayCandidates,
 		normalizeGeoZarrUrl,
 		registerGeoZarr,
+		unregisterGeoZarr,
 		prepareLocalGeoZarr,
 		releaseLocalGeoZarr,
 		type GeoZarrArrayCandidate,
@@ -29,7 +30,6 @@
 	import { normalizeHttpUrlInput } from '$routes/map/utils/platform/request';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
-	import { isProcessing } from '$routes/stores/ui';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
@@ -49,6 +49,7 @@
 	let localUrl = $state('');
 	let localName = $state('');
 	let registered = false;
+	let requestVersion = 0;
 
 	const validation = yup.object().shape({
 		url: yup
@@ -77,6 +78,7 @@
 	let analyzed = $state<GeoZarrRegistrationMeta | null>(null);
 	let candidates = $state<GeoZarrArrayCandidate[]>([]);
 	let candidatesLoaded = $state(false);
+	let registrationError = $state('');
 	let isRegistering = $state(false);
 	let needsManualBbox = $state(false);
 
@@ -85,10 +87,7 @@
 	);
 	const shouldShowManualArrayPath = $derived(candidatesLoaded && candidates.length === 0);
 	const canRegister = $derived(
-		candidatesLoaded &&
-			!isSubmitDisabled &&
-			!isRegistering &&
-			(!needsManualBbox || !!forms.bbox.trim())
+		!isSubmitDisabled && !isRegistering && (!needsManualBbox || !!forms.bbox.trim())
 	);
 	onMount(() => {
 		const files = toUploadFiles(dropFile);
@@ -101,6 +100,7 @@
 			remoteGeoZarrUrl = null;
 		}
 		return () => {
+			requestVersion++;
 			if (localUrl && !registered) releaseLocalGeoZarr(localUrl);
 		};
 	});
@@ -122,51 +122,18 @@
 		}
 	});
 
-	const inspect = async () => {
-		if (isSubmitDisabled) return;
-
-		isProcessing.set(true);
-
-		try {
-			const normalizedUrl = localUrl || normalizeHttpUrlInput(forms.url);
-			if (!normalizedUrl) {
-				showNotification('URLの形式が正しくありません', 'error');
-				return;
-			}
-			forms.url = normalizeGeoZarrUrl(normalizedUrl);
-			candidates = await listGeoZarrArrayCandidates(forms.url);
-			candidatesLoaded = true;
-			needsManualBbox = false;
-			analyzed = null;
-
-			if (candidates.length > 0) {
-				forms.arrayPath = candidates.some((candidate) => candidate.arrayPath === forms.arrayPath)
-					? forms.arrayPath
-					: (candidates[0]?.arrayPath ?? '');
-			} else if (!forms.arrayPath) {
-				showNotification(
-					'配列候補を一覧できませんでした。必要なら配列パスを入力してください',
-					'info'
-				);
-			}
-
-			showNotification('GeoZarr の候補を取得しました', 'success');
-		} catch (error) {
-			console.error(error);
-			showNotification(
-				error instanceof Error ? error.message : 'GeoZarr の解析に失敗しました',
-				'error'
-			);
-		} finally {
-			isProcessing.set(false);
-		}
-	};
+	$effect(() => {
+		void forms.url;
+		untrack(onUrlChange);
+	});
 
 	const registration = async () => {
 		if (isSubmitDisabled || !canRegister) return;
 
-		isProcessing.set(true);
+		const version = ++requestVersion;
+		const isCurrent = () => version === requestVersion;
 		isRegistering = true;
+		registrationError = '';
 
 		try {
 			const normalizedUrl = localUrl || normalizeHttpUrlInput(forms.url);
@@ -174,26 +141,48 @@
 				showNotification('URLの形式が正しくありません', 'error');
 				return;
 			}
+			if (!candidatesLoaded) {
+				const result = await listGeoZarrArrayCandidates(normalizeGeoZarrUrl(normalizedUrl));
+				if (!isCurrent()) return;
+				candidates = result;
+				candidatesLoaded = true;
+				const displayArrays = result.filter(
+					(candidate) => candidate.shape.length >= 2 && candidate.category !== 'coordinates'
+				);
+				forms.arrayPath = displayArrays[0]?.arrayPath ?? result[0]?.arrayPath ?? '';
+				// 選択不要なら、この決定操作のまま登録まで進める。
+				if (displayArrays.length !== 1 || displayArrays[0].columnMaximum) return;
+			}
+			const arrayPath = forms.arrayPath;
+			const bboxText = forms.bbox || null;
+			const mode = registrationMode;
+			const offeredVoxelChoice = !!selectedCandidate?.columnMaximum || !!analyzed?.gpm?.height;
 			const inspected = await inspectGeoZarr(
 				normalizeGeoZarrUrl(normalizedUrl),
-				forms.arrayPath,
-				forms.bbox || null
+				arrayPath,
+				bboxText
 			);
-			if (registrationMode === 'voxel' && !inspected.gpm?.height)
-				throw new Error(
-					'この配列にはボクセル表示に必要な地域・高度情報がありません。2D表示を選んでください。'
-				);
+			if (!isCurrent()) return;
 			analyzed = inspected;
 			needsManualBbox = false;
+			if (inspected.gpm?.height && !offeredVoxelChoice) return;
+			if (mode !== 'raster' && !inspected.gpm?.height)
+				throw new Error(
+					'この配列には3D表示に必要な地域・高度情報がありません。2D表示を選んでください。'
+				);
 
 			const entryId = `geozarr_${crypto.randomUUID()}`;
 			const metadata = await registerGeoZarr({
 				entryId,
 				url: normalizedUrl,
-				arrayPath: forms.arrayPath,
-				bboxText: forms.bbox || null,
+				arrayPath,
+				bboxText,
 				metadata: inspected
 			});
+			if (!isCurrent()) {
+				unregisterGeoZarr(entryId);
+				return;
+			}
 
 			const sampleRanges =
 				metadata.sampleRanges.length > 0 ? metadata.sampleRanges : [{ min: 0, max: 1 }];
@@ -204,7 +193,7 @@
 					type: 'geozarr',
 					url: metadata.url,
 					arrayPath: metadata.arrayPath || undefined,
-					...(forms.bbox ? { bbox: metadata.bbox } : {})
+					...(bboxText ? { bbox: metadata.bbox } : {})
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
@@ -212,9 +201,11 @@
 					...(metadata.gpm
 						? {
 								description:
-									registrationMode === 'voxel'
-										? '地域別の降水量配列です。高度ごとの値をボクセルで立体表示します。'
-										: '地域別の降水量配列です。高度方向の最大値や指定高度の断面を地図上に色分けして表示します。'
+									mode === 'volume'
+										? '地域別の降水量配列です。高度ごとの値を3Dテクスチャで半透明に表示します。'
+										: mode === 'voxel'
+											? '地域別の降水量配列です。高度ごとの値をボクセルで立体表示します。'
+											: '地域別の降水量配列です。高度方向の最大値や指定高度の断面を地図上に色分けして表示します。'
 							}
 						: {}),
 					name:
@@ -251,8 +242,8 @@
 						}
 					: {
 							type: 'tiff',
-							...(registrationMode === 'voxel'
-								? { volume: { type: 'voxel' as const, threshold: 0, heightScale: 1 } }
+							...(mode === 'voxel' || mode === 'volume'
+								? { volume: { type: mode, threshold: 0, heightScale: 1, density: 2 } }
 								: {}),
 							opacity: 1.0,
 							visible: true,
@@ -293,21 +284,14 @@
 			remoteGeoZarrUrl = null;
 			showNotification('GeoZarr レイヤーを登録しました', 'success');
 		} catch (error) {
+			if (!isCurrent()) return;
 			console.error(error);
 			needsManualBbox =
 				error instanceof Error && error.message.includes('bbox を判定できませんでした');
-			showNotification(
-				error instanceof Error ? error.message : 'GeoZarr の登録に失敗しました',
-				'error'
-			);
+			registrationError = error instanceof Error ? error.message : 'GeoZarr の登録に失敗しました';
 		} finally {
-			isRegistering = false;
-			isProcessing.set(false);
+			if (isCurrent()) isRegistering = false;
 		}
-	};
-
-	const resetAnalysis = () => {
-		analyzed = null;
 	};
 
 	const categoryLabel = (category: GeoZarrArrayCandidate['category']) => {
@@ -326,6 +310,9 @@
 	};
 
 	const onArrayPathChange = () => {
+		requestVersion++;
+		isRegistering = false;
+		registrationError = '';
 		registrationMode = 'raster';
 		forms.bbox = '';
 		analyzed = null;
@@ -333,6 +320,9 @@
 	};
 
 	const onUrlChange = () => {
+		requestVersion++;
+		isRegistering = false;
+		registrationError = '';
 		registrationMode = 'raster';
 		candidates = [];
 		candidatesLoaded = false;
@@ -343,6 +333,9 @@
 	};
 
 	const onBboxChange = () => {
+		requestVersion++;
+		isRegistering = false;
+		registrationError = '';
 		analyzed = null;
 	};
 </script>
@@ -350,7 +343,7 @@
 <div class="flex flex-col gap-4 overflow-y-auto pr-1">
 	<h2 class="text-lg font-bold">GeoZarr を追加</h2>
 	<p class="text-sm leading-relaxed text-gray-300">
-		Zarrのフォルダー・ZIP、または公開URLから追加します。グループの場合は表示する配列を選びます。
+		Zarrのフォルダー・ZIP、または公開URLから追加します。決定すると読み込みと登録を行います。複数の配列がある場合は、表示する配列を選びます。
 		位置を判定できない場合は、西端・南端・東端・北端の経緯度を入力します。
 		{#if selectedCandidate?.columnMaximum}
 			この配列は地域ごとに配置し、高度方向の最大値を表示します。登録後に指定高度の断面へ切り替えられます。detailは縮小表示時にoverviewを使います。
@@ -365,7 +358,12 @@
 			ローカルデータはアップロードされません。ページを再読み込みした場合は再登録してください。
 		</p>
 	{:else}
-		<TextForm label="URL" bind:value={forms.url} error={errors.url} onInput={onUrlChange} />
+		<TextForm label="URL" bind:value={forms.url} error={errors.url} />
+	{/if}
+	{#if isRegistering}
+		<p role="status" class="text-sm text-gray-300">GeoZarr を読み込んでいます...</p>
+	{:else if registrationError}
+		<p role="alert" class="text-sm text-red-400">{registrationError}</p>
 	{/if}
 	{#if needsManualBbox}
 		<TextForm label="bbox" bind:value={forms.bbox} error={errors.bbox} onInput={onBboxChange} />
@@ -406,17 +404,24 @@
 	{/if}
 
 	{#if selectedCandidate?.columnMaximum || analyzed?.gpm?.height}
-		<HorizontalSelectBox
-			label="登録方法"
-			options={[
-				{ key: 'raster', name: '2D表示' },
-				{ key: 'voxel', name: 'ボクセル表示' }
-			]}
-			bind:group={registrationMode}
-		/>
+		<fieldset disabled={isRegistering}>
+			<HorizontalSelectBox
+				label="登録方法"
+				options={[
+					{ key: 'raster', name: '2D表示' },
+					{ key: 'voxel', name: 'ボクセル表示' },
+					{ key: 'volume', name: 'ボリューム表示' }
+				]}
+				bind:group={registrationMode}
+			/>
+		</fieldset>
 		{#if registrationMode === 'voxel'}
 			<p class="text-sm text-gray-300">
 				高度ごとの値を立体の箱で表示します。値が0または欠損のセルは表示しません。地図を傾けると高さを確認できます。
+			</p>
+		{:else if registrationMode === 'volume'}
+			<p class="text-sm text-gray-300">
+				高度ごとの値を3Dテクスチャで半透明に表示します。登録後に濃さと高さ倍率を調整できます。
 			</p>
 		{/if}
 	{/if}
@@ -453,43 +458,16 @@
 		</div>
 	{/if}
 
-	<div class="flex gap-3">
-		<button class="c-btn-sub px-4 py-2" onclick={inspect} disabled={isSubmitDisabled}>
-			候補を解析
+	<div class="flex shrink-0 justify-center gap-4 pt-2">
+		<button class="c-btn-sub cursor-pointer p-4 text-lg" onclick={() => (showDialogType = null)}>
+			キャンセル
 		</button>
-		{#if candidatesLoaded}
-			<button class="c-btn-confirm px-4 py-2" onclick={registration} disabled={!canRegister}>
-				登録
-			</button>
-		{/if}
-		<button class="c-btn-sub px-4 py-2" onclick={() => (showDialogType = null)}>閉じる</button>
+		<button
+			class="c-btn-confirm min-w-[200px] p-4 text-lg disabled:cursor-not-allowed disabled:opacity-50"
+			onclick={registration}
+			disabled={!canRegister}
+		>
+			決定
+		</button>
 	</div>
-
-	{#if analyzed}
-		<div
-			transition:slide={{ duration: 180 }}
-			class="rounded-lg p-3 text-sm text-gray-200 border border-gray-700 bg-black/20"
-		>
-			{#if selectedCandidate}
-				<div>分類: {categoryLabel(selectedCandidate.category)}</div>
-			{/if}
-			<div>配列: {analyzed.arrayPath || '/'}</div>
-			<div>サイズ: {analyzed.width} x {analyzed.height}</div>
-			<div>バンド数: {analyzed.numBands}</div>
-			<div>dtype: {analyzed.dtype}</div>
-			<div>bbox: {analyzed.bbox.join(', ')}</div>
-			<div>次元: {analyzed.dimensionNames.join(', ')}</div>
-			<button class="mt-3 text-xs text-gray-300 underline" onclick={resetAnalysis}>
-				解析結果を消す
-			</button>
-		</div>
-	{:else if isRegistering}
-		<div
-			transition:slide={{ duration: 180 }}
-			class="flex items-center gap-3 rounded-lg border border-gray-700 bg-black/20 p-3 text-sm text-gray-200"
-		>
-			<div class="border-t-accent h-4 w-4 animate-spin rounded-full border-2 border-gray-300"></div>
-			<span>GeoZarr を解析して登録しています...</span>
-		</div>
-	{/if}
 </div>

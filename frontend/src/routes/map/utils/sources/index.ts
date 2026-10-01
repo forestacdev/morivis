@@ -340,7 +340,10 @@ export const createSourcesItems = ({
 						coordinates: getBoundingBoxCorners(metaData.bounds)
 					} satisfies ImageSourceSpecification;
 				} else if (format.type === 'geozarr') {
-					if (style.type === 'tiff' && style.volume?.type === 'voxel') {
+					if (
+						style.type === 'tiff'
+						&& (style.volume?.type === 'voxel' || style.volume?.type === 'volume')
+					) {
 						return { index, items };
 					}
 					const sourceQuery = `url=${encodeURIComponent(format.url)}&arrayPath=${

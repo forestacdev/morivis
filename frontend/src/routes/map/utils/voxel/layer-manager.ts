@@ -1,4 +1,8 @@
-import { readGeoZarrVoxelRegion, registerGeoZarr } from '$routes/map/protocol/geozarr';
+import {
+	readGeoZarrVolumeRegion,
+	readGeoZarrVoxelRegion,
+	registerGeoZarr
+} from '$routes/map/protocol/geozarr';
 import type { GpmLayout } from '$routes/map/protocol/geozarr/gpm';
 import type { VoxelRegionData } from '$routes/map/protocol/geozarr/voxels';
 import { formatGeoZarr } from '$routes/map/utils/formats/geozarr/definition';
@@ -19,14 +23,24 @@ import {
 	WebGLRenderer
 } from 'three';
 import type { VoxelSpec } from './spec';
+import {
+	createVolumeRegion,
+	releaseVolumeRegion,
+	updateVolumeCamera,
+	updateVolumeRegion,
+	type VolumeRegion
+} from './volume-mesh';
 
 export const GEOZARR_VOXEL_LAYER_ID = 'geozarr-voxel-layer';
-type Region = {
+type VoxelRegion = {
+	kind: 'voxel';
+	bytes: number;
 	overview: boolean;
 	data: VoxelRegionData;
 	mesh: InstancedMesh;
 	material: MeshBasicMaterial;
 };
+type Region = VoxelRegion | VolumeRegion;
 type Runtime = {
 	spec: VoxelSpec;
 	layout?: GpmLayout;
@@ -64,6 +78,8 @@ export class GeoZarrVoxelLayerManager {
 	private camera = new Camera();
 	private scene = new Scene();
 	private activeJobs = 0;
+	private max3DTextureSize = 0;
+	private linear3DFiltering = false;
 	private uniforms = {
 		voxelAnchor: { value: new Vector2() },
 		voxelFlat: { value: new Matrix4() },
@@ -80,6 +96,7 @@ export class GeoZarrVoxelLayerManager {
 			if (
 				!ids.has(id) || next?.url !== runtime.spec.url
 				|| next?.arrayPath !== runtime.spec.arrayPath
+				|| next?.type !== runtime.spec.type
 			) {
 				this.releaseRuntime(runtime);
 				this.runtimes.delete(id);
@@ -101,7 +118,10 @@ export class GeoZarrVoxelLayerManager {
 				void this.initialize(runtime);
 			} else if (JSON.stringify(runtime.spec) !== JSON.stringify(spec)) {
 				runtime.spec = spec;
-				for (const region of runtime.regions.values()) this.updateMesh(region, spec);
+				for (const region of runtime.regions.values()) {
+					if (region.kind === 'volume') updateVolumeRegion(region, spec);
+					else this.updateMesh(region, spec);
+				}
 			}
 		}
 		this.refresh();
@@ -197,6 +217,33 @@ export class GeoZarrVoxelLayerManager {
 	) => {
 		try {
 			const s = runtime.spec;
+			if (s.type === 'volume') {
+				const data = await readGeoZarrVolumeRegion({
+					entryId: s.id,
+					url: s.url,
+					arrayPath: s.arrayPath,
+					region: index,
+					overview
+				}, controller.signal);
+				if (
+					runtime.abort.signal.aborted || controller.signal.aborted
+					|| runtime.desired.get(index) !== overview
+				) return;
+				this.checkMemory(data.values.byteLength * 2 + 64 * 1024, runtime, index);
+				const region = createVolumeRegion(
+					data,
+					overview,
+					this.uniforms,
+					this.linear3DFiltering,
+					this.max3DTextureSize
+				);
+				updateVolumeRegion(region, runtime.spec);
+				const previous = runtime.regions.get(index);
+				if (previous) this.releaseRegion(previous);
+				runtime.regions.set(index, region);
+				this.map?.triggerRepaint();
+				return;
+			}
 			const data = await readGeoZarrVoxelRegion({
 				entryId: s.id,
 				url: s.url,
@@ -208,20 +255,8 @@ export class GeoZarrVoxelLayerManager {
 				runtime.abort.signal.aborted || controller.signal.aborted
 				|| runtime.desired.get(index) !== overview
 			) return;
-			// CPUのセル列とGPUの行列・色を合わせて見積もる。
-			let retainedBytes = 0;
-			for (const item of this.runtimes.values()) {
-				for (const region of item.regions.values()) {
-					retainedBytes += region.data.cells.length / 7 * 104;
-				}
-			}
-			if (
-				retainedBytes + data.cells.length / 7 * 104 > formatGeoZarr.limits.maxExpandedBytes
-			) {
-				throw new Error(
-					'ボクセル描画のメモリ上限に達しました。表示範囲を狭めるかoverview配列を選んでください'
-				);
-			}
+			const bytes = data.cells.length / 7 * 104;
+			this.checkMemory(bytes, runtime, index);
 			const material = new MeshBasicMaterial({ vertexColors: true, toneMapped: false });
 			material.onBeforeCompile = shader => {
 				Object.assign(shader.uniforms, this.uniforms);
@@ -247,7 +282,7 @@ export class GeoZarrVoxelLayerManager {
 			material.customProgramCacheKey = () => 'morivis-geozarr-voxel-v1';
 			const mesh = new InstancedMesh(this.geometry, material, data.cells.length / 7);
 			mesh.frustumCulled = false;
-			const region = { overview, data, mesh, material };
+			const region: VoxelRegion = { kind: 'voxel', bytes, overview, data, mesh, material };
 			this.updateMesh(region, runtime.spec);
 			const previous = runtime.regions.get(index);
 			if (previous) this.releaseRegion(previous);
@@ -264,7 +299,18 @@ export class GeoZarrVoxelLayerManager {
 			this.pump();
 		}
 	};
-	private updateMesh = ({ mesh, material, data }: Region, spec: VoxelSpec) => {
+	private checkMemory = (bytes: number, runtime: Runtime, index: number) => {
+		let total = bytes - (runtime.regions.get(index)?.bytes ?? 0);
+		for (const item of this.runtimes.values()) {
+			for (const region of item.regions.values()) total += region.bytes;
+		}
+		if (total > formatGeoZarr.limits.maxExpandedBytes) {
+			throw new Error(
+				'Zarrの3D描画のメモリ上限に達しました。表示範囲を狭めるかoverview配列を選んでください'
+			);
+		}
+	};
+	private updateMesh = ({ mesh, material, data }: VoxelRegion, spec: VoxelSpec) => {
 		const matrix = new Matrix4(),
 			color = new Color(),
 			colors = palette.createColorArray(spec.colorMap);
@@ -305,6 +351,10 @@ export class GeoZarrVoxelLayerManager {
 		renderingMode: '3d',
 		onAdd: (map, gl) => {
 			this.map = map;
+			this.max3DTextureSize = gl.getParameter(
+				(gl as WebGL2RenderingContext).MAX_3D_TEXTURE_SIZE
+			);
+			this.linear3DFiltering = !!gl.getExtension('OES_texture_float_linear');
 			this.renderer = new WebGLRenderer({ canvas: map.getCanvas(), context: gl });
 			this.renderer.autoClear = false;
 			map.on('moveend', this.refresh);
@@ -325,6 +375,7 @@ export class GeoZarrVoxelLayerManager {
 					this.uniforms.voxelFlat.value.fromArray(
 						p.projectionTransition > 0 ? p.fallbackMatrix : p.mainMatrix
 					).multiply(new Matrix4().makeTranslation(x + wrap, y, 0));
+					if (region.kind === 'volume') updateVolumeCamera(region, this.uniforms);
 					this.scene.add(region.mesh);
 					this.renderer.resetState();
 					this.renderer.render(this.scene, this.camera);
@@ -336,6 +387,10 @@ export class GeoZarrVoxelLayerManager {
 		onRemove: () => this.releaseRenderer()
 	});
 	private releaseRegion = (region: Region) => {
+		if (region.kind === 'volume') {
+			releaseVolumeRegion(region);
+			return;
+		}
 		region.mesh.dispose();
 		region.material.dispose();
 	};

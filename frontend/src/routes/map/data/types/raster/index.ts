@@ -223,7 +223,12 @@ export interface MultiBandData {
 
 export interface RasterTiffStyle extends BaseRasterStyle {
 	/** 高度付き格子の立体表示。未指定時は2Dラスター。 */
-	volume?: { type: 'voxel'; threshold: number; heightScale: number; };
+	volume?: {
+		type: 'voxel' | 'volume';
+		threshold: number;
+		heightScale: number;
+		density?: number;
+	};
 	type: 'tiff';
 	resampling?: 'nearest' | 'linear';
 	visualization: {

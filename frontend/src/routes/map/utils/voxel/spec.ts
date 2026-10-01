@@ -4,12 +4,14 @@ import type { RasterGeoZarrEntry, RasterTiffStyle } from '$routes/map/data/types
 export type GeoZarrVoxelEntry = RasterGeoZarrEntry<RasterTiffStyle>;
 export const isGeoZarrVoxelEntry = (entry: MorivisLayerEntry): entry is GeoZarrVoxelEntry =>
 	entry.type === 'raster' && entry.format.type === 'geozarr' && entry.style.type === 'tiff'
-	&& entry.style.volume?.type === 'voxel';
+	&& (entry.style.volume?.type === 'voxel' || entry.style.volume?.type === 'volume');
 export const createVoxelSpec = (entry: GeoZarrVoxelEntry) => {
 	const band = entry.style.visualization.uniformsData.single;
 	const [min, max] = getAdjustableRangeValue(band.range, band.min, band.max);
 	return {
 		id: entry.id,
+		type: entry.style.volume?.type ?? 'voxel',
+		density: Math.max(0.1, Math.min(10, entry.style.volume?.density ?? 2)),
 		url: entry.format.url,
 		arrayPath: entry.format.arrayPath,
 		visible: entry.style.visible,

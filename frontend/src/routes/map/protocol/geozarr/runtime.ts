@@ -13,6 +13,7 @@ import {
 } from './gpm';
 import { coordinateAxis, type GeoZarrGrid, gridPixel, tileGridWindow, tileLatitude } from './grid';
 import { normalizeGeoZarrUrl } from './url';
+import { createVolumeData } from './volume';
 import { createVoxelCells, type VoxelRegionRequest } from './voxels';
 export { normalizeGeoZarrUrl } from './url';
 import * as tilebelt from '@mapbox/tilebelt';
@@ -1534,7 +1535,7 @@ const renderMultiBandTile = async (
 };
 
 /** Worker内で展開し、正のセルだけを描画側へ渡す。 */
-export const readGeoZarrVoxelRegion = async (input: VoxelRegionRequest, signal: AbortSignal) => {
+const readGeoZarrRegion = async (input: VoxelRegionRequest, signal: AbortSignal) => {
 	signal.throwIfAborted();
 	let state = zarrRegistry.get(input.entryId);
 	if (!state || state.url !== input.url || state.arrayPath !== (input.arrayPath ?? '')) {
@@ -1566,7 +1567,16 @@ export const readGeoZarrVoxelRegion = async (input: VoxelRegionRequest, signal: 
 	if ([nx * ny * nz, nx * ny, nx, 1].some((value, i) => value !== chunk.stride[i])) {
 		throw new Error('Zarrのボクセル配列順が不正です');
 	}
-	return createVoxelCells(layout, input.region, chunk.data);
+	return { layout, values: chunk.data };
+};
+
+export const readGeoZarrVoxelRegion = async (input: VoxelRegionRequest, signal: AbortSignal) => {
+	const { layout, values } = await readGeoZarrRegion(input, signal);
+	return createVoxelCells(layout, input.region, values);
+};
+export const readGeoZarrVolumeRegion = async (input: VoxelRegionRequest, signal: AbortSignal) => {
+	const { layout, values } = await readGeoZarrRegion(input, signal);
+	return createVolumeData(layout, input.region, values);
 };
 
 export const geozarrProtocol = (protocolName: 'geozarr') => ({

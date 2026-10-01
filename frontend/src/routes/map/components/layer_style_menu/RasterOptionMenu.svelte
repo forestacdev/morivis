@@ -78,7 +78,7 @@
 	});
 </script>
 
-{#if layerEntry.format.type === 'geozarr' && style.type === 'tiff' && style.volume?.type === 'voxel'}
+{#if layerEntry.format.type === 'geozarr' && style.type === 'tiff' && style.volume}
 	<VoxelOption bind:layerEntry={layerEntry as MorivisRasterEntry<RasterTiffStyle>} />
 {:else if layerEntry.format.type === 'geozarr' && layerEntry.properties?.vertical}
 	<GeoZarrHeightOption bind:layerEntry />

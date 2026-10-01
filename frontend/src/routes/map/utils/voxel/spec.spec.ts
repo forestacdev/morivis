@@ -44,6 +44,13 @@ describe('Zarrボクセルの描画仕様', () => {
 		});
 		value.style.volume!.threshold = 2;
 		expect(spec.threshold).toBe(0.5);
+		value.style.volume = { type: 'volume', density: 3, threshold: 1, heightScale: 5 };
+		expect(createVoxelSpec(value)).toMatchObject({
+			type: 'volume',
+			density: 3,
+			threshold: 1,
+			heightScale: 5
+		});
 	});
 	it('ボクセル用entryには2Dラスターを重ねず、通常のZarrは従来通り生成する', () => {
 		const value = entry();
@@ -57,6 +64,10 @@ describe('Zarrボクセルの描画仕様', () => {
 				showHillshade: false,
 				showStreetView: false
 			});
+		expect(sources()['test-voxels_source']).toBeUndefined();
+		expect(layers().layers.some(l => l.id === 'test-voxels')).toBe(false);
+		value.style.volume!.type = 'volume';
+		expect(isGeoZarrVoxelEntry(value)).toBe(true);
 		expect(sources()['test-voxels_source']).toBeUndefined();
 		expect(layers().layers.some(l => l.id === 'test-voxels')).toBe(false);
 		delete value.style.volume;
