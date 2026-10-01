@@ -1,6 +1,6 @@
+import { fromArrayBuffer } from '$routes/map/utils/formats/geotiff/reader';
 import { getProjContext, isValidEpsg } from '$routes/map/utils/proj/dict';
 import { DOMParser } from '@xmldom/xmldom';
-import { fromArrayBuffer } from '$routes/map/utils/formats/geotiff/reader';
 import type { GeoTransform } from '../envi-bil';
 import { MAX_METADATA_BYTES } from './boxes';
 export interface Jp2Spatial {

@@ -1,6 +1,6 @@
+import { fromArrayBuffer } from '$routes/map/utils/formats/geotiff/reader';
 import type maplibregl from '$routes/map/utils/maplibre';
 import type { Coordinates } from '$routes/map/utils/maplibre';
-import { fromArrayBuffer } from '$routes/map/utils/formats/geotiff/reader';
 
 import type { RasterWcsEntry } from '$routes/map/data/types/raster';
 import { buildWcsGetCoverageUrl } from '$routes/map/utils/formats/wcs';

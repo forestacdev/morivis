@@ -80,6 +80,7 @@
 	let candidatesLoaded = $state(false);
 	let registrationError = $state('');
 	let isRegistering = $state(false);
+	let isLoadingCandidates = $state(false);
 	let needsManualBbox = $state(false);
 
 	const selectedCandidate = $derived.by(
@@ -87,7 +88,10 @@
 	);
 	const shouldShowManualArrayPath = $derived(candidatesLoaded && candidates.length === 0);
 	const canRegister = $derived(
-		!isSubmitDisabled && !isRegistering && (!needsManualBbox || !!forms.bbox.trim())
+		!isSubmitDisabled &&
+			!isRegistering &&
+			!isLoadingCandidates &&
+			(!needsManualBbox || !!forms.bbox.trim())
 	);
 	onMount(() => {
 		const files = toUploadFiles(dropFile);
@@ -123,9 +127,38 @@
 	});
 
 	$effect(() => {
-		void forms.url;
+		const url = forms.url;
 		untrack(onUrlChange);
+		if (untrack(() => !!localUrl)) return;
+		const normalizedUrl = normalizeHttpUrlInput(url);
+		if (!normalizedUrl) return;
+		const version = requestVersion;
+		isLoadingCandidates = true;
+		const timer = setTimeout(async () => {
+			try {
+				await loadCandidates(normalizedUrl, version);
+			} catch (error) {
+				if (version !== requestVersion) return;
+				registrationError =
+					error instanceof Error ? error.message : 'GeoZarr の配列候補の読み込みに失敗しました';
+			} finally {
+				if (version === requestVersion) isLoadingCandidates = false;
+			}
+		}, 300);
+		return () => clearTimeout(timer);
 	});
+
+	const loadCandidates = async (url: string, version: number) => {
+		const result = await listGeoZarrArrayCandidates(normalizeGeoZarrUrl(url));
+		if (version !== requestVersion) return null;
+		candidates = result;
+		candidatesLoaded = true;
+		const displayArrays = result.filter(
+			(candidate) => candidate.shape.length >= 2 && candidate.category !== 'coordinates'
+		);
+		forms.arrayPath = displayArrays[0]?.arrayPath ?? result[0]?.arrayPath ?? '';
+		return displayArrays;
+	};
 
 	const registration = async () => {
 		if (isSubmitDisabled || !canRegister) return;
@@ -142,14 +175,8 @@
 				return;
 			}
 			if (!candidatesLoaded) {
-				const result = await listGeoZarrArrayCandidates(normalizeGeoZarrUrl(normalizedUrl));
-				if (!isCurrent()) return;
-				candidates = result;
-				candidatesLoaded = true;
-				const displayArrays = result.filter(
-					(candidate) => candidate.shape.length >= 2 && candidate.category !== 'coordinates'
-				);
-				forms.arrayPath = displayArrays[0]?.arrayPath ?? result[0]?.arrayPath ?? '';
+				const displayArrays = await loadCandidates(normalizedUrl, version);
+				if (!displayArrays) return;
 				// 選択不要なら、この決定操作のまま登録まで進める。
 				if (displayArrays.length !== 1 || displayArrays[0].columnMaximum) return;
 			}
@@ -322,6 +349,7 @@
 	const onUrlChange = () => {
 		requestVersion++;
 		isRegistering = false;
+		isLoadingCandidates = false;
 		registrationError = '';
 		registrationMode = 'raster';
 		candidates = [];
@@ -343,7 +371,7 @@
 <div class="flex flex-col gap-4 overflow-y-auto pr-1">
 	<h2 class="text-lg font-bold">GeoZarr を追加</h2>
 	<p class="text-sm leading-relaxed text-gray-300">
-		Zarrのフォルダー・ZIP、または公開URLから追加します。決定すると読み込みと登録を行います。複数の配列がある場合は、表示する配列を選びます。
+		Zarrのフォルダー・ZIP、または公開URLから追加します。URLを入力すると配列候補を読み込みます。複数の配列がある場合は、表示する配列を選んで決定します。
 		位置を判定できない場合は、西端・南端・東端・北端の経緯度を入力します。
 		{#if selectedCandidate?.columnMaximum}
 			この配列は地域ごとに配置し、高度方向の最大値を表示します。登録後に指定高度の断面へ切り替えられます。detailは縮小表示時にoverviewを使います。
@@ -360,7 +388,7 @@
 	{:else}
 		<TextForm label="URL" bind:value={forms.url} error={errors.url} />
 	{/if}
-	{#if isRegistering}
+	{#if isRegistering || isLoadingCandidates}
 		<p role="status" class="text-sm text-gray-300">GeoZarr を読み込んでいます...</p>
 	{:else if registrationError}
 		<p role="alert" class="text-sm text-red-400">{registrationError}</p>

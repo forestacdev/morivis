@@ -1,7 +1,7 @@
 // 任意の座標・画素値だけからJP2を生成する。リポジトリのルートで実行。
+import { writeArrayBuffer } from 'geotiff';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
-import { writeArrayBuffer } from 'geotiff';
 const require = createRequire(import.meta.url);
 const init = require('@cornerstonejs/codec-openjpeg/wasmjs');
 const codec = await init({
@@ -29,16 +29,15 @@ const encode = (bits, components, signed = false) => {
 		const view = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
 		const samples = [];
 		for (let i = 0; i < width * height * components; i++) {
-			const value =
-				components === 4 && i % 4 === 3
-					? i === 3
-						? 0
-						: 255
-					: signed
-						? i * 100 - 800
-						: bits === 16
-							? i * 1000
-							: (i * 17) % 256;
+			const value = components === 4 && i % 4 === 3
+				? i === 3
+					? 0
+					: 255
+				: signed
+				? i * 100 - 800
+				: bits === 16
+				? i * 1000
+				: (i * 17) % 256;
 			samples.push(value);
 			if (bits === 8) view.setUint8(i, value);
 			else if (signed) view.setInt16(i * 2, value, true);
@@ -69,27 +68,36 @@ const geo = (extra) =>
 			...extra
 		})
 	);
-for (const [name, encoded, bits, components, isSigned, metadata] of [
-	['test-color', rgb, 8, 3, false, null],
-	['test-alpha', rgba, 8, 4, false, null],
-	['test-geojp2', rgb, 8, 3, false, geo({})],
-	[
-		'test-projected',
-		rgb,
-		8,
-		3,
-		false,
-		geo({
-			GTModelTypeGeoKey: 1,
-			ProjectedCSTypeGeoKey: 3857,
-			ModelPixelScale: [10, 10, 0],
-			ModelTiepoint: [0, 0, 0, 1000, 2000, 0]
-		})
-	],
-	['test-height', gray, 16, 1, false, geo({})],
-	['test-signed', signed, 16, 1, true, geo({})],
-	['test-unknown', rgb, 8, 3, false, geo({ GTModelTypeGeoKey: 32767, GeographicTypeGeoKey: 32767 })]
-]) {
+for (
+	const [name, encoded, bits, components, isSigned, metadata] of [
+		['test-color', rgb, 8, 3, false, null],
+		['test-alpha', rgba, 8, 4, false, null],
+		['test-geojp2', rgb, 8, 3, false, geo({})],
+		[
+			'test-projected',
+			rgb,
+			8,
+			3,
+			false,
+			geo({
+				GTModelTypeGeoKey: 1,
+				ProjectedCSTypeGeoKey: 3857,
+				ModelPixelScale: [10, 10, 0],
+				ModelTiepoint: [0, 0, 0, 1000, 2000, 0]
+			})
+		],
+		['test-height', gray, 16, 1, false, geo({})],
+		['test-signed', signed, 16, 1, true, geo({})],
+		[
+			'test-unknown',
+			rgb,
+			8,
+			3,
+			false,
+			geo({ GTModelTypeGeoKey: 32767, GeographicTypeGeoKey: 32767 })
+		]
+	]
+) {
 	const ihdr = Buffer.alloc(14);
 	ihdr.writeUInt32BE(height);
 	ihdr.writeUInt32BE(width, 4);

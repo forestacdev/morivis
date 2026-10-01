@@ -1,5 +1,5 @@
-import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 import { fromArrayBuffer } from '$routes/map/utils/formats/geotiff/reader';
+import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 
 export interface WcsCoverageSummary {
 	id: string;

@@ -47,7 +47,7 @@ const finishRegistration = async (
 	await expect(page.locator('.loader')).toHaveCount(0);
 };
 
-test('決定で解析から登録へ進み、変更前の遅い応答を反映しない', async ({ page, context }) => {
+test('URLから配列候補を自動展開し、変更前の遅い応答を反映せず決定1回で登録する', async ({ page, context }) => {
 	const store = createTestZarrStore(3);
 	let releaseOld = () => {};
 	const oldResponse = new Promise<void>(resolve => {
@@ -88,23 +88,63 @@ test('決定で解析から登録へ進み、変更前の遅い応答を反映�
 	await page.getByPlaceholder('URLから読み込む').fill(source);
 	await page.getByRole('button', { name: 'URLを開く', exact: true }).click();
 	await expect(page.getByRole('heading', { name: 'GeoZarr を追加' })).toBeVisible();
-	// 以前の500 msデバウンスが残っていないことも確認する。
-	await page.waitForTimeout(650);
-	expect(oldRequested).toBe(false);
-	await page.getByRole('button', { name: '決定', exact: true }).click();
 	await expect.poll(() => oldRequested).toBe(true);
 	await expect(page.getByRole('status')).toContainText('GeoZarr を読み込んでいます');
+	await expect(page.getByRole('button', { name: '決定', exact: true })).toBeDisabled();
 	await page.getByLabel('URL', { exact: true }).fill(
 		source.replace('test-auto-old', 'test-auto-new')
 	);
-	await page.getByRole('button', { name: '決定', exact: true }).click();
-	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
+	await expect(page.getByLabel('配列候補')).toHaveValue('test-new');
+	await expect(page.getByText('配列: test-new', { exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toHaveCount(0);
 	releaseOld();
 	await expect.poll(() => oldReturned).toBe(true);
 	await expect(page.getByRole('status')).toHaveCount(0);
+	await expect(page.getByLabel('配列候補')).toHaveValue('test-new');
+	await expect(page.locator('select option[value="test-old"]')).toHaveCount(0);
+	await page.getByRole('button', { name: '決定', exact: true }).click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
 	await expect(page.getByText('test-new', { exact: true }).first()).toBeVisible();
 	await expect(page.getByText('test-old', { exact: true })).toHaveCount(0);
 	await expect(page.getByRole('heading', { name: 'GeoZarr を追加' })).toHaveCount(0);
+});
+
+test('複数配列のURLも決定前に候補と登録方法を選べる', async ({ page, context }) => {
+	const store = createTestRegionalZarr();
+	const readMetadata = (path: string) => JSON.parse(new TextDecoder().decode(store.get(path)));
+	// HTTP配信ではフォルダーを列挙できないため、配列一覧を集約メタデータに含める。
+	store.set(
+		'zarr.json',
+		new TextEncoder().encode(JSON.stringify({
+			...readMetadata('zarr.json'),
+			consolidated_metadata: {
+				kind: 'inline',
+				must_understand: false,
+				metadata: {
+					overview: readMetadata('overview/zarr.json'),
+					detail: readMetadata('detail/zarr.json')
+				}
+			}
+		}))
+	);
+	await context.route('**/test-choices.zarr/**', async route => {
+		const path = new URL(route.request().url()).pathname.split('.zarr/')[1];
+		const bytes = store.get(path);
+		await route.fulfill(bytes ? { body: Buffer.from(bytes) } : { status: 404 });
+	});
+	await page.goto('map?c=0_60&z=3', { waitUntil: 'domcontentloaded' });
+	await page.getByRole('button', { name: 'データ一覧を見る', exact: true }).click();
+	await page.getByRole('button', { name: 'アップロード', exact: true }).click();
+	await page.getByPlaceholder('URLから読み込む').fill(
+		new URL('test-choices.zarr', page.url()).href
+	);
+	await page.getByRole('button', { name: 'URLを開く', exact: true }).click();
+	await page.getByLabel('配列候補').selectOption('detail');
+	await expect(page.getByText('配列: detail', { exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'ボクセル表示', exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toHaveCount(0);
+	await page.getByRole('button', { name: '決定', exact: true }).click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
 });
 
 test('Zarrフォルダーのドロップで相対パスを保持し、登録できる', async ({ page }) => {
