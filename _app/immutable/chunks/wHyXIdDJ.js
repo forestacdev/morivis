@@ -1,1 +1,0 @@
-import{i as o}from"./v1ZyM8T1.js";let t=0;const n=e=>{if(e.aborted)return()=>{};t+=1,o.set(!0);let s=!1;const r=()=>{s||(s=!0,e.removeEventListener("abort",r),t-=1,t===0&&o.set(!1))};return e.addEventListener("abort",r,{once:!0}),r};export{n as b};
