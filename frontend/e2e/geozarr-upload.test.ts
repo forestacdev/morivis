@@ -1,8 +1,8 @@
-import { expect, type Page, test } from '@playwright/test';
 import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { createTestRegionalZarr } from '../src/routes/map/utils/formats/geozarr/__fixtures__/test-regions';
 import { createTestZarrStore } from '../src/routes/map/utils/formats/geozarr/__fixtures__/test-store';
+import { expect, type Page, test } from './map-test';
 
 // 起動時の外部ストリートビュー取得は架空fixtureで固定する。
 test.beforeEach(async ({ page }) => {
