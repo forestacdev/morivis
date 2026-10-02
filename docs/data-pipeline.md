@@ -143,6 +143,8 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+VTK（`.vtk` / `.vtp` / `.vtu` / `.vti` / `.vtr` / `.vts`）は `VtkForm.svelte` からWorkerで解析する。表面メッシュ・構造格子・対応する2次セルの外表面を取り出し、同一XML内の複数Pieceを統合する。2次曲面を補間して三角形へ分割し、選択した点・セルのスカラー値を頂点色へ変換する。単位・上方向を補正したGLBを `MeshModelForm.svelte` に渡し、既存の座標系選択・位置合わせを経て `MeshEntry` へ登録する。色分けは取り込み時に確定する。対応範囲と制限は [VTK](../frontend/src/routes/map/utils/formats/vtk/README.md) を参照。
+
 Zarr / GeoZarrは共通URL欄または `GeoZarrForm.svelte` で配列を選び、`RasterGeoZarrEntry` に登録する。
 メタ情報取得・チャンク展開・タイル描画は専用Workerで処理する。座標軸の向きと元の投影を保持してMapLibreの画素中心へ再サンプリングし、取得共有・キャンセル・容量上限をruntime内で管理する。
 対応範囲は [Zarr / GeoZarr](../frontend/src/routes/map/utils/formats/geozarr/README.md) を参照。

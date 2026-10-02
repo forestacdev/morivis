@@ -81,6 +81,7 @@ import { formatVector } from './vector/definition';
 import { formatVideo } from './video/definition';
 import { formatVrm } from './vrm/definition';
 import { formatVrml } from './vrml/definition';
+import { formatVtk } from './vtk/definition';
 import { formatWcs } from './wcs/definition';
 import { formatWkt } from './wkt/definition';
 import { formatWmts } from './wmts/definition';
@@ -168,6 +169,7 @@ export const FORMAT_DEFINITIONS = {
 	'amf': formatAmf,
 	'step-iges': formatStepIges,
 	'stl': formatStl,
+	'vtk': formatVtk,
 	'ifc': formatIfc,
 	'bcf': formatBcf,
 	'vrm': formatVrm,

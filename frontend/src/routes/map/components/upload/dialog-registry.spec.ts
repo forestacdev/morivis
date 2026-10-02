@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const imports = vi.hoisted(() => ({ gpx: 0, dwg: 0 }));
+const vtkImports = vi.hoisted(() => ({ count: 0 }));
+vi.mock('./form/VtkForm.svelte', () => {
+	vtkImports.count++;
+	return { default: () => {} };
+});
 vi.mock('./form/Jpeg2000Form.svelte', () => ({ default: () => {} }));
 vi.mock('./form/MapInfoTabForm.svelte', () => ({ default: () => {} }));
 vi.mock('./form/EnviBilForm.svelte', () => ({ default: () => {} }));
@@ -36,6 +41,12 @@ vi.mock('./form/DwgForm.svelte', () => {
 import { dialogRegistry } from './dialog-registry';
 
 describe('dialog registry loading', () => {
+	it('VTKフォームをファイル入力付きで遅延ロードする', async () => {
+		expect(vtkImports.count).toBe(0);
+		expect(dialogRegistry.vtk!.profile).toBe('drop-file');
+		expect((await dialogRegistry.vtk!.load()).default).toBeTypeOf('function');
+		expect(vtkImports.count).toBe(1);
+	});
 	it('JPEG2000に座標系選択とラスター位置合わせを渡す', async () => {
 		expect(dialogRegistry.jpeg2000!.profile).toBe('pointcloud-georef');
 		expect((await dialogRegistry.jpeg2000!.load()).default).toBeTypeOf('function');

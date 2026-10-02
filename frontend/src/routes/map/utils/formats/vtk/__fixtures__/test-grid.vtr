@@ -1,0 +1,12 @@
+<VTKFile type="RectilinearGrid" byte_order="LittleEndian">
+ <RectilinearGrid WholeExtent="0 2 0 1 0 0">
+  <Piece Extent="0 2 0 1 0 0">
+   <Coordinates>
+    <DataArray type="Float64">0 2 5</DataArray>
+    <DataArray type="Float64">0 3</DataArray>
+    <DataArray type="Float64">4</DataArray>
+   </Coordinates>
+   <CellData><DataArray type="Float64" Name="test-pressure">10 20</DataArray></CellData>
+  </Piece>
+ </RectilinearGrid>
+</VTKFile>

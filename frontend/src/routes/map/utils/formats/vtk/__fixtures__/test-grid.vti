@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<VTKFile type="ImageData" byte_order="LittleEndian">
+ <ImageData WholeExtent="2 4 -1 0 0 1" Origin="10 20 30" Spacing="2 3 4" Direction="0 -1 0 1 0 0 0 0 1">
+  <Piece Extent="2 3 -1 0 0 1">
+   <CellData><DataArray type="Float64" Name="test-pressure">10</DataArray></CellData>
+  </Piece>
+  <Piece Extent="3 4 -1 0 0 1">
+   <CellData><DataArray type="Float64" Name="test-pressure">20</DataArray></CellData>
+  </Piece>
+ </ImageData>
+</VTKFile>

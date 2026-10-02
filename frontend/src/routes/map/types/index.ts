@@ -123,6 +123,7 @@ export type DialogType =
 	| 'pmtiles'
 	| 'model'
 	| 'step-iges'
+	| 'vtk'
 	| 'mca'
 	| 'roblox'
 	| 'gaussian-splat'
@@ -741,6 +742,13 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		icon: 'mdi:cube-outline',
 		description:
 			'三角形メッシュで形状を表す3Dモデル形式です。ASCII形式とバイナリ形式の造形データを読み込むときに使います。'
+	},
+	{
+		id: 'vtk',
+		label: 'VTK（メッシュ・構造格子）',
+		icon: 'mdi:vector-triangle',
+		description:
+			'メッシュと解析値を保持する科学技術データです。表面や体積セルの外表面を、スカラー値で色分けして地図上に配置します。'
 	},
 	{
 		id: 'ifc',

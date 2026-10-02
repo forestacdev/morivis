@@ -153,6 +153,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/StepIgesForm.svelte'),
 		profile: 'drop-file'
 	},
+	vtk: {
+		load: () => import('$routes/map/components/upload/form/VtkForm.svelte'),
+		profile: 'drop-file'
+	},
 	mca: {
 		load: () => import('$routes/map/components/upload/form/McaForm.svelte'),
 		profile: 'drop-file'

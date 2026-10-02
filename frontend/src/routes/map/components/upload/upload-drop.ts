@@ -45,7 +45,8 @@ import {
 	hasKnownExtension,
 	isGtfsTextSet,
 	isShapeFileRelated,
-	MODEL_FILE_EXTENSIONS
+	MODEL_FILE_EXTENSIONS,
+	VTK_FILE_EXTENSIONS
 } from './upload-drop-matchers';
 
 export type UploadDropDecision =
@@ -257,6 +258,12 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	'3mf': 'model',
 	amf: 'model',
 	stl: 'model',
+	vtk: 'vtk',
+	vtp: 'vtk',
+	vtu: 'vtk',
+	vti: 'vtk',
+	vtr: 'vtk',
+	vts: 'vtk',
 	step: 'step-iges',
 	stp: 'step-iges',
 	iges: 'step-iges',
@@ -420,6 +427,15 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 			createDialogDecision(
 				'step-iges',
 				files.filter(file => hasAnyExtension(file, CAD_MODEL_FILE_EXTENSIONS))
+			)
+	},
+	{
+		id: 'vtk-files',
+		match: files => files.some(file => hasAnyExtension(file, VTK_FILE_EXTENSIONS)),
+		resolve: async files =>
+			createDialogDecision(
+				'vtk',
+				files.filter(file => hasAnyExtension(file, VTK_FILE_EXTENSIONS))
 			)
 	},
 	{

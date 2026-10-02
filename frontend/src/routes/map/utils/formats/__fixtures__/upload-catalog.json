@@ -562,6 +562,10 @@
 		]
 	},
 	{
+		"id": "vtk",
+		"extensions": [".vtk", ".vtp", ".vtu", ".vti", ".vtr", ".vts"]
+	},
+	{
 		"id": "ifc",
 		"extensions": [
 			".ifc"

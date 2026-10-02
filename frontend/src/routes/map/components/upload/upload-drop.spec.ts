@@ -3,6 +3,59 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('VTKのドロップ', () => {
+	it.each([
+		'test-surface.vtk',
+		'test-surface.VTP',
+		'test-volume.vtu',
+		'test-grid.vti',
+		'test-grid.vtr',
+		'test-grid.vts'
+	])(
+		'%sをVTKフォームへ渡す',
+		async name => {
+			const file = new File(['test-vtk'], name);
+			expect(await resolveDroppedFiles(file)).toEqual({
+				type: 'dialog',
+				dialogType: 'vtk',
+				dropFiles: undefined
+			});
+		}
+	);
+	it('複数ファイルとZIPは選択可能な一式として渡す', async () => {
+		const files = [new File(['test-vtk'], 'test-a.vtk'), new File(['test-vtp'], 'test-b.vtp')];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'vtk',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test-folder/test-a.vtk', 'test-vtk');
+		zip.file('test-folder/test-b.vtp', 'test-vtp');
+		const decision = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-models.zip')
+		);
+		expect(decision).toMatchObject({
+			type: 'dialog',
+			dialogType: 'vtk',
+			dropFiles: [expect.any(File), expect.any(File)]
+		});
+	});
+	it('ファイル選択の対応拡張子を技術定義から公開する', () => {
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'vtk')?.extensions).toEqual([
+			'.vtk',
+			'.vtp',
+			'.vtu',
+			'.vti',
+			'.vtr',
+			'.vts'
+		]);
+		for (const extension of ['.vtk', '.vtp', '.vtu']) {
+			expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(extension);
+		}
+	});
+});
+
 describe('OSM PBFのドロップ', () => {
 	const bytes = readFileSync(
 		new URL('../../utils/formats/osm-pbf/__fixtures__/test-dense.osm.pbf', import.meta.url)

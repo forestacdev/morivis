@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <Piece NumberOfPoints="5" NumberOfCells="2">
+      <Points><DataArray type="Float64" NumberOfComponents="3" format="ascii">0 0 0  2 0 0  0 2 0  0 0 2  0 0 -2</DataArray></Points>
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="ascii">0 1 2 3  0 2 1 4</DataArray>
+        <DataArray type="Int32" Name="offsets" format="ascii">4 8</DataArray>
+        <DataArray type="UInt8" Name="types" format="ascii">10 10</DataArray>
+      </Cells>
+      <PointData><DataArray type="Float64" Name="test-temperature" format="ascii">0 10 20 30 40</DataArray></PointData>
+      <CellData><DataArray type="Float32" Name="test-pressure" format="ascii">10 20</DataArray></CellData>
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

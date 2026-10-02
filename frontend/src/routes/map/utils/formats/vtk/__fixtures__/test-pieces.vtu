@@ -1,0 +1,24 @@
+<VTKFile type="UnstructuredGrid" byte_order="LittleEndian">
+ <UnstructuredGrid>
+  <Piece NumberOfPoints="4" NumberOfCells="1">
+   <Points><DataArray type="Float64" NumberOfComponents="3">0 0 0 2 0 0 0 2 0 0 0 2</DataArray></Points>
+   <Cells>
+    <DataArray type="Int32" Name="connectivity">0 1 2 3</DataArray>
+    <DataArray type="Int32" Name="offsets">4</DataArray>
+    <DataArray type="UInt8" Name="types">10</DataArray>
+   </Cells>
+   <PointData><DataArray type="Float64" Name="test-value">0 10 20 30</DataArray></PointData>
+   <CellData><DataArray type="Float64" Name="test-pressure">10</DataArray></CellData>
+  </Piece>
+  <Piece NumberOfPoints="4" NumberOfCells="1">
+   <Points><DataArray type="Float64" NumberOfComponents="3">0 2 0 0 0 0 2 0 0 0 0 -2</DataArray></Points>
+   <Cells>
+    <DataArray type="Int32" Name="connectivity">1 0 2 3</DataArray>
+    <DataArray type="Int32" Name="offsets">4</DataArray>
+    <DataArray type="UInt8" Name="types">10</DataArray>
+   </Cells>
+   <PointData><DataArray type="Float64" Name="test-value">120 100 110 140</DataArray></PointData>
+   <CellData><DataArray type="Float64" Name="test-pressure">20</DataArray></CellData>
+  </Piece>
+ </UnstructuredGrid>
+</VTKFile>
