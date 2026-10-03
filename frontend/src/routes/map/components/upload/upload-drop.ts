@@ -3,6 +3,7 @@ import { isJp2File } from '$routes/map/utils/formats/jpeg2000/files';
 import { isMapInfoTab } from '$routes/map/utils/formats/mapinfo-tab/files';
 import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
+import { isNmeaCandidate, isNmeaFile } from '$routes/map/utils/formats/nmea/files';
 import { isOsmPbfFile } from '$routes/map/utils/formats/osm-pbf/files';
 import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
 import { isS57File } from '$routes/map/utils/formats/s57/files';
@@ -222,6 +223,8 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	gpx: 'gpx',
 	tcx: 'tcx',
 	fit: 'fit',
+	nmea: 'nmea',
+	nme: 'nmea',
 	osm: 'osm',
 	gml: 'gml',
 	landxml: 'landxml',
@@ -760,6 +763,14 @@ export const resolveDroppedFiles = async (
 	const files = Array.isArray(input) ? input : [input];
 	// 更新単独でもフォームで基本セル不足を説明し、同じ入力欄から一式を選び直せる。
 	if (files.some(isS57File)) return createDialogDecision('s57', files.filter(isS57File));
+	const nmeaCandidates = files.filter(isNmeaCandidate);
+	if (nmeaCandidates.length && !isGtfsTextSet(files)) {
+		const matches = await Promise.all(
+			nmeaCandidates.map(async file => ({ file, matched: await isNmeaFile(file) }))
+		);
+		const logs = matches.filter(item => item.matched).map(item => item.file);
+		if (logs.length) return createDialogDecision('nmea', logs);
+	}
 	if (isLocalGeoZarrFolder(files)) return createDialogDecision('geozarr', files);
 	// MCAは同じワールドのリージョン一式を専用フォームへ渡す。
 	if (files.some((file) => hasExtension(file, '.mca'))) {

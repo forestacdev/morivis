@@ -258,6 +258,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/TcxForm.svelte'),
 		profile: 'drop-file'
 	},
+	nmea: {
+		load: () => import('$routes/map/components/upload/form/NmeaForm.svelte'),
+		profile: 'drop-file'
+	},
 	fit: {
 		load: () => import('$routes/map/components/upload/form/FitForm.svelte'),
 		profile: 'drop-file'

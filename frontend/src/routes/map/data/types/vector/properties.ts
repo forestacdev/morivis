@@ -228,10 +228,15 @@ interface PatternConfig {
 		hour?: number;
 		minute?: number;
 		second?: number;
+		millisecond?: number;
 	};
 }
 
 const PATTERN_CONFIG_MAP: Record<string, PatternConfig> = {
+	'YYYY-MM-DDTHH:mm:ss.SSSZ': {
+		regex: /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})Z$/,
+		groups: { year: 1, month: 2, day: 3, hour: 4, minute: 5, second: 6, millisecond: 7 }
+	},
 	// ISO 8601 形式（タイムゾーン付き）
 	'YYYY-MM-DDTHH:mm:ssZ': {
 		regex: /^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{2}):(\d{2}):(\d{2})Z$/,
@@ -310,6 +315,7 @@ interface ParsedDate {
 	hour?: number;
 	minute?: number;
 	second?: number;
+	millisecond?: number;
 }
 
 /**
@@ -329,7 +335,10 @@ const parseDate = (value: string, patterns: string[]): ParsedDate | null => {
 				day: groups.day ? parseInt(match[groups.day], 10) : undefined,
 				hour: groups.hour ? parseInt(match[groups.hour], 10) : undefined,
 				minute: groups.minute ? parseInt(match[groups.minute], 10) : undefined,
-				second: groups.second ? parseInt(match[groups.second], 10) : undefined
+				second: groups.second ? parseInt(match[groups.second], 10) : undefined,
+				millisecond: groups.millisecond
+					? parseInt(match[groups.millisecond], 10)
+					: undefined
 			};
 		}
 	}
@@ -344,7 +353,7 @@ const formatParsedDate = (
 	displayPattern: string,
 	fill?: DateFormatSpec['fill']
 ): string => {
-	const { year, hour, minute, second } = parsed;
+	const { year, hour, minute, second, millisecond } = parsed;
 	let { month, day } = parsed;
 
 	// fillルールの適用
@@ -373,6 +382,7 @@ const formatParsedDate = (
 		// 分
 		.replace('mm', minute !== undefined ? String(minute).padStart(2, '0') : '')
 		.replace('m', minute !== undefined ? String(minute) : '')
+		.replace('SSS', millisecond !== undefined ? String(millisecond).padStart(3, '0') : '')
 		// 秒
 		.replace('ss', second !== undefined ? String(second).padStart(2, '0') : '')
 		.replace('s', second !== undefined ? String(second) : '');

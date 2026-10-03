@@ -167,6 +167,8 @@ GeoJSONSeq / 行区切りGeoJSONは専用パーサーでFeatureCollectionへま�
 
 FIT (`.fit`) は `FitForm.svelte` から専用WorkerでGPS記録を解析する。軌跡・計測点・コースポイントを選び、WGS84のGeoJSONを通常のvector entryとして登録する。座標系指定は不要で、解析・登録中はスクリーンガードを表示する。対応範囲は [FIT](../frontend/src/routes/map/utils/formats/fit/README.md) を参照。
 
+NMEA 0183 (`.nmea` / `.nme` / 内容判定した `.log`・`.txt`) は `NmeaForm.svelte` から専用WorkerでGNSSログを解析する。RMC・GGA・GLLの位置を軌跡または計測点として登録し、時刻・高度・速度などを属性に保持する。複数ログは結合せず選択して登録する。対応範囲は [NMEA 0183](../frontend/src/routes/map/utils/formats/nmea/README.md) を参照。
+
 動画（MP4・WebM・MOV・M4V・OGV）は `VideoForm.svelte` で位置タグと先頭フレームを読む。MP4・MOV系の撮影位置を取得できた場合は、詳細画面に動画を持つGeoJSONポイントとして登録へ進む。位置情報がない場合は位置合わせへ進む。確定した四隅と元動画のURLを `RasterVideoEntry` に保持し、video sourceとraster layerで再生する。対応範囲は[動画](../frontend/src/routes/map/utils/formats/video/README.md)を参照。
 
 E57 (`.e57`) は既存の `PointCloudForm.svelte` へ渡す。専用Worker内のWASMで複数スキャンのpose・RGBを反映し、点群entryへ正規化する。埋め込みWKTがない・変換できない場合は座標系指定または位置合わせを使う。

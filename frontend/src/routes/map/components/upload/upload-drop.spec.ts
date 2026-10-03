@@ -1805,3 +1805,43 @@ describe('OpenDRIVEのドロップ', () => {
 			.toMatchObject({ dialogType: 'opendrive', dropFiles: files });
 	});
 });
+
+describe('NMEAのドロップ', () => {
+	const text = readFileSync(
+		new URL('../../utils/formats/nmea/__fixtures__/test-track.nmea', import.meta.url),
+		'utf8'
+	);
+	it.each(['nmea', 'NME', 'log', 'txt'])('%sログを内容に応じて振り分ける', async extension => {
+		const file = new File([text], `test-track.${extension}`);
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'nmea',
+			dropFiles: [file]
+		});
+	});
+	it('複数ログとZIP展開後も同じフォームへ渡す', async () => {
+		const files = [new File([text], 'test-a.nmea'), new File([text], 'test-b.log')];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			dialogType: 'nmea',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test-a.nmea', text);
+		zip.file('test-b.txt', text);
+		const decision = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-logs.zip')
+		);
+		expect(decision).toMatchObject({
+			dialogType: 'nmea',
+			dropFiles: expect.arrayContaining([
+				expect.objectContaining({ name: 'test-a.nmea' }),
+				expect.objectContaining({ name: 'test-b.txt' })
+			])
+		});
+	});
+	it('通常のLOGをNMEA扱いしない', async () => {
+		expect(await resolveDroppedFiles(new File(['test message'], 'test.log'))).toMatchObject({
+			type: 'notification'
+		});
+	});
+});

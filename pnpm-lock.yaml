@@ -292,6 +292,9 @@ importers:
       netcdfjs:
         specifier: ^4.0.0
         version: 4.0.0
+      nmea-simple:
+        specifier: ^3.3.0
+        version: 3.3.0
       occt-import-js:
         specifier: ^0.0.23
         version: 0.0.23
@@ -5319,6 +5322,10 @@ packages:
 
   netcdfjs@4.0.0:
     resolution: {integrity: sha512-98DBig9KmiCZC6kU0Y8OXR5Gj39KenMgp6sblpSdg+5oVscTjhm5r5oLiznlqBZyhRGQqlAMEyWjQnMh4/iPOA==}
+
+  nmea-simple@3.3.0:
+    resolution: {integrity: sha512-jYJBoxgYBUAbm2tLv0NeqK4dxhv8hhrf8rhiWGJ3+i0ubv7gn5NGyoMgPEqkE8wKscQrMT9AyA09gtuNR+70ng==}
+    engines: {node: '>= 8.0.0'}
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -12181,6 +12188,8 @@ snapshots:
   netcdfjs@4.0.0:
     dependencies:
       iobuffer: 6.0.1
+
+  nmea-simple@3.3.0: {}
 
   node-fetch@2.7.0:
     dependencies:

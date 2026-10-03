@@ -54,6 +54,7 @@ import { formatMca } from './mca/definition';
 import { formatMif } from './mif/definition';
 import { formatMojxml } from './mojxml/definition';
 import { formatNc } from './netcdf/definition';
+import { formatNmea } from './nmea/definition';
 import { formatObj } from './obj/definition';
 import { formatOpenDrive } from './opendrive/definition';
 import { formatOsm } from './osm/definition';
@@ -120,6 +121,7 @@ export const FORMAT_DEFINITIONS = {
 	'gpx': formatGpx,
 	'tcx': formatTcx,
 	'fit': formatFit,
+	'nmea': formatNmea,
 	'gdb': formatGdb,
 	'osm': formatOsm,
 	'georss': formatGeorss,

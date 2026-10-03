@@ -207,6 +207,10 @@
 		]
 	},
 	{
+		"id": "nmea",
+		"extensions": [".nmea", ".nme", ".log", ".txt"]
+	},
+	{
 		"id": "gdb",
 		"extensions": [
 			".gdb"
