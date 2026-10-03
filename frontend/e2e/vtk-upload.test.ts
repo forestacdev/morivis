@@ -20,7 +20,12 @@ const dropFixture = async (page: Page, name: string | string[], invalid = false)
 				)
 			);
 		}
-		canvas.dispatchEvent(new DragEvent('drop', { dataTransfer: transfer, bubbles: true }));
+		const bounds = canvas.getBoundingClientRect();
+		const target = document.elementFromPoint(
+			bounds.left + bounds.width / 2,
+			bounds.top + bounds.height / 2
+		) ?? canvas;
+		target.dispatchEvent(new DragEvent('drop', { dataTransfer: transfer, bubbles: true }));
 	}, { files, invalid });
 };
 
@@ -42,7 +47,9 @@ test.beforeEach(async ({ page }) => {
 	await page.locator('canvas.maplibregl-canvas:visible').first().waitFor();
 });
 
-test('VTKを選択すると自動解析し、スカラー色付きモデルの位置合わせまで進む', async ({ page }) => {
+test('VTKを連続して地図へ追加し、次のドロップも解析できる', async ({ page }) => {
+	const errors: string[] = [];
+	page.on('pageerror', error => errors.push(error.message));
 	await dropFixture(page, 'test-volumes.vtu');
 	await expect(page.getByText('VTK', { exact: true })).toBeVisible();
 	await expect(page.getByText(/表示する三角形 6 面/)).toBeVisible();
@@ -59,6 +66,15 @@ test('VTKを選択すると自動解析し、スカラー色付きモデルの�
 	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
 	await expect(page.getByText('test-volumes', { exact: true }).first()).toBeVisible();
 	await expect(page.getByText('VTK', { exact: true })).toHaveCount(0);
+	await dropFixture(page, 'test-surface.vtk');
+	await expect(page.getByText(/表示する三角形 3 面/)).toBeVisible();
+	await page.getByRole('button', { name: '読み込み', exact: true }).click();
+	await page.getByRole('button', { name: '決定', exact: true }).click();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	await expect(page.getByText('test-surface', { exact: true }).first()).toBeVisible();
+	await dropFixture(page, 'test-surface.vtk');
+	await expect(page.getByText(/表示する三角形 3 面/)).toBeVisible();
+	expect(errors).toEqual([]);
 });
 
 test('不正なVTKで理由を表示し、キャンセル後に別ファイルを解析できる', async ({ page }) => {
@@ -114,4 +130,15 @@ test('自動解析中のファイル切替とキャンセル後も選択した�
 	await expect(page.getByText('VTK', { exact: true })).toHaveCount(0);
 	await dropFixture(page, 'test-volumes.vtu');
 	await expect(page.getByText(/表示する三角形 6 面/)).toBeVisible();
+});
+
+test('VTK画面上へ2回目以降のファイルをドロップすると自動で再解析する', async ({ page }) => {
+	await dropFixture(page, 'test-volumes.vtu');
+	await expect(page.getByText(/表示する三角形 6 面/)).toBeVisible();
+	await dropFixture(page, 'test-surface.vtk');
+	await expect(page.getByText(/表示する三角形 3 面/)).toBeVisible();
+	await dropFixture(page, 'test-surface.vtk', true);
+	await expect(page.getByRole('alert')).toContainText('ヘッダー');
+	await dropFixture(page, 'test-surface.vtk');
+	await expect(page.getByText(/表示する三角形 3 面/)).toBeVisible();
 });

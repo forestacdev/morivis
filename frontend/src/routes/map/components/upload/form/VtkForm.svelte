@@ -22,7 +22,7 @@
 	let selectedIndex = $state(0);
 	const file = $derived(files[selectedIndex] ?? files[0]);
 	let inspected = $state.raw<{ file: File; summary: VtkSummary } | null>(null);
-	const summary = $derived(inspected?.file === file ? inspected.summary : null);
+	const summary = $derived(inspected && inspected.file === file ? inspected.summary : null);
 	let scalarId = $state<string | null>(null);
 	const scalar = $derived(summary?.scalars.find((item) => item.id === scalarId));
 	let upAxis = $state<VtkRenderOptions['upAxis']>('z');
