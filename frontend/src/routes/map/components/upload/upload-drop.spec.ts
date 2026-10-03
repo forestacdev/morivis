@@ -1877,6 +1877,18 @@ describe('CZMLのドロップ', () => {
 			dropFiles: expect.arrayContaining([expect.objectContaining({ name: 'test-b.json' })])
 		});
 	});
+	it('CZMLに関連するモデルとテクスチャを落とさず渡す', async () => {
+		const files = [
+			new File([text], 'test.czml'),
+			new File(['{}'], 'test.gltf'),
+			new File([''], 'test.bin'),
+			new File([''], 'test.png')
+		];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			dialogType: 'czml',
+			dropFiles: files
+		});
+	});
 	it('通常のGeoJSONをCZML扱いしない', async () => {
 		const file = new File(
 			[JSON.stringify({ type: 'FeatureCollection', features: [] })],

@@ -169,7 +169,7 @@ FIT (`.fit`) は `FitForm.svelte` から専用WorkerでGPS記録を解析する�
 
 NMEA 0183 (`.nmea` / `.nme` / 内容判定した `.log`・`.txt`) は `NmeaForm.svelte` から専用WorkerでGNSSログを解析する。RMC・GGA・GLLの位置を軌跡または計測点として登録し、時刻・高度・速度などを属性に保持する。複数ログは結合せず選択して登録する。対応範囲は [NMEA 0183](../frontend/src/routes/map/utils/formats/nmea/README.md) を参照。
 
-CZML (`.czml`・CZML内容の `.json`) は `CzmlForm.svelte` から公式CesiumデコーダーをWorker内で実行する。位置・軌跡・ライン・ポリゴンを選択してGeoJSONのvector entryに登録し、時刻別の地物は既存のtemporal filterへ接続する。対応範囲は [CZML](../frontend/src/routes/map/utils/formats/czml/README.md) を参照。
+CZML (`.czml`・CZML内容の `.json`) は `CzmlForm.svelte` から公式CesiumデコーダーをWorker内で実行する。位置・軌跡・ライン・ポリゴンを選択してGeoJSONのvector entryに登録し、時刻別の地物は既存のtemporal filterへ接続する。3Dモデルは関連glTF/GLBをまとめたmesh entryとノード変換の時系列へ正規化し、既存のmodel temporal dimensionから描画runtimeへ反映する。対応範囲は [CZML](../frontend/src/routes/map/utils/formats/czml/README.md) を参照。
 
 動画（MP4・WebM・MOV・M4V・OGV）は `VideoForm.svelte` で位置タグと先頭フレームを読む。MP4・MOV系の撮影位置を取得できた場合は、詳細画面に動画を持つGeoJSONポイントとして登録へ進む。位置情報がない場合は位置合わせへ進む。確定した四隅と元動画のURLを `RasterVideoEntry` に保持し、video sourceとraster layerで再生する。対応範囲は[動画](../frontend/src/routes/map/utils/formats/video/README.md)を参照。
 

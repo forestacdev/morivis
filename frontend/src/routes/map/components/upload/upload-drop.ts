@@ -771,7 +771,7 @@ export const resolveDroppedFiles = async (
 			czmlCandidates.map(async file => ({ file, matched: await isCzmlFile(file) }))
 		);
 		const documents = matches.filter(item => item.matched).map(item => item.file);
-		if (documents.length) return createDialogDecision('czml', documents);
+		if (documents.length) return createDialogDecision('czml', files);
 	}
 	const nmeaCandidates = files.filter(isNmeaCandidate);
 	if (nmeaCandidates.length && !isGtfsTextSet(files)) {

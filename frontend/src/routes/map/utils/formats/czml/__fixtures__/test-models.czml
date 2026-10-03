@@ -1,0 +1,39 @@
+[
+  {
+    "id": "document",
+    "version": "1.0",
+    "name": "test-models",
+    "clock": {
+      "interval": "2024-01-02T00:00:00Z/2024-01-02T00:00:20Z",
+      "currentTime": "2024-01-02T00:00:00Z"
+    }
+  },
+  {
+    "id": "test-moving-point",
+    "availability": "2024-01-02T00:00:00Z/2024-01-02T00:00:20Z",
+    "position": {
+      "epoch": "2024-01-02T00:00:00Z",
+      "cartographicDegrees": [
+        0,
+        2.5,
+        1.25,
+        10,
+        10,
+        2.51,
+        1.26,
+        12,
+        20,
+        2.52,
+        1.27,
+        14
+      ]
+    },
+    "model": {
+      "gltf": "test-model.gltf",
+      "scale": 2
+    },
+    "orientation": {
+      "velocityReference": "#position"
+    }
+  }
+]

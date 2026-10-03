@@ -1086,7 +1086,8 @@ const createMapStore = () => {
 		};
 
 		if (currentThreeModelIds.has(entry.id)) {
-			applyTemporalModelMeshTimeStep(entry, timeIndex);
+			if (entry.properties?.nodeTransforms) await threeJsManager.setModelStyle(entry);
+			else applyTemporalModelMeshTimeStep(entry, timeIndex);
 		}
 
 		if (map && isMapValid(map)) {

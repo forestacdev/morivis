@@ -68,8 +68,15 @@ export const prepareCzml = (text: string) => {
 		}
 	};
 	const validateCoordinates = (values: unknown, key: string, list: boolean, epoch: unknown) => {
+		if (key === 'number' && typeof values === 'number' && Number.isFinite(values)) return;
 		if (!Array.isArray(values) || !values.length) throw new Error('CZMLの座標配列が不正です');
-		const dimensions = key === 'cartesianVelocity' ? 6 : 3;
+		const dimensions = key === 'cartesianVelocity'
+			? 6
+			: key === 'unitQuaternion'
+			? 4
+			: key === 'number'
+			? 1
+			: 3;
 		const sampled = !list && values.length !== dimensions;
 		const stride = dimensions + (sampled ? 1 : 0);
 		if (values.length % stride) throw new Error('CZMLの座標配列の要素数が不正です');
@@ -113,13 +120,20 @@ export const prepareCzml = (text: string) => {
 		if (value.interval !== undefined) addInterval(value.interval);
 		for (const [key, part] of Object.entries(value)) {
 			if (
-				['cartesian', 'cartesianVelocity', 'cartographicDegrees', 'cartographicRadians']
+				[
+					'cartesian',
+					'cartesianVelocity',
+					'cartographicDegrees',
+					'cartographicRadians',
+					'unitQuaternion',
+					'number'
+				]
 					.includes(key)
 			) {
 				if (Array.isArray(part) && Array.isArray(part[0])) {
 					for (const ring of part) validateCoordinates(ring, key, true, value.epoch);
 				} else validateCoordinates(part, key, list, value.epoch);
-			} else if (key === 'reference' || key === 'references') {
+			} else if (key === 'reference' || key === 'references' || key === 'velocityReference') {
 				for (const reference of Array.isArray(part) ? part : [part]) {
 					if (typeof reference !== 'string' || !reference.includes('#')) {
 						throw new Error('CZMLの参照が不正です');
@@ -171,6 +185,7 @@ export const prepareCzml = (text: string) => {
 			'delete',
 			'availability',
 			'position',
+			'orientation',
 			'properties'
 		]);
 		if (packet.id === 'document') {
@@ -193,10 +208,21 @@ export const prepareCzml = (text: string) => {
 					clean[key] = pick(packet[key], ['show', 'positions', 'holes']);
 				}
 			}
+			if (isObject(packet.model)) {
+				clean.model = pick(packet.model, ['gltf', 'show', 'scale', 'interval']);
+				if (
+					Object.keys(packet.model).some(key =>
+						!['gltf', 'show', 'scale', 'interval'].includes(key)
+					)
+				) {
+					warnings.add(
+						'モデル内のアニメーション、最小ピクセルサイズ、地面への追従、色の上書きは再現しません。'
+					);
+				}
+			}
 			if (
 				Object.keys(packet).some(key =>
 					[
-						'model',
 						'billboard',
 						'label',
 						'ellipse',
@@ -206,13 +232,12 @@ export const prepareCzml = (text: string) => {
 						'wall',
 						'corridor',
 						'rectangle',
-						'tileset',
-						'orientation'
+						'tileset'
 					].includes(key)
 				)
 			) {
 				warnings.add(
-					'モデル・画像・ラベル・立体図形は再現せず、位置があればポイントとして読み込みます。'
+					'画像・ラベル・立体図形は再現せず、位置があればポイントとして読み込みます。'
 				);
 			}
 			if (packet.point || packet.path || packet.polyline || packet.polygon) {
@@ -221,7 +246,9 @@ export const prepareCzml = (text: string) => {
 		}
 		if (clean.position !== undefined || packet.delete === true) references.delete(packet.id);
 		inspect(clean.position, packet.id, false, 0, true);
-		for (const key of ['point', 'path', 'polyline', 'polygon']) inspect(clean[key], packet.id);
+		for (const key of ['point', 'path', 'polyline', 'polygon', 'orientation', 'model']) {
+			inspect(clean[key], packet.id);
+		}
 		// 任意属性はプリミティブな定数に絞る。HTMLや参照を評価する経路を作らない。
 		if (isObject(clean.properties)) {
 			const properties = attributes.get(packet.id) ?? {};

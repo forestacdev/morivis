@@ -1,3 +1,4 @@
+import './worker-compat';
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import {
 	type Cartesian3,
@@ -7,13 +8,18 @@ import {
 	type Entity,
 	JulianDate,
 	Math as CesiumMath,
-	type PolygonHierarchy
+	Matrix3,
+	Matrix4,
+	type PolygonHierarchy,
+	Transforms
 } from '@cesium/engine';
-import { formatCzml } from './definition';
+import { czmlModelLimits, formatCzml } from './definition';
+import type { CzmlModel } from './model-types';
 import { prepareCzml } from './prepare';
 
 export type CzmlDataType = 'points' | 'tracks' | 'lines' | 'polygons';
 export interface CzmlResult {
+	models: CzmlModel[];
 	points: FeatureCollection;
 	tracks: FeatureCollection;
 	lines: FeatureCollection;
@@ -36,6 +42,7 @@ export const parseCzml = async (text: string): Promise<CzmlResult> => {
 	}
 	const times = prepared.times;
 	const result: CzmlResult = {
+		models: [],
 		points: empty(),
 		tracks: empty(),
 		lines: empty(),
@@ -96,6 +103,7 @@ export const parseCzml = async (text: string): Promise<CzmlResult> => {
 			name: entity.name ?? entity.id
 		};
 	};
+	const models = new Map<string, CzmlModel>();
 	let ignored = 0;
 	try {
 		for (const entity of source.entities.values) {
@@ -122,7 +130,7 @@ export const parseCzml = async (text: string): Promise<CzmlResult> => {
 				trackStart = undefined;
 				trackEnd = undefined;
 			};
-			for (const time of evaluationTimes) {
+			for (const [timeIndex, time] of evaluationTimes.entries()) {
 				if (!entity.isAvailable(time) || !entity.isShowing) {
 					finishTrack();
 					continue;
@@ -144,6 +152,63 @@ export const parseCzml = async (text: string): Promise<CzmlResult> => {
 				const position = entity.position?.getValue(time);
 				if (position) {
 					const point = coordinate(position);
+					const model = entity.model;
+					if (model && model.show?.getValue(time) !== false) {
+						const resource = model.uri?.getValue(time);
+						const uri = typeof resource === 'string' ? resource : resource?.url;
+						if (typeof uri === 'string' && uri.trim()) {
+							const scale = model.scale?.getValue(time) ?? 1;
+							if (!Number.isFinite(scale) || scale < 0) {
+								throw new Error('CZMLモデルの縮尺が不正です');
+							}
+							const matrix = entity.computeModelMatrix(time, new Matrix4());
+							if (!matrix) throw new Error('CZMLモデルの向きを計算できません');
+							const enu = Transforms.eastNorthUpToFixedFrame(position);
+							const local = Matrix4.multiply(
+								Matrix4.inverseTransformation(enu, new Matrix4()),
+								matrix,
+								new Matrix4()
+							);
+							// CesiumのglTF既定値: Y-up/Z-forwardからZ-up/X-forwardへの補正。
+							Matrix4.multiply(
+								local,
+								Matrix4.fromRotationTranslation(Matrix3.fromRotationX(Math.PI / 2)),
+								local
+							);
+							Matrix4.multiply(
+								local,
+								Matrix4.fromRotationTranslation(Matrix3.fromRotationY(Math.PI / 2)),
+								local
+							);
+							const rotation = Matrix3.toArray(
+								Matrix4.getMatrix3(local, new Matrix3())
+							);
+							if (!rotation.every(Number.isFinite)) {
+								throw new Error('CZMLモデルの向きが不正です');
+							}
+							const key = JSON.stringify([entity.id, uri]);
+							let item = models.get(key);
+							if (!item) {
+								if (models.size >= czmlModelLimits.maxInstances) {
+									throw new Error('CZMLのモデル数が128件を超えています');
+								}
+								item = {
+									id: entity.id,
+									name: entity.name ?? entity.id,
+									uri,
+									frames: []
+								};
+								models.set(key, item);
+							}
+							item.frames.push({
+								timeIndex,
+								position: [...point.xy, point.height],
+								rotation,
+								scale
+							});
+						}
+					}
+
 					if (entity.point?.show?.getValue(time) !== false) {
 						add('points', { type: 'Point', coordinates: point.xy }, {
 							...properties,
@@ -234,7 +299,8 @@ export const parseCzml = async (text: string): Promise<CzmlResult> => {
 	} finally {
 		source.entities.removeAll();
 	}
-	if (!features) {
+	result.models = [...models.values()];
+	if (!features && !result.models.length) {
 		throw new Error('CZMLから表示できる位置・ライン・ポリゴンが見つかりませんでした');
 	}
 	if (ignored) {

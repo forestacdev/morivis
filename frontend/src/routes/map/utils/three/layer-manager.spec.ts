@@ -58,6 +58,30 @@ const deferred = () => {
 	return { promise, resolve };
 };
 describe('ThreeJsLayerManager の読み込み登録境界', () => {
+	it('ノード時系列を初期読込・時刻変更・宣言的なentry更新へ反映する', async () => {
+		const manager = setup();
+		const { entry, object } = createTestModel();
+		const node = object.children[0];
+		node.name = 'test-temporal-node';
+		const first = new THREE.Matrix4().makeTranslation(1, 2, 3).toArray();
+		const second = new THREE.Matrix4().makeTranslation(4, 5, 6).toArray();
+		entry.properties = {
+			nodeTransforms: [{ nodeName: node.name, frames: [first, second, null] }]
+		};
+		entry.state = { dimension: { currentIndex: 1 } };
+		load.mockResolvedValueOnce({ object, animations: [] });
+		await manager.addModel(entry);
+		expect(node.matrix.toArray()).toEqual(second);
+		entry.state.dimension!.currentIndex = 2;
+		await manager.setModelStyle(entry);
+		expect(node.visible).toBe(false);
+		entry.state.dimension!.currentIndex = 0;
+		manager.updateTransform([entry]);
+		expect(node.visible).toBe(true);
+		expect(node.matrix.toArray()).toEqual(first);
+		manager.dispose();
+	});
+
 	it.each(['remove', 'dispose'] as const)(
 		'%s 後の読み込み完了を登録せず解放する',
 		async action => {

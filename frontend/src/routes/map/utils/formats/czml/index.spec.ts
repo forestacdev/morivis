@@ -87,7 +87,7 @@ describe('CZML', () => {
 		try {
 			const result = await parseCzml(input('external-model'));
 			expect(result.points.features).toHaveLength(1);
-			expect(result.warnings.join('')).toContain('モデル');
+			expect(result.models).toHaveLength(1);
 			expect(fetch).not.toHaveBeenCalled();
 		} finally {
 			fetch.mockRestore();

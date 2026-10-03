@@ -123,3 +123,49 @@ test('複数ファイルを切り替えてキャンセル後もドロップで�
 	await dropFixture(page, 'test-moving.czml');
 	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
 });
+
+test('CZMLとglTFを一緒にドロップして3Dモデルを登録できる', async ({ page }) => {
+	const errors: string[] = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await dropFixture(page, ['test-models.czml', 'test-model.gltf']);
+	await expect(page.getByRole('button', { name: '3Dモデル', exact: true })).toBeVisible();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	await expect(page.getByText('test-models', { exact: true }).first()).toBeVisible();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeHidden();
+	const layer = page.getByRole('button', { name: 'レイヤー', exact: true }).filter({
+		hasText: 'test-models'
+	});
+	await layer.hover();
+	await layer.locator('button').last().click();
+	await page.getByText('時間', { exact: true }).click();
+	await expect(page.getByRole('button', { name: '次へ', exact: true })).toBeVisible();
+	await page.getByRole('button', { name: '次へ', exact: true }).click();
+	await expect(page.getByRole('button', { name: '前へ', exact: true })).toBeEnabled();
+	await page.getByRole('button', { name: '前へ', exact: true }).click();
+	await dropFixture(page, 'test-static.czml');
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
+	expect(errors).toEqual([]);
+});
+
+test('モデル不足を説明し、関連ファイルを選び直すと登録できる', async ({ page }) => {
+	await dropFixture(page, 'test-models.czml');
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('alert')).toContainText('関連ファイルがありません');
+	await page.getByLabel('CZMLファイル', { exact: true }).setInputFiles(
+		['test-models.czml', 'test-model.gltf'].map(name => ({
+			name,
+			mimeType: 'application/json',
+			buffer: readFileSync(
+				new URL(
+					`../src/routes/map/utils/formats/czml/__fixtures__/${name}`,
+					import.meta.url
+				)
+			)
+		}))
+	);
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
+});

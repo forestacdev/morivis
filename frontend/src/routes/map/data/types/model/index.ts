@@ -89,6 +89,12 @@ export interface ModelPartData {
 }
 
 export interface ModelEntryProperties {
+	/** メッシュ内のノードのローカル変換。dimensionの各時刻に対応し、nullは非表示。 */
+	nodeTransforms?: {
+		nodeName: string;
+		/** 列優先4×4行列。描画オブジェクトは保持しない。 */
+		frames: (number[] | null)[];
+	}[];
 	/** 単体ビューで床グリッドを置く、モデルローカル座標の Y 値。 */
 	modelView?: {
 		floorY?: number;

@@ -4,6 +4,11 @@ import { MiB } from '../resource-limits';
 export const formatCzml = {
 	id: 'czml',
 	extensions: ['.czml', '.json'],
+	files: {
+		mainExtensions: ['.czml', '.json'],
+		optionalExtensions: ['.glb', '.gltf', '.bin', '.png', '.jpg', '.jpeg', '.webp'],
+		grouping: 'header-reference'
+	},
 	limits: {
 		maxFileBytes: 32 * MiB,
 		maxTextLength: 32 * MiB,
@@ -14,3 +19,10 @@ export const formatCzml = {
 		timeoutMs: 120_000
 	}
 } as const satisfies FormatDefinition;
+
+export const czmlModelLimits = {
+	maxInstances: 128,
+	maxAssets: 32,
+	maxBytes: 128 * MiB,
+	maxVertices: 1_000_000
+} as const;
