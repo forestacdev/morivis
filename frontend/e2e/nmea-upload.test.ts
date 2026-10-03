@@ -67,12 +67,13 @@ test('軌跡を登録した後の2回目のドロップで計測点も登録で�
 	await dropFixture(page, 'test-track.nmea');
 	await expect(page.getByLabel('NMEAファイル', { exact: true })).toBeHidden();
 	await expect(page.getByText('選択済み: 1ファイル', { exact: true })).toBeVisible();
-	await expect(page.getByLabel('表示対象')).toHaveValue('tracks');
+	await expect(page.getByRole('button', { name: 'ライン', exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'ポイント', exact: true })).toBeVisible();
 	await page.getByRole('button', { name: '登録', exact: true }).click();
 	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
 	await expect(page.getByText('test-track', { exact: true }).first()).toBeVisible();
 	await dropFixture(page, 'test-track.nmea');
-	await page.getByLabel('表示対象').selectOption('track_points');
+	await page.getByRole('button', { name: 'ポイント', exact: true }).click();
 	await page.getByLabel('データ名').fill('test-points');
 	await page.getByRole('button', { name: '登録', exact: true }).click();
 	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
@@ -96,7 +97,8 @@ test('不正な入力を選び直し、同じファイルを再選択できる',
 		)
 	};
 	await input.setInputFiles(file);
-	await expect(page.getByLabel('表示対象')).toHaveValue('tracks');
+	await expect(page.getByRole('button', { name: 'ライン', exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'ポイント', exact: true })).toBeVisible();
 	await page.getByLabel('データ名').fill('test-edited');
 	await input.setInputFiles(file);
 	await expect(page.getByLabel('データ名')).toHaveValue('test-track');
@@ -109,6 +111,7 @@ test('複数ログは結合せず選択したファイルのみ表示する', as
 	await expect(page.getByLabel('読み込むファイル')).toBeVisible();
 	await page.getByLabel('読み込むファイル').selectOption('1');
 	await expect(page.getByText('軌跡: 0件 / 計測点: 1件')).toBeVisible();
+	await expect(page.getByText('読み込みタイプ: ポイント', { exact: true })).toBeVisible();
 	await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
 	await dropFixture(page, 'test-track.nmea');
 	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();

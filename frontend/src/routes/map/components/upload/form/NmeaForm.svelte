@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 
+	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import { beginUploadProcessing } from '$routes/map/components/upload/processing-guard';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
@@ -39,7 +40,15 @@
 			? parsedInput.result
 			: null
 	);
-	let dataType = $state<'tracks' | 'track_points'>('tracks');
+	type NmeaDataType = 'tracks' | 'track_points';
+	let dataType = $state<NmeaDataType>('tracks');
+	const dataTypesOptions = $derived.by(() => {
+		const options: { key: NmeaDataType; name: string }[] = [];
+		if (result?.track_points.features.length)
+			options.push({ key: 'track_points', name: 'ポイント' });
+		if (result?.tracks.features.length) options.push({ key: 'tracks', name: 'ライン' });
+		return options;
+	});
 	const selectedData = $derived(result?.[dataType] ?? null);
 	let name = $state('');
 	let loading = $state(false);
@@ -171,14 +180,16 @@
 		<p>
 			軌跡: {result.tracks.features.length.toLocaleString()}件 / 計測点: {result.track_points.features.length.toLocaleString()}件
 		</p>
-		{#if result.tracks.features.length || result.track_points.features.length}
-			<label class="flex flex-col gap-2">
-				表示対象
-				<select class="rounded bg-zinc-800 p-2" bind:value={dataType} disabled={loading}>
-					{#if result.tracks.features.length}<option value="tracks">軌跡</option>{/if}
-					{#if result.track_points.features.length}<option value="track_points">計測点</option>{/if}
-				</select>
-			</label>
+		{#if dataTypesOptions.length > 1}
+			<fieldset class="min-w-0" disabled={loading}>
+				<HorizontalSelectBox
+					label="データタイプを選択"
+					bind:group={dataType as string | number}
+					options={dataTypesOptions}
+				/>
+			</fieldset>
+		{:else if dataTypesOptions.length === 1}
+			<p>読み込みタイプ: {dataTypesOptions[0].name}</p>
 		{/if}
 		{#if result.skippedSentences > 0}
 			<p class="text-amber-200">読み取れなかった文: {result.skippedSentences.toLocaleString()}件</p>
