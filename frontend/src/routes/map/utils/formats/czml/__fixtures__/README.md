@@ -1,0 +1,1 @@
+手作業の架空CZML。緯度1.25・経度2.5付近の単純な任意座標を使う。test-cases.jsonはdocumentパケット以降の試験ケース。ECEFはWGS84赤道半径に10mを足した人工的な入力。外部参照はtest.invalidのみ。

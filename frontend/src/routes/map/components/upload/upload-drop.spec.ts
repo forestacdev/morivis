@@ -1845,3 +1845,43 @@ describe('NMEAのドロップ', () => {
 		});
 	});
 });
+
+describe('CZMLのドロップ', () => {
+	const text = readFileSync(
+		new URL('../../utils/formats/czml/__fixtures__/test-static.czml', import.meta.url),
+		'utf8'
+	);
+	it.each(['czml', 'CZML', 'json'])('%sをCZMLフォームへ渡す', async extension => {
+		const file = new File([text], `test-static.${extension}`);
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'czml',
+			dropFiles: [file]
+		});
+	});
+	it('複数ファイルとZIP展開後のJSONを判定する', async () => {
+		const files = [new File([text], 'test-a.czml'), new File([text], 'test-b.json')];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			dialogType: 'czml',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test-a.czml', text);
+		zip.file('test-b.json', text);
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+			)
+		).toMatchObject({
+			dialogType: 'czml',
+			dropFiles: expect.arrayContaining([expect.objectContaining({ name: 'test-b.json' })])
+		});
+	});
+	it('通常のGeoJSONをCZML扱いしない', async () => {
+		const file = new File(
+			[JSON.stringify({ type: 'FeatureCollection', features: [] })],
+			'test.json'
+		);
+		expect(await resolveDroppedFiles(file)).toMatchObject({ dialogType: 'geojson' });
+	});
+});

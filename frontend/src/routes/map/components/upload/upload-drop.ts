@@ -1,3 +1,4 @@
+import { isCzmlFile } from '$routes/map/utils/formats/czml/files';
 import { isGeoZarrZip, isLocalGeoZarrFolder } from '$routes/map/utils/formats/geozarr/local';
 import { isJp2File } from '$routes/map/utils/formats/jpeg2000/files';
 import { isMapInfoTab } from '$routes/map/utils/formats/mapinfo-tab/files';
@@ -224,6 +225,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	tcx: 'tcx',
 	fit: 'fit',
 	nmea: 'nmea',
+	czml: 'czml',
 	nme: 'nmea',
 	osm: 'osm',
 	gml: 'gml',
@@ -763,6 +765,14 @@ export const resolveDroppedFiles = async (
 	const files = Array.isArray(input) ? input : [input];
 	// 更新単独でもフォームで基本セル不足を説明し、同じ入力欄から一式を選び直せる。
 	if (files.some(isS57File)) return createDialogDecision('s57', files.filter(isS57File));
+	const czmlCandidates = files.filter(file => /\.(?:czml|json)$/i.test(file.name));
+	if (czmlCandidates.length) {
+		const matches = await Promise.all(
+			czmlCandidates.map(async file => ({ file, matched: await isCzmlFile(file) }))
+		);
+		const documents = matches.filter(item => item.matched).map(item => item.file);
+		if (documents.length) return createDialogDecision('czml', documents);
+	}
 	const nmeaCandidates = files.filter(isNmeaCandidate);
 	if (nmeaCandidates.length && !isGtfsTextSet(files)) {
 		const matches = await Promise.all(

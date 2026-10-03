@@ -10,6 +10,7 @@ import { formatCedxm } from './cedxm/definition';
 import { formatCitygml } from './citygml/definition';
 import { formatCityjson } from './cityjson/definition';
 import { formatCsv } from './csv/definition';
+import { formatCzml } from './czml/definition';
 import { formatDae } from './dae/definition';
 import { formatDgn } from './dgn/definition';
 import { formatDm } from './dm/definition';
@@ -122,6 +123,7 @@ export const FORMAT_DEFINITIONS = {
 	'tcx': formatTcx,
 	'fit': formatFit,
 	'nmea': formatNmea,
+	'czml': formatCzml,
 	'gdb': formatGdb,
 	'osm': formatOsm,
 	'georss': formatGeorss,

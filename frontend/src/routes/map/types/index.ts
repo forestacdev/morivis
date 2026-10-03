@@ -79,6 +79,7 @@ export type DialogType =
 	| 'tcx'
 	| 'fit'
 	| 'nmea'
+	| 'czml'
 	| 'osm'
 	| 'georss'
 	| 'geojson'
@@ -408,6 +409,13 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		icon: 'mdi:map-marker-path',
 		description:
 			'GNSS受信機や航海機器が位置・時刻・速度などを交換するための通信形式です。保存されたログのRMC・GGA・GLLから、移動軌跡や計測点を地図に表示できます。'
+	},
+	{
+		id: 'czml',
+		label: 'CZML',
+		icon: 'mdi:map-clock',
+		description:
+			'位置や形状などの時間変化をJSONで記述する形式です。地球固定座標の位置・軌跡・ライン・ポリゴンを読み込み、時刻ごとに地図上で確認できます。'
 	},
 	{
 		id: 'gdb',

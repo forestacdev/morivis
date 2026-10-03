@@ -211,6 +211,10 @@
 		"extensions": [".nmea", ".nme", ".log", ".txt"]
 	},
 	{
+		"id": "czml",
+		"extensions": [".czml", ".json"]
+	},
+	{
 		"id": "gdb",
 		"extensions": [
 			".gdb"
