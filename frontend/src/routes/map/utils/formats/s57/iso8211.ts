@@ -82,7 +82,11 @@ const FORMATS: Record<string, string> = {
 	ATTF: 'b12,A',
 	NATF: 'b12,A',
 	ATTV: 'b12,A',
-	FFPT: 'B(64),b11,A'
+	FFPT: 'B(64),b11,A',
+	FFPC: 'b11,2b12',
+	FSPC: 'b11,2b12',
+	VRPC: 'b11,2b12',
+	SGCC: 'b11,2b12'
 };
 const expandFormat = (format: string) =>
 	format.replace(/\s/g, '').split(',').flatMap(token => {
@@ -93,7 +97,7 @@ const expandFormat = (format: string) =>
 		return Array<string>(count).fill(match[2].replace(/\(\)/, ''));
 	}).join(',');
 
-export const readDefinitions = (fields: Fields): Set<string> => {
+export const readDefinitions = (fields: Fields, update = false): Set<string> => {
 	const tags = new Set<string>();
 	for (const [tag, expected] of Object.entries(FORMATS)) {
 		const definitions = fields.get(tag);
@@ -110,7 +114,7 @@ export const readDefinitions = (fields: Fields): Set<string> => {
 		}
 		tags.add(tag);
 	}
-	if (!tags.has('DSID') || !tags.has('DSPM') || !tags.has('FRID')) {
+	if (!tags.has('DSID') || (!update && (!tags.has('DSPM') || !tags.has('FRID')))) {
 		throw new Error('S-57 ENCのフィールド定義を確認できませんでした');
 	}
 	return tags;
@@ -162,6 +166,7 @@ export const fieldReader = (bytes: Uint8Array) => {
 		u32: () => view.getUint32(take(4), true),
 		i32: () => view.getInt32(take(4), true),
 		text,
+		position: () => offset,
 		remaining: () => bytes.length - offset,
 		end: () => {
 			if (offset !== bytes.length) invalid();

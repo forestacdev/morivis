@@ -376,7 +376,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		label: 'S-57 電子海図',
 		icon: 'mdi:map-marker-radius',
 		description:
-			'S-57の電子海図の基本ファイルです。点・線・面と測深値を地図に重ね、地物分類や属性を確認できます。'
+			'S-57の電子海図の基本ファイルと更新差分です。同じセルの一式を読み込み、更新を適用した点・線・面と測深値を地図に重ねられます。'
 	},
 	{
 		id: 'gpx',

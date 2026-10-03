@@ -30,7 +30,7 @@ describe('S-57のドロップ', () => {
 			dropFiles: [expect.objectContaining({ name: 'test-chart.000' })]
 		});
 	});
-	it('単体・基本セルとの混在・ZIPの更新差分を無視せず拒否する', async () => {
+	it('単体・基本セルとの混在・ZIPの更新差分をフォームへ渡す', async () => {
 		const base = new File(['test'], 'test-chart.000');
 		const update = new File(['test'], 'test-chart.001');
 		const zip = new JSZip();
@@ -42,9 +42,9 @@ describe('S-57のドロップ', () => {
 		);
 		for (const input of [update, [base, update], archive]) {
 			expect(await resolveDroppedFiles(input)).toMatchObject({
-				type: 'notification',
-				level: 'error',
-				message: expect.stringContaining('更新ファイル')
+				type: 'dialog',
+				dialogType: 's57',
+				dropFiles: expect.arrayContaining([expect.objectContaining({ name: update.name })])
 			});
 		}
 	});

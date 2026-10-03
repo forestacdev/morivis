@@ -84,7 +84,7 @@ test('S-57を地図へ追加したあと、2回目のドロップも自動解析
 	expect(errors).toEqual([]);
 });
 
-test('不正なS-57と更新ファイルで理由を表示し、再選択で復帰する', async ({ page }) => {
+test('不正なS-57と基本セルのない更新で理由を表示し、再選択で復帰する', async ({ page }) => {
 	await dropFixture(page, 'test-chart.000', true);
 	await expect(page.getByRole('alert')).toContainText('ISO 8211');
 	await expect(page.getByRole('button', { name: 'プレビュー', exact: true })).toBeDisabled();
@@ -92,14 +92,9 @@ test('不正なS-57と更新ファイルで理由を表示し、再選択で復�
 		{
 			name: 'test-chart.001',
 			mimeType: 'application/octet-stream',
-			buffer: Buffer.from('test-update')
-		},
-		{
-			name: 'test-chart.000',
-			mimeType: 'application/octet-stream',
 			buffer: readFileSync(
 				new URL(
-					'../src/routes/map/utils/formats/s57/__fixtures__/test-chart.000',
+					'../src/routes/map/utils/formats/s57/__fixtures__/test-chart.001',
 					import.meta.url
 				)
 			)
@@ -140,4 +135,31 @@ test('解析中のファイル切替・キャンセルと、新しい一式の�
 	await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
 	await dropFixture(page, 'test-chart.000');
 	await expect(page.getByLabel('データ名')).toHaveValue('test-chart');
+});
+
+test('基本セルへ連続した差分を適用し、地図追加後も更新一式を再ドロップできる', async ({ page }) => {
+	const errors: string[] = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await dropFixture(page, ['test-chart.001', 'test-chart.000']);
+	await expect(page.getByText('更新番号: 1', { exact: true })).toBeVisible();
+	await expect(page.getByText('5 地物', { exact: true })).toBeVisible();
+	await page.getByLabel('地物分類').selectOption('75');
+	await expect(page.getByText('選択中: 2 地物', { exact: true })).toBeVisible();
+	await page.getByRole('button', { name: 'プレビュー', exact: true }).click();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	await expect(page.getByText('S-57 電子海図', { exact: true })).toHaveCount(0);
+	await dropFixture(page, ['test-chart.002', 'test-chart.000', 'test-chart.001']);
+	await expect(page.getByText('更新番号: 2', { exact: true })).toBeVisible();
+	await expect(page.getByText('4 地物', { exact: true })).toBeVisible();
+	expect(errors).toEqual([]);
+});
+
+test('更新番号の欠落で登録を止め、基本セルだけの再選択で更新番号を戻す', async ({ page }) => {
+	await dropFixture(page, ['test-chart.000', 'test-chart.002']);
+	await expect(page.getByRole('alert')).toContainText('.001が必要');
+	await expect(page.getByRole('button', { name: 'プレビュー', exact: true })).toBeDisabled();
+	await dropFixture(page, ['test-chart.000', 'test-chart.001']);
+	await expect(page.getByText('更新番号: 1', { exact: true })).toBeVisible();
+	await dropFixture(page, 'test-chart.000');
+	await expect(page.getByText('更新番号: 0', { exact: true })).toBeVisible();
 });

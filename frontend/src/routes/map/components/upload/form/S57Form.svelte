@@ -12,11 +12,9 @@
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { FeatureCollection } from '$routes/map/types/geojson';
-	import { hasFormatExtension } from '$routes/map/utils/formats/format-definition';
 	import type { S57Result } from '$routes/map/utils/formats/s57';
 	import { runS57Worker } from '$routes/map/utils/formats/s57/analyze';
-	import { formatS57 } from '$routes/map/utils/formats/s57/definition';
-	import { isS57Update, S57_UPDATE_ERROR } from '$routes/map/utils/formats/s57/files';
+	import { getS57Datasets, S57_FILE_ACCEPT } from '$routes/map/utils/formats/s57/files';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 
 	interface Props {
@@ -30,15 +28,21 @@
 		dropFile = $bindable()
 	}: Props = $props();
 	const uploadFiles = $derived(toUploadFiles(dropFile));
-	const hasUpdates = $derived(uploadFiles.some(isS57Update));
-	const files = $derived(
-		hasUpdates
-			? []
-			: uploadFiles.filter((item) => hasFormatExtension(item.name, formatS57.extensions))
-	);
+	const groupedInput = $derived.by(() => {
+		try {
+			return { datasets: getS57Datasets(uploadFiles), error: '' };
+		} catch (cause) {
+			return {
+				datasets: [],
+				error: cause instanceof Error ? cause.message : 'S-57のファイル構成を確認できませんでした'
+			};
+		}
+	});
+	const datasets = $derived(groupedInput.datasets);
 	let selection = $state.raw<{ batch: UploadFilesInput; index: number } | null>(null);
 	const selectedIndex = $derived(selection && selection.batch === dropFile ? selection.index : 0);
-	const file = $derived(files[selectedIndex] ?? files[0] ?? null);
+	const dataset = $derived(datasets[selectedIndex] ?? datasets[0] ?? null);
+	const file = $derived(dataset?.base ?? null);
 	let parsedInput = $state.raw<{
 		batch: UploadFilesInput;
 		file: File;
@@ -78,6 +82,7 @@
 
 	$effect(() => {
 		const selected = file;
+		const selectedDataset = dataset;
 		const batch = dropFile;
 		const task = new AbortController();
 		controller = task;
@@ -85,14 +90,14 @@
 		selectedClass = null;
 		selectedGeometry = 'Point';
 		name = selected?.name.replace(/\.000$/i, '') ?? '';
-		error = hasUpdates ? S57_UPDATE_ERROR : '';
+		error = groupedInput.error;
 		loading = !!selected;
-		if (selected) {
+		if (selected && selectedDataset) {
 			untrack(() => {
 				const release = beginUploadProcessing(task.signal);
 				void (async () => {
 					try {
-						const parsed = await runS57Worker(selected, task.signal);
+						const parsed = await runS57Worker(selectedDataset, task.signal);
 						if (task.signal.aborted || file !== selected || dropFile !== batch) return;
 						parsedInput = { batch, file: selected, result: parsed };
 						name = parsed.metadata.name || selected.name.replace(/\.000$/i, '');
@@ -152,12 +157,14 @@
 
 <div class="pb-4 text-2xl font-bold">S-57 電子海図</div>
 <div class="c-scroll flex flex-col gap-4 overflow-y-auto text-sm">
-	<p>基本ファイル（.000）の地物と属性を読み込みます。更新ファイルとS-52の海図表現は対象外です。</p>
+	<p>
+		基本ファイル（.000）と更新ファイル（.001以降）をまとめて選択・ドロップしてください。更新を適用した地物と属性を読み込みます。S-52の海図表現は対象外です。
+	</p>
 	<label class="flex flex-col gap-2">
 		S-57ファイル
 		<input
 			type="file"
-			accept={formatS57.extensions.join(',')}
+			accept={S57_FILE_ACCEPT}
 			multiple
 			onchange={(event) => {
 				const selected = event.currentTarget.files;
@@ -168,12 +175,12 @@
 			}}
 		/>
 	</label>
-	{#if files.length > 1}
+	{#if datasets.length > 1}
 		<label class="flex flex-col gap-2">
 			読み込むファイル
 			<select class="rounded bg-zinc-800 p-2" bind:value={() => selectedIndex, selectFile}>
-				{#each files as item, index (item)}
-					<option value={index}>{item.name}</option>
+				{#each datasets as item, index (item.base)}
+					<option value={index}>{item.base.name}</option>
 				{/each}
 			</select>
 		</label>
@@ -188,6 +195,7 @@
 			<input class="rounded bg-zinc-800 p-2" bind:value={name} disabled={loading} />
 		</label>
 		<p>{result.geojson.features.length.toLocaleString()} 地物</p>
+		<p>更新番号: {result.metadata.updateNumber}</p>
 		{#if result.metadata.edition || result.metadata.issueDate || result.metadata.scale > 0}
 			<p>
 				{#if result.metadata.edition}版: {result.metadata.edition}{/if}

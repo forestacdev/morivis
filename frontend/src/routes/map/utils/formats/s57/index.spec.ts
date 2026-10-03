@@ -230,8 +230,8 @@ describe('S-57 ENC', () => {
 			}
 		}
 	});
-	it('更新ファイルを拒否し、CATALOG.031は差分と混同しない', () => {
-		expect(() => checkS57File({ name: 'test-chart.001', size: 1 })).toThrow('更新ファイル');
+	it('更新ファイルを受け入れ、CATALOG.031は差分と混同しない', () => {
+		expect(() => checkS57File({ name: 'test-chart.001', size: 1 })).not.toThrow();
 		expect(isS57Update({ name: 'CATALOG.031' })).toBe(false);
 		expect(isS57Update({ name: 'test-chart.031' })).toBe(true);
 	});

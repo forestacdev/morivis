@@ -26,6 +26,11 @@ DEFINITIONS = {
     'NATF': ('*ATTL!ATVL', 'b12,A'),
     'FSPT': ('*NAME!ORNT!USAG!MASK', 'B(40),3b11'),
     'FFPT': ('*LNAM!RIND!COMT', 'B(64),b11,A'),
+    'ATTV': ('*ATTL!ATVL', 'b12,A'),
+    'FSPC': ('FSUI!FSIX!NSPT', 'b11,2b12'),
+    'FFPC': ('FFUI!FFIX!NFPT', 'b11,2b12'),
+    'VRPC': ('VPUI!VPIX!NVPT', 'b11,2b12'),
+    'SGCC': ('CCUI!CCIX!CCNC', 'b11,2b12'),
 }
 
 
@@ -49,13 +54,23 @@ def record(fields, ddr=False):
     return bytes(leader) + directory + FT + b''.join(value for _, value in fields)
 
 
-def chart(name, national_level=2):
+def definitions(update=False):
     tree = '0001DSIDDSIDDSSI0001DSPM0001VRIDVRIDSG2DVRIDSG3DVRIDVRPT0001FRIDFRIDFOIDFRIDATTFFRIDNATFFRIDFSPTFRIDFFPT'
     ddr = [('0000', b'0000;&   ' + text('test-chart') + tree.encode())]
+    tree += 'FRIDFSPCFRIDFFPCVRIDVRPCVRIDSGCCVRIDATTV'
+    if update:
+        tree = tree.replace('0001DSPM', '')
+    ddr[0] = ('0000', b'0000;&   ' + text('test-chart') + tree.encode())
     for tag, (labels, fmt) in DEFINITIONS.items():
+        if update and tag == 'DSPM':
+            continue
         control = b'0500;&   ' if tag == '0001' else b'2600;&   ' if labels.startswith('*') else b'1600;&   '
         ddr.append((tag, control + text('test-' + tag) + text(labels) + f'({fmt})'.encode()))
-    records = [record(ddr, True)]
+    return record(ddr, True)
+
+
+def chart(name, national_level=2):
+    records = [definitions()]
     serial = 0
 
     def add(fields):
@@ -82,7 +97,7 @@ def chart(name, national_level=2):
         if ident == 1:
             fields += [('SG2D', struct.pack('<ii', 1000000, 1500000))]
         vector(130, ident, fields)
-    vector(110, 1, [('SG3D', struct.pack('<iiiiii', 1250000, 1250000, 123, 1750000, 1750000, -5))])
+    vector(110, 1, [('SG3D', struct.pack('<iii', 1250000, 1250000, 123)), ('SG3D', struct.pack('<iii', 1750000, 1750000, -5))])
     vector(110, 2, [('SG2D', struct.pack('<ii', 1250000, 1500000))])
 
     def feature(ident, primitive, objl, pointers, attrs=None, extra=None):
@@ -105,6 +120,55 @@ def chart(name, national_level=2):
     return b''.join(records)
 
 
+def updates(number):
+    records = [definitions(True)]
+    serial = 0
+
+    def add(fields):
+        nonlocal serial
+        serial += 1
+        records.append(record([('0001', u16(serial))] + fields))
+
+    dsid = u8(10) + u32(1) + bytes([2, 4]) + text(f'test-chart.{number:03d}') + text('1') + text(str(number))
+    dsid += b'20000101' + f'200001{number + 1:02d}'.encode() + b'03.1' + u8(1) + text('') + text('2.0') + u8(2) + u16(999) + text('test-update')
+    add([('DSID', dsid), ('DSSI', bytes([2, 1, 2]) + struct.pack('<8I', 0, 0, 0, 0, 0, 0, 0, 0))])
+
+    def vector(kind, ident, version, operation, fields):
+        add([('VRID', u8(kind) + u32(ident) + u16(version) + u8(operation))] + fields)
+
+    def feature(ident, primitive, objl, version, operation, fields):
+        add([('FRID', u8(100) + u32(ident) + bytes([primitive, 2]) + u16(objl) + u16(version) + u8(operation))] + fields)
+
+    control = lambda operation, index, count: u8(operation) + u16(index) + u16(count)
+    pointer = lambda kind, ident: u8(kind) + u32(ident) + bytes([255, 255, 2])
+    relation = lambda ident, comment: u16(999) + u32(ident) + u16(1) + u8(1) + text(comment)
+    if number == 1:
+        vector(110, 1, 2, 3, [('SGCC', control(3, 1, 1)), ('SG3D', struct.pack('<iii', 1250000, 1250000, 456))])
+        vector(130, 1, 2, 3, [('SGCC', control(1, 2, 1)), ('SG2D', struct.pack('<ii', 1000000, 1750000))])
+        vector(130, 2, 2, 3, [('SG2D', struct.pack('<ii', 2000000, 4000000))])
+        vector(120, 9, 1, 1, [('SG2D', struct.pack('<ii', 2000000, 2000000))])
+        vector(130, 8, 2, 3, [('VRPC', control(3, 2, 1)), ('VRPT', u8(120) + u32(9) + bytes([255, 255, 2, 255]))])
+        vector(110, 3, 1, 1, [('SG2D', struct.pack('<ii', 1500000, 2500000))])
+        feature(4, 1, 75, 2, 3, [
+            ('FOID', u16(999) + u32(4) + u16(1)),
+            ('ATTF', u16(116) + text('test-updated') + u16(75) + b'\x7f' + UT + u16(102) + text('test-new')),
+            ('NATF', u16(301) + 'test-更新'.encode('utf-16le') + b'\x1f\0\x1e\0'),
+            ('FSPC', control(3, 1, 1)), ('FSPT', pointer(110, 3)),
+            ('FFPC', control(3, 1, 1)), ('FFPT', relation(6, 'test-replaced'))])
+        feature(6, 1, 75, 1, 1, [('FOID', u16(999) + u32(6) + u16(1)), ('FSPT', pointer(110, 3)), ('ATTF', u16(116) + text('test-added'))])
+        feature(2, 2, 30, 2, 2, [])
+        vector(110, 2, 2, 2, [])
+    else:
+        vector(110, 1, 3, 3, [('SGCC', control(2, 2, 1))])
+        feature(4, 1, 75, 3, 3, [('NATF', u16(301) + b'\x7f\0\x1f\0\x1e\0'), ('FFPC', control(2, 1, 1))])
+        feature(4, 1, 75, 4, 3, [('FFPC', control(1, 1, 1)), ('FFPT', relation(3, 'test-inserted'))])
+        feature(6, 1, 75, 2, 3, [('FSPC', control(1, 2, 1)), ('FSPT', pointer(110, 1))])
+        feature(6, 1, 75, 3, 3, [('FSPC', control(2, 1, 1))])
+    return b''.join(records)
+
+
 if __name__ == '__main__':
     (ROOT / 'test-chart.000').write_bytes(chart('test-chart'))
     (ROOT / 'test-other.000').write_bytes(chart('test-other', 1))
+    (ROOT / 'test-chart.001').write_bytes(updates(1))
+    (ROOT / 'test-chart.002').write_bytes(updates(2))

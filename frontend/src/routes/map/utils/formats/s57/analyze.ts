@@ -2,12 +2,12 @@ import type { S57Result } from '.';
 import { formatS57 } from './definition';
 import type { S57Response } from './worker';
 
-import { checkS57File } from './files';
+import { getS57Datasets, type S57DatasetFiles } from './files';
 import S57Worker from './worker?worker';
 
-export const runS57Worker = (file: File, signal: AbortSignal): Promise<S57Result> => {
+export const runS57Worker = (dataset: S57DatasetFiles, signal: AbortSignal): Promise<S57Result> => {
 	signal.throwIfAborted();
-	checkS57File(file);
+	getS57Datasets([dataset.base, ...dataset.updates]);
 	return new Promise((resolve, reject) => {
 		const worker = new S57Worker();
 		const cleanup = () => {
@@ -40,7 +40,7 @@ export const runS57Worker = (file: File, signal: AbortSignal): Promise<S57Result
 			reject(new Error('S-57の解析結果を受け取れませんでした'));
 		};
 		try {
-			worker.postMessage({ file });
+			worker.postMessage({ dataset });
 		} catch (error) {
 			cleanup();
 			reject(error);

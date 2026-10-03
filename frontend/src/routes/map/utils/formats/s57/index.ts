@@ -22,6 +22,7 @@ import { attribute, objectClass } from './catalog';
 import { formatS57 } from './definition';
 import { type Coordinate, geometryBuilder, type Pointer, type Spatial } from './geometry';
 import { fieldReader, type Fields, readDefinitions, readRecords, stripTerminator } from './iso8211';
+import { readUpdatedRecords, type S57UpdateInput } from './updates';
 
 const fail = (message: string): never => {
 	throw new Error(`S-57の${message}`);
@@ -53,7 +54,7 @@ const readPointers = (fields: Fields, tag: 'FSPT' | 'VRPT'): Pointer[] => {
 };
 
 /** S-57 3.1のバイナリENC基本セルをWGS84のGeoJSONへ変換する。 */
-export const parseS57 = (bytes: Uint8Array): S57Result => {
+export const parseS57 = (bytes: Uint8Array, updates: readonly S57UpdateInput[] = []): S57Result => {
 	const limits = formatS57.limits;
 	if (bytes.byteLength > limits.maxFileBytes) fail('入力は64 MiBの上限を超えています');
 	const metadata: S57Result['metadata'] = {
@@ -91,7 +92,9 @@ export const parseS57 = (bytes: Uint8Array): S57Result => {
 			}
 		}
 	};
-	readRecords(bytes, (fields, ddr) => {
+	const visitRecords = (visit: (fields: Fields, ddr: boolean) => void) =>
+		updates.length ? readUpdatedRecords(bytes, updates, visit) : readRecords(bytes, visit);
+	visitRecords((fields, ddr) => {
 		if (ddr) {
 			definitions = readDefinitions(fields);
 			return;

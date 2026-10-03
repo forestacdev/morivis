@@ -5,7 +5,7 @@ import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
 import { isOsmPbfFile } from '$routes/map/utils/formats/osm-pbf/files';
 import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
-import { isS57Base, isS57Update, S57_UPDATE_ERROR } from '$routes/map/utils/formats/s57/files';
+import { isS57File } from '$routes/map/utils/formats/s57/files';
 import { getShapefileDataset } from '$routes/map/utils/formats/shp/files';
 import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
@@ -47,7 +47,6 @@ import {
 	isGtfsTextSet,
 	isShapeFileRelated,
 	MODEL_FILE_EXTENSIONS,
-	S57_FILE_EXTENSIONS,
 	VTK_FILE_EXTENSIONS
 } from './upload-drop-matchers';
 
@@ -317,11 +316,6 @@ const SXF_SAF_EXTENSION = '.saf';
 
 // 複数ファイルドロップ専用ルール。上から優先順に評価する。
 const MULTI_FILE_RULES: UploadDropRule[] = [
-	{
-		id: 's57-base-cells',
-		match: files => files.some(file => hasAnyExtension(file, S57_FILE_EXTENSIONS)),
-		resolve: async files => createDialogDecision('s57', files.filter(isS57Base))
-	},
 	{
 		id: 'dgn-file',
 		match: files => files.some(file => hasExtension(file, '.dgn')),
@@ -750,8 +744,8 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
-	// ZIP展開後も更新差分を無視せず、基本セルと一緒に読み込む前に拒否する。
-	if (files.some(isS57Update)) return createNotificationDecision(S57_UPDATE_ERROR);
+	// 更新単独でもフォームで基本セル不足を説明し、同じ入力欄から一式を選び直せる。
+	if (files.some(isS57File)) return createDialogDecision('s57', files.filter(isS57File));
 	if (isLocalGeoZarrFolder(files)) return createDialogDecision('geozarr', files);
 	// MCAは同じワールドのリージョン一式を専用フォームへ渡す。
 	if (files.some((file) => hasExtension(file, '.mca'))) {

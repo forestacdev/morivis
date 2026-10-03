@@ -36,6 +36,7 @@ describe('format definitions', () => {
 	});
 	it('関連ファイルを含むファイル選択の対応範囲を維持する', () => {
 		const sidecars = [
+			...Array.from({ length: 999 }, (_, i) => `.${String(i + 1).padStart(3, '0')}`),
 			'.tfw',
 			'.tifw',
 			'.tiffw',
