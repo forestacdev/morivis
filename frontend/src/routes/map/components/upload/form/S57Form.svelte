@@ -27,6 +27,7 @@
 		showDialogType = $bindable(),
 		dropFile = $bindable()
 	}: Props = $props();
+	let fileInput = $state<HTMLInputElement | null>(null);
 	const uploadFiles = $derived(toUploadFiles(dropFile));
 	const groupedInput = $derived.by(() => {
 		try {
@@ -155,26 +156,40 @@
 	};
 </script>
 
-<div class="pb-4 text-2xl font-bold">S-57 電子海図</div>
-<div class="c-scroll flex flex-col gap-4 overflow-y-auto text-sm">
+<div class="shrink-0 pb-4 text-2xl font-bold">S-57 電子海図</div>
+<div class="c-scroll flex min-h-0 grow flex-col gap-4 overflow-y-auto text-sm">
 	<p>
 		基本ファイル（.000）と更新ファイル（.001以降）をまとめて選択・ドロップしてください。更新を適用した地物と属性を読み込みます。S-52の海図表現は対象外です。
 	</p>
-	<label class="flex flex-col gap-2">
-		S-57ファイル
+	<div class="flex flex-col items-start gap-2">
+		<span>S-57ファイル</span>
+		<button
+			type="button"
+			class="c-btn-confirm min-w-[180px] p-3 text-base"
+			onclick={() => fileInput?.click()}
+		>
+			{uploadFiles.length > 0 ? 'ファイルを選び直す' : 'ファイルを選択'}
+		</button>
 		<input
+			bind:this={fileInput}
 			type="file"
+			aria-label="S-57ファイル"
 			accept={S57_FILE_ACCEPT}
+			class="hidden"
 			multiple
 			onchange={(event) => {
 				const selected = event.currentTarget.files;
 				if (selected?.length) {
 					controller?.abort();
 					dropFile = Array.from(selected);
+					event.currentTarget.value = '';
 				}
 			}}
 		/>
-	</label>
+		{#if uploadFiles.length > 0}
+			<p>選択済み: {uploadFiles.length.toLocaleString()}ファイル</p>
+		{/if}
+	</div>
 	{#if datasets.length > 1}
 		<label class="flex flex-col gap-2">
 			読み込むファイル
@@ -188,6 +203,9 @@
 		<p class="break-all">{file.name}</p>
 	{:else}
 		<p>.000ファイルを選択してください。</p>
+	{/if}
+	{#if dataset && dataset.updates.length > 0}
+		<p>更新ファイル: {dataset.updates.length.toLocaleString()}件</p>
 	{/if}
 	{#if result}
 		<label class="flex flex-col gap-2">
@@ -245,12 +263,12 @@
 	{/if}
 	{#if loading}<p role="status">S-57を処理しています…</p>{/if}
 	{#if error}<p class="text-red-300" role="alert">{error}</p>{/if}
-	<div class="flex justify-end gap-2">
-		<button class="c-btn-cancel rounded-lg px-4 py-2" onclick={cancel}>キャンセル</button>
-		<button
-			class="c-btn-confirm rounded-lg px-4 py-2"
-			onclick={register}
-			disabled={loading || !selectedData?.features.length}>プレビュー</button
-		>
-	</div>
+</div>
+<div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">
+	<button class="c-btn-sub cursor-pointer p-4 text-lg" onclick={cancel}>キャンセル</button>
+	<button
+		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg disabled:cursor-not-allowed disabled:opacity-50"
+		onclick={register}
+		disabled={loading || !selectedData?.features.length}>登録</button
+	>
 </div>

@@ -63,12 +63,16 @@ test('S-57を地図へ追加したあと、2回目のドロップも自動解析
 	page.on('pageerror', error => errors.push(error.message));
 	await dropFixture(page, 'test-chart.000');
 	await expect(page.getByText('S-57 電子海図', { exact: true })).toBeVisible();
+	await expect(page.getByLabel('S-57ファイル', { exact: true })).toBeHidden();
+	await expect(page.getByText('選択済み: 1ファイル', { exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: 'ファイルを選び直す', exact: true }))
+		.toBeVisible();
 	await expect(page.getByText('5 地物', { exact: true })).toBeVisible();
 	await expect(page.getByRole('button', { name: '解析', exact: true })).toHaveCount(0);
 	await page.getByLabel('地物分類').selectOption('42');
 	await expect(page.getByText('選択中: 1 地物', { exact: true })).toBeVisible();
 	await expect(page.getByLabel('図形の種類')).toHaveValue('Polygon');
-	await page.getByRole('button', { name: 'プレビュー', exact: true }).click();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
 	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
 	await expect(page.getByText('test-chart', { exact: true }).first()).toBeVisible();
 	await expect(page.getByText('S-57 電子海図', { exact: true })).toHaveCount(0);
@@ -78,7 +82,7 @@ test('S-57を地図へ追加したあと、2回目のドロップも自動解析
 	await page.getByLabel('地物分類').selectOption('129');
 	await expect(page.getByLabel('図形の種類')).toHaveValue('Point');
 	await expect(page.getByText('選択中: 2 地物', { exact: true })).toBeVisible();
-	await page.getByRole('button', { name: 'プレビュー', exact: true }).click();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
 	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
 	await expect(page.getByText('test-other', { exact: true }).first()).toBeVisible();
 	expect(errors).toEqual([]);
@@ -87,8 +91,11 @@ test('S-57を地図へ追加したあと、2回目のドロップも自動解析
 test('不正なS-57と基本セルのない更新で理由を表示し、再選択で復帰する', async ({ page }) => {
 	await dropFixture(page, 'test-chart.000', true);
 	await expect(page.getByRole('alert')).toContainText('ISO 8211');
-	await expect(page.getByRole('button', { name: 'プレビュー', exact: true })).toBeDisabled();
-	await page.getByLabel('S-57ファイル', { exact: true }).setInputFiles([
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeDisabled();
+	const chooserPromise = page.waitForEvent('filechooser');
+	await page.getByRole('button', { name: 'ファイルを選び直す', exact: true }).click();
+	const chooser = await chooserPromise;
+	await chooser.setFiles([
 		{
 			name: 'test-chart.001',
 			mimeType: 'application/octet-stream',
@@ -101,7 +108,9 @@ test('不正なS-57と基本セルのない更新で理由を表示し、再選�
 		}
 	]);
 	await expect(page.getByRole('alert')).toContainText('更新ファイル');
-	await expect(page.getByRole('button', { name: 'プレビュー', exact: true })).toBeDisabled();
+	await expect(page.getByText('選択済み: 1ファイル', { exact: true })).toBeVisible();
+	await expect(page.getByLabel('S-57ファイル', { exact: true })).toHaveValue('');
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeDisabled();
 	await dropFixture(page, 'test-chart.000');
 	await expect(page.getByText('5 地物', { exact: true })).toBeVisible();
 	await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
@@ -141,11 +150,13 @@ test('基本セルへ連続した差分を適用し、地図追加後も更新�
 	const errors: string[] = [];
 	page.on('pageerror', error => errors.push(error.message));
 	await dropFixture(page, ['test-chart.001', 'test-chart.000']);
+	await expect(page.getByText('選択済み: 2ファイル', { exact: true })).toBeVisible();
+	await expect(page.getByText('更新ファイル: 1件', { exact: true })).toBeVisible();
 	await expect(page.getByText('更新番号: 1', { exact: true })).toBeVisible();
 	await expect(page.getByText('5 地物', { exact: true })).toBeVisible();
 	await page.getByLabel('地物分類').selectOption('75');
 	await expect(page.getByText('選択中: 2 地物', { exact: true })).toBeVisible();
-	await page.getByRole('button', { name: 'プレビュー', exact: true }).click();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
 	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
 	await expect(page.getByText('S-57 電子海図', { exact: true })).toHaveCount(0);
 	await dropFixture(page, ['test-chart.002', 'test-chart.000', 'test-chart.001']);
@@ -157,7 +168,7 @@ test('基本セルへ連続した差分を適用し、地図追加後も更新�
 test('更新番号の欠落で登録を止め、基本セルだけの再選択で更新番号を戻す', async ({ page }) => {
 	await dropFixture(page, ['test-chart.000', 'test-chart.002']);
 	await expect(page.getByRole('alert')).toContainText('.001が必要');
-	await expect(page.getByRole('button', { name: 'プレビュー', exact: true })).toBeDisabled();
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeDisabled();
 	await dropFixture(page, ['test-chart.000', 'test-chart.001']);
 	await expect(page.getByText('更新番号: 1', { exact: true })).toBeVisible();
 	await dropFixture(page, 'test-chart.000');
