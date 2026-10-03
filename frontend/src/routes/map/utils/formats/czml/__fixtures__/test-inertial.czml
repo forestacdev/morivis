@@ -1,0 +1,7 @@
+[
+  {"id":"document","version":"1.0","clock":{"interval":"2024-01-02T00:00:00Z/2024-01-02T01:00:00Z","currentTime":"2024-01-02T00:30:00Z"}},
+  {"id":"test-inertial-constant","position":{"referenceFrame":"INERTIAL","cartesian":[7000000,0,0]},"model":{"gltf":"test-model.gltf"},"orientation":{"velocityReference":"#position"}},
+  {"id":"test-inertial-sampled","position":{"referenceFrame":"INERTIAL","epoch":"2024-01-02T00:00:00Z","cartesian":[0,7000000,100000,0,3600,7000000,200000,10000]}},
+  {"id":"test-inertial-reference","position":{"reference":"test-inertial-sampled#position"}},
+  {"id":"test-inertial-line","polyline":{"positions":{"references":["test-inertial-constant#position","test-inertial-sampled#position"]}}}
+]

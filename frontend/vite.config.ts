@@ -3,6 +3,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import path from 'path';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { qrcode } from 'vite-plugin-qrcode';
+import { cesiumAssetsPlugin } from './scripts/cesium-assets-plugin';
 import { lazySvelteKitPWA } from './scripts/pwa-precache';
 import { robloxAssetsPlugin } from './scripts/roblox-assets-plugin';
 import { buildViteProxyConfig } from './src/routes/map/utils/platform/proxy';
@@ -40,6 +41,7 @@ export default defineConfig(({ mode }) => {
 			]
 		},
 		plugins: [
+			cesiumAssetsPlugin(),
 			diaperCssOverridePlugin,
 			robloxAssetsPlugin(env.ROBLOX_API_KEY),
 			sveltekit(),

@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import type { CzmlResult } from '.';
 import { formatCzml } from './definition';
 import type { CzmlRequest, CzmlResponse } from './worker';
@@ -6,7 +7,7 @@ import { assertInputResourceLimits } from '../resource-limits';
 import CzmlWorker from './worker?worker';
 
 export const runCzmlWorker = (
-	request: CzmlRequest,
+	request: Pick<CzmlRequest, 'file'>,
 	signal: AbortSignal
 ): Promise<CzmlResult> => {
 	signal.throwIfAborted();
@@ -48,7 +49,12 @@ export const runCzmlWorker = (
 			reject(new Error('CZMLの解析結果を受け取れませんでした'));
 		};
 		try {
-			worker.postMessage(request);
+			worker.postMessage(
+				{
+					...request,
+					cesiumBaseUrl: new URL(`${base}/vendor/cesium/`, window.location.href).href
+				} satisfies CzmlRequest
+			);
 		} catch (error) {
 			cleanup();
 			reject(error);

@@ -270,3 +270,60 @@ test('テキストの相対モデル参照を説明し、絶対URLへ直して3D
 	await page.getByRole('button', { name: '登録', exact: true }).click();
 	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
 });
+
+for (const mode of ['ファイル', 'テキスト']) {
+	test(`INERTIAL座標を${mode}から読み込み、軌跡を登録できる`, async ({ page }) => {
+		const assets: string[] = [];
+		page.on('response', response => {
+			if (response.url().includes('/vendor/cesium/Assets/IAU2006_XYS/')) {
+				expect(response.status()).toBe(200);
+				assets.push(response.url());
+			}
+		});
+		if (mode === 'ファイル') {
+			await dropFixture(page, 'test-inertial.czml');
+		} else {
+			await openTextInput(page, true);
+			await page.getByLabel('CZMLテキスト', { exact: true }).fill(
+				fixtureText('test-inertial.czml')
+			);
+			await page.getByRole('button', { name: '登録', exact: true }).click();
+		}
+		await expect(page.getByText('時刻: 3件', { exact: true })).toBeVisible();
+		expect(assets.length).toBeGreaterThan(0);
+		await page.getByRole('button', { name: '軌跡', exact: true }).click();
+		await page.getByLabel('データ名', { exact: true }).fill('test-inertial-tracks');
+		await page.getByRole('button', { name: '登録', exact: true }).click();
+		await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+		await expect(page.getByText('test-inertial-tracks', { exact: true }).first()).toBeVisible();
+	});
+}
+
+test('INERTIALの3Dモデルを登録して時刻を切り替えられる', async ({ page }) => {
+	await dropFixture(page, ['test-inertial.czml', 'test-model.gltf']);
+	await expect(page.getByRole('button', { name: '3Dモデル', exact: true })).toBeVisible();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	const layer = page.getByRole('button', { name: 'レイヤー', exact: true }).filter({
+		hasText: 'test-inertial'
+	});
+	await layer.hover();
+	await layer.locator('button').last().click();
+	await page.getByText('時間', { exact: true }).click();
+	await page.getByRole('button', { name: '次へ', exact: true }).click();
+	await expect(page.getByRole('button', { name: '前へ', exact: true })).toBeEnabled();
+	await page.getByRole('button', { name: '前へ', exact: true }).click();
+});
+
+test('INERTIAL変換表の取得失敗を表示し、再ドロップで復帰する', async ({ page }) => {
+	const pattern = '**/vendor/cesium/Assets/IAU2006_XYS/*.json';
+	await page.route(pattern, route => route.fulfill({ status: 503, body: 'test-unavailable' }));
+	await dropFixture(page, 'test-inertial.czml');
+	await expect(page.getByRole('alert')).toContainText('変換データを読み込めません');
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeDisabled();
+	await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
+	await page.unroute(pattern);
+	await dropFixture(page, 'test-inertial.czml');
+	await expect(page.getByText('時刻: 3件', { exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
+});

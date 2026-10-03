@@ -35,6 +35,7 @@ export const prepareCzml = (text: string) => {
 	const warnings = new Set<string>();
 	const references = new Map<string, Set<string>>();
 	let sourcePoints = 0;
+	let hasInertial = false;
 	const addTime = (raw: unknown, epoch?: unknown) => {
 		let time: JulianDate;
 		try {
@@ -112,10 +113,21 @@ export const prepareCzml = (text: string) => {
 			return;
 		}
 		if (!isObject(value)) return;
-		if (value.referenceFrame !== undefined && value.referenceFrame !== 'FIXED') {
-			throw new Error(
-				'CZMLのINERTIAL座標系には未対応です。FIXEDまたは経緯度座標で出力してください'
-			);
+		if (value.referenceFrame !== undefined) {
+			if (value.referenceFrame !== 'FIXED' && value.referenceFrame !== 'INERTIAL') {
+				throw new Error('CZMLのreferenceFrameにはFIXEDまたはINERTIALを指定してください');
+			}
+			if (value.referenceFrame === 'INERTIAL') {
+				if (!positionReference) {
+					throw new Error(
+						'INERTIALはpositionに指定してください。線・面にはpositionへのreferencesを使用してください'
+					);
+				}
+				hasInertial = true;
+				warnings.add(
+					'INERTIAL座標を時刻ごとに変換します。地球姿勢の実測補正（EOP）は含みません。'
+				);
+			}
 		}
 		if (value.interval !== undefined) addInterval(value.interval);
 		for (const [key, part] of Object.entries(value)) {
@@ -291,7 +303,13 @@ export const prepareCzml = (text: string) => {
 		checked.add(id);
 	};
 	for (const id of references.keys()) checkReferences(id);
+	if (hasInertial && !times.size) {
+		throw new Error(
+			'INERTIAL座標の変換には時刻が必要です。clock・availability・位置サンプルの時刻を指定してください'
+		);
+	}
 	return {
+		hasInertial,
 		packets,
 		attributes,
 		times: [...times.values()].sort(JulianDate.compare),

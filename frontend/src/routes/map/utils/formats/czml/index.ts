@@ -14,6 +14,7 @@ import {
 	Transforms
 } from '@cesium/engine';
 import { czmlModelLimits, formatCzml } from './definition';
+import { preloadCzmlInertial } from './inertial';
 import type { CzmlModel } from './model-types';
 import { prepareCzml } from './prepare';
 
@@ -32,6 +33,7 @@ const empty = (): FeatureCollection => ({ type: 'FeatureCollection', features: [
 
 export const parseCzml = async (text: string): Promise<CzmlResult> => {
 	const prepared = prepareCzml(text);
+	if (prepared.hasInertial) await preloadCzmlInertial(prepared.times);
 	let source: CzmlDataSource;
 	try {
 		source = await CzmlDataSource.load(prepared.packets);
