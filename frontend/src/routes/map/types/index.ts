@@ -97,6 +97,7 @@ export type DialogType =
 	| 'drm'
 	| 'dwg'
 	| 'dxf'
+	| 's57'
 	| 'dgn'
 	| 'jww'
 	| 'cedxm'
@@ -369,6 +370,13 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		icon: 'mdi:shape-outline',
 		description:
 			'複数ファイルで構成されたベクターデータです。`.shp` を中心に図形と属性をまとめて読み込むときに使います。'
+	},
+	{
+		id: 's57',
+		label: 'S-57 電子海図',
+		icon: 'mdi:map-marker-radius',
+		description:
+			'S-57の電子海図の基本ファイルです。点・線・面と測深値を地図に重ね、地物分類や属性を確認できます。'
 	},
 	{
 		id: 'gpx',

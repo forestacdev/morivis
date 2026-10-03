@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const imports = vi.hoisted(() => ({ gpx: 0, dwg: 0 }));
+const s57Imports = vi.hoisted(() => ({ count: 0 }));
+vi.mock('./form/S57Form.svelte', () => {
+	s57Imports.count++;
+	return { default: () => {} };
+});
 const vtkImports = vi.hoisted(() => ({ count: 0 }));
 vi.mock('./form/VtkForm.svelte', () => {
 	vtkImports.count++;
@@ -41,6 +46,12 @@ vi.mock('./form/DwgForm.svelte', () => {
 import { dialogRegistry } from './dialog-registry';
 
 describe('dialog registry loading', () => {
+	it('S-57フォームをファイル入力付きで遅延ロードする', async () => {
+		expect(s57Imports.count).toBe(0);
+		expect(dialogRegistry.s57!.profile).toBe('drop-file');
+		expect((await dialogRegistry.s57!.load()).default).toBeTypeOf('function');
+		expect(s57Imports.count).toBe(1);
+	});
 	it('VTKフォームをファイル入力付きで遅延ロードする', async () => {
 		expect(vtkImports.count).toBe(0);
 		expect(dialogRegistry.vtk!.profile).toBe('drop-file');

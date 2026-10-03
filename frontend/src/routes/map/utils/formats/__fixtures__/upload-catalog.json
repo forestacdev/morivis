@@ -185,6 +185,10 @@
 		]
 	},
 	{
+		"id": "s57",
+		"extensions": [".000"]
+	},
+	{
 		"id": "gpx",
 		"extensions": [
 			".gpx"

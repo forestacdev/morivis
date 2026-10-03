@@ -3,6 +3,53 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('S-57のドロップ', () => {
+	it('単体・複数の基本セルをS-57へ振り分ける', async () => {
+		const files = [new File(['test'], 'test-a.000'), new File(['test'], 'test-b.000')];
+		expect(await resolveDroppedFiles(files[0])).toMatchObject({
+			type: 'dialog',
+			dialogType: 's57'
+		});
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			type: 'dialog',
+			dialogType: 's57',
+			dropFiles: files
+		});
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.000');
+	});
+	it('ZIP内の基本セルを読み込み、カタログを差分と混同しない', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/test-chart.000', 'test');
+		zip.file('test-folder/CATALOG.031', 'test');
+		const decision = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-chart.zip')
+		);
+		expect(decision).toMatchObject({
+			type: 'dialog',
+			dialogType: 's57',
+			dropFiles: [expect.objectContaining({ name: 'test-chart.000' })]
+		});
+	});
+	it('単体・基本セルとの混在・ZIPの更新差分を無視せず拒否する', async () => {
+		const base = new File(['test'], 'test-chart.000');
+		const update = new File(['test'], 'test-chart.001');
+		const zip = new JSZip();
+		zip.file(base.name, 'test');
+		zip.file(update.name, 'test');
+		const archive = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-chart.zip'
+		);
+		for (const input of [update, [base, update], archive]) {
+			expect(await resolveDroppedFiles(input)).toMatchObject({
+				type: 'notification',
+				level: 'error',
+				message: expect.stringContaining('更新ファイル')
+			});
+		}
+	});
+});
+
 describe('VTKのドロップ', () => {
 	it.each([
 		'test-surface.vtk',

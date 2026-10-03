@@ -63,6 +63,7 @@ import { formatPptx } from './pptx/definition';
 import { formatRaster } from './raster/definition';
 import { formatRik } from './rik/definition';
 import { formatRoblox } from './roblox/definition';
+import { formatS57 } from './s57/definition';
 import { formatShp } from './shp/definition';
 import { formatSim } from './sima/definition';
 import { formatSpz } from './spz/definition';
@@ -114,6 +115,7 @@ export const FORMAT_DEFINITIONS = {
 	'sqlite': formatSqlite,
 	'filegdb': formatFilegdb,
 	'shp': formatShp,
+	's57': formatS57,
 	'gpx': formatGpx,
 	'tcx': formatTcx,
 	'fit': formatFit,
