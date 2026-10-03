@@ -23,6 +23,10 @@
 		showDialogType = $bindable(),
 		dropFile = $bindable()
 	}: Props = $props();
+	let sourceMode = $state<'file' | 'text'>('file');
+	let inputText = $state('');
+	let manualEntryName = $state('');
+	let parsedText = $state.raw<{ text: string; file: File; result: CzmlResult } | null>(null);
 	const uploadFiles = $derived(toUploadFiles(dropFile));
 	let detectedInput = $state.raw<{
 		batch: UploadFilesInput;
@@ -33,7 +37,9 @@
 		detectedInput && detectedInput.batch === dropFile ? detectedInput.files : []
 	);
 	const detectionError = $derived(
-		detectedInput && detectedInput.batch === dropFile ? detectedInput.error : ''
+		sourceMode === 'file' && detectedInput && detectedInput.batch === dropFile
+			? detectedInput.error
+			: ''
 	);
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let selection = $state.raw<{ batch: UploadFilesInput; index: number } | null>(null);
@@ -44,11 +50,13 @@
 		file: File;
 		result: CzmlResult;
 	} | null>(null);
-	const result = $derived(
-		parsedInput && parsedInput.batch === dropFile && parsedInput.file === file
+	const result = $derived.by(() => {
+		if (sourceMode === 'text')
+			return parsedText && parsedText.text === inputText ? parsedText.result : null;
+		return parsedInput && parsedInput.batch === dropFile && parsedInput.file === file
 			? parsedInput.result
-			: null
-	);
+			: null;
+	});
 	type DisplayType = CzmlDataType | 'models';
 	const typeOptions: { key: DisplayType; name: string }[] = [
 		{ key: 'models', name: '3Dモデル' },
@@ -73,14 +81,24 @@
 	const busy = $derived(loading || discovering);
 	let error = $state('');
 	let controller: AbortController | undefined;
+	let observedBatch: UploadFilesInput = null;
 
 	$effect(() => {
+		const batch = dropFile;
+		if (batch !== observedBatch) {
+			observedBatch = batch;
+			if (batch) sourceMode = 'file';
+		}
+	});
+
+	$effect(() => {
+		const mode = sourceMode;
 		const batch = dropFile;
 		const inputs = uploadFiles;
 		const task = new AbortController();
 		detectedInput = null;
-		discovering = inputs.length > 0;
-		if (inputs.length) {
+		discovering = mode === 'file' && inputs.length > 0;
+		if (mode === 'file' && inputs.length) {
 			untrack(() => {
 				const release = beginUploadProcessing(task.signal);
 				void (async () => {
@@ -113,6 +131,7 @@
 	});
 
 	$effect(() => {
+		if (sourceMode !== 'file') return;
 		const input = file;
 		const batch = dropFile;
 		const task = new AbortController();
@@ -125,7 +144,8 @@
 		if (input) {
 			untrack(() => {
 				const release = beginUploadProcessing(task.signal);
-				const isCurrent = () => !task.signal.aborted && file === input && dropFile === batch;
+				const isCurrent = () =>
+					!task.signal.aborted && sourceMode === 'file' && file === input && dropFile === batch;
 				void (async () => {
 					try {
 						const parsed = await analyzeCzmlFile(input, task.signal);
@@ -148,28 +168,88 @@
 		return () => task.abort();
 	});
 
+	$effect(() => {
+		if (sourceMode !== 'text') return;
+		// テキストの変更で結果を破棄する。解析は登録操作から開始する。
+		void inputText;
+		const task = new AbortController();
+		controller = task;
+		parsedText = null;
+		loading = false;
+		error = '';
+		return () => task.abort();
+	});
+
 	const selectFile = (index: number) => {
 		if (index === selectedIndex) return;
 		controller?.abort();
 		selection = { batch: dropFile, index };
 	};
 	const register = async () => {
-		if (!result || !file || !canRegister || !controller || busy) return;
-		const input = file;
+		if (!controller || busy) return;
+		const mode = sourceMode;
+		const text = inputText;
+		if (mode === 'text' ? !text.trim() : !result || !file || !canRegister) return;
+		const input =
+			mode === 'text'
+				? parsedText?.text === text
+					? parsedText.file
+					: new File([text], 'input.czml', { type: 'application/json' })
+				: file;
+		if (!input) return;
 		const batch = dropFile;
 		const signal = controller.signal;
 		if (signal.aborted) return;
-		const isCurrent = () => !signal.aborted && file === input && dropFile === batch;
+		const isCurrent = () =>
+			!signal.aborted &&
+			sourceMode === mode &&
+			dropFile === batch &&
+			(mode === 'text' ? inputText === text : file === input);
 		const release = beginUploadProcessing(signal);
 		loading = true;
 		error = '';
 		try {
+			let parsed = result;
+			let type = dataType;
+			if (mode === 'text' && !parsed) {
+				const analyzed = await analyzeCzmlFile(input, signal);
+				if (!isCurrent()) return;
+				parsed = analyzed;
+				parsedText = { text, file: input, result: parsed };
+				const options = typeOptions.filter((option) => dataCount(analyzed, option.key) > 0);
+				if (!options.length) throw new Error('表示できる位置・図形・モデルがありません');
+				type = options[0].key;
+				dataType = type;
+				if (options.length > 1) return;
+			}
+			if (!parsed) return;
+			if (mode === 'text' && type === 'models') {
+				for (const model of parsed.models) {
+					let absolute = false;
+					try {
+						const url = new URL(model.uri);
+						absolute =
+							url.protocol === 'data:' || (/^https?:\/\//i.test(model.uri) && !!url.hostname);
+					} catch {
+						// 相対参照は関連ファイルを含めたファイル入力で解決する。
+					}
+					if (!absolute)
+						throw new Error(
+							'テキスト入力の3DモデルにはHTTP(S)の絶対URLまたはdata URIを指定してください。相対参照を使う場合は「ファイル」に切り替え、CZMLとモデル・画像をまとめて選択してください。'
+						);
+				}
+			}
+			const entryName = (mode === 'text' ? manualEntryName : name).trim() || 'CZML';
 			const entry =
-				dataType === 'models'
-					? await createCzmlModelEntry(result, input, uploadFiles, name.trim() || 'CZML', signal)
-					: selectedData
-						? await createCzmlEntry(selectedData, name.trim() || 'CZML')
-						: undefined;
+				type === 'models'
+					? await createCzmlModelEntry(
+							parsed,
+							input,
+							mode === 'file' ? uploadFiles : [],
+							entryName,
+							signal
+						)
+					: await createCzmlEntry(parsed[type], entryName);
 			if (!isCurrent()) {
 				if (entry?.type === 'model') URL.revokeObjectURL(entry.format.url);
 				else if (entry) GeojsonCache.remove(entry.id);
@@ -197,52 +277,88 @@
 <div class="shrink-0 pb-4 text-2xl font-bold">CZML</div>
 <div class="c-scroll flex min-h-0 grow flex-col gap-4 overflow-y-auto text-sm">
 	<p>時刻付きの位置・軌跡・図形を読み込みます。</p>
-	<p>
-		3Dモデルを含む場合は、CZMLと参照するglTF・GLB・バイナリ・画像ファイルをまとめて選択してください。
-	</p>
-	<div class="flex flex-col items-start gap-2">
-		<span>CZMLファイル</span>
-		<button
-			type="button"
-			class="c-btn-confirm min-w-[180px] p-3 text-base"
-			onclick={() => fileInput?.click()}
-		>
-			{uploadFiles.length > 0 ? 'ファイルを選び直す' : 'ファイルを選択'}
-		</button>
-		<input
-			bind:this={fileInput}
-			type="file"
-			aria-label="CZMLファイル"
-			class="hidden"
-			multiple
-			onchange={(event) => {
-				const selected = event.currentTarget.files;
-				if (selected?.length) {
-					controller?.abort();
-					dropFile = Array.from(selected);
-					event.currentTarget.value = '';
-				}
-			}}
+	<div class="w-full p-2">
+		<HorizontalSelectBox
+			label="入力方法を選択"
+			bind:group={sourceMode as string | number}
+			options={[
+				{ key: 'file', name: 'ファイル' },
+				{ key: 'text', name: 'テキスト' }
+			]}
 		/>
-		{#if uploadFiles.length > 0}<p>選択済み: {uploadFiles.length.toLocaleString()}ファイル</p>{/if}
 	</div>
-	{#if files.length > 1}
-		<label class="flex flex-col gap-2">
-			読み込むファイル
-			<select class="rounded bg-zinc-800 p-2" bind:value={() => selectedIndex, selectFile}>
-				{#each files as item, index (item)}<option value={index}>{item.name}</option>{/each}
-			</select>
-		</label>
-	{:else if file}
-		<p class="break-all">{file.name}</p>
+	{#if sourceMode === 'file'}
+		<p>
+			3Dモデルを含む場合は、CZMLと参照するglTF・GLB・バイナリ・画像ファイルをまとめて選択してください。
+		</p>
+		<div class="flex flex-col items-start gap-2">
+			<span>CZMLファイル</span>
+			<button
+				type="button"
+				class="c-btn-confirm min-w-[180px] p-3 text-base"
+				onclick={() => fileInput?.click()}
+			>
+				{uploadFiles.length > 0 ? 'ファイルを選び直す' : 'ファイルを選択'}
+			</button>
+			<input
+				bind:this={fileInput}
+				type="file"
+				aria-label="CZMLファイル"
+				class="hidden"
+				multiple
+				onchange={(event) => {
+					const selected = event.currentTarget.files;
+					if (selected?.length) {
+						controller?.abort();
+						dropFile = Array.from(selected);
+						event.currentTarget.value = '';
+					}
+				}}
+			/>
+			{#if uploadFiles.length > 0}<p>
+					選択済み: {uploadFiles.length.toLocaleString()}ファイル
+				</p>{/if}
+		</div>
+		{#if files.length > 1}
+			<label class="flex flex-col gap-2">
+				読み込むファイル
+				<select class="rounded bg-zinc-800 p-2" bind:value={() => selectedIndex, selectFile}>
+					{#each files as item, index (item)}<option value={index}>{item.name}</option>{/each}
+				</select>
+			</label>
+		{:else if file}
+			<p class="break-all">{file.name}</p>
+		{:else}
+			<p>CZMLファイルを選択してください。</p>
+		{/if}
 	{:else}
-		<p>CZMLファイルを選択してください。</p>
+		<div class="flex w-full flex-col gap-2 p-2">
+			<label class="flex flex-col gap-2">
+				<span class="text-base font-bold select-none">データ名</span>
+				<input
+					type="text"
+					class="bg-base text-main w-full rounded-lg p-2 focus:outline-0"
+					bind:value={manualEntryName}
+					disabled={busy}
+				/>
+			</label>
+			<label class="flex flex-col gap-2">
+				<span class="text-base font-bold select-none">CZMLテキスト</span>
+				<textarea
+					class="bg-base text-main min-h-[220px] w-full rounded-lg p-3 font-mono text-sm focus:outline-0"
+					bind:value={inputText}
+					placeholder={'[{"id":"document","version":"1.0"}]'}
+				></textarea>
+			</label>
+		</div>
 	{/if}
 	{#if result}
-		<label class="flex flex-col gap-2">
-			データ名
-			<input class="rounded bg-zinc-800 p-2" bind:value={name} disabled={busy} />
-		</label>
+		{#if sourceMode === 'file'}
+			<label class="flex flex-col gap-2">
+				データ名
+				<input class="rounded bg-zinc-800 p-2" bind:value={name} disabled={busy} />
+			</label>
+		{/if}
 		<p>
 			ポイント: {result.points.features.length.toLocaleString()}件 / 軌跡: {result.tracks.features.length.toLocaleString()}件
 			/ ライン: {result.lines.features.length.toLocaleString()}件 / ポリゴン: {result.polygons.features.length.toLocaleString()}件
@@ -278,6 +394,8 @@
 	<button
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg disabled:cursor-not-allowed disabled:opacity-50"
 		onclick={register}
-		disabled={busy || !canRegister}>登録</button
+		disabled={busy ||
+			(sourceMode === 'text' ? !inputText.trim() || (!!result && !canRegister) : !canRegister)}
+		>登録</button
 	>
 </div>

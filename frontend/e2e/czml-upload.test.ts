@@ -169,3 +169,104 @@ test('モデル不足を説明し、関連ファイルを選び直すと登録�
 	await page.getByRole('button', { name: '登録', exact: true }).click();
 	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
 });
+
+const fixtureText = (name: string) =>
+	readFileSync(
+		new URL(
+			`../src/routes/map/utils/formats/czml/__fixtures__/${name}`,
+			import.meta.url
+		),
+		'utf8'
+	);
+const singlePointText = () =>
+	JSON.stringify(JSON.parse(fixtureText('test-static.czml')).slice(0, 2));
+const openTextInput = async (page: Page, fromMenu = false) => {
+	if (fromMenu) {
+		await page.getByRole('button', { name: 'データ一覧を見る', exact: true }).click();
+		await page.getByRole('button', { name: 'アップロード', exact: true }).click();
+		await page.getByRole('button', { name: '対応形式一覧', exact: true }).click();
+		await page.getByRole('button', { name: /^CZML/ }).click();
+	} else {
+		await dropFixture(page, 'test-static.czml');
+		await expect(page.getByRole('button', { name: 'ポリゴン', exact: true })).toBeVisible();
+	}
+	await page.getByRole('button', { name: 'テキスト', exact: true }).click();
+	await expect(page.getByLabel('CZMLテキスト', { exact: true })).toBeVisible();
+};
+
+test('テキストは登録時に検証し、修正後は入力した名前で登録できる', async ({ page }) => {
+	await openTextInput(page, true);
+	const text = page.getByLabel('CZMLテキスト', { exact: true });
+	const register = page.getByRole('button', { name: '登録', exact: true });
+	await expect(register).toBeDisabled();
+	await text.fill('test-invalid-json');
+	await expect(page.getByRole('alert')).toHaveCount(0);
+	await register.click();
+	await expect(page.getByRole('alert')).toContainText('JSONを読み取れませんでした');
+	await text.fill(singlePointText());
+	await page.getByLabel('データ名', { exact: true }).fill('test-pasted-point');
+	await register.click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	await expect(page.getByText('test-pasted-point', { exact: true }).first()).toBeVisible();
+	await dropFixture(page, 'test-static.czml');
+	await expect(page.getByRole('button', { name: 'ポリゴン', exact: true })).toBeVisible();
+});
+
+test('複数種類のテキストは選択して登録し、モード切り替えでも入力を保つ', async ({ page }) => {
+	await openTextInput(page);
+	const input = fixtureText('test-static.czml');
+	await page.getByLabel('CZMLテキスト', { exact: true }).fill(input);
+	await page.getByLabel('データ名', { exact: true }).fill('test-pasted-line');
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('button', { name: 'ライン', exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toHaveCount(0);
+	await page.getByRole('button', { name: 'ファイル', exact: true }).click();
+	await expect(page.getByRole('button', { name: 'ポリゴン', exact: true })).toBeVisible();
+	await page.getByRole('button', { name: 'テキスト', exact: true }).click();
+	await expect(page.getByLabel('CZMLテキスト', { exact: true })).toHaveValue(input);
+	await expect(page.getByLabel('データ名', { exact: true })).toHaveValue('test-pasted-line');
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await page.getByRole('button', { name: 'ライン', exact: true }).click();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
+});
+
+test('解析後にテキストを編集すると古い図形を登録しない', async ({ page }) => {
+	await openTextInput(page);
+	const text = page.getByLabel('CZMLテキスト', { exact: true });
+	await text.fill(fixtureText('test-static.czml'));
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+	await text.fill('test-invalid-revision');
+	await expect(page.getByRole('button', { name: 'ポリゴン', exact: true })).toHaveCount(0);
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('alert')).toContainText('JSONを読み取れませんでした');
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toHaveCount(0);
+	await text.fill(singlePointText());
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
+});
+
+test('テキストの相対モデル参照を説明し、絶対URLへ直して3D登録できる', async ({ page }) => {
+	await page.route('https://test.invalid/test-model.gltf', route =>
+		route.fulfill({
+			contentType: 'model/gltf+json',
+			headers: { 'access-control-allow-origin': '*' },
+			body: fixtureText('test-model.gltf')
+		}));
+	await openTextInput(page);
+	const text = page.getByLabel('CZMLテキスト', { exact: true });
+	const packets = JSON.parse(fixtureText('test-models.czml'));
+	await text.fill(JSON.stringify(packets));
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await page.getByRole('button', { name: '3Dモデル', exact: true }).click();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('alert')).toContainText('絶対URL');
+	packets[1].model.gltf = 'https://test.invalid/test-model.gltf';
+	await text.fill(JSON.stringify(packets));
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await page.getByRole('button', { name: '3Dモデル', exact: true }).click();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
+});

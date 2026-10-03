@@ -412,6 +412,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 	},
 	{
 		id: 'czml',
+		dialogType: 'czml',
 		label: 'CZML',
 		icon: 'mdi:map-clock',
 		description:
