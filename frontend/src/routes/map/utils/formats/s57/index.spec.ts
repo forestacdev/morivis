@@ -19,6 +19,26 @@ const mutate = (tag: string, edit: (bytes: Uint8Array, view: DataView) => void, 
 };
 
 describe('S-57 ENC', () => {
+	it('ENC標準のChain-nodeを読み込み、Planar graphも同じ図形へ復元する', () => {
+		let structure: number | undefined;
+		readRecords(fixture(), (fields, ddr) => {
+			if (!ddr && fields.has('DSSI')) structure = fields.get('DSSI')![0][0];
+		});
+		expect(structure).toBe(2);
+		const chainNode = parseS57(fixture());
+		expect(chainNode.geojson.features).toHaveLength(5);
+		expect(parseS57(mutate('DSSI', bytes => {
+			bytes[0] = 3;
+		}))).toEqual(chainNode);
+	});
+	it.each([0, 1, 4, 255])('未対応のデータ構造は実際のDSTR=%sを表示する', structure => {
+		expect(() =>
+			parseS57(mutate('DSSI', bytes => {
+				bytes[0] = structure;
+			}))
+		)
+			.toThrow(`DSTR=${structure} は未対応`);
+	});
 	it('基本セルからWGS84の点・線・面と地物分類を取り出す', () => {
 		const result = parseS57(fixture());
 		expect(result.metadata).toEqual({
@@ -105,7 +125,6 @@ describe('S-57 ENC', () => {
 			['VRID', 7, 2, '更新ファイル'],
 			['DSPM', 5, 1, 'WGS84'],
 			['DSPM', 15, 2, '経緯度'],
-			['DSSI', 0, 4, 'Planar graph'],
 			['DSSI', 2, 3, '文字コード'],
 			['FSPT', 5, 255, 'エッジ参照'],
 			['VRPT', 7, 255, '始点・終点']

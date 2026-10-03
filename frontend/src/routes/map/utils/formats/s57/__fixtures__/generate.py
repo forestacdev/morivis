@@ -65,7 +65,8 @@ def chart(name, national_level=2):
 
     dsid = u8(10) + u32(1) + bytes([1, 4]) + text(name) + text('1') + text('0')
     dsid += b'200001012000010103.1' + u8(1) + text('') + text('2.0') + u8(1) + u16(999) + text('test-fictional')
-    add([('DSID', dsid), ('DSSI', bytes([3, 1, national_level]) + struct.pack('<8I', 0, 0, 4, 1, 2, 8, 8, 0))])
+    # ENC Product Specification uses Chain-node (DSTR=2).
+    add([('DSID', dsid), ('DSSI', bytes([2, 1, national_level]) + struct.pack('<8I', 0, 0, 4, 1, 2, 8, 8, 0))])
     add([('DSPM', u8(20) + u32(1) + bytes([2, 16, 16]) + u32(10000) + bytes([1, 1, 1, 1]) + u32(1000000) + u32(10) + text('test'))])
 
     def vector(kind, ident, fields):

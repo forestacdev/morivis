@@ -131,7 +131,13 @@ export const parseS57 = (bytes: Uint8Array): S57Result => {
 		if (dssi) {
 			if (hasDssi) fail('DSSIが重複しています');
 			hasDssi = true;
-			if (dssi.u8() !== 3) fail('Planar graph以外の構造は未対応です');
+			const structure = dssi.u8();
+			// ENCはChain-node。どちらも接続点とエッジから地物の境界を復元する。
+			if (structure !== 2 && structure !== 3) {
+				fail(
+					`データ構造 DSTR=${structure} は未対応です。Chain-node（2）またはPlanar graph（3）に対応しています`
+				);
+			}
 			asciiLevel = dssi.u8();
 			nationalLevel = dssi.u8();
 			if (asciiLevel > 1 || nationalLevel > 2) fail('文字コードは未対応です');

@@ -12,7 +12,7 @@ OBJL=30の地物欠落と、分割された内周エッジを個別の穴へ変�
 
 ## 対応範囲
 
-- Planar graphのENC基本セル。座標はHDAT=2（WGS84）、COUN=1（経緯度）。
+- ENC標準のChain-node（DSTR=2）とPlanar graph（DSTR=3）。座標はHDAT=2（WGS84）、COUN=1（経緯度）。
 - ISO 8211のDDRとdirectoryに基づくバイナリレコード。record length=0の長いレコードもdirectoryの長さから読む。
 - 点、接続点、エッジ、ライン、穴付きポリゴン、複数の線・外周。
 - COMFによる座標倍率、SOMFによる測深倍率。測深群は個別のPointに分割し、`DEPTH`・`DEPTH_UNIT`・`SOUNDING_DATUM`へ保存する。深さを標高として使わない。
@@ -23,7 +23,7 @@ OBJL=30の地物欠落と、分割された内周エッジを個別の穴へ変�
 
 ## 制限
 
-更新差分（`.001`以降）と更新レコード、ASCII符号化、ENC以外の製品仕様、別測地系・投影座標、曲線、Full topology、日付変更線をまたぐ線・面、ISO 8211の省略ヘッダーは未対応。理由を表示して取り込みを止める。
+更新差分（`.001`以降）と更新レコード、ASCII符号化、ENC以外の製品仕様、別測地系・投影座標、曲線、Cartographic spaghetti・Full topology・Topology is not relevant、日付変更線をまたぐ線・面、ISO 8211の省略ヘッダーは未対応。理由を表示して取り込みを止める。
 `CATALOG.031`は更新差分と区別し、基本セル選択時に除外する。
 図形を持たない地物は地図の表示対象から除き、その件数をフォームに表示する。
 空間レコードの品質属性ATTVは地物属性へ合成しない。S-52の配色・記号・表示優先度や、MASKによる個々の境界線の非表示は再現しない。
@@ -35,6 +35,7 @@ OBJL=30の地物欠落と、分割された内周エッジを個別の穴へ変�
 ## 参照と辞書
 
 - [IHO S-57 Edition 3.1 Part 3](https://iho.int/uploads/user/pubs/standards/s-57/31Main.pdf): レコード構造、符号化、接続情報。
+- [IHO S-58 ENC Validation Checks](https://iho.int/uploads/user/pubs/standards/s-58/S-58%20Ed%208.0.0_FINAL.pdf): ENCのDSTRは2（Chain-node）。
 - [GDAL S-57 driver](https://gdal.org/en/stable/drivers/vector/s57.html): 地物辞書と属性の対応。
 - `catalog/s57objectclasses.csv`・`catalog/s57attributes.csv`は[GDAL v3.8.4のdata](https://github.com/OSGeo/gdal/tree/v3.8.4/data)から変更せず同梱。ライセンスは`catalog/LICENSE.TXT`、配布用コピーは`static/vendor/s57-catalog/LICENSE.txt`。
 
