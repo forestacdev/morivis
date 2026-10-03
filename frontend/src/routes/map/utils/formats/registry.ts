@@ -55,6 +55,7 @@ import { formatMif } from './mif/definition';
 import { formatMojxml } from './mojxml/definition';
 import { formatNc } from './netcdf/definition';
 import { formatObj } from './obj/definition';
+import { formatOpenDrive } from './opendrive/definition';
 import { formatOsm } from './osm/definition';
 import { formatPmtiles } from './pmtiles/definition';
 import { formatPmx } from './pmx/definition';
@@ -150,6 +151,7 @@ export const FORMAT_DEFINITIONS = {
 	'mt': formatMt,
 	'dm': formatDm,
 	'landxml': formatLandxml,
+	'opendrive': formatOpenDrive,
 	'mojxml': formatMojxml,
 	'geophoto': formatGeophoto,
 	'video': formatVideo,

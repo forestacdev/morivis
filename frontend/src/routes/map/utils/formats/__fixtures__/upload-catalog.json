@@ -419,6 +419,12 @@
 		]
 	},
 	{
+		"id": "opendrive",
+		"extensions": [
+			".xodr"
+		]
+	},
+	{
 		"id": "mojxml",
 		"extensions": [
 			".xml"

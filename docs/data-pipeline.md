@@ -492,3 +492,8 @@ V8は未対応として案内し、容量制限とキャンセルは形式定義
 対応範囲は [DGN V7](../frontend/src/routes/map/utils/formats/dgn/README.md) を参照。
 
 Zarrのフォルダー・ZIPは共通ドロップ判定から `GeoZarrForm.svelte` へ渡す。フォルダーの相対パスを保持し、ZIPは一般の全展開処理より先に判定する。ローカルStoreをWorkerへ接続し、配列選択・登録・描画はURL入力と共用する。ローカルFile参照はruntimeだけに保持し、ページ再読み込み後は再登録する。
+
+OpenDRIVE (`.xodr`・OpenDRIVEの`.xml`) は `OpenDriveForm.svelte` で道路基準線か車線面を選ぶ。
+専用Workerが曲線と車線幅を2Dベクターへ変換し、`header/offset`・`geoReference`を適用する。
+座標系不明時は座標系選択・位置合わせへ渡し、通常のvector entryとして登録する。
+対応範囲は [OpenDRIVE](../frontend/src/routes/map/utils/formats/opendrive/README.md) を参照。

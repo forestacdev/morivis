@@ -47,6 +47,7 @@ import {
 	isGtfsTextSet,
 	isShapeFileRelated,
 	MODEL_FILE_EXTENSIONS,
+	OPENDRIVE_FILE_EXTENSIONS,
 	VTK_FILE_EXTENSIONS
 } from './upload-drop-matchers';
 
@@ -147,6 +148,9 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 
 	try {
 		const header = await targetFile.slice(0, 2000).text();
+		if (/<(?:[\w.-]+:)?OpenDRIVE(?:\s|>)/.test(header)) {
+			return createDialogDecision('opendrive');
+		}
 		if (/<CADIF(?:\s|>)/.test(header)) return createDialogDecision('cedxm');
 
 		if (hasGeoRssMarker(header)) {
@@ -221,6 +225,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	osm: 'osm',
 	gml: 'gml',
 	landxml: 'landxml',
+	xodr: 'opendrive',
 	bz2: 'hrit',
 	lrit: 'hrit',
 	hrit: 'hrit',
@@ -429,6 +434,15 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 			createDialogDecision(
 				'step-iges',
 				files.filter(file => hasAnyExtension(file, CAD_MODEL_FILE_EXTENSIONS))
+			)
+	},
+	{
+		id: 'opendrive-files',
+		match: files => files.some(file => hasAnyExtension(file, OPENDRIVE_FILE_EXTENSIONS)),
+		resolve: async files =>
+			createDialogDecision(
+				'opendrive',
+				files.filter(file => hasAnyExtension(file, OPENDRIVE_FILE_EXTENSIONS))
 			)
 	},
 	{
@@ -780,6 +794,25 @@ export const resolveDroppedFiles = async (
 		);
 		const cityJsonFiles = matches.filter(item => item.matched).map(item => item.file);
 		if (cityJsonFiles.length) return createDialogDecision('cityjson', cityJsonFiles);
+	}
+	// .xml保存のOpenDRIVEも、.xodrとの混在やZIP展開後に同じ一式へまとめる。
+	const openDriveXml = files.filter(file => /\.xml$/i.test(file.name));
+	if (openDriveXml.length) {
+		const matches = await Promise.all(
+			openDriveXml.map(async file => ({
+				file,
+				matched: /<(?:[\w.-]+:)?OpenDRIVE(?:\s|>)/.test(await file.slice(0, 2000).text())
+			}))
+		);
+		const xmlFiles = new Set(matches.filter(item => item.matched).map(item => item.file));
+		if (xmlFiles.size) {
+			return createDialogDecision(
+				'opendrive',
+				files.filter(file =>
+					hasAnyExtension(file, OPENDRIVE_FILE_EXTENSIONS) || xmlFiles.has(file)
+				)
+			);
+		}
 	}
 	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。
 	const cityGmlCandidates = files.filter((file) => /\.(?:gml|xml|citygml)$/i.test(file.name));

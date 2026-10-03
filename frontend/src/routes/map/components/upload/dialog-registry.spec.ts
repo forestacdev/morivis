@@ -11,6 +11,7 @@ vi.mock('./form/VtkForm.svelte', () => {
 	vtkImports.count++;
 	return { default: () => {} };
 });
+vi.mock('./form/OpenDriveForm.svelte', () => ({ default: () => {} }));
 vi.mock('./form/Jpeg2000Form.svelte', () => ({ default: () => {} }));
 vi.mock('./form/MapInfoTabForm.svelte', () => ({ default: () => {} }));
 vi.mock('./form/EnviBilForm.svelte', () => ({ default: () => {} }));
@@ -46,6 +47,10 @@ vi.mock('./form/DwgForm.svelte', () => {
 import { dialogRegistry } from './dialog-registry';
 
 describe('dialog registry loading', () => {
+	it('OpenDRIVEに座標系選択とベクター位置合わせを渡す', async () => {
+		expect(dialogRegistry.opendrive!.profile).toBe('vector-zone-georef');
+		expect((await dialogRegistry.opendrive!.load()).default).toBeTypeOf('function');
+	});
 	it('S-57フォームをファイル入力付きで遅延ロードする', async () => {
 		expect(s57Imports.count).toBe(0);
 		expect(dialogRegistry.s57!.profile).toBe('drop-file');

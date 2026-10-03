@@ -153,6 +153,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/StepIgesForm.svelte'),
 		profile: 'drop-file'
 	},
+	opendrive: {
+		load: () => import('./form/OpenDriveForm.svelte'),
+		profile: 'vector-zone-georef'
+	},
 	s57: {
 		load: () => import('./form/S57Form.svelte'),
 		profile: 'drop-file'

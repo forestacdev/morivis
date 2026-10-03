@@ -1765,3 +1765,43 @@ describe('DGNのドロップ', () => {
 		).toMatchObject({ type: 'notification' });
 	});
 });
+
+describe('OpenDRIVEのドロップ', () => {
+	const xml = readFileSync(
+		new URL('../../utils/formats/opendrive/__fixtures__/test-road.xodr', import.meta.url),
+		'utf8'
+	);
+	it.each(['test-road.xodr', 'test-road.XODR', 'test-road.xml'])(
+		'%sを専用フォームへ渡す',
+		async name => {
+			expect(await resolveDroppedFiles(new File([xml], name))).toMatchObject({
+				type: 'dialog',
+				dialogType: 'opendrive'
+			});
+		}
+	);
+	it('複数ファイルとZIPを選択可能な一式にする', async () => {
+		const files = [new File([xml], 'test-a.xodr'), new File([xml], 'test-b.xodr')];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			dialogType: 'opendrive',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test-folder/test-a.xodr', xml);
+		zip.file('test-folder/test-b.xodr', xml);
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-roads.zip')
+			)
+		).toMatchObject({
+			dialogType: 'opendrive',
+			dropFiles: [expect.any(File), expect.any(File)]
+		});
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.xodr');
+	});
+	it('xodrとXMLが混在してもOpenDRIVEのファイルだけを選択候補にする', async () => {
+		const files = [new File([xml], 'test-a.xodr'), new File([xml], 'test-b.xml')];
+		expect(await resolveDroppedFiles([...files, new File(['<test/>'], 'test-other.xml')]))
+			.toMatchObject({ dialogType: 'opendrive', dropFiles: files });
+	});
+});

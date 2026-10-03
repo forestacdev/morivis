@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenDRIVE>
+  <header revMajor="1" revMinor="8" name="test-road">
+    <geoReference><![CDATA[+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +units=m +no_defs]]></geoReference>
+    <offset x="100" y="200" z="0" hdg="1.5707963267948966"/>
+  </header>
+  <road id="test-1" name="test-road-a" length="20" junction="-1">
+    <planView><geometry s="0" x="0" y="0" hdg="0" length="20"><line/></geometry></planView>
+    <lanes>
+      <laneOffset s="0" a="1" b="0" c="0" d="0"/>
+      <laneSection s="0">
+        <left><lane id="1" type="driving"><width sOffset="0" a="2" b="0.1" c="0" d="0"/></lane></left>
+        <center><lane id="0" type="none"/></center>
+        <right><lane id="-1" type="driving"><width sOffset="0" a="3" b="0.05" c="0" d="0"/></lane></right>
+      </laneSection>
+      <laneSection s="10" singleSide="true">
+        <left>
+          <lane id="1" type="driving"><width sOffset="0" a="3" b="0" c="0" d="0"/></lane>
+          <lane id="2" type="sidewalk"><width sOffset="0" a="1" b="0" c="0" d="0"/></lane>
+        </left>
+      </laneSection>
+    </lanes>
+  </road>
+</OpenDRIVE>

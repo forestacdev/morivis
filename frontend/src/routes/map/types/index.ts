@@ -140,6 +140,7 @@ export type DialogType =
 	| 'kml'
 	| 'topojson'
 	| 'landxml'
+	| 'opendrive'
 	| 'stac'
 	| 'svg'
 	| 'geoparquet'
@@ -613,6 +614,13 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		icon: 'mdi:terrain',
 		description:
 			'土木測量や設計の地形情報を表すXML形式です。TINや線形、測点データを扱うときに使います。'
+	},
+	{
+		id: 'opendrive',
+		label: 'OpenDRIVE',
+		icon: 'mdi:road-variant',
+		description:
+			'道路の基準線と車線構成をXMLで表したデータです。車線幅から生成した面や道路の線形を地図に重ねられます。'
 	},
 	{
 		id: 'mojxml',
