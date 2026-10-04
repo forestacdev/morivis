@@ -1,0 +1,32 @@
+[
+	{
+		"part": "title",
+		"issue": { "UTC": "2024-01-02T00:00:00Z" },
+		"typhoonNumber": "0001",
+		"name": { "jp": "TEST-TYPHOON", "en": "TEST-TYPHOON" }
+	},
+	{
+		"part": { "jp": "実況" },
+		"advancedHours": 0,
+		"validtime": { "UTC": "2024-01-01T23:00:00Z" },
+		"center": [1, 2],
+		"track": { "preTyphoon": [[0, 1], [0.5, 1.5]], "typhoon": [[0.5, 1.5], [1, 2]] }
+	},
+	{
+		"part": { "jp": "予報" },
+		"advancedHours": 12,
+		"validtime": { "UTC": "2024-01-02T11:00:00Z" },
+		"center": [2, 3],
+		"probabilityCircle": {
+			"radius": 10000,
+			"tangent": [[[1, 2], [1.9, 2.9]], [[1, 2], [2.1, 3.1]]]
+		}
+	},
+	{
+		"part": { "jp": "予報" },
+		"advancedHours": 24,
+		"validtime": { "UTC": "2024-01-02T23:00:00Z" },
+		"center": [3, 4],
+		"probabilityCircle": { "radius": 20000 }
+	}
+]
