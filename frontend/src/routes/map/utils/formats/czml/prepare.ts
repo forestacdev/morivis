@@ -1,4 +1,4 @@
-import { JulianDate } from '@cesium/engine';
+import { Iso8601, JulianDate } from '@cesium/engine';
 import { formatCzml } from './definition';
 
 type Packet = Record<string, unknown>;
@@ -36,13 +36,20 @@ export const prepareCzml = (text: string) => {
 	const references = new Map<string, Set<string>>();
 	let sourcePoints = 0;
 	let hasInertial = false;
-	const addTime = (raw: unknown, epoch?: unknown) => {
+	const addTime = (raw: unknown, epoch?: unknown, intervalBoundary = false) => {
 		let time: JulianDate;
 		try {
 			if (typeof raw === 'string') time = JulianDate.fromIso8601(raw);
 			else if (typeof raw === 'number' && Number.isFinite(raw) && typeof epoch === 'string') {
 				time = JulianDate.addSeconds(JulianDate.fromIso8601(epoch), raw, new JulianDate());
 			} else throw new Error('Invalid timestamp');
+			// Cesiumの無期限区間の境界は観測時刻ではない。パケットには残し、
+			// show/availabilityの評価に使うが、変換やタイムラインには加えない。
+			if (
+				intervalBoundary
+				&& (JulianDate.equals(time, Iso8601.MINIMUM_VALUE)
+					|| JulianDate.equals(time, Iso8601.MAXIMUM_VALUE))
+			) return;
 			const iso = JulianDate.toIso8601(time, 3);
 			if (!/^\d{4}-/.test(iso)) throw new Error('Unsupported year');
 			times.set(iso, time);
@@ -58,8 +65,8 @@ export const prepareCzml = (text: string) => {
 			if (typeof interval !== 'string') throw new Error('CZMLの時間区間が不正です');
 			const ends = interval.split('/');
 			if (ends.length !== 2) throw new Error('CZMLの時間区間が不正です');
-			addTime(ends[0]);
-			addTime(ends[1]);
+			addTime(ends[0], undefined, true);
+			addTime(ends[1], undefined, true);
 			if (
 				JulianDate.compare(JulianDate.fromIso8601(ends[0]), JulianDate.fromIso8601(ends[1]))
 					> 0

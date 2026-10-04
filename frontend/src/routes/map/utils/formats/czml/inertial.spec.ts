@@ -12,6 +12,7 @@ import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { parseCzml } from '.';
+import { prepareCzml } from './prepare';
 
 const contents = readFileSync(
 	new URL('./__fixtures__/test-inertial.czml', import.meta.url),
@@ -33,6 +34,35 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('CZML INERTIAL', () => {
+	it('無期限の表示区間は評価時刻にせず、有限の境界と表示切替を保つ', async () => {
+		const text = readFileSync(
+			new URL('./__fixtures__/test-inertial-open-interval.czml', import.meta.url),
+			'utf8'
+		);
+		const result = await parseCzml(text);
+		expect(result.timestamps).toEqual([
+			'2024-01-02T00:00:00.000Z',
+			'2024-01-02T00:15:00.000Z',
+			'2024-01-02T00:30:00.000Z',
+			'2024-01-02T00:45:00.000Z',
+			'2024-01-02T01:00:00.000Z'
+		]);
+		expect(result.points.features.map(feature => feature.properties.time)).toEqual([
+			'2024-01-02T00:15:00.000Z',
+			'2024-01-02T00:30:00.000Z'
+		]);
+		const input = JSON.parse(text);
+		delete input[0].clock;
+		delete input[1].point;
+		expect(() => prepareCzml(JSON.stringify(input))).toThrow('時刻が必要');
+	});
+	it('通常の有限な期間外境界は無期限と扱わない', async () => {
+		const input = packets();
+		input[1].point = {
+			show: [{ interval: '1900-01-01T00:00:00Z/2024-01-02T00:00:00Z', boolean: false }]
+		};
+		await expect(parseCzml(JSON.stringify(input))).rejects.toThrow('対応期間外');
+	});
 	it('画像マーカーにも同じINERTIAL変換を適用する', async () => {
 		const input = packets();
 		input[1].billboard = { image: 'test-billboard-red.png' };

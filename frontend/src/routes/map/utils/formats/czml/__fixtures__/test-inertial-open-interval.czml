@@ -1,0 +1,22 @@
+[
+  {
+    "id": "document",
+    "version": "1.0",
+    "clock": {
+      "interval": "2024-01-02T00:00:00Z/2024-01-02T01:00:00Z",
+      "currentTime": "2024-01-02T00:30:00Z"
+    }
+  },
+  {
+    "id": "test-inertial-open",
+    "availability": "0000-01-01T00:00:00Z/9999-12-31T24:00:00Z",
+    "position": { "referenceFrame": "INERTIAL", "cartesian": [7000000, 0, 0] },
+    "point": {
+      "show": [
+        { "interval": "0000-01-01T00:00:00Z/2024-01-02T00:15:00Z", "boolean": false },
+        { "interval": "2024-01-02T00:15:00Z/2024-01-02T00:45:00Z", "boolean": true },
+        { "interval": "2024-01-02T00:45:00Z/9999-12-31T24:00:00Z", "boolean": false }
+      ]
+    }
+  }
+]
