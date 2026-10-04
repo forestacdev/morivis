@@ -416,7 +416,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		label: 'CZML',
 		icon: 'mdi:map-clock',
 		description:
-			'位置や形状などの時間変化をJSONで記述する形式です。地球固定座標の位置・軌跡・ライン・ポリゴン・3Dモデルを読み込み、時刻ごとに地図上で確認できます。'
+			'位置や形状などの時間変化をJSONで記述する形式です。位置・軌跡・ライン・ポリゴン・画像マーカー・3Dモデルを読み込み、時刻ごとに地図上で確認できます。'
 	},
 	{
 		id: 'gdb',

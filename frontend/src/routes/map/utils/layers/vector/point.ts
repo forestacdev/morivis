@@ -105,6 +105,7 @@ export const createPointImageIconLayer = (
 	fields: FieldDef[]
 ): SymbolLayerSpecification | undefined => {
 	const iconExpression = buildGeneratedPoiIconExpression(imageIcon);
+	const original = imageIcon.rendering === 'original';
 
 	const defaultStyle = style.default;
 	const showLabel = style.labels.show;
@@ -135,12 +136,18 @@ export const createPointImageIconLayer = (
 		},
 		layout: {
 			'icon-image': iconExpression,
-			'icon-size': 0.5,
-			'icon-anchor': 'bottom',
+			'icon-size': original ? 1 : 0.5,
+			'icon-anchor': original ? 'center' : 'bottom',
+			...(original
+				? {
+					'icon-pitch-alignment': 'viewport' as const,
+					'icon-rotation-alignment': 'viewport' as const
+				}
+				: {}),
 
 			// 間引きをする
-			'icon-allow-overlap': false,
-			'icon-ignore-placement': false,
+			'icon-allow-overlap': original,
+			'icon-ignore-placement': original,
 
 			// ラベルのスタイルはアイコンレイヤーに統合
 			...(showLabel

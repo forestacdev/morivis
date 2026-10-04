@@ -73,8 +73,10 @@ export const prepareCzml = (text: string) => {
 		if (!Array.isArray(values) || !values.length) throw new Error('CZMLの座標配列が不正です');
 		const dimensions = key === 'cartesianVelocity'
 			? 6
-			: key === 'unitQuaternion'
+			: key === 'unitQuaternion' || key === 'rgba' || key === 'rgbaf'
 			? 4
+			: key === 'cartesian2'
+			? 2
 			: key === 'number'
 			? 1
 			: 3;
@@ -135,6 +137,9 @@ export const prepareCzml = (text: string) => {
 				[
 					'cartesian',
 					'cartesianVelocity',
+					'cartesian2',
+					'rgba',
+					'rgbaf',
 					'cartographicDegrees',
 					'cartographicRadians',
 					'unitQuaternion',
@@ -232,10 +237,30 @@ export const prepareCzml = (text: string) => {
 					);
 				}
 			}
+			if (isObject(packet.billboard)) {
+				const keys = [
+					'image',
+					'show',
+					'scale',
+					'width',
+					'height',
+					'rotation',
+					'color',
+					'horizontalOrigin',
+					'verticalOrigin',
+					'pixelOffset',
+					'interval'
+				];
+				clean.billboard = pick(packet.billboard, keys);
+				if (Object.keys(packet.billboard).some(key => !keys.includes(key))) {
+					warnings.add(
+						'画像マーカーのメートル単位のサイズ、距離による変化、地形への追従、画像の切り抜き、3D方向の指定は再現しません。'
+					);
+				}
+			}
 			if (
 				Object.keys(packet).some(key =>
 					[
-						'billboard',
 						'label',
 						'ellipse',
 						'ellipsoid',
@@ -249,7 +274,7 @@ export const prepareCzml = (text: string) => {
 				)
 			) {
 				warnings.add(
-					'画像・ラベル・立体図形は再現せず、位置があればポイントとして読み込みます。'
+					'ラベル・立体図形は再現せず、位置があればポイントとして読み込みます。'
 				);
 			}
 			if (packet.point || packet.path || packet.polyline || packet.polygon) {
@@ -258,7 +283,17 @@ export const prepareCzml = (text: string) => {
 		}
 		if (clean.position !== undefined || packet.delete === true) references.delete(packet.id);
 		inspect(clean.position, packet.id, false, 0, true);
-		for (const key of ['point', 'path', 'polyline', 'polygon', 'orientation', 'model']) {
+		for (
+			const key of [
+				'point',
+				'path',
+				'polyline',
+				'polygon',
+				'orientation',
+				'model',
+				'billboard'
+			]
+		) {
 			inspect(clean[key], packet.id);
 		}
 		// 任意属性はプリミティブな定数に絞る。HTMLや参照を評価する経路を作らない。

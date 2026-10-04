@@ -24,7 +24,11 @@ const timeFormat = {
 	invalidText: ''
 };
 
-export const createCzmlEntry = async (geojson: FeatureCollection, name: string) => {
+export const createCzmlEntry = async (
+	geojson: FeatureCollection,
+	name: string,
+	timestamps: string[] = []
+) => {
 	const geometryType = geometryTypeToEntryType(geojson);
 	if (!geometryType) throw new Error('選択したCZMLデータに表示できる地物がありません');
 	const entry = await createGeoJsonEntry(
@@ -54,6 +58,9 @@ export const createCzmlEntry = async (geojson: FeatureCollection, name: string) 
 		return { ...field, label: labels[field.key] ?? field.label };
 	});
 	const items = new Map<string, VectorTemporalItem>();
+	for (const raw of timestamps) {
+		items.set(raw, { raw, timestamp: Date.parse(raw), label: formatDate(raw, timeFormat) });
+	}
 	for (const feature of geojson.features) {
 		const raw = feature.properties.time;
 		if (typeof raw !== 'string' || !Number.isFinite(Date.parse(raw))) continue;

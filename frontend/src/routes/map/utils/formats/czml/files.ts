@@ -1,3 +1,5 @@
+import { formatCzml } from './definition';
+
 // 判定時にはCesiumやファイル全体を読み込まない。
 export const isCzmlFile = async (file: File): Promise<boolean> => {
 	if (/\.czml$/i.test(file.name)) return true;
@@ -24,4 +26,30 @@ export const isCzmlFile = async (file: File): Promise<boolean> => {
 		return false;
 	}
 	return false;
+};
+
+/** フォルダードロップ・ZIP・ファイル選択で共通のパス。 */
+export const czmlFilePath = (file: File): string =>
+	((file as File & { morivisRelativePath?: string; }).morivisRelativePath
+		|| file.webkitRelativePath || file.name).replaceAll('\\', '/');
+
+export const mergeCzmlFiles = (current: File[], incoming: File[]): File[] => {
+	const files = new Map<string, File>();
+	for (const file of [...current, ...incoming]) files.set(czmlFilePath(file), file);
+	return [...files.values()];
+};
+
+export const isCzmlSupplementaryBatch = async (
+	current: File[],
+	incoming: File[]
+): Promise<boolean> => {
+	if (
+		!incoming.length
+		|| !incoming.every(file =>
+			formatCzml.files.optionalExtensions.some(extension =>
+				file.name.toLowerCase().endsWith(extension)
+			)
+		)
+	) return false;
+	return (await Promise.all(current.map(isCzmlFile))).some(Boolean);
 };

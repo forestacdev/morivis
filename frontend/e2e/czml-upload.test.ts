@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import sharp from 'sharp';
 import { expect, type Page, test } from './map-test';
 
 const dropFixture = async (page: Page, name: string | string[], invalid = false) => {
@@ -149,12 +150,13 @@ test('CZMLとglTFを一緒にドロップして3Dモデルを登録できる', a
 	expect(errors).toEqual([]);
 });
 
-test('モデル不足を説明し、関連ファイルを選び直すと登録できる', async ({ page }) => {
+test('CZMLの後にモデルだけを追加選択し、名前を保持して登録できる', async ({ page }) => {
 	await dropFixture(page, 'test-models.czml');
-	await page.getByRole('button', { name: '登録', exact: true }).click();
-	await expect(page.getByRole('alert')).toContainText('関連ファイルがありません');
+	await expect(page.getByText('未追加ファイル:', { exact: true }).locator('..')).toBeVisible();
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeDisabled();
+	await page.getByLabel('データ名').fill('test-staged-model');
 	await page.getByLabel('CZMLファイル', { exact: true }).setInputFiles(
-		['test-models.czml', 'test-model.gltf'].map(name => ({
+		['test-model.gltf'].map(name => ({
 			name,
 			mimeType: 'application/json',
 			buffer: readFileSync(
@@ -165,6 +167,21 @@ test('モデル不足を説明し、関連ファイルを選び直すと登録�
 			)
 		}))
 	);
+	await expect(page.getByLabel('データ名')).toHaveValue('test-staged-model');
+	await expect(page.getByText('選択済み: 2ファイル', { exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
+});
+
+test('複数CZMLから選んだ文書を保持してモデルを追加ドロップできる', async ({ page }) => {
+	await dropFixture(page, ['test-static.czml', 'test-models.czml']);
+	await page.getByLabel('読み込むファイル').selectOption('1');
+	await expect(page.getByText('未追加ファイル:', { exact: true }).locator('..')).toContainText(
+		'test-model.gltf'
+	);
+	await dropFixture(page, 'test-model.gltf');
+	await expect(page.getByLabel('読み込むファイル')).toHaveValue('1');
 	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
 	await page.getByRole('button', { name: '登録', exact: true }).click();
 	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
@@ -325,5 +342,122 @@ test('INERTIAL変換表の取得失敗を表示し、再ドロップで復帰す
 	await page.unroute(pattern);
 	await dropFixture(page, 'test-inertial.czml');
 	await expect(page.getByText('時刻: 3件', { exact: true })).toBeVisible();
+	// 参照モデルが未追加でも、座標変換済みのポイントは登録できる。
+	await page.getByRole('button', { name: 'ポイント', exact: true }).click();
 	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
 });
+
+const billboardColors = async (page: Page) => {
+	const canvas = page.locator('canvas.maplibregl-canvas:visible').first();
+	const screenshot = await canvas.screenshot();
+	const { data, info } = await sharp(screenshot).ensureAlpha().raw().toBuffer({
+		resolveWithObject: true
+	});
+	// ブラウザ・画面の色変換による差を許容し、架空画像の色と面積を検査する。
+	let red = 0, blue = 0;
+	for (let i = 0; i < data.length; i += info.channels) {
+		if (
+			data[i] > 180 && data[i + 1] < 70 && data[i + 2] > 40 && data[i + 2] < 100
+		) red++;
+		if (
+			data[i] < 80 && data[i + 1] > 70 && data[i + 1] < 140 && data[i + 2] > 180
+		) blue++;
+	}
+	return { red, blue };
+};
+
+test('画像マーカーを枠なしで表示し、時刻に応じて非表示・画像差し替えを反映する', async ({ page }) => {
+	await dropFixture(page, [
+		'test-billboards.czml',
+		'test-billboard-red.png',
+		'test-billboard-blue.png'
+	]);
+	await expect(page.getByRole('button', { name: '画像マーカー', exact: true })).toBeVisible();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	await expect.poll(async () => (await billboardColors(page)).red).toBeGreaterThan(2500);
+	const layer = page.getByRole('button', { name: 'レイヤー', exact: true }).filter({
+		hasText: 'test-billboards'
+	});
+	await layer.hover();
+	await layer.locator('button').last().click();
+	await page.getByText('時間フィルター', { exact: true }).click();
+	const slider = page.locator('input[type="range"][max="4"]').first();
+	await expect(slider).toBeVisible();
+	await slider.focus();
+	await slider.press('Home');
+	await slider.press('ArrowRight');
+	await slider.press('ArrowRight');
+	await expect.poll(async () => (await billboardColors(page)).red).toBe(0);
+	await expect.poll(async () => (await billboardColors(page)).blue).toBe(0);
+	await slider.press('ArrowRight');
+	await expect.poll(async () => (await billboardColors(page)).blue).toBeGreaterThan(2500);
+	await slider.press('Home');
+	await expect.poll(async () => (await billboardColors(page)).red).toBeGreaterThan(2500);
+});
+
+test('CZMLの後に画像を1枚ずつドロップし、不足一覧を更新して登録できる', async ({ page }) => {
+	await dropFixture(page, 'test-billboards.czml');
+	const missing = page.getByText('未追加ファイル:', { exact: true }).locator('..');
+	await expect(missing).toContainText('test-billboard-red.png');
+	await expect(missing).toContainText('test-billboard-blue.png');
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeDisabled();
+	await page.getByLabel('データ名').fill('test-staged-billboards');
+	await page.getByRole('button', { name: 'ポイント', exact: true }).click();
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
+	await dropFixture(page, 'test-billboard-red.png');
+	await expect(page.getByText('選択済み: 2ファイル', { exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
+	await page.getByRole('button', { name: '画像マーカー', exact: true }).click();
+	await expect(missing).not.toContainText('test-billboard-red.png');
+	await expect(missing).toContainText('test-billboard-blue.png');
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeDisabled();
+	await dropFixture(page, 'test-billboard-blue.png');
+	await expect(missing).toHaveCount(0);
+	await expect(page.getByLabel('データ名')).toHaveValue('test-staged-billboards');
+	await expect(page.getByText('選択済み: 3ファイル', { exact: true })).toBeVisible();
+	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	await expect.poll(async () => (await billboardColors(page)).red).toBeGreaterThan(2500);
+});
+
+for (const mode of ['data', 'url']) {
+	test(`テキストの画像マーカーで相対参照を説明し、${mode}の画像を登録する`, async ({ page }) => {
+		const bytes = readFileSync(
+			new URL(
+				'../src/routes/map/utils/formats/czml/__fixtures__/test-billboard-red.png',
+				import.meta.url
+			)
+		);
+		await page.route(
+			'https://test.invalid/test-image.png',
+			route =>
+				route.fulfill({
+					contentType: 'image/png',
+					headers: { 'access-control-allow-origin': '*' },
+					body: bytes
+				})
+		);
+		await openTextInput(page, true);
+		const packets = JSON.parse(fixtureText('test-billboards.czml'));
+		delete packets[0].clock;
+		packets[1].position = { cartographicDegrees: [2.5, 1.25, 0] };
+		packets[1].billboard = { image: 'test-image.png', width: 80, height: 40 };
+		const text = page.getByLabel('CZMLテキスト', { exact: true });
+		await text.fill(JSON.stringify(packets));
+		await page.getByRole('button', { name: '登録', exact: true }).click();
+		await page.getByRole('button', { name: '登録', exact: true }).click();
+		await expect(page.getByRole('alert')).toContainText('絶対URL');
+		packets[1].billboard.image = mode === 'data'
+			? `data:image/png;base64,${bytes.toString('base64')}`
+			: 'https://test.invalid/test-image.png';
+		await text.fill(JSON.stringify(packets));
+		await page.getByRole('button', { name: '登録', exact: true }).click();
+		await page.getByRole('button', { name: '登録', exact: true }).click();
+		await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+		await expect.poll(async () => (await billboardColors(page)).red).toBeGreaterThan(2500);
+	});
+}

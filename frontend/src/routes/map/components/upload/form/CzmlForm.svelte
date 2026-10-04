@@ -8,8 +8,14 @@
 	import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 	import type { CzmlDataType, CzmlResult } from '$routes/map/utils/formats/czml';
 	import { analyzeCzmlFile } from '$routes/map/utils/formats/czml/analyze';
+	import { inspectCzmlAssets } from '$routes/map/utils/formats/czml/asset-inspection';
+	import { createCzmlBillboardEntry } from '$routes/map/utils/formats/czml/billboard-entry';
 	import { createCzmlEntry } from '$routes/map/utils/formats/czml/entry';
-	import { isCzmlFile } from '$routes/map/utils/formats/czml/files';
+	import {
+		isCzmlFile,
+		isCzmlSupplementaryBatch,
+		mergeCzmlFiles
+	} from '$routes/map/utils/formats/czml/files';
 	import { createCzmlModelEntry } from '$routes/map/utils/formats/czml/model-entry';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 
@@ -34,7 +40,9 @@
 		error: string;
 	} | null>(null);
 	const files = $derived(
-		detectedInput && detectedInput.batch === dropFile ? detectedInput.files : []
+		detectedInput && detectedInput.batch === dropFile
+			? detectedInput.files
+			: (detectedInput?.files.filter((candidate) => uploadFiles.includes(candidate)) ?? [])
 	);
 	const detectionError = $derived(
 		sourceMode === 'file' && detectedInput && detectedInput.batch === dropFile
@@ -42,24 +50,27 @@
 			: ''
 	);
 	let fileInput = $state<HTMLInputElement | null>(null);
-	let selection = $state.raw<{ batch: UploadFilesInput; index: number } | null>(null);
-	const selectedIndex = $derived(selection && selection.batch === dropFile ? selection.index : 0);
+	let selectedFile = $state.raw<File | null>(null);
+	const selectedIndex = $derived(
+		Math.max(
+			0,
+			files.findIndex((candidate) => candidate === selectedFile)
+		)
+	);
 	const file = $derived(files[selectedIndex] ?? files[0] ?? null);
 	let parsedInput = $state.raw<{
-		batch: UploadFilesInput;
 		file: File;
 		result: CzmlResult;
 	} | null>(null);
 	const result = $derived.by(() => {
 		if (sourceMode === 'text')
 			return parsedText && parsedText.text === inputText ? parsedText.result : null;
-		return parsedInput && parsedInput.batch === dropFile && parsedInput.file === file
-			? parsedInput.result
-			: null;
+		return parsedInput && parsedInput.file === file ? parsedInput.result : null;
 	});
 	type DisplayType = CzmlDataType | 'models';
 	const typeOptions: { key: DisplayType; name: string }[] = [
 		{ key: 'models', name: '3Dモデル' },
+		{ key: 'billboards', name: '画像マーカー' },
 		{ key: 'points', name: 'ポイント' },
 		{ key: 'tracks', name: '軌跡' },
 		{ key: 'lines', name: 'ライン' },
@@ -78,9 +89,40 @@
 	let name = $state('');
 	let loading = $state(false);
 	let discovering = $state(false);
-	const busy = $derived(loading || discovering);
+	let selecting = $state(false);
+	let registering = $state(false);
+	const busy = $derived(loading || discovering || selecting || registering);
 	let error = $state('');
 	let controller: AbortController | undefined;
+	let registrationController: AbortController | undefined;
+	let selectionController: AbortController | undefined;
+	let assetInspection = $state.raw<{
+		batch: UploadFilesInput;
+		file: File;
+		result: CzmlResult;
+		type: 'models' | 'billboards';
+		missing: string[];
+		error: string;
+	} | null>(null);
+	const needsAssets = $derived(
+		sourceMode === 'file' &&
+			!!result &&
+			!!file &&
+			(dataType === 'models' || dataType === 'billboards')
+	);
+	const currentInspection = $derived(
+		assetInspection?.batch === dropFile &&
+			assetInspection?.file === file &&
+			assetInspection?.result === result &&
+			assetInspection?.type === dataType
+			? assetInspection
+			: null
+	);
+	const inspectingAssets = $derived(needsAssets && !currentInspection);
+	const assetsBlocked = $derived(
+		needsAssets &&
+			(!currentInspection || !!currentInspection.error || currentInspection.missing.length > 0)
+	);
 	let observedBatch: UploadFilesInput = null;
 
 	$effect(() => {
@@ -96,7 +138,6 @@
 		const batch = dropFile;
 		const inputs = uploadFiles;
 		const task = new AbortController();
-		detectedInput = null;
 		discovering = mode === 'file' && inputs.length > 0;
 		if (mode === 'file' && inputs.length) {
 			untrack(() => {
@@ -133,7 +174,6 @@
 	$effect(() => {
 		if (sourceMode !== 'file') return;
 		const input = file;
-		const batch = dropFile;
 		const task = new AbortController();
 		controller = task;
 		parsedInput = null;
@@ -144,13 +184,12 @@
 		if (input) {
 			untrack(() => {
 				const release = beginUploadProcessing(task.signal);
-				const isCurrent = () =>
-					!task.signal.aborted && sourceMode === 'file' && file === input && dropFile === batch;
+				const isCurrent = () => !task.signal.aborted && sourceMode === 'file' && file === input;
 				void (async () => {
 					try {
 						const parsed = await analyzeCzmlFile(input, task.signal);
 						if (!isCurrent()) return;
-						parsedInput = { batch, file: input, result: parsed };
+						parsedInput = { file: input, result: parsed };
 						name = parsed.name || input.name.replace(/\.[^.]+$/, '');
 						const firstType = typeOptions.find((option) => dataCount(parsed, option.key) > 0);
 						dataType = firstType?.key ?? 'points';
@@ -180,13 +219,79 @@
 		return () => task.abort();
 	});
 
+	$effect(() => {
+		void dropFile;
+		void file;
+		void sourceMode;
+		void inputText;
+		registrationController?.abort();
+		selectionController?.abort();
+		registering = false;
+		selecting = false;
+		return () => {
+			registrationController?.abort();
+			selectionController?.abort();
+		};
+	});
+
+	$effect(() => {
+		const mode = sourceMode;
+		const parsed = result;
+		const input = file;
+		const batch = dropFile;
+		const inputs = uploadFiles;
+		const type = dataType;
+		const task = new AbortController();
+		assetInspection = null;
+		if (mode === 'file' && parsed && input && (type === 'models' || type === 'billboards')) {
+			void (async () => {
+				try {
+					const missing = await inspectCzmlAssets(parsed, input, inputs, task.signal, type);
+					if (!task.signal.aborted)
+						assetInspection = { batch, file: input, result: parsed, type, missing, error: '' };
+				} catch (cause) {
+					if (!task.signal.aborted)
+						assetInspection = {
+							batch,
+							file: input,
+							result: parsed,
+							type,
+							missing: [],
+							error: cause instanceof Error ? cause.message : '関連ファイルを確認できませんでした'
+						};
+				}
+			})();
+		}
+		return () => task.abort();
+	});
+
+	const acceptFiles = async (incoming: File[]) => {
+		selectionController?.abort();
+		const task = new AbortController();
+		selectionController = task;
+		const batch = dropFile;
+		const current = uploadFiles;
+		selecting = true;
+		error = '';
+		try {
+			const supplementary = await isCzmlSupplementaryBatch(current, incoming);
+			if (task.signal.aborted || dropFile !== batch) return;
+			dropFile = supplementary ? mergeCzmlFiles(current, incoming) : incoming;
+		} catch (cause) {
+			if (!task.signal.aborted && dropFile === batch)
+				error = cause instanceof Error ? cause.message : '選択したファイルを確認できませんでした';
+		} finally {
+			if (selectionController === task) selecting = false;
+		}
+	};
+
 	const selectFile = (index: number) => {
 		if (index === selectedIndex) return;
 		controller?.abort();
-		selection = { batch: dropFile, index };
+		selectedFile = files[index] ?? null;
 	};
 	const register = async () => {
-		if (!controller || busy) return;
+		if (!controller || busy || assetsBlocked) return;
 		const mode = sourceMode;
 		const text = inputText;
 		if (mode === 'text' ? !text.trim() : !result || !file || !canRegister) return;
@@ -198,15 +303,17 @@
 				: file;
 		if (!input) return;
 		const batch = dropFile;
-		const signal = controller.signal;
-		if (signal.aborted) return;
+		registrationController?.abort();
+		const task = new AbortController();
+		registrationController = task;
+		const signal = task.signal;
 		const isCurrent = () =>
 			!signal.aborted &&
 			sourceMode === mode &&
 			dropFile === batch &&
 			(mode === 'text' ? inputText === text : file === input);
 		const release = beginUploadProcessing(signal);
-		loading = true;
+		registering = true;
 		error = '';
 		try {
 			let parsed = result;
@@ -223,19 +330,26 @@
 				if (options.length > 1) return;
 			}
 			if (!parsed) return;
-			if (mode === 'text' && type === 'models') {
-				for (const model of parsed.models) {
+			if (mode === 'text' && (type === 'models' || type === 'billboards')) {
+				const references =
+					type === 'models'
+						? parsed.models.map((model) => model.uri)
+						: parsed.billboards.features.map((feature) => feature.properties?.billboard_image);
+				for (const uri of references) {
 					let absolute = false;
 					try {
-						const url = new URL(model.uri);
-						absolute =
-							url.protocol === 'data:' || (/^https?:\/\//i.test(model.uri) && !!url.hostname);
+						if (typeof uri === 'string') {
+							const url = new URL(uri);
+							absolute = url.protocol === 'data:' || (/^https?:\/\//i.test(uri) && !!url.hostname);
+						}
 					} catch {
 						// 相対参照は関連ファイルを含めたファイル入力で解決する。
 					}
 					if (!absolute)
 						throw new Error(
-							'テキスト入力の3DモデルにはHTTP(S)の絶対URLまたはdata URIを指定してください。相対参照を使う場合は「ファイル」に切り替え、CZMLとモデル・画像をまとめて選択してください。'
+							type === 'models'
+								? 'テキスト入力の3DモデルにはHTTP(S)の絶対URLまたはdata URIを指定してください。相対参照を使う場合は「ファイル」に切り替え、CZMLを選択し、参照するモデル・画像を追加してください。'
+								: 'テキスト入力の画像マーカーにはHTTP(S)の絶対URLまたはdata URIを指定してください。相対参照を使う場合は「ファイル」に切り替え、CZMLを選択し、参照する画像を追加してください。'
 						);
 				}
 			}
@@ -249,7 +363,15 @@
 							entryName,
 							signal
 						)
-					: await createCzmlEntry(parsed[type], entryName);
+					: type === 'billboards'
+						? await createCzmlBillboardEntry(
+								parsed,
+								input,
+								mode === 'file' ? uploadFiles : [],
+								entryName,
+								signal
+							)
+						: await createCzmlEntry(parsed[type], entryName);
 			if (!isCurrent()) {
 				if (entry?.type === 'model') URL.revokeObjectURL(entry.format.url);
 				else if (entry) GeojsonCache.remove(entry.id);
@@ -264,11 +386,13 @@
 				error = cause instanceof Error ? cause.message : 'CZMLを登録できませんでした';
 		} finally {
 			release();
-			if (isCurrent()) loading = false;
+			if (registrationController === task) registering = false;
 		}
 	};
 	const cancel = () => {
 		controller?.abort();
+		registrationController?.abort();
+		selectionController?.abort();
 		dropFile = null;
 		showDialogType = null;
 	};
@@ -276,7 +400,7 @@
 
 <div class="shrink-0 pb-4 text-2xl font-bold">CZML</div>
 <div class="c-scroll flex min-h-0 grow flex-col gap-4 overflow-y-auto text-sm">
-	<p>時刻付きの位置・軌跡・図形を読み込みます。</p>
+	<p>時刻付きの位置・軌跡・図形・画像マーカー・3Dモデルを読み込みます。</p>
 	<div class="w-full p-2">
 		<HorizontalSelectBox
 			label="入力方法を選択"
@@ -289,7 +413,7 @@
 	</div>
 	{#if sourceMode === 'file'}
 		<p>
-			3Dモデルを含む場合は、CZMLと参照するglTF・GLB・バイナリ・画像ファイルをまとめて選択してください。
+			CZMLを選択してください。参照する画像・glTF・GLB・バイナリファイルは、あとから追加できます。
 		</p>
 		<div class="flex flex-col items-start gap-2">
 			<span>CZMLファイル</span>
@@ -298,7 +422,7 @@
 				class="c-btn-confirm min-w-[180px] p-3 text-base"
 				onclick={() => fileInput?.click()}
 			>
-				{uploadFiles.length > 0 ? 'ファイルを選び直す' : 'ファイルを選択'}
+				{uploadFiles.length > 0 ? 'ファイルを追加・選び直す' : 'ファイルを選択'}
 			</button>
 			<input
 				bind:this={fileInput}
@@ -307,12 +431,9 @@
 				class="hidden"
 				multiple
 				onchange={(event) => {
-					const selected = event.currentTarget.files;
-					if (selected?.length) {
-						controller?.abort();
-						dropFile = Array.from(selected);
-						event.currentTarget.value = '';
-					}
+					const selected = Array.from(event.currentTarget.files ?? []);
+					event.currentTarget.value = '';
+					if (selected.length) void acceptFiles(selected);
 				}}
 			/>
 			{#if uploadFiles.length > 0}<p>
@@ -365,6 +486,9 @@
 		</p>
 		<p>時刻: {result.timestamps.length.toLocaleString()}件</p>
 		{#if result.models.length > 0}<p>3Dモデル: {result.models.length.toLocaleString()}件</p>{/if}
+		{#if result.billboards.features.length > 0}<p>
+				画像マーカー: {result.billboards.features.length.toLocaleString()}件
+			</p>{/if}
 		{#if dataTypesOptions.length > 1}
 			<fieldset class="min-w-0" disabled={busy}>
 				<HorizontalSelectBox
@@ -375,6 +499,24 @@
 			</fieldset>
 		{:else if dataTypesOptions.length === 1}
 			<p>読み込みタイプ: {dataTypesOptions[0].name}</p>
+		{/if}
+		{#if needsAssets && currentInspection?.missing.length}
+			<div
+				role="status"
+				class="rounded-lg border border-amber-400/40 bg-amber-400/10 p-3 text-amber-200"
+			>
+				<p>未追加ファイル:</p>
+				<ul class="my-2 list-disc space-y-1 pl-5">
+					{#each currentInspection.missing as path (path)}
+						<li class="break-all">{path}</li>
+					{/each}
+				</ul>
+				<p>このフォームに追加ドロップするか、「ファイルを追加・選び直す」から選択してください。</p>
+			</div>
+		{/if}
+		{#if inspectingAssets}<p role="status">関連ファイルを確認しています…</p>{/if}
+		{#if needsAssets && currentInspection?.error}
+			<p class="text-red-300" role="alert">{currentInspection.error}</p>
 		{/if}
 		{#if result.warnings.length > 0}
 			<ul class="list-disc space-y-1 pl-5 text-amber-200">
@@ -395,6 +537,7 @@
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg disabled:cursor-not-allowed disabled:opacity-50"
 		onclick={register}
 		disabled={busy ||
+			assetsBlocked ||
 			(sourceMode === 'text' ? !inputText.trim() || (!!result && !canRegister) : !canRegister)}
 		>登録</button
 	>

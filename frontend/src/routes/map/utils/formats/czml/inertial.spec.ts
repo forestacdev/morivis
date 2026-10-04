@@ -33,6 +33,18 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('CZML INERTIAL', () => {
+	it('画像マーカーにも同じINERTIAL変換を適用する', async () => {
+		const input = packets();
+		input[1].billboard = { image: 'test-billboard-red.png' };
+		const result = await parseCzml(JSON.stringify(input));
+		const points = result.points.features.filter(f =>
+			f.properties.entity_id === 'test-inertial-constant'
+		);
+		expect(result.billboards.features.map(f => f.geometry)).toEqual(
+			points.map(f => f.geometry)
+		);
+		expect(result.billboards.features.map(f => f.properties.time)).toEqual(result.timestamps);
+	});
 	it('慣性系で一定の位置も時刻ごとに地球固定座標へ変換し、軌跡を作る', async () => {
 		const result = await parseCzml(contents);
 		const points = result.points.features.filter(f =>

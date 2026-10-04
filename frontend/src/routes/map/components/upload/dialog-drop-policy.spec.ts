@@ -62,6 +62,34 @@ const createPathLikeFile = (name: string, relativePath: string, content = 'test'
 };
 
 describe('resolveOpenDialogDrop', () => {
+	it('CZMLにモデルと画像を別々に追加し、同じファイルは差し替える', async () => {
+		const document = createFile('test.czml', '[]');
+		const model = createFile('test.gltf');
+		const image = createFile('test.png');
+		expect(await resolveOpenDialogDrop('czml', [document], [model])).toEqual({
+			type: 'stay',
+			dropFiles: [document, model]
+		});
+		expect(await resolveOpenDialogDrop('czml', [document, model], [image], { mobile: true }))
+			.toEqual({
+				type: 'stay',
+				dropFiles: [document, model, image]
+			});
+		const replacement = createFile('test.png', 'test-new');
+		expect(await resolveOpenDialogDrop('czml', [document, model, image], [replacement]))
+			.toEqual({
+				type: 'stay',
+				dropFiles: [document, model, replacement]
+			});
+	});
+	it('新しいCZMLをドロップしたら前の入力一式を置き換える', async () => {
+		const old = createFile('test-old.czml', '[]');
+		const next = createFile('test-next.czml', '[]');
+		expect(await resolveOpenDialogDrop('czml', [old, createFile('test.png')], [next])).toEqual({
+			type: 'stay',
+			dropFiles: [next]
+		});
+	});
 	it('MCAフォームへの追加ドロップで既存のリージョンを保持する', async () => {
 		const original = createFile('r.-1.0.mca');
 		const added = createFile('r.0.0.MCA');

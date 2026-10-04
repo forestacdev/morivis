@@ -26,3 +26,12 @@ export const czmlModelLimits = {
 	maxBytes: 128 * MiB,
 	maxVertices: 1_000_000
 } as const;
+
+export const czmlBillboardLimits = {
+	maxAssets: 128,
+	maxVariants: 256,
+	maxBytes: 32 * MiB,
+	maxDimension: 2048,
+	maxSourcePixels: 16_777_216,
+	maxOutputPixels: 16_777_216
+} as const;

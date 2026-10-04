@@ -13,13 +13,15 @@ import {
 	type PolygonHierarchy,
 	Transforms
 } from '@cesium/engine';
+import { evaluateCzmlBillboard } from './billboard';
 import { czmlModelLimits, formatCzml } from './definition';
 import { preloadCzmlInertial } from './inertial';
 import type { CzmlModel } from './model-types';
 import { prepareCzml } from './prepare';
 
-export type CzmlDataType = 'points' | 'tracks' | 'lines' | 'polygons';
+export type CzmlDataType = 'points' | 'tracks' | 'lines' | 'polygons' | 'billboards';
 export interface CzmlResult {
+	billboards: FeatureCollection;
 	models: CzmlModel[];
 	points: FeatureCollection;
 	tracks: FeatureCollection;
@@ -44,6 +46,7 @@ export const parseCzml = async (text: string): Promise<CzmlResult> => {
 	}
 	const times = prepared.times;
 	const result: CzmlResult = {
+		billboards: empty(),
 		models: [],
 		points: empty(),
 		tracks: empty(),
@@ -154,6 +157,14 @@ export const parseCzml = async (text: string): Promise<CzmlResult> => {
 				const position = entity.position?.getValue(time);
 				if (position) {
 					const point = coordinate(position);
+					const billboard = evaluateCzmlBillboard(entity, time);
+					if (billboard) {
+						add('billboards', { type: 'Point', coordinates: point.xy }, {
+							...properties,
+							height: point.height,
+							...billboard
+						});
+					}
 					const model = entity.model;
 					if (model && model.show?.getValue(time) !== false) {
 						const resource = model.uri?.getValue(time);

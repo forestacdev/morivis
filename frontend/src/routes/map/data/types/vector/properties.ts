@@ -100,6 +100,10 @@ export type PopupImageSource = ImageSource;
 
 export type IconImageSource = ImageSource & {
 	imageIdKey: string;
+	/** 元画像の形を保つ場合はoriginal。省略時は既存のPOIアイコン。 */
+	rendering?: 'original';
+	/** 画像IDごとに保存するdata URI。地物ごとの同一画像の重複を避ける。 */
+	embeddedImages?: Record<string, string>;
 };
 
 export interface VectorImages {

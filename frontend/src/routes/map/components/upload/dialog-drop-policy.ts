@@ -1,4 +1,5 @@
 import type { DialogType, UploadFiles } from '$routes/map/types';
+import { isCzmlSupplementaryBatch, mergeCzmlFiles } from '$routes/map/utils/formats/czml/files';
 import { isFileGdbRelatedFile } from '$routes/map/utils/formats/filegdb';
 import { inspectGltfFile } from '$routes/map/utils/formats/gltf';
 import { isJp2Sidecar } from '$routes/map/utils/formats/jpeg2000/files';
@@ -111,6 +112,7 @@ const mergeFiles = (currentFiles: UploadFiles, incomingFiles: File[]): File[] =>
 const supplementaryDropMatchers: Partial<
 	Record<Exclude<DialogType, null>, SupplementaryDropMatcher>
 > = {
+	czml: (current, incoming) => isCzmlSupplementaryBatch(toUploadFiles(current), incoming),
 	'mapinfo-tab': (_currentFiles, files) => files.length > 0 && files.every(isMapInfoSidecar),
 	jpeg2000: (_currentFiles, files) => files.length > 0 && files.every(isJp2Sidecar),
 	sxf: (_currentFiles, files) =>
@@ -170,7 +172,9 @@ export const resolveOpenDialogDrop = async (
 	if (await supplementaryDropMatcher?.(currentFiles, incomingFiles)) {
 		return {
 			type: 'stay',
-			dropFiles: mergeFiles(currentFiles, incomingFiles)
+			dropFiles: dialogType === 'czml'
+				? mergeCzmlFiles(toUploadFiles(currentFiles), incomingFiles)
+				: mergeFiles(currentFiles, incomingFiles)
 		};
 	}
 

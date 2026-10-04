@@ -1,6 +1,7 @@
 import { GeojsonCache } from '$routes/map/utils/cache/geojson-cache';
 import { createVectorLayer } from '$routes/map/utils/layers';
 import { getTemporalFilter } from '$routes/map/utils/layers/vector/filter';
+import type { FilterSpecification } from '$routes/map/utils/maplibre';
 import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { parseCzml } from '.';
@@ -41,4 +42,46 @@ describe('CZML entry', () => {
 			expect(layer?.type).toBe({ points: 'circle', lines: 'line', polygons: 'fill' }[type]);
 		}
 	);
+});
+
+describe('CZML画像アイコンのスタイル', () => {
+	it('時刻フィルターを保ち、元画像を画面正面へ原寸で表示する', async () => {
+		const result = await parseCzml(fixture('test-billboards'));
+		const entry = await createCzmlEntry(result.billboards, 'test-images', result.timestamps);
+		if (entry.style.type !== 'circle') throw new Error('Expected point');
+		entry.style.imageIcon = { show: true };
+		entry.style.labels.show = false;
+		entry.properties.images = {
+			icon: {
+				type: 'absolute',
+				urlKey: 'test-url',
+				imageIdKey: 'test-id',
+				rendering: 'original',
+				embeddedImages: { 'test-image': 'data:image/png;base64,dGVzdA==' }
+			}
+		};
+		const filter: FilterSpecification = ['==', ['get', 'time'], result.timestamps[0]];
+		const layer = createVectorLayer(
+			{
+				id: entry.id,
+				source: `${entry.id}_source`,
+				minzoom: 0,
+				maxzoom: 24,
+				filter
+			},
+			entry.style,
+			entry.properties.fields,
+			entry.properties.images.icon
+		);
+		expect(layer?.type).toBe('symbol');
+		if (layer?.type !== 'symbol') throw new Error('Expected symbol');
+		expect(layer.layout).toMatchObject({
+			'icon-size': 1,
+			'icon-anchor': 'center',
+			'icon-allow-overlap': true,
+			'icon-pitch-alignment': 'viewport',
+			'icon-rotation-alignment': 'viewport'
+		});
+		expect(layer.filter).toEqual(filter);
+	});
 });

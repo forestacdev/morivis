@@ -26,6 +26,7 @@ const ICON_WORKER_POOL_MAX_SIZE = 1;
 const ICON_WORKER_IDLE_TIMEOUT_MS = 3000;
 
 export const GENERATED_POI_ICON_PREFIX = 'prop_icon';
+export const ORIGINAL_ICON_PREFIX = 'original_icon';
 export const GENERATED_POI_ICON_SEPARATOR = ':::';
 const GENERATED_POI_DOT_ICON_ID =
 	`${GENERATED_POI_ICON_PREFIX}${GENERATED_POI_ICON_SEPARATOR}${GENERATED_POI_ICON_SEPARATOR}`;
@@ -40,6 +41,21 @@ export const buildGeneratedPoiIconExpression = (
 	image: IconImageSource
 ): DataDrivenPropertyValueSpecification<ResolvedImageSpecification> => {
 	const { imageIdKey } = image;
+	if (image.embeddedImages) {
+		const values = Object.entries(image.embeddedImages);
+		if (!values.length) return GENERATED_POI_DOT_ICON_ID;
+		const prefix = image.rendering === 'original'
+			? ORIGINAL_ICON_PREFIX
+			: GENERATED_POI_ICON_PREFIX;
+		return [
+			'match',
+			['to-string', ['get', imageIdKey]],
+			...values.flatMap((
+				[id, url]
+			) => [id, [prefix, id, url].join(GENERATED_POI_ICON_SEPARATOR)]),
+			GENERATED_POI_DOT_ICON_ID
+		] as DataDrivenPropertyValueSpecification<ResolvedImageSpecification>;
+	}
 	const fallbackUrl: ExpressionSpecification = [
 		'concat',
 		ICON_IMAGE_BASE_PATH,
@@ -67,7 +83,7 @@ export const buildGeneratedPoiIconExpression = (
 		['all', ['has', imageIdKey], ['!=', ['to-string', ['get', imageIdKey]], '']],
 		[
 			'concat',
-			GENERATED_POI_ICON_PREFIX,
+			image.rendering === 'original' ? ORIGINAL_ICON_PREFIX : GENERATED_POI_ICON_PREFIX,
 			GENERATED_POI_ICON_SEPARATOR,
 			['to-string', ['get', imageIdKey]],
 			GENERATED_POI_ICON_SEPARATOR,
@@ -78,7 +94,9 @@ export const buildGeneratedPoiIconExpression = (
 };
 
 export const isGeneratedPoiIconId = (id: string) => {
-	return id.startsWith(`${GENERATED_POI_ICON_PREFIX}${GENERATED_POI_ICON_SEPARATOR}`);
+	return [GENERATED_POI_ICON_PREFIX, ORIGINAL_ICON_PREFIX].some(prefix =>
+		id.startsWith(`${prefix}${GENERATED_POI_ICON_SEPARATOR}`)
+	);
 };
 
 export const isGeneratedPoiIconLayout = (iconImage: unknown): boolean => {
@@ -98,8 +116,11 @@ export const parseGeneratedPoiIconId = (id: string) => {
 	// `prop_icon:::<propId>:::<iconUrl>` という自前フォーマットで
 	// propId と画像 URL を 1 本の文字列に詰めて styleimagemissing 側で復元する。
 	// URL には `_` や `/` が普通に含まれるので、衝突しやすい記号ではなく `:::` を区切りに使う。
-	const prefix = `${GENERATED_POI_ICON_PREFIX}${GENERATED_POI_ICON_SEPARATOR}`;
 	if (!isGeneratedPoiIconId(id)) return null;
+	const original = id.startsWith(`${ORIGINAL_ICON_PREFIX}${GENERATED_POI_ICON_SEPARATOR}`);
+	const prefix = `${
+		original ? ORIGINAL_ICON_PREFIX : GENERATED_POI_ICON_PREFIX
+	}${GENERATED_POI_ICON_SEPARATOR}`;
 
 	const payload = id.slice(prefix.length);
 	const separatorIndex = payload.indexOf(GENERATED_POI_ICON_SEPARATOR);
@@ -110,7 +131,8 @@ export const parseGeneratedPoiIconId = (id: string) => {
 
 	return {
 		propId,
-		iconUrl
+		iconUrl,
+		original
 	};
 };
 
@@ -161,6 +183,7 @@ export const resolveGeneratedPoiIconUrl = (
 	const rawImageId = properties[image.imageIdKey];
 	const imageId = rawImageId != null ? String(rawImageId) : '';
 	if (!imageId) return null;
+	if (image.embeddedImages) return image.embeddedImages[imageId] ?? null;
 
 	const resolvedImageUrl = resolveImageUrl(properties, image);
 	const imageUrl = resolvedImageUrl ?? `${ICON_IMAGE_BASE_PATH}/${imageId}.webp`;
@@ -525,7 +548,7 @@ export const resolveMissingStyleImage = async (id: string, map: MapLibreMapType 
 		}
 		const image = await loadImage(imageUrl);
 
-		if (USE_WORKER_GENERATED_POI_ICONS) {
+		if (USE_WORKER_GENERATED_POI_ICONS && !parsed.original) {
 			const renderedImage = await renderImageWithWorker(id, image);
 			addImageToMap(id, renderedImage);
 			return;
