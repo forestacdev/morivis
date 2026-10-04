@@ -79,6 +79,7 @@ export type DialogType =
 	| 'tcx'
 	| 'fit'
 	| 'nmea'
+	| 'ais'
 	| 'czml'
 	| 'orbit'
 	| 'osm'
@@ -410,6 +411,13 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		icon: 'mdi:map-marker-path',
 		description:
 			'GNSS受信機や航海機器が位置・時刻・速度などを交換するための通信形式です。保存されたログのRMC・GGA・GLLから、移動軌跡や計測点を地図に表示できます。'
+	},
+	{
+		id: 'ais',
+		label: 'AISログ',
+		icon: 'mdi:ferry',
+		description:
+			'船舶自動識別装置（AIS）が送受信した船舶情報のログです。NMEA形式の位置報告を船舶ごとのポイントや航跡として表示できます。'
 	},
 	{
 		id: 'orbit',

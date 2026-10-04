@@ -3,6 +3,38 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('AISログのドロップ', () => {
+	const content = readFileSync(
+		new URL('../../utils/formats/ais/__fixtures__/test-vessels.ais', import.meta.url),
+		'utf8'
+	);
+	it('AISを通常NMEAより先に内容判定する', async () => {
+		for (const extension of ['ais', 'nmea', 'nme', 'log', 'txt']) {
+			const file = new File([content], `test.${extension}`);
+			expect(await resolveDroppedFiles(file)).toMatchObject({
+				type: 'dialog',
+				dialogType: 'ais',
+				dropFiles: [file]
+			});
+		}
+	});
+	it('複数ログとZIP展開後もAISへ渡す', async () => {
+		const files = [new File([content], 'test-a.log'), new File([content], 'test-b.ais')];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'ais',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test/test.nmea', content);
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+			)
+		).toMatchObject({ type: 'dialog', dialogType: 'ais' });
+	});
+});
+
 describe('TLE / OMMのドロップ', () => {
 	const fixture = (name: string) =>
 		readFileSync(

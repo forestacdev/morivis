@@ -35,6 +35,11 @@ export default defineConfig(({ mode }) => {
 		optimizeDeps: {
 			include: [
 				'satellite.js',
+				'ais-stream-decoder/dist/ais-bitfield',
+				'ais-stream-decoder/dist/messages/ais-message-123',
+				'ais-stream-decoder/dist/messages/ais-message-18',
+				'ais-stream-decoder/dist/messages/ais-message-5',
+				'ais-stream-decoder/dist/messages/ais-message-24',
 				'three/addons/objects/MarchingCubes.js',
 				'occt-import-js',
 				'@cornerstonejs/codec-openjpeg/decodewasmjs',

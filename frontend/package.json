@@ -144,6 +144,7 @@
 		"@types/proj4": "^2.5.6",
 		"@xmldom/xmldom": "0.8.13",
 		"@yohawing/three-mmd-loader": "0.8.2",
+		"ais-stream-decoder": "2.1.2",
 		"apache-arrow": "21.1.0",
 		"arcgis-pbf-parser": "^0.0.4",
 		"bz2": "^1.0.1",

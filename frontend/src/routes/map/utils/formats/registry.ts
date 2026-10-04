@@ -1,6 +1,7 @@
 import { format3dm } from './3dm/definition';
 import { format3ds } from './3ds/definition';
 import { format3mf } from './3mf/definition';
+import { formatAis } from './ais/definition';
 import { formatAmf } from './amf/definition';
 import { formatArcgis } from './arcgis/definition';
 import { formatAsciiGrid } from './ascii-grid/definition';
@@ -124,6 +125,7 @@ export const FORMAT_DEFINITIONS = {
 	'tcx': formatTcx,
 	'fit': formatFit,
 	'nmea': formatNmea,
+	'ais': formatAis,
 	'czml': formatCzml,
 	'orbit': formatOrbit,
 	'gdb': formatGdb,

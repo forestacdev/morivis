@@ -166,6 +166,9 @@ importers:
       '@yohawing/three-mmd-loader':
         specifier: 0.8.2
         version: 0.8.2(three@0.177.0)
+      ais-stream-decoder:
+        specifier: 2.1.2
+        version: 2.1.2
       apache-arrow:
         specifier: 21.1.0
         version: 21.1.0
@@ -3413,6 +3416,9 @@ packages:
     resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+
+  ais-stream-decoder@2.1.2:
+    resolution: {integrity: sha512-kS0WZ2eDDkNj94ci9ysO27bPOKtdyQjeHyMvxtoosw1qxWV2QuTcEj9vCzfusEcXIHAn9IaOBxwxVw9gAOnb0Q==}
 
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
@@ -10120,6 +10126,8 @@ snapshots:
   acorn@8.17.0: {}
 
   acorn@8.18.0: {}
+
+  ais-stream-decoder@2.1.2: {}
 
   ajv@6.12.6:
     dependencies:

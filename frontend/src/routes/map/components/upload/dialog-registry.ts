@@ -258,6 +258,10 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/TcxForm.svelte'),
 		profile: 'drop-file'
 	},
+	ais: {
+		load: () => import('$routes/map/components/upload/form/AisForm.svelte'),
+		profile: 'drop-file'
+	},
 	orbit: {
 		load: () => import('$routes/map/components/upload/form/OrbitForm.svelte'),
 		profile: 'drop-file'

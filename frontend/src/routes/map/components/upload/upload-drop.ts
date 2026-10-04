@@ -1,3 +1,4 @@
+import { isAisCandidate, isAisFile } from '$routes/map/utils/formats/ais/files';
 import { isCzmlFile } from '$routes/map/utils/formats/czml/files';
 import { isGeoZarrZip, isLocalGeoZarrFolder } from '$routes/map/utils/formats/geozarr/local';
 import { isJp2File } from '$routes/map/utils/formats/jpeg2000/files';
@@ -226,6 +227,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	tcx: 'tcx',
 	fit: 'fit',
 	nmea: 'nmea',
+	ais: 'ais',
 	czml: 'czml',
 	tle: 'orbit',
 	omm: 'orbit',
@@ -781,6 +783,12 @@ export const resolveDroppedFiles = async (
 		const matches = await Promise.all(orbitCandidates.map(isOrbitFile));
 		const documents = orbitCandidates.filter((_, index) => matches[index]);
 		if (documents.length) return createDialogDecision('orbit', documents);
+	}
+	const aisCandidates = files.filter(isAisCandidate);
+	if (aisCandidates.length && !isGtfsTextSet(files)) {
+		const matches = await Promise.all(aisCandidates.map(isAisFile));
+		const logs = aisCandidates.filter((_, index) => matches[index]);
+		if (logs.length) return createDialogDecision('ais', logs);
 	}
 	const nmeaCandidates = files.filter(isNmeaCandidate);
 	if (nmeaCandidates.length && !isGtfsTextSet(files)) {
