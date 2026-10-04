@@ -60,20 +60,6 @@ export const createTyphoonEntry = (data: TyphoonData = emptyTyphoonData()) => {
 		width: 2,
 		lineStyle: 'solid'
 	});
-	entry.style.default = {
-		line: {
-			paint: {
-				'line-dasharray': [
-					'match',
-					['get', 'kind'],
-					['予報円', '予報円の接線'],
-					['literal', [2, 2]],
-					['literal', [1, 0]]
-				]
-			},
-			layout: {}
-		}
-	};
 
 	// 中心位置は親エントリーと一緒に追加・削除・表示切替される補助表示。
 	// 不透明度は固定せず、共通のspec生成で親の値を引き継ぐ。
