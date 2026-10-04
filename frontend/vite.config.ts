@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => {
 		// reloads the page on discovery and discards the user's uploaded point cloud.
 		optimizeDeps: {
 			include: [
+				'satellite.js',
 				'three/addons/objects/MarchingCubes.js',
 				'occt-import-js',
 				'@cornerstonejs/codec-openjpeg/decodewasmjs',

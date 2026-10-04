@@ -80,6 +80,7 @@ export type DialogType =
 	| 'fit'
 	| 'nmea'
 	| 'czml'
+	| 'orbit'
 	| 'osm'
 	| 'georss'
 	| 'geojson'
@@ -409,6 +410,13 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		icon: 'mdi:map-marker-path',
 		description:
 			'GNSS受信機や航海機器が位置・時刻・速度などを交換するための通信形式です。保存されたログのRMC・GGA・GLLから、移動軌跡や計測点を地図に表示できます。'
+	},
+	{
+		id: 'orbit',
+		label: 'TLE / OMM',
+		icon: 'mdi:satellite-variant',
+		description:
+			'人工衛星の軌道要素を記録する形式です。指定期間の衛星位置と地上軌跡を計算して表示します。OMMはJSON形式に対応します。'
 	},
 	{
 		id: 'czml',

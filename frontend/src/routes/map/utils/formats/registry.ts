@@ -58,6 +58,7 @@ import { formatNc } from './netcdf/definition';
 import { formatNmea } from './nmea/definition';
 import { formatObj } from './obj/definition';
 import { formatOpenDrive } from './opendrive/definition';
+import { formatOrbit } from './orbit/definition';
 import { formatOsm } from './osm/definition';
 import { formatPmtiles } from './pmtiles/definition';
 import { formatPmx } from './pmx/definition';
@@ -124,6 +125,7 @@ export const FORMAT_DEFINITIONS = {
 	'fit': formatFit,
 	'nmea': formatNmea,
 	'czml': formatCzml,
+	'orbit': formatOrbit,
 	'gdb': formatGdb,
 	'osm': formatOsm,
 	'georss': formatGeorss,

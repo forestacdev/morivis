@@ -3,6 +3,56 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('TLE / OMMのドロップ', () => {
+	const fixture = (name: string) =>
+		readFileSync(
+			new URL(`../../utils/formats/orbit/__fixtures__/${name}`, import.meta.url),
+			'utf8'
+		);
+	it('TLE・OMM JSON・内容判定TXTを同じフォームへ渡す', async () => {
+		for (
+			const [name, content] of [
+				['test.tle', fixture('test-orbit.tle')],
+				['test.txt', fixture('test-orbit.tle')],
+				['test.json', fixture('test-orbit.json')],
+				['test.omm', fixture('test-orbit.json')]
+			]
+		) {
+			const file = new File([content], name);
+			expect(await resolveDroppedFiles(file)).toMatchObject({
+				type: 'dialog',
+				dialogType: 'orbit',
+				dropFiles: [file]
+			});
+		}
+	});
+	it('複数文書とZIP展開後も軌道フォームへ渡す', async () => {
+		const files = [
+			new File([fixture('test-orbit.tle')], 'test.tle'),
+			new File([fixture('test-orbit.json')], 'test.json')
+		];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'orbit',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test/test.txt', fixture('test-orbit.tle'));
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+			)
+		).toMatchObject({ type: 'dialog', dialogType: 'orbit' });
+	});
+	it('通常のGeoJSONは既存フォームへ渡す', async () => {
+		expect(
+			await resolveDroppedFiles(
+				new File(['{"type":"FeatureCollection","features":[]}'], 'test.json')
+			)
+		).toMatchObject({ type: 'dialog', dialogType: 'geojson' });
+	});
+});
+
 describe('S-57のドロップ', () => {
 	it('単体・複数の基本セルをS-57へ振り分ける', async () => {
 		const files = [new File(['test'], 'test-a.000'), new File(['test'], 'test-b.000')];

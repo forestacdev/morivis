@@ -5,6 +5,7 @@ import { isMapInfoTab } from '$routes/map/utils/formats/mapinfo-tab/files';
 import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
 import { isNmeaCandidate, isNmeaFile } from '$routes/map/utils/formats/nmea/files';
+import { isOrbitFile } from '$routes/map/utils/formats/orbit/files';
 import { isOsmPbfFile } from '$routes/map/utils/formats/osm-pbf/files';
 import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
 import { isS57File } from '$routes/map/utils/formats/s57/files';
@@ -226,6 +227,8 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	fit: 'fit',
 	nmea: 'nmea',
 	czml: 'czml',
+	tle: 'orbit',
+	omm: 'orbit',
 	nme: 'nmea',
 	osm: 'osm',
 	gml: 'gml',
@@ -772,6 +775,12 @@ export const resolveDroppedFiles = async (
 		);
 		const documents = matches.filter(item => item.matched).map(item => item.file);
 		if (documents.length) return createDialogDecision('czml', files);
+	}
+	const orbitCandidates = files.filter(file => /\.(?:tle|omm|txt|json)$/i.test(file.name));
+	if (orbitCandidates.length && !isGtfsTextSet(files)) {
+		const matches = await Promise.all(orbitCandidates.map(isOrbitFile));
+		const documents = orbitCandidates.filter((_, index) => matches[index]);
+		if (documents.length) return createDialogDecision('orbit', documents);
 	}
 	const nmeaCandidates = files.filter(isNmeaCandidate);
 	if (nmeaCandidates.length && !isGtfsTextSet(files)) {

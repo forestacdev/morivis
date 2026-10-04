@@ -211,6 +211,10 @@
 		"extensions": [".nmea", ".nme", ".log", ".txt"]
 	},
 	{
+		"id": "orbit",
+		"extensions": [".tle", ".omm", ".txt", ".json"]
+	},
+	{
 		"id": "czml",
 		"extensions": [".czml", ".json"]
 	},

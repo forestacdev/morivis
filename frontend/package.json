@@ -199,6 +199,7 @@
 		"proj4": "^2.15.0",
 		"read-excel-file": "^9.3.5",
 		"rhino3dm": "^8.17.0",
+		"satellite.js": "^6.0.2",
 		"shapefile": "^0.6.6",
 		"sql.js": "^1.14.1",
 		"svelte-tiny-virtual-list": "^2.1.2",
