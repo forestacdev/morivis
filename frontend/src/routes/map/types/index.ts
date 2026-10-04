@@ -145,6 +145,7 @@ export type DialogType =
 	| 'topojson'
 	| 'landxml'
 	| 'opendrive'
+	| 'csw'
 	| 'stac'
 	| 'svg'
 	| 'geoparquet'
@@ -252,6 +253,14 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		description:
 			'3次元の地物やモデルをタイルに分割したデータです。URL入力またはフォルダ・ZIPから登録できます。',
 		icon: 'mdi:cube-scan'
+	},
+	{
+		id: 'csw',
+		dialogType: 'csw',
+		label: 'CSW カタログ',
+		description:
+			'地理データのメタデータを検索するカタログサービスです。キーワードや地図範囲で検索し、配信リンクからデータを読み込みます。',
+		icon: 'mdi:database-search'
 	},
 	{
 		id: 'stac',

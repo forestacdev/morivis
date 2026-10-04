@@ -31,6 +31,23 @@ describe('resolveUploadUrlInput', () => {
 		vi.clearAllMocks();
 	});
 
+	it.each([
+		'https://test.invalid/csw',
+		'https://test.invalid/catalog?SERVICE=CSW&REQUEST=GetCapabilities',
+		'https://test.invalid/catalog/srv/eng/csw?token=test'
+	])('CSW URLを配信サービスへの問い合わせ前にカタログへ渡す: %s', async (url) => {
+		expect(await resolveUploadUrlInput(url)).toEqual({
+			type: 'dialog',
+			dialogType: 'csw',
+			target: 'remoteCswUrl',
+			value: url
+		});
+		expect(parseWmtsCapabilities).not.toHaveBeenCalled();
+		expect(parseWmsCapabilities).not.toHaveBeenCalled();
+		expect(parseWfsCapabilities).not.toHaveBeenCalled();
+		expect(parseOgcApiFeaturesService).not.toHaveBeenCalled();
+	});
+
 	it.each(['test.tif', 'test.TIFF?key=test#test', 'test%2Etif'])(
 		'TIFFはサービス問い合わせ前に部分取得で判定する: %s',
 		async (path) => {

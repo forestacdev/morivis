@@ -223,6 +223,7 @@
 	let remoteFeatureServiceUrl = $state<string | null>(null);
 	let remoteArcGisUrl = $state<string | null>(null);
 	let remoteStacUrl = $state<string | null>(null);
+	let remoteCswUrl = $state<string | null>(null);
 	let pendingTileUrl = $state<string | null>(null);
 
 	let isStyleEditEntry = $derived.by(() => {
@@ -1537,6 +1538,7 @@
 					bind:remoteFeatureServiceUrl
 					bind:remoteArcGisUrl
 					bind:remoteStacUrl
+					bind:remoteCswUrl
 					bind:pendingTileUrl
 				/>
 			{/if}
@@ -1598,6 +1600,7 @@
 				bind:remoteFeatureServiceUrl
 				bind:remoteArcGisUrl
 				bind:remoteStacUrl
+				bind:remoteCswUrl
 				bind:pendingTileUrl
 				bind:transformOptionMode
 				bind:focusBbox

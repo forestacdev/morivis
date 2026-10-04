@@ -59,6 +59,10 @@
 		]
 	},
 	{
+		"id": "csw",
+		"extensions": []
+	},
+	{
 		"id": "stac",
 		"extensions": []
 	},

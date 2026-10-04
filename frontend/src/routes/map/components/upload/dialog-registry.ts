@@ -14,6 +14,7 @@ export type DialogProfile =
 	| 'feature-service'
 	| 'remote-wmts'
 	| 'remote-arcgis'
+	| 'remote-csw'
 	| 'remote-stac'
 	| 'remote-geozarr'
 	| 'tiles'
@@ -84,6 +85,11 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	ogcapifeatures: {
 		load: () => import('$routes/map/components/upload/form/FeatureServiceForm.svelte'),
 		profile: 'feature-service'
+	},
+	csw: {
+		load: () => import('$routes/map/components/upload/form/CswForm.svelte'),
+		profile: 'remote-csw',
+		fixedHeight: true
 	},
 	stac: {
 		load: () => import('$routes/map/components/upload/form/StacForm.svelte'),

@@ -11,6 +11,7 @@ import { formatCedxm } from './cedxm/definition';
 import { formatCitygml } from './citygml/definition';
 import { formatCityjson } from './cityjson/definition';
 import { formatCsv } from './csv/definition';
+import { formatCsw } from './csw/definition';
 import { formatCzml } from './czml/definition';
 import { formatDae } from './dae/definition';
 import { formatDgn } from './dgn/definition';
@@ -104,6 +105,7 @@ export const FORMAT_DEFINITIONS = {
 	'mbtiles': formatMbtiles,
 	'3dtiles': format3dtiles,
 	'stac': formatStac,
+	'csw': formatCsw,
 	'geozarr': formatGeoZarr,
 	'geojson': formatGeojson,
 	'geojsonseq': formatGeojsonseq,

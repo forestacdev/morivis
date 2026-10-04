@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<c:Capabilities xmlns:c="http://www.opengis.net/cat/csw/2.0.2" xmlns:o="http://www.opengis.net/ows" xmlns:l="http://www.w3.org/1999/xlink" version="2.0.2">
+  <o:ServiceIdentification><o:Title>test-catalogue</o:Title></o:ServiceIdentification>
+  <o:OperationsMetadata>
+    <o:Operation name="GetRecords"><o:DCP><o:HTTP><o:Get l:href="https://test.invalid/csw"/></o:HTTP></o:DCP></o:Operation>
+    <o:Operation name="GetRecordById">
+      <o:DCP><o:HTTP><o:Get l:href="https://test.invalid/csw"/></o:HTTP></o:DCP>
+      <o:Parameter name="outputSchema"><o:Value>http://www.opengis.net/cat/csw/2.0.2</o:Value><o:Value>http://www.isotc211.org/2005/gmd</o:Value></o:Parameter>
+    </o:Operation>
+  </o:OperationsMetadata>
+</c:Capabilities>

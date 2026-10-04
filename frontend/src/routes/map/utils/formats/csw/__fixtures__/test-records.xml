@@ -1,0 +1,15 @@
+<c:GetRecordsResponse xmlns:c="http://www.opengis.net/cat/csw/2.0.2" xmlns:d="http://purl.org/dc/elements/1.1/" xmlns:t="http://purl.org/dc/terms/" xmlns:o="http://www.opengis.net/ows">
+  <c:SearchResults numberOfRecordsMatched="3" numberOfRecordsReturned="2" nextRecord="3">
+    <c:Record>
+      <d:identifier>test-record-1</d:identifier><d:title>test-roads</d:title><d:type>dataset</d:type>
+      <t:abstract>test-description &amp; test-more</t:abstract><d:subject>test-topic</d:subject><t:modified>2024-01-01</t:modified>
+      <d:URI name="test-map" protocol="OGC:WMS-1.3.0-http-get-map">https://test.invalid/wms?service=WMS&amp;request=GetMap&amp;layers=test-roads</d:URI>
+      <t:references scheme="WWW:LINK">https://test.invalid/metadata/test-record-1</t:references>
+      <o:BoundingBox crs="urn:ogc:def:crs:OGC:1.3:CRS84"><o:LowerCorner>1 2</o:LowerCorner><o:UpperCorner>3 4</o:UpperCorner></o:BoundingBox>
+    </c:Record>
+    <c:Record>
+      <d:identifier>test-record-2</d:identifier><d:title>test-metadata-only</d:title><t:abstract>test-no-distribution</t:abstract>
+      <o:BoundingBox crs="urn:ogc:def:crs:EPSG::4326"><o:LowerCorner>2 1</o:LowerCorner><o:UpperCorner>4 3</o:UpperCorner></o:BoundingBox>
+    </c:Record>
+  </c:SearchResults>
+</c:GetRecordsResponse>
