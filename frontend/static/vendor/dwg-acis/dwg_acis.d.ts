@@ -1,28 +1,44 @@
 /* tslint:disable */
 /* eslint-disable */
-export function decode_dwg_layers(bytes: Uint8Array, layers_json: string): Uint8Array;
-export function decode_dwg_binary(bytes: Uint8Array): Uint8Array;
+export function mesh_dwg_solid(bytes: Uint8Array): Uint8Array;
 export function decode_dwg(bytes: Uint8Array, max_triangles: number): string;
+export function decode_dwg_layers(bytes: Uint8Array, layers_json: string): Uint8Array;
 /**
  * Inventory does not parse SAT/SAB or tessellate any solid.
  */
 export function inspect_dwg(bytes: Uint8Array): string;
+export function prepare_dwg(bytes: Uint8Array, layers_json: string): PreparedDwg;
+export function decode_dwg_binary(bytes: Uint8Array): Uint8Array;
+export class PreparedDwg {
+  private constructor();
+  free(): void;
+  [Symbol.dispose](): void;
+  drawing(): string;
+  next_job(): Uint8Array;
+  job_count(): number;
+}
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly __wbg_prepareddwg_free: (a: number, b: number) => void;
   readonly decode_dwg: (a: number, b: number, c: number) => [number, number, number, number];
   readonly decode_dwg_binary: (a: number, b: number) => [number, number, number, number];
   readonly decode_dwg_layers: (a: number, b: number, c: number, d: number) => [number, number, number, number];
   readonly inspect_dwg: (a: number, b: number) => [number, number, number, number];
+  readonly mesh_dwg_solid: (a: number, b: number) => [number, number, number, number];
+  readonly prepare_dwg: (a: number, b: number, c: number, d: number) => [number, number, number];
+  readonly prepareddwg_drawing: (a: number) => [number, number, number, number];
+  readonly prepareddwg_job_count: (a: number) => number;
+  readonly prepareddwg_next_job: (a: number) => [number, number, number, number];
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __wbindgen_externrefs: WebAssembly.Table;
-  readonly __wbindgen_malloc: (a: number, b: number) => number;
-  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+  readonly __wbindgen_malloc: (a: number, b: number) => number;
+  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_start: () => void;
 }
 

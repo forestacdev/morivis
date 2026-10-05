@@ -204,6 +204,21 @@ test('バイナリで読み込んだACISソリッドを2D輪郭線にして座�
 	await expect(page.getByText('投影法選択', { exact: true }).first()).toBeVisible();
 });
 
+test('境界分割で復元した細いACIS面をモデルとして登録する', async ({ page }) => {
+	const errors: string[] = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await dropFixture(page, 'test-shallow-lens.dwg');
+	await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
+	await expect(page.getByRole('region', { name: '変換できない部品', exact: true }))
+		.toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'モデル範囲の頂点 min-min-min', exact: true }))
+		.toBeAttached();
+	await page.getByRole('button', { name: '決定', exact: true }).click();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	await expect(page.getByText('test-shallow-lens', { exact: true }).first()).toBeVisible();
+	expect(errors).toEqual([]);
+});
+
 // Workerへの要求を記録し、確認操作より前に重い変換を開始していないことを検証する。
 const trackDwgRequests = async (page: Page, stallConversion = false) => {
 	await page.evaluate((stall) => {
@@ -303,3 +318,77 @@ for (const mode of ['auto', '2d-line']) {
 		await expect(page.getByText('test-georeferenced', { exact: true }).first()).toBeVisible();
 	});
 }
+
+const trackSolidWorkers = async (page: Page, stall = false) => {
+	await page.evaluate((stall) => {
+		const state = window as unknown as {
+			cadSolidJobs: Map<Worker, number>;
+			cadStopped: Set<Worker>;
+		};
+		state.cadSolidJobs = new Map();
+		state.cadStopped = new Set();
+		const OriginalWorker = window.Worker;
+		window.Worker = class extends OriginalWorker {
+			postMessage(...args: Parameters<Worker['postMessage']>) {
+				if (args[0]?.job instanceof Uint8Array) {
+					state.cadSolidJobs.set(this, (state.cadSolidJobs.get(this) ?? 0) + 1);
+					if (stall) return;
+				}
+				Reflect.apply(OriginalWorker.prototype.postMessage, this, args);
+			}
+			terminate() {
+				state.cadStopped.add(this);
+				super.terminate();
+			}
+		};
+	}, stall);
+};
+
+test('8部品を4つのWorkerで分担してモデル配置へ進む', async ({ page }) => {
+	await trackSolidWorkers(page);
+	await dropFixture(page, 'test-parallel-solids.dwg');
+	await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
+	await expect(page.getByRole('button', { name: 'モデル範囲の頂点 min-min-min', exact: true }))
+		.toBeAttached();
+	const actual = await page.evaluate(() => {
+		const state = window as unknown as {
+			cadSolidJobs: Map<Worker, number>;
+			cadStopped: Set<Worker>;
+		};
+		return {
+			workers: state.cadSolidJobs.size,
+			jobs: [...state.cadSolidJobs.values()].reduce((sum, count) => sum + count, 0),
+			stopped: [...state.cadSolidJobs.keys()].every(worker => state.cadStopped.has(worker))
+		};
+	});
+	expect(actual).toEqual({ workers: 4, jobs: 8, stopped: true });
+});
+
+test('4つのWorkerへ分担した後でもキャンセルして再ドロップできる', async ({ page }) => {
+	await trackSolidWorkers(page, true);
+	await dropFixture(page, 'test-parallel-solids.dwg');
+	await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
+	await expect.poll(() =>
+		page.evaluate(() =>
+			(window as unknown as { cadSolidJobs: Map<Worker, number>; }).cadSolidJobs.size
+		)
+	).toBe(4);
+	await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
+	expect(
+		await page.evaluate(() => {
+			const state = window as unknown as {
+				cadSolidJobs: Map<Worker, number>;
+				cadStopped: Set<Worker>;
+			};
+			return {
+				stopped: [...state.cadSolidJobs.keys()].every(worker =>
+					state.cadStopped.has(worker)
+				),
+				total: state.cadStopped.size
+			};
+		})
+	).toEqual({ stopped: true, total: 6 }); // 一覧取得1 + 準備1 + 三角形化4
+	await dropFixture(page, 'test-mesh.dwg');
+	await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+	await expect(page.getByRole('button', { name: '3Dモデルの配置へ', exact: true })).toBeEnabled();
+});

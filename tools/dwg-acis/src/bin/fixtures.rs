@@ -45,8 +45,41 @@ fn write_trim_fixture(destination: &std::path::Path) -> Result<(), Box<dyn std::
     Ok(())
 }
 
+fn write_parallel_fixture(destination: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    let mut doc = CadDocument::new();
+    doc.header.insertion_units = 6;
+    doc.layers.add(Layer::new("test-parallel"))?;
+    for index in 0..8 {
+        let sat = primitives::build_box([index as f64 * 5., 0., 0.], 2., 3., 4.);
+        let mut solid = Solid3D::from_sat(&sat.to_sat_string());
+        solid.common.layer = "test-parallel".into();
+        doc.add_entity(EntityType::Solid3D(solid))?;
+    }
+    DwgWriter::write_to_file(destination.join("test-parallel-solids.dwg"), &doc)?;
+    Ok(())
+}
+
+fn write_lens_fixture(destination: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    let mut doc = CadDocument::new();
+    doc.header.insertion_units = 6;
+    let mut sat = opencadcodec::entities::acis::SatDocument::new();
+    opencadkernel::acis::append(&fixture_shapes::shallow_lens(), &mut sat)
+        .expect("fictional shallow lens");
+    doc.add_entity(EntityType::Solid3D(Solid3D::from_sat(&sat.to_sat_string())))?;
+    DwgWriter::write_to_file(destination.join("test-shallow-lens.dwg"), &doc)?;
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let destination = PathBuf::from(std::env::args().nth(1).expect("fixture directory"));
+    write_lens_fixture(&destination)?;
+    if std::env::args().any(|argument| argument == "--lens-only") {
+        return Ok(());
+    }
+    write_parallel_fixture(&destination)?;
+    if std::env::args().any(|argument| argument == "--parallel-only") {
+        return Ok(());
+    }
     write_trim_fixture(&destination)?;
     if std::env::args().any(|argument| argument == "--regression-only") {
         return Ok(());

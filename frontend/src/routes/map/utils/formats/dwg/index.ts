@@ -6,6 +6,7 @@ import {
 	scaleIndexedCadMesh
 } from '../dxf/indexed-mesh';
 import {
+	type DecodedDrawing,
 	decodeDwgWithSolids,
 	type DwgReadOptions,
 	type DwgSolidDescriptor,
@@ -27,6 +28,10 @@ export const analyzeDwgDrawing = async (
 	options?: DwgReadOptions
 ): Promise<DwgDrawingResult> => {
 	const drawing = await decodeDwgWithSolids(arrayBuffer, options);
+	return normalizeDwgDrawing(drawing, unit);
+};
+
+export const normalizeDwgDrawing = (drawing: DecodedDrawing, unit: DxfUnit): DwgDrawingResult => {
 	const result = parseDxf(drawing.dxf, unit);
 	for (const solid of drawing.solids) scaleIndexedCadMesh(solid, result.metersPerUnit);
 	return {

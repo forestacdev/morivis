@@ -54,6 +54,12 @@ function isLikeNone(x) {
     return x === undefined || x === null;
 }
 
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_externrefs.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
+}
+
 let WASM_VECTOR_LEN = 0;
 
 function passArray8ToWasm0(arg, malloc) {
@@ -61,6 +67,47 @@ function passArray8ToWasm0(arg, malloc) {
     getUint8ArrayMemory0().set(arg, ptr / 1);
     WASM_VECTOR_LEN = arg.length;
     return ptr;
+}
+/**
+ * @param {Uint8Array} bytes
+ * @returns {Uint8Array}
+ */
+export function mesh_dwg_solid(bytes) {
+    const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.mesh_dwg_solid(ptr0, len0);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v2;
+}
+
+/**
+ * @param {Uint8Array} bytes
+ * @param {number} max_triangles
+ * @returns {string}
+ */
+export function decode_dwg(bytes, max_triangles) {
+    let deferred3_0;
+    let deferred3_1;
+    try {
+        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decode_dwg(ptr0, len0, max_triangles);
+        var ptr2 = ret[0];
+        var len2 = ret[1];
+        if (ret[3]) {
+            ptr2 = 0; len2 = 0;
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        deferred3_0 = ptr2;
+        deferred3_1 = len2;
+        return getStringFromWasm0(ptr2, len2);
+    } finally {
+        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+    }
 }
 
 const cachedTextEncoder = new TextEncoder();
@@ -114,12 +161,6 @@ function passStringToWasm0(arg, malloc, realloc) {
     WASM_VECTOR_LEN = offset;
     return ptr;
 }
-
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_externrefs.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
-}
 /**
  * @param {Uint8Array} bytes
  * @param {string} layers_json
@@ -137,48 +178,6 @@ export function decode_dwg_layers(bytes, layers_json) {
     var v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
     wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
     return v3;
-}
-
-/**
- * @param {Uint8Array} bytes
- * @returns {Uint8Array}
- */
-export function decode_dwg_binary(bytes) {
-    const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.decode_dwg_binary(ptr0, len0);
-    if (ret[3]) {
-        throw takeFromExternrefTable0(ret[2]);
-    }
-    var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
-    return v2;
-}
-
-/**
- * @param {Uint8Array} bytes
- * @param {number} max_triangles
- * @returns {string}
- */
-export function decode_dwg(bytes, max_triangles) {
-    let deferred3_0;
-    let deferred3_1;
-    try {
-        const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.decode_dwg(ptr0, len0, max_triangles);
-        var ptr2 = ret[0];
-        var len2 = ret[1];
-        if (ret[3]) {
-            ptr2 = 0; len2 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred3_0 = ptr2;
-        deferred3_1 = len2;
-        return getStringFromWasm0(ptr2, len2);
-    } finally {
-        wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
-    }
 }
 
 /**
@@ -206,6 +205,107 @@ export function inspect_dwg(bytes) {
         wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
     }
 }
+
+/**
+ * @param {Uint8Array} bytes
+ * @param {string} layers_json
+ * @returns {PreparedDwg}
+ */
+export function prepare_dwg(bytes, layers_json) {
+    const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(layers_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.prepare_dwg(ptr0, len0, ptr1, len1);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return PreparedDwg.__wrap(ret[0]);
+}
+
+/**
+ * @param {Uint8Array} bytes
+ * @returns {Uint8Array}
+ */
+export function decode_dwg_binary(bytes) {
+    const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.decode_dwg_binary(ptr0, len0);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v2;
+}
+
+const PreparedDwgFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_prepareddwg_free(ptr >>> 0, 1));
+
+export class PreparedDwg {
+
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(PreparedDwg.prototype);
+        obj.__wbg_ptr = ptr;
+        PreparedDwgFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        PreparedDwgFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_prepareddwg_free(ptr, 0);
+    }
+    /**
+     * @returns {string}
+     */
+    drawing() {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.prepareddwg_drawing(this.__wbg_ptr);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * @returns {Uint8Array}
+     */
+    next_job() {
+        const ret = wasm.prepareddwg_next_job(this.__wbg_ptr);
+        if (ret[3]) {
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
+    }
+    /**
+     * @returns {number}
+     */
+    job_count() {
+        const ret = wasm.prepareddwg_job_count(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+}
+if (Symbol.dispose) PreparedDwg.prototype[Symbol.dispose] = PreparedDwg.prototype.free;
 
 const EXPECTED_RESPONSE_TYPES = new Set(['basic', 'cors', 'default']);
 

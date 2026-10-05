@@ -214,6 +214,23 @@ describe('ACISソリッド', () => {
 			disposeDxfModel(model);
 		}
 	});
+
+	it('両端だけでは面積が消える細いNURBS面を境界の分割で復元する', async () => {
+		const result = await analyzeDwgDrawing(readFixture('test-shallow-lens.dwg'));
+		expect(result.skippedSolids).toEqual([]);
+		expect(result.solids).toHaveLength(1);
+		const { positions, indices } = result.solids[0];
+		let area = 0;
+		for (let i = 0; i < indices.length; i += 3) {
+			const [a, b, c] = [0, 1, 2].map(offset =>
+				new Vector3().fromArray(positions, indices[i + offset] * 3)
+			);
+			const cross = b.sub(a).cross(c.sub(a));
+			expect(cross.z).toBeGreaterThan(0);
+			area += cross.length() / 2;
+		}
+		expect(area).toBeCloseTo(0.002, 10);
+	});
 });
 
 it('展開上限に収まらない部品は全体を除外し、上限を超えるメッシュを返さない', () => {
@@ -319,4 +336,61 @@ it('単位変更は一覧の通常図形だけ換算し、原本とレイヤー�
 	expect(scaled.geojson).toEqual(expected.geojson);
 	expect(result.geojson).toEqual(original);
 	expect(rescaleDxfResult(scaled, 'auto').geojson).toEqual(original);
+});
+
+// 部品分割APIも実際のWASMで検証し、従来の一括変換と形状・除外情報を比較する。
+it.each([
+	'test-solids-sat.dwg',
+	'test-solids-sab.dwg',
+	'test-placed-solids.dwg',
+	'test-partial-solids.dwg',
+	'test-trimmed-solid.dwg',
+	'test-shallow-lens.dwg',
+	'test-unsupported-solid.dwg',
+	'test-mesh.dwg'
+])('%sを部品単位で変換しても一括変換と同じ結果になる', async name => {
+	const runtime = await import('../../../../../../static/vendor/dwg-acis/dwg_acis.js');
+	const { readDwgBinary } = await import('./acis');
+	const { normalizeDwgDrawing } = await import('.');
+	const bytes = readFixture(name);
+	const expected = await analyzeDwgDrawing(bytes);
+	const prepared = runtime.prepare_dwg(new Uint8Array(bytes), 'null');
+	try {
+		const result = normalizeDwgDrawing(JSON.parse(prepared.drawing()), 'auto');
+		expect(result.solids).toEqual([]);
+		expect(result.skippedSolids).toEqual([]);
+		const count = prepared.job_count();
+		for (let index = 0; index < count; index++) {
+			const part = readDwgBinary(runtime.mesh_dwg_solid(prepared.next_job()));
+			const { scaleIndexedCadMesh } = await import('../dxf/indexed-mesh');
+			for (const solid of part.solids) scaleIndexedCadMesh(solid, result.metersPerUnit);
+			result.solids.push(...part.solids);
+			result.skippedSolids.push(...part.skippedSolids);
+		}
+		expect(prepared.job_count()).toBe(0);
+		expect(result).toEqual(expected);
+	} finally {
+		prepared.free();
+	}
+});
+
+it('部品取り出しでもレイヤー選択を保持し、未選択のACISを解析しない', async () => {
+	const runtime = await import('../../../../../../static/vendor/dwg-acis/dwg_acis.js');
+	const { readDwgBinary } = await import('./acis');
+	for (const layers of [[], ['test-valid'], ['test-excluded']]) {
+		const prepared = runtime.prepare_dwg(
+			new Uint8Array(readFixture('test-partial-solids.dwg')),
+			JSON.stringify(layers)
+		);
+		try {
+			expect(prepared.job_count()).toBe(layers.length);
+			if (!layers.length) continue;
+			const result = readDwgBinary(runtime.mesh_dwg_solid(prepared.next_job()));
+			expect([...result.solids, ...result.skippedSolids].map(part => part.layer)).toEqual(
+				layers
+			);
+		} finally {
+			prepared.free();
+		}
+	}
 });

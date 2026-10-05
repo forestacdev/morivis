@@ -22,7 +22,7 @@ export interface DwgSolidDescriptor {
 }
 export type DwgReadOptions = { mode: 'inspect'; } | { mode: 'convert'; layers: string[]; };
 
-interface DecodedDrawing {
+export interface DecodedDrawing {
 	solidDescriptors: DwgSolidDescriptor[];
 	dxf: string;
 	solids: IndexedCadMesh[];
@@ -102,12 +102,16 @@ export const decodeDwgWithSolids = async (
 				: runtime.decode_dwg_binary(bytes)
 		);
 	} catch (error) {
-		if (error instanceof WebAssembly.RuntimeError) {
-			throw new Error(
-				'DWGの変換エンジンが処理を継続できませんでした。メモリ不足、または変換エンジン内部のエラーが考えられます。',
-				{ cause: error }
-			);
-		}
-		throw error instanceof Error ? error : new Error(String(error));
+		throw dwgConversionError(error);
 	}
+};
+
+export const dwgConversionError = (error: unknown): Error => {
+	if (error instanceof WebAssembly.RuntimeError) {
+		return new Error(
+			'DWGの変換エンジンが処理を継続できませんでした。メモリ不足、または変換エンジン内部のエラーが考えられます。',
+			{ cause: error }
+		);
+	}
+	return error instanceof Error ? error : new Error(String(error));
 };

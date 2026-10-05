@@ -2,7 +2,7 @@ use opencadcodec::entities::AcisData;
 use opencadcodec::types::Transform;
 use opencadcodec::{CadDocument, Color, DwgReader, DxfWriter, EntityType, Vector3};
 use opencadkernel::{acis, brep::mesh::TessellationTolerance};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::io::Cursor;
 use wasm_bindgen::prelude::*;
 
@@ -61,6 +61,7 @@ struct Collector<'a> {
     inspect_only: bool,
     selected_layers: Option<&'a [String]>,
     solid_descriptors: Vec<SolidDescriptor>,
+    jobs: Option<Vec<SolidJob>>,
 }
 
 impl Collector<'_> {
@@ -126,7 +127,28 @@ impl Collector<'_> {
         {
             return Ok(());
         }
-        match self.convert_solid(data, entity_type, placement, layer, color, array) {
+        if let Some(jobs) = &mut self.jobs {
+            jobs.push(SolidJob {
+                data: data.clone(),
+                placement: *placement,
+                layer: layer.into(),
+                color,
+                entity_type: entity_type.into(),
+                array,
+                handle: common.handle.to_string(),
+                block_path: path.clone(),
+            });
+            return Ok(());
+        }
+        match convert_solid(
+            data,
+            entity_type,
+            placement,
+            layer,
+            color,
+            array,
+            self.remaining_triangles,
+        ) {
             Ok(solid) => {
                 self.remaining_triangles -= solid.triangles.len();
                 self.solids.push(solid);
@@ -141,70 +163,72 @@ impl Collector<'_> {
         }
         Ok(())
     }
+}
 
-    fn convert_solid(
-        &self,
-        data: &AcisData,
-        entity_type: &'static str,
-        placement: &Transform,
-        layer: &str,
-        color: Color,
-        array: bool,
-    ) -> Result<SolidMesh, &'static str> {
-        if array {
-            return Err("配列複写（MINSERT）内のACISソリッドは未対応です。通常のブロックへ展開してください。");
-        }
-        if self.remaining_triangles == 0 {
-            return Err(
-                "ACISの三角形数が読み込み上限に達したため除外しました。図面を分割してください。",
-            );
-        }
-        let sat = data
-            .parse()
-            .ok_or("ACISのSAT/SABデータを解析できませんでした")?;
-        let (bodies, loss) = acis::lift(&sat);
-        if !loss.is_empty() || bodies.is_empty() || bodies.len() != sat.bodies().len() {
-            return Err("未対応または不正なACIS形状が含まれています");
-        }
-        let (r, g, b) = color.rgb().unwrap_or((255, 255, 255));
-        let mut solid = SolidMesh {
-            layer: layer.into(),
-            color: format!("#{r:02x}{g:02x}{b:02x}"),
-            entity_type,
-            positions: Vec::new(),
-            triangles: Vec::new(),
-        };
-        for body in bodies {
-            // Every successfully tessellated face needs at least one triangle.
-            // Avoid expensive meshing when even this lower bound exceeds the budget.
-            if body.face_keys().count() > self.remaining_triangles - solid.triangles.len() {
-                return Err("ACISの三角形数が読み込み上限を超えるため除外しました。図面を分割すると読み込める場合があります。");
-            }
-            // The pinned kernel applies the body's ACIS transform during lift.
-            let mesh = tessellation::tessellate_body(&body, TessellationTolerance::new(0.15, 1e-6));
-            if !mesh.missing_faces.is_empty() || mesh.mesh.triangles.is_empty() {
-                return Err("ACISの一部の面をメッシュへ変換できませんでした");
-            }
-            if mesh.mesh.triangles.len() > self.remaining_triangles - solid.triangles.len() {
-                return Err("ACISの三角形数が読み込み上限を超えるため除外しました。図面を分割すると読み込める場合があります。");
-            }
-            let offset = solid.positions.len();
-            for point in mesh.mesh.positions {
-                let p = placement.apply(Vector3::new(point[0], point[1], point[2]));
-                if ![p.x, p.y, p.z].iter().all(|v| v.is_finite()) {
-                    return Err("ACISの座標が不正です");
-                }
-                solid.positions.push([p.x, p.y, p.z]);
-            }
-            solid.triangles.extend(
-                mesh.mesh
-                    .triangles
-                    .into_iter()
-                    .map(|t| t.map(|i| i + offset)),
-            );
-        }
-        Ok(solid)
+fn convert_solid(
+    data: &AcisData,
+    entity_type: &'static str,
+    placement: &Transform,
+    layer: &str,
+    color: Color,
+    array: bool,
+    remaining_triangles: usize,
+) -> Result<SolidMesh, &'static str> {
+    if array {
+        return Err(
+            "配列複写（MINSERT）内のACISソリッドは未対応です。通常のブロックへ展開してください。",
+        );
     }
+    if remaining_triangles == 0 {
+        return Err(
+            "ACISの三角形数が読み込み上限に達したため除外しました。図面を分割してください。",
+        );
+    }
+    let sat = data
+        .parse()
+        .ok_or("ACISのSAT/SABデータを解析できませんでした")?;
+    let (bodies, loss) = acis::lift(&sat);
+    if !loss.is_empty() || bodies.is_empty() || bodies.len() != sat.bodies().len() {
+        return Err("未対応または不正なACIS形状が含まれています");
+    }
+    let (r, g, b) = color.rgb().unwrap_or((255, 255, 255));
+    let mut solid = SolidMesh {
+        layer: layer.into(),
+        color: format!("#{r:02x}{g:02x}{b:02x}"),
+        entity_type,
+        positions: Vec::new(),
+        triangles: Vec::new(),
+    };
+    for body in bodies {
+        // Every successfully tessellated face needs at least one triangle.
+        // Avoid expensive meshing when even this lower bound exceeds the budget.
+        if body.face_keys().count() > remaining_triangles - solid.triangles.len() {
+            return Err("ACISの三角形数が読み込み上限を超えるため除外しました。図面を分割すると読み込める場合があります。");
+        }
+        // The pinned kernel applies the body's ACIS transform during lift.
+        let mesh = tessellation::tessellate_body(&body, TessellationTolerance::new(0.15, 1e-6));
+        if !mesh.missing_faces.is_empty() || mesh.mesh.triangles.is_empty() {
+            return Err("ACISの一部の面をメッシュへ変換できませんでした");
+        }
+        if mesh.mesh.triangles.len() > remaining_triangles - solid.triangles.len() {
+            return Err("ACISの三角形数が読み込み上限を超えるため除外しました。図面を分割すると読み込める場合があります。");
+        }
+        let offset = solid.positions.len();
+        for point in mesh.mesh.positions {
+            let p = placement.apply(Vector3::new(point[0], point[1], point[2]));
+            if ![p.x, p.y, p.z].iter().all(|v| v.is_finite()) {
+                return Err("ACISの座標が不正です");
+            }
+            solid.positions.push([p.x, p.y, p.z]);
+        }
+        solid.triangles.extend(
+            mesh.mesh
+                .triangles
+                .into_iter()
+                .map(|t| t.map(|i| i + offset)),
+        );
+    }
+    Ok(solid)
 }
 
 pub fn read_drawing(bytes: &[u8], max_triangles: usize) -> Result<Drawing, String> {
@@ -217,6 +241,17 @@ fn read_drawing_selected(
     inspect_only: bool,
     selected_layers: Option<&[String]>,
 ) -> Result<Drawing, String> {
+    collect_drawing(bytes, max_triangles, inspect_only, selected_layers, false)
+        .map(|(drawing, _)| drawing)
+}
+
+fn collect_drawing(
+    bytes: &[u8],
+    max_triangles: usize,
+    inspect_only: bool,
+    selected_layers: Option<&[String]>,
+    prepare: bool,
+) -> Result<(Drawing, Vec<SolidJob>), String> {
     let mut doc = DwgReader::from_stream(Cursor::new(bytes))
         .read()
         .map_err(|e| e.to_string())?;
@@ -228,6 +263,7 @@ fn read_drawing_selected(
         inspect_only,
         selected_layers,
         solid_descriptors: Vec::new(),
+        jobs: prepare.then(Vec::new),
     };
     for entity in doc.model_space_entities() {
         collector.visit(
@@ -239,6 +275,7 @@ fn read_drawing_selected(
             false,
         )?;
     }
+    let jobs = collector.jobs.unwrap_or_default();
     let solid_descriptors = collector.solid_descriptors;
     let solids = collector.solids;
     let skipped_solids = collector.skipped_solids;
@@ -254,12 +291,15 @@ fn read_drawing_selected(
     let dxf = DxfWriter::new(&doc)
         .write_to_vec()
         .map_err(|e| e.to_string())?;
-    Ok(Drawing {
-        dxf: String::from_utf8(dxf).map_err(|e| e.to_string())?,
-        solids,
-        skipped_solids,
-        solid_descriptors,
-    })
+    Ok((
+        Drawing {
+            dxf: String::from_utf8(dxf).map_err(|e| e.to_string())?,
+            solids,
+            skipped_solids,
+            solid_descriptors,
+        },
+        jobs,
+    ))
 }
 
 #[wasm_bindgen]
@@ -421,4 +461,95 @@ pub fn decode_dwg_layers(bytes: &[u8], layers_json: &str) -> Result<Vec<u8>, JsV
     let drawing = read_drawing_selected(bytes, usize::MAX, false, Some(&layers))
         .map_err(|e| JsValue::from_str(&e))?;
     encode_binary(&drawing).map_err(|e| JsValue::from_str(&e))
+}
+
+// Raw ACIS and resolved instance metadata only; no document or tessellated mesh is cloned.
+#[derive(Serialize, Deserialize)]
+struct SolidJob {
+    data: AcisData,
+    placement: Transform,
+    layer: String,
+    color: Color,
+    entity_type: String,
+    array: bool,
+    handle: String,
+    block_path: Vec<String>,
+}
+
+#[wasm_bindgen]
+pub struct PreparedDwg {
+    drawing: Drawing,
+    jobs: std::vec::IntoIter<SolidJob>,
+}
+
+#[wasm_bindgen]
+impl PreparedDwg {
+    pub fn drawing(&self) -> Result<String, JsValue> {
+        serde_json::to_string(&self.drawing).map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    pub fn job_count(&self) -> usize {
+        self.jobs.len()
+    }
+
+    // The caller requests at most one job per idle meshing Worker. Consumed raw data is freed.
+    pub fn next_job(&mut self) -> Result<Vec<u8>, JsValue> {
+        let job = self
+            .jobs
+            .next()
+            .ok_or_else(|| JsValue::from_str("DWGの部品がありません"))?;
+        serde_json::to_vec(&job).map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+}
+
+#[wasm_bindgen]
+pub fn prepare_dwg(bytes: &[u8], layers_json: &str) -> Result<PreparedDwg, JsValue> {
+    let layers: Option<Vec<String>> =
+        serde_json::from_str(layers_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+    let (drawing, jobs) = collect_drawing(bytes, usize::MAX, false, layers.as_deref(), true)
+        .map_err(|e| JsValue::from_str(&e))?;
+    Ok(PreparedDwg {
+        drawing,
+        jobs: jobs.into_iter(),
+    })
+}
+
+fn mesh_job(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let job: SolidJob = serde_json::from_slice(bytes).map_err(|e| e.to_string())?;
+    let entity_type = match job.entity_type.as_str() {
+        "3DSOLID" => "3DSOLID",
+        "BODY" => "BODY",
+        "REGION" => "REGION",
+        _ => return Err("DWGの部品種別が不正です".into()),
+    };
+    let mut drawing = Drawing {
+        dxf: String::new(),
+        solids: vec![],
+        skipped_solids: vec![],
+        solid_descriptors: vec![],
+    };
+    match convert_solid(
+        &job.data,
+        entity_type,
+        &job.placement,
+        &job.layer,
+        job.color,
+        job.array,
+        usize::MAX,
+    ) {
+        Ok(solid) => drawing.solids.push(solid),
+        Err(reason) => drawing.skipped_solids.push(SkippedSolid {
+            handle: job.handle,
+            layer: job.layer,
+            entity_type,
+            block_path: job.block_path,
+            reason: reason.into(),
+        }),
+    }
+    encode_binary(&drawing)
+}
+
+#[wasm_bindgen]
+pub fn mesh_dwg_solid(bytes: &[u8]) -> Result<Vec<u8>, JsValue> {
+    mesh_job(bytes).map_err(|e| JsValue::from_str(&e))
 }
