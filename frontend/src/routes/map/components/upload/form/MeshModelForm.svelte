@@ -78,6 +78,7 @@
 	}: Props = $props();
 
 	interface ModelPlacement {
+		preserveLocalOrigin?: boolean;
 		name?: string;
 		lng: number;
 		lat: number;
@@ -906,6 +907,7 @@
 		}
 
 		const normalizeToLocalOrigin =
+			!modelPlacement?.preserveLocalOrigin &&
 			!getUploadedMinecraftRegion(glbFile) &&
 			(activeFormat === 'ifc' ||
 				activeFormat === 'gltf' ||
@@ -1027,7 +1029,8 @@
 				resourceUrls,
 				normalizeToLocalOrigin: entry.format.normalizeToLocalOrigin,
 				upAxis: entry.format.upAxis,
-				projectedModelEpsg: resolvedProjectedModelEpsg
+				projectedModelEpsg: resolvedProjectedModelEpsg,
+				preserveScale: modelPlacement?.preserveLocalOrigin
 			});
 
 			if (uploadedModelMeta.resolvedPlacement) {

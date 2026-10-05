@@ -1,6 +1,7 @@
 import type { FeatureCollection, MultiPolygon3DFeatureCollection } from '$routes/map/types/geojson';
 import {
 	Box3,
+	BufferAttribute,
 	BufferGeometry,
 	Color,
 	DoubleSide,
@@ -12,6 +13,8 @@ import {
 	Vector2,
 	Vector3
 } from 'three';
+
+import type { IndexedCadMesh } from './indexed-mesh';
 
 type Position = [number, number, number];
 
@@ -140,11 +143,20 @@ export const disposeDxfModel = (model: Group) => {
 	for (const material of materials) material.dispose();
 };
 
-/** POLYLINEの境界は個別オブジェクトとして保持し、単独の面はレイヤー別にまとめる。 */
-export const createDxfModel = (geojson: FeatureCollection) => {
+/** ポリフェイスとACISソリッドは個別オブジェクトとして保持し、単独の面はレイヤー別にまとめる。 */
+export const createDxfModel = (
+	geojson: FeatureCollection,
+	indexedMeshes: IndexedCadMesh[] = []
+) => {
 	const parts = new Map<
 		string,
-		{ name: string; layer: string; entityIndex?: number; data: FeatureCollection; }
+		{
+			name: string;
+			layer: string;
+			entityIndex?: number;
+			entityType?: string;
+			data: FeatureCollection;
+		}
 	>();
 	const bounds = new Box3();
 	geojson.features.forEach((feature, index) => {
@@ -156,14 +168,15 @@ export const createDxfModel = (geojson: FeatureCollection) => {
 			: [];
 		if (!polygons.length) return;
 		const layer = String(feature.properties?.layer ?? '未分類');
-		const isPolyline = feature.properties?.type === 'POLYLINE';
-		const key = isPolyline ? `entity:${index}` : `layer:${layer}`;
+		const entityType = String(feature.properties?.type ?? '');
+		const isSeparateEntity = ['POLYLINE', '3DSOLID', 'BODY', 'REGION'].includes(entityType);
+		const key = isSeparateEntity ? `entity:${index}` : `layer:${layer}`;
 		let part = parts.get(key);
 		if (!part) {
 			part = {
-				name: isPolyline ? `${layer} #${index + 1}` : layer,
+				name: isSeparateEntity ? `${layer} #${index + 1}` : layer,
 				layer,
-				...(isPolyline ? { entityIndex: index } : {}),
+				...(isSeparateEntity ? { entityIndex: index, entityType } : {}),
 				data: { type: 'FeatureCollection', features: [] }
 			};
 			parts.set(key, part);
@@ -180,6 +193,10 @@ export const createDxfModel = (geojson: FeatureCollection) => {
 			}
 		}
 	});
+	for (const mesh of indexedMeshes) {
+		bounds.expandByPoint(new Vector3(...mesh.bounds.slice(0, 3)));
+		bounds.expandByPoint(new Vector3(...mesh.bounds.slice(3, 6)));
+	}
 	if (bounds.isEmpty()) throw new EmptyDxfMeshError();
 	const origin = bounds.getCenter(new Vector3());
 	origin.z = bounds.min.z;
@@ -205,7 +222,7 @@ export const createDxfModel = (geojson: FeatureCollection) => {
 				layer: part.layer,
 				sourceEntityCount: part.data.features.length,
 				...(part.entityIndex !== undefined
-					? { sourceEntityIndex: part.entityIndex, entityType: 'POLYLINE' }
+					? { sourceEntityIndex: part.entityIndex, entityType: part.entityType }
 					: {})
 			};
 			if (material) {
@@ -214,6 +231,52 @@ export const createDxfModel = (geojson: FeatureCollection) => {
 			} else {
 				material = mesh.material;
 			}
+			model.add(mesh);
+		}
+		const indexedMaterials = new Map<string, MeshStandardMaterial>();
+		for (const [index, part] of indexedMeshes.entries()) {
+			const partOrigin = new Vector3(
+				(part.bounds[0] + part.bounds[3]) / 2,
+				(part.bounds[1] + part.bounds[4]) / 2,
+				part.bounds[2]
+			);
+			const positions = new Float32Array(part.positions.length);
+			for (let i = 0; i < positions.length; i += 3) {
+				positions[i] = part.positions[i] - partOrigin.x;
+				positions[i + 1] = part.positions[i + 2] - partOrigin.z;
+				positions[i + 2] = -(part.positions[i + 1] - partOrigin.y);
+			}
+			const geometry = new BufferGeometry();
+			geometry.setAttribute('position', new BufferAttribute(positions, 3));
+			geometry.setIndex(new BufferAttribute(part.indices, 1));
+			geometry.computeVertexNormals();
+			geometry.computeBoundingBox();
+			let partMaterial = indexedMaterials.get(part.color);
+			if (!partMaterial) {
+				partMaterial = new MeshStandardMaterial({
+					color: part.color,
+					roughness: 1,
+					metalness: 0,
+					side: DoubleSide
+				});
+				indexedMaterials.set(part.color, partMaterial);
+			}
+			const mesh = new Mesh(geometry, partMaterial);
+			mesh.name = `${part.layer} #${index + 1}`;
+			mesh.position.set(
+				partOrigin.x - origin.x,
+				partOrigin.z - origin.z,
+				-(partOrigin.y - origin.y)
+			);
+			mesh.userData = {
+				sourceFormat: 'DWG',
+				sourceOrigin: partOrigin.toArray(),
+				coordinateUnit: 'm',
+				layer: part.layer,
+				entityType: part.entityType,
+				sourceEntityIndex: index,
+				sourceEntityCount: 1
+			};
 			model.add(mesh);
 		}
 		if (!model.children.length) throw new EmptyDxfMeshError();

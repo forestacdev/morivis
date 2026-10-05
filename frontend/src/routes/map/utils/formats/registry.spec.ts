@@ -94,6 +94,7 @@ describe('format definitions', () => {
 		for (
 			const group of [
 				FORMAT_DEFINITIONS.osm,
+				FORMAT_DEFINITIONS.dxf,
 				FORMAT_DEFINITIONS.jww,
 				FORMAT_DEFINITIONS.sqlite,
 				FORMAT_DEFINITIONS.pointcloud

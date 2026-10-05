@@ -2,6 +2,7 @@ import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import type { AnyGeometry } from '$routes/map/types/geometry';
 import DxfParser from 'dxf-parser';
 import { DxfFaceHandler } from './face';
+import { type CadGeoreference, readCadGeoreference } from './georeference';
 
 type DxfHeader = Record<string, unknown>;
 type DxfPointLike = { x?: unknown; y?: unknown; z?: unknown; };
@@ -17,6 +18,7 @@ type DxfMeshVertex = DxfPointLike & {
 
 export type DxfUnit = 'auto' | 'mm' | 'cm' | 'm' | 'in' | 'ft';
 export interface DxfParseResult {
+	georeference?: CadGeoreference;
 	geojson: FeatureCollection;
 	/** 単位指定なし・単位なし(0)・未対応コードはnull。 */
 	sourceUnitCode: number | null;
@@ -75,8 +77,10 @@ export const parseDxf = (dxfText: string, unit: DxfUnit = 'auto'): DxfParseResul
 			&& Object.hasOwn(DXF_INSUNITS_TO_METERS, insunits)
 		? insunits
 		: null;
+	const georeference = readCadGeoreference(dxfText);
 	const unitScaleFactor = unit === 'auto'
-		? (sourceUnitCode === null ? 1 : DXF_INSUNITS_TO_METERS[sourceUnitCode])
+		? (georeference?.metersPerUnit
+			?? (sourceUnitCode === null ? 1 : DXF_INSUNITS_TO_METERS[sourceUnitCode]))
 		: DXF_UNIT_SCALE[unit];
 	const features: Feature[] = [];
 
@@ -90,7 +94,33 @@ export const parseDxf = (dxfText: string, unit: DxfUnit = 'auto'): DxfParseResul
 	return {
 		geojson: { type: 'FeatureCollection', features },
 		sourceUnitCode,
-		metersPerUnit: unitScaleFactor
+		metersPerUnit: unitScaleFactor,
+		...(georeference ? { georeference } : {})
+	};
+};
+
+/** 読み取った通常図形を再解析せずに単位変更する。入力は変更しない。 */
+export const rescaleDxfResult = (result: DxfParseResult, unit: DxfUnit): DxfParseResult => {
+	const metersPerUnit = unit === 'auto'
+		? (result.georeference?.metersPerUnit ?? DXF_INSUNITS_TO_METERS[result.sourceUnitCode ?? 0])
+		: DXF_UNIT_SCALE[unit];
+	if (metersPerUnit === result.metersPerUnit) return result;
+	const factor = metersPerUnit / result.metersPerUnit;
+	return {
+		...result,
+		metersPerUnit,
+		geojson: {
+			type: 'FeatureCollection',
+			features: result.geojson.features.map(feature => {
+				const properties = { ...feature.properties };
+				scaleLengthProperties(properties, factor);
+				return {
+					...feature,
+					geometry: scaleGeometry(feature.geometry, factor),
+					properties
+				};
+			})
+		}
 	};
 };
 

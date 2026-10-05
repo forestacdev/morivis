@@ -608,7 +608,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'dxf',
 		label: 'DXF / DWG',
 		icon: 'mdi:vector-square',
-		description: 'CAD図面を表す形式です。図面上の線や注記を地図上で確認するときに使います。'
+		description:
+			'CAD図面を表す形式です。線・注記や3Dメッシュを地図上に配置して利用します。DWGは基本的なACISソリッドの表示にも対応します。'
 	},
 	{
 		id: 'dgn',

@@ -11,7 +11,7 @@ const latToMercatorY = (lat: number) =>
 		- (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + THREE.MathUtils.degToRad(lat) / 2)))
 	/ 360;
 
-const meterInMercatorCoordinateUnits = (lat: number) =>
+export const meterInMercatorCoordinateUnits = (lat: number) =>
 	1 / (EARTH_CIRCUMFERENCE * Math.cos(THREE.MathUtils.degToRad(lat)));
 
 const buildMercatorAnchorMatrix = (

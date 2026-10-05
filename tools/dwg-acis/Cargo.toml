@@ -1,0 +1,24 @@
+[package]
+name = "morivis-dwg-acis"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+opencadcodec = { git = "https://github.com/HakanSeven12/opencadcodec.git", rev = "fe69506" }
+opencadkernel = { git = "https://github.com/HakanSeven12/opencadkernel.git", rev = "ae28f669f8a5673585c2c5c5b3617876c8b7bf98", features = ["acis"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+wasm-bindgen = "=0.2.105"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"

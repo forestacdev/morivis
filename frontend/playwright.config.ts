@@ -1,7 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
 const port = Number(process.env.PLAYWRIGHT_PORT ?? 4173);
-const baseURL = `http://127.0.0.1:${port}/morivis/`;
+const dev = process.env.PLAYWRIGHT_DEV === '1';
+const baseURL = `http://127.0.0.1:${port}${dev ? '/' : '/morivis/'}`;
 
 export default defineConfig({
 	forbidOnly: !!process.env.CI,
@@ -13,7 +14,7 @@ export default defineConfig({
 		trace: 'retain-on-failure'
 	},
 	webServer: {
-		command: `pnpm run preview --host 127.0.0.1 --port ${port} --strictPort`,
+		command: `pnpm run ${dev ? 'dev' : 'preview'} --host 127.0.0.1 --port ${port} --strictPort`,
 		url: baseURL,
 		reuseExistingServer: false
 	},
