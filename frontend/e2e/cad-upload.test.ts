@@ -296,9 +296,10 @@ test('決定後のソリッド変換をキャンセルして再読込できる',
 	await trackDwgRequests(page, true);
 	await dropFixture(page, 'test-trimmed-solid.dwg');
 	await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
-	await expect(page.getByRole('status').filter({ hasText: '選択した図形を変換しています' }))
+	await expect(page.getByRole('status').filter({ hasText: '選択した図形を準備しています' }))
 		.toBeVisible();
 	await expect(page.getByLabel('図面の単位')).toBeDisabled();
+	await expect(page.getByRole('progressbar')).not.toHaveAttribute('value');
 	await expect.poll(() => dwgRequests(page)).toEqual([{ mode: 'inspect' }, {
 		mode: 'convert',
 		layers: ['test-trim']
@@ -336,7 +337,9 @@ const trackSolidWorkers = async (page: Page, stall = false) => {
 		const state = window as unknown as {
 			cadSolidJobs: Map<Worker, number>;
 			cadStopped: Set<Worker>;
+			cadRelease: (() => void)[];
 		};
+		state.cadRelease = [];
 		state.cadSolidJobs = new Map();
 		state.cadStopped = new Set();
 		const OriginalWorker = window.Worker;
@@ -344,7 +347,12 @@ const trackSolidWorkers = async (page: Page, stall = false) => {
 			postMessage(...args: Parameters<Worker['postMessage']>) {
 				if (args[0]?.job instanceof Uint8Array) {
 					state.cadSolidJobs.set(this, (state.cadSolidJobs.get(this) ?? 0) + 1);
-					if (stall) return;
+					if (stall) {
+						state.cadRelease.push(() =>
+							Reflect.apply(OriginalWorker.prototype.postMessage, this, args)
+						);
+						return;
+					}
 				}
 				Reflect.apply(OriginalWorker.prototype.postMessage, this, args);
 			}
@@ -374,6 +382,7 @@ test('8部品を4つのWorkerで分担してモデル配置へ進む', async ({ 
 		};
 	});
 	expect(actual).toEqual({ workers: 4, jobs: 8, stopped: true });
+	await expect(page.getByRole('progressbar', { name: 'DWGの処理進捗' })).toHaveCount(0);
 });
 
 test('4つのWorkerへ分担した後でもキャンセルして再ドロップできる', async ({ page }) => {
@@ -404,3 +413,38 @@ test('4つのWorkerへ分担した後でもキャンセルして再ドロップ�
 	await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
 	await expect(page.getByRole('button', { name: '3Dモデルの配置へ', exact: true })).toBeEnabled();
 });
+
+test(
+	'部品の完了数と経過時間を表示し、キャンセル後は進捗をリセットする',
+	async ({ page }, testInfo) => {
+		await trackSolidWorkers(page, true);
+		await dropFixture(page, 'test-parallel-solids.dwg');
+		await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
+		const bar = page.getByRole('progressbar', { name: 'DWGの処理進捗' });
+		await expect(bar).toHaveAttribute('max', '8');
+		await expect(bar).toHaveAttribute('value', '0');
+		await expect.poll(() =>
+			page.evaluate(() =>
+				(window as unknown as { cadRelease: (() => void)[]; }).cadRelease.length
+			)
+		).toBe(4);
+		await page.evaluate(() =>
+			(window as unknown as { cadRelease: (() => void)[]; }).cadRelease.shift()!()
+		);
+		await expect(bar).toHaveAttribute('value', '1');
+		await expect(page.getByText('処理済み 1 / 8 部品', { exact: true })).toBeVisible();
+		await expect(page.getByText('12%', { exact: true })).toBeVisible();
+		await expect(page.getByText(/^経過 /)).not.toHaveText('経過 0:00');
+		await page.screenshot({ path: testInfo.outputPath('dwg-progress-desktop.png') });
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expect(bar).toBeVisible();
+		await page.screenshot({ path: testInfo.outputPath('dwg-progress-mobile.png') });
+		await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
+		await expect(bar).toHaveCount(0);
+		await dropFixture(page, 'test-parallel-solids.dwg');
+		await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
+		await expect(bar).toHaveAttribute('value', '0');
+		await expect(page.getByText('処理済み 0 / 8 部品', { exact: true })).toBeVisible();
+		await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
+	}
+);

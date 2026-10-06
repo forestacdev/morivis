@@ -12,6 +12,8 @@ RUSTFLAGS="--cfg getrandom_backend=\"wasm_js\" --remap-path-prefix=$PWD=." cargo
 wasm-bindgen tools/dwg-acis/target/wasm32-unknown-unknown/release/morivis_dwg_acis.wasm --target web --out-dir frontend/static/vendor/dwg-acis --out-name dwg_acis
 ```
 
+releaseは `opt-level = 3`・LTOで実行速度を優先する。曲面の分割許容差や変換不能の判定はビルド設定によって変更しない。
+
 架空fixtureの生成:
 
 ```sh
@@ -33,6 +35,8 @@ cargo run --locked --manifest-path tools/dwg-acis/Cargo.toml --bin fixtures -- f
 - 非周期NURBS面が、同じNURBS辺を逆方向に往復するだけの微小な境界を持つ場合は、曲線の制御点全体が線形許容差以内に収まることを確認し、面積のない面として扱う。閉じた周期面や大きな折り返しには適用しない。
 - ACISの円錐面に楕円比がある場合は、比率を保持した有理NURBS面として読み込む。角度を使う元のpcurveは引き継がず、3D境界から再投影する。
 - 複数の辺で構成された上下の輪郭を、同じ継ぎ目が往復して結ぶ周期面にも対応する。内部の格子線は共有境界と区別して追加分割できるようにする。密なNURBS面は節点から格子を作り、必要な箇所を後から細分化する。
+- 丸め誤差で潰れた三角形の検査は、パラメータ空間で細い三角形に該当する場合だけ曲面上の座標を評価する。通常の三角形で不要なNURBS評価を省き、幾何判定と許容差は維持する。
+- 曲面の細分化では、点追加で変化した三角形とその隣接三角形、未完了の三角形だけを再判定する。境界フラグへの影響も追跡し、座標のビット列と境界条件が同じ場合だけ判定結果を再利用する。処理順・許容差・細分化の上限は維持し、進展がない場合は直前の検査済み形状を使う。平面は従来どおり一度だけ分割する。
 - アプリはドロップ時に `inspect_dwg` で通常図形とソリッドのレイヤー・種類を取得する。この段階ではSAT/SABの解析や三角形化を行わない。決定後は `prepare_dwg` で選択した部品の生ACISと解決済み配置・色を取り出す。`PreparedDwg.next_job` を空いたWorkerから要求し、最大4つのWorkerが `mesh_dwg_solid` で三角形化する。図面全体を各Workerへ複製せず、最後の部品を転送した時点で準備用Workerを終了する。図面は一覧取得時と決定時に読み、単位変更だけなら再読み込みしない。
 - バイナリAPIには三角形数の上限を設定しない。Workerの自動タイムアウトも設けず、キャンセル時にWorkerを終了する。
 - `decode_dwg` のJSON出力と三角形数上限引数は、少量データの互換性・制限処理のテスト用に残す。大きな図面はバイナリ出力を使う。
@@ -56,3 +60,17 @@ Rust側の回帰検証: `cargo test --locked --release --manifest-path tools/dwg
 準備用WorkerはDWGを一度読み、モデル空間とINSERTをたどって選択対象のジョブを元の順番に並べる。ジョブはSAT/SABと配置行列・色・除外報告用の識別情報だけを含み、部品単位のUTF-8 JSONバイト列で転送する。配置行列の数値はserde_jsonのfloat_roundtripで往復する。各Workerが同じ `convert_solid` を呼び、結果をMDW1バイナリで返す。分割許容差や失敗部品の扱いは一括APIと共通。
 
 フロントエンドは実行中の部品を最大4つに限定し、完了したWorkerへ次の部品を渡す。結果は入力順に結合する。通常の変換不能は部品単位の除外情報、WorkerやWASMの異常は全体のエラーとして扱う。キャンセル・異常終了では準備用Workerも含めて全て終了する。`decode_dwg_binary` / `decode_dwg_layers` の一括APIはNodeでの利用と結果比較用にも残す。
+
+## 変換時間の比較
+
+Node.js 24で、配布WASMの `prepare_dwg` と `mesh_dwg_solid` を計測する。入力の読み込み後からWASM初期化・ジョブ準備・最大4 Workerによるメッシュ生成までを測る。GLB出力・座標変換・地図描画は含まない。部品ごとの時間はメッシュ生成だけ、`meshSeconds` はWorkerの起動・結果のハッシュ計算・終了も含む。
+
+```sh
+node tools/dwg-acis/benchmark.mjs frontend/src/routes/map/utils/formats/dwg/__fixtures__/test-parallel-solids.dwg
+node tools/dwg-acis/benchmark.mjs input.dwg --runtime path/to/dwg_acis.mjs --workers 4
+node tools/dwg-acis/benchmark.mjs input.dwg --handle 0x123 --workers 1
+```
+
+`--runtime` のJSと同じディレクトリに、対応する `dwg_acis_bg.wasm` を置く。JSをES modulesとして認識しないディレクトリでは拡張子を `.mjs` にする。`--handle` は複数回指定できる。計測用CLIでは準備したジョブを一度メモリに集めるため、ブラウザのメモリ使用量の計測には使わない。
+
+比較対象は順に実行し、同時にビルドや他の計測を行わない。JSON出力の `drawingSha256` と `meshSha256` で通常図形・部品の出力一致を確認する。メッシュのハッシュは入力順に並べた各MDW1バイナリのSHA-256から作るため、Workerの完了順に依存しない。除外数と三角形数、重い部品の時間も返す。計測結果や実データはfixtureへ追加せず、必要ならGit管理外の `tools/dwg-acis/target/` に保存する。

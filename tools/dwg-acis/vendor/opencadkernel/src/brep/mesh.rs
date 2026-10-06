@@ -4481,39 +4481,33 @@ fn fill_scheduled(
     let mut additions = additions;
     let mut complete = None;
     let mut normal_cache = ParameterMap::default();
-    // Most triangles survive later insertions unchanged. Their surface and
-    // constraint checks are immutable; retain only the current pass's successes.
-    let mut accepted = std::collections::HashSet::new();
+    // Keep accepted faces and revisit only insertion neighborhoods. The domain
+    // retains face order and the last checked snapshot for no-progress exits.
+    if !flat {
+        domain.begin_refinement();
+    }
     for _ in 0..MAX_FACE_PASSES {
-        let triangles = domain.triangles();
-        if triangles.is_empty() {
-            return None;
-        }
         if flat {
-            complete = Some(triangles);
+            complete = Some(domain.triangles());
             break;
         }
-        let mut next_accepted = std::collections::HashSet::new();
+        let triangles = domain.pending_triangles();
+        if triangles.is_empty() {
+            complete = Some(domain.checked_triangles());
+            break;
+        }
         let mut candidates = Vec::new();
         let mut candidates_within_tolerance = true;
-        for triangle in &triangles {
-            let key = (
-                triangle.parameters.map(|p| p.map(f64::to_bits)),
-                triangle.constraints,
-            );
-            if accepted.contains(&key) {
-                next_accepted.insert(key);
-                continue;
-            }
+        for (handle, triangle) in &triangles {
             let refinement =
                 triangle_refinement(surface, triangle, max_angle, tolerance, &mut normal_cache)?;
             match refinement {
                 TriangleRefinement::Complete => {
-                    next_accepted.insert(key);
+                    domain.accept_triangle(*handle);
                 }
                 TriangleRefinement::Boundary => {
                     if triangle_chordal_error(surface, triangle.parameters, tolerance) {
-                        next_accepted.insert(key);
+                        domain.accept_triangle(*handle);
                         continue;
                     }
                     let mut candidate = None;
@@ -4554,6 +4548,7 @@ fn fill_scheduled(
                         }
                     }
                     if let Some(parameter) = candidate {
+                        domain.retry_triangle(*handle);
                         candidates.push((parameter, triangle.parameters));
                         candidates_within_tolerance = false;
                     } else {
@@ -4562,18 +4557,18 @@ fn fill_scheduled(
                 }
                 TriangleRefinement::Interior(parameters) => {
                     if triangle_chordal_error(surface, triangle.parameters, tolerance) {
-                        next_accepted.insert(key);
+                        domain.accept_triangle(*handle);
                         continue;
                     }
                     candidates_within_tolerance &=
                         triangle_within_tolerance(surface, triangle.parameters, tolerance);
+                    domain.retry_triangle(*handle);
                     candidates.push((parameters, triangle.parameters));
                 }
             }
         }
-        accepted = next_accepted;
         if candidates.is_empty() {
-            complete = Some(triangles);
+            complete = Some(domain.checked_triangles());
             break;
         }
         let mut unique = std::collections::HashSet::with_capacity(candidates.len());
@@ -4615,7 +4610,7 @@ fn fill_scheduled(
         }
         if inserted == 0 {
             if candidates_within_tolerance {
-                complete = Some(triangles);
+                complete = Some(domain.checked_triangles());
                 break;
             }
             return None;
@@ -5116,19 +5111,15 @@ fn surface_triangle_roundoff(
     corners: [[f64; 2]; 3],
     tolerance: f64,
 ) -> bool {
-    let points = corners.map(|uv| surface.point_at(uv[0], uv[1]));
     let ranges = if let super::geometry::Surface::Nurbs(n) = surface {
         let ((a, b), (c, d)) = n.domain();
         [b - a, d - c]
     } else {
         [1.0; 2]
     };
-    let scale = points
-        .into_iter()
-        .flatten()
-        .map(f64::abs)
-        .fold(1.0, f64::max);
-    let roundoff = (f64::EPSILON * 128.0 * scale).min(tolerance * 0.01);
+    // Only parameter-space slivers can pass this test. Avoid evaluating three
+    // spline points for every ordinary triangle, and reuse them across probes.
+    let mut geometry = None;
     (0..3).any(|i| {
         let a = corners[(i + 1) % 3];
         let b = corners[(i + 2) % 3];
@@ -5141,13 +5132,23 @@ fn surface_triangle_roundoff(
         }
         let t = (ap[0] * ab[0] + ap[1] * ab[1]) / len;
         let cross = (ap[0] * ab[1] - ap[1] * ab[0]).abs();
-        cross <= len * 1e-8
-            && t > 0.0
-            && t < 1.0
-            && distance3(
-                points[i],
-                surface.point_at(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t),
-            ) <= roundoff
+        if !(cross <= len * 1e-8 && t > 0.0 && t < 1.0) {
+            return false;
+        }
+        let (points, roundoff) = geometry.get_or_insert_with(|| {
+            let points = corners.map(|uv| surface.point_at(uv[0], uv[1]));
+            let scale = points
+                .into_iter()
+                .flatten()
+                .map(f64::abs)
+                .fold(1.0, f64::max);
+            let roundoff = (f64::EPSILON * 128.0 * scale).min(tolerance * 0.01);
+            (points, roundoff)
+        });
+        distance3(
+            points[i],
+            surface.point_at(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t),
+        ) <= *roundoff
     })
 }
 
@@ -6094,6 +6095,24 @@ mod trim_accuracy_tests {
     use super::*;
     use crate::brep::geometry::{Cylinder, Surface};
     use crate::space::{NurbsSurface3, Plane};
+
+    #[test]
+    fn roundoff_only_removes_geometrically_collapsed_slivers() {
+        let surface = Surface::Plane(Plane::XY);
+        for (height, collapsed) in [(1., false), (1e-10, false), (1e-16, true)] {
+            let corners = [[0., 0.], [1., 0.], [0.5, height]];
+            for offset in 0..3 {
+                let rotated = [0, 1, 2].map(|i| corners[(i + offset) % 3]);
+                assert_eq!(surface_triangle_roundoff(&surface, rotated, 1e-6), collapsed);
+            }
+        }
+        // Even a numerical sliver must respect the tighter linear-tolerance cap.
+        assert!(!surface_triangle_roundoff(
+            &surface,
+            [[0., 0.], [1., 0.], [0.5, 1e-16]],
+            1e-16,
+        ));
+    }
 
     #[test]
     fn chord_error_uses_geometry_not_parameter_speed() {

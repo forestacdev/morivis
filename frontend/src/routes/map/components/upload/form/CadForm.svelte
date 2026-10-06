@@ -2,6 +2,8 @@
 	import turfBbox from '@turf/bbox';
 	import { onDestroy, untrack } from 'svelte';
 
+	import CadProgress from './CadProgress.svelte';
+
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
 	import { createAutoGeoJsonEntry } from '$routes/map/components/upload/form/geojson-entry';
@@ -21,7 +23,10 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 	import type { DwgSolidDescriptor, SkippedDwgSolid } from '$routes/map/utils/formats/dwg/acis';
-	import { analyzeDwgFileInWorker } from '$routes/map/utils/formats/dwg/analyze';
+	import {
+		analyzeDwgFileInWorker,
+		type DwgConversionProgress
+	} from '$routes/map/utils/formats/dwg/analyze';
 	import {
 		rescaleDxfResult,
 		type DxfParseResult,
@@ -81,6 +86,8 @@
 
 	let isAnalyzing = $state(false);
 	let isConverting = $state(false);
+	let conversionProgress = $state.raw<DwgConversionProgress | null>(null);
+	let conversionLabel = $state('選択した図形を準備しています…');
 	const isBusy = $derived(isAnalyzing || isConverting || $isProcessing);
 	let solidDescriptors = $state.raw<DwgSolidDescriptor[]>([]);
 	let inspected = $state.raw<DxfParseResult | null>(null);
@@ -178,6 +185,7 @@
 			const controller = new AbortController();
 			const useLocalProgress = sourceFormat === 'dwg';
 			isAnalyzing = true;
+			conversionProgress = null;
 			if (!useLocalProgress) isProcessing.set(true);
 			inspected = null;
 			solidDescriptors = [];
@@ -275,6 +283,7 @@
 				meshConversion?.abort();
 				isAnalyzing = false;
 				isConverting = false;
+				conversionProgress = null;
 				if (!useLocalProgress) isProcessing.set(false);
 			};
 		}
@@ -291,6 +300,8 @@
 		meshConversion?.abort();
 		meshConversion = controller;
 		isConverting = true;
+		conversionProgress = null;
+		conversionLabel = '選択した図形を準備しています…';
 		if (sourceFormat !== 'dwg') isProcessing.set(true);
 		preparedVectorInput = null;
 		try {
@@ -299,10 +310,23 @@
 				if (converted?.key === key) solids = converted.solids;
 				else {
 					converted = null;
-					const result = await analyzeDwgFileInWorker(file, unit, controller.signal, {
-						mode: 'convert',
-						layers: [...new Set(selectedSolidDescriptors.map((solid) => solid.layer))]
-					});
+					const result = await analyzeDwgFileInWorker(
+						file,
+						unit,
+						controller.signal,
+						{
+							mode: 'convert',
+							layers: [...new Set(selectedSolidDescriptors.map((solid) => solid.layer))]
+						},
+						(progress) => {
+							if (meshConversion !== controller || controller.signal.aborted) return;
+							conversionProgress = progress;
+							conversionLabel =
+								progress.phase === 'meshing'
+									? '部品を変換しています…'
+									: '選択した図形を準備しています…';
+						}
+					);
 					if (controller.signal.aborted) return;
 					solids = result.solids;
 					converted = { key, solids, skipped: result.skippedSolids };
@@ -312,6 +336,8 @@
 			if (controller.signal.aborted) return;
 			if (!input.features.length && !solids.length) throw new Error('読み込める図形がありません。');
 			if (useMesh) {
+				conversionProgress = null;
+				conversionLabel = '3Dモデルを作成しています…';
 				const { glb, placement } = await convertDxfModelInWorker(
 					input,
 					controller.signal,
@@ -330,6 +356,8 @@
 				dropFile = [modelFile];
 				showDialogType = 'model';
 			} else {
+				conversionProgress = null;
+				conversionLabel = '地図に表示する図形を準備しています…';
 				const vectorInput = {
 					...input,
 					features: [
@@ -355,6 +383,7 @@
 		} finally {
 			if (meshConversion === controller) {
 				isConverting = false;
+				conversionProgress = null;
 				if (sourceFormat !== 'dwg') isProcessing.set(false);
 			}
 		}
@@ -584,9 +613,12 @@
 </fieldset>
 
 {#if sourceFormat === 'dwg' && (isAnalyzing || isConverting)}
-	<p class="px-2 pt-2 text-sm text-gray-300" role="status">
-		{isAnalyzing ? 'DWGの図形・レイヤーを読み取っています…' : '選択した図形を変換しています…'}
-	</p>
+	{#key cadFile}
+		<CadProgress
+			label={isAnalyzing ? 'DWGの図形・レイヤーを読み取っています…' : conversionLabel}
+			progress={isAnalyzing ? null : conversionProgress}
+		/>
+	{/key}
 {/if}
 
 <div class="flex shrink-0 justify-center gap-4 overflow-auto pt-2">

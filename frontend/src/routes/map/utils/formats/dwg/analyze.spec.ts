@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DwgDrawingResult } from '.';
-import { analyzeDwgFileInWorker } from './analyze';
+import { analyzeDwgFileInWorker, type DwgConversionProgress } from './analyze';
 import type { DwgSolidResponse } from './solid.worker';
 import type { DwgWorkerResponse } from './worker';
 
@@ -83,11 +83,15 @@ const preparedDrawing = {
 	solidDescriptors: [],
 	skippedSolids: []
 } as unknown as DwgDrawingResult;
-const startPool = async (count: number, signal?: AbortSignal) => {
+const startPool = async (
+	count: number,
+	signal?: AbortSignal,
+	onProgress?: (progress: DwgConversionProgress) => void
+) => {
 	const promise = analyzeDwgFileInWorker(file(), 'auto', signal, {
 		mode: 'convert',
 		layers: ['test-layer']
-	});
+	}, onProgress);
 	await vi.waitFor(() => expect(state.workers).toHaveLength(1));
 	state.workers[0].onmessage({ data: { prepared: preparedDrawing, jobCount: count } });
 	return { promise, reader: state.workers[0] };
@@ -183,6 +187,64 @@ describe('DWGの並列三角形化', () => {
 			if (kind === 'result') worker.onmessage({ data: { error: 'test-engine' } });
 			await rejected;
 			for (const active of state.workers) expect(active.terminate).toHaveBeenCalledOnce();
+		}
+	);
+});
+
+describe('DWGの進捗通知', () => {
+	it('完了順に関係なく、除外された部品も処理済みとして数える', async () => {
+		const onProgress = vi.fn();
+		const { promise, reader } = await startPool(3, undefined, onProgress);
+		for (let slot = 0; slot < 3; slot++) deliverJob(slot, slot);
+		finishJob(2, 2);
+		finishJob(0, 0);
+		finishJob(1, 1);
+		await promise;
+		expect(onProgress.mock.calls.map(([progress]) => progress)).toEqual([
+			{ phase: 'preparing' },
+			...[0, 1, 2, 3].map(completed => ({ phase: 'meshing', completed, total: 3 }))
+		]);
+		const request = reader.postMessage.mock.calls[0][0];
+		expect(Object.keys(request).sort()).toEqual(['arrayBuffer', 'options', 'unit']);
+		expect(request.options).toEqual({ mode: 'convert', layers: ['test-layer'] });
+	});
+	it('部品がなければゼロ除算になる進捗を通知しない', async () => {
+		const onProgress = vi.fn();
+		const { promise } = await startPool(0, undefined, onProgress);
+		await promise;
+		expect(onProgress.mock.calls).toEqual([[{ phase: 'preparing' }]]);
+	});
+	it('キャンセル後に到着した結果は進捗へ反映しない', async () => {
+		const controller = new AbortController();
+		const onProgress = vi.fn();
+		const { promise } = await startPool(2, controller.signal, onProgress);
+		const rejected = expect(promise).rejects.toMatchObject({ name: 'AbortError' });
+		deliverJob(0, 0);
+		controller.abort();
+		await rejected;
+		onProgress.mockClear();
+		finishJob(0, 0);
+		expect(onProgress).not.toHaveBeenCalled();
+	});
+	it.each(['preparing', 'meshing'])(
+		'通知内で%sをキャンセルしてもWorkerを追加起動しない',
+		async phase => {
+			const controller = new AbortController();
+			const onProgress = vi.fn((progress: DwgConversionProgress) => {
+				if (progress.phase === phase) controller.abort();
+			});
+			const promise = analyzeDwgFileInWorker(file(), 'auto', controller.signal, {
+				mode: 'convert',
+				layers: ['test-layer']
+			}, onProgress);
+			const rejected = expect(promise).rejects.toMatchObject({ name: 'AbortError' });
+			if (phase === 'meshing') {
+				await vi.waitFor(() => expect(state.workers).toHaveLength(1));
+				state.workers[0].onmessage({ data: { prepared: preparedDrawing, jobCount: 8 } });
+			}
+			await rejected;
+			expect(state.workers).toHaveLength(phase === 'meshing' ? 1 : 0);
+			for (const worker of state.workers) expect(worker.terminate).toHaveBeenCalledOnce();
 		}
 	);
 });

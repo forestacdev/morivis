@@ -11,11 +11,16 @@ import SolidWorker from './solid.worker?worker';
 import type { DwgWorkerResponse } from './worker';
 import DwgWorker from './worker?worker';
 
+export type DwgConversionProgress =
+	| { phase: 'preparing'; }
+	| { phase: 'meshing'; completed: number; total: number; };
+
 const analyzeDwgArrayBufferInWorker = (
 	arrayBuffer: ArrayBuffer,
 	unit: DxfUnit = 'auto',
 	signal?: AbortSignal,
-	options?: DwgReadOptions
+	options?: DwgReadOptions,
+	onProgress?: (progress: DwgConversionProgress) => void
 ): Promise<DwgDrawingResult> =>
 	new Promise((resolve, reject) => {
 		if (signal?.aborted) {
@@ -65,6 +70,8 @@ const analyzeDwgArrayBufferInWorker = (
 			return worker;
 		};
 		try {
+			onProgress?.({ phase: 'preparing' });
+			if (settled) return;
 			const reader = watch(new DwgWorker());
 			const dispatch = (slot: number) => {
 				if (settled) return;
@@ -83,6 +90,8 @@ const analyzeDwgArrayBufferInWorker = (
 						drawing = data.prepared;
 						jobCount = data.jobCount;
 						if (!jobCount) return finish(drawing);
+						onProgress?.({ phase: 'meshing', completed: 0, total: jobCount });
+						if (settled) return;
 						for (let slot = 0; slot < Math.min(4, jobCount); slot++) {
 							meshWorkers.push(watch(new SolidWorker()));
 							dispatch(slot);
@@ -96,7 +105,9 @@ const analyzeDwgArrayBufferInWorker = (
 						try {
 							if ('error' in data) return fail(new Error(data.error));
 							results[index] = data.result;
-							if (++completed === jobCount) {
+							completed++;
+							onProgress?.({ phase: 'meshing', completed, total: jobCount });
+							if (completed === jobCount) {
 								finish({
 									...drawing,
 									solids: results.flatMap(result => result.solids),
@@ -127,12 +138,19 @@ export const analyzeDwgFileInWorker = async (
 	file: File,
 	unit: DxfUnit = 'auto',
 	signal?: AbortSignal,
-	options?: DwgReadOptions
+	options?: DwgReadOptions,
+	onProgress?: (progress: DwgConversionProgress) => void
 ) => {
 	if (file.size > formatDwg.limits.maxFileBytes) {
 		throw new Error('DWGの読み込み上限は128 MiBです。図面を分割してください。');
 	}
-	return analyzeDwgArrayBufferInWorker(await file.arrayBuffer(), unit, signal, options);
+	return analyzeDwgArrayBufferInWorker(
+		await file.arrayBuffer(),
+		unit,
+		signal,
+		options,
+		onProgress
+	);
 };
 
 const drawingToGeoJson = (drawing: DwgDrawingResult): FeatureCollection => ({
