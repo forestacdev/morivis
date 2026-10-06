@@ -231,6 +231,53 @@ describe('ACISソリッド', () => {
 		}
 		expect(area).toBeCloseTo(0.002, 10);
 	});
+
+	it.each(
+		[
+			['test-horn-patch.dwg', 0.25 ** 2 * 1.1 * (Math.PI / 2 - 1), 0.02],
+			['test-planar-slit.dwg', 12, 1e-8],
+			['test-crossing-trim.dwg', 20 / 3, 2e-6]
+		] as const
+	)('%sの境界を復元し面積を保つ', async (name, expectedArea, relativeTolerance) => {
+		const result = await analyzeDwgDrawing(readFixture(name));
+		expect(result.skippedSolids).toEqual([]);
+		expect(result.solids).toHaveLength(1);
+		const { positions, indices } = result.solids[0];
+		let area = 0;
+		for (let i = 0; i < indices.length; i += 3) {
+			const [a, b, c] = [0, 1, 2].map(offset =>
+				new Vector3().fromArray(positions, indices[i + offset] * 3)
+			);
+			area += b.sub(a).cross(c.sub(a)).length() / 2;
+		}
+		expect(Math.abs(area - expectedArea)).toBeLessThan(expectedArea * relativeTolerance);
+	});
+
+	it('曲がった継ぎ目を持つ周期NURBS面を復元する', async () => {
+		const result = await analyzeDwgDrawing(readFixture('test-bent-tube.dwg'));
+		expect(result.skippedSolids).toEqual([]);
+		expect(result.solids).toHaveLength(1);
+		expect(result.solids[0].indices.length).toBeGreaterThan(0);
+		expect(result.solids[0].positions.every(Number.isFinite)).toBe(true);
+	});
+
+	it('粗い円弧の弦が交差する面を細分化して復元する', async () => {
+		const result = await analyzeDwgDrawing(readFixture('test-curved-band.dwg'));
+		expect(result.skippedSolids).toEqual([]);
+		expect(result.solids).toHaveLength(1);
+		const { positions, indices } = result.solids[0];
+		let area = 0;
+		for (let i = 0; i < indices.length; i += 3) {
+			const [a, b, c] = [0, 1, 2].map(offset =>
+				new Vector3().fromArray(positions, indices[i + offset] * 3)
+			);
+			const cross = b.sub(a).cross(c.sub(a));
+			expect(cross.z).toBeGreaterThan(0);
+			area += cross.length() / 2;
+		}
+		const exact = (1.0002 ** 2 * Math.PI - (Math.PI - 0.14) - 2 * 1.0002 * Math.sin(0.07)) / 2;
+		expect(Math.abs(area - exact)).toBeLessThan(exact * 0.05);
+	});
 });
 
 it('展開上限に収まらない部品は全体を除外し、上限を超えるメッシュを返さない', () => {
@@ -346,6 +393,11 @@ it.each([
 	'test-partial-solids.dwg',
 	'test-trimmed-solid.dwg',
 	'test-shallow-lens.dwg',
+	'test-curved-band.dwg',
+	'test-horn-patch.dwg',
+	'test-planar-slit.dwg',
+	'test-bent-tube.dwg',
+	'test-crossing-trim.dwg',
 	'test-unsupported-solid.dwg',
 	'test-mesh.dwg'
 ])('%sを部品単位で変換しても一括変換と同じ結果になる', async name => {

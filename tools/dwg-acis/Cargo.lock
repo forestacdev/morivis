@@ -315,7 +315,6 @@ dependencies = [
 [[package]]
 name = "opencadkernel"
 version = "0.1.0"
-source = "git+https://github.com/HakanSeven12/opencadkernel.git?rev=ae28f669f8a5673585c2c5c5b3617876c8b7bf98#ae28f669f8a5673585c2c5c5b3617876c8b7bf98"
 dependencies = [
  "opencadcodec",
  "rustc-hash",

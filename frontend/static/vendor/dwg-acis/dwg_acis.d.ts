@@ -1,14 +1,14 @@
 /* tslint:disable */
 /* eslint-disable */
+export function decode_dwg_binary(bytes: Uint8Array): Uint8Array;
 export function mesh_dwg_solid(bytes: Uint8Array): Uint8Array;
-export function decode_dwg(bytes: Uint8Array, max_triangles: number): string;
 export function decode_dwg_layers(bytes: Uint8Array, layers_json: string): Uint8Array;
 /**
  * Inventory does not parse SAT/SAB or tessellate any solid.
  */
 export function inspect_dwg(bytes: Uint8Array): string;
+export function decode_dwg(bytes: Uint8Array, max_triangles: number): string;
 export function prepare_dwg(bytes: Uint8Array, layers_json: string): PreparedDwg;
-export function decode_dwg_binary(bytes: Uint8Array): Uint8Array;
 export class PreparedDwg {
   private constructor();
   free(): void;

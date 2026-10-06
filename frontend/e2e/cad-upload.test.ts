@@ -204,20 +204,32 @@ test('バイナリで読み込んだACISソリッドを2D輪郭線にして座�
 	await expect(page.getByText('投影法選択', { exact: true }).first()).toBeVisible();
 });
 
-test('境界分割で復元した細いACIS面をモデルとして登録する', async ({ page }) => {
-	const errors: string[] = [];
-	page.on('pageerror', error => errors.push(error.message));
-	await dropFixture(page, 'test-shallow-lens.dwg');
-	await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
-	await expect(page.getByRole('region', { name: '変換できない部品', exact: true }))
-		.toHaveCount(0);
-	await expect(page.getByRole('button', { name: 'モデル範囲の頂点 min-min-min', exact: true }))
-		.toBeAttached();
-	await page.getByRole('button', { name: '決定', exact: true }).click();
-	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
-	await expect(page.getByText('test-shallow-lens', { exact: true }).first()).toBeVisible();
-	expect(errors).toEqual([]);
-});
+for (
+	const name of [
+		'test-shallow-lens',
+		'test-curved-band',
+		'test-bent-tube',
+		'test-planar-slit',
+		'test-crossing-trim'
+	]
+) {
+	test(`${name}のACIS面を復元してモデルとして登録する`, async ({ page }) => {
+		const errors: string[] = [];
+		page.on('pageerror', error => errors.push(error.message));
+		await dropFixture(page, `${name}.dwg`);
+		await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
+		await expect(page.getByRole('region', { name: '変換できない部品', exact: true }))
+			.toHaveCount(0);
+		await expect(
+			page.getByRole('button', { name: 'モデル範囲の頂点 min-min-min', exact: true })
+		)
+			.toBeAttached();
+		await page.getByRole('button', { name: '決定', exact: true }).click();
+		await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+		await expect(page.getByText(name, { exact: true }).first()).toBeVisible();
+		expect(errors).toEqual([]);
+	});
+}
 
 // Workerへの要求を記録し、確認操作より前に重い変換を開始していないことを検証する。
 const trackDwgRequests = async (page: Page, stallConversion = false) => {

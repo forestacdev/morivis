@@ -70,8 +70,51 @@ fn write_lens_fixture(destination: &std::path::Path) -> Result<(), Box<dyn std::
     Ok(())
 }
 
+fn write_surface_fixtures(destination: &std::path::Path) -> Result<(), Box<dyn std::error::Error>> {
+    for (name, body) in [
+        (
+            "test-horn-patch.dwg",
+            fixture_shapes::horn_patch([100000., -200000., 300000.]),
+        ),
+        ("test-planar-slit.dwg", fixture_shapes::planar_slit(1e-8)),
+        ("test-bent-tube.dwg", fixture_shapes::bent_tube()),
+    ] {
+        let mut sat = opencadcodec::entities::acis::SatDocument::new();
+        opencadkernel::acis::append(&body, &mut sat).expect("fictional surface patch");
+        let mut doc = CadDocument::new();
+        doc.header.insertion_units = 6;
+        doc.add_entity(EntityType::Solid3D(Solid3D::from_sat(&sat.to_sat_string())))?;
+        DwgWriter::write_to_file(destination.join(name), &doc)?;
+    }
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let destination = PathBuf::from(std::env::args().nth(1).expect("fixture directory"));
+    if std::env::args().any(|argument| argument == "--crossing-trim-only") {
+        let mut sat = opencadcodec::entities::acis::SatDocument::new();
+        opencadkernel::acis::append(&fixture_shapes::crossing_curved_patch(), &mut sat)
+            .expect("fictional crossing trim");
+        let mut doc = CadDocument::new();
+        doc.header.insertion_units = 6;
+        doc.add_entity(EntityType::Solid3D(Solid3D::from_sat(&sat.to_sat_string())))?;
+        DwgWriter::write_to_file(destination.join("test-crossing-trim.dwg"), &doc)?;
+        return Ok(());
+    }
+    write_surface_fixtures(&destination)?;
+    if std::env::args().any(|argument| argument == "--surface-repairs-only") {
+        return Ok(());
+    }
+    let mut sat = opencadcodec::entities::acis::SatDocument::new();
+    opencadkernel::acis::append(&fixture_shapes::curved_band(), &mut sat)
+        .expect("fictional circular band");
+    let mut doc = CadDocument::new();
+    doc.header.insertion_units = 6;
+    doc.add_entity(EntityType::Solid3D(Solid3D::from_sat(&sat.to_sat_string())))?;
+    DwgWriter::write_to_file(destination.join("test-curved-band.dwg"), &doc)?;
+    if std::env::args().any(|argument| argument == "--curved-band-only") {
+        return Ok(());
+    }
     write_lens_fixture(&destination)?;
     if std::env::args().any(|argument| argument == "--lens-only") {
         return Ok(());

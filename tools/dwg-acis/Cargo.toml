@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 opencadcodec = { git = "https://github.com/HakanSeven12/opencadcodec.git", rev = "fe69506", features = ["serde"] }
-opencadkernel = { git = "https://github.com/HakanSeven12/opencadkernel.git", rev = "ae28f669f8a5673585c2c5c5b3617876c8b7bf98", features = ["acis"] }
+opencadkernel = { path = "vendor/opencadkernel", features = ["acis"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
 wasm-bindgen = "=0.2.105"
