@@ -4,7 +4,6 @@
 	import { scale } from 'svelte/transition';
 
 	import AkarIconsEyeIcon from '$lib/components/svgs/icons/akar-icons/EyeIcon.svelte';
-	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import LayerInfo from '$routes/map/components/atoms/LayerInfo.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
@@ -18,6 +17,14 @@
 
 	let { showDataEntry = $bindable(), previewEntries }: Props = $props();
 	const entries = $derived(previewEntries ?? (showDataEntry ? [showDataEntry] : []));
+	const selectedIndex = $derived(entries.findIndex((entry) => entry.id === showDataEntry?.id));
+	const fanOffset = (index: number) => {
+		const middle = Math.floor(entries.length / 2);
+		return (
+			(((index - selectedIndex + entries.length + middle) % entries.length) - middle) /
+			Math.max(1, middle)
+		);
+	};
 	let lastFocusKey = '';
 	let previewSpinToken = $state(0);
 	let previewCardWrapper: HTMLDivElement | null = $state(null);
@@ -107,23 +114,29 @@
 		{#if entries.length > 1}
 			<div class="flex shrink-0 flex-col gap-2 px-2 pb-2" aria-label="プレビューするレイヤー">
 				<p class="text-sm text-gray-300">{entries.length}レイヤーをまとめて表示中</p>
-				{#each entries as entry (entry.id)}
-					<button
-						class="text-base flex items-center gap-3 rounded p-3 text-left text-sm {showDataEntry.id ===
-						entry.id
-							? 'bg-accent/25'
-							: 'bg-white/5 hover:bg-white/10'}"
-						aria-pressed={showDataEntry.id === entry.id}
-						onclick={() => {
-							showDataEntry = entry;
-						}}
-					>
-						<span aria-hidden="true" class="relative block h-8 w-8 shrink-0 overflow-hidden rounded"
-							><LayerIcon layerEntry={entry} /></span
+				<div class="preview-fan">
+					{#each entries as entry, index (entry.id)}
+						<div
+							class="fan-card"
+							style:--fan-angle="{fanOffset(index) * 12}deg"
+							style:--fan-x="{fanOffset(index) * 22}px"
+							style:z-index={entry.id === showDataEntry.id ? entries.length + 1 : index + 1}
 						>
-						<span>{entry.metaData.name}</span>
-					</button>
-				{/each}
+							<div class="fan-card-content">
+								<DataSlot
+									dataEntry={entry}
+									bind:showDataEntry
+									previewOnly
+									itemHeight={180}
+									{index}
+									isLeftEdge={false}
+									isRightEdge={false}
+									isTopEdge={false}
+								/>
+							</div>
+						</div>
+					{/each}
+				</div>
 			</div>
 		{:else}
 			<div class="flex flex-col items-center justify-start pt-2 text-base">
@@ -157,4 +170,33 @@
 {/if}
 
 <style>
+	.preview-fan {
+		position: relative;
+		height: 370px;
+		width: 100%;
+	}
+	.fan-card {
+		position: absolute;
+		top: 24px;
+		left: calc(50% - 115px);
+		width: 230px;
+		height: calc(230px * 4 / 3);
+		transform-origin: center bottom;
+		transform: translateX(var(--fan-x)) rotate(var(--fan-angle));
+		transition: transform 260ms ease;
+		filter: drop-shadow(0 8px 12px #0006);
+	}
+	.fan-card-content {
+		width: 300px;
+		transform: scale(calc(230 / 300));
+		transform-origin: top left;
+	}
+	.fan-card:focus-within {
+		z-index: 20 !important;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.fan-card {
+			transition: none;
+		}
+	}
 </style>

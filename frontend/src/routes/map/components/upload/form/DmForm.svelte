@@ -2,14 +2,23 @@
 	import turfBbox from '@turf/bbox';
 	import { untrack } from 'svelte';
 
-	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
+	import GeometryTypeSelect from './GeometryTypeSelect.svelte';
+	import { getUploadPreview } from '../preview-context';
+	import {
+		createVectorEntryGroup,
+		filterByGeometryTypes,
+		prepareVectorEntryGroups,
+		type VectorEntryGroup
+	} from './vector-entry-group';
+
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
-		createGeoJsonEntry,
+		getGeometryTypes,
+		groupPropertyByGeometryType,
 		filterByProperty,
 		buildDmStyle
 	} from '$routes/map/data/entries/vector';
@@ -49,17 +58,13 @@
 		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
-	const GEOMETRY_TYPE_LABELS: Partial<Record<VectorEntryGeometryType, string>> = {
-		Point: 'ポイント',
-		LineString: 'ライン',
-		Polygon: 'ポリゴン'
-	};
-
+	const showPreviewEntries = getUploadPreview();
+	let selectedTypes = $state<VectorEntryGeometryType[]>([]);
+	let pending: { data: FeatureCollection; groups: VectorEntryGroup[] } | null = null;
 	let zoneInfo = $state<DMInfo | null>(null);
 	// 平面直角座標のままのGeoJSON（座標変換前）
-	let rawGeojson: FeatureCollection | null = null;
-	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
-	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
+	let rawGeojson = $state.raw<FeatureCollection | null>(null);
+	const geometryTypes = $derived(rawGeojson ? getGeometryTypes(rawGeojson) : []);
 	const extractClassName = (props: Record<string, unknown>) =>
 		props?.className != null ? String(props.className) : undefined;
 
@@ -70,70 +75,6 @@
 	// ジオメトリタイプ → DMデータタイプ（面/線/点/注記等）のマッピング
 	let dataTypesByGeometryType = $state<Record<string, string[]>>({});
 
-	const getFallbackGeometryType = (
-		geometryType: string | undefined
-	): VectorEntryGeometryType | null => {
-		if (geometryType === 'Point' || geometryType === 'MultiPoint') return 'Point';
-		if (geometryType === 'LineString' || geometryType === 'MultiLineString') return 'LineString';
-		if (geometryType === 'Polygon' || geometryType === 'MultiPolygon') return 'Polygon';
-		return null;
-	};
-
-	const getDmGeometryType = (
-		feature: FeatureCollection['features'][number]
-	): VectorEntryGeometryType | null => {
-		const props = feature.properties as Record<string, unknown> | null;
-		const dataType = props?.dataType != null ? String(props.dataType) : undefined;
-		if (dataType === '点' || dataType === '方向' || dataType === '注記') return 'Point';
-		if (dataType === '線' || dataType === '円弧') return 'LineString';
-		if (dataType === '面' || dataType === '円') return 'Polygon';
-		return getFallbackGeometryType(feature.geometry?.type);
-	};
-
-	const getDmGeometryTypes = (geojson: FeatureCollection): VectorEntryGeometryType[] => {
-		const geometryTypes = new Set<VectorEntryGeometryType>();
-		for (const feature of geojson.features) {
-			const geometryType = getDmGeometryType(feature);
-			if (geometryType) geometryTypes.add(geometryType);
-		}
-		return Array.from(geometryTypes);
-	};
-
-	const filterDmByGeometryType = (
-		geojson: FeatureCollection,
-		geometryType: VectorEntryGeometryType
-	): FeatureCollection => ({
-		type: 'FeatureCollection',
-		features: geojson.features.filter((feature) => getDmGeometryType(feature) === geometryType)
-	});
-
-	const groupDmPropertyByGeometryType = (
-		geojson: FeatureCollection,
-		getKey: (props: Record<string, unknown>) => string | undefined
-	): Partial<Record<VectorEntryGeometryType, string[]>> => {
-		const grouped: Partial<Record<VectorEntryGeometryType, Set<string>>> = {
-			Point: new Set(),
-			LineString: new Set(),
-			Polygon: new Set()
-		};
-
-		for (const feature of geojson.features) {
-			const geometryType = getDmGeometryType(feature);
-			const props = feature.properties as Record<string, unknown> | null;
-			const key = props ? getKey(props) : undefined;
-			if (!geometryType || key == null) continue;
-			const bucket = grouped[geometryType];
-			if (!bucket) continue;
-			bucket.add(key);
-		}
-
-		return {
-			Point: Array.from(grouped.Point ?? []),
-			LineString: Array.from(grouped.LineString ?? []),
-			Polygon: Array.from(grouped.Polygon ?? [])
-		};
-	};
-
 	// 選択されたclassName一覧（チェック済みのもの）
 	const selectedClassNames = $derived(
 		Object.entries(classNameChecked)
@@ -141,13 +82,25 @@
 			.map(([k]) => k)
 	);
 
-	// ジオメトリタイプ変更時にclassName一覧を全選択で初期化
-	$effect(() => {
-		if (classNamesByGeometryType && selectedGeometryType) {
-			const names = classNamesByGeometryType[selectedGeometryType] ?? [];
-			classNameChecked = Object.fromEntries(names.map((n) => [n, true]));
-		}
+	const visibleClassNames = $derived([
+		...new Set(selectedTypes.flatMap((type) => classNamesByGeometryType?.[type] ?? []))
+	]);
+	const selectedDataTypes = $derived([
+		...new Set(selectedTypes.flatMap((type) => dataTypesByGeometryType[type] ?? []))
+	]);
+	const selectedData = $derived.by(() => {
+		if (!rawGeojson) return null;
+		const filtered = filterByGeometryTypes(rawGeojson, selectedTypes);
+		return visibleClassNames.length
+			? filterByProperty(filtered, selectedClassNames, extractClassName)
+			: filtered;
 	});
+	const selectVisibleClasses = (checked: boolean) => {
+		classNameChecked = {
+			...classNameChecked,
+			...Object.fromEntries(visibleClassNames.map((name) => [name, checked]))
+		};
+	};
 
 	const dmFiles = $derived(dropFile ? getDmFiles(toUploadFiles(dropFile)) : []);
 	let selectedDmFile = $state<File | null>(null);
@@ -166,11 +119,12 @@
 	// ファイルドロップ時: DM変換（座標変換なし）→ ジオメトリタイプ確認
 	$effect(() => {
 		let cancelled = false;
-		if (dmFile) {
+		if (dmFile && showDialogType === 'dm') {
 			rawGeojson = null;
 			zoneInfo = null;
-			selectedGeometryType = '';
-			geometryTypeOptions = [];
+			pending = null;
+			selectedTypes = [];
+			classNameChecked = {};
 			classNamesByGeometryType = null;
 			isProcessing.set(true);
 			analyzeDmFileInWorker(dmFile, indexFiles)
@@ -178,20 +132,13 @@
 					if (cancelled) return;
 					zoneInfo = info;
 					rawGeojson = geojson as unknown as FeatureCollection;
-					const types = getDmGeometryTypes(rawGeojson);
-
-					if (types.length === 1) {
-						selectedGeometryType = types[0];
-						geometryTypeOptions = [];
-					} else {
-						geometryTypeOptions = types.map((t) => ({
-							key: t,
-							name: GEOMETRY_TYPE_LABELS[t] ?? t
-						}));
-						selectedGeometryType = types[0];
-					}
-
-					classNamesByGeometryType = groupDmPropertyByGeometryType(rawGeojson, extractClassName);
+					selectedTypes = getGeometryTypes(rawGeojson);
+					classNamesByGeometryType = groupPropertyByGeometryType(rawGeojson, extractClassName);
+					classNameChecked = Object.fromEntries(
+						Object.values(classNamesByGeometryType)
+							.flat()
+							.map((name) => [name, true])
+					);
 
 					// className → classCode のマッピングを構築
 					const codeMap: Record<string, string> = {};
@@ -205,18 +152,8 @@
 					}
 					classCodeMap = codeMap;
 
-					// ジオメトリタイプ → DMデータタイプのマッピングを構築
-					const dtMap: Record<string, Set<string>> = {};
-					for (const feature of rawGeojson.features) {
-						const props = feature.properties as Record<string, unknown>;
-						const dt = props?.dataType != null ? String(props.dataType) : undefined;
-						const key = getDmGeometryType(feature);
-						if (!dt || !key) continue;
-						if (!dtMap[key]) dtMap[key] = new Set();
-						dtMap[key].add(dt);
-					}
-					dataTypesByGeometryType = Object.fromEntries(
-						Object.entries(dtMap).map(([k, v]) => [k, [...v].sort()])
+					dataTypesByGeometryType = groupPropertyByGeometryType(rawGeojson, (props) =>
+						props.dataType != null ? String(props.dataType) : undefined
 					);
 				})
 				.catch((e) => {
@@ -230,109 +167,60 @@
 		}
 		return () => {
 			cancelled = true;
+			pending = null;
 			isProcessing.set(false);
 		};
 	});
 
-	// 「決定」→ 座標系選択UIを表示
 	const openZoneSelection = () => {
-		if (rawGeojson && selectedGeometryType) {
-			let filtered = filterDmByGeometryType(
-				rawGeojson,
-				selectedGeometryType as VectorEntryGeometryType
-			);
-			if (selectedClassNames.length > 0) {
-				filtered = filterByProperty(filtered, selectedClassNames, extractClassName);
-			}
-			pendingZoneGeoRefData = {
-				featureCollection: filtered as FeatureCollection,
-				entryName: zoneInfo?.drawingName || dmFile?.name || 'DMデータ'
-			};
-		} else if (rawGeojson) {
-			pendingZoneGeoRefData = {
-				featureCollection: rawGeojson,
-				entryName: zoneInfo?.drawingName || dmFile?.name || 'DMデータ'
-			};
-		}
-		if (pendingZoneGeoRefData && zoneInfo?.zone) {
-			pendingZoneGeoRefData.suggestedEpsgCode = String(6668 + zoneInfo.zone) as EpsgCode;
-		}
+		if (!selectedData?.features.length || $isProcessing) return;
+		const entryName = zoneInfo?.drawingName || dmFile?.name || 'DMデータ';
+		const groups = prepareVectorEntryGroups(selectedData, entryName, 'DM', buildDmStyle);
+		pending = { data: selectedData, groups };
+		pendingZoneGeoRefData = {
+			featureCollection: selectedData,
+			entryName,
+			vectorGroups: groups,
+			suggestedEpsgCode: zoneInfo?.zone ? (String(6668 + zoneInfo.zone) as EpsgCode) : undefined
+		};
+		zoneConfirmedEpsg = null;
+		focusBbox = turfBbox(selectedData) as [number, number, number, number];
 		transformOptionMode = 'zone';
-
-		// フィルタ結果でbboxを計算（rawGeojsonは上書きしない）
-		if (rawGeojson && selectedGeometryType) {
-			let filtered = filterDmByGeometryType(
-				rawGeojson,
-				selectedGeometryType as VectorEntryGeometryType
-			);
-			if (selectedClassNames.length > 0) {
-				filtered = filterByProperty(filtered, selectedClassNames, extractClassName);
-			}
-			focusBbox = turfBbox(filtered) as [number, number, number, number];
-		} else {
-			focusBbox = rawGeojson ? (turfBbox(rawGeojson) as [number, number, number, number]) : null;
-		}
 	};
 
-	// 座標系選択後 → フィルタ → 座標変換 → エントリ作成
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
-		if (!dmFile || !rawGeojson || !selectedGeometryType) return;
+		const input = pending;
+		if (!input) return;
 		isProcessing.set(true);
-
 		try {
-			const prjContent = getProjContext(epsgCode as EpsgCode);
-
-			// ジオメトリタイプ + className でフィルタリングしてから座標変換
-			let filtered = filterDmByGeometryType(
-				rawGeojson,
-				selectedGeometryType as VectorEntryGeometryType
-			);
-			if (selectedClassNames.length > 0) {
-				filtered = filterByProperty(filtered, selectedClassNames, extractClassName);
-			}
-
-			const geojsonData = (await transformGeoJSONParallel(
-				filtered,
-				prjContent
+			const data = (await transformGeoJSONParallel(
+				input.data,
+				getProjContext(epsgCode)
 			)) as FeatureCollection;
-
-			if (!geojsonData || geojsonData.features.length === 0) {
-				showNotification('DMファイルの変換に失敗しました', 'error');
-				return;
-			}
-
-			const bbox = turfBbox(geojsonData);
-			if (!bbox || !isBboxValid(bbox)) {
-				showNotification('座標変換に失敗しました。系番号を確認してください', 'error');
-				return;
-			}
-
-			const entryName = zoneInfo?.drawingName || dmFile.name;
-			const propKeys = Object.keys(geojsonData.features[0]?.properties ?? {});
-			const style = buildDmStyle(geojsonData, selectedGeometryType, propKeys);
-			const entry = await createGeoJsonEntry(
-				geojsonData,
-				selectedGeometryType,
-				entryName,
-				bbox as [number, number, number, number],
-				style,
-				{ attribution: 'DM' }
-			);
-
-			if (entry) {
-				showDataEntry = entry;
-				showDialogType = null;
-				showNotification('ファイルを読み込みました', 'success');
-			}
-		} catch (e) {
-			showNotification('DMファイルの変換中にエラーが発生しました', 'error');
-			console.error(e);
+			if (input !== pending) return;
+			if (!isBboxValid(turfBbox(data)))
+				throw new Error('座標変換に失敗しました。系番号を確認してください');
+			const entries = await createVectorEntryGroup(data, input.groups);
+			if (input !== pending) return;
+			showPreviewEntries(entries);
+			transformOptionMode = null;
+			pendingZoneGeoRefData = null;
+			dropFile = null;
+			showDialogType = null;
+			showNotification('DMファイルを読み込みました', 'success');
+		} catch (error) {
+			if (input === pending)
+				showNotification(error instanceof Error ? error.message : String(error), 'error');
 		} finally {
-			isProcessing.set(false);
+			if (input === pending) isProcessing.set(false);
 		}
 	};
 
 	const cancel = () => {
+		pending = null;
+		pendingZoneGeoRefData = null;
+		zoneConfirmedEpsg = null;
+		transformOptionMode = null;
 		dropFile = null;
 		showDialogType = null;
 	};
@@ -381,48 +269,39 @@
 		</div>
 	{/if}
 
-	{#if geometryTypeOptions.length > 1}
-		<div class="w-full p-2">
-			<HorizontalSelectBox
-				label="ジオメトリタイプを選択"
-				bind:group={selectedGeometryType}
-				bind:options={geometryTypeOptions}
-			/>
-		</div>
-
-		{#if dataTypesByGeometryType[selectedGeometryType]?.length}
+	{#if geometryTypes.length}
+		<GeometryTypeSelect
+			options={geometryTypes}
+			bind:selected={selectedTypes}
+			disabled={$isProcessing}
+		/>
+		{#if selectedDataTypes.length}
 			<div class="flex w-full flex-wrap items-center gap-1 px-2">
 				<span class="text-xs text-gray-400">含まれる要素:</span>
-				{#each dataTypesByGeometryType[selectedGeometryType] as dt (dt)}
+				{#each selectedDataTypes as dt (dt)}
 					<span class="rounded bg-gray-700 px-1.5 py-0.5 text-xs text-gray-300">{dt}</span>
 				{/each}
 			</div>
 		{/if}
 	{/if}
 
-	{#if classNamesByGeometryType && classNamesByGeometryType[selectedGeometryType]?.length}
+	{#if visibleClassNames.length}
 		<div class="w-full px-2">
 			<div class="mb-2 flex items-center justify-between">
 				<span class="text-sm text-gray-300">クラス名</span>
 				<div class="flex gap-2">
 					<button
 						class="c-btn-sub pointer-events-auto cursor-pointer text-xs"
-						onclick={() => {
-							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
-							classNameChecked = Object.fromEntries(names.map((n) => [n, true]));
-						}}>全選択</button
+						onclick={() => selectVisibleClasses(true)}>全選択</button
 					>
 					<button
 						class="c-btn-sub pointer-events-auto cursor-pointer text-xs"
-						onclick={() => {
-							const names = classNamesByGeometryType?.[selectedGeometryType] ?? [];
-							classNameChecked = Object.fromEntries(names.map((n) => [n, false]));
-						}}>全解除</button
+						onclick={() => selectVisibleClasses(false)}>全解除</button
 					>
 				</div>
 			</div>
 			<div class="flex flex-col gap-1">
-				{#each [...classNamesByGeometryType[selectedGeometryType]].sort((a, b) => {
+				{#each [...visibleClassNames].sort((a, b) => {
 					const codeA = parseInt(classCodeMap[a] ?? '9999', 10);
 					const codeB = parseInt(classCodeMap[b] ?? '9999', 10);
 					return codeA - codeB;
@@ -443,10 +322,9 @@
 	<button onclick={cancel} class="c-btn-sub cursor-pointer p-4 text-lg"> キャンセル </button>
 	<button
 		onclick={openZoneSelection}
-		disabled={$isProcessing || !selectedGeometryType || selectedClassNames.length === 0}
+		disabled={$isProcessing || !selectedData?.features.length}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {$isProcessing ||
-		!selectedGeometryType ||
-		selectedClassNames.length === 0
+		!selectedData?.features.length
 			? 'cursor-not-allowed opacity-50'
 			: ''}"
 	>

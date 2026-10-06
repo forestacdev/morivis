@@ -2,16 +2,23 @@
 	import turfBbox from '@turf/bbox';
 	import { untrack } from 'svelte';
 
+	import GeometryTypeSelect from './GeometryTypeSelect.svelte';
+	import { getUploadPreview } from '../preview-context';
+	import {
+		createVectorEntryGroup,
+		filterByGeometryTypes,
+		prepareVectorEntryGroups,
+		type VectorEntryGroup
+	} from './vector-entry-group';
+
 	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
-	import { createAutoGeoJsonEntry } from '$routes/map/components/upload/form/geojson-entry';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
 	import {
 		buildSxfStyle,
-		filterByGeometryType,
 		filterByProperty,
 		getGeometryTypes,
 		groupPropertyByGeometryType
@@ -57,11 +64,9 @@
 		pendingZoneGeoRefData = $bindable()
 	}: Props = $props();
 
-	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
-		Point: 'ポイント',
-		LineString: 'ライン',
-		Polygon: 'ポリゴン'
-	};
+	const showPreviewEntries = getUploadPreview();
+	let selectedTypes = $state<VectorEntryGeometryType[]>([]);
+	let pending: { data: FeatureCollection; groups: VectorEntryGroup[] } | null = null;
 
 	const COORDINATE_UNIT_OPTIONS: { key: 'auto' | SxfCoordinateUnit; name: string }[] = [
 		{ key: 'auto', name: '自動' },
@@ -71,8 +76,7 @@
 	const SXF_RELATED_EXTENSIONS = ['.sfc', '.p21', '.saf', '.tif', '.tiff'];
 
 	let rawGeojson = $state.raw<FeatureCollection | null>(null);
-	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
-	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
+	const geometryTypes = $derived(rawGeojson ? getGeometryTypes(rawGeojson) : []);
 	let layersByGeometryType = $state<Record<string, string[]> | null>(null);
 	let layerChecked = $state<Record<string, boolean>>({});
 	let coordinateUnit = $state<'auto' | SxfCoordinateUnit>('auto');
@@ -80,8 +84,8 @@
 
 	const resetAnalysisState = () => {
 		rawGeojson = null;
-		geometryTypeOptions = [];
-		selectedGeometryType = '';
+		selectedTypes = [];
+		pending = null;
 		layersByGeometryType = null;
 		layerChecked = {};
 		coordinateUnit = 'auto';
@@ -143,9 +147,10 @@
 			.filter(([, checked]) => checked)
 			.map(([layer]) => layer)
 	);
-	const hasSelectableLayers = $derived(
-		!!selectedGeometryType && (layersByGeometryType?.[selectedGeometryType] ?? []).length > 0
-	);
+	const visibleLayers = $derived([
+		...new Set(selectedTypes.flatMap((type) => layersByGeometryType?.[type] ?? []))
+	]);
+	const hasSelectableLayers = $derived(visibleLayers.length > 0);
 	const resolvedCoordinateUnit = $derived.by(() =>
 		coordinateUnit === 'auto'
 			? rawGeojson
@@ -168,48 +173,35 @@
 			? 'mm を m に補正してから座標変換します'
 			: 'm のまま座標変換します';
 	});
-	const isDecisionDisabled = $derived(
-		$isProcessing ||
-			!selectedGeometryType ||
-			preparedGeojson === null ||
-			(hasSelectableLayers && selectedLayers.length === 0)
-	);
 
 	const extractLayer = (props: Record<string, unknown>) =>
 		props?.layer != null ? String(props.layer) : undefined;
-
-	const applyLayerSelectionDefaults = () => {
-		if (!layersByGeometryType || !selectedGeometryType) {
-			layerChecked = {};
-			return;
-		}
-
-		const names = layersByGeometryType[selectedGeometryType] ?? [];
-		layerChecked = Object.fromEntries(names.map((name) => [name, true]));
+	const selectVisibleLayers = (checked: boolean) => {
+		layerChecked = {
+			...layerChecked,
+			...Object.fromEntries(visibleLayers.map((name) => [name, checked]))
+		};
 	};
-
-	$effect(() => {
-		if (layersByGeometryType && selectedGeometryType) {
-			applyLayerSelectionDefaults();
-		}
+	const selectedData = $derived.by(() => {
+		if (!preparedGeojson) return null;
+		const filtered = filterByGeometryTypes(preparedGeojson, selectedTypes);
+		return hasSelectableLayers
+			? filterByProperty(filtered, selectedLayers, extractLayer)
+			: filtered;
 	});
 
-	const getFilteredGeojson = (geojson: FeatureCollection): FeatureCollection => {
-		let filtered = filterByGeometryType(geojson, selectedGeometryType as VectorEntryGeometryType);
-		if (hasSelectableLayers && selectedLayers.length > 0) {
-			filtered = filterByProperty(filtered, selectedLayers, extractLayer);
-		}
-		return filtered as FeatureCollection;
-	};
+	const isDecisionDisabled = $derived($isProcessing || !selectedData?.features.length);
 
 	$effect(() => {
-		if (!sxfFile) return;
+		if (!sxfFile || showDialogType !== 'sxf') return;
+		let cancelled = false;
 
 		isProcessing.set(true);
 		resetAnalysisState();
 
 		sxfFileToGeoJsonInWorker(sxfFile)
 			.then((geojson) => {
+				if (cancelled) return;
 				rawGeojson = geojson as FeatureCollection;
 				const geometryTypes = getGeometryTypes(rawGeojson);
 
@@ -218,20 +210,16 @@
 					return;
 				}
 
-				if (geometryTypes.length === 1) {
-					selectedGeometryType = geometryTypes[0];
-					geometryTypeOptions = [];
-				} else {
-					geometryTypeOptions = geometryTypes.map((geometryType) => ({
-						key: geometryType,
-						name: GEOMETRY_TYPE_LABELS[geometryType] ?? geometryType
-					}));
-					selectedGeometryType = geometryTypes[0];
-				}
-
+				selectedTypes = geometryTypes;
 				layersByGeometryType = groupPropertyByGeometryType(rawGeojson, extractLayer);
+				layerChecked = Object.fromEntries(
+					Object.values(layersByGeometryType)
+						.flat()
+						.map((name) => [name, true])
+				);
 			})
 			.catch((error) => {
+				if (cancelled) return;
 				showNotification(
 					error instanceof Error ? error.message : 'SXF ファイルの読み込みに失敗しました',
 					'error'
@@ -239,83 +227,62 @@
 				console.error(error);
 			})
 			.finally(() => {
-				isProcessing.set(false);
+				if (!cancelled) isProcessing.set(false);
 			});
+		return () => {
+			cancelled = true;
+			pending = null;
+			isProcessing.set(false);
+		};
 	});
 
 	const openZoneSelection = () => {
-		if (!preparedGeojson || !selectedGeometryType) return;
-
-		const filteredGeojson = getFilteredGeojson(preparedGeojson);
-		if (filteredGeojson.features.length === 0) {
-			showNotification('選択した条件に一致する図形がありません', 'error');
-			return;
-		}
-
+		if (!selectedData?.features.length || $isProcessing) return;
+		const groups = prepareVectorEntryGroups(selectedData, entryName, 'SXF', buildSxfStyle);
+		pending = { data: selectedData, groups };
 		pendingZoneGeoRefData = {
-			featureCollection: filteredGeojson,
-			entryName
+			featureCollection: selectedData,
+			entryName,
+			vectorGroups: groups
 		};
+		zoneConfirmedEpsg = null;
+		focusBbox = turfBbox(selectedData) as [number, number, number, number];
 		transformOptionMode = 'zone';
-		focusBbox = turfBbox(filteredGeojson) as [number, number, number, number];
 	};
 
 	const convertAndCreateEntry = async (epsgCode: EpsgCode) => {
-		if (!preparedGeojson || !selectedGeometryType) return;
-
+		const input = pending;
+		if (!input) return;
 		isProcessing.set(true);
-
 		try {
-			const prjContent = getProjContext(epsgCode);
-			const transformedGeojson = (await transformGeoJSONParallel(
-				preparedGeojson,
-				prjContent
+			const data = (await transformGeoJSONParallel(
+				input.data,
+				getProjContext(epsgCode)
 			)) as FeatureCollection;
-			const geojsonData = getFilteredGeojson(transformedGeojson);
-
-			if (geojsonData.features.length === 0) {
-				showNotification('SXF ファイルの変換に失敗しました', 'error');
-				return;
-			}
-
-			const bbox = turfBbox(geojsonData);
-			if (!bbox || !isBboxValid(bbox)) {
-				showNotification('座標変換に失敗しました。座標系を確認してください', 'error');
-				return;
-			}
-
-			const propKeys = Object.keys(geojsonData.features[0]?.properties ?? {});
-			const style = buildSxfStyle(geojsonData, selectedGeometryType, propKeys);
-			const entry = await createAutoGeoJsonEntry({
-				geojson: geojsonData,
-				geometryType: selectedGeometryType,
-				name: entryName,
-				bbox: bbox as [number, number, number, number],
-				style,
-				attribution: 'SXF',
-				allow3d: false
-			});
-
-			if (!entry) {
-				showNotification('SXF エントリの作成に失敗しました', 'error');
-				return;
-			}
-
-			showDataEntry = entry;
+			if (input !== pending) return;
+			if (!isBboxValid(turfBbox(data)))
+				throw new Error('座標変換に失敗しました。座標系を確認してください');
+			const entries = await createVectorEntryGroup(data, input.groups);
+			if (input !== pending) return;
+			showPreviewEntries(entries);
+			transformOptionMode = null;
+			pendingZoneGeoRefData = null;
+			dropFile = null;
 			showDialogType = null;
-			showNotification('SXF ファイルを読み込みました', 'success');
+			showNotification('SXFファイルを読み込みました', 'success');
 		} catch (error) {
-			showNotification(
-				error instanceof Error ? error.message : 'SXF ファイルの変換中にエラーが発生しました',
-				'error'
-			);
-			console.error(error);
+			if (input === pending)
+				showNotification(error instanceof Error ? error.message : String(error), 'error');
 		} finally {
-			isProcessing.set(false);
+			if (input === pending) isProcessing.set(false);
 		}
 	};
 
 	const cancel = () => {
+		pending = null;
+		pendingZoneGeoRefData = null;
+		zoneConfirmedEpsg = null;
+		transformOptionMode = null;
 		dropFile = null;
 		showDialogType = null;
 	};
@@ -332,14 +299,10 @@
 			const epsg = zoneConfirmedEpsg;
 			untrack(() => {
 				zoneConfirmedEpsg = null;
-				transformWithEpsg(epsg);
+				void convertAndCreateEntry(epsg);
 			});
 		}
 	});
-
-	const transformWithEpsg = async (epsgCode: EpsgCode) => {
-		await convertAndCreateEntry(epsgCode);
-	};
 </script>
 
 <div class="flex h-full w-full flex-col">
@@ -374,14 +337,12 @@
 			</div>
 		{/if}
 
-		{#if geometryTypeOptions.length > 1}
-			<div class="w-full p-2">
-				<HorizontalSelectBox
-					label="ジオメトリタイプを選択"
-					bind:group={selectedGeometryType}
-					bind:options={geometryTypeOptions}
-				/>
-			</div>
+		{#if geometryTypes.length}
+			<GeometryTypeSelect
+				options={geometryTypes}
+				bind:selected={selectedTypes}
+				disabled={$isProcessing}
+			/>
 		{/if}
 
 		{#if rawGeojson}
@@ -402,23 +363,20 @@
 					<div class="flex gap-2">
 						<button
 							class="c-btn-sub pointer-events-auto text-xs"
-							onclick={applyLayerSelectionDefaults}
+							onclick={() => selectVisibleLayers(true)}
 						>
 							全選択
 						</button>
 						<button
 							class="c-btn-sub pointer-events-auto text-xs"
-							onclick={() => {
-								const names = layersByGeometryType?.[selectedGeometryType] ?? [];
-								layerChecked = Object.fromEntries(names.map((name) => [name, false]));
-							}}
+							onclick={() => selectVisibleLayers(false)}
 						>
 							全解除
 						</button>
 					</div>
 				</div>
 				<div class="flex flex-col gap-1">
-					{#each layersByGeometryType?.[selectedGeometryType] ?? [] as layer (layer)}
+					{#each visibleLayers as layer (layer)}
 						<Checkbox label={layer} bind:value={layerChecked[layer]} />
 					{/each}
 				</div>

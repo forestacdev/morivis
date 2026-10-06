@@ -509,12 +509,37 @@ for (const placement of ['embedded', 'zone', 'georef'] as const) {
 						hasText: entryName
 					})
 				).toHaveCount(0);
-				await page.getByRole('button', { name: entryName, exact: true }).click();
+				const card = page.getByRole('button', { name: entryName, exact: true });
+				await card.focus();
+				await card.press('Enter');
+				await expect(card).toHaveAttribute('aria-pressed', 'true');
 				await expect(page.getByText('3レイヤーをまとめて追加しますか？', { exact: true }))
 					.toBeVisible();
 			}
 			if (placement === 'embedded') {
-				await page.screenshot({ path: testInfo.outputPath('cad-group-preview.png') });
+				await page.getByRole('button', { name: '地図に追加', exact: true }).click({
+					trial: true
+				});
+				const backCard = page.getByRole('button', {
+					name: `${name}／ポイント`,
+					exact: true
+				});
+				const visiblePoint = await backCard.evaluate(button => {
+					const bounds = button.getBoundingClientRect();
+					for (let y = bounds.top + 12; y < bounds.bottom; y += 12) {
+						for (let x = bounds.left + 12; x < bounds.right; x += 12) {
+							if (button.contains(document.elementFromPoint(x, y))) return { x, y };
+						}
+					}
+					return null;
+				});
+				expect(visiblePoint).not.toBeNull();
+				await page.mouse.click(visiblePoint!.x, visiblePoint!.y);
+				await expect(backCard).toHaveAttribute('aria-pressed', 'true');
+				await page.screenshot({
+					path: testInfo.outputPath('cad-group-preview.png'),
+					animations: 'disabled'
+				});
 			}
 			await page.getByRole('button', { name: '地図に追加', exact: true }).click();
 			for (const label of ['ポイント', 'ライン', 'ポリゴン']) {

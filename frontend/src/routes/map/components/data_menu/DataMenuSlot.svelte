@@ -21,7 +21,7 @@
 	import { getLayerImage } from '$routes/map/utils/image';
 	import { CoverImageManager } from '$routes/map/utils/image';
 	import { getBaseMapImageUrl } from '$routes/map/utils/image/vector';
-	import { checkPc, checkMobile } from '$routes/map/utils/platform/viewport';
+	import { checkPc } from '$routes/map/utils/platform/viewport';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { showNotification, showLayerAddedNotification } from '$routes/stores/notification';
 	import { isMobile, showDataMenu } from '$routes/stores/ui';
@@ -35,6 +35,7 @@
 		isRightEdge: boolean;
 		isTopEdge: boolean;
 		spinToken?: number;
+		previewOnly?: boolean;
 	}
 
 	let {
@@ -45,7 +46,8 @@
 		isLeftEdge,
 		isRightEdge,
 		isTopEdge,
-		spinToken = 0
+		spinToken = 0,
+		previewOnly = false
 	}: Props = $props();
 
 	let isHover = $state(false);
@@ -176,12 +178,6 @@
 		return `translate3d(${translateX}, ${translateY}, 0) scale(1.05) rotate(3deg)`;
 	};
 
-	// スマホ用タッチ処理
-	const handleTouch = () => {
-		if (!checkMobile()) return;
-		if (!isAdded) showDataEntry = dataEntry;
-	};
-
 	$effect(() => {
 		if (!spinToken || spinToken === lastSpinToken) return;
 
@@ -217,21 +213,14 @@
 		? getHoverTransform()
 		: 'translate3d(0, 0, 0) scale(1) rotate(0deg)'};"
 	bind:this={container}
-	onmouseover={() => (checkPc() ? (isHover = true) : null)}
+	onmouseover={() => (checkPc() && !previewOnly ? (isHover = true) : null)}
 	onmouseleave={() => (checkPc() ? (isHover = false) : null)}
-	onfocus={() => (checkPc() ? (isHover = true) : null)}
+	onfocus={() => (checkPc() && !previewOnly ? (isHover = true) : null)}
 	onblur={() => (checkPc() ? (isHover = false) : null)}
-	onclick={handleTouch}
-	tabindex="0"
-	role="button"
-	onkeydown={(e) => {
-		if (e.key === 'Enter' || e.key === ' ') {
-			handleTouch();
-		}
-	}}
+	role="group"
 >
 	<!-- 追加ボタン -->
-	{#if isHover && !isAnimating && !isSelected}
+	{#if !previewOnly && isHover && !isAnimating && !isSelected}
 		<div transition:fade={{ duration: 200 }} class="absolute top-2 right-2 z-10 shrink-0">
 			{#if isAdded}
 				<button
@@ -272,6 +261,8 @@
 	{/if}
 	<div bind:this={card3d} class="card-3d relative h-full w-full">
 		<button
+			aria-label={previewOnly ? dataEntry.metaData.name : undefined}
+			aria-pressed={previewOnly ? isSelected : undefined}
 			onclick={() => {
 				if (!isAdded) showDataEntry = dataEntry;
 			}}
@@ -281,6 +272,19 @@
 				: 'border-main'}"
 		>
 			<div class="group relative flex aspect-square w-full shrink-0 overflow-hidden bg-black">
+				{#if dataEntry.metaData.xyzImageTile && !dataEntry.metaData.coverImage && !isImageError && dataEntry.type === 'vector'}
+					<!-- 背景地図画像 -->
+					<img
+						src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
+						class="c-basemap-img absolute h-full w-full object-cover transition-transform duration-150"
+						alt="背景地図画像"
+						loading="lazy"
+						onerror={() => {
+							console.error('Image loading failed: BaseMap Image');
+							isImageError = true;
+						}}
+					/>
+				{/if}
 				{#await promise then imageResult}
 					{#if imageResult && dataEntry}
 						{#if dataEntry.metaData.coverImage && !isImageError}
@@ -295,19 +299,6 @@
 								}}
 							/>
 						{:else}
-							{#if dataEntry.metaData.xyzImageTile && !dataEntry.metaData.coverImage && !isImageError && dataEntry.type === 'vector'}
-								<!-- 背景地図画像 -->
-								<img
-									src={getBaseMapImageUrl(dataEntry.metaData.xyzImageTile)}
-									class="c-basemap-img absolute h-full w-full object-cover transition-transform duration-150"
-									alt="背景地図画像"
-									loading="lazy"
-									onerror={() => {
-										console.error('Image loading failed: BaseMap Image');
-										isImageError = true;
-									}}
-								/>
-							{/if}
 							<img
 								src={imageResult.url}
 								class="c-no-drag-icon absolute h-full w-full object-cover transition-transform duration-150"

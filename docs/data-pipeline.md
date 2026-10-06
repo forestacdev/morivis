@@ -152,9 +152,12 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 ## 形式別フロー
 
 DXF / DWGは `CadForm.svelte` でポイント・ライン・ポリゴンを複数選択できる。最初は図面に含まれる種類をすべて選択する。CADレイヤーによる絞り込みも適用し、`cad-vector.ts` で選択した図形と種類ごとの表示設定を準備する。
+
 座標変換やGeoRefの四隅変形は図面全体へ一度適用し、`createVectorEntryGroup()` で種類ごとのentryへ分割する。GeoRefへ進む場合は `vectorGroups` に名前・スタイル等を引き継ぐ。面の輪郭をライン化した場合は、元のラインと同じentryにまとめる。
 ポリゴンだけを選んで3Dモデルとして読み込む場合は、従来のGLB変換とモデル配置を使う。
 読み込み方式は2D・3D・2Dライン（面の輪郭）から選ぶ。通常は2Dを初期値にし、立体のポリゴンだけを選んだ場合は3Dモデルを初期値にする。3Dを選んだ場合は高さを保持する。
+
+JWW / JWC・DM・SXFも図面内のポイント・ライン・ポリゴンを複数選択できる。元レイヤーやDMのクラスで絞り込んだ全図形を一度に座標変換・位置合わせし、`vector-entry-group.ts` で種類ごとの2D entryへ分けてまとめてプレビュー・登録する。図形の種類を切り替えても元レイヤー・クラスのチェック状態は保持する。形式ごとの色・線・注記の設定は種類ごとに引き継ぐ。
 
 VTK（`.vtk` / `.vtp` / `.vtu` / `.vti` / `.vtr` / `.vts`）は `VtkForm.svelte` からWorkerで解析する。表面メッシュ・構造格子・対応する2次セルの外表面を取り出し、同一XML内の複数Pieceを統合する。2次曲面を補間して三角形へ分割し、選択した点・セルのスカラー値を頂点色へ変換する。単位・上方向を補正したGLBを `MeshModelForm.svelte` に渡し、既存の座標系選択・位置合わせを経て `MeshEntry` へ登録する。色分けは取り込み時に確定する。対応範囲と制限は [VTK](../frontend/src/routes/map/utils/formats/vtk/README.md) を参照。
 
@@ -453,7 +456,7 @@ main thread に残っている責務は、主に次の通り。
 
 ## preview と final の違い
 
-登録前の通常プレビューでは `previewEntries` の全entryを描画する。複数の場合、`PreviewMenu` は全体の範囲へフォーカスし、一覧の選択で詳細表示だけを切り替える。`DataPreviewDialog` の「地図に追加」で全件を登録し、キャンセルで全件を破棄する。スマートフォンでは追加確認欄に対象名を並べる。
+登録前の通常プレビューでは `previewEntries` の全entryを描画する。複数の場合、`PreviewMenu` は全体の範囲へフォーカスし、単体と同じカードを扇形に並べる。カードの選択で中央・手前のカードと詳細表示を切り替える。`DataPreviewDialog` の「地図に追加」で全件を登録し、キャンセルで全件を破棄する。スマートフォンでは追加確認欄に対象名を並べる。
 複数entryを作るフォームは `preview-context.ts` のcontext経由で配列を渡す。通常のフォームは既存の `showDataEntry` のまま扱える。プレビューの組はUIの一時状態に置き、複数entryを表すための仮のentryは作らない。
 
 morivis では preview と final entry を分けて考える必要がある。
