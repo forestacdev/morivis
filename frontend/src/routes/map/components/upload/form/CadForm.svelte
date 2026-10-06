@@ -3,10 +3,11 @@
 	import { onDestroy, untrack } from 'svelte';
 
 	import CadProgress from './CadProgress.svelte';
+	import { getUploadPreview } from '../preview-context';
+	import { prepareCadVectorData, CAD_GEOMETRY_LABELS, type CadRenderMode } from './cad-vector';
+	import { createVectorEntryGroup } from './vector-entry-group';
 
-	import HorizontalSelectBox from '$routes/map/components/atoms/HorizontalSelectBox.svelte';
 	import Checkbox from '$routes/map/components/layer_menu/Checkbox.svelte';
-	import { createAutoGeoJsonEntry } from '$routes/map/components/upload/form/geojson-entry';
 	import type {
 		PendingZoneGeoRefData,
 		TransformOptionMode
@@ -15,8 +16,7 @@
 		getGeometryTypes,
 		filterByGeometryType,
 		filterByProperty,
-		groupPropertyByGeometryType,
-		buildDxfStyle
+		groupPropertyByGeometryType
 	} from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
@@ -38,7 +38,6 @@
 		type IndexedCadMesh
 	} from '$routes/map/utils/formats/dxf/indexed-mesh';
 	import { convertDxfModelInWorker } from '$routes/map/utils/formats/dxf/mesh-analyze';
-	import { prepareDxfVectorData, type DxfRenderMode } from '$routes/map/utils/formats/dxf/planar';
 	import { has3dGeometryForType } from '$routes/map/utils/formats/geojson/3d';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
@@ -73,11 +72,8 @@
 
 	const formatLabel = $derived(sourceFormat.toUpperCase());
 
-	const GEOMETRY_TYPE_LABELS: Record<VectorEntryGeometryType, string> = {
-		Point: 'ポイント',
-		LineString: 'ライン',
-		Polygon: 'ポリゴン'
-	};
+	const GEOMETRY_TYPE_LABELS = CAD_GEOMETRY_LABELS;
+	const showPreviewEntries = getUploadPreview();
 
 	const cadFile = $derived.by(() => {
 		if (!dropFile) return null;
@@ -104,28 +100,38 @@
 		const bounds = turfBbox(rawGeojson);
 		return `${(bounds[2] - bounds[0]).toLocaleString('ja-JP', { maximumFractionDigits: 3 })} × ${(bounds[3] - bounds[1]).toLocaleString('ja-JP', { maximumFractionDigits: 3 })} m`;
 	});
-	let geometryTypeOptions = $state<{ key: string; name: string }[]>([]);
-	let selectedGeometryType = $state<VectorEntryGeometryType | ''>('');
+	let geometryTypeOptions = $state<VectorEntryGeometryType[]>([]);
+	let geometryChecked = $state<Partial<Record<VectorEntryGeometryType, boolean>>>({});
+	const selectedGeometryTypes = $derived(
+		geometryTypeOptions.filter((type) => geometryChecked[type])
+	);
+	const selectedGeometryType = $derived(
+		selectedGeometryTypes.length === 1 ? selectedGeometryTypes[0] : ''
+	);
 
 	let layersByGeometryType = $state<Record<string, string[]> | null>(null);
 	let layerChecked = $state<Record<string, boolean>>({});
 	// ジオメトリタイプ → CADエンティティタイプのマッピング
 	let entityTypesByGeometryType = $state<Record<string, string[]>>({});
 
-	const selectedLayers = $derived(
-		Object.entries(layerChecked)
-			.filter(([, v]) => v)
-			.map(([k]) => k)
-	);
+	const visibleLayers = $derived([
+		...new Set(selectedGeometryTypes.flatMap((type) => layersByGeometryType?.[type] ?? []))
+	]);
+	const selectedLayers = $derived(visibleLayers.filter((name) => layerChecked[name]));
 	const selectedSolidDescriptors = $derived(
-		selectedGeometryType === 'Polygon'
+		selectedGeometryTypes.includes('Polygon')
 			? solidDescriptors.filter((solid) => selectedLayers.includes(solid.layer))
 			: []
 	);
 	const selectedGeojson = $derived.by(() => {
-		if (!rawGeojson || !selectedGeometryType) return null;
+		if (!rawGeojson || !selectedGeometryTypes.length) return null;
 		return filterByProperty(
-			filterByGeometryType(rawGeojson, selectedGeometryType),
+			{
+				...rawGeojson,
+				features: selectedGeometryTypes.flatMap(
+					(type) => filterByGeometryType(rawGeojson, type).features
+				)
+			},
 			selectedLayers,
 			(props) => (props?.layer != null ? String(props.layer) : undefined)
 		);
@@ -140,20 +146,20 @@
 						feature.geometry.type === 'MultiPolygon' || feature.properties?.type === '3DFACE'
 				))
 	);
-	let renderSelection = $state<{ file: File | null; mode: DxfRenderMode }>({
+	let renderSelection = $state<{ file: File | null; mode: CadRenderMode }>({
 		file: null,
-		mode: 'auto'
+		mode: '2d'
 	});
 	const renderMode = $derived.by(() => {
-		const mode = renderSelection.file === cadFile ? renderSelection.mode : 'auto';
-		return mode === '2d-line' && selectedGeometryType !== 'Polygon' ? '2d' : mode;
+		const mode = renderSelection.file === cadFile ? renderSelection.mode : canUseMesh ? '3d' : '2d';
+		return mode === '2d-line' && !selectedGeometryTypes.includes('Polygon') ? '2d' : mode;
 	});
-	const useMesh = $derived(canUseMesh && renderMode === 'auto');
-	let preparedVectorInput: (ReturnType<typeof prepareDxfVectorData> & { file: File }) | null = null;
+	const useMesh = $derived(canUseMesh && renderMode === '3d');
+	let preparedVectorInput: (ReturnType<typeof prepareCadVectorData> & { file: File }) | null = null;
 	let meshConversion: AbortController | null = null;
 	onDestroy(() => meshConversion?.abort());
 	const conversionKey = $derived(
-		JSON.stringify([unit, selectedGeometryType, [...selectedLayers].sort()])
+		JSON.stringify([unit, selectedGeometryTypes, [...selectedLayers].sort()])
 	);
 	let converted = $state.raw<{
 		key: string;
@@ -166,14 +172,6 @@
 			!converted.solids.length &&
 			!selectedGeojson?.features.length
 	);
-
-	// ジオメトリタイプ変更時にレイヤー一覧を全選択で初期化
-	$effect(() => {
-		if (layersByGeometryType && selectedGeometryType) {
-			const names = layersByGeometryType[selectedGeometryType] ?? [];
-			layerChecked = Object.fromEntries(names.map((n) => [n, true]));
-		}
-	});
 
 	const extractLayer = (props: Record<string, unknown>) =>
 		props?.layer != null ? String(props.layer) : undefined;
@@ -194,7 +192,7 @@
 			entityTypesByGeometryType = {};
 			layerChecked = {};
 			preparedVectorInput = null;
-			selectedGeometryType = '';
+			geometryChecked = {};
 			layersByGeometryType = null;
 			(sourceFormat === 'dwg'
 				? analyzeDwgFileInWorker(cadFile, 'auto', controller.signal, { mode: 'inspect' })
@@ -216,16 +214,8 @@
 						);
 					}
 
-					if (types.length === 1) {
-						selectedGeometryType = types[0];
-						geometryTypeOptions = [];
-					} else {
-						geometryTypeOptions = types.map((t) => ({
-							key: t,
-							name: GEOMETRY_TYPE_LABELS[t] ?? t
-						}));
-						selectedGeometryType = types[0];
-					}
+					geometryTypeOptions = types;
+					geometryChecked = Object.fromEntries(types.map((type) => [type, true]));
 
 					const groups = groupPropertyByGeometryType(rawGeojson!, extractLayer);
 					if (solidDescriptors.length)
@@ -236,6 +226,9 @@
 							])
 						];
 					layersByGeometryType = groups;
+					layerChecked = Object.fromEntries(
+						[...new Set(Object.values(groups).flat())].map((name) => [name, true])
+					);
 
 					// ジオメトリタイプ → エンティティタイプのマッピングを構築
 					const etMap: Record<string, Set<string>> = {};
@@ -292,7 +285,8 @@
 	// 未対応部品はこのフォームで確認できるようにし、同じ決定ボタンで残りを読み込む。
 	// 再確認時に三角形化を繰り返さない。選択変更時には別の変換結果として扱う。
 	const confirmSelection = async () => {
-		if (isBusy || !cadFile || !unitResolved || !selectedGeojson || !selectedGeometryType) return;
+		if (isBusy || !cadFile || !unitResolved || !selectedGeojson || !selectedGeometryTypes.length)
+			return;
 		const file = cadFile;
 		const input = selectedGeojson;
 		const key = conversionKey;
@@ -365,11 +359,18 @@
 						...solids.map((solid) => indexedCadMeshToFeature(solid) as unknown as Feature)
 					]
 				};
-				const prepared = prepareDxfVectorData(vectorInput, selectedGeometryType, renderMode);
+				const prepared = prepareCadVectorData(
+					vectorInput,
+					selectedGeometryTypes,
+					renderMode,
+					file.name.replace(/\.[^.]+$/, ''),
+					formatLabel
+				);
 				preparedVectorInput = { ...prepared, file };
 				pendingZoneGeoRefData = {
 					featureCollection: prepared.geojson,
-					entryName: file.name.replace(/\.[^.]+$/, '')
+					entryName: file.name.replace(/\.[^.]+$/, ''),
+					vectorGroups: prepared.groups
 				};
 				focusBbox = turfBbox(prepared.geojson) as [number, number, number, number];
 				if (georeference) {
@@ -414,27 +415,12 @@
 				return;
 			}
 
-			const entryName = input.file.name.replace(/\.[^.]+$/, '');
-			const propKeys = Object.keys(geojsonData.features[0]?.properties ?? {});
-			const style = buildDxfStyle(geojsonData, input.geometryType, propKeys);
-			const entry = await createAutoGeoJsonEntry({
-				geojson: geojsonData,
-				geometryType: input.geometryType,
-				name: entryName,
-				bbox: bbox as [number, number, number, number],
-				style,
-				attribution: formatLabel,
-				colorProperty: 'color',
-				allow3d: input.allow3d
-			});
+			const entries = await createVectorEntryGroup(geojsonData, input.groups);
 			if (input !== preparedVectorInput || input.file !== cadFile) return;
-
-			if (entry) {
-				showDataEntry = entry;
-				dropFile = null;
-				showDialogType = null;
-				showNotification('ファイルを読み込みました', 'success');
-			}
+			showPreviewEntries(entries);
+			dropFile = null;
+			showDialogType = null;
+			showNotification('ファイルを読み込みました', 'success');
 		} catch (e) {
 			showNotification(
 				e instanceof Error ? e.message : `${formatLabel}ファイルの変換中にエラーが発生しました`,
@@ -502,7 +488,7 @@
 		{#if georeference}<p class="text-sm text-gray-300">
 				座標系: EPSG:{georeference.epsg}（図面の設定から自動配置）
 			</p>{/if}
-		{#if selectedGeometryType}
+		{#if selectedGeometryTypes.length}
 			<label class="flex flex-col gap-2 text-sm">
 				<span>読み込み方式</span>
 				<select
@@ -510,12 +496,16 @@
 					value={renderMode}
 					disabled={isBusy}
 					onchange={(event) => {
-						renderSelection = { file: cadFile, mode: event.currentTarget.value as DxfRenderMode };
+						renderSelection = { file: cadFile, mode: event.currentTarget.value as CadRenderMode };
 					}}
 				>
-					<option value="auto">{canUseMesh ? '3Dモデル' : '自動（高さを保持）'}</option>
-					<option value="2d">2D{GEOMETRY_TYPE_LABELS[selectedGeometryType]}</option>
-					{#if selectedGeometryType === 'Polygon'}<option value="2d-line"
+					<option value="2d"
+						>2D{selectedGeometryType
+							? GEOMETRY_TYPE_LABELS[selectedGeometryType]
+							: '（高さを除く）'}</option
+					>
+					<option value="3d">{canUseMesh ? '3Dモデル' : '3D（高さを保持）'}</option>
+					{#if selectedGeometryTypes.includes('Polygon')}<option value="2d-line"
 							>2Dライン（面の輪郭）</option
 						>{/if}
 				</select>
@@ -564,25 +554,32 @@
 		</section>
 	{/if}
 	{#if geometryTypeOptions.length > 1}
-		<div class="w-full p-2">
-			<HorizontalSelectBox
-				label="ジオメトリタイプを選択"
-				bind:group={selectedGeometryType}
-				bind:options={geometryTypeOptions}
-			/>
-		</div>
-
-		{#if entityTypesByGeometryType[selectedGeometryType]?.length}
-			<div class="flex w-full flex-wrap items-center gap-1 px-2">
-				<span class="text-xs text-gray-400">含まれる要素:</span>
-				{#each entityTypesByGeometryType[selectedGeometryType] as et (et)}
-					<span class="rounded bg-gray-700 px-1.5 py-0.5 text-xs text-gray-300">{et}</span>
+		<fieldset class="w-full space-y-2 px-2">
+			<legend class="mb-2 text-sm text-gray-300">読み込む図形（複数選択可）</legend>
+			<div class="flex flex-wrap gap-4">
+				{#each geometryTypeOptions as type (type)}
+					<label class="flex items-center gap-2 cursor-pointer">
+						<input type="checkbox" class="accent-accent" bind:checked={geometryChecked[type]} />
+						{GEOMETRY_TYPE_LABELS[type]}
+					</label>
 				{/each}
 			</div>
-		{/if}
+			<p class="text-xs text-gray-400">
+				選択した図形を種類ごとのレイヤーに分け、まとめて登録します。
+			</p>
+		</fieldset>
 	{/if}
 
-	{#if layersByGeometryType && layersByGeometryType[selectedGeometryType]?.length}
+	{#if selectedGeometryTypes.some((type) => entityTypesByGeometryType[type]?.length)}
+		<div class="flex w-full flex-wrap items-center gap-1 px-2">
+			<span class="text-xs text-gray-400">含まれる要素:</span>
+			{#each [...new Set(selectedGeometryTypes.flatMap((type) => entityTypesByGeometryType[type] ?? []))] as entityType (entityType)}
+				<span class="rounded bg-gray-700 px-1.5 py-0.5 text-xs text-gray-300">{entityType}</span>
+			{/each}
+		</div>
+	{/if}
+
+	{#if visibleLayers.length}
 		<div class="w-full px-2">
 			<div class="mb-2 flex items-center justify-between">
 				<span class="text-sm text-gray-300">レイヤー</span>
@@ -590,21 +587,27 @@
 					<button
 						class="c-btn-sub pointer-events-auto text-xs"
 						onclick={() => {
-							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
-							layerChecked = Object.fromEntries(names.map((n) => [n, true]));
+							const names = visibleLayers;
+							layerChecked = {
+								...layerChecked,
+								...Object.fromEntries(names.map((n) => [n, true]))
+							};
 						}}>全選択</button
 					>
 					<button
 						class="c-btn-sub pointer-events-auto text-xs"
 						onclick={() => {
-							const names = layersByGeometryType?.[selectedGeometryType] ?? [];
-							layerChecked = Object.fromEntries(names.map((n) => [n, false]));
+							const names = visibleLayers;
+							layerChecked = {
+								...layerChecked,
+								...Object.fromEntries(names.map((n) => [n, false]))
+							};
 						}}>全解除</button
 					>
 				</div>
 			</div>
 			<div class="flex flex-col gap-1">
-				{#each layersByGeometryType[selectedGeometryType] as layer (layer)}
+				{#each visibleLayers as layer (layer)}
 					<Checkbox label={layer} bind:value={layerChecked[layer]} />
 				{/each}
 			</div>
@@ -628,12 +631,12 @@
 		disabled={isBusy ||
 			nothingConverted ||
 			!unitResolved ||
-			!selectedGeometryType ||
+			!selectedGeometryTypes.length ||
 			selectedLayers.length === 0}
 		class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg {isBusy ||
 		nothingConverted ||
 		!unitResolved ||
-		!selectedGeometryType ||
+		!selectedGeometryTypes.length ||
 		selectedLayers.length === 0
 			? 'cursor-not-allowed opacity-50'
 			: ''}"

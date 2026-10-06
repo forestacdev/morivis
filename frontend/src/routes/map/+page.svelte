@@ -62,7 +62,9 @@
 		GeoRefData,
 		GeoRefPreviewData
 	} from '$routes/map/components/upload/form/transform/georef-types';
+	import { createVectorEntryGroup } from '$routes/map/components/upload/form/vector-entry-group';
 	import LazyUploadComponent from '$routes/map/components/upload/LazyUploadComponent.svelte';
+	import { setUploadPreview } from '$routes/map/components/upload/preview-context';
 	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import {
 		mergeUploadFiles,
@@ -198,12 +200,26 @@
 			.map((entryId) => layerEntries.find((candidate) => candidate.id === entryId))
 			.filter((entry): entry is ThreeModelEntry => Boolean(entry && isThreeModelEntry(entry)));
 	});
-	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
+	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビューで選択中のデータ
+	let previewGroup = $state.raw<MorivisLayerEntry[]>([]);
+	const previewEntries = $derived(
+		showDataEntry
+			? previewGroup.some((entry) => entry.id === showDataEntry?.id)
+				? previewGroup.map((entry) => (entry.id === showDataEntry?.id ? showDataEntry : entry))
+				: [showDataEntry]
+			: []
+	);
+	$effect(() => {
+		if (!showDataEntry || !previewGroup.some((entry) => entry.id === showDataEntry?.id)) {
+			if (previewGroup.length) previewGroup = [];
+		}
+	});
 	let dropFile = $state<UploadFiles>(null); // ドロップしたファイル
 	let pendingUploadFiles: File[] = [];
 	let isStartingUploadSession = false;
 
 	const setUploadedDataEntry = (entry: MorivisLayerEntry | null) => {
+		previewGroup = [];
 		if (!entry) {
 			showDataEntry = null;
 			return;
@@ -213,6 +229,14 @@
 		showDataEntry = withUploadFileDescription(entry, uploadFiles);
 		pendingUploadFiles = [];
 	};
+
+	const setUploadedDataEntries = (entries: MorivisLayerEntry[]) => {
+		const files = mergeUploadFiles(pendingUploadFiles, toUploadFiles(dropFile));
+		previewGroup = entries.map((entry) => withUploadFileDescription(entry, files));
+		showDataEntry = previewGroup[0] ?? null;
+		pendingUploadFiles = [];
+	};
+	setUploadPreview(setUploadedDataEntries);
 
 	let remoteGeoZarrUrl = $state<string | null>(null);
 	let remotePmtilesUrl = $state<string | null>(null);
@@ -433,6 +457,16 @@
 					data.sourceCorners,
 					plainCorners
 				);
+				if (data.vectorGroups) {
+					const entries = await createVectorEntryGroup(
+						warpedGeojson as AppFeatureCollection,
+						data.vectorGroups
+					);
+					setUploadedDataEntries(entries);
+					closeGeoRefUi();
+					showNotification('図形の位置を設定しました', 'success');
+					return;
+				}
 				const warpedType = geometryTypeToEntryType(warpedGeojson as AppFeatureCollection);
 				const warpedBbox = turfBbox(warpedGeojson as AppFeatureCollection) as [
 					number,
@@ -742,6 +776,7 @@
 			geoRefData = {
 				...nextGeoRefData,
 				vectorStyle: pendingData.vectorStyle,
+				vectorGroups: pendingData.vectorGroups,
 				vectorAttribution: pendingData.attribution,
 				allowedTransformModes: nextAllowedTransformModes
 			};
@@ -1349,6 +1384,7 @@
 		<div class="fixed h-dvh w-full">
 			<MapLibreMap
 				bind:maplibreMap={map}
+				{previewEntries}
 				bind:layerEntries
 				bind:tempLayerEntries
 				bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
@@ -1436,6 +1472,7 @@
 					<div class="min-h-0 flex-1">
 						<MapLibreMap
 							bind:maplibreMap={map}
+							{previewEntries}
 							bind:layerEntries
 							bind:tempLayerEntries
 							bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
@@ -1521,7 +1558,7 @@
 			</MobileFeatureMenuCard>
 
 			{#if !transformOptionMode}
-				<PreviewMenu bind:showDataEntry />
+				<PreviewMenu bind:showDataEntry {previewEntries} />
 			{/if}
 
 			{#if !transformOptionMode}
@@ -1543,7 +1580,7 @@
 				/>
 			{/if}
 			{#if showDataEntry && !transformOptionMode}
-				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
+				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries {previewEntries} />
 			{/if}
 
 			{#if showStreetViewLayer}

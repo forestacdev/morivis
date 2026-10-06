@@ -1,47 +1,53 @@
 <script lang="ts">
 	import gsap from 'gsap';
 	import { tick } from 'svelte';
-	import { fade, fly, scale } from 'svelte/transition';
+	import { scale } from 'svelte/transition';
 
-	import FacIcon from '$lib/components/svgs/FacIcon.svelte';
 	import AkarIconsEyeIcon from '$lib/components/svgs/icons/akar-icons/EyeIcon.svelte';
-	import PrefectureIcon from '$lib/components/svgs/prefectures/PrefectureIcon.svelte';
 	import LayerIcon from '$routes/map/components/atoms/LayerIcon.svelte';
 	import LayerInfo from '$routes/map/components/atoms/LayerInfo.svelte';
 	import DataSlot from '$routes/map/components/data_menu/DataMenuSlot.svelte';
-	import { getAttributionName } from '$routes/map/data/entries/_meta_data/_attribution';
-	import { getPrefectureCode } from '$routes/map/data/pref';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import { getLayerIcon, getLayerType } from '$routes/map/utils/entries';
 	import { isBBoxInside } from '$routes/map/utils/map/bbox';
 	import { mapStore } from '$routes/stores/map';
 
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
+		previewEntries?: MorivisLayerEntry[];
 	}
 
-	let { showDataEntry = $bindable() }: Props = $props();
+	let { showDataEntry = $bindable(), previewEntries }: Props = $props();
+	const entries = $derived(previewEntries ?? (showDataEntry ? [showDataEntry] : []));
+	let lastFocusKey = '';
 	let previewSpinToken = $state(0);
 	let previewCardWrapper: HTMLDivElement | null = $state(null);
 
-	let prefCode = $derived.by(() => {
-		if (showDataEntry) {
-			return getPrefectureCode(showDataEntry.metaData.location);
-		}
-	});
-
-	let layertype = $derived.by(() => {
-		if (showDataEntry) {
-			return getLayerType(showDataEntry);
-		}
-	});
+	let previewPanel = $state<HTMLDivElement | null>(null);
 
 	$effect(() => {
-		if (showDataEntry) {
-			const mapBbox = mapStore.getMapBounds();
-			const shouldForceFocus = showDataEntry.type === 'model';
-			if (shouldForceFocus || !isBBoxInside(mapBbox, showDataEntry.metaData.bounds)) {
-				mapStore.focusLayer(showDataEntry);
+		const key = JSON.stringify(entries.map((entry) => [entry.id, entry.metaData.bounds]));
+		if (!entries.length) {
+			lastFocusKey = '';
+			return;
+		}
+		if (!previewPanel || key === lastFocusKey) return;
+		lastFocusKey = key;
+		if (entries.length > 1) {
+			const bounds: [number, number, number, number] = [
+				Math.min(...entries.map((entry) => entry.metaData.bounds[0])),
+				Math.min(...entries.map((entry) => entry.metaData.bounds[1])),
+				Math.max(...entries.map((entry) => entry.metaData.bounds[2])),
+				Math.max(...entries.map((entry) => entry.metaData.bounds[3]))
+			];
+			const panelWidth = previewPanel.getBoundingClientRect().width;
+			mapStore.fitBounds(bounds, {
+				padding: { top: 40, right: 40, bottom: panelWidth ? 180 : 280, left: panelWidth + 40 },
+				duration: 800
+			});
+		} else {
+			const entry = entries[0];
+			if (entry.type === 'model' || !isBBoxInside(mapStore.getMapBounds(), entry.metaData.bounds)) {
+				mapStore.focusLayer(entry);
 			}
 		}
 	});
@@ -90,6 +96,7 @@
 
 {#if showDataEntry}
 	<div
+		bind:this={previewPanel}
 		transition:scale={{ duration: 300, start: 0.9, opacity: 0 }}
 		class="bg-main lg:w-side-menu absolute top-0 left-0 z-20 flex h-full flex-col gap-2 overflow-hidden px-2 max-lg:hidden"
 	>
@@ -97,21 +104,44 @@
 			<AkarIconsEyeIcon class="h-7 w-7 text-base" />
 			<span class="text-base text-lg select-none max-lg:hidden">データプレビュー</span>
 		</div>
-		<div class="flex flex-col items-center justify-start pt-2 text-base">
-			<!-- カード -->
-			<div bind:this={previewCardWrapper} class="w-[300px]" style="perspective: 1200px;">
-				<DataSlot
-					dataEntry={showDataEntry}
-					bind:showDataEntry
-					itemHeight={180}
-					index={0}
-					isLeftEdge={false}
-					isRightEdge={false}
-					isTopEdge={false}
-					spinToken={previewSpinToken}
-				/>
+		{#if entries.length > 1}
+			<div class="flex shrink-0 flex-col gap-2 px-2 pb-2" aria-label="プレビューするレイヤー">
+				<p class="text-sm text-gray-300">{entries.length}レイヤーをまとめて表示中</p>
+				{#each entries as entry (entry.id)}
+					<button
+						class="text-base flex items-center gap-3 rounded p-3 text-left text-sm {showDataEntry.id ===
+						entry.id
+							? 'bg-accent/25'
+							: 'bg-white/5 hover:bg-white/10'}"
+						aria-pressed={showDataEntry.id === entry.id}
+						onclick={() => {
+							showDataEntry = entry;
+						}}
+					>
+						<span aria-hidden="true" class="relative block h-8 w-8 shrink-0 overflow-hidden rounded"
+							><LayerIcon layerEntry={entry} /></span
+						>
+						<span>{entry.metaData.name}</span>
+					</button>
+				{/each}
 			</div>
-		</div>
+		{:else}
+			<div class="flex flex-col items-center justify-start pt-2 text-base">
+				<!-- カード -->
+				<div bind:this={previewCardWrapper} class="w-[300px]" style="perspective: 1200px;">
+					<DataSlot
+						dataEntry={showDataEntry}
+						bind:showDataEntry
+						itemHeight={180}
+						index={0}
+						isLeftEdge={false}
+						isRightEdge={false}
+						isTopEdge={false}
+						spinToken={previewSpinToken}
+					/>
+				</div>
+			</div>
+		{/if}
 		<div class="relative flex h-full flex-col overflow-hidden overflow-x-hidden">
 			<!-- スクロールコンテンツ -->
 			<div

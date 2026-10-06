@@ -5,7 +5,7 @@
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import { getLayerType } from '$routes/map/utils/entries';
 	import { resetWcsViewportReady } from '$routes/map/utils/formats/wcs/runtime';
-	import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
+	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { activeLayerIdsStore } from '$routes/stores/layers';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification, showLayerAddedNotification } from '$routes/stores/notification';
@@ -14,9 +14,15 @@
 	interface Props {
 		showDataEntry: MorivisLayerEntry | null;
 		tempLayerEntries: MorivisLayerEntry[];
+		previewEntries?: MorivisLayerEntry[];
 	}
 
-	let { showDataEntry = $bindable(), tempLayerEntries = $bindable() }: Props = $props();
+	let {
+		showDataEntry = $bindable(),
+		tempLayerEntries = $bindable(),
+		previewEntries
+	}: Props = $props();
+	const entries = $derived(previewEntries ?? (showDataEntry ? [showDataEntry] : []));
 
 	const isWcsEntry = (
 		entry: MorivisLayerEntry
@@ -24,42 +30,44 @@
 		entry.type === 'raster' && entry.format.type === 'wcs';
 
 	const addData = () => {
-		if (showDataEntry) {
-			const copy = { ...showDataEntry };
-			showDataEntry = null;
-			if (!geoDataEntries.some((entry) => entry.id === copy.id)) {
-				registerInitialEntryStyle(copy);
-				tempLayerEntries = [...tempLayerEntries, copy];
-			}
-			const layerType = getLayerType(copy);
-			if (!layerType) {
-				showNotification(`レイヤータイプが不明です: ${copy.id}`, 'error');
-				return;
-			}
-			activeLayerIdsStore.addType(copy.id, layerType);
-			activeLayerIdsStore.add(copy.id);
-			if (isWcsEntry(copy)) {
-				resetWcsViewportReady(copy.id);
-				mapStore.fitBounds(copy.metaData.bounds, {
-					padding: 20,
-					duration: 500
-				});
-			}
-			showLayerAddedNotification(copy);
-			showDataMenu.set(false);
-			if (checkMobile()) {
-				$isActiveMobileMenu = 'map';
-			}
+		if (!showDataEntry || !entries.length) return;
+		const copies = entries.map((entry) => ({ ...entry }));
+		const types = copies.map(getLayerType);
+		if (types.some((type) => !type)) {
+			showNotification('レイヤータイプが不明です', 'error');
+			return;
 		}
-	};
-	const deleteData = () => {
-		if (showDataEntry) {
-			activeLayerIdsStore.remove(showDataEntry.id);
-			if (showDataEntry.type === 'raster' && showDataEntry.format.type === 'video') {
-				URL.revokeObjectURL(showDataEntry.format.url);
+		const localEntries = copies.filter(
+			(entry) => !geoDataEntries.some((catalog) => catalog.id === entry.id)
+		);
+		localEntries.forEach(registerInitialEntryStyle);
+		tempLayerEntries = [
+			...tempLayerEntries.filter((entry) => !localEntries.some((added) => added.id === entry.id)),
+			...localEntries
+		];
+		showDataEntry = null;
+		copies.forEach((entry, index) => {
+			activeLayerIdsStore.addType(entry.id, types[index]!);
+			activeLayerIdsStore.add(entry.id);
+			if (isWcsEntry(entry)) {
+				resetWcsViewportReady(entry.id);
+				mapStore.fitBounds(entry.metaData.bounds, { padding: 20, duration: 500 });
 			}
-			if (showDataEntry.type === 'vector') {
-				for (const detail of Object.values(showDataEntry.properties.detailsById ?? {})) {
+		});
+		if (copies.length === 1) showLayerAddedNotification(copies[0]);
+		else showNotification(`${copies.length}レイヤーを追加しました`, 'success');
+		showDataMenu.set(false);
+		if (checkMobile()) $isActiveMobileMenu = 'map';
+	};
+
+	const deleteData = () => {
+		for (const entry of entries) {
+			activeLayerIdsStore.remove(entry.id);
+			if (entry.type === 'raster' && entry.format.type === 'video') {
+				URL.revokeObjectURL(entry.format.url);
+			}
+			if (entry.type === 'vector') {
+				for (const detail of Object.values(entry.properties.detailsById ?? {})) {
 					for (const media of detail.medias ?? []) {
 						if (media.type === 'video' && media.url.startsWith('blob:')) {
 							URL.revokeObjectURL(media.url);
@@ -67,8 +75,8 @@
 					}
 				}
 			}
-			showDataEntry = null;
 		}
+		showDataEntry = null;
 	};
 </script>
 
@@ -86,7 +94,19 @@
 		<div class="absolute top-0 flex h-full w-full flex-col gap-4 rounded-lg border-1"></div>
 
 		<div class="border-sub flex flex-col gap-4 rounded-lg border-1 bg-black p-6">
-			<span class="w-full text-center text-base">このデータを追加しますか？</span>
+			<span class="w-full text-center text-base"
+				>{entries.length > 1
+					? `${entries.length}レイヤーをまとめて追加しますか？`
+					: 'このデータを追加しますか？'}</span
+			>
+			{#if entries.length > 1}
+				<ul
+					class="text-base pointer-events-auto max-h-32 max-w-[75vw] space-y-1 overflow-auto text-sm lg:hidden"
+					aria-label="追加するレイヤー"
+				>
+					{#each entries as entry (entry.id)}<li>{entry.metaData.name}</li>{/each}
+				</ul>
+			{/if}
 			<div class="flex gap-4">
 				<button class="c-btn-sub pointer-events-auto px-4 text-lg" onclick={deleteData}
 					>キャンセル

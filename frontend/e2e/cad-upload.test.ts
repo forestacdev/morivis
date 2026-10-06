@@ -43,6 +43,37 @@ const dropFixture = async (page: Page, name: string | string[], invalid = false)
 	}, { files, invalid });
 };
 
+const selectOnlyGeometry = async (page: Page, label: string) => {
+	await expect(page.getByRole('checkbox', { name: label, exact: true })).toBeEnabled();
+	for (const name of ['ポイント', 'ライン', 'ポリゴン']) {
+		const checkbox = page.getByRole('checkbox', { name, exact: true });
+		if (await checkbox.count()) await checkbox.setChecked(name === label);
+	}
+};
+
+for (const mode of ['2d', '3d']) {
+	test(`高さ付きDXFラインを${mode}で読み込み、指定した描画方式で登録する`, async ({ page }) => {
+		await dropFixture(page, 'test-elevated-line.dxf');
+		await expect(page.getByLabel('読み込み方式')).toHaveValue('2d');
+		await expect(page.getByLabel('読み込み方式').locator('option[value="auto"]')).toHaveCount(
+			0
+		);
+		if (mode === '3d') await page.getByLabel('読み込み方式').selectOption('3d');
+		await page.getByRole('button', { name: '決定', exact: true }).click();
+		await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
+		await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+		await expect(
+			page.getByRole('button', { name: 'レイヤー', exact: true }).filter({
+				hasText: 'test-elevated-line'
+			})
+		).toHaveCount(1);
+		await expect(page.getByText(mode === '2d' ? 'ライン' : '3Dモデル', { exact: true }))
+			.toHaveCount(1);
+		await expect(page.getByText(mode === '2d' ? '3Dモデル' : 'ライン', { exact: true }))
+			.toHaveCount(0);
+	});
+}
+
 test.beforeEach(async ({ page }) => {
 	await page.route('**/assets/street_view/*', async route => {
 		if (new URL(route.request().url()).pathname.endsWith('.fgb')) {
@@ -68,13 +99,13 @@ for (const extension of ['dwg', 'dxf']) {
 		await dropFixture(page, `test-mesh.${extension}`);
 		await expect(page.getByText(`${extension.toUpperCase()}ファイルの登録`, { exact: true }))
 			.toBeVisible();
-		await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
-		await expect(page.getByLabel('読み込み方式')).toHaveValue('auto');
+		await selectOnlyGeometry(page, 'ポリゴン');
+		await expect(page.getByLabel('読み込み方式')).toHaveValue('3d');
 		await expect(page.getByLabel('test-face', { exact: true })).toBeChecked();
 		await page.getByLabel('図面の単位').selectOption('m');
 		await expect(page.getByText('読み込む範囲（X × Y）：20 × 10 m', { exact: true }))
 			.toBeVisible();
-		await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+		await selectOnlyGeometry(page, 'ポリゴン');
 		await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
 		await expect(
 			page.getByRole('button', { name: 'モデル範囲の頂点 min-min-min', exact: true })
@@ -84,7 +115,7 @@ for (const extension of ['dwg', 'dxf']) {
 		await expect(page.getByText('test-mesh', { exact: true }).first()).toBeVisible();
 		await dropFixture(page, `test-mesh.${extension}`);
 		await expect(page.getByLabel('図面の単位')).toHaveValue('auto');
-		await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+		await selectOnlyGeometry(page, 'ポリゴン');
 		await page.getByLabel('読み込み方式').selectOption('2d-line');
 		await page.getByRole('button', { name: '決定', exact: true }).click();
 		await expect(page.getByText('投影法選択', { exact: true }).first()).toBeVisible();
@@ -98,14 +129,14 @@ test('不正なDWGのエラー後にキャンセルして再読込できる', as
 	await expect(page.getByLabel('図面の単位')).toBeEnabled();
 	await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
 	await dropFixture(page, 'test-mesh.dwg');
-	await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+	await selectOnlyGeometry(page, 'ポリゴン');
 	await expect(page.getByRole('button', { name: '3Dモデルの配置へ', exact: true })).toBeEnabled();
 });
 
 for (const encoding of ['sat', 'sab']) {
 	test(`ACIS ${encoding}のソリッドを選択して地図へ登録する`, async ({ page }, testInfo) => {
 		await dropFixture(page, `test-solids-${encoding}.dwg`);
-		await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+		await selectOnlyGeometry(page, 'ポリゴン');
 		await expect(page.getByText('3DSOLID', { exact: true })).toBeVisible();
 		await expect(page.getByLabel('test-box', { exact: true })).toBeChecked();
 		await expect(page.getByLabel('test-cylinder', { exact: true })).toBeChecked();
@@ -140,7 +171,7 @@ test(
 	'未対応部品を明示して残りを登録し、次のファイルでは除外一覧をリセットする',
 	async ({ page }, testInfo) => {
 		await dropFixture(page, 'test-partial-solids.dwg');
-		await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+		await selectOnlyGeometry(page, 'ポリゴン');
 		await expect(page.getByRole('region', { name: '変換できない部品', exact: true }))
 			.toHaveCount(0);
 		await expect(page.getByLabel('test-excluded', { exact: true })).toBeChecked();
@@ -149,7 +180,7 @@ test(
 		await expect(excluded).toContainText('変換できない1部品を除外しました');
 		await expect(excluded).toContainText('test-excluded / 3DSOLID / ID:');
 		await expect(excluded).toContainText('未対応または不正なACIS形状');
-		await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+		await selectOnlyGeometry(page, 'ポリゴン');
 		await expect(page.getByLabel('test-valid', { exact: true })).toBeChecked();
 		await expect(page.getByLabel('test-excluded', { exact: true })).toBeChecked();
 		await page.screenshot({ path: testInfo.outputPath('test-partial-form.png') });
@@ -192,7 +223,7 @@ test('DWGの変換待ちでも既存のキャンセルを押せて再読込で�
 		await page.unroute(wasmUrl);
 	}
 	await dropFixture(page, 'test-mesh.dwg');
-	await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+	await selectOnlyGeometry(page, 'ポリゴン');
 	await expect(page.getByRole('button', { name: '3Dモデルの配置へ', exact: true })).toBeEnabled();
 });
 
@@ -265,12 +296,12 @@ const dwgRequests = (page: Page) =>
 test('選択前と単位変更時は一覧取得だけを行い、2D線ではソリッドを変換しない', async ({ page }) => {
 	await trackDwgRequests(page);
 	await dropFixture(page, 'test-partial-solids.dwg');
-	await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+	await selectOnlyGeometry(page, 'ポリゴン');
 	await page.getByText('test-excluded', { exact: true }).click();
 	await page.getByLabel('図面の単位').selectOption('m');
 	await expect(page.getByLabel('test-excluded', { exact: true })).not.toBeChecked();
 	expect(await dwgRequests(page)).toEqual([{ mode: 'inspect' }]);
-	await page.getByRole('button', { name: 'ライン', exact: true }).click();
+	await selectOnlyGeometry(page, 'ライン');
 	await page.getByLabel('読み込み方式').selectOption('2d');
 	await page.getByRole('button', { name: '決定', exact: true }).click();
 	await expect(page.getByText('投影法選択', { exact: true }).first()).toBeVisible();
@@ -280,7 +311,7 @@ test('選択前と単位変更時は一覧取得だけを行い、2D線ではソ
 test('決定時だけ選択したソリッドを変換する', async ({ page }) => {
 	await trackDwgRequests(page);
 	await dropFixture(page, 'test-partial-solids.dwg');
-	await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+	await selectOnlyGeometry(page, 'ポリゴン');
 	await page.getByText('test-excluded', { exact: true }).click();
 	expect(await dwgRequests(page)).toEqual([{ mode: 'inspect' }]);
 	await page.getByRole('button', { name: '3Dモデルの配置へ', exact: true }).click();
@@ -310,16 +341,16 @@ test('決定後のソリッド変換をキャンセルして再読込できる',
 		page.evaluate(() => (window as unknown as { cadTerminated: number; }).cadTerminated)
 	).toBe(2);
 	await dropFixture(page, 'test-mesh.dwg');
-	await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+	await selectOnlyGeometry(page, 'ポリゴン');
 	await expect(page.getByRole('button', { name: '3Dモデルの配置へ', exact: true })).toBeEnabled();
 });
 
-for (const mode of ['auto', '2d-line']) {
+for (const mode of ['3d', '2d-line']) {
 	test(`GEODATAのあるCADは${mode}で座標選択・手動配置を省略する`, async ({ page }) => {
 		await dropFixture(page, 'test-georeferenced.dxf');
 		await expect(page.getByText('座標系: EPSG:3857（図面の設定から自動配置）', { exact: true }))
 			.toBeVisible();
-		await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+		await selectOnlyGeometry(page, 'ポリゴン');
 		await page.getByLabel('読み込み方式').selectOption(mode);
 		await page.getByRole('button', { name: '決定', exact: true }).click();
 		await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeVisible();
@@ -410,7 +441,7 @@ test('4つのWorkerへ分担した後でもキャンセルして再ドロップ�
 		})
 	).toEqual({ stopped: true, total: 6 }); // 一覧取得1 + 準備1 + 三角形化4
 	await dropFixture(page, 'test-mesh.dwg');
-	await page.getByRole('button', { name: 'ポリゴン', exact: true }).click();
+	await selectOnlyGeometry(page, 'ポリゴン');
 	await expect(page.getByRole('button', { name: '3Dモデルの配置へ', exact: true })).toBeEnabled();
 });
 
@@ -448,3 +479,107 @@ test(
 		await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
 	}
 );
+
+for (const placement of ['embedded', 'zone', 'georef'] as const) {
+	test(
+		`CADの3種類をまとめてプレビューし、一度の登録で追加する: ${placement}`,
+		async ({ page }, testInfo) => {
+			const errors: string[] = [];
+			page.on('pageerror', error => errors.push(error.message));
+			const name = placement === 'embedded' ? 'test-mixed-georeferenced' : 'test-mixed';
+			await dropFixture(page, `${name}.dxf`);
+			for (const label of ['ポイント', 'ライン', 'ポリゴン']) {
+				await expect(page.getByRole('checkbox', { name: label, exact: true }))
+					.toBeChecked();
+			}
+			await page.getByRole('button', { name: '決定', exact: true }).click();
+			if (placement !== 'embedded') {
+				await expect(page.getByText('投影法選択', { exact: true }).first()).toBeVisible();
+				if (placement === 'georef') {
+					await page.getByRole('button', { name: '位置合わせ', exact: true }).click();
+				}
+				await page.getByRole('button', { name: '決定', exact: true }).last().click();
+			}
+			await expect(page.getByText('3レイヤーをまとめて追加しますか？', { exact: true }))
+				.toBeVisible();
+			for (const label of ['ポイント', 'ライン', 'ポリゴン']) {
+				const entryName = `${name}／${label}`;
+				await expect(
+					page.getByRole('button', { name: 'レイヤー', exact: true }).filter({
+						hasText: entryName
+					})
+				).toHaveCount(0);
+				await page.getByRole('button', { name: entryName, exact: true }).click();
+				await expect(page.getByText('3レイヤーをまとめて追加しますか？', { exact: true }))
+					.toBeVisible();
+			}
+			if (placement === 'embedded') {
+				await page.screenshot({ path: testInfo.outputPath('cad-group-preview.png') });
+			}
+			await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+			for (const label of ['ポイント', 'ライン', 'ポリゴン']) {
+				await expect(
+					page.getByRole('button', { name: 'レイヤー', exact: true }).filter({
+						hasText: `${name}／${label}`
+					})
+				).toHaveCount(1);
+			}
+			await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toHaveCount(
+				0
+			);
+			await dropFixture(page, 'test-mixed.dxf');
+			await expect(page.getByRole('checkbox', { name: 'ポイント', exact: true }))
+				.toBeChecked();
+			expect(errors).toEqual([]);
+		}
+	);
+}
+
+test('複数プレビューのキャンセルで全件を破棄し、選択した種類だけを再登録できる', async ({ page }) => {
+	await dropFixture(page, 'test-mixed-georeferenced.dxf');
+	await page.getByRole('button', { name: '決定', exact: true }).click();
+	await expect(page.getByText('3レイヤーをまとめて追加しますか？', { exact: true }))
+		.toBeVisible();
+	await page.getByRole('button', { name: 'キャンセル', exact: true }).click();
+	await expect(
+		page.getByRole('button', { name: 'レイヤー', exact: true }).filter({
+			hasText: 'test-mixed'
+		})
+	).toHaveCount(0);
+	await dropFixture(page, 'test-mixed-georeferenced.dxf');
+	for (const label of ['ポイント', 'ライン', 'ポリゴン']) {
+		await page.getByRole('checkbox', { name: label, exact: true }).uncheck();
+	}
+	await expect(page.getByRole('button', { name: '決定', exact: true })).toBeDisabled();
+	await page.getByRole('checkbox', { name: 'ポイント', exact: true }).check();
+	await page.getByRole('checkbox', { name: 'ライン', exact: true }).check();
+	await page.getByRole('button', { name: '決定', exact: true }).click();
+	await expect(page.getByText('2レイヤーをまとめて追加しますか？', { exact: true }))
+		.toBeVisible();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	await expect(
+		page.getByRole('button', { name: 'レイヤー', exact: true }).filter({
+			hasText: 'test-mixed-georeferenced／'
+		})
+	).toHaveCount(2);
+});
+
+test('スマートフォンでも3種類の名前を確認してまとめて登録できる', async ({ page }, testInfo) => {
+	await page.setViewportSize({ width: 390, height: 844 });
+	await dropFixture(page, 'test-mixed-georeferenced.dxf');
+	await expect(page.getByRole('checkbox', { name: 'ポイント', exact: true })).toBeChecked();
+	await page.getByRole('button', { name: '決定', exact: true }).click();
+	const list = page.getByRole('list', { name: '追加するレイヤー' });
+	await expect(list).toBeVisible();
+	await expect(list.getByRole('listitem')).toHaveCount(3);
+	await expect(page.getByRole('button', { name: '地図に追加', exact: true })).toBeInViewport();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click({ trial: true });
+	await expect.poll(() => {
+		const center = new URL(page.url()).searchParams.get('c') ?? '';
+		return Math.abs(Number(center.split('_')[0]));
+	}).toBeLessThan(0.1);
+	await page.screenshot({ path: testInfo.outputPath('cad-group-mobile.png') });
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	await expect(page.getByText('3レイヤーを追加しました', { exact: true })).toBeVisible();
+	await expect(list).toHaveCount(0);
+});

@@ -20,7 +20,7 @@ flowchart LR
 	H --> J["GeoRef で四隅確定"]
 	I --> G
 	J --> G
-	G --> K["showDataEntry"]
+	G --> K["previewEntries / showDataEntry"]
 	K --> L["layerEntries へ追加"]
 	L --> M["MapLibre / deck.gl / three.js"]
 ```
@@ -123,7 +123,8 @@ PWA は `scripts/pwa-precache.ts` で起動エントリの静的依存をたど�
 | --- | --- | --- |
 | `showDialogType` | `+page.svelte` | 今どの Form を開いているか。 |
 | `dropFile` | `+page.svelte` | 現在処理中のファイルまたはファイル群。 |
-| `showDataEntry` | `+page.svelte` | preview 中または直近に確定した `MorivisLayerEntry`。 |
+| `showDataEntry` | `+page.svelte` | プレビューで詳細を表示している `MorivisLayerEntry`。 |
+| `previewGroup` / `previewEntries` | `+page.svelte` | 一括登録するentryの組と、選択中のentryを反映した表示対象。通常の単一プレビューは1件の配列になる。 |
 | `focusBbox` | `+page.svelte` | Zone UI で候補 EPSG を可視化する元 bbox。 |
 | `selectedEpsgCode` | `+page.svelte` | Zone UI で現在選択中の EPSG。 |
 | `zoneConfirmedEpsg` | `+page.svelte` | Zone UI で確定した EPSG。各 Form 側がこれを受けて再変換する。 |
@@ -149,6 +150,11 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 | preview のみ作る | ベクター GeoRef、点群 GeoRef、画像 GeoRef の準備段階 | `showDataEntry` ではなく `geoRefPreviewData` を更新する。 |
 
 ## 形式別フロー
+
+DXF / DWGは `CadForm.svelte` でポイント・ライン・ポリゴンを複数選択できる。最初は図面に含まれる種類をすべて選択する。CADレイヤーによる絞り込みも適用し、`cad-vector.ts` で選択した図形と種類ごとの表示設定を準備する。
+座標変換やGeoRefの四隅変形は図面全体へ一度適用し、`createVectorEntryGroup()` で種類ごとのentryへ分割する。GeoRefへ進む場合は `vectorGroups` に名前・スタイル等を引き継ぐ。面の輪郭をライン化した場合は、元のラインと同じentryにまとめる。
+ポリゴンだけを選んで3Dモデルとして読み込む場合は、従来のGLB変換とモデル配置を使う。
+読み込み方式は2D・3D・2Dライン（面の輪郭）から選ぶ。通常は2Dを初期値にし、立体のポリゴンだけを選んだ場合は3Dモデルを初期値にする。3Dを選んだ場合は高さを保持する。
 
 VTK（`.vtk` / `.vtp` / `.vtu` / `.vti` / `.vtr` / `.vts`）は `VtkForm.svelte` からWorkerで解析する。表面メッシュ・構造格子・対応する2次セルの外表面を取り出し、同一XML内の複数Pieceを統合する。2次曲面を補間して三角形へ分割し、選択した点・セルのスカラー値を頂点色へ変換する。単位・上方向を補正したGLBを `MeshModelForm.svelte` に渡し、既存の座標系選択・位置合わせを経て `MeshEntry` へ登録する。色分けは取り込み時に確定する。対応範囲と制限は [VTK](../frontend/src/routes/map/utils/formats/vtk/README.md) を参照。
 
@@ -447,12 +453,15 @@ main thread に残っている責務は、主に次の通り。
 
 ## preview と final の違い
 
+登録前の通常プレビューでは `previewEntries` の全entryを描画する。複数の場合、`PreviewMenu` は全体の範囲へフォーカスし、一覧の選択で詳細表示だけを切り替える。`DataPreviewDialog` の「地図に追加」で全件を登録し、キャンセルで全件を破棄する。スマートフォンでは追加確認欄に対象名を並べる。
+複数entryを作るフォームは `preview-context.ts` のcontext経由で配列を渡す。通常のフォームは既存の `showDataEntry` のまま扱える。プレビューの組はUIの一時状態に置き、複数entryを表すための仮のentryは作らない。
+
 morivis では preview と final entry を分けて考える必要がある。
 
 | 段階 | 主な状態 |
 | --- | --- |
 | preview | `geoRefPreviewData`, `geoRefData`, `showDialogType`, `transformOptionMode` |
-| final | `showDataEntry` |
+| final entryの登録前プレビュー | `showDataEntry`, `previewEntries` |
 
 特に GeoRef 系では、「preview 画像を作るコンポーネント」と「最終 entry を作るコンポーネント」が別である。
 

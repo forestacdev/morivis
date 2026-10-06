@@ -115,6 +115,7 @@
 		angleMarkerLngLat: LngLat;
 		cameraBearing: number; // カメラの向き
 		showDataEntry: MorivisLayerEntry | null;
+		previewEntries?: MorivisLayerEntry[];
 		dropFile: UploadFiles;
 		showDialogType: DialogType;
 		transformOptionMode: TransformOptionMode;
@@ -138,6 +139,7 @@
 		layerEntries = $bindable(),
 		tempLayerEntries = $bindable(),
 		showDataEntry = $bindable(),
+		previewEntries,
 		featureMenuData = $bindable(),
 		highlightMarkerState = $bindable(),
 		streetViewLineData,
@@ -168,6 +170,9 @@
 	}: Props = $props();
 
 	const isZoneRegistrationActive = $derived(transformOptionMode === 'zone');
+	const effectivePreviewEntries = $derived(
+		previewEntries ?? (showDataEntry ? [showDataEntry] : [])
+	);
 	const isGeoRefRegistrationActive = $derived(transformOptionMode === 'georef');
 	// 位置合わせは現在の地図に重ねる。通常プレビューと座標系選択だけを単独表示にする。
 	const isIsolatedPreview = $derived(
@@ -280,7 +285,7 @@
 		);
 		if (!isCurrent()) return;
 		const previewPrepared = await prepareSourceData(
-			input.showDataEntry ? [input.showDataEntry] : [],
+			input.previewEntries ?? (input.showDataEntry ? [input.showDataEntry] : []),
 			{ isCurrent }
 		);
 		if (!isCurrent()) return;
@@ -420,6 +425,7 @@
 			entries: getMapStyleEntries(entries),
 			mcaGridEntries,
 			showDataEntry,
+			previewEntries: effectivePreviewEntries,
 			baseMap: $selectedBaseMap,
 			showHillshade: $showHillshadeLayer,
 			showStreetView: $showStreetViewLayer,
@@ -451,10 +457,12 @@
 
 		if (!import.meta.env.PROD) {
 			// 描画方式で絞る前に、アップロードしたモデルと登録前のプレビューも出力する。
-			const previewEntry = showDataEntry;
-			const debugEntries = previewEntry
-				? [...entries.filter((entry) => entry.id !== previewEntry.id), previewEntry]
-				: entries;
+			const debugEntries = [
+				...entries.filter(
+					(entry) => !effectivePreviewEntries.some((preview) => preview.id === entry.id)
+				),
+				...effectivePreviewEntries
+			];
 			console.log('debug:entries', $state.snapshot(debugEntries));
 		}
 
@@ -464,7 +472,7 @@
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'geojsontile';
 		const hasGeojsonTileLayer =
-			entries.some(isGeojsonTileEntry) || (showDataEntry && isGeojsonTileEntry(showDataEntry));
+			entries.some(isGeojsonTileEntry) || effectivePreviewEntries.some(isGeojsonTileEntry);
 
 		if (hasGeojsonTileLayer) {
 			mapStore.ensureGeojsonProtocol();
@@ -476,7 +484,7 @@
 			e.type === 'vector' &&
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'esri-feature';
-		const hasEsriLayer = entries.some(isEsriEntry) || (showDataEntry && isEsriEntry(showDataEntry));
+		const hasEsriLayer = entries.some(isEsriEntry) || effectivePreviewEntries.some(isEsriEntry);
 
 		if (hasEsriLayer) {
 			mapStore.ensureEsriProtocol();
@@ -489,7 +497,7 @@
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'ogc-feature';
 		const hasOgcFeatureLayer =
-			entries.some(isOgcFeatureEntry) || (showDataEntry && isOgcFeatureEntry(showDataEntry));
+			entries.some(isOgcFeatureEntry) || effectivePreviewEntries.some(isOgcFeatureEntry);
 
 		if (hasOgcFeatureLayer) {
 			mapStore.ensureOgcFeatureProtocol();
@@ -502,7 +510,7 @@
 			'format' in e &&
 			(e as { format: { type: string } }).format.type === 'wfs-feature';
 		const hasWfsFeatureLayer =
-			entries.some(isWfsFeatureEntry) || (showDataEntry && isWfsFeatureEntry(showDataEntry));
+			entries.some(isWfsFeatureEntry) || effectivePreviewEntries.some(isWfsFeatureEntry);
 
 		if (hasWfsFeatureLayer) {
 			mapStore.ensureWfsFeatureProtocol();
@@ -521,10 +529,10 @@
 		const isCogTileEntry = (e: MorivisLayerEntry) =>
 			isCogEntry(e) && (e as { format: { mode?: 'tile' | 'viewport' } }).format.mode === 'tile';
 		const hasGeoZarrLayer =
-			entries.some(isGeoZarrEntry) || (showDataEntry && isGeoZarrEntry(showDataEntry));
-		const hasCogLayer = entries.some(isCogEntry) || (showDataEntry && isCogEntry(showDataEntry));
+			entries.some(isGeoZarrEntry) || effectivePreviewEntries.some(isGeoZarrEntry);
+		const hasCogLayer = entries.some(isCogEntry) || effectivePreviewEntries.some(isCogEntry);
 		const hasCogTileLayer =
-			entries.some(isCogTileEntry) || (showDataEntry && isCogTileEntry(showDataEntry));
+			entries.some(isCogTileEntry) || effectivePreviewEntries.some(isCogTileEntry);
 
 		if (hasCogTileLayer) {
 			mapStore.ensureCogProtocol();
@@ -542,7 +550,7 @@
 			// 定義済みCOGエントリをCogTileManagerに登録（タイル要求前に完了させる）
 			const cogEntries = [
 				...entries.filter(isCogEntry),
-				...(showDataEntry && isCogEntry(showDataEntry) ? [showDataEntry] : [])
+				...effectivePreviewEntries.filter(isCogEntry)
 			];
 			await Promise.all(
 				cogEntries.map(async (e) => {
@@ -558,7 +566,7 @@
 		const isMbtilesEntry = (e: MorivisLayerEntry) =>
 			'format' in e && (e as { format: { type: string } }).format.type === 'mbtiles';
 		const hasMbtilesLayer =
-			entries.some(isMbtilesEntry) || (showDataEntry && isMbtilesEntry(showDataEntry));
+			entries.some(isMbtilesEntry) || effectivePreviewEntries.some(isMbtilesEntry);
 
 		if (hasMbtilesLayer) {
 			mapStore.ensureMbtilesProtocol();
@@ -570,7 +578,7 @@
 			e.type === 'raster' &&
 			'style' in e &&
 			(e as { style: { type: string } }).style.type === 'dem';
-		const hasDemLayer = entries.some(isDemEntry) || (showDataEntry && isDemEntry(showDataEntry));
+		const hasDemLayer = entries.some(isDemEntry) || effectivePreviewEntries.some(isDemEntry);
 		const hasDemBaseMap = ['relief', 'slope', 'aspect', 'curvature'].includes($selectedBaseMap);
 
 		if (hasDemLayer || hasDemBaseMap) {
@@ -606,11 +614,13 @@
 		// 後から開始した更新がある場合、この結果は古いので破棄する。
 		if (!result || !isCurrent()) return;
 
-		const rasterPreviewEntry = showDataEntry;
 		applyRasterVisualizationUpdates(
-			rasterPreviewEntry
-				? [...entries.filter((entry) => entry.id !== rasterPreviewEntry.id), rasterPreviewEntry]
-				: entries,
+			[
+				...entries.filter(
+					(entry) => !effectivePreviewEntries.some((preview) => preview.id === entry.id)
+				),
+				...effectivePreviewEntries
+			],
 			result.rasterUpdates
 		);
 		clickableVectorIds.set(result.metadata.clickableVectorIds);
@@ -630,13 +640,11 @@
 					(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
 				) as AnyTiles3DEntry[]);
 
-		if (
-			showDataEntry &&
-			showDataEntry.type === 'model' &&
-			(showDataEntry as AnyTiles3DEntry).format.type === '3d-tiles'
-		) {
-			tiles3dEntries.push(showDataEntry as AnyTiles3DEntry);
-		}
+		tiles3dEntries.push(
+			...(effectivePreviewEntries.filter(
+				(entry) => entry.type === 'model' && entry.format.type === '3d-tiles'
+			) as AnyTiles3DEntry[])
+		);
 
 		const pointCloudEntries = isIsolatedPreview
 			? []
@@ -644,13 +652,11 @@
 					(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
 				) as PointCloudEntry[]);
 
-		if (
-			showDataEntry &&
-			showDataEntry.type === 'model' &&
-			(showDataEntry as PointCloudEntry).format.type === 'point-cloud'
-		) {
-			pointCloudEntries.push(showDataEntry as PointCloudEntry);
-		}
+		pointCloudEntries.push(
+			...(effectivePreviewEntries.filter(
+				(entry) => entry.type === 'model' && entry.format.type === 'point-cloud'
+			) as PointCloudEntry[])
+		);
 
 		const deckVectorEntries = isIsolatedPreview
 			? []
@@ -660,14 +666,13 @@
 						(entry.format.type === 'geoarrow' || entry.format.type === 'geojson-3d')
 				) as DeckVectorEntry[]);
 
-		if (
-			showDataEntry &&
-			showDataEntry.type === 'model' &&
-			((showDataEntry as DeckVectorEntry).format.type === 'geoarrow' ||
-				(showDataEntry as DeckVectorEntry).format.type === 'geojson-3d')
-		) {
-			deckVectorEntries.push(showDataEntry as DeckVectorEntry);
-		}
+		deckVectorEntries.push(
+			...(effectivePreviewEntries.filter(
+				(entry) =>
+					entry.type === 'model' &&
+					(entry.format.type === 'geoarrow' || entry.format.type === 'geojson-3d')
+			) as DeckVectorEntry[])
+		);
 
 		mapStore.setTiles3DStyleEntries(tiles3dEntries);
 		await mapStore.setDeckModelStyleEntries(pointCloudEntries, deckVectorEntries);
@@ -697,23 +702,22 @@
 							entry.format.type === 'usd')
 				) as ThreeModelEntry[]);
 
-		const previewThreeModelEntry =
-			showDataEntry &&
-			showDataEntry.type === 'model' &&
-			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat') &&
-			showDataEntry.format.type !== '3d-tiles'
-				? (showDataEntry as ThreeModelEntry)
-				: null;
+		const previewThreeModelEntries = effectivePreviewEntries.filter(
+			(entry) =>
+				entry.type === 'model' &&
+				(entry.style.type === 'mesh' || entry.style.type === 'gaussian-splat') &&
+				entry.format.type !== '3d-tiles'
+		) as ThreeModelEntry[];
 
 		// setThreeLayerの直前にも確認して、古いモデル状態の上書きを防ぐ。
 		if (updateId !== styleUpdateId) return;
 		// 座標系選択・配置中の実モデルは各フォーム側で読み込み完了まで待って表示する。
 		// ここでは同じプレビューを重複ロードせず、通常プレビューだけを同期する。
 		const isThreeModelTransformPreviewActive =
-			isModelPlacementActive || (isZoneRegistrationActive && !!previewThreeModelEntry);
+			isModelPlacementActive || (isZoneRegistrationActive && previewThreeModelEntries.length > 0);
 		if (!isThreeModelTransformPreviewActive) {
-			await (previewThreeModelEntry
-				? mapStore.setThreeLayer([previewThreeModelEntry], 'preview')
+			await (previewThreeModelEntries.length
+				? mapStore.setThreeLayer(previewThreeModelEntries, 'preview')
 				: showDataEntry
 					? mapStore.setThreeLayer([], 'preview')
 					: mapStore.setThreeLayer(threeModelEntries, 'main'));
@@ -846,6 +850,7 @@
 
 	// データプレビュー
 	$effect(() => {
+		$state.snapshot(effectivePreviewEntries.map((entry) => ({ id: entry.id, style: entry.style })));
 		setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
 		threeJsManager.setGroupVisibility(!showDataEntry || isGeoRefRegistrationActive);
 	});

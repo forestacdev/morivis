@@ -1,4 +1,5 @@
 import type { ActiveTransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
+import type { VectorEntryGroup } from '$routes/map/components/upload/form/vector-entry-group';
 import type { Opacity } from '$routes/map/data/types';
 import type { ColorMapType, RasterDiscreteDimension } from '$routes/map/data/types/raster';
 import type { VectorStyle } from '$routes/map/data/types/vector/style';
@@ -56,6 +57,7 @@ export interface GeoRefData {
 	sourceCorners?: GeoRefCorners;
 	sourceFeatureCollectionId?: string;
 	vectorStyle?: VectorStyle;
+	vectorGroups?: VectorEntryGroup[];
 	vectorLineWidth?: number;
 	vectorAttribution?: string;
 	allowedTransformModes?: ActiveTransformOptionMode[];

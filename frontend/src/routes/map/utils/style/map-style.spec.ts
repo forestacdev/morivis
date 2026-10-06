@@ -262,3 +262,30 @@ describe('明示的入力による地図style生成', () => {
 		).toHaveProperty('test-preview_source');
 	});
 });
+
+it('複数プレビューをすべて同じstyleへ含め、選択カードだけ変わっても図形を残す', () => {
+	const previewEntries = [rasterEntry('test-preview-a'), rasterEntry('test-preview-b')];
+	const state = {
+		...input(),
+		previewEntries,
+		showDataEntry: previewEntries[0],
+		isIsolatedPreview: true
+	};
+	const first = createMapStyle(state, resources());
+	for (const entry of previewEntries) {
+		expect(first.style.sources[`${entry.id}_source`]).toBeDefined();
+		expect(first.style.layers.some(layer => layer.id === entry.id)).toBe(true);
+	}
+	expect(first.style.sources['test-main_source']).toBeUndefined();
+	const second = createMapStyle({ ...state, showDataEntry: previewEntries[1] }, resources());
+	expect(second.style).toEqual(first.style);
+	expect([...second.metadata.attributions].sort()).toEqual([
+		'test-preview-a-attribution',
+		'test-preview-b-attribution'
+	]);
+	const registered = createMapStyle({ ...input(), entries: previewEntries }, resources());
+	expect([...registered.metadata.clickableRasterIds].sort()).toEqual([
+		'test-preview-a',
+		'test-preview-b'
+	]);
+});
