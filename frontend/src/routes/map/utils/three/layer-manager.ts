@@ -533,12 +533,11 @@ export class ThreeJsLayerManager {
 				vertexColors: material.userData.morivisMinecraftMaterial === true
 					&& material.vertexColors,
 				opacity,
-				side: THREE.DoubleSide
+				side: material.side
 			});
 		}
 
 		const clonedMaterial = material.clone();
-		clonedMaterial.side = THREE.DoubleSide;
 		clonedMaterial.transparent = clonedMaterial.transparent || clonedMaterial.opacity < 1;
 		if ('wireframe' in clonedMaterial) {
 			clonedMaterial.wireframe = false;

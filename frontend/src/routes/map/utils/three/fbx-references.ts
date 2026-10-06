@@ -1,4 +1,8 @@
-import { formatFbxMetadataDescription, parseFbxFileMetadata } from './fbx-metadata';
+import {
+	formatFbxMetadataDescription,
+	isNavisworksFbx,
+	parseFbxFileMetadata
+} from './fbx-metadata';
 
 const BINARY_HEADER_PREFIX = 'Kaydara FBX Binary  ';
 const PATH_PROPERTY_NAMES = new Set(['RelativeFilename', 'FileName', 'Filename']);
@@ -122,6 +126,7 @@ const collectBinaryReferences = (buffer: ArrayBuffer) => {
 export interface FbxFileInspection {
 	referencedTexturePaths: string[];
 	description: string;
+	initialFaceSide: 'source' | 'double';
 }
 
 export const inspectFbxFile = async (file: File): Promise<FbxFileInspection> => {
@@ -132,9 +137,11 @@ export const inspectFbxFile = async (file: File): Promise<FbxFileInspection> => 
 	const paths = header === BINARY_HEADER_PREFIX
 		? collectBinaryReferences(buffer)
 		: collectTextReferences(new TextDecoder().decode(buffer));
+	const metadata = parseFbxFileMetadata(buffer);
 	return {
 		referencedTexturePaths: [...paths],
-		description: formatFbxMetadataDescription(parseFbxFileMetadata(buffer), file.size)
+		description: formatFbxMetadataDescription(metadata, file.size),
+		initialFaceSide: isNavisworksFbx(metadata) ? 'double' : 'source'
 	};
 };
 

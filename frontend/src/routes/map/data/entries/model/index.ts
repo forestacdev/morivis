@@ -199,6 +199,7 @@ export const createGlbEntry = (
 		georeference?: ProjectedModelGeoreference;
 		sourceFileName?: string;
 		initialShadingEnabled?: boolean;
+		initialFaceSide?: MeshStyle['faceSide'];
 	}
 ): MeshEntry<MeshStyle> => {
 	const baseRotationX = getModelBaseRotationX(
@@ -271,6 +272,7 @@ export const createGlbEntry = (
 			type: 'mesh',
 			opacity: 1,
 			wireframe: false,
+			faceSide: options?.initialFaceSide ?? 'source',
 			...(formatType === 'fbx' && { showFbxCurves: true, showFbxText: true }),
 			showThroughTerrain: false,
 			color: '#ffffff',

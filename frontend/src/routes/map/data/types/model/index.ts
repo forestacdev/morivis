@@ -221,6 +221,8 @@ export interface MeshStyle extends ModelTransformStyle {
 	opacity: Opacity;
 	visible?: boolean;
 	wireframe: boolean;
+	/** 描画する面。未指定時は元の材質設定を維持する。 */
+	faceSide?: 'source' | 'double' | 'front';
 	/** FBXに含まれるNURBS曲線を表示する。未指定時は表示する。 */
 	showFbxCurves?: boolean;
 	/** FBXに残された文字属性を3Dテキストとして表示する。未指定時は表示する。 */

@@ -304,6 +304,7 @@
 	let isInspectingFbxReferences = $state(false);
 	let referencedFbxTexturePaths = $state<string[]>([]);
 	let fbxDescription = $state<string | undefined>(undefined);
+	let fbxInitialFaceSide = $state<'source' | 'double'>('source');
 	let isInspectingVrmlReferences = $state(false);
 	let referencedVrmlTexturePaths = $state<string[]>([]);
 	let gltfInspectionFileKey = $state<string | null>(null);
@@ -519,6 +520,7 @@
 
 	$effect(() => {
 		if (!glbFile || activeFormat !== 'fbx') {
+			fbxInitialFaceSide = 'source';
 			fbxInspectionFileKey = null;
 			isInspectingFbxReferences = false;
 			referencedFbxTexturePaths = [];
@@ -530,6 +532,7 @@
 		if (fbxInspectionFileKey === nextFileKey) return;
 
 		fbxInspectionFileKey = nextFileKey;
+		fbxInitialFaceSide = 'source';
 		isInspectingFbxReferences = true;
 		referencedFbxTexturePaths = [];
 		fbxDescription = undefined;
@@ -541,6 +544,7 @@
 				if (fbxInspectionFileKey !== inspectionKey) return;
 				referencedFbxTexturePaths = inspection.referencedTexturePaths;
 				fbxDescription = inspection.description;
+				fbxInitialFaceSide = inspection.initialFaceSide;
 			} catch (error) {
 				if (fbxInspectionFileKey !== inspectionKey) return;
 				referencedFbxTexturePaths = [];
@@ -939,7 +943,8 @@
 				sourceUnit: getUploadedModelSourceUnit(glbFile),
 				minecraftRegion: getUploadedMinecraftRegion(glbFile),
 				minecraftRegions: getUploadedMinecraftRegions(glbFile),
-				initialShadingEnabled: activeFormat !== 'vrm' && activeFormat !== 'pmx'
+				initialShadingEnabled: activeFormat !== 'vrm' && activeFormat !== 'pmx',
+				initialFaceSide: activeFormat === 'fbx' ? fbxInitialFaceSide : 'source'
 			}
 		);
 		if (activeFormat === 'fbx' && fbxDescription) {
@@ -1235,6 +1240,7 @@
 			untrack(clearZoneModelPreview);
 		}
 		zoneModelPreviewSourceKey = sourceKey;
+		if (activeFormat === 'fbx' && isInspectingFbxReferences) return;
 		const syncId = ++zoneModelPreviewSyncId;
 		void syncZoneModelPreview(selectedEpsgCode, syncId);
 	});

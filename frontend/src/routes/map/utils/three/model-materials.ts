@@ -10,6 +10,7 @@ import {
 } from '$routes/map/utils/three/model-attributes';
 import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
 import { createEdgeUvGeometry } from '$routes/map/utils/three/model-edge-uv';
+import { resolveModelFaceSide } from '$routes/map/utils/three/model-face-side';
 import { getModelPartColor } from '$routes/map/utils/three/model-part-style';
 import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
 import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
@@ -17,7 +18,10 @@ import * as THREE from 'three';
 const IFC_ATTRIBUTE_BATCH_SIZE = 32;
 export class ModelMaterials {
 	private colorMapManager = new ColorMapManager();
-	private createEdgeOverlayMaterial = (style: MeshStyle): THREE.ShaderMaterial => {
+	private createEdgeOverlayMaterial = (
+		style: MeshStyle,
+		sourceMaterial: THREE.Material
+	): THREE.ShaderMaterial => {
 		const edgeUniforms = resolveMeshEdgeUniforms(style);
 		const material = new THREE.ShaderMaterial({
 			uniforms: {
@@ -104,13 +108,17 @@ export class ModelMaterials {
 			// 面や他モデルに隠れない、最前面用の描画パスとして扱う。
 			depthTest: false,
 			depthWrite: false,
-			side: THREE.DoubleSide
+			side: resolveModelFaceSide(sourceMaterial.side, style.faceSide)
 		});
 		material.userData.morivisEdgeOverlayMaterial = true;
 		return material;
 	};
 
-	private updateEdgeOverlayMaterial = (material: THREE.Material, style: MeshStyle) => {
+	private updateEdgeOverlayMaterial = (
+		material: THREE.Material,
+		style: MeshStyle,
+		sourceMaterial: THREE.Material
+	) => {
 		if (
 			!(material instanceof THREE.ShaderMaterial)
 			|| material.userData.morivisEdgeOverlayMaterial !== true
@@ -123,6 +131,7 @@ export class ModelMaterials {
 		material.uniforms.uEdgeThickness.value = edgeUniforms.thickness;
 		material.uniforms.uSilhouetteWidthPx.value = edgeUniforms.silhouetteWidthPx;
 		material.uniforms.uEdgeOpacity.value = edgeUniforms.opacity;
+		this.updateMaterialSide(material, sourceMaterial, style);
 		return true;
 	};
 
@@ -165,7 +174,11 @@ export class ModelMaterials {
 		}
 	};
 
-	private syncEdgeOverlay = (mesh: THREE.Mesh, style: MeshStyle) => {
+	private syncEdgeOverlay = (
+		mesh: THREE.Mesh,
+		style: MeshStyle,
+		sourceMaterials: THREE.Material[]
+	) => {
 		const overlay = mesh.children.find(
 			(child) => child.userData.morivisEdgeOverlay === true
 		) as THREE.Mesh | undefined;
@@ -179,12 +192,11 @@ export class ModelMaterials {
 			return;
 		}
 
-		const materialCount = Array.isArray(mesh.material) ? mesh.material.length : 1;
+		const materialCount = sourceMaterials.length;
 		if (!overlay) {
 			if (!edgeGeometry) return;
-			const materials = Array.from(
-				{ length: materialCount },
-				() => this.createEdgeOverlayMaterial(style)
+			const materials = sourceMaterials.map(
+				(source) => this.createEdgeOverlayMaterial(style, source)
 			);
 			this.createEdgeOverlay(mesh, materials, edgeGeometry.geometry, edgeGeometry.generated);
 			return;
@@ -195,15 +207,16 @@ export class ModelMaterials {
 			: [overlay.material];
 		if (
 			currentMaterials.length === materialCount
-			&& currentMaterials.every((material) => this.updateEdgeOverlayMaterial(material, style))
+			&& currentMaterials.every((material, index) =>
+				this.updateEdgeOverlayMaterial(material, style, sourceMaterials[index])
+			)
 		) {
 			return;
 		}
 
 		currentMaterials.forEach((material) => material.dispose());
-		const nextMaterials = Array.from(
-			{ length: materialCount },
-			() => this.createEdgeOverlayMaterial(style)
+		const nextMaterials = sourceMaterials.map(
+			(source) => this.createEdgeOverlayMaterial(style, source)
 		);
 		overlay.material = Array.isArray(mesh.material) ? nextMaterials : nextMaterials[0];
 	};
@@ -321,6 +334,9 @@ export class ModelMaterials {
 					#include <skinbase_vertex>
 					#include <skinnormal_vertex>
 					vNormal = normalize(normalMatrix * objectNormal);
+					#ifdef FLIP_SIDED
+						vNormal = -vNormal;
+					#endif
 					vec3 transformed = vec3(position);
 					#include <morphtarget_vertex>
 					#include <skinning_vertex>
@@ -391,6 +407,9 @@ export class ModelMaterials {
 								: (uUseHeightColorRamp ? rampColor : (uBaseColor * texel.rgb))
 						);
 					vec3 normalDir = normalize(vNormal);
+					#ifdef DOUBLE_SIDED
+						normalDir *= gl_FrontFacing ? 1.0 : -1.0;
+					#endif
 					float diffuse = max(dot(normalDir, normalize(uLightDirection)), 0.0);
 					float shade = clamp(uAmbientStrength + diffuse * uShadeStrength, 0.0, 1.0);
 					vec3 shadedColor = surfaceColor * shade;
@@ -406,7 +425,7 @@ export class ModelMaterials {
 			transparent: sourceAlpha.transparent,
 			depthWrite: sourceAlpha.depthWrite,
 			wireframe: style.wireframe,
-			side: THREE.DoubleSide
+			side: resolveModelFaceSide(sourceMaterial.side, style.faceSide)
 		});
 		material.userData.morivisShaderShading = true;
 		material.userData.morivisMinecraftMaterial = sourceAlpha.enabled;
@@ -510,7 +529,20 @@ export class ModelMaterials {
 		material.uniforms.uObjectPartOpacity.value = objectPartIsTransparent ? 0 : 1;
 		material.uniforms.uUsePartColors.value = useIndexedPartColors;
 		material.wireframe = style.wireframe;
+		this.updateMaterialSide(material, sourceMaterial, style);
 		return true;
+	};
+
+	private updateMaterialSide = (
+		material: THREE.Material,
+		sourceMaterial: THREE.Material,
+		style: MeshStyle
+	) => {
+		const side = resolveModelFaceSide(sourceMaterial.side, style.faceSide);
+		if (material.side === side) return;
+		material.side = side;
+		// THREEの表裏用シェーダー定義も切り替える。
+		material.needsUpdate = true;
 	};
 
 	private applyStyleToMesh = (
@@ -535,7 +567,7 @@ export class ModelMaterials {
 		const objectPartColor = usePartColorMaterial
 			? undefined
 			: getModelPartColor(style.partColors, getModelObjectAttributes(mesh));
-		this.syncEdgeOverlay(mesh, style);
+		this.syncEdgeOverlay(mesh, style, originalMaterials);
 		const hasExistingShaderMaterials = currentMaterials.every((material, index) =>
 			this.updateShaderMaterialUniforms(
 				originalMaterials[index],

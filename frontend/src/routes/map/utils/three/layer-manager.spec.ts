@@ -36,7 +36,10 @@ vi.mock('./model-placement-controller', () => ({
 		dispose = vi.fn();
 	}
 }));
-afterEach(() => vi.clearAllMocks());
+afterEach(() => {
+	vi.clearAllMocks();
+	vi.unstubAllGlobals();
+});
 const setup = () => {
 	const manager = new ThreeJsLayerManager();
 	manager.createLayer().onAdd!(
@@ -58,6 +61,41 @@ const deferred = () => {
 	return { promise, resolve };
 };
 describe('ThreeJsLayerManager の読み込み登録境界', () => {
+	it('描画面を変更してGLBへ保存し、書き出し後も元の材質へ戻せる', async () => {
+		vi.stubGlobal(
+			'FileReader',
+			class {
+				result: ArrayBuffer | null = null;
+				onloadend: (() => void) | null = null;
+				readAsArrayBuffer = (blob: Blob) => {
+					void blob.arrayBuffer().then(buffer => {
+						this.result = buffer;
+						this.onloadend?.();
+					});
+				};
+			}
+		);
+		const manager = setup();
+		const { entry, object } = createTestModel();
+		const mesh = object.children[0] as THREE.Mesh;
+		load.mockResolvedValueOnce({ object, animations: [] });
+		await manager.addModel(entry);
+		const displayMaterial = mesh.material;
+		for (const faceSide of ['double', 'front', 'source'] as const) {
+			entry.style.faceSide = faceSide;
+			await manager.setModelStyle(entry);
+			const buffer = await manager.exportModelAsGlb(entry.id);
+			const jsonLength = new DataView(buffer).getUint32(12, true);
+			const gltf = JSON.parse(
+				new TextDecoder().decode(new Uint8Array(buffer, 20, jsonLength))
+			);
+			expect(gltf.materials[0].doubleSided ?? false).toBe(faceSide === 'double');
+			expect(mesh.material).toBe(displayMaterial);
+		}
+		expect((mesh.material as THREE.Material).side).toBe(THREE.FrontSide);
+		manager.dispose();
+	});
+
 	it('ノード時系列を初期読込・時刻変更・宣言的なentry更新へ反映する', async () => {
 		const manager = setup();
 		const { entry, object } = createTestModel();

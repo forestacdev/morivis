@@ -143,10 +143,21 @@ for (const skinned of [false, true]) {
 						return { count, x: sumX / count, brightness: sumBrightness / count };
 					};
 					const initial = render(0), changed = render(1), reset = render(0);
+					// 裏から見た同じ面を、材質を再利用して切り替える。
+					mesh.rotation.y = Math.PI;
+					material.side = THREE.FrontSide;
+					material.needsUpdate = true;
+					const culledBack = render(0);
+					material.side = THREE.DoubleSide;
+					material.needsUpdate = true;
+					const doubleBack = render(0);
+					material.side = THREE.BackSide;
+					material.needsUpdate = true;
+					const sourceBack = render(0);
 					geometry.dispose();
 					material.dispose();
 					renderer.dispose();
-					return { initial, changed, reset, errors };
+					return { initial, changed, reset, culledBack, doubleBack, sourceBack, errors };
 				},
 				{ vertexShader, fragmentShader, skinned, morphs }
 			);
@@ -158,6 +169,10 @@ for (const skinned of [false, true]) {
 				expect(result.changed.brightness).toBeLessThan(result.initial.brightness - 30);
 			}
 			expect(result.reset).toEqual(result.initial);
+			expect(result.culledBack.count).toBe(0);
+			expect(result.doubleBack.count).toBeGreaterThan(50);
+			expect(result.doubleBack.brightness).toBeCloseTo(result.initial.brightness, 0);
+			expect(result.sourceBack).toEqual(result.doubleBack);
 		});
 	}
 }
