@@ -212,6 +212,8 @@ export interface LabelsExpressions {
 export interface Labels {
 	key: string;
 	show: boolean;
+	/** ラベル表示中は、文字を持つポイントの記号だけを透明にする。 */
+	hidePoint?: boolean;
 	opacity?: number;
 	color?: string;
 	size?: number;

@@ -1,5 +1,6 @@
 import type {
 	CircleLayerSpecification,
+	ExpressionSpecification,
 	SymbolLayerSpecification
 } from '$routes/map/utils/maplibre';
 
@@ -23,23 +24,39 @@ import {
 } from '$routes/map/utils/layers/id';
 import { combineFilters } from '$routes/map/utils/layers/vector/filter';
 
+const getPointOpacity = (
+	style: PointStyle,
+	fields: FieldDef[]
+): number | ExpressionSpecification => {
+	const label = style.labels.expressions.find(item => item.key === style.labels.key);
+	if (!style.labels.show || !style.labels.hidePoint || !label) return style.opacity;
+	return [
+		'case',
+		['!=', ['to-string', ['coalesce', compileLabelExpr(label, fields), '']], ''],
+		0,
+		style.opacity
+	];
+};
+
 // pointレイヤーの作成
 export const createCircleLayer = (
 	layer: LayerItem,
-	style: PointStyle
+	style: PointStyle,
+	fields: FieldDef[] = []
 ): CircleLayerSpecification => {
 	const outline = style.outline;
 	const defaultStyle = style.default;
 	const colorExpression = getColorExpression(style.colors);
 	const radius = getNumberExpression(style.radius);
+	const opacity = getPointOpacity(style, fields);
 	const circleLayer: CircleLayerSpecification = {
 		...layer,
 		type: 'circle',
 		paint: {
-			'circle-opacity': style.colors.show ? style.opacity : 0,
+			'circle-opacity': style.colors.show ? opacity : 0,
 			'circle-stroke-opacity': outline.minzoom
-				? ['step', ['zoom'], 0, outline.minzoom, style.opacity]
-				: style.opacity,
+				? ['step', ['zoom'], 0, outline.minzoom, opacity]
+				: opacity,
 			'circle-color': style.colors.show ? colorExpression : '#00000000',
 			'circle-radius': radius,
 			'circle-stroke-color': outline.show ? style.outline.color : '#00000000',
@@ -59,7 +76,8 @@ export const createCircleLayer = (
 // ポイントのicon用レイヤーの作成
 export const createPointIconLayer = (
 	layer: LayerItem,
-	style: PointStyle
+	style: PointStyle,
+	fields: FieldDef[] = []
 ): SymbolLayerSpecification | undefined => {
 	const iconExpression = getIconExpression(style.colors);
 	if (!iconExpression) {
@@ -79,7 +97,7 @@ export const createPointIconLayer = (
 		),
 		type: 'symbol',
 		paint: {
-			'icon-opacity': style.opacity
+			'icon-opacity': getPointOpacity(style, fields)
 		},
 		layout: {
 			'icon-image': iconExpression,
@@ -122,7 +140,7 @@ export const createPointImageIconLayer = (
 		),
 		type: 'symbol',
 		paint: {
-			'icon-opacity': style.opacity,
+			'icon-opacity': getPointOpacity(style, fields),
 			// ラベルのスタイルはアイコンレイヤーに統合
 			...(showLabel
 				? {

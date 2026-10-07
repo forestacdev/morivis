@@ -51,7 +51,7 @@
 	</Accordion>
 {/if}
 
-<LabelOption bind:labels={layerEntry.style.labels} />
+<LabelOption bind:labels={layerEntry.style.labels} point />
 
 <style>
 </style>

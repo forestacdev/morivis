@@ -114,10 +114,7 @@
 		const style = buildDxfStyle(data, type, [
 			...new Set(data.features.flatMap((feature) => Object.keys(feature.properties)))
 		]);
-		if (type === 'Point' && data.features.some((feature) => feature.properties.type === 'TEXT')) {
-			style.labels.key = 'text';
-			style.labels.show = true;
-		}
+
 		return style;
 	};
 	const openPlacement = () => {

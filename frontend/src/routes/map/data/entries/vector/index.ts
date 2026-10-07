@@ -1,4 +1,5 @@
 import turfBbox from '@turf/bbox';
+import { withCadTextLabels } from './cad-labels';
 
 import { createAdjustableRange } from '$routes/map/data/types';
 import type {
@@ -388,7 +389,12 @@ export const buildDmStyle = (
 	if (entryGeometryType === 'LineString') {
 		return { ...DEFAULT_CAD_STYLE, colors: colorsConfig, labels: labelsConfig };
 	}
-	return getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig);
+	return withCadTextLabels(
+		getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig),
+		data,
+		'dataType',
+		['注記']
+	);
 };
 
 export const buildDxfStyle = (
@@ -430,7 +436,12 @@ export const buildDxfStyle = (
 	if (entryGeometryType === 'LineString') {
 		return { ...DEFAULT_CAD_STYLE, colors: colorsConfig, labels: labelsConfig };
 	}
-	return getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig);
+	return withCadTextLabels(
+		getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig),
+		data,
+		'type',
+		['TEXT', 'MTEXT']
+	);
 };
 
 export const buildCadStyle = (
@@ -487,7 +498,12 @@ export const buildSxfStyle = (
 	if (entryGeometryType === 'LineString') {
 		return { ...DEFAULT_CAD_STYLE, colors: colorsConfig, labels: labelsConfig };
 	}
-	return getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig);
+	return withCadTextLabels(
+		getDefaultStyle(entryGeometryType, colorsConfig, labelsConfig),
+		data,
+		'type',
+		['text_string', 'text_literal']
+	);
 };
 
 // --- 属性から自動match分類を生成 ---

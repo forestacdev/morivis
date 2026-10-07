@@ -97,7 +97,7 @@ export const createVectorLayer = (
 			if (style.imageIcon?.show && pointImageIcon) {
 				return createPointImageIconLayer(layer, style, pointImageIcon, fields);
 			} else {
-				return createCircleLayer(layer, style);
+				return createCircleLayer(layer, style, fields);
 			}
 		}
 		default:
@@ -301,7 +301,7 @@ export const createLayersItems = ({
 
 							// ポイントもパターン（アイコンレイヤー）
 							if (style.colors.show) {
-								const pointIconLayer = createPointIconLayer(layer, style);
+								const pointIconLayer = createPointIconLayer(layer, style, fields);
 								if (pointIconLayer) {
 									circleLayerItems.push(pointIconLayer);
 									clickableVecter.push(pointIconLayer.id); // アイコンレイヤーもクリック可能にする
