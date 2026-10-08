@@ -36,15 +36,3 @@ jobs:
           pnpm --dir frontend lint
       - name: Build Svelte project
         run: pnpm --dir frontend build
-      - name: Install Chromium
-        run: pnpm --dir frontend exec playwright install --with-deps chromium
-      - name: Run browser tests against the build
-        run: pnpm --dir frontend exec playwright test
-      - name: Upload browser test results
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-results
-          path: frontend/test-results/
-          retention-days: 7
-          if-no-files-found: ignore

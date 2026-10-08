@@ -82,7 +82,7 @@ pnpm --dir frontend test:e2e
 
 ポートが使用中の場合は `PLAYWRIGHT_PORT=4175` などで変更できる。既存サーバーは再利用せず、テスト対象のビルドを専用サーバーで配信する。
 
-地図を開くアップロードテストは `e2e/map-test.ts` の `test` を使う。補助スタイルとそのタイルを架空fixtureで返し、CIの `PUBLIC_STYLES_PATH` や外部配信に依存させない。
+地図を開くアップロードテストは `e2e/map-test.ts` の `test` を使う。補助スタイルとそのタイルを架空fixtureで返し、実行環境の `PUBLIC_STYLES_PATH` や外部配信に依存させない。
 
 すでにビルドした結果を検証する場合は、ビルドを繰り返さずに実行できる。
 
@@ -90,18 +90,18 @@ pnpm --dir frontend test:e2e
 pnpm --dir frontend exec playwright test
 ```
 
-対象はホーム画面、DEMシェーダー、モデルのモーフ描画。WebGL2が必要で、CIではChromiumを1ワーカーで実行する。失敗時のtraceは `frontend/test-results/` に保存する。ローカルでインストール済みのChromeを使う場合は `PLAYWRIGHT_CHANNEL=chrome` を指定できる。
+対象はホーム画面、DEMシェーダー、モデルのモーフ描画。WebGL2が必要で、Chromiumを使う。`CI` 環境変数が設定されている場合は1ワーカーで実行する。失敗時のtraceは `frontend/test-results/` に保存する。ローカルでインストール済みのChromeを使う場合は `PLAYWRIGHT_CHANNEL=chrome` を指定できる。
 
 ## CI
 
 | Workflow | 実行する検証 |
 | --- | --- |
-| `frontend-pull-request-check.yml` | check → lint → build → ChromiumのPlaywrightテスト |
+| `frontend-pull-request-check.yml` | check → lint → build |
 | `frontend-vitest.yml` | Vitestを一度実行 |
 
 両workflowはPRで `frontend/**`、ルートの `package.json`・`pnpm-lock.yaml`・`pnpm-workspace.yaml`・`.npmrc`、または各workflow自身が変わると起動する。ルートの `README.md` や `docs/**` だけの変更では起動しない。
 
-インストールはルートで `pnpm install --frozen-lockfile` を実行し、依存キャッシュもルートのlockfileを参照する。ビルドと単体テストは別ジョブで実行し、Playwrightはビルドジョブの出力を使う。ブラウザテストが失敗した場合は `playwright-results` artifactから結果を確認できる。
+インストールはルートで `pnpm install --frozen-lockfile` を実行し、依存キャッシュもルートのlockfileを参照する。ビルドと単体テストは別ジョブで実行する。PlaywrightはPRワークフローでは実行せず、必要に応じてローカルで実行する。
 
 ## 実装の参照先
 
