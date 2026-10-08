@@ -1,0 +1,5 @@
+S-57 object/attribute dictionaries from GDAL v3.8.4
+https://github.com/OSGeo/gdal/tree/v3.8.4/data
+
+s57objectclasses.csv and s57attributes.csv are distributed under the GDAL/OGR General license in LICENSE.txt.
+Dictionary files are bundled into the S-57 parser worker without modifications.
