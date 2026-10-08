@@ -89,6 +89,12 @@ export interface ModelPartData {
 }
 
 export interface ModelEntryProperties {
+	/** メッシュ内のノードのローカル変換。dimensionの各時刻に対応し、nullは非表示。 */
+	nodeTransforms?: {
+		nodeName: string;
+		/** 列優先4×4行列。描画オブジェクトは保持しない。 */
+		frames: (number[] | null)[];
+	}[];
 	/** 単体ビューで床グリッドを置く、モデルローカル座標の Y 値。 */
 	modelView?: {
 		floorY?: number;
@@ -215,6 +221,8 @@ export interface MeshStyle extends ModelTransformStyle {
 	opacity: Opacity;
 	visible?: boolean;
 	wireframe: boolean;
+	/** 描画する面。未指定時は元の材質設定を維持する。 */
+	faceSide?: 'source' | 'double' | 'front';
 	/** FBXに含まれるNURBS曲線を表示する。未指定時は表示する。 */
 	showFbxCurves?: boolean;
 	/** FBXに残された文字属性を3Dテキストとして表示する。未指定時は表示する。 */

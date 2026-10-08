@@ -5,6 +5,22 @@ import { createGlbEntry } from './index';
 const transform = { lng: 1, lat: 2, altitude: 3 };
 
 describe('createGlbEntry', () => {
+	it('描画面は元データを既定とし、指定した初期値を保存する', () => {
+		expect(createGlbEntry('test-mesh', 'blob:test-mesh', transform).style.faceSide).toBe(
+			'source'
+		);
+		const entry = createGlbEntry(
+			'test-mesh',
+			'blob:test-mesh',
+			transform,
+			'fbx',
+			undefined,
+			undefined,
+			{ initialFaceSide: 'double' }
+		);
+		expect(JSON.parse(JSON.stringify(entry)).style.faceSide).toBe('double');
+	});
+
 	it('アップロード用の指定で陰影を有効にする', () => {
 		const entry = createGlbEntry(
 			'test-mesh',

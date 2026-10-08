@@ -78,6 +78,10 @@ export type DialogType =
 	| 'gpx'
 	| 'tcx'
 	| 'fit'
+	| 'nmea'
+	| 'ais'
+	| 'czml'
+	| 'orbit'
 	| 'osm'
 	| 'georss'
 	| 'geojson'
@@ -97,6 +101,7 @@ export type DialogType =
 	| 'drm'
 	| 'dwg'
 	| 'dxf'
+	| 's57'
 	| 'dgn'
 	| 'jww'
 	| 'cedxm'
@@ -123,6 +128,7 @@ export type DialogType =
 	| 'pmtiles'
 	| 'model'
 	| 'step-iges'
+	| 'vtk'
 	| 'mca'
 	| 'roblox'
 	| 'gaussian-splat'
@@ -138,6 +144,8 @@ export type DialogType =
 	| 'kml'
 	| 'topojson'
 	| 'landxml'
+	| 'opendrive'
+	| 'csw'
 	| 'stac'
 	| 'svg'
 	| 'geoparquet'
@@ -247,6 +255,14 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		icon: 'mdi:cube-scan'
 	},
 	{
+		id: 'csw',
+		dialogType: 'csw',
+		label: 'CSW カタログ',
+		description:
+			'地理データのメタデータを検索するカタログサービスです。キーワードや地図範囲で検索し、配信リンクからデータを読み込みます。',
+		icon: 'mdi:database-search'
+	},
+	{
 		id: 'stac',
 		dialogType: 'stac',
 		label: 'STAC / COG',
@@ -260,14 +276,14 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		label: 'Zarr / GeoZarr',
 		icon: 'mdi:grid',
 		description:
-			'多次元の数値配列をチャンクに分けて配信するデータです。公開URL・フォルダー・ZIPから配列を選び、地図上に色分けして表示します。'
+			'多次元配列をチャンクに分けて保存する形式です。公開URL・フォルダー・ZIPから地理座標を持つ配列を選び、地図上に色分けして表示します。'
 	},
 	{
 		id: 'geojson',
 		dialogType: 'geojson',
 		label: 'GeoJSON',
 		description:
-			'GeoJSON・GeoJSONSeq（行区切りGeoJSON）に対応しています。ファイルの読み込みやテキストの直接入力ができます。',
+			'点・線・面と属性をJSONで表す地理データ形式です。GeoJSONSeqを含むファイルの読み込みや、テキストの直接入力ができます。',
 		icon: 'mdi:code-json'
 	},
 	{
@@ -283,7 +299,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'wkt',
 		dialogType: 'wkt',
 		label: 'WKT',
-		description: 'WKTファイルの読み込みや、WKTテキストの直接入力を行うフォームです。',
+		description:
+			'点・線・面の形状をテキストで表す形式です。WKTファイルや入力した文字列から図形を地図上に表示できます。',
 		icon: 'mdi:code-tags'
 	},
 	{
@@ -370,6 +387,13 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 			'複数ファイルで構成されたベクターデータです。`.shp` を中心に図形と属性をまとめて読み込むときに使います。'
 	},
 	{
+		id: 's57',
+		label: 'S-57 電子海図',
+		icon: 'mdi:map-marker-radius',
+		description:
+			'S-57の電子海図の基本ファイルと更新差分です。同じセルの一式を読み込み、更新を適用した点・線・面と測深値を地図に重ねられます。'
+	},
+	{
 		id: 'gpx',
 		label: 'GPX',
 		icon: 'mdi:map-marker-path',
@@ -391,11 +415,40 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 			'GPS機器の移動軌跡や計測値を記録したデータです。経路や時刻・標高・センサー値を地図上で確認するときに使います。'
 	},
 	{
+		id: 'nmea',
+		label: 'NMEA 0183',
+		icon: 'mdi:map-marker-path',
+		description:
+			'GNSS受信機や航海機器が位置・時刻・速度などを交換するための通信形式です。保存されたログのRMC・GGA・GLLから、移動軌跡や計測点を地図に表示できます。'
+	},
+	{
+		id: 'ais',
+		label: 'AISログ',
+		icon: 'mdi:ferry',
+		description:
+			'船舶自動識別装置（AIS）が送受信した船舶情報のログです。NMEA形式の位置報告を船舶ごとのポイントや航跡として表示できます。'
+	},
+	{
+		id: 'orbit',
+		label: 'TLE / OMM',
+		icon: 'mdi:satellite-variant',
+		description:
+			'人工衛星の軌道要素を記録する形式です。指定期間の衛星位置と地上軌跡を計算して表示します。OMMはJSON形式に対応します。'
+	},
+	{
+		id: 'czml',
+		dialogType: 'czml',
+		label: 'CZML',
+		icon: 'mdi:map-clock',
+		description:
+			'位置や形状などの時間変化をJSONで記述する形式です。位置・軌跡・ライン・ポリゴン・画像マーカー・3Dモデルを読み込み、時刻ごとに地図上で確認できます。'
+	},
+	{
 		id: 'gdb',
 		label: 'Garmin GDB',
 		icon: 'cib:garmin',
 		description:
-			'Garminの地図・GPSデータベースです。ルートやトラック、ウェイポイントを読み込むときに使います。'
+			'Garmin MapSourceなどで使われるGPSデータの保存形式です。ルート・トラック・ウェイポイントを読み込み、地図上に表示できます。'
 	},
 	{
 		id: 'osm',
@@ -437,14 +490,14 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		label: 'CityGML',
 		icon: 'mdi:file-outline',
 		description:
-			'都市モデルの形状と属性をXMLで表したデータです。建物を標高付きGeoJSONに変換して3D表示するときに使います。'
+			'都市の建物・地形などの形状と属性を記述するGML形式です。morivisでは建物を読み込み、詳細度（LOD）を選んで3D表示できます。'
 	},
 	{
 		id: 'kml',
 		label: 'KML / KMZ',
 		icon: 'mdi:earth',
 		description:
-			'地理データをXMLや圧縮パッケージで表した形式です。地物やスタイル、写真オーバーレイを読み込むときに使います。'
+			'地理的な位置と表示情報をXMLで記述するKMLと、その圧縮形式KMZです。地物や地図に重ねる画像、参照先の3Dモデルを読み込めます。'
 	},
 	{
 		id: 'csv',
@@ -555,7 +608,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'dxf',
 		label: 'DXF / DWG',
 		icon: 'mdi:vector-square',
-		description: 'CAD図面を表す形式です。図面上の線や注記を地図上で確認するときに使います。'
+		description:
+			'CAD図面を表す形式です。線・注記や3Dメッシュを地図上に配置して利用します。DWGは基本的なACISソリッドの表示にも対応します。'
 	},
 	{
 		id: 'dgn',
@@ -603,7 +657,14 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		label: 'LandXML',
 		icon: 'mdi:terrain',
 		description:
-			'土木測量や設計の地形情報を表すXML形式です。TINや線形、測点データを扱うときに使います。'
+			'土木設計・測量データを交換するXML形式です。morivisではTIN地表面を読み込み、3D地形・等高線・標高ラスターとして表示できます。'
+	},
+	{
+		id: 'opendrive',
+		label: 'OpenDRIVE',
+		icon: 'mdi:road-variant',
+		description:
+			'自動運転などのシミュレーションで使う、道路ネットワークの交換形式です。morivisでは道路の基準線と車線の面を読み込み、地図上に2D表示できます。'
 	},
 	{
 		id: 'mojxml',
@@ -637,7 +698,7 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		label: 'GeoPDF',
 		icon: 'mdi:file-pdf-box',
 		description:
-			'位置情報を持つPDF地図です。紙地図由来のラスタやベクターを読み込むときに使います。'
+			'地図座標との対応情報を含むPDFです。ページの画像や、PDF内の線・面などを地図に重ねて表示できます。'
 	},
 	{
 		id: 'pointcloud',
@@ -669,7 +730,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'obj',
 		label: 'Wavefront OBJ',
 		icon: 'mdi:cube-outline',
-		description: '3Dメッシュの交換形式です。建物や地形のモデル形状を読み込むときに使います。'
+		description:
+			'頂点・面・法線・テクスチャ座標などを記録するテキスト形式の3Dモデルです。MTLと画像を一緒に読み込むと、材質・テクスチャを使ったモデルを表示できます。'
 	},
 	{
 		id: '3ds',
@@ -688,7 +750,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'dae',
 		label: 'Collada DAE',
 		icon: 'mdi:vector-combine',
-		description: 'XMLベースの3Dモデル形式です。モデルと構造情報を読み込むときに使います。'
+		description:
+			'3Dモデル・材質・アニメーションなどをソフトウェア間で交換するXML形式です。DAEと参照画像を読み込み、3Dモデルとして表示できます。'
 	},
 	{
 		id: '3dm',
@@ -714,7 +777,8 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 		id: 'drc',
 		label: 'Draco DRC',
 		icon: 'mdi:cube-outline',
-		description: '圧縮された3Dメッシュ形式です。軽量化された3D形状を表示するときに使います。'
+		description:
+			'メッシュや点群の座標・属性を圧縮する形式です。morivisでは圧縮メッシュを展開して3Dモデルとして表示します。'
 	},
 	{
 		id: '3mf',
@@ -743,11 +807,18 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 			'三角形メッシュで形状を表す3Dモデル形式です。ASCII形式とバイナリ形式の造形データを読み込むときに使います。'
 	},
 	{
+		id: 'vtk',
+		label: 'VTK（メッシュ・構造格子）',
+		icon: 'mdi:vector-triangle',
+		description:
+			'メッシュと解析値を保持する科学技術データです。表面や体積セルの外表面を、スカラー値で色分けして地図上に配置します。'
+	},
+	{
 		id: 'ifc',
 		label: 'Industry Foundation Classes',
 		icon: 'mdi:office-building-cog',
 		description:
-			'BIMで使う建築モデル形式です。建物の部材や属性を含む3Dデータを読み込むときに使います。'
+			'建築・土木のBIM情報をソフトウェア間で交換する標準形式です。部材の形状と属性を読み込み、3Dで確認できます。'
 	},
 	{
 		id: 'bcf',

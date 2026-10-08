@@ -282,7 +282,6 @@ export class ModelLoader {
 
 				if (entry.format.mtlUrl) {
 					const mtlLoader = new MTLLoader(manager);
-					mtlLoader.setMaterialOptions({ side: THREE.DoubleSide });
 					mtlLoader.setResourcePath('');
 					mtlLoader.load(
 						entry.format.mtlUrl,

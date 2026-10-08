@@ -59,6 +59,10 @@
 		]
 	},
 	{
+		"id": "csw",
+		"extensions": []
+	},
+	{
 		"id": "stac",
 		"extensions": []
 	},
@@ -185,6 +189,10 @@
 		]
 	},
 	{
+		"id": "s57",
+		"extensions": [".000"]
+	},
+	{
 		"id": "gpx",
 		"extensions": [
 			".gpx"
@@ -201,6 +209,22 @@
 		"extensions": [
 			".fit"
 		]
+	},
+	{
+		"id": "nmea",
+		"extensions": [".nmea", ".nme", ".log", ".txt"]
+	},
+	{
+		"id": "ais",
+		"extensions": [".ais", ".nmea", ".nme", ".log", ".txt"]
+	},
+	{
+		"id": "orbit",
+		"extensions": [".tle", ".omm", ".txt", ".json"]
+	},
+	{
+		"id": "czml",
+		"extensions": [".czml", ".json"]
 	},
 	{
 		"id": "gdb",
@@ -415,6 +439,12 @@
 		]
 	},
 	{
+		"id": "opendrive",
+		"extensions": [
+			".xodr"
+		]
+	},
+	{
 		"id": "mojxml",
 		"extensions": [
 			".xml"
@@ -560,6 +590,10 @@
 		"extensions": [
 			".stl"
 		]
+	},
+	{
+		"id": "vtk",
+		"extensions": [".vtk", ".vtp", ".vtu", ".vti", ".vtr", ".vts"]
 	},
 	{
 		"id": "ifc",

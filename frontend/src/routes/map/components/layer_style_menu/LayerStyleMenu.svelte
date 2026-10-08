@@ -2,7 +2,6 @@
 	import { fly } from 'svelte/transition';
 
 	import InfoControl from './InfoControl.svelte';
-	import ModelOptionMenu from './ModelOptionMenu.svelte';
 	import OpacityControl from './OpacityControl.svelte';
 
 	import UiCloseIcon from '$lib/components/svgs/icons/ui/CloseIcon.svelte';
@@ -115,7 +114,13 @@
 						{/if}
 
 						{#if layerEntry.type === 'model'}
-							<ModelOptionMenu bind:layerEntry bind:showColorOption bind:showDimensionOption />
+							{#await import('./ModelOptionMenu.svelte')}
+								<p role="status">読み込み中…</p>
+							{:then { default: ModelOptionMenu }}
+								<ModelOptionMenu bind:layerEntry bind:showColorOption bind:showDimensionOption />
+							{:catch}
+								<p role="alert">3D設定を読み込めませんでした。設定画面を開き直してください。</p>
+							{/await}
 						{/if}
 
 						<InfoControl {layerEntry} />

@@ -1,0 +1,9 @@
+<OpenDRIVE>
+  <header revMajor="1" revMinor="8" name="test-curves"/>
+  <road id="test-line" length="10"><planView><geometry s="0" x="0" y="0" hdg="0" length="10"><line/></geometry></planView></road>
+  <road id="test-arc" length="15.707963267948966"><planView><geometry s="0" x="0" y="0" hdg="0" length="15.707963267948966"><arc curvature="0.1"/></geometry></planView></road>
+  <road id="test-spiral" length="20"><planView><geometry s="0" x="0" y="0" hdg="0" length="20"><spiral curvStart="0" curvEnd="0.1"/></geometry></planView></road>
+  <road id="test-poly3" length="10"><planView><geometry s="0" x="0" y="0" hdg="0" length="10"><poly3 a="0" b="1" c="0" d="0"/></geometry></planView></road>
+  <road id="test-param-normalized" length="20"><planView><geometry s="0" x="0" y="0" hdg="0" length="20"><paramPoly3 aU="0" bU="10" cU="10" dU="0" aV="0" bV="0" cV="0" dV="0" pRange="normalized"/></geometry></planView><lanes><laneSection s="0"><left><lane id="1" type="driving"><width sOffset="0" a="1" b="0.1" c="0" d="0"/></lane></left></laneSection></lanes></road>
+  <road id="test-param-arc" length="10"><planView><geometry s="0" x="0" y="0" hdg="0" length="10"><paramPoly3 aU="0" bU="0.5" cU="0.05" dU="0" aV="0" bV="0" cV="0" dV="0" pRange="arcLength"/></geometry></planView></road>
+</OpenDRIVE>

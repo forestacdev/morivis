@@ -185,6 +185,39 @@ describe('computeUploadedModelMeta', () => {
 		}
 	});
 
+	it('位置と寸法を保持する指定では小さいモデルを自動拡大しない', async () => {
+		const { computeUploadedModelMeta } = await import('./model-bounds');
+		const file = new File([
+			'solid test-small\nfacet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 0.2 0 0\nvertex 0 0.2 0\nendloop\nendfacet\nendsolid test-small'
+		], 'test-small.stl');
+		const params = {
+			file,
+			format: 'stl' as const,
+			style: {
+				transform: {
+					lng: 2,
+					lat: 1,
+					altitude: 0,
+					heightOffset: 0,
+					heightScale: 1,
+					baseScale: 1,
+					baseRotationX: 0,
+					baseRotationY: 0,
+					baseRotationZ: 0,
+					scale: 1,
+					rotationX: 0,
+					rotationY: 0,
+					rotationZ: 0
+				}
+			}
+		};
+		const ordinary = await computeUploadedModelMeta(params);
+		const located = await computeUploadedModelMeta({ ...params, preserveScale: true });
+		expect(ordinary.scaleMultiplier).toBeGreaterThan(1);
+		expect(located.scaleMultiplier).toBe(1);
+		expect(located.localMaxDimension).toBeCloseTo(0.2);
+	});
+
 	it('GLB fixture から bounds とスケール情報を計算できる', async () => {
 		const { computeUploadedModelMeta } = await import('./model-bounds');
 		const file = readFixtureFile('box.glb');

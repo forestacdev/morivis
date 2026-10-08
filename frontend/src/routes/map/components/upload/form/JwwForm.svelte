@@ -2,15 +2,18 @@
 	import turfBbox from '@turf/bbox';
 	import { untrack } from 'svelte';
 
+	import { getUploadPreview } from '../preview-context';
 	import CadLayerSelect from './CadLayerSelect.svelte';
+	import GeometryTypeSelect from './GeometryTypeSelect.svelte';
 	import type { PendingZoneGeoRefData, TransformOptionMode } from './pending-zone-vector';
-
 	import {
-		buildDxfStyle,
-		createGeoJsonEntry,
-		filterByGeometryType,
-		getGeometryTypes
-	} from '$routes/map/data/entries/vector';
+		createVectorEntryGroup,
+		filterByGeometryTypes,
+		prepareVectorEntryGroups,
+		type VectorEntryGroup
+	} from './vector-entry-group';
+
+	import { buildDxfStyle, getGeometryTypes } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
@@ -47,16 +50,16 @@
 	const formatLabel = $derived(/\.jwc$/i.test(file?.name ?? '') ? 'JWC' : 'JWW');
 	let parsed = $state.raw<JwwParseResult | null>(null);
 	let errorMessage = $state('');
-	let geometryType = $state<VectorEntryGeometryType>('LineString');
+	const showPreviewEntries = getUploadPreview();
+	let selectedTypes = $state<VectorEntryGeometryType[]>([]);
 	let selectedLayers = $state<string[]>([]);
-	const labels = { LineString: '線・円弧・寸法線', Point: '点・文字', Polygon: '塗りつぶし' };
 	const geometryTypes = $derived(parsed ? getGeometryTypes(parsed.geojson) : []);
 	const selected = $derived.by((): FeatureCollection | null => {
 		if (!parsed) return null;
 		const keys = new Set(selectedLayers);
 		return {
 			type: 'FeatureCollection',
-			features: filterByGeometryType(parsed.geojson, geometryType).features.filter((feature) =>
+			features: filterByGeometryTypes(parsed.geojson, selectedTypes).features.filter((feature) =>
 				keys.has(String(feature.properties.layer))
 			)
 		};
@@ -73,8 +76,7 @@
 	});
 	let pending: {
 		data: FeatureCollection;
-		geometryType: VectorEntryGeometryType;
-		file: File;
+		groups: VectorEntryGroup[];
 	} | null = null;
 
 	// The dropped File is external input. Cancel the worker on replacement or dialog close.
@@ -91,7 +93,7 @@
 				if (controller.signal.aborted) return;
 				parsed = result;
 				const types = getGeometryTypes(result.geojson);
-				geometryType = types.includes('LineString') ? 'LineString' : types[0];
+				selectedTypes = types;
 				selectedLayers = result.layers.filter((layer) => layer.visible).map((layer) => layer.key);
 			})
 			.catch((error) => {
@@ -112,19 +114,18 @@
 		const style = buildDxfStyle(data, type, [
 			...new Set(data.features.flatMap((feature) => Object.keys(feature.properties)))
 		]);
-		if (type === 'Point' && data.features.some((feature) => feature.properties.type === 'TEXT')) {
-			style.labels.key = 'text';
-			style.labels.show = true;
-		}
+
 		return style;
 	};
 	const openPlacement = () => {
 		if (!selected?.features.length || !file || $isProcessing) return;
-		pending = { data: selected, geometryType, file };
+		const name = file.name.replace(/\.[^.]+$/, '');
+		const groups = prepareVectorEntryGroups(selected, name, 'Jw_cad', getStyle);
+		pending = { data: selected, groups };
 		pendingZoneGeoRefData = {
 			featureCollection: selected,
-			entryName: file.name.replace(/\.[^.]+$/, ''),
-			vectorStyle: getStyle(selected, geometryType),
+			entryName: name,
+			vectorGroups: groups,
 			attribution: 'Jw_cad'
 		};
 		zoneConfirmedEpsg = null;
@@ -143,16 +144,9 @@
 			if (input !== pending) return;
 			const bbox = turfBbox(data) as [number, number, number, number];
 			if (!isBboxValid(bbox)) throw new Error('座標変換に失敗しました。座標系を確認してください');
-			const entry = await createGeoJsonEntry(
-				data,
-				input.geometryType,
-				input.file.name.replace(/\.[^.]+$/, ''),
-				bbox,
-				getStyle(data, input.geometryType),
-				{ attribution: 'Jw_cad' }
-			);
-			if (input !== pending || !entry) return;
-			showDataEntry = entry;
+			const entries = await createVectorEntryGroup(data, input.groups);
+			if (input !== pending) return;
+			showPreviewEntries(entries);
 			transformOptionMode = null;
 			pendingZoneGeoRefData = null;
 			dropFile = null;
@@ -191,16 +185,11 @@
 	</div>
 	{#if errorMessage}<p role="alert" class="text-sm text-red-400">{errorMessage}</p>{/if}
 	{#if parsed}
-		<label class="flex flex-col gap-2 text-sm">
-			<span>登録する図形</span>
-			<select
-				bind:value={geometryType}
-				disabled={$isProcessing}
-				class="rounded border border-white/20 bg-[#252525] px-3 py-2"
-			>
-				{#each geometryTypes as type (type)}<option value={type}>{labels[type]}</option>{/each}
-			</select>
-		</label>
+		<GeometryTypeSelect
+			options={geometryTypes}
+			bind:selected={selectedTypes}
+			disabled={$isProcessing}
+		/>
 		<CadLayerSelect
 			label="レイヤーグループ / レイヤー"
 			items={parsed.layers.map((layer) => ({
@@ -228,13 +217,13 @@
 	{:else if $isProcessing}<p role="status" class="text-sm text-gray-400">
 			図面を解析しています…
 		</p>{/if}
-	<div class="flex justify-end gap-3 border-t border-white/10 pt-3">
-		<button type="button" class="rounded px-4 py-2 text-sm hover:bg-white/10" onclick={cancel}
+	<div class="flex shrink-0 justify-center gap-4 pt-2">
+		<button type="button" class="c-btn-sub cursor-pointer p-4 text-lg" onclick={cancel}
 			>キャンセル</button
 		>
 		<button
 			type="button"
-			class="rounded bg-blue-600 px-4 py-2 text-sm text-white disabled:opacity-40"
+			class="c-btn-confirm min-w-[200px] cursor-pointer p-4 text-lg disabled:cursor-not-allowed disabled:opacity-50"
 			disabled={$isProcessing || !selectedData?.features.length}
 			onclick={openPlacement}>位置を設定して登録</button
 		>

@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { expect, test } from './map-test';
 
 test.beforeEach(async ({ page }) => {
 	// 動画と無関係な初期索引の外部配信にテストを依存させない。

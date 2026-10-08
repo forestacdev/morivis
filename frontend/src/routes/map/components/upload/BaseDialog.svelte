@@ -38,6 +38,7 @@
 		remoteFeatureServiceUrl: string | null;
 		remoteArcGisUrl: string | null;
 		remoteStacUrl: string | null;
+		remoteCswUrl: string | null;
 		pendingTileUrl: string | null;
 		focusBbox: [number, number, number, number] | null;
 		isDragover: boolean;
@@ -63,6 +64,7 @@
 		remoteFeatureServiceUrl = $bindable(),
 		remoteArcGisUrl = $bindable(),
 		remoteStacUrl = $bindable(),
+		remoteCswUrl = $bindable(),
 		pendingTileUrl = $bindable(),
 		focusBbox = $bindable(),
 		isDragover = $bindable(),
@@ -133,6 +135,7 @@
 					bind:remoteFeatureServiceUrl
 					bind:remoteArcGisUrl
 					bind:remoteStacUrl
+					bind:remoteCswUrl
 					bind:pendingTileUrl
 					bind:focusBbox
 					bind:zoneConfirmedEpsg
@@ -180,6 +183,7 @@
 						bind:remoteFeatureServiceUrl
 						bind:remoteArcGisUrl
 						bind:remoteStacUrl
+						bind:remoteCswUrl
 						bind:pendingTileUrl
 						bind:focusBbox
 						bind:zoneConfirmedEpsg

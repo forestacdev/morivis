@@ -1,6 +1,7 @@
 import { format3dm } from './3dm/definition';
 import { format3ds } from './3ds/definition';
 import { format3mf } from './3mf/definition';
+import { formatAis } from './ais/definition';
 import { formatAmf } from './amf/definition';
 import { formatArcgis } from './arcgis/definition';
 import { formatAsciiGrid } from './ascii-grid/definition';
@@ -10,6 +11,8 @@ import { formatCedxm } from './cedxm/definition';
 import { formatCitygml } from './citygml/definition';
 import { formatCityjson } from './cityjson/definition';
 import { formatCsv } from './csv/definition';
+import { formatCsw } from './csw/definition';
+import { formatCzml } from './czml/definition';
 import { formatDae } from './dae/definition';
 import { formatDgn } from './dgn/definition';
 import { formatDm } from './dm/definition';
@@ -54,7 +57,10 @@ import { formatMca } from './mca/definition';
 import { formatMif } from './mif/definition';
 import { formatMojxml } from './mojxml/definition';
 import { formatNc } from './netcdf/definition';
+import { formatNmea } from './nmea/definition';
 import { formatObj } from './obj/definition';
+import { formatOpenDrive } from './opendrive/definition';
+import { formatOrbit } from './orbit/definition';
 import { formatOsm } from './osm/definition';
 import { formatPmtiles } from './pmtiles/definition';
 import { formatPmx } from './pmx/definition';
@@ -63,6 +69,7 @@ import { formatPptx } from './pptx/definition';
 import { formatRaster } from './raster/definition';
 import { formatRik } from './rik/definition';
 import { formatRoblox } from './roblox/definition';
+import { formatS57 } from './s57/definition';
 import { formatShp } from './shp/definition';
 import { formatSim } from './sima/definition';
 import { formatSpz } from './spz/definition';
@@ -81,6 +88,7 @@ import { formatVector } from './vector/definition';
 import { formatVideo } from './video/definition';
 import { formatVrm } from './vrm/definition';
 import { formatVrml } from './vrml/definition';
+import { formatVtk } from './vtk/definition';
 import { formatWcs } from './wcs/definition';
 import { formatWkt } from './wkt/definition';
 import { formatWmts } from './wmts/definition';
@@ -97,6 +105,7 @@ export const FORMAT_DEFINITIONS = {
 	'mbtiles': formatMbtiles,
 	'3dtiles': format3dtiles,
 	'stac': formatStac,
+	'csw': formatCsw,
 	'geozarr': formatGeoZarr,
 	'geojson': formatGeojson,
 	'geojsonseq': formatGeojsonseq,
@@ -113,9 +122,14 @@ export const FORMAT_DEFINITIONS = {
 	'sqlite': formatSqlite,
 	'filegdb': formatFilegdb,
 	'shp': formatShp,
+	's57': formatS57,
 	'gpx': formatGpx,
 	'tcx': formatTcx,
 	'fit': formatFit,
+	'nmea': formatNmea,
+	'ais': formatAis,
+	'czml': formatCzml,
+	'orbit': formatOrbit,
 	'gdb': formatGdb,
 	'osm': formatOsm,
 	'georss': formatGeorss,
@@ -147,6 +161,7 @@ export const FORMAT_DEFINITIONS = {
 	'mt': formatMt,
 	'dm': formatDm,
 	'landxml': formatLandxml,
+	'opendrive': formatOpenDrive,
 	'mojxml': formatMojxml,
 	'geophoto': formatGeophoto,
 	'video': formatVideo,
@@ -168,6 +183,7 @@ export const FORMAT_DEFINITIONS = {
 	'amf': formatAmf,
 	'step-iges': formatStepIges,
 	'stl': formatStl,
+	'vtk': formatVtk,
 	'ifc': formatIfc,
 	'bcf': formatBcf,
 	'vrm': formatVrm,

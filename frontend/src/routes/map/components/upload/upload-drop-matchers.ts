@@ -6,6 +6,8 @@ const PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.heic', '.heif'];
 const XML_EXTENSION = '.xml';
 
 export const CAD_MODEL_FILE_EXTENSIONS = FORMAT_DEFINITIONS['step-iges'].extensions;
+export const OPENDRIVE_FILE_EXTENSIONS = FORMAT_DEFINITIONS.opendrive.extensions;
+export const VTK_FILE_EXTENSIONS = FORMAT_DEFINITIONS.vtk.extensions;
 
 const MODEL_FORMATS = [
 	'glb',

@@ -48,6 +48,7 @@ export interface MeshModelEntryConfig extends BaseModelConfig {
 		rotationY?: number;
 	};
 	wireframe?: boolean;
+	faceSide?: MeshStyle['faceSide'];
 	showThroughTerrain?: boolean;
 	color?: string;
 	heightColorRamp?: {
@@ -75,6 +76,7 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 		opacity = 0.7,
 		transform,
 		wireframe = false,
+		faceSide = 'source',
 		showThroughTerrain = false,
 		color = '#ffffff',
 		heightColorRamp
@@ -108,6 +110,7 @@ export function createMeshModelEntry(config: MeshModelEntryConfig): MeshEntry<Me
 			type: 'mesh',
 			opacity,
 			wireframe,
+			faceSide,
 			showThroughTerrain,
 			color,
 			shading: { ...DEFAULT_MESH_SHADING },

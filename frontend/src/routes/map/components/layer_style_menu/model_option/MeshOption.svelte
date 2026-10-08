@@ -367,6 +367,24 @@
 		</div>
 	{/if}
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
+	<div class="my-2">
+		<p class="text-sm">描画面</p>
+		<BaseSelectMenu
+			items={[
+				{ key: 'source', name: '元データに従う' },
+				{ key: 'double', name: '両面' },
+				{ key: 'front', name: '表面のみ' }
+			]}
+			bind:selectedKey={
+				() => layerEntry.style.faceSide ?? 'source',
+				(value) => {
+					if (value === 'source' || value === 'double' || value === 'front') {
+						layerEntry.style.faceSide = value;
+					}
+				}
+			}
+		/>
+	</div>
 	{#if isFbx}
 		<Switch
 			label="FBXテキストを表示"

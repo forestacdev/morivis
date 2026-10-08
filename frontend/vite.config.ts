@@ -3,6 +3,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import path from 'path';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { qrcode } from 'vite-plugin-qrcode';
+import { cesiumAssetsPlugin } from './scripts/cesium-assets-plugin';
 import { lazySvelteKitPWA } from './scripts/pwa-precache';
 import { robloxAssetsPlugin } from './scripts/roblox-assets-plugin';
 import { buildViteProxyConfig } from './src/routes/map/utils/platform/proxy';
@@ -24,6 +25,7 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 	const lazyPrecacheIgnores = [
 		'**/*.wasm',
+		'client/minecraft/**',
 		'client/_app/immutable/workers/**',
 		'client/{draco,basis,rhino3dm,web-ifc,vendor}/**'
 	];
@@ -33,6 +35,12 @@ export default defineConfig(({ mode }) => {
 		// reloads the page on discovery and discards the user's uploaded point cloud.
 		optimizeDeps: {
 			include: [
+				'satellite.js',
+				'ais-stream-decoder/dist/ais-bitfield',
+				'ais-stream-decoder/dist/messages/ais-message-123',
+				'ais-stream-decoder/dist/messages/ais-message-18',
+				'ais-stream-decoder/dist/messages/ais-message-5',
+				'ais-stream-decoder/dist/messages/ais-message-24',
 				'three/addons/objects/MarchingCubes.js',
 				'occt-import-js',
 				'@cornerstonejs/codec-openjpeg/decodewasmjs',
@@ -40,6 +48,7 @@ export default defineConfig(({ mode }) => {
 			]
 		},
 		plugins: [
+			cesiumAssetsPlugin(),
 			diaperCssOverridePlugin,
 			robloxAssetsPlugin(env.ROBLOX_API_KEY),
 			sveltekit(),
@@ -131,6 +140,15 @@ export default defineConfig(({ mode }) => {
 						options: {
 							cacheName: 'morivis-lazy-modules',
 							expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 },
+							cacheableResponse: { statuses: [200] }
+						}
+					}, {
+						urlPattern: ({ url, sameOrigin }) =>
+							sameOrigin && /^\/(?:morivis\/)?minecraft\//.test(url.pathname),
+						handler: 'StaleWhileRevalidate',
+						options: {
+							cacheName: 'morivis-minecraft-resources',
+							expiration: { maxEntries: 5000, maxAgeSeconds: 30 * 24 * 60 * 60 },
 							cacheableResponse: { statuses: [200] }
 						}
 					}]

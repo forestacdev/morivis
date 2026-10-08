@@ -31,7 +31,8 @@ import {
 	type VolumeRegion
 } from './volume-mesh';
 
-export const GEOZARR_VOXEL_LAYER_ID = 'geozarr-voxel-layer';
+import { GEOZARR_VOXEL_LAYER_ID } from './constants';
+export { GEOZARR_VOXEL_LAYER_ID } from './constants';
 type VoxelRegion = {
 	kind: 'voxel';
 	bytes: number;

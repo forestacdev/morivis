@@ -30,6 +30,7 @@ export interface MapStyleInput {
 	entries: MorivisLayerEntry[];
 	mcaGridEntries: MorivisLayerEntry[];
 	showDataEntry: MorivisLayerEntry | null;
+	previewEntries?: MorivisLayerEntry[];
 	baseMap: BaseMapType | null;
 	showHillshade: boolean;
 	showStreetView: boolean;
@@ -92,6 +93,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		zoneBboxGeojsonData,
 		searchGeojsonData
 	} = input;
+	const previewEntries = input.previewEntries ?? (showDataEntry ? [showDataEntry] : []);
 	const { prepared, previewPrepared, referenceStyle, contourDem } = resources;
 	const previewOptions = {
 		mode: 'preview',
@@ -128,9 +130,9 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 			}
 		}));
 
-	let previewSources = showDataEntry
+	let previewSources = previewEntries.length
 		? createSourcesItems({
-			entries: [showDataEntry],
+			entries: previewEntries,
 			prepared: previewPrepared,
 			...previewOptions
 		})
@@ -162,7 +164,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		};
 	}
 	const previewResult = createLayersItems({
-		entries: showDataEntry ? [showDataEntry] : [],
+		entries: previewEntries,
 		...previewOptions
 	});
 	let previewLayers = previewResult.layers;
@@ -407,8 +409,10 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 	return {
 		style: mapStyle,
 		voxelSpecs: [
-			...(!isIsolatedPreview ? entries.filter(e => e.id !== showDataEntry?.id) : []),
-			...(showDataEntry ? [showDataEntry] : [])
+			...(!isIsolatedPreview
+				? entries.filter(e => !previewEntries.some(preview => preview.id === e.id))
+				: []),
+			...previewEntries
 		].filter(isGeoZarrVoxelEntry).map(createVoxelSpec),
 		metadata: {
 			clickableVectorIds: mainResult.clickableVectorIds,

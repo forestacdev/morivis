@@ -1,0 +1,9 @@
+[
+  {"id":"document","version":"1.0","clock":{"interval":"2024-01-02T00:00:00Z/2024-01-02T00:00:20Z","currentTime":"2024-01-02T00:00:05Z"}},
+  {"id":"test-billboard","position":{"epoch":"2024-01-02T00:00:00Z","cartographicDegrees":[0,2.5,1.25,10,10,2.5001,1.2501,20,20,2.5002,1.2502,30]},
+   "billboard":{
+     "image":[{"interval":"2024-01-02T00:00:00Z/2024-01-02T00:00:10Z","uri":"test-billboard-red.png"},{"interval":"2024-01-02T00:00:10Z/2024-01-02T00:00:20Z","uri":"test-billboard-blue.png"}],
+     "width":80,"height":40,"scale":1,"pixelOffset":{"cartesian2":[0,0]},"horizontalOrigin":"CENTER","verticalOrigin":"CENTER",
+     "show":[{"interval":"2024-01-02T00:00:00Z/2024-01-02T00:00:10Z","boolean":true},{"interval":"2024-01-02T00:00:10Z/2024-01-02T00:00:15Z","boolean":false},{"interval":"2024-01-02T00:00:15Z/2024-01-02T00:00:20Z","boolean":true}]
+   }}
+]

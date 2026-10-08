@@ -61,6 +61,7 @@
 	let angleY = $state<number>(0);
 	let angleZ = $state<number>(0);
 	let showWireframe = $state<boolean>(false); // デバッグ用ワイヤーフレーム表示
+	let destroyed = false;
 
 	$effect(() => {
 		if (showWireframe) {
@@ -75,7 +76,7 @@
 
 	const textureCache = new TextureCache(textureLoader);
 
-	onMount(async () => {
+	onMount(() => {
 		if (!canvas) return;
 		const sizes = {
 			width: canvas.clientWidth,
@@ -148,11 +149,25 @@
 
 		renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+	});
 
-		// アニメーション
+	// 非表示時と破棄時には次のフレームを予約しない。
+	$effect(() => {
+		if (!$isStreetView || !showThreeCanvas || !renderer || !camera || !scene || !orbitControls)
+			return;
+		let frame = 0;
 		const animate = () => {
-			if (!isStreetView || !orbitControls || !camera || !renderer || !scene) return;
-			requestAnimationFrame(animate);
+			if (
+				destroyed ||
+				!$isStreetView ||
+				!showThreeCanvas ||
+				!orbitControls ||
+				!camera ||
+				!renderer ||
+				!scene
+			)
+				return;
+			frame = requestAnimationFrame(animate);
 			// if (!isRendering) return;
 
 			orbitControls.update();
@@ -187,7 +202,8 @@
 
 			renderer.render(scene, camera);
 		};
-		animate();
+		frame = requestAnimationFrame(animate);
+		return () => cancelAnimationFrame(frame);
 	});
 
 	// 外部からのcameraBearing変更を監視してカメラに反映
@@ -218,6 +234,10 @@
 		try {
 			const { angle, texture } = pointsData;
 			const newTexture = await textureCache.loadTexture(texture);
+			if (destroyed) {
+				textureCache.clearCache();
+				return;
+			}
 
 			// 次のテクスチャスロットを決定
 			const nextIndex = (currentTextureIndex + 1) % 3;
@@ -268,6 +288,10 @@
 		if (!pointsData || pointsData.length === 0) return;
 
 		textureCache.preloadTextures(pointsData.map((point) => point.texture)).then(() => {
+			if (destroyed) {
+				textureCache.clearCache();
+				return;
+			}
 			pointsData.forEach(async (pointData) => {
 				// 読み込み完了リストに追加
 				isLoadedNodeIdList = [...isLoadedNodeIdList, pointData.node_id];
@@ -286,6 +310,7 @@
 
 			// 1番目の読み込み完了を待ってから2番目以降を読み込む
 			loadTextureWithFade(pointsData[0]).then(() => {
+				if (destroyed) return;
 				isLoadedNodeIdList = [...isLoadedNodeIdList, node_id];
 				isLoading = false;
 				loadTextures(pointsData.slice(1));
@@ -316,6 +341,7 @@
 	};
 
 	onDestroy(() => {
+		destroyed = true;
 		// リサイズイベントのリスナーを削除
 		window.removeEventListener('resize', onResize);
 
@@ -352,6 +378,9 @@
 		uniforms.textureA.value?.dispose();
 		uniforms.textureB.value?.dispose();
 		uniforms.textureC.value?.dispose();
+		uniforms.textureA.value = null;
+		uniforms.textureB.value = null;
+		uniforms.textureC.value = null;
 	});
 </script>
 
@@ -367,7 +396,8 @@
 	{#if $isDebugMode}
 		<DebugControl bind:angleX bind:angleY bind:angleZ bind:showWireframe {streetViewPoint} />
 	{/if}
-	<canvas class="h-full w-full" bind:this={canvas}> </canvas>
+	<canvas aria-label="ストリートビューのパノラマ" class="h-full w-full" bind:this={canvas}>
+	</canvas>
 	{#if isLoading}
 		<div class="css-loading" transition:fade={{ duration: 150 }}>
 			<div class="css-spinner"></div>
@@ -379,6 +409,7 @@
 				style="top: calc(10px + env(safe-area-inset-top));"
 			>
 				<button
+					aria-label="ストリートビューを閉じる"
 					class="lg:bg-base group cursor-pointer rounded-full p-2 max-lg:text-white lg:text-black"
 					onclick={() => ($isStreetView = false)}
 					><EpBackIcon
@@ -421,7 +452,7 @@
 			<div class="rotate-x-60">
 				<div bind:this={controlDiv} class="pointer-events-none origin-center">
 					{#if nextPointData}
-						{#each nextPointData as point}
+						{#each nextPointData as point (point.featureData.properties.node_id)}
 							<!-- 自身のnode_idを除外 -->
 							{#if point.featureData.properties.node_id !== currentSceneId}
 								<button

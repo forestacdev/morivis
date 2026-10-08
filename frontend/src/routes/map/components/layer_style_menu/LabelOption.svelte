@@ -8,9 +8,10 @@
 
 	interface Props {
 		labels: Labels;
+		point?: boolean;
 	}
 
-	let { labels = $bindable() }: Props = $props();
+	let { labels = $bindable(), point = false }: Props = $props();
 
 	let showLabelOption = $state<boolean>(false);
 	// ラベルのキーの取得
@@ -24,6 +25,12 @@
 	{#if labels.show}
 		<div transition:slide={{ duration: 300 }}>
 			<LabelSelect bind:labels icon={'ci:font'} />
+			{#if point}
+				<Switch
+					label="ラベルのあるポイントを非表示"
+					bind:value={() => labels.hidePoint ?? false, (value) => (labels.hidePoint = value)}
+				/>
+			{/if}
 		</div>
 	{/if}
 	<!-- <div class="flex grow flex-col gap-2">

@@ -14,6 +14,7 @@ export type DialogProfile =
 	| 'feature-service'
 	| 'remote-wmts'
 	| 'remote-arcgis'
+	| 'remote-csw'
 	| 'remote-stac'
 	| 'remote-geozarr'
 	| 'tiles'
@@ -85,6 +86,11 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 		load: () => import('$routes/map/components/upload/form/FeatureServiceForm.svelte'),
 		profile: 'feature-service'
 	},
+	csw: {
+		load: () => import('$routes/map/components/upload/form/CswForm.svelte'),
+		profile: 'remote-csw',
+		fixedHeight: true
+	},
 	stac: {
 		load: () => import('$routes/map/components/upload/form/StacForm.svelte'),
 		profile: 'remote-stac'
@@ -151,6 +157,18 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	},
 	'step-iges': {
 		load: () => import('$routes/map/components/upload/form/StepIgesForm.svelte'),
+		profile: 'drop-file'
+	},
+	opendrive: {
+		load: () => import('./form/OpenDriveForm.svelte'),
+		profile: 'vector-zone-georef'
+	},
+	s57: {
+		load: () => import('./form/S57Form.svelte'),
+		profile: 'drop-file'
+	},
+	vtk: {
+		load: () => import('$routes/map/components/upload/form/VtkForm.svelte'),
 		profile: 'drop-file'
 	},
 	mca: {
@@ -244,6 +262,22 @@ export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDef
 	},
 	tcx: {
 		load: () => import('$routes/map/components/upload/form/TcxForm.svelte'),
+		profile: 'drop-file'
+	},
+	ais: {
+		load: () => import('$routes/map/components/upload/form/AisForm.svelte'),
+		profile: 'drop-file'
+	},
+	orbit: {
+		load: () => import('$routes/map/components/upload/form/OrbitForm.svelte'),
+		profile: 'drop-file'
+	},
+	czml: {
+		load: () => import('$routes/map/components/upload/form/CzmlForm.svelte'),
+		profile: 'drop-file'
+	},
+	nmea: {
+		load: () => import('$routes/map/components/upload/form/NmeaForm.svelte'),
 		profile: 'drop-file'
 	},
 	fit: {

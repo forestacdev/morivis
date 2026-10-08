@@ -41,6 +41,7 @@ import { buildMercatorModelMatrix } from './mercator-model-matrix';
 import { ModelInteractionController } from './model-interaction-controller';
 import { loadWebIfcModule, ModelLoader } from './model-loader';
 import { ModelMaterials } from './model-materials';
+import { applyModelNodeTransforms } from './model-node-transforms';
 import { ModelPlacementController } from './model-placement-controller';
 import { ModelRenderer } from './model-renderer';
 import { isMeshModelEntry, type LoadedModel } from './model-runtime-types';
@@ -532,12 +533,11 @@ export class ThreeJsLayerManager {
 				vertexColors: material.userData.morivisMinecraftMaterial === true
 					&& material.vertexColors,
 				opacity,
-				side: THREE.DoubleSide
+				side: material.side
 			});
 		}
 
 		const clonedMaterial = material.clone();
-		clonedMaterial.side = THREE.DoubleSide;
 		clonedMaterial.transparent = clonedMaterial.transparent || clonedMaterial.opacity < 1;
 		if ('wireframe' in clonedMaterial) {
 			clonedMaterial.wireframe = false;
@@ -777,6 +777,7 @@ export class ThreeJsLayerManager {
 					return;
 				}
 				this.pendingModelLoads.delete(entry.id);
+				applyModelNodeTransforms(model, entry);
 				model.visible = entry.style.visible ?? true;
 				model.userData.entryId = entry.id;
 				const loaded: LoadedModel = {
@@ -874,6 +875,7 @@ export class ThreeJsLayerManager {
 			const transform = this.calculateTransform(entry.style);
 			loaded.transform = transform;
 			loaded.entry = entry;
+			applyModelNodeTransforms(loaded.object, entry);
 			this.syncAnimationState(loaded);
 		});
 	}
@@ -1163,6 +1165,7 @@ export class ThreeJsLayerManager {
 		const loaded = this.loadedModels.get(entry.id);
 		if (!loaded) return;
 		loaded.entry = entry;
+		applyModelNodeTransforms(loaded.object, entry);
 		loaded.transform = this.calculateTransform(entry.style);
 		if (isMeshModelEntry(entry)) {
 			if (entry.format.type === 'ifc') {

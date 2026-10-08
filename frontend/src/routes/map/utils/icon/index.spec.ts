@@ -68,3 +68,35 @@ describe('写真のないPOIの代替アイコン', () => {
 		}
 	});
 });
+
+describe('元画像のアイコン', () => {
+	it('画像表を式へ含め、POI用の吹き出し生成を通さず元画像を登録する', async () => {
+		const image = { width: 32, height: 16 };
+		const uri = 'data:image/png;base64,dGVzdC1pbWFnZQ==';
+		const expression = buildGeneratedPoiIconExpression({
+			type: 'absolute',
+			urlKey: 'test-url',
+			imageIdKey: 'test-id',
+			rendering: 'original',
+			embeddedImages: { 'test-original': uri }
+		});
+		expect((expression as unknown[])[0]).toBe('match');
+		const id = (expression as unknown[])[3] as string;
+		expect(id).toBe(`original_icon:::test-original:::${uri}`);
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({ ok: true, blob: async () => new Blob(['test-image']) })
+		);
+		vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue(image));
+		const addImage = vi.fn();
+		try {
+			await resolveMissingStyleImage(
+				id,
+				{ hasImage: () => false, addImage } as unknown as MapLibreMapType
+			);
+			expect(addImage).toHaveBeenCalledExactlyOnceWith(id, image, { pixelRatio: 1 });
+		} finally {
+			vi.unstubAllGlobals();
+		}
+	});
+});

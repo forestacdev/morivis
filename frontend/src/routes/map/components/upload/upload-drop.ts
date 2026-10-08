@@ -1,10 +1,15 @@
+import { isAisCandidate, isAisFile } from '$routes/map/utils/formats/ais/files';
+import { isCzmlFile } from '$routes/map/utils/formats/czml/files';
 import { isGeoZarrZip, isLocalGeoZarrFolder } from '$routes/map/utils/formats/geozarr/local';
 import { isJp2File } from '$routes/map/utils/formats/jpeg2000/files';
 import { isMapInfoTab } from '$routes/map/utils/formats/mapinfo-tab/files';
 import { isMltFile } from '$routes/map/utils/formats/mlt';
 import { isLocalMvtInput } from '$routes/map/utils/formats/mvt';
+import { isNmeaCandidate, isNmeaFile } from '$routes/map/utils/formats/nmea/files';
+import { isOrbitFile } from '$routes/map/utils/formats/orbit/files';
 import { isOsmPbfFile } from '$routes/map/utils/formats/osm-pbf/files';
 import { isLocalRasterTileInput } from '$routes/map/utils/formats/raster-tiles';
+import { isS57File } from '$routes/map/utils/formats/s57/files';
 import { getShapefileDataset } from '$routes/map/utils/formats/shp/files';
 import { findLocalTilesetFiles } from '$routes/map/utils/formats/tiles3d';
 import JSZip from 'jszip';
@@ -45,7 +50,9 @@ import {
 	hasKnownExtension,
 	isGtfsTextSet,
 	isShapeFileRelated,
-	MODEL_FILE_EXTENSIONS
+	MODEL_FILE_EXTENSIONS,
+	OPENDRIVE_FILE_EXTENSIONS,
+	VTK_FILE_EXTENSIONS
 } from './upload-drop-matchers';
 
 export type UploadDropDecision =
@@ -145,6 +152,9 @@ const resolveXmlFiles = async (files: File[]): Promise<UploadDropDecision> => {
 
 	try {
 		const header = await targetFile.slice(0, 2000).text();
+		if (/<(?:[\w.-]+:)?OpenDRIVE(?:\s|>)/.test(header)) {
+			return createDialogDecision('opendrive');
+		}
 		if (/<CADIF(?:\s|>)/.test(header)) return createDialogDecision('cedxm');
 
 		if (hasGeoRssMarker(header)) {
@@ -216,9 +226,16 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	gpx: 'gpx',
 	tcx: 'tcx',
 	fit: 'fit',
+	nmea: 'nmea',
+	ais: 'ais',
+	czml: 'czml',
+	tle: 'orbit',
+	omm: 'orbit',
+	nme: 'nmea',
 	osm: 'osm',
 	gml: 'gml',
 	landxml: 'landxml',
+	xodr: 'opendrive',
 	bz2: 'hrit',
 	lrit: 'hrit',
 	hrit: 'hrit',
@@ -227,6 +244,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	dwg: 'dwg',
 	dxf: 'dxf',
 	dgn: 'dgn',
+	'000': 's57',
 	jww: 'jww',
 	jwc: 'jww',
 	sfc: 'sxf',
@@ -257,6 +275,12 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	'3mf': 'model',
 	amf: 'model',
 	stl: 'model',
+	vtk: 'vtk',
+	vtp: 'vtk',
+	vtu: 'vtk',
+	vti: 'vtk',
+	vtr: 'vtk',
+	vts: 'vtk',
 	step: 'step-iges',
 	stp: 'step-iges',
 	iges: 'step-iges',
@@ -420,6 +444,24 @@ const MULTI_FILE_RULES: UploadDropRule[] = [
 			createDialogDecision(
 				'step-iges',
 				files.filter(file => hasAnyExtension(file, CAD_MODEL_FILE_EXTENSIONS))
+			)
+	},
+	{
+		id: 'opendrive-files',
+		match: files => files.some(file => hasAnyExtension(file, OPENDRIVE_FILE_EXTENSIONS)),
+		resolve: async files =>
+			createDialogDecision(
+				'opendrive',
+				files.filter(file => hasAnyExtension(file, OPENDRIVE_FILE_EXTENSIONS))
+			)
+	},
+	{
+		id: 'vtk-files',
+		match: files => files.some(file => hasAnyExtension(file, VTK_FILE_EXTENSIONS)),
+		resolve: async files =>
+			createDialogDecision(
+				'vtk',
+				files.filter(file => hasAnyExtension(file, VTK_FILE_EXTENSIONS))
 			)
 	},
 	{
@@ -726,6 +768,36 @@ export const resolveDroppedFiles = async (
 	options: UploadDropOptions = {}
 ): Promise<UploadDropDecision> => {
 	const files = Array.isArray(input) ? input : [input];
+	// 更新単独でもフォームで基本セル不足を説明し、同じ入力欄から一式を選び直せる。
+	if (files.some(isS57File)) return createDialogDecision('s57', files.filter(isS57File));
+	const czmlCandidates = files.filter(file => /\.(?:czml|json)$/i.test(file.name));
+	if (czmlCandidates.length) {
+		const matches = await Promise.all(
+			czmlCandidates.map(async file => ({ file, matched: await isCzmlFile(file) }))
+		);
+		const documents = matches.filter(item => item.matched).map(item => item.file);
+		if (documents.length) return createDialogDecision('czml', files);
+	}
+	const orbitCandidates = files.filter(file => /\.(?:tle|omm|txt|json)$/i.test(file.name));
+	if (orbitCandidates.length && !isGtfsTextSet(files)) {
+		const matches = await Promise.all(orbitCandidates.map(isOrbitFile));
+		const documents = orbitCandidates.filter((_, index) => matches[index]);
+		if (documents.length) return createDialogDecision('orbit', documents);
+	}
+	const aisCandidates = files.filter(isAisCandidate);
+	if (aisCandidates.length && !isGtfsTextSet(files)) {
+		const matches = await Promise.all(aisCandidates.map(isAisFile));
+		const logs = aisCandidates.filter((_, index) => matches[index]);
+		if (logs.length) return createDialogDecision('ais', logs);
+	}
+	const nmeaCandidates = files.filter(isNmeaCandidate);
+	if (nmeaCandidates.length && !isGtfsTextSet(files)) {
+		const matches = await Promise.all(
+			nmeaCandidates.map(async file => ({ file, matched: await isNmeaFile(file) }))
+		);
+		const logs = matches.filter(item => item.matched).map(item => item.file);
+		if (logs.length) return createDialogDecision('nmea', logs);
+	}
 	if (isLocalGeoZarrFolder(files)) return createDialogDecision('geozarr', files);
 	// MCAは同じワールドのリージョン一式を専用フォームへ渡す。
 	if (files.some((file) => hasExtension(file, '.mca'))) {
@@ -760,6 +832,25 @@ export const resolveDroppedFiles = async (
 		);
 		const cityJsonFiles = matches.filter(item => item.matched).map(item => item.file);
 		if (cityJsonFiles.length) return createDialogDecision('cityjson', cityJsonFiles);
+	}
+	// .xml保存のOpenDRIVEも、.xodrとの混在やZIP展開後に同じ一式へまとめる。
+	const openDriveXml = files.filter(file => /\.xml$/i.test(file.name));
+	if (openDriveXml.length) {
+		const matches = await Promise.all(
+			openDriveXml.map(async file => ({
+				file,
+				matched: /<(?:[\w.-]+:)?OpenDRIVE(?:\s|>)/.test(await file.slice(0, 2000).text())
+			}))
+		);
+		const xmlFiles = new Set(matches.filter(item => item.matched).map(item => item.file));
+		if (xmlFiles.size) {
+			return createDialogDecision(
+				'opendrive',
+				files.filter(file =>
+					hasAnyExtension(file, OPENDRIVE_FILE_EXTENSIONS) || xmlFiles.has(file)
+				)
+			);
+		}
 	}
 	// 汎用GML・XMLより先にCityGMLを判定する。ZIP展開後も同じ入口を通す。
 	const cityGmlCandidates = files.filter((file) => /\.(?:gml|xml|citygml)$/i.test(file.name));

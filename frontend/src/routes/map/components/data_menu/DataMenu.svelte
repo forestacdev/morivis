@@ -35,6 +35,7 @@
 		remoteFeatureServiceUrl: string | null;
 		remoteArcGisUrl: string | null;
 		remoteStacUrl: string | null;
+		remoteCswUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -51,6 +52,7 @@
 		remoteFeatureServiceUrl = $bindable(),
 		remoteArcGisUrl = $bindable(),
 		remoteStacUrl = $bindable(),
+		remoteCswUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -345,6 +347,7 @@
 				bind:remoteFeatureServiceUrl
 				bind:remoteArcGisUrl
 				bind:remoteStacUrl
+				bind:remoteCswUrl
 				bind:pendingTileUrl
 			/>
 		{/if}

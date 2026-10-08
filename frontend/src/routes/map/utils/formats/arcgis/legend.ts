@@ -82,7 +82,7 @@ export const arcGisLegendToImageLegend = (
 		}
 		if (urls.length) categories.push({ name, urls, labels });
 	}
-	return categories.length ? { type: 'image', layout: 'symbols', categories } : undefined;
+	return categories.length ? { type: 'image', categories } : undefined;
 };
 
 export const fetchArcGisLegend = async (

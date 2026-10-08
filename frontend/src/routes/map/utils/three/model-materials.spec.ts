@@ -4,6 +4,67 @@ import { createTestModel } from './__fixtures__/test-model-runtime';
 import { ModelMaterials } from './model-materials';
 
 describe('ModelMaterials', () => {
+	it('材質ごとの描画面を保持し、両面・表面のみから元データへ戻せる', () => {
+		const { entry, object } = createTestModel();
+		const mesh = object.children[0] as THREE.Mesh;
+		(mesh.material as THREE.Material).dispose();
+		const sides = [THREE.FrontSide, THREE.DoubleSide, THREE.BackSide] as const;
+		mesh.material = sides.map(side => new THREE.MeshBasicMaterial({ side }));
+		entry.style.edge = { enabled: true, color: '#000000', thickness: 0.01 };
+		const materials = new ModelMaterials();
+		// 古い保存データでプロパティがない場合も、元の材質を使う。
+		delete entry.style.faceSide;
+		materials.applyStyleToObject(object, entry.style, 'gltf');
+		const shaders = mesh.material as THREE.ShaderMaterial[];
+		const overlay = mesh.children.find(child =>
+			child.userData.morivisEdgeOverlay
+		) as THREE.Mesh;
+		const edgeMaterials = overlay.material as THREE.ShaderMaterial[];
+		expect(shaders.map(material => material.side)).toEqual(sides);
+		expect(edgeMaterials.map(material => material.side)).toEqual(sides);
+
+		for (
+			const [faceSide, expected] of [
+				['double', sides.map(() => THREE.DoubleSide)],
+				['front', sides.map(() => THREE.FrontSide)],
+				['source', sides]
+			] as const
+		) {
+			entry.style.faceSide = faceSide;
+			materials.applyStyleToObject(object, entry.style, 'gltf');
+			expect(mesh.material).toBe(shaders);
+			expect(shaders.map(material => material.side)).toEqual(expected);
+			expect(edgeMaterials.map(material => material.side)).toEqual(expected);
+		}
+		const versions = shaders.map(material => material.version);
+		expect(versions.every(version => version > 0)).toBe(true);
+		materials.applyStyleToObject(object, entry.style, 'gltf');
+		expect(shaders.map(material => material.version)).toEqual(versions);
+		materials.disposeModelObject(object);
+	});
+
+	it('表面のみでは裏から選択されず、両面へ変更すると選択できる', () => {
+		const { entry, object } = createTestModel();
+		const mesh = object.children[0] as THREE.Mesh;
+		mesh.geometry.dispose();
+		mesh.geometry = new THREE.PlaneGeometry(2, 2);
+		const materials = new ModelMaterials();
+		const backRay = new THREE.Raycaster(
+			new THREE.Vector3(0.1, 0.2, -2),
+			new THREE.Vector3(0, 0, 1)
+		);
+		const frontRay = new THREE.Raycaster(
+			new THREE.Vector3(0.1, 0.2, 2),
+			new THREE.Vector3(0, 0, -1)
+		);
+		for (const faceSide of ['source', 'double', 'front', 'source'] as const) {
+			materials.applyStyleToObject(object, { ...entry.style, faceSide }, 'fbx');
+			expect(backRay.intersectObject(mesh).length > 0).toBe(faceSide === 'double');
+			expect(frontRay.intersectObject(mesh)).toHaveLength(1);
+		}
+		materials.disposeModelObject(object);
+	});
+
 	it('材質を再利用してstyleを更新し、形状・モーフ状態・親を保つ', () => {
 		const { entry, object } = createTestModel();
 		const mesh = object.children[0] as THREE.Mesh;

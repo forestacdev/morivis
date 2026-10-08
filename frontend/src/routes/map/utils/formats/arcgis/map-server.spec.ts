@@ -160,7 +160,6 @@ describe('ArcGIS凡例の正規化', () => {
 		}, serviceUrl);
 		expect(legend).toEqual({
 			type: 'image',
-			layout: 'symbols',
 			categories: [{
 				name: 'test-layer',
 				labels: ['test-embedded', 'test-layer'],

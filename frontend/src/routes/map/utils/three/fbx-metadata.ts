@@ -61,6 +61,11 @@ interface ParsedFbxMetadata {
 	geometryTypes: Record<string, number>;
 }
 
+/** ファイル名やCAD属性では推測せず、生成ソフトの明示情報だけで判定する。 */
+export const isNavisworksFbx = (metadata: FbxFileMetadata): boolean =>
+	[metadata.creator, metadata.originalApplication?.name, metadata.lastSavedApplication?.name]
+		.some((value) => value != null && /\bnavisworks\b/i.test(value));
+
 const hasPropertyValue = (value: FbxScalar | FbxScalar[]) => {
 	const values = Array.isArray(value) ? value : [value];
 	return values.some((item) => typeof item !== 'string' || item.trim() !== '');

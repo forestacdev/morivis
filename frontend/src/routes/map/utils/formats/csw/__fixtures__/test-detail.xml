@@ -1,0 +1,21 @@
+<c:GetRecordByIdResponse xmlns:c="http://www.opengis.net/cat/csw/2.0.2" xmlns:g="http://www.isotc211.org/2005/gmd" xmlns:v="http://www.isotc211.org/2005/gco">
+  <g:MD_Metadata>
+    <g:fileIdentifier><v:CharacterString>test-record-1</v:CharacterString></g:fileIdentifier>
+    <g:hierarchyLevel><g:MD_ScopeCode codeListValue="dataset">dataset</g:MD_ScopeCode></g:hierarchyLevel>
+    <g:dateStamp><v:Date>2024-01-02</v:Date></g:dateStamp>
+    <g:identificationInfo><g:MD_DataIdentification>
+      <g:citation><g:CI_Citation><g:title><v:CharacterString>test-roads-detail</v:CharacterString></g:title></g:CI_Citation></g:citation>
+      <g:abstract><v:CharacterString>test-detailed-description</v:CharacterString></g:abstract>
+      <g:descriptiveKeywords><g:MD_Keywords><g:keyword><v:CharacterString>test-topic</v:CharacterString></g:keyword></g:MD_Keywords></g:descriptiveKeywords>
+      <g:extent><g:EX_Extent><g:geographicElement><g:EX_GeographicBoundingBox>
+        <g:westBoundLongitude><v:Decimal>1</v:Decimal></g:westBoundLongitude><g:eastBoundLongitude><v:Decimal>3</v:Decimal></g:eastBoundLongitude>
+        <g:southBoundLatitude><v:Decimal>2</v:Decimal></g:southBoundLatitude><g:northBoundLatitude><v:Decimal>4</v:Decimal></g:northBoundLatitude>
+      </g:EX_GeographicBoundingBox></g:geographicElement></g:EX_Extent></g:extent>
+    </g:MD_DataIdentification></g:identificationInfo>
+    <g:distributionInfo><g:MD_Distribution><g:transferOptions><g:MD_DigitalTransferOptions>
+      <g:onLine><g:CI_OnlineResource><g:linkage><g:URL>/wfs</g:URL></g:linkage><g:protocol><v:CharacterString>OGC:WFS-2.0.0-http-get-feature</v:CharacterString></g:protocol><g:name><v:CharacterString>test-features</v:CharacterString></g:name></g:CI_OnlineResource></g:onLine>
+      <g:onLine><g:CI_OnlineResource><g:linkage><g:URL>https://test.invalid/test-points.geojson</g:URL></g:linkage><g:protocol><v:CharacterString>WWW:DOWNLOAD</v:CharacterString></g:protocol><g:name><v:CharacterString>test-points</v:CharacterString></g:name></g:CI_OnlineResource></g:onLine>
+      <g:onLine><g:CI_OnlineResource><g:linkage><g:URL>javascript:alert(1)</g:URL></g:linkage><g:name><v:CharacterString>test-invalid-link</v:CharacterString></g:name></g:CI_OnlineResource></g:onLine>
+    </g:MD_DigitalTransferOptions></g:transferOptions></g:MD_Distribution></g:distributionInfo>
+  </g:MD_Metadata>
+</c:GetRecordByIdResponse>

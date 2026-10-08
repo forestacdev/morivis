@@ -1,0 +1,5 @@
+<c:GetRecordsResponse xmlns:c="http://www.opengis.net/cat/csw/2.0.2" xmlns:d="http://purl.org/dc/elements/1.1/">
+  <c:SearchResults numberOfRecordsMatched="3" numberOfRecordsReturned="1" nextRecord="0">
+    <c:Record><d:identifier>test-record-3</d:identifier><d:title>test-last-record</d:title><d:URI name="test-points" protocol="WWW:DOWNLOAD-1.0-http--download">https://test.invalid/test-points.geojson</d:URI></c:Record>
+  </c:SearchResults>
+</c:GetRecordsResponse>

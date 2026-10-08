@@ -48,6 +48,7 @@ export interface ComputeUploadedModelMetaParams {
 	upAxis?: MeshUpAxis;
 	georeference?: ProjectedModelGeoreference;
 	projectedModelEpsg?: string;
+	preserveScale?: boolean;
 	terrainEnabled?: boolean;
 }
 
@@ -787,6 +788,7 @@ export const computeUploadedModelMeta = async ({
 	upAxis,
 	georeference,
 	projectedModelEpsg,
+	preserveScale = false,
 	terrainEnabled = false
 }: ComputeUploadedModelMetaParams): Promise<UploadedModelMeta> => {
 	const { object, animationNames } = await getUploadedModelObject(
@@ -857,10 +859,10 @@ export const computeUploadedModelMeta = async ({
 	const size = displayBox.getSize(new THREE.Vector3());
 	const unitScaleMeters = resolvedGeoreference?.unitScaleMeters ?? formatUnitScaleMeters;
 	const localMaxDimension = Math.max(size.x, size.y, size.z) * unitScaleMeters;
-	const scaleMultiplier =
-		localMaxDimension > 1e-6 && localMaxDimension < MIN_MODEL_MAX_DIMENSION_METERS
-			? TARGET_MODEL_MAX_DIMENSION_METERS / localMaxDimension
-			: 1;
+	const scaleMultiplier = !preserveScale && localMaxDimension > 1e-6
+			&& localMaxDimension < MIN_MODEL_MAX_DIMENSION_METERS
+		? TARGET_MODEL_MAX_DIMENSION_METERS / localMaxDimension
+		: 1;
 	const localRenderUnitScale = resolvedGeoreference ? 1 : formatUnitScaleMeters;
 
 	const modelMatrix = buildMercatorModelMatrix(

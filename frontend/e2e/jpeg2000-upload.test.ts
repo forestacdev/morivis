@@ -1,5 +1,5 @@
-import { expect, type Page, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
+import { expect, type Page, test } from './map-test';
 
 const dropFiles = async (page: Page, names: string[]) => {
 	const files = names.map(name => {

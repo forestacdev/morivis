@@ -19,7 +19,6 @@
 		SearchGeojsonData
 	} from './utils/data/search-result';
 	import { lonLatToTileCoords } from './utils/map/tile-coordinate';
-	import { checkPc } from './utils/platform/viewport';
 
 	import { page } from '$app/state';
 	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
@@ -45,13 +44,15 @@
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
-	import ModelViewCanvas from '$routes/map/components/model_view/ModelViewCanvas.svelte';
+	const loadModelViewCanvas = () =>
+		import('$routes/map/components/model_view/ModelViewCanvas.svelte');
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
-	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
+	const loadStreetViewCanvas = () =>
+		import('$routes/map/components/street_view/ThreeCanvas.svelte');
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import type {
 		PendingZoneGeoRefData,
@@ -62,7 +63,9 @@
 		GeoRefData,
 		GeoRefPreviewData
 	} from '$routes/map/components/upload/form/transform/georef-types';
+	import { createVectorEntryGroup } from '$routes/map/components/upload/form/vector-entry-group';
 	import LazyUploadComponent from '$routes/map/components/upload/LazyUploadComponent.svelte';
+	import { setUploadPreview } from '$routes/map/components/upload/preview-context';
 	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
 	import {
 		mergeUploadFiles,
@@ -123,7 +126,6 @@
 	import maplibregl from '$routes/map/utils/maplibre';
 	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
 	import {
-		get3dParams,
 		getParams,
 		getStreetViewParams,
 		removeUrlParams
@@ -142,6 +144,7 @@
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import {
 		isStreetView,
+		closeModelView,
 		mapMode,
 		modelViewRequest,
 		selectedLayerId,
@@ -198,12 +201,26 @@
 			.map((entryId) => layerEntries.find((candidate) => candidate.id === entryId))
 			.filter((entry): entry is ThreeModelEntry => Boolean(entry && isThreeModelEntry(entry)));
 	});
-	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビュー用のデータ
+	let showDataEntry = $state<MorivisLayerEntry | null>(null); // プレビューで選択中のデータ
+	let previewGroup = $state.raw<MorivisLayerEntry[]>([]);
+	const previewEntries = $derived(
+		showDataEntry
+			? previewGroup.some((entry) => entry.id === showDataEntry?.id)
+				? previewGroup.map((entry) => (entry.id === showDataEntry?.id ? showDataEntry : entry))
+				: [showDataEntry]
+			: []
+	);
+	$effect(() => {
+		if (!showDataEntry || !previewGroup.some((entry) => entry.id === showDataEntry?.id)) {
+			if (previewGroup.length) previewGroup = [];
+		}
+	});
 	let dropFile = $state<UploadFiles>(null); // ドロップしたファイル
 	let pendingUploadFiles: File[] = [];
 	let isStartingUploadSession = false;
 
 	const setUploadedDataEntry = (entry: MorivisLayerEntry | null) => {
+		previewGroup = [];
 		if (!entry) {
 			showDataEntry = null;
 			return;
@@ -214,6 +231,14 @@
 		pendingUploadFiles = [];
 	};
 
+	const setUploadedDataEntries = (entries: MorivisLayerEntry[]) => {
+		const files = mergeUploadFiles(pendingUploadFiles, toUploadFiles(dropFile));
+		previewGroup = entries.map((entry) => withUploadFileDescription(entry, files));
+		showDataEntry = previewGroup[0] ?? null;
+		pendingUploadFiles = [];
+	};
+	setUploadPreview(setUploadedDataEntries);
+
 	let remoteGeoZarrUrl = $state<string | null>(null);
 	let remotePmtilesUrl = $state<string | null>(null);
 	let remoteRasterUrl = $state<string | null>(null);
@@ -223,6 +248,7 @@
 	let remoteFeatureServiceUrl = $state<string | null>(null);
 	let remoteArcGisUrl = $state<string | null>(null);
 	let remoteStacUrl = $state<string | null>(null);
+	let remoteCswUrl = $state<string | null>(null);
 	let pendingTileUrl = $state<string | null>(null);
 
 	let isStyleEditEntry = $derived.by(() => {
@@ -267,6 +293,30 @@
 
 	// 起動時のストリートビュー判定
 	let isInitialStreetViewEntry = $state<boolean>(false);
+	let streetViewDataReady = $state(false);
+	let mapReady = $state(false);
+	let streetViewDataPromise: Promise<void> | null = null;
+	let destroyed = false;
+
+	const ensureStreetViewData = () => {
+		streetViewDataPromise ??= Promise.all([
+			getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/nodes.fgb`),
+			getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/links.fgb`),
+			fetchJsonWithDevProxy<NodeConnections>(`${STREET_VIEW_DATA_PATH}/node_connections.json`)
+		])
+			.then(([points, lines, connections]) => {
+				if (destroyed) return;
+				streetViewPointData = points as unknown as StreetViewPointGeoJson;
+				streetViewLineData = lines;
+				nodeConnectionsJson = connections;
+				streetViewDataReady = true;
+			})
+			.catch((error) => {
+				streetViewDataPromise = null;
+				throw error;
+			});
+		return streetViewDataPromise;
+	};
 
 	// canvasの表示制御
 	let showMapCanvas = $state<boolean>(true);
@@ -432,6 +482,16 @@
 					data.sourceCorners,
 					plainCorners
 				);
+				if (data.vectorGroups) {
+					const entries = await createVectorEntryGroup(
+						warpedGeojson as AppFeatureCollection,
+						data.vectorGroups
+					);
+					setUploadedDataEntries(entries);
+					closeGeoRefUi();
+					showNotification('図形の位置を設定しました', 'success');
+					return;
+				}
 				const warpedType = geometryTypeToEntryType(warpedGeojson as AppFeatureCollection);
 				const warpedBbox = turfBbox(warpedGeojson as AppFeatureCollection) as [
 					number,
@@ -741,6 +801,7 @@
 			geoRefData = {
 				...nextGeoRefData,
 				vectorStyle: pendingData.vectorStyle,
+				vectorGroups: pendingData.vectorGroups,
 				vectorAttribution: pendingData.attribution,
 				allowedTransformModes: nextAllowedTransformModes
 			};
@@ -893,7 +954,7 @@
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
 
-	onMount(async () => {
+	onMount(() => {
 		/** レイヤーメニューの表示 */
 
 		const params = getParams(location.search);
@@ -905,43 +966,9 @@
 		}
 
 		isInitialized = true;
-
-		// スクリーンショットモードではストリートビューデータの読み込みをスキップ
-		if (isScreenshotMode) {
-			isInitialStreetViewEntry = true;
-			return;
-		}
-
-		const geojson = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/nodes.fgb`);
-		streetViewPointData = geojson as unknown as StreetViewPointGeoJson;
-
-		streetViewLineData = await getFgbToGeojson(`${STREET_VIEW_DATA_PATH}/links.fgb`);
-
-		nodeConnectionsJson = await fetchJsonWithDevProxy(
-			`${STREET_VIEW_DATA_PATH}/node_connections.json`
-		);
-
-		// ストリートビューのパラメータを取得
-		const nodeId = getStreetViewParams();
-
-		if (nodeId) {
-			const point = streetViewPointData.features.find(
-				(point) => point.properties.node_id === Number(nodeId)
-			);
-			if (point) {
-				showStreetViewLayer.set(true);
-				setPoint(Number(nodeId));
-			}
-		}
-
-		isInitialStreetViewEntry = true;
-
-		mapStore.onLoad(() => {
-			const terrain3d = get3dParams();
-			if (terrain3d === '1' && checkPc()) {
-				// mapStore.toggleTerrain(true);
-				// isTerrain3d.set(true);
-			}
+		isInitialStreetViewEntry = !getStreetViewParams();
+		return mapStore.onLoad(() => {
+			mapReady = true;
 		});
 	});
 
@@ -1053,7 +1080,10 @@
 	};
 
 	// streetビューの表示切り替え時
-	isStreetView.subscribe(async (value) => {
+	let streetViewTransition = 0;
+	const unsubscribeStreetView = isStreetView.subscribe(async (value) => {
+		const transition = ++streetViewTransition;
+		const isCancelled = () => destroyed || transition !== streetViewTransition;
 		if (!streetViewPoint) return;
 		isBlocked.set(true);
 
@@ -1077,10 +1107,12 @@
 			});
 
 			await delay(isInitialStreetViewEntry ? 750 : 0);
+			if (isCancelled()) return;
 
 			showMapCanvas = false;
 			showThreeCanvas = true;
 			if (isInitialStreetViewEntry) await delay(500);
+			if (isCancelled()) return;
 
 			mapStore.setBearing(0);
 			mapStore.setPitch(0);
@@ -1104,6 +1136,7 @@
 			mapStore.resetCamera();
 
 			await delay(300);
+			if (isCancelled()) return;
 
 			// マップを移動
 			mapStore.easeTo({
@@ -1113,6 +1146,7 @@
 				duration: 750
 			});
 			await delay(750);
+			if (isCancelled()) return;
 			isBlocked.set(false);
 
 			// const map = mapStore.getMap();
@@ -1235,13 +1269,35 @@
 
 	const streetViewNodeId = $derived(page.url.searchParams.get('sv'));
 
+	// 地図の表示を待たせず、レイヤー表示またはURL指定で初めてデータを取得する。
+	$effect(() => {
+		if (!isInitialized || isScreenshotMode) return;
+		if (!$showStreetViewLayer && !streetViewNodeId) return;
+		let cancelled = false;
+		void ensureStreetViewData().catch((error) => {
+			if (cancelled || destroyed) return;
+			console.error('Failed to load street view data:', error);
+			showNotification(
+				'ストリートビューデータを取得できませんでした。表示を一度オフにして再度お試しください。',
+				'error'
+			);
+		});
+		return () => {
+			cancelled = true;
+		};
+	});
+
 	let currentStreetViewNodeId: string | null = null;
 	// URLパラメータの変更を監視
 	$effect(() => {
+		if (!streetViewDataReady || !mapReady || isScreenshotMode) return;
 		if (streetViewNodeId === currentStreetViewNodeId) return;
 		currentStreetViewNodeId = streetViewNodeId;
-		if (!isInitialStreetViewEntry) return;
-		setPoint(Number(streetViewNodeId));
+		if (!streetViewNodeId) return;
+		untrack(() => {
+			showStreetViewLayer.set(true);
+			setPoint(Number(streetViewNodeId));
+		});
 	});
 
 	const focusFeature = async (result: ResultData) => {
@@ -1332,6 +1388,13 @@
 
 	onDestroy(() => {
 		// コンポーネントが破棄されるときに実行される処理
+		destroyed = true;
+		unsubscribeStreetView();
+		if (streetViewPoint) {
+			isStreetView.set(false);
+			isBlocked.set(false);
+			mapMode.set('view');
+		}
 		isInitialized = false;
 	});
 </script>
@@ -1342,12 +1405,13 @@
 	</div>
 {/if} -->
 
-{#if isInitialized && isInitialStreetViewEntry}
+{#if isInitialized}
 	{#if isScreenshotMode}
 		<!-- スクリーンショットモード: マップのみ表示 -->
 		<div class="fixed h-dvh w-full">
 			<MapLibreMap
 				bind:maplibreMap={map}
+				{previewEntries}
 				bind:layerEntries
 				bind:tempLayerEntries
 				bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
@@ -1435,6 +1499,7 @@
 					<div class="min-h-0 flex-1">
 						<MapLibreMap
 							bind:maplibreMap={map}
+							{previewEntries}
 							bind:layerEntries
 							bind:tempLayerEntries
 							bind:showDataEntry={() => showDataEntry, setUploadedDataEntry}
@@ -1520,7 +1585,7 @@
 			</MobileFeatureMenuCard>
 
 			{#if !transformOptionMode}
-				<PreviewMenu bind:showDataEntry />
+				<PreviewMenu bind:showDataEntry {previewEntries} />
 			{/if}
 
 			{#if !transformOptionMode}
@@ -1537,37 +1602,46 @@
 					bind:remoteFeatureServiceUrl
 					bind:remoteArcGisUrl
 					bind:remoteStacUrl
+					bind:remoteCswUrl
 					bind:pendingTileUrl
 				/>
 			{/if}
 			{#if showDataEntry && !transformOptionMode}
-				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries />
+				<DataPreviewDialog bind:showDataEntry bind:tempLayerEntries {previewEntries} />
 			{/if}
 
-			{#if showStreetViewLayer}
-				<StreetViewCanvas
-					{streetViewPoint}
-					{nextPointData}
-					{showThreeCanvas}
-					bind:cameraBearing
-					bind:showAngleMarker
-					bind:isExternalCameraUpdate
-				/>
+			{#if $isStreetView || showThreeCanvas}
+				<LazyUploadComponent load={loadStreetViewCanvas} onclose={() => isStreetView.set(false)}>
+					{#snippet children(StreetViewCanvas)}
+						<StreetViewCanvas
+							{streetViewPoint}
+							{nextPointData}
+							{showThreeCanvas}
+							bind:cameraBearing
+							bind:showAngleMarker
+							bind:isExternalCameraUpdate
+						/>
+					{/snippet}
+				</LazyUploadComponent>
 			{/if}
 
 			{#if modelViewEntries.length > 0}
 				{#key $modelViewRequest?.entryIds.join(':')}
-					<ModelViewCanvas
-						entries={modelViewEntries}
-						initialCamera={$modelViewRequest?.camera}
-						includeHighlights={$modelViewRequest?.includeHighlights ?? false}
-						fpsMode={modelViewFpsMode}
-						onModelPicked={showModelAttributes}
-						onModelMiss={closeFeaturePanel}
-						onResetViewChange={setModelViewReset}
-						onFpsModeChange={setModelViewFpsMode}
-						onFpsStartChange={setModelViewFpsStart}
-					/>
+					<LazyUploadComponent load={loadModelViewCanvas} onclose={closeModelView}>
+						{#snippet children(ModelViewCanvas)}
+							<ModelViewCanvas
+								entries={modelViewEntries}
+								initialCamera={$modelViewRequest?.camera}
+								includeHighlights={$modelViewRequest?.includeHighlights ?? false}
+								fpsMode={modelViewFpsMode}
+								onModelPicked={showModelAttributes}
+								onModelMiss={closeFeaturePanel}
+								onResetViewChange={setModelViewReset}
+								onFpsModeChange={setModelViewFpsMode}
+								onFpsStartChange={setModelViewFpsStart}
+							/>
+						{/snippet}
+					</LazyUploadComponent>
 				{/key}
 			{/if}
 
@@ -1598,6 +1672,7 @@
 				bind:remoteFeatureServiceUrl
 				bind:remoteArcGisUrl
 				bind:remoteStacUrl
+				bind:remoteCswUrl
 				bind:pendingTileUrl
 				bind:transformOptionMode
 				bind:focusBbox

@@ -21,7 +21,7 @@ export const resolveStaticAssetBasePath = (moduleUrl: string, baseUrl?: string):
 
 export const resolveStaticAssetPath = (assetPath: string): string => {
 	const normalizedAssetPath = assetPath.startsWith('/') ? assetPath : `/${assetPath}`;
-	const basePath = resolveStaticAssetBasePath(import.meta.url, import.meta.env.BASE_URL);
+	const basePath = resolveStaticAssetBasePath(import.meta.url, import.meta.env?.BASE_URL);
 
 	return `${basePath}${normalizedAssetPath}`;
 };

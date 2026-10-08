@@ -3,6 +3,188 @@ import JSZip from 'jszip';
 import { readFileSync } from 'node:fs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+describe('AISログのドロップ', () => {
+	const content = readFileSync(
+		new URL('../../utils/formats/ais/__fixtures__/test-vessels.ais', import.meta.url),
+		'utf8'
+	);
+	it('AISを通常NMEAより先に内容判定する', async () => {
+		for (const extension of ['ais', 'nmea', 'nme', 'log', 'txt']) {
+			const file = new File([content], `test.${extension}`);
+			expect(await resolveDroppedFiles(file)).toMatchObject({
+				type: 'dialog',
+				dialogType: 'ais',
+				dropFiles: [file]
+			});
+		}
+	});
+	it('複数ログとZIP展開後もAISへ渡す', async () => {
+		const files = [new File([content], 'test-a.log'), new File([content], 'test-b.ais')];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'ais',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test/test.nmea', content);
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+			)
+		).toMatchObject({ type: 'dialog', dialogType: 'ais' });
+	});
+});
+
+describe('TLE / OMMのドロップ', () => {
+	const fixture = (name: string) =>
+		readFileSync(
+			new URL(`../../utils/formats/orbit/__fixtures__/${name}`, import.meta.url),
+			'utf8'
+		);
+	it('TLE・OMM JSON・内容判定TXTを同じフォームへ渡す', async () => {
+		for (
+			const [name, content] of [
+				['test.tle', fixture('test-orbit.tle')],
+				['test.txt', fixture('test-orbit.tle')],
+				['test.json', fixture('test-orbit.json')],
+				['test.omm', fixture('test-orbit.json')]
+			]
+		) {
+			const file = new File([content], name);
+			expect(await resolveDroppedFiles(file)).toMatchObject({
+				type: 'dialog',
+				dialogType: 'orbit',
+				dropFiles: [file]
+			});
+		}
+	});
+	it('複数文書とZIP展開後も軌道フォームへ渡す', async () => {
+		const files = [
+			new File([fixture('test-orbit.tle')], 'test.tle'),
+			new File([fixture('test-orbit.json')], 'test.json')
+		];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'orbit',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test/test.txt', fixture('test-orbit.tle'));
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+			)
+		).toMatchObject({ type: 'dialog', dialogType: 'orbit' });
+	});
+	it('通常のGeoJSONは既存フォームへ渡す', async () => {
+		expect(
+			await resolveDroppedFiles(
+				new File(['{"type":"FeatureCollection","features":[]}'], 'test.json')
+			)
+		).toMatchObject({ type: 'dialog', dialogType: 'geojson' });
+	});
+});
+
+describe('S-57のドロップ', () => {
+	it('単体・複数の基本セルをS-57へ振り分ける', async () => {
+		const files = [new File(['test'], 'test-a.000'), new File(['test'], 'test-b.000')];
+		expect(await resolveDroppedFiles(files[0])).toMatchObject({
+			type: 'dialog',
+			dialogType: 's57'
+		});
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			type: 'dialog',
+			dialogType: 's57',
+			dropFiles: files
+		});
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.000');
+	});
+	it('ZIP内の基本セルを読み込み、カタログを差分と混同しない', async () => {
+		const zip = new JSZip();
+		zip.file('test-folder/test-chart.000', 'test');
+		zip.file('test-folder/CATALOG.031', 'test');
+		const decision = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-chart.zip')
+		);
+		expect(decision).toMatchObject({
+			type: 'dialog',
+			dialogType: 's57',
+			dropFiles: [expect.objectContaining({ name: 'test-chart.000' })]
+		});
+	});
+	it('単体・基本セルとの混在・ZIPの更新差分をフォームへ渡す', async () => {
+		const base = new File(['test'], 'test-chart.000');
+		const update = new File(['test'], 'test-chart.001');
+		const zip = new JSZip();
+		zip.file(base.name, 'test');
+		zip.file(update.name, 'test');
+		const archive = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-chart.zip'
+		);
+		for (const input of [update, [base, update], archive]) {
+			expect(await resolveDroppedFiles(input)).toMatchObject({
+				type: 'dialog',
+				dialogType: 's57',
+				dropFiles: expect.arrayContaining([expect.objectContaining({ name: update.name })])
+			});
+		}
+	});
+});
+
+describe('VTKのドロップ', () => {
+	it.each([
+		'test-surface.vtk',
+		'test-surface.VTP',
+		'test-volume.vtu',
+		'test-grid.vti',
+		'test-grid.vtr',
+		'test-grid.vts'
+	])(
+		'%sをVTKフォームへ渡す',
+		async name => {
+			const file = new File(['test-vtk'], name);
+			expect(await resolveDroppedFiles(file)).toEqual({
+				type: 'dialog',
+				dialogType: 'vtk',
+				dropFiles: undefined
+			});
+		}
+	);
+	it('複数ファイルとZIPは選択可能な一式として渡す', async () => {
+		const files = [new File(['test-vtk'], 'test-a.vtk'), new File(['test-vtp'], 'test-b.vtp')];
+		expect(await resolveDroppedFiles(files)).toEqual({
+			type: 'dialog',
+			dialogType: 'vtk',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test-folder/test-a.vtk', 'test-vtk');
+		zip.file('test-folder/test-b.vtp', 'test-vtp');
+		const decision = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-models.zip')
+		);
+		expect(decision).toMatchObject({
+			type: 'dialog',
+			dialogType: 'vtk',
+			dropFiles: [expect.any(File), expect.any(File)]
+		});
+	});
+	it('ファイル選択の対応拡張子を技術定義から公開する', () => {
+		expect(SUPPORTED_FILE_GROUPS.find(group => group.id === 'vtk')?.extensions).toEqual([
+			'.vtk',
+			'.vtp',
+			'.vtu',
+			'.vti',
+			'.vtr',
+			'.vts'
+		]);
+		for (const extension of ['.vtk', '.vtp', '.vtu']) {
+			expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(extension);
+		}
+	});
+});
+
 describe('OSM PBFのドロップ', () => {
 	const bytes = readFileSync(
 		new URL('../../utils/formats/osm-pbf/__fixtures__/test-dense.osm.pbf', import.meta.url)
@@ -1663,5 +1845,137 @@ describe('DGNのドロップ', () => {
 				new File(['test'], 'test-b.dgn')
 			])
 		).toMatchObject({ type: 'notification' });
+	});
+});
+
+describe('OpenDRIVEのドロップ', () => {
+	const xml = readFileSync(
+		new URL('../../utils/formats/opendrive/__fixtures__/test-road.xodr', import.meta.url),
+		'utf8'
+	);
+	it.each(['test-road.xodr', 'test-road.XODR', 'test-road.xml'])(
+		'%sを専用フォームへ渡す',
+		async name => {
+			expect(await resolveDroppedFiles(new File([xml], name))).toMatchObject({
+				type: 'dialog',
+				dialogType: 'opendrive'
+			});
+		}
+	);
+	it('複数ファイルとZIPを選択可能な一式にする', async () => {
+		const files = [new File([xml], 'test-a.xodr'), new File([xml], 'test-b.xodr')];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			dialogType: 'opendrive',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test-folder/test-a.xodr', xml);
+		zip.file('test-folder/test-b.xodr', xml);
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-roads.zip')
+			)
+		).toMatchObject({
+			dialogType: 'opendrive',
+			dropFiles: [expect.any(File), expect.any(File)]
+		});
+		expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain('.xodr');
+	});
+	it('xodrとXMLが混在してもOpenDRIVEのファイルだけを選択候補にする', async () => {
+		const files = [new File([xml], 'test-a.xodr'), new File([xml], 'test-b.xml')];
+		expect(await resolveDroppedFiles([...files, new File(['<test/>'], 'test-other.xml')]))
+			.toMatchObject({ dialogType: 'opendrive', dropFiles: files });
+	});
+});
+
+describe('NMEAのドロップ', () => {
+	const text = readFileSync(
+		new URL('../../utils/formats/nmea/__fixtures__/test-track.nmea', import.meta.url),
+		'utf8'
+	);
+	it.each(['nmea', 'NME', 'log', 'txt'])('%sログを内容に応じて振り分ける', async extension => {
+		const file = new File([text], `test-track.${extension}`);
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'nmea',
+			dropFiles: [file]
+		});
+	});
+	it('複数ログとZIP展開後も同じフォームへ渡す', async () => {
+		const files = [new File([text], 'test-a.nmea'), new File([text], 'test-b.log')];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			dialogType: 'nmea',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test-a.nmea', text);
+		zip.file('test-b.txt', text);
+		const decision = await resolveDroppedFiles(
+			new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test-logs.zip')
+		);
+		expect(decision).toMatchObject({
+			dialogType: 'nmea',
+			dropFiles: expect.arrayContaining([
+				expect.objectContaining({ name: 'test-a.nmea' }),
+				expect.objectContaining({ name: 'test-b.txt' })
+			])
+		});
+	});
+	it('通常のLOGをNMEA扱いしない', async () => {
+		expect(await resolveDroppedFiles(new File(['test message'], 'test.log'))).toMatchObject({
+			type: 'notification'
+		});
+	});
+});
+
+describe('CZMLのドロップ', () => {
+	const text = readFileSync(
+		new URL('../../utils/formats/czml/__fixtures__/test-static.czml', import.meta.url),
+		'utf8'
+	);
+	it.each(['czml', 'CZML', 'json'])('%sをCZMLフォームへ渡す', async extension => {
+		const file = new File([text], `test-static.${extension}`);
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'czml',
+			dropFiles: [file]
+		});
+	});
+	it('複数ファイルとZIP展開後のJSONを判定する', async () => {
+		const files = [new File([text], 'test-a.czml'), new File([text], 'test-b.json')];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			dialogType: 'czml',
+			dropFiles: files
+		});
+		const zip = new JSZip();
+		zip.file('test-a.czml', text);
+		zip.file('test-b.json', text);
+		expect(
+			await resolveDroppedFiles(
+				new File([await zip.generateAsync({ type: 'arraybuffer' })], 'test.zip')
+			)
+		).toMatchObject({
+			dialogType: 'czml',
+			dropFiles: expect.arrayContaining([expect.objectContaining({ name: 'test-b.json' })])
+		});
+	});
+	it('CZMLに関連するモデルとテクスチャを落とさず渡す', async () => {
+		const files = [
+			new File([text], 'test.czml'),
+			new File(['{}'], 'test.gltf'),
+			new File([''], 'test.bin'),
+			new File([''], 'test.png')
+		];
+		expect(await resolveDroppedFiles(files)).toMatchObject({
+			dialogType: 'czml',
+			dropFiles: files
+		});
+	});
+	it('通常のGeoJSONをCZML扱いしない', async () => {
+		const file = new File(
+			[JSON.stringify({ type: 'FeatureCollection', features: [] })],
+			'test.json'
+		);
+		expect(await resolveDroppedFiles(file)).toMatchObject({ dialogType: 'geojson' });
 	});
 });

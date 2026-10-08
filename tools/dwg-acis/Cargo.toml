@@ -1,0 +1,25 @@
+[package]
+name = "morivis-dwg-acis"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+opencadcodec = { git = "https://github.com/HakanSeven12/opencadcodec.git", rev = "fe69506", features = ["serde"] }
+opencadkernel = { path = "vendor/opencadkernel", features = ["acis"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+wasm-bindgen = "=0.2.105"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
+
+[profile.release]
+# Curve evaluation and tessellation dominate large drawings; optimize execution speed.
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"

@@ -2,7 +2,11 @@
 	import { tick } from 'svelte';
 	import { fade, fly, slide } from 'svelte/transition';
 
-	import { getRemoteFileName, resolveUploadUrlInput, validateUploadUrlInput } from './upload-url';
+	import {
+		loadRemoteUploadFile,
+		resolveUploadUrlInput,
+		validateUploadUrlInput
+	} from './upload-url';
 
 	import Icon from '$lib/components/svgs/Icon.svelte';
 	import DropContainer from '$routes/map/components/DropContainer.svelte';
@@ -15,7 +19,6 @@
 		type DialogType,
 		type UploadFiles
 	} from '$routes/map/types';
-	import { fetchWithDevProxy } from '$routes/map/utils/platform/request';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
 
@@ -32,6 +35,7 @@
 		remoteFeatureServiceUrl: string | null;
 		remoteArcGisUrl: string | null;
 		remoteStacUrl: string | null;
+		remoteCswUrl: string | null;
 		pendingTileUrl: string | null;
 	}
 
@@ -48,6 +52,7 @@
 		remoteFeatureServiceUrl = $bindable(),
 		remoteArcGisUrl = $bindable(),
 		remoteStacUrl = $bindable(),
+		remoteCswUrl = $bindable(),
 		pendingTileUrl = $bindable()
 	}: Props = $props();
 
@@ -91,25 +96,14 @@
 				if (resolved.target === 'remoteFeatureServiceUrl') remoteFeatureServiceUrl = resolved.value;
 				if (resolved.target === 'remoteArcGisUrl') remoteArcGisUrl = resolved.value;
 				if (resolved.target === 'remoteStacUrl') remoteStacUrl = resolved.value;
+				if (resolved.target === 'remoteCswUrl') remoteCswUrl = resolved.value;
 				if (resolved.target === 'remoteGeoZarrUrl') remoteGeoZarrUrl = resolved.value;
 				inputUrl = '';
 				hasTouchedUrlInput = false;
 				return;
 			}
 			// upload-url.ts が remote-file を返した場合だけ、ここで実ファイルを取得する。
-			const response = await fetchWithDevProxy(resolved.requestUrl);
-			if (!response.ok) {
-				throw new Error(`HTTP ${response.status}`);
-			}
-
-			const blob = await response.blob();
-			const remoteFileName = await getRemoteFileName(resolved.requestUrl, response, blob);
-			if (!remoteFileName) {
-				showNotification('URLから対応拡張子を判定できません', 'error');
-				return;
-			}
-
-			dropFile = [new File([blob], remoteFileName, { type: blob.type })];
+			dropFile = [await loadRemoteUploadFile(resolved.requestUrl)];
 			inputUrl = '';
 			hasTouchedUrlInput = false;
 		} catch (error) {

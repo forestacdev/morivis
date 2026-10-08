@@ -20,7 +20,7 @@ flowchart LR
 	H --> J["GeoRef で四隅確定"]
 	I --> G
 	J --> G
-	G --> K["showDataEntry"]
+	G --> K["previewEntries / showDataEntry"]
 	K --> L["layerEntries へ追加"]
 	L --> M["MapLibre / deck.gl / three.js"]
 ```
@@ -95,6 +95,13 @@ Shapefileに新しい強制容量上限は設けていない。
 通常のZIPアップロードは、展開前の圧縮ファイルに加え、展開後のFile配列でも共通警告を行う。
 キャンセル時はフォームへ進まない。展開後の確認なので、展開中のメモリ使用量を抑える仕組みではない。
 
+## S-57の電子海図
+
+`.000`の基本セルは専用Workerで自動解析し、地物分類・図形種別を選んで通常のvector entryへ変換する。
+接続点とエッジから線・穴付き面を復元し、測深値はPointの`DEPTH`属性として保持する。座標はWGS84の経緯度を使用する。
+`.000`と同じパス・基本名の`.001`以降を一式にし、版・更新番号・レコード版を照合して差分を順番に適用する。ZIP内の一式も同じ導線を使う。更新単独や途中の欠落、セル名・版の不一致は登録を止める。S-52の海図表現は再現しない。
+詳細な対応範囲と制限は[パーサーのREADME](../frontend/src/routes/map/utils/formats/s57/README.md)を参照。
+
 ## 読み込みのタイミング
 
 PC・モバイルとも、`showDialogType` が設定されたときに `BaseDialog` を読み込む。
@@ -106,6 +113,7 @@ PC・モバイルとも、`showDialogType` が設定されたときに `BaseDial
 
 PWA は `scripts/pwa-precache.ts` で起動エントリの静的依存をたどり、遅延 JS と変換用 Worker・WASM を事前キャッシュから除外する。
 ハッシュ付きの遅延モジュールは、Service Worker の制御下で使用した時点でキャッシュする。
+Minecraft のモデル・テクスチャも事前キャッシュから除外し、使用時に取得・キャッシュする。未取得の素材はオフラインでは利用できない。
 未使用の形式を初めて開くときは通信が必要になる。
 
 ## 中間状態
@@ -116,7 +124,8 @@ PWA は `scripts/pwa-precache.ts` で起動エントリの静的依存をたど�
 | --- | --- | --- |
 | `showDialogType` | `+page.svelte` | 今どの Form を開いているか。 |
 | `dropFile` | `+page.svelte` | 現在処理中のファイルまたはファイル群。 |
-| `showDataEntry` | `+page.svelte` | preview 中または直近に確定した `MorivisLayerEntry`。 |
+| `showDataEntry` | `+page.svelte` | プレビューで詳細を表示している `MorivisLayerEntry`。 |
+| `previewGroup` / `previewEntries` | `+page.svelte` | 一括登録するentryの組と、選択中のentryを反映した表示対象。通常の単一プレビューは1件の配列になる。 |
 | `focusBbox` | `+page.svelte` | Zone UI で候補 EPSG を可視化する元 bbox。 |
 | `selectedEpsgCode` | `+page.svelte` | Zone UI で現在選択中の EPSG。 |
 | `zoneConfirmedEpsg` | `+page.svelte` | Zone UI で確定した EPSG。各 Form 側がこれを受けて再変換する。 |
@@ -143,6 +152,17 @@ OBJ の `morivisProjectedModelEpsg` はその代表例で、`upload-drop.ts` で
 
 ## 形式別フロー
 
+DXF / DWGは `CadForm.svelte` でポイント・ライン・ポリゴンを複数選択できる。最初は図面に含まれる種類をすべて選択する。CADレイヤーによる絞り込みも適用し、`cad-vector.ts` で選択した図形と種類ごとの表示設定を準備する。
+
+座標変換やGeoRefの四隅変形は図面全体へ一度適用し、`createVectorEntryGroup()` で種類ごとのentryへ分割する。GeoRefへ進む場合は `vectorGroups` に名前・スタイル等を引き継ぐ。面の輪郭をライン化した場合は、元のラインと同じentryにまとめる。
+ポリゴンだけを選んで3Dモデルとして読み込む場合は、従来のGLB変換とモデル配置を使う。
+読み込み方式は2D・3D・2Dライン（面の輪郭）から選ぶ。通常は2Dを初期値にし、立体のポリゴンだけを選んだ場合は3Dモデルを初期値にする。3Dを選んだ場合は高さを保持する。
+
+JWW / JWC・DM・SXFも図面内のポイント・ライン・ポリゴンを複数選択できる。元レイヤーやDMのクラスで絞り込んだ全図形を一度に座標変換・位置合わせし、`vector-entry-group.ts` で種類ごとの2D entryへ分けてまとめてプレビュー・登録する。図形の種類を切り替えても元レイヤー・クラスのチェック状態は保持する。形式ごとの色・線・注記の設定は種類ごとに引き継ぐ。
+CADの文字ポイント（DXF / DWG / JWWのTEXT・MTEXT、DMの注記、SXFの文字）は、初期状態で文字ラベルを表示し、ラベルがあるポイントの記号と輪郭を透明にする。通常のポイントは表示を保つ。ラベル設定の「ラベルのあるポイントを非表示」で切り替えられる。
+
+VTK（`.vtk` / `.vtp` / `.vtu` / `.vti` / `.vtr` / `.vts`）は `VtkForm.svelte` からWorkerで解析する。表面メッシュ・構造格子・対応する2次セルの外表面を取り出し、同一XML内の複数Pieceを統合する。2次曲面を補間して三角形へ分割し、選択した点・セルのスカラー値を頂点色へ変換する。単位・上方向を補正したGLBを `MeshModelForm.svelte` に渡し、既存の座標系選択・位置合わせを経て `MeshEntry` へ登録する。色分けは取り込み時に確定する。対応範囲と制限は [VTK](../frontend/src/routes/map/utils/formats/vtk/README.md) を参照。
+
 Zarr / GeoZarrは共通URL欄または `GeoZarrForm.svelte` で配列を選び、`RasterGeoZarrEntry` に登録する。
 メタ情報取得・チャンク展開・タイル描画は専用Workerで処理する。座標軸の向きと元の投影を保持してMapLibreの画素中心へ再サンプリングし、取得共有・キャンセル・容量上限をruntime内で管理する。
 対応範囲は [Zarr / GeoZarr](../frontend/src/routes/map/utils/formats/geozarr/README.md) を参照。
@@ -157,6 +177,14 @@ GeoJSONSeq / 行区切りGeoJSONは専用パーサーでFeatureCollectionへま�
 対応範囲とメモリ上の制約は [GeoJSONSeq](../frontend/src/routes/map/utils/formats/geojsonseq/README.md) を参照。
 
 FIT (`.fit`) は `FitForm.svelte` から専用WorkerでGPS記録を解析する。軌跡・計測点・コースポイントを選び、WGS84のGeoJSONを通常のvector entryとして登録する。座標系指定は不要で、解析・登録中はスクリーンガードを表示する。対応範囲は [FIT](../frontend/src/routes/map/utils/formats/fit/README.md) を参照。
+
+NMEA 0183 (`.nmea` / `.nme` / 内容判定した `.log`・`.txt`) は `NmeaForm.svelte` から専用WorkerでGNSSログを解析する。RMC・GGA・GLLの位置を軌跡または計測点として登録し、時刻・高度・速度などを属性に保持する。複数ログは結合せず選択して登録する。対応範囲は [NMEA 0183](../frontend/src/routes/map/utils/formats/nmea/README.md) を参照。
+
+AISログ (`.ais`・内容判定した `.nmea`・`.nme`・`.log`・`.txt`) は `AisForm.svelte` から専用Workerで復号する。通常NMEAより先にVDM/VDOを判定し、船舶別のポイント・航跡をvector entryへ登録する。受信日時があるポイントは既存のtemporal filterへ接続し、日時のない報告には時刻を推定しない。対応メッセージ・分割文・タグブロックの扱いは [AISログ](../frontend/src/routes/map/utils/formats/ais/README.md) を参照。
+
+TLE / OMM (`.tle`・`.omm`・内容判定した `.txt`・`.json`・テキスト入力) は `OrbitForm.svelte` から `satellite.js` を専用Workerで実行し、指定期間の衛星の地上位置・地上軌跡をGeoJSONのvector entryへ変換する。OMMはJSON形式に対応する。ポイントは既存のtemporal filterで時刻を切り替え、地上軌跡は日付変更線で分割する。対応範囲と計算上限は [TLE / OMM](../frontend/src/routes/map/utils/formats/orbit/README.md) を参照。
+
+CZML (`.czml`・CZML内容の `.json`・テキスト入力) は `CzmlForm.svelte` から公式CesiumデコーダーをWorker内で実行する。位置・軌跡・ライン・ポリゴン・画像マーカーを選択してGeoJSONのvector entryに登録し、時刻別の地物は既存のtemporal filterへ接続する。画像マーカーは画像と表示設定をPNGへ変換してentry内の画像表に保存し、枠を付けずに表示する。ローカルの参照画像・モデルが不足する場合はフォームにファイル名を表示し、後からの追加ドロップ・選択で補完する。glTF/GLBの外部バッファ・画像も検査する。3Dモデルは関連glTF/GLBをまとめたmesh entryとノード変換の時系列へ正規化し、既存のmodel temporal dimensionから描画runtimeへ反映する。INERTIAL位置は同梱のIAU2006 XYS表を先読みしてから時刻ごとに地球固定座標へ変換する。時刻不足・期間外・表の取得失敗は登録を止める。対応範囲は [CZML](../frontend/src/routes/map/utils/formats/czml/README.md) を参照。
 
 動画（MP4・WebM・MOV・M4V・OGV）は `VideoForm.svelte` で位置タグと先頭フレームを読む。MP4・MOV系の撮影位置を取得できた場合は、詳細画面に動画を持つGeoJSONポイントとして登録へ進む。位置情報がない場合は位置合わせへ進む。確定した四隅と元動画のURLを `RasterVideoEntry` に保持し、video sourceとraster layerで再生する。対応範囲は[動画](../frontend/src/routes/map/utils/formats/video/README.md)を参照。
 
@@ -430,12 +458,15 @@ main thread に残っている責務は、主に次の通り。
 
 ## preview と final の違い
 
+登録前の通常プレビューでは `previewEntries` の全entryを描画する。複数の場合、`PreviewMenu` は全体の範囲へフォーカスし、単体と同じカードを扇形に並べる。カードの選択で中央・手前のカードと詳細表示を切り替える。`DataPreviewDialog` の「地図に追加」で全件を登録し、キャンセルで全件を破棄する。スマートフォンでは追加確認欄に対象名を並べる。
+複数entryを作るフォームは `preview-context.ts` のcontext経由で配列を渡す。通常のフォームは既存の `showDataEntry` のまま扱える。プレビューの組はUIの一時状態に置き、複数entryを表すための仮のentryは作らない。
+
 morivis では preview と final entry を分けて考える必要がある。
 
 | 段階 | 主な状態 |
 | --- | --- |
 | preview | `geoRefPreviewData`, `geoRefData`, `showDialogType`, `transformOptionMode` |
-| final | `showDataEntry` |
+| final entryの登録前プレビュー | `showDataEntry`, `previewEntries` |
 
 特に GeoRef 系では、「preview 画像を作るコンポーネント」と「最終 entry を作るコンポーネント」が別である。
 
@@ -483,3 +514,8 @@ V8は未対応として案内し、容量制限とキャンセルは形式定義
 対応範囲は [DGN V7](../frontend/src/routes/map/utils/formats/dgn/README.md) を参照。
 
 Zarrのフォルダー・ZIPは共通ドロップ判定から `GeoZarrForm.svelte` へ渡す。フォルダーの相対パスを保持し、ZIPは一般の全展開処理より先に判定する。ローカルStoreをWorkerへ接続し、配列選択・登録・描画はURL入力と共用する。ローカルFile参照はruntimeだけに保持し、ページ再読み込み後は再登録する。
+
+OpenDRIVE (`.xodr`・OpenDRIVEの`.xml`) は `OpenDriveForm.svelte` で道路基準線か車線面を選ぶ。
+専用Workerが曲線と車線幅を2Dベクターへ変換し、`header/offset`・`geoReference`を適用する。
+座標系不明時は座標系選択・位置合わせへ渡し、通常のvector entryとして登録する。
+対応範囲は [OpenDRIVE](../frontend/src/routes/map/utils/formats/opendrive/README.md) を参照。

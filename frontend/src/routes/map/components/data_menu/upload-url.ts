@@ -1,10 +1,12 @@
 import { type DialogType } from '$routes/map/types';
+import { looksLikeCswUrl } from '$routes/map/utils/formats/csw';
 import { hasGeoRssMarker } from '$routes/map/utils/formats/georss';
 import { parseOgcApiFeaturesService } from '$routes/map/utils/formats/ogc-api-features';
 import { parseWfsCapabilities } from '$routes/map/utils/formats/wfs';
 import { parseWmsCapabilities } from '$routes/map/utils/formats/wms';
 import { parseWmtsCapabilities } from '$routes/map/utils/formats/wmts';
 import {
+	fetchWithDevProxy,
 	normalizeHttpTemplateInput,
 	normalizeHttpUrlInput
 } from '$routes/map/utils/platform/request';
@@ -160,6 +162,7 @@ type UploadUrlDialogTarget =
 	| 'pendingTileUrl'
 	| 'remoteTiles3dUrl'
 	| 'remotePmtilesUrl'
+	| 'remoteCswUrl'
 	| 'remoteStacUrl'
 	| 'remoteGeoZarrUrl'
 	| 'remoteWmtsUrl'
@@ -252,6 +255,11 @@ const templateRules: UploadUrlRule[] = [
 
 // パス末尾や拡張子だけで判断できるルール群。
 const extensionRules: UploadUrlRule[] = [
+	{
+		id: 'csw-service',
+		match: (context) => looksLikeCswUrl(context.requestUrl),
+		resolve: (context) => createDialogDecision('csw', 'remoteCswUrl', context.requestUrl)
+	},
 	{
 		id: 'remote-geozarr',
 		match: (context) =>
@@ -380,4 +388,14 @@ export const resolveUploadUrlInput = async (value: string): Promise<UploadUrlDec
 		type: 'remote-file',
 		requestUrl: context.requestUrl
 	};
+};
+
+/** URL入力とカタログの配信リンクが共用するファイル取得。 */
+export const loadRemoteUploadFile = async (url: string, signal?: AbortSignal): Promise<File> => {
+	const response = await fetchWithDevProxy(url, { signal });
+	if (!response.ok) throw new Error(`HTTP ${response.status}`);
+	const blob = await response.blob();
+	const name = await getRemoteFileName(url, response, blob);
+	if (!name) throw new Error('URLから対応拡張子を判定できません');
+	return new File([blob], name, { type: blob.type });
 };

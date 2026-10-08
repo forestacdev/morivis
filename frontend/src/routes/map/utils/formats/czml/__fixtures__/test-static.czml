@@ -1,0 +1,77 @@
+[
+  {
+    "id": "document",
+    "version": "1.0",
+    "name": "test-static"
+  },
+  {
+    "id": "test-point",
+    "name": "test-point",
+    "position": {
+      "cartographicDegrees": [
+        2.5,
+        1.25,
+        10
+      ]
+    },
+    "properties": {
+      "test_value": {
+        "number": 7
+      }
+    }
+  },
+  {
+    "id": "test-line",
+    "polyline": {
+      "positions": {
+        "cartographicDegrees": [
+          2.5,
+          1.25,
+          0,
+          2.51,
+          1.26,
+          0
+        ]
+      }
+    }
+  },
+  {
+    "id": "test-polygon",
+    "polygon": {
+      "positions": {
+        "cartographicDegrees": [
+          2.5,
+          1.25,
+          0,
+          2.52,
+          1.25,
+          0,
+          2.52,
+          1.27,
+          0,
+          2.5,
+          1.27,
+          0
+        ]
+      },
+      "holes": {
+        "cartographicDegrees": [
+          [
+            2.505,
+            1.255,
+            0,
+            2.515,
+            1.255,
+            0,
+            2.515,
+            1.265,
+            0,
+            2.505,
+            1.265,
+            0
+          ]
+        ]
+      }
+    }
+  }
+]
