@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, process.cwd(), '');
 	const lazyPrecacheIgnores = [
 		'**/*.wasm',
+		'client/minecraft/**',
 		'client/_app/immutable/workers/**',
 		'client/{draco,basis,rhino3dm,web-ifc,vendor}/**'
 	];
@@ -139,6 +140,15 @@ export default defineConfig(({ mode }) => {
 						options: {
 							cacheName: 'morivis-lazy-modules',
 							expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 60 * 60 },
+							cacheableResponse: { statuses: [200] }
+						}
+					}, {
+						urlPattern: ({ url, sameOrigin }) =>
+							sameOrigin && /^\/(?:morivis\/)?minecraft\//.test(url.pathname),
+						handler: 'StaleWhileRevalidate',
+						options: {
+							cacheName: 'morivis-minecraft-resources',
+							expiration: { maxEntries: 5000, maxAgeSeconds: 30 * 24 * 60 * 60 },
 							cacheableResponse: { statuses: [200] }
 						}
 					}]

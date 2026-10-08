@@ -743,8 +743,8 @@
 		getSetStyleDebounceHandler(wait)(entries);
 	};
 
-	const requestStyleUpdateByDependency = (_dependency: unknown) => {
-		setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+	const requestStyleUpdateByDependency = (_dependency: unknown, wait?: number) => {
+		setStyleDebounce(layerEntries as MorivisLayerEntry[], wait);
 	};
 
 	const syncHighlightLayers = () => {
@@ -808,12 +808,17 @@
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		})
 	);
-	// ストリートビューの表示
-	styleUpdateUnsubscribers.push(
-		showStreetViewLayer.subscribe(() => {
-			setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
-		})
-	);
+	// 表示切替だけでなく、初回の非同期取得が完了したときもソースを更新する。
+	$effect(() => {
+		requestStyleUpdateByDependency(
+			{
+				visible: $showStreetViewLayer,
+				points: streetViewPointData,
+				lines: streetViewLineData
+			},
+			0
+		);
+	});
 	// モデルビュー中は空と大気を外し、閉じたら通常のスタイルへ戻す。
 	styleUpdateUnsubscribers.push(
 		showModelView.subscribe(() => {

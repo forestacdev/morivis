@@ -1,5 +1,5 @@
 import turfBbox from '@turf/bbox';
-import { withCadTextLabels } from './cad-labels';
+import { withCadTextLabels } from './_cad-labels';
 
 import { createAdjustableRange } from '$routes/map/data/types';
 import type {
