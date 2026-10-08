@@ -44,13 +44,15 @@
 	import MobileFeatureMenuCard from '$routes/map/components/mobile/FeatureMenuCard.svelte';
 	import MobileFooter from '$routes/map/components/mobile/Footer.svelte';
 	import MobileMapControl from '$routes/map/components/mobile/MapControl.svelte';
-	import ModelViewCanvas from '$routes/map/components/model_view/ModelViewCanvas.svelte';
+	const loadModelViewCanvas = () =>
+		import('$routes/map/components/model_view/ModelViewCanvas.svelte');
 	import NotificationMessage from '$routes/map/components/NotificationMessage.svelte';
 	import OtherMenu from '$routes/map/components/OtherMenu.svelte';
 	import DataPreviewDialog from '$routes/map/components/preview_menu/DataPreviewDialog.svelte';
 	import PreviewMenu from '$routes/map/components/preview_menu/PreviewMenu.svelte';
 	import SearchMenu from '$routes/map/components/search_menu/SearchMenu.svelte';
-	import StreetViewCanvas from '$routes/map/components/street_view/ThreeCanvas.svelte';
+	const loadStreetViewCanvas = () =>
+		import('$routes/map/components/street_view/ThreeCanvas.svelte');
 	import Tooltip from '$routes/map/components/Tooltip.svelte';
 	import type {
 		PendingZoneGeoRefData,
@@ -142,6 +144,7 @@
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import {
 		isStreetView,
+		closeModelView,
 		mapMode,
 		modelViewRequest,
 		selectedLayerId,
@@ -1608,29 +1611,37 @@
 			{/if}
 
 			{#if $isStreetView || showThreeCanvas}
-				<StreetViewCanvas
-					{streetViewPoint}
-					{nextPointData}
-					{showThreeCanvas}
-					bind:cameraBearing
-					bind:showAngleMarker
-					bind:isExternalCameraUpdate
-				/>
+				<LazyUploadComponent load={loadStreetViewCanvas} onclose={() => isStreetView.set(false)}>
+					{#snippet children(StreetViewCanvas)}
+						<StreetViewCanvas
+							{streetViewPoint}
+							{nextPointData}
+							{showThreeCanvas}
+							bind:cameraBearing
+							bind:showAngleMarker
+							bind:isExternalCameraUpdate
+						/>
+					{/snippet}
+				</LazyUploadComponent>
 			{/if}
 
 			{#if modelViewEntries.length > 0}
 				{#key $modelViewRequest?.entryIds.join(':')}
-					<ModelViewCanvas
-						entries={modelViewEntries}
-						initialCamera={$modelViewRequest?.camera}
-						includeHighlights={$modelViewRequest?.includeHighlights ?? false}
-						fpsMode={modelViewFpsMode}
-						onModelPicked={showModelAttributes}
-						onModelMiss={closeFeaturePanel}
-						onResetViewChange={setModelViewReset}
-						onFpsModeChange={setModelViewFpsMode}
-						onFpsStartChange={setModelViewFpsStart}
-					/>
+					<LazyUploadComponent load={loadModelViewCanvas} onclose={closeModelView}>
+						{#snippet children(ModelViewCanvas)}
+							<ModelViewCanvas
+								entries={modelViewEntries}
+								initialCamera={$modelViewRequest?.camera}
+								includeHighlights={$modelViewRequest?.includeHighlights ?? false}
+								fpsMode={modelViewFpsMode}
+								onModelPicked={showModelAttributes}
+								onModelMiss={closeFeaturePanel}
+								onResetViewChange={setModelViewReset}
+								onFpsModeChange={setModelViewFpsMode}
+								onFpsStartChange={setModelViewFpsStart}
+							/>
+						{/snippet}
+					</LazyUploadComponent>
 				{/key}
 			{/if}
 

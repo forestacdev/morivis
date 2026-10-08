@@ -30,6 +30,10 @@ flowchart LR
 
 ## Three.jsモデル
 
+通常の地図起動ではThree.js・deck.gl・3D Tilesの描画コードを読み込まない。モデル、点群、3D Tiles、ボクセルのエントリーが必要になった時点で、各runtimeを動的に読み込む。パノラマ・モデルビュー・モデル設定UIも使用時に読み込む。
+
+`utils/runtime/lazy-resource.ts` は同時ロードの共有と失敗後の再試行を扱う。`lazy-map-layer.ts` は読み込み中の削除・後続更新・地図の破棄を検出し、失効した結果を反映しない。空のエントリー、2D地物のクリック、終了処理からは3Dコードを読み込まない。通常画面のThree.js操作は `three/lazy-manager.ts` を通し、未ロード時のピックやハイライト解除は何もしない。
+
 `ThreeJsLayerManager` は画面側の公開APIを保ちながら、モデル登録、差し替え、アニメーション更新と各サービスの呼び出し順を管理する。モデルの読み込み完了をそのまま登録せず、削除・置き換えで失効した結果は破棄する。
 
 | ファイル（`frontend/src/routes/map/utils/three/`） | 責務 |

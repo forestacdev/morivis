@@ -54,7 +54,7 @@
 	} from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { mcaGridPreviewStore } from '$routes/map/utils/formats/mca/placement-store';
-	import { createMcaRegionGridController } from '$routes/map/utils/formats/mca/region-grid';
+	import type { createMcaRegionGridController } from '$routes/map/utils/formats/mca/region-grid';
 	import {
 		fetchWcsViewportImage,
 		clearAllWcsViewportImages,
@@ -74,7 +74,7 @@
 	import { prepareSourceData } from '$routes/map/utils/sources/prepare';
 	import { applyRasterVisualizationUpdates } from '$routes/map/utils/sources/raster-updates';
 	import { createMapStyle, type MapStyleInput } from '$routes/map/utils/style/map-style';
-	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
+	import { setThreeGroupVisibility } from '$routes/map/utils/three/lazy-manager';
 	import { clickableVectorIds, clickableRasterIds } from '$routes/stores';
 	import { isStreetView } from '$routes/stores';
 	import { mapMode } from '$routes/stores';
@@ -183,7 +183,7 @@
 			showDataEntry?.type === 'model' &&
 			(showDataEntry.style.type === 'mesh' || showDataEntry.style.type === 'gaussian-splat')
 	);
-	const mcaRegionGridController = createMcaRegionGridController();
+	let mcaRegionGridController: ReturnType<typeof createMcaRegionGridController> | undefined;
 	let mapDestroyed = false;
 	const isMcaGridModel = (entry: MorivisLayerEntry): entry is MeshEntry<MeshStyle> =>
 		entry.type === 'model' &&
@@ -327,7 +327,7 @@
 	onDestroy(() => {
 		mapDestroyed = true;
 		styleUpdateId += 1;
-		mcaRegionGridController.clear();
+		mcaRegionGridController?.clear();
 		// Svelte storeの購読は明示的に解除しないと、画面破棄後もcallbackが残る。
 		styleUpdateUnsubscribers.forEach((unsubscribe) => unsubscribe());
 		clearAllCogViewportImages();
@@ -417,10 +417,14 @@
 		const updateId = ++styleUpdateId;
 		const isCurrent = () => !mapDestroyed && updateId === styleUpdateId;
 		// 非同期のspec生成前に、main/preview/draftを統合した最新のグリッドを確定する。
-		const mcaGridEntries = mcaRegionGridController.sync(
-			effectiveMcaGridModels,
-			mcaPlacementPreview
-		);
+		if (!mcaRegionGridController && (effectiveMcaGridModels.length || mcaPlacementPreview)) {
+			const { createMcaRegionGridController } =
+				await import('$routes/map/utils/formats/mca/region-grid');
+			if (!isCurrent()) return;
+			mcaRegionGridController ??= createMcaRegionGridController();
+		}
+		const mcaGridEntries =
+			mcaRegionGridController?.sync(effectiveMcaGridModels, mcaPlacementPreview) ?? [];
 		const input: MapStyleInput = {
 			entries: getMapStyleEntries(entries),
 			mcaGridEntries,
@@ -674,7 +678,8 @@
 			) as DeckVectorEntry[])
 		);
 
-		mapStore.setTiles3DStyleEntries(tiles3dEntries);
+		await mapStore.setTiles3DStyleEntries(tiles3dEntries);
+		if (!isCurrent()) return;
 		await mapStore.setDeckModelStyleEntries(pointCloudEntries, deckVectorEntries);
 		// style更新中に新しい更新が始まった場合、古い3Dレイヤーを反映しない。
 		if (updateId !== styleUpdateId) return;
@@ -857,7 +862,7 @@
 	$effect(() => {
 		$state.snapshot(effectivePreviewEntries.map((entry) => ({ id: entry.id, style: entry.style })));
 		setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
-		threeJsManager.setGroupVisibility(!showDataEntry || isGeoRefRegistrationActive);
+		setThreeGroupVisibility(!showDataEntry || isGeoRefRegistrationActive);
 	});
 
 	// 座標系選択

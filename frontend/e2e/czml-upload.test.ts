@@ -140,6 +140,10 @@ test('CZMLとglTFを一緒にドロップして3Dモデルを登録できる', a
 	});
 	await layer.hover();
 	await layer.locator('button').last().click();
+	await page.getByRole('button', { name: 'モデルビューで開く', exact: true }).click();
+	await expect(page.getByLabel('3Dモデルビュー', { exact: true })).toBeVisible();
+	await page.getByRole('button', { name: 'モデルビューを閉じる', exact: true }).click();
+	await expect(page.getByLabel('3Dモデルビュー', { exact: true })).toHaveCount(0);
 	await page.getByText('時間', { exact: true }).click();
 	await expect(page.getByRole('button', { name: '次へ', exact: true })).toBeVisible();
 	await page.getByRole('button', { name: '次へ', exact: true }).click();

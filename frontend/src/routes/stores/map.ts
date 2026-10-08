@@ -27,13 +27,15 @@ import type {
 	StyleSetterOptions,
 	StyleSpecification
 } from '$routes/map/utils/maplibre';
+import { createLazyMapLayer } from '$routes/map/utils/runtime/lazy-map-layer';
+import { createLazyResource } from '$routes/map/utils/runtime/lazy-resource';
 import { getModelOverlayBeforeId } from '$routes/map/utils/three/model-overlay-order';
-import { Tiles3DLayerManager, TILES_3D_LAYER_ID } from '$routes/map/utils/tiles3d/layer-manager';
-import {
-	GEOZARR_VOXEL_LAYER_ID,
-	GeoZarrVoxelLayerManager
-} from '$routes/map/utils/voxel/layer-manager';
+import { TILES_3D_LAYER_ID } from '$routes/map/utils/tiles3d/constants';
+import type { Tiles3DLayerManager } from '$routes/map/utils/tiles3d/layer-manager';
+import { GEOZARR_VOXEL_LAYER_ID } from '$routes/map/utils/voxel/constants';
+import type { GeoZarrVoxelLayerManager } from '$routes/map/utils/voxel/layer-manager';
 import type { VoxelSpec } from '$routes/map/utils/voxel/spec';
+import { showNotification } from '$routes/stores/notification';
 import { Protocol } from 'pmtiles';
 import { type Writable, writable } from 'svelte/store';
 
@@ -105,13 +107,13 @@ import {
 	terminateWfsFeatureWorker,
 	wfsFeatureProtocol
 } from '$routes/map/protocol/vector/wfs-feature';
-import { clearPointCloudDataCache, createDeckOverlay } from '$routes/map/utils/deck/overlay';
+
 import {
 	buildGlbExportFilename,
 	downloadArrayBufferAsGlb,
 	downloadBlobUrlAsGlb
 } from '$routes/map/utils/formats/export/model';
-import { sampleRasterMeshHeights } from '$routes/map/utils/formats/geotiff/mesh';
+
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
 import {
 	isGeneratedPoiIconId,
@@ -120,12 +122,25 @@ import {
 } from '$routes/map/utils/icon';
 import { isPointInBbox } from '$routes/map/utils/map/bbox';
 import { getSinglePointFocus } from '$routes/map/utils/map/focus-layer';
-import { getModelFocusCamera } from '$routes/map/utils/map/focus-model';
+
 import { checkMobile, checkPc } from '$routes/map/utils/platform/viewport';
-import { threeJsManager } from '$routes/map/utils/three/layer-manager';
+import {
+	getThreeJsManager,
+	loadThreeJsManager,
+	syncThreeGroupVisibility
+} from '$routes/map/utils/three/lazy-manager';
 import type { LayersList } from '@deck.gl/core';
-import { MapboxOverlay } from '@deck.gl/mapbox';
+import type { MapboxOverlay } from '@deck.gl/mapbox';
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry } from 'geojson';
+
+const deckRuntime = createLazyResource(() => import('$routes/map/utils/deck/runtime'));
+const reportRuntimeError = (error: unknown) => {
+	console.error('3D runtime load failed:', error);
+	showNotification(
+		'3D描画の読み込みに失敗しました。通信状態を確認し、再度表示してください。',
+		'error'
+	);
+};
 
 const pmtilesProtocol = new Protocol();
 maplibregl.addProtocol('pmtiles', pmtilesProtocol.tile);
@@ -416,8 +431,27 @@ const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
 	let deckOverlay: MapboxOverlay | null = null;
 	let isDeckOverlayAdded = false;
-	const tiles3dManager = new Tiles3DLayerManager();
-	const voxelManager = new GeoZarrVoxelLayerManager();
+	const tiles3dRuntime = createLazyMapLayer<AnyTiles3DEntry, Tiles3DLayerManager>({
+		id: TILES_3D_LAYER_ID,
+		getMap: () => map,
+		load: async () =>
+			new (await import('$routes/map/utils/tiles3d/layer-manager')).Tiles3DLayerManager(),
+		update: (manager, entries) => manager.setEntries(entries),
+		beforeId: map =>
+			map.getLayer('deck-reference-layer')
+				? 'deck-reference-layer'
+				: getModelOverlayBeforeId(map.getStyle().layers)
+	});
+	const voxelRuntime = createLazyMapLayer<VoxelSpec, GeoZarrVoxelLayerManager>({
+		id: GEOZARR_VOXEL_LAYER_ID,
+		getMap: () => map,
+		load: async () =>
+			new (await import('$routes/map/utils/voxel/layer-manager')).GeoZarrVoxelLayerManager(),
+		update: (manager, specs) => manager.setSpecs(specs),
+		beforeId: map => getModelOverlayBeforeId(map.getStyle().layers)
+	});
+	let deckUpdateId = 0;
+	const threeUpdateIds = { main: 0, preview: 0 };
 	let voxelSpecs: VoxelSpec[] = [];
 
 	const { subscribe, set } = writable<maplibregl.Map | null>(null);
@@ -827,7 +861,7 @@ const createMapStore = () => {
 		if (!map || !isMapValid(map)) return;
 		setStyleEvent.set(style);
 		voxelSpecs = nextVoxelSpecs;
-		voxelManager.setSpecs(voxelSpecs);
+		void voxelRuntime.set(voxelSpecs).catch(reportRuntimeError);
 		map.setStyle(style, {
 			// preserveDrawingBuffer: true, // スタイル変更後も描画バッファを保持
 			transformStyle: (previous, next) => {
@@ -846,7 +880,9 @@ const createMapStore = () => {
 	};
 
 	// deck.gl レイヤーを設定
-	const setDeckOverlay = (layers: LayersList) => {
+	const setDeckOverlay = async (layers: LayersList) => {
+		const updateId = ++deckUpdateId;
+		const targetMap = map;
 		if (!map || !isMapValid(map)) return;
 
 		if (layers.length === 0) {
@@ -860,10 +896,12 @@ const createMapStore = () => {
 			}
 			currentDeckPointCloudEntries.clear();
 			currentDeckVectorEntries.clear();
-			clearPointCloudDataCache();
+			deckRuntime.get()?.clearPointCloudDataCache();
 			return;
 		}
 
+		const { MapboxOverlay } = await deckRuntime.load();
+		if (updateId !== deckUpdateId || map !== targetMap) return;
 		if (!deckOverlay) {
 			const { width, height } = getDeckOverlaySize();
 			deckOverlay = new MapboxOverlay(
@@ -893,6 +931,8 @@ const createMapStore = () => {
 
 	// Three.js レイヤーを必要時に追加
 	const ensureThreeLayer = () => {
+		const threeJsManager = getThreeJsManager();
+		if (!threeJsManager) return;
 		if (!map || !isMapValid(map)) return;
 		const layerId = '3d-model-layer';
 		if (map.getLayer(layerId)) {
@@ -901,6 +941,7 @@ const createMapStore = () => {
 		}
 		const layer = threeJsManager.createLayer();
 		map.addLayer(layer, getModelOverlayBeforeId(map.getStyle().layers));
+		syncThreeGroupVisibility();
 	};
 
 	const releaseThreeLayer = () => {
@@ -909,7 +950,7 @@ const createMapStore = () => {
 		if (map.getLayer(layerId)) {
 			map.removeLayer(layerId);
 		}
-		threeJsManager.dispose();
+		getThreeJsManager()?.dispose();
 		currentThreeModelIds = new Set();
 	};
 
@@ -919,36 +960,17 @@ const createMapStore = () => {
 	let currentDeckPointCloudEntries = new Map<string, PointCloudEntry>();
 	let currentDeckVectorEntries = new Map<string, DeckVectorEntry>();
 
-	const ensureTiles3DLayer = () => {
-		if (!map || !isMapValid(map) || currentTiles3dEntries.size === 0) return;
-		const beforeId = map.getLayer('deck-reference-layer')
-			? 'deck-reference-layer'
-			: getModelOverlayBeforeId(map.getStyle().layers);
-		if (!map.getLayer(TILES_3D_LAYER_ID)) map.addLayer(tiles3dManager.createLayer(), beforeId);
-		else map.moveLayer(TILES_3D_LAYER_ID, beforeId);
-	};
+	const ensureTiles3DLayer = tiles3dRuntime.ensure;
+	const ensureVoxelLayer = voxelRuntime.ensure;
 
-	const setTiles3DStyleEntries = (entries: AnyTiles3DEntry[]) => {
-		currentTiles3dEntries = new Map(entries.map((entry) => [entry.id, entry]));
-		tiles3dManager.setEntries(entries);
-		if (!entries.length) {
-			if (map?.getLayer(TILES_3D_LAYER_ID)) map.removeLayer(TILES_3D_LAYER_ID);
-			tiles3dManager.dispose();
-		} else ensureTiles3DLayer();
-	};
-
-	const ensureVoxelLayer = () => {
-		if (!map || !isMapValid(map)) return;
-		if (!voxelSpecs.length) {
-			if (map.getLayer(GEOZARR_VOXEL_LAYER_ID)) map.removeLayer(GEOZARR_VOXEL_LAYER_ID);
-			voxelManager.dispose();
-			return;
+	const setTiles3DStyleEntries = async (entries: AnyTiles3DEntry[]) => {
+		currentTiles3dEntries = new Map(entries.map(entry => [entry.id, entry]));
+		try {
+			await tiles3dRuntime.set(entries);
+		} catch (error) {
+			reportRuntimeError(error);
 		}
-		const before = getModelOverlayBeforeId(map.getStyle().layers);
-		if (!map.getLayer(GEOZARR_VOXEL_LAYER_ID)) map.addLayer(voxelManager.createLayer(), before);
-		else map.moveLayer(GEOZARR_VOXEL_LAYER_ID, before);
 	};
-
 	const refreshTiles3D = () => setTiles3DStyleEntries(Array.from(currentTiles3dEntries.values()));
 
 	const syncDeckOverlay = async (
@@ -957,11 +979,20 @@ const createMapStore = () => {
 	) => {
 		currentDeckPointCloudEntries = new Map(pointCloudEntries.map((entry) => [entry.id, entry]));
 		currentDeckVectorEntries = new Map(deckVectorEntries.map((entry) => [entry.id, entry]));
+		const updateId = ++deckUpdateId;
+		const targetMap = map;
+		if (!pointCloudEntries.length && !deckVectorEntries.length) {
+			await setDeckOverlay([]);
+			return;
+		}
+		const { createDeckOverlay } = await deckRuntime.load();
+		if (updateId !== deckUpdateId || map !== targetMap) return;
 		const layers = await createDeckOverlay(
 			pointCloudEntries,
 			deckVectorEntries
 		);
-		setDeckOverlay(layers);
+		if (updateId !== deckUpdateId || map !== targetMap) return;
+		await setDeckOverlay(layers);
 	};
 
 	const refreshCurrentDeckOverlay = async () => {
@@ -974,16 +1005,17 @@ const createMapStore = () => {
 		}
 	};
 
-	const applyTemporalModelMeshTimeStep = (
+	const applyTemporalModelMeshTimeStep = async (
 		entry: MeshEntry<MeshStyle>,
 		timeIndex: number
-	): boolean => {
+	): Promise<boolean> => {
 		const cacheEntry = NetCDFDataCache.get(entry.id);
 		if (!cacheEntry?.meshConfig) return false;
 
 		const stepData = NetCDFDataCache.getTimeStepData(entry.id, timeIndex);
 		if (!stepData) return false;
 
+		const { sampleRasterMeshHeights } = await import('$routes/map/utils/formats/geotiff/mesh');
 		const meshHeightSampling = sampleRasterMeshHeights({
 			band: stepData.data,
 			width: stepData.width,
@@ -1000,11 +1032,11 @@ const createMapStore = () => {
 			signedHeights[i] = -meshHeightSampling.heights[i];
 		}
 
-		return threeJsManager.updateModelMeshHeights(
+		return getThreeJsManager()?.updateModelMeshHeights(
 			entry.id,
 			signedHeights,
 			meshHeightSampling.normalizedHeights
-		);
+		) ?? false;
 	};
 
 	// Three.js モデルを設定（差分更新）
@@ -1012,6 +1044,19 @@ const createMapStore = () => {
 		newEntries: ThreeModelEntry[],
 		_type: 'main' | 'preview' = 'main'
 	): Promise<void> => {
+		const updateId = ++threeUpdateIds[_type];
+		const targetMap = map;
+		const isCurrent = () => map === targetMap && updateId === threeUpdateIds[_type];
+		if (!targetMap) return;
+		if (!newEntries.length && !getThreeJsManager()) return;
+		let threeJsManager;
+		try {
+			threeJsManager = getThreeJsManager() ?? await loadThreeJsManager();
+		} catch (error) {
+			reportRuntimeError(error);
+			throw error;
+		}
+		if (!isCurrent()) return;
 		if (_type === 'preview') {
 			if (newEntries.length > 0) {
 				ensureThreeLayer();
@@ -1039,9 +1084,10 @@ const createMapStore = () => {
 		}
 		for (const entry of entriesToAdd) {
 			await threeJsManager.addModel(entry);
+			if (!isCurrent()) return;
 			const currentIndex = entry.state?.dimension?.currentIndex;
 			if (entry.style.type === 'mesh' && currentIndex != null && currentIndex > 0) {
-				applyTemporalModelMeshTimeStep(entry as MeshEntry<MeshStyle>, currentIndex);
+				await applyTemporalModelMeshTimeStep(entry as MeshEntry<MeshStyle>, currentIndex);
 			}
 		}
 
@@ -1086,8 +1132,8 @@ const createMapStore = () => {
 		};
 
 		if (currentThreeModelIds.has(entry.id)) {
-			if (entry.properties?.nodeTransforms) await threeJsManager.setModelStyle(entry);
-			else applyTemporalModelMeshTimeStep(entry, timeIndex);
+			if (entry.properties?.nodeTransforms) await getThreeJsManager()?.setModelStyle(entry);
+			else await applyTemporalModelMeshTimeStep(entry, timeIndex);
 		}
 
 		if (map && isMapValid(map)) {
@@ -1096,26 +1142,26 @@ const createMapStore = () => {
 	};
 
 	const setPmxMorphState = (entry: MeshEntry<MeshStyle>) => {
-		threeJsManager.setPmxMorphState(entry);
+		getThreeJsManager()?.setPmxMorphState(entry);
 		if (map && isMapValid(map)) map.triggerRepaint();
 	};
 
 	const setModelAnimationState = (entry: MeshEntry<MeshStyle>) => {
-		threeJsManager.setModelAnimationState(entry);
+		getThreeJsManager()?.setModelAnimationState(entry);
 		if (map && isMapValid(map)) {
 			map.triggerRepaint();
 		}
 	};
 
 	const setModelStyle = (entry: ThreeModelEntry) => {
-		void threeJsManager.setModelStyle(entry);
+		void getThreeJsManager()?.setModelStyle(entry);
 		if (map && isMapValid(map)) {
 			map.triggerRepaint();
 		}
 	};
 
 	const loadIfcPartColorAttributes = async (entry: MeshEntry<MeshStyle>) => {
-		const attributeCount = await threeJsManager.loadIfcPartColorAttributes(entry);
+		const attributeCount = await (await loadThreeJsManager()).loadIfcPartColorAttributes(entry);
 		setModelStyle(entry);
 		return attributeCount;
 	};
@@ -1131,7 +1177,7 @@ const createMapStore = () => {
 			return;
 		}
 
-		const glb = await threeJsManager.exportModelAsGlb(entry.id);
+		const glb = await (await loadThreeJsManager()).exportModelAsGlb(entry.id);
 		downloadArrayBufferAsGlb(glb, buildGlbExportFilename(entry.metaData.name));
 	};
 
@@ -1139,7 +1185,11 @@ const createMapStore = () => {
 		pointCloudEntries: PointCloudEntry[] = [],
 		deckVectorEntries: DeckVectorEntry[] = []
 	) => {
-		await syncDeckOverlay(pointCloudEntries, deckVectorEntries);
+		try {
+			await syncDeckOverlay(pointCloudEntries, deckVectorEntries);
+		} catch (error) {
+			reportRuntimeError(error);
+		}
 	};
 
 	const setDeckModelVisibility = async (entryId: string, visible: boolean) => {
@@ -1422,7 +1472,14 @@ const createMapStore = () => {
 	const focusLayer = async (_entry: MorivisLayerEntry) => {
 		if (!map || !isMapValid(map)) return;
 
-		const modelCamera = getModelFocusCamera(_entry, map);
+		const targetMap = map;
+		const modelCamera = _entry.type === 'model'
+			? (await import('$routes/map/utils/map/focus-model')).getModelFocusCamera(
+				_entry,
+				targetMap
+			)
+			: null;
+		if (map !== targetMap) return;
 		if (modelCamera) {
 			map.flyTo({ ...modelCamera, duration: 1000, easing: MAP_EASING });
 			return;
@@ -1705,6 +1762,9 @@ const createMapStore = () => {
 	const remove = () => {
 		if (!map || !isMapValid(map)) return;
 		setMapMovingClass(false);
+		deckUpdateId++;
+		threeUpdateIds.main++;
+		threeUpdateIds.preview++;
 		if (deckOverlay) {
 			deckOverlay.finalize();
 			deckOverlay = null;
@@ -1712,7 +1772,10 @@ const createMapStore = () => {
 		releaseThreeLayer();
 		setTiles3DStyleEntries([]);
 		voxelSpecs = [];
-		ensureVoxelLayer();
+		voxelRuntime.clear();
+		deckRuntime.get()?.clearPointCloudDataCache();
+		currentDeckPointCloudEntries.clear();
+		currentDeckVectorEntries.clear();
 
 		map.remove();
 		releaseRegionalMeshProtocol();
@@ -1816,7 +1879,8 @@ const createMapStore = () => {
 		addLockonMarker,
 		removeLockonMarker,
 		queryRenderedFeatures,
-		pickTiles3D: (point: { x: number; y: number; }) => tiles3dManager.pick(point),
+		pickTiles3D: (point: { x: number; y: number; }) =>
+			tiles3dRuntime.get()?.pick(point) ?? null,
 		setCursor,
 		setData,
 		setTiles,

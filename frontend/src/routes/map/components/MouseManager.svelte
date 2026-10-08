@@ -30,7 +30,7 @@
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster/tile-query';
-	import { threeJsManager } from '$routes/map/utils/three/layer-manager';
+	import { getThreeJsManager } from '$routes/map/utils/three/lazy-manager';
 	import { getHighDetailLodZoom } from '$routes/map/utils/three/model-lod';
 	import {
 		clickableVectorIds,
@@ -403,7 +403,7 @@
 		const hadContextMenu = contextMenuState?.show === true;
 
 		setSelectedHighlight(null);
-		threeJsManager.clearModelHighlight();
+		getThreeJsManager()?.clearModelHighlight();
 		featureMenuData = null;
 		clearSearchHighlight();
 		clickedLayerIds = [];
@@ -546,7 +546,7 @@
 			// デバッグ用コード
 			clickDebug(e);
 
-			const pickedModel = await threeJsManager.pickModel(e.point);
+			const pickedModel = await getThreeJsManager()?.pickModel(e.point);
 			if (pickedModel) {
 				if (pickedModel.isLowerDetailLod) {
 					// 下位LODには部材属性がないため、最高詳細へ寄せる操作だけにする。
@@ -554,7 +554,7 @@
 					clickedLayerIds = [];
 					featureMenuData = null;
 					setSelectedHighlight(null);
-					threeJsManager.clearModelHighlight();
+					getThreeJsManager()?.clearModelHighlight();
 					focusLodModel(pickedModel.entryId);
 					return;
 				}
@@ -580,7 +580,7 @@
 				return;
 			}
 			if (!import.meta.env.PROD) console.info('[モデル属性] メッシュにヒットしませんでした');
-			threeJsManager.clearModelHighlight();
+			getThreeJsManager()?.clearModelHighlight();
 
 			const pickedTiles3D = mapStore.pickTiles3D(e.point);
 			if (pickedTiles3D) {
@@ -823,7 +823,7 @@
 	$effect(() => {
 		if (!featureMenuData) {
 			setSelectedHighlight(null);
-			threeJsManager.clearModelHighlight();
+			getThreeJsManager()?.clearModelHighlight();
 		}
 	});
 </script>

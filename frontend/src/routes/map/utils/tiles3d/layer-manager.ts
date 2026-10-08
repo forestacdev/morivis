@@ -24,7 +24,8 @@ import { createTilesMaterialController } from './materials';
 import { fetchRendererResource } from './renderer-fetch';
 import { type PickedTiles3DFeature, resolveTilesIntersection } from './three-picking';
 
-export const TILES_3D_LAYER_ID = '3d-tiles-layer';
+import { TILES_3D_LAYER_ID } from './constants';
+export { TILES_3D_LAYER_ID } from './constants';
 
 type TilesRuntime = {
 	entry: AnyTiles3DEntry;
