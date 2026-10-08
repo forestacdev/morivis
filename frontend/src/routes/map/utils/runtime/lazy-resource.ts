@@ -4,12 +4,13 @@ export const createLazyResource = <T>(load: () => Promise<T>) => {
 	let pending: Promise<T> | undefined;
 	return {
 		get: () => value,
-		load: (): Promise<T> => pending ??= load().then(result => {
-			value = result;
-			return result;
-		}).catch(error => {
-			pending = undefined;
-			throw error;
-		})
+		load: (): Promise<T> =>
+			pending ??= load().then(result => {
+				value = result;
+				return result;
+			}).catch(error => {
+				pending = undefined;
+				throw error;
+			})
 	};
 };

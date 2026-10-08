@@ -34,7 +34,10 @@ export const createLazyMapLayer = <T, M extends Manager>(options: {
 		}
 	};
 	const set = async (next: T[]) => {
-		if (!next.length) { clear(); return; }
+		if (!next.length) {
+			clear();
+			return;
+		}
 		const current = ++revision;
 		const map = options.getMap();
 		if (!map) return;

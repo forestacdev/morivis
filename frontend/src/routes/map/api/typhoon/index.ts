@@ -131,7 +131,10 @@ export const fetchTyphoonData = async (): Promise<TyphoonData> => {
 			ids
 				.slice(i, i + 4)
 				.map(async (id) =>
-					convertTyphoonForecast(await fetchJson(`${TYPHOON_BASE_URL}/${id}/forecast.json`), id)
+					convertTyphoonForecast(
+						await fetchJson(`${TYPHOON_BASE_URL}/${id}/forecast.json`),
+						id
+					)
 				)
 		);
 		for (const forecast of forecasts) {
@@ -142,7 +145,7 @@ export const fetchTyphoonData = async (): Promise<TyphoonData> => {
 	}
 	return result;
 };
-let snapshot: { at: number; data: TyphoonData } | undefined;
+let snapshot: { at: number; data: TyphoonData; } | undefined;
 let inflight: Promise<TyphoonData> | undefined;
 const currentData = async () => {
 	if (snapshot && Date.now() - snapshot.at < 60_000) return snapshot.data;

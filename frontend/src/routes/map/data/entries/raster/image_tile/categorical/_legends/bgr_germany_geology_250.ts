@@ -1183,7 +1183,6 @@ const groups = [
 
 const legend: ImageLegend = {
 	type: 'image',
-	layout: 'symbols',
 	categories: groups.map(({ layerId, name, items }) => ({
 		name,
 		urls: items.map(([image]) => `${SERVICE_URL}/${layerId}/images/${image}`),

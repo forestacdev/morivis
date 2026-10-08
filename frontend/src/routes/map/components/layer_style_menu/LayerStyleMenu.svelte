@@ -2,7 +2,6 @@
 	import { fly } from 'svelte/transition';
 
 	import InfoControl from './InfoControl.svelte';
-
 	import OpacityControl from './OpacityControl.svelte';
 
 	import UiCloseIcon from '$lib/components/svgs/icons/ui/CloseIcon.svelte';

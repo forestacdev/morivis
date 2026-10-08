@@ -65,7 +65,6 @@ const groups = [
 
 const legend: ImageLegend = {
 	type: 'image',
-	layout: 'symbols',
 	categories: groups.map((group) => ({
 		name: group.name,
 		urls: group.items.map(([file]) => `${IMG}/${file}`),
