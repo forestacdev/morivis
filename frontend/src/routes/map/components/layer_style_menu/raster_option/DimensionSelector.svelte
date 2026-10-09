@@ -93,6 +93,13 @@
 	let isUpdatingDimension = $state(false);
 	let playbackSpeed = $state(1200);
 
+	// 不具合切り分け用。スマホの操作はUI内だけで完結させ、entry・runtimeとは同期しない。
+	let isolatedTimeIndex = $state(0);
+	let isolatedPlaybackSpeed = $state(1200);
+	const updateIsolatedTimeIndex = (index: number) => {
+		isolatedTimeIndex = index;
+	};
+
 	$effect(() => {
 		if (!dimension || dimensionState) return;
 
@@ -365,12 +372,11 @@
 		{#if $isMobile && dimension.type === 'time'}
 			<TimeRuler
 				{dimension}
-				currentIndex={dimensionState?.currentIndex ?? 0}
-				disabled={isUpdatingDimension}
+				currentIndex={isolatedTimeIndex}
 				showPlayback
-				bind:playbackSpeed
-				onPreview={applyDimensionIndex}
-				onCommit={applyDimensionIndex}
+				bind:playbackSpeed={isolatedPlaybackSpeed}
+				onPreview={updateIsolatedTimeIndex}
+				onCommit={updateIsolatedTimeIndex}
 			/>
 		{:else}
 			<div class="flex flex-col gap-4">

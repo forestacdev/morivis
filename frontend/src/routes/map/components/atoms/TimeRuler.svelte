@@ -57,10 +57,9 @@
 	let viewportWidth = $state(0);
 	let dragOffsetPx = $state(0);
 	let activePointerId: number | null = null;
-	let activeTouchId: number | null = null;
 	let pointerStartX = 0;
 	let pointerStartOffsetPx = 0;
-	let dragBaseIndex: number | null = null;
+	let dragBaseIndex = $state<number | null>(null);
 	let lastPreviewedIndex: number | null = null;
 
 	// currentIndex をそのまま追うと、preview 更新中に基準がずれる。
@@ -150,9 +149,9 @@
 		void onPreview?.(nextIndex);
 	};
 
-	// Pointer と Touch の両方を受ける。中では同じ drag 更新関数に寄せる。
+	// タッチもPointerで扱い、1回の操作を重複して開始・確定しない。
 	const handlePointerDown = (event: PointerEvent) => {
-		if (disabled) return;
+		if (disabled || activePointerId !== null || !event.isPrimary || event.button !== 0) return;
 		activePointerId = event.pointerId;
 		beginDrag(event.clientX);
 		viewportElement?.setPointerCapture(event.pointerId);
@@ -169,33 +168,6 @@
 		activePointerId = null;
 		viewportElement?.releasePointerCapture(event.pointerId);
 		await commitIndex(nextIndex);
-	};
-
-	const handleTouchStart = (event: TouchEvent) => {
-		if (disabled) return;
-		const touch = event.changedTouches[0];
-		if (!touch) return;
-		activeTouchId = touch.identifier;
-		beginDrag(touch.clientX);
-	};
-
-	const handleTouchMove = (event: TouchEvent) => {
-		if (activeTouchId == null) return;
-		const touch =
-			Array.from(event.changedTouches).find((item) => item.identifier === activeTouchId) ??
-			Array.from(event.touches).find((item) => item.identifier === activeTouchId);
-		if (!touch) return;
-		updateDrag(touch.clientX);
-	};
-
-	const handleTouchEnd = async (event: TouchEvent) => {
-		if (activeTouchId == null) return;
-		const touch = Array.from(event.changedTouches).find(
-			(item) => item.identifier === activeTouchId
-		);
-		if (!touch) return;
-		activeTouchId = null;
-		await commitIndex(previewIndex);
 	};
 
 	const stepIndex = async (delta: number) => {
@@ -263,10 +235,6 @@
 		onpointermove={handlePointerMove}
 		onpointerup={handlePointerEnd}
 		onpointercancel={handlePointerEnd}
-		ontouchstart={handleTouchStart}
-		ontouchmove={handleTouchMove}
-		ontouchend={handleTouchEnd}
-		ontouchcancel={handleTouchEnd}
 		onkeydown={handleKeyDown}
 	>
 		<div
