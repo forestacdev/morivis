@@ -100,3 +100,51 @@ describe('元画像のアイコン', () => {
 		}
 	});
 });
+
+describe('アイコンWorkerの並行準備', () => {
+	it('準備中に要求されたアイコンを、準備完了後に生成して登録する', async () => {
+		vi.resetModules();
+		const inputImage = { width: 32, height: 32 };
+		const outputImage = { width: 102, height: 111 };
+		const addImage = vi.fn();
+		const messages: { type: string; id?: string; }[] = [];
+		const worker = {
+			onmessage: null as ((event: { data: unknown; }) => void) | null,
+			onerror: null,
+			postMessage: (message: { type: string; id?: string; }) => {
+				messages.push(message);
+			},
+			terminate: vi.fn()
+		};
+		vi.stubGlobal('Worker', vi.fn(() => worker));
+		vi.stubGlobal(
+			'fetch',
+			vi.fn().mockResolvedValue({
+				ok: true,
+				blob: async () => new Blob(['test-image'])
+			})
+		);
+		vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValue(inputImage));
+		try {
+			const icons = await import('./index');
+			const warmup = icons.warmupGeneratedPoiIconWorker();
+			const id = icons.buildGeneratedPoiIconId('test-photo', '/test-photo.webp');
+			const render = icons.resolveMissingStyleImage(id, {
+				hasImage: () => false,
+				addImage
+			} as unknown as MapLibreMapType);
+			await vi.waitFor(() => expect(createImageBitmap).toHaveBeenCalledOnce());
+			expect(messages).toEqual([{ type: 'warmup' }]);
+			expect(addImage).not.toHaveBeenCalled();
+			worker.onmessage?.({ data: { type: 'warmup-complete' } });
+			await warmup;
+			await vi.waitFor(() => expect(messages).toHaveLength(2));
+			expect(messages[1]).toMatchObject({ type: 'render', id, image: inputImage });
+			worker.onmessage?.({ data: { type: 'render-complete', imageBitmap: outputImage } });
+			await render;
+			expect(addImage).toHaveBeenCalledExactlyOnceWith(id, outputImage, { pixelRatio: 1 });
+		} finally {
+			vi.unstubAllGlobals();
+		}
+	});
+});
