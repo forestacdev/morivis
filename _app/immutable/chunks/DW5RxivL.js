@@ -1,0 +1,1 @@
+const s={tif:"GeoTIFF",tiff:"GeoTIFF",jpg:"JPEG",jpeg:"JPEG",webp:"WebP",gltf:"glTF",stp:"STEP",igs:"IGES",wrl:"VRML"},r=(t,o)=>{var e;const i=((e=t.name.split(".").pop())==null?void 0:e.toLowerCase())??"";return t.morivisSourceAttribution??o??s[i]??i.toUpperCase()},n=(t,o)=>Object.assign(t,{morivisSourceAttribution:o});export{r as g,n as w};
