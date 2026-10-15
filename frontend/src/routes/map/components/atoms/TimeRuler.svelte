@@ -52,6 +52,11 @@
 		return `${y}/${String(m).padStart(2, '0')}/${String(d).padStart(2, '0')} ${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
 	};
 
+	const getTimeLabel = (index: number) => {
+		if (index < 0 || index >= dimension.values.length) return '';
+		return dimension.labels?.[index] ?? formatTimeValue(dimension.values[index]);
+	};
+
 	// ルーラーの描画状態と、ドラッグ中にだけ使う基準値。
 	let viewportElement: HTMLDivElement | undefined = $state();
 	let viewportWidth = $state(0);
@@ -69,8 +74,10 @@
 		const rawIndex = referenceIndex - dragOffsetPx / tickSpacingPx;
 		return clamp(Math.round(rawIndex), 0, Math.max(dimension.values.length - 1, 0));
 	});
-	const currentLabel = $derived(
-		dimension.labels?.[previewIndex] ?? formatTimeValue(dimension.values[previewIndex] ?? '')
+	const currentLabel = $derived(getTimeLabel(previewIndex));
+	// 左右に1件ずつ余分に置き、同じ日付の要素を残したまま横へ移動する。
+	const labelIndices = $derived(
+		Array.from({ length: 5 }, (_, offset) => previewIndex + offset - 2)
 	);
 	const centerX = $derived(viewportWidth / 2);
 	// 全目盛りは描かず、現在位置の前後だけを描画して DOM 数を抑える。
@@ -107,9 +114,6 @@
 
 	const getTickX = (index: number) =>
 		centerX + (index - referenceIndex) * tickSpacingPx + dragOffsetPx;
-
-	const getTickLabel = (index: number) =>
-		dimension.labels?.[index] ?? formatTimeValue(dimension.values[index] ?? '');
 
 	// commit は「確定値」。ドラッグ用の一時状態を戻してから親へ通知する。
 	const commitIndex = async (index: number) => {
@@ -213,15 +217,26 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<div class="min-w-0 px-3 text-center">
+	<div class="min-w-0 text-center">
 		<div class="text-xs text-white/60">{dimension.placeholder ?? '時間'}</div>
-		<div class="truncate text-sm text-white">{currentLabel}</div>
+		<div class="time-labels">
+			{#each labelIndices as index (index)}
+				<div
+					class={['time-label', index === previewIndex && 'is-current']}
+					style:--label-offset={index - previewIndex}
+					style:opacity={Math.abs(index - previewIndex) > 1 ? 0 : index === previewIndex ? 1 : 0.6}
+					aria-hidden={Math.abs(index - previewIndex) > 1}
+				>
+					{getTimeLabel(index) || '—'}
+				</div>
+			{/each}
+		</div>
 	</div>
 
 	<!-- 時間ルーラー -->
 	<div
 		bind:this={viewportElement}
-		class="time-ruler relative h-[84px] w-full overflow-hidden rounded-2xl bg-black"
+		class="time-ruler relative h-16 w-full overflow-hidden rounded-2xl bg-black"
 		role="slider"
 		tabindex={disabled ? undefined : 0}
 		aria-label={dimension.placeholder ?? '時間'}
@@ -240,11 +255,10 @@
 		<div
 			class="pointer-events-none absolute inset-y-3 left-1/2 z-20 w-[2px] -translate-x-1/2 rounded-full bg-main-accent"
 		></div>
-		<div class="pointer-events-none absolute right-0 bottom-0 left-0 h-9 bg-black"></div>
 
 		{#each visibleIndices as index (index)}
 			<div
-				class="pointer-events-none absolute bottom-8 -translate-x-1/2"
+				class="pointer-events-none absolute bottom-4 -translate-x-1/2"
 				style:left={`${getTickX(index)}px`}
 			>
 				<div
@@ -252,14 +266,6 @@
 					style:height={`${getTickHeight(index)}px`}
 				></div>
 			</div>
-			{#if isMajorTick(index)}
-				<div
-					class={`pointer-events-none absolute bottom-3 max-w-[84px] -translate-x-1/2 truncate text-[10px] leading-none ${index === previewIndex ? 'text-white' : 'text-white/60'}`}
-					style:left={`${getTickX(index)}px`}
-				>
-					{getTickLabel(index)}
-				</div>
-			{/if}
 		{/each}
 	</div>
 
@@ -275,6 +281,40 @@
 </div>
 
 <style>
+	.time-labels {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		column-gap: 0.5rem;
+		align-items: start;
+		min-height: 2.75rem;
+		margin-top: 0.5rem;
+		overflow: hidden;
+	}
+
+	.time-label {
+		grid-area: 1 / 2;
+		min-width: 0;
+		color: white;
+		font-size: 0.75rem;
+		line-height: 1.625;
+		overflow-wrap: anywhere;
+		text-wrap: balance;
+		transform: translateX(calc(var(--label-offset) * (100% + 0.5rem)));
+		transition:
+			transform 180ms ease-out,
+			opacity 180ms ease-out;
+	}
+
+	.time-label.is-current {
+		font-weight: 600;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.time-label {
+			transition: none;
+		}
+	}
+
 	.time-ruler {
 		touch-action: none;
 	}

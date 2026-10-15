@@ -8,7 +8,8 @@ export const createVideoEntry = (
 	url: string,
 	bounds: [number, number, number, number],
 	corners: GeoRefCorners,
-	previewImageUrl?: string
+	previewImageUrl?: string,
+	attribution = '動画'
 ): RasterVideoEntry => {
 	const base = createRasterEntry(name, url, { bounds });
 	return {
@@ -17,7 +18,7 @@ export const createVideoEntry = (
 		format: { type: 'video', url },
 		metaData: {
 			...base.metaData,
-			attribution: '動画',
+			attribution,
 			description: '地図上に配置した動画。位置合わせした範囲で映像を再生する。',
 			imageCorners: corners.map(([lng, lat]) => [lng, lat]) as GeoRefCorners,
 			mapImage: previewImageUrl

@@ -28,15 +28,23 @@
 	}: Props = $props();
 	let error = $state('');
 	const file = $derived(getFirstUploadFile(dropFile));
+	const isGif = $derived(file?.name.toLowerCase().endsWith('.gif') ?? false);
 
 	$effect(() => {
 		if (!file) return;
-		const source = file;
+		const input = file;
+		const convertGif = isGif;
 		const controller = new AbortController();
 		const release = beginUploadProcessing(controller.signal);
 		error = '';
 		void (async () => {
 			try {
+				const source = convertGif
+					? await (
+							await import('$routes/map/utils/formats/gif')
+						).convertGifToVideo(input, controller.signal)
+					: input;
+				controller.signal.throwIfAborted();
 				const location = await readVideoLocation(source, controller.signal);
 				const data = await readVideoFile(source, controller.signal);
 				if (controller.signal.aborted) return;
@@ -56,6 +64,7 @@
 				const map = mapStore.getMap();
 				geoRefData = {
 					...data,
+					rasterConfig: { attribution: convertGif ? 'GIF' : '動画' },
 					initialCorners: map
 						? getDefaultGeoRefCorners(map, data.imageWidth, data.imageHeight)
 						: undefined
@@ -74,13 +83,17 @@
 	});
 </script>
 
-<div class="pb-3 text-2xl font-bold">動画の登録</div>
+<div class="pb-3 text-2xl font-bold">動画・GIFの登録</div>
 {#if error}
 	<p role="alert" class="text-red-400">{error}</p>
 {:else if file}
-	<p>動画の位置情報とプレビューを読み込んでいます。</p>
+	<p>
+		{isGif
+			? 'GIFを動画へ変換しています。透明な部分は白背景になります。'
+			: '動画の位置情報とプレビューを読み込んでいます。'}
+	</p>
 {:else}
-	<p>動画ファイルをドロップしてください（MP4・WebM・MOV・M4V・OGV）。</p>
+	<p>動画・GIFファイルをドロップしてください（MP4・WebM・MOV・M4V・OGV・GIF）。</p>
 {/if}
 <p class="py-3 text-sm text-gray-400">
 	位置情報付きのMP4・MOV系動画は撮影位置にポイントを配置し、クリックすると動画を開きます。

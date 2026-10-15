@@ -37,6 +37,7 @@ import { formatPdf } from './geopdf/definition';
 import { formatGeorss } from './georss/definition';
 import { formatTif } from './geotiff/definition';
 import { formatGeoZarr } from './geozarr/definition';
+import { formatGif } from './gif/definition';
 import { formatGlb } from './gltf/definition';
 import { formatGml } from './gml/definition';
 import { formatGpkg } from './gpkg/definition';
@@ -95,6 +96,7 @@ import { formatWmts } from './wmts/definition';
 import { formatXlsx } from './xlsx/definition';
 
 export const FORMAT_DEFINITIONS = {
+	'gif': formatGif,
 	'raster': formatRaster,
 	'vector': formatVector,
 	'wmts': formatWmts,

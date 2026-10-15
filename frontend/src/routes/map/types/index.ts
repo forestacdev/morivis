@@ -683,8 +683,18 @@ const UPLOAD_FORMAT_PRESENTATIONS: UploadFormatPresentation[] = [
 	{
 		id: 'video',
 		dialogType: 'video',
-		label: '動画',
-		description: '動画ファイルです。位置合わせして地図上で再生します。',
+		label: '動画・GIF',
+		description:
+			'動画やアニメーションGIFです。GIFは透明部分を白背景にした動画へ変換し、位置合わせして地図上で再生します。',
+		icon: 'mdi:video-outline'
+	},
+	{
+		id: 'gif',
+		dialogType: 'video',
+		showInFormList: false,
+		label: 'GIF',
+		description:
+			'アニメーション画像です。透明部分を白背景にした動画へ変換し、地図上で再生します。',
 		icon: 'mdi:video-outline'
 	},
 	{

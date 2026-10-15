@@ -586,7 +586,14 @@
 			if (data.sourceType === 'video') {
 				const url = URL.createObjectURL(data.imageFile);
 				try {
-					const entry = createVideoEntry(data.entryName, url, bbox, corners, data.previewImageUrl);
+					const entry = createVideoEntry(
+						data.entryName,
+						url,
+						bbox,
+						corners,
+						data.previewImageUrl,
+						data.rasterConfig?.attribution
+					);
 					entry.id = data.entryId;
 					setUploadedDataEntry(entry);
 				} catch (cause) {
