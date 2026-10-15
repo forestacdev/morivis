@@ -262,6 +262,7 @@
 
 			if (!isBbox2D(bbox) || !isBboxValid(bbox)) {
 				pendingZoneGeoRefData = {
+					attribution: 'Shapefile',
 					featureCollection: geojsonData as unknown as FeatureCollection,
 					entryName: forms.shpName
 				};

@@ -124,7 +124,7 @@
 			featureCollection: selectedData,
 			entryName: name,
 			vectorStyle: styleFor(selectedData),
-			attribution: 'DGN'
+			attribution: 'MicroStation DGN V7'
 		};
 		transformOptionMode = 'zone';
 	};
@@ -185,13 +185,13 @@
 		error = '';
 		try {
 			const data = await featureCollectionToGeoRefData({
+				attribution: 'MicroStation DGN V7',
 				featureCollection: selectedData,
 				entryName: name.trim() || 'MicroStation DGN V7'
 			});
 			if (signal.aborted) return;
 			data.vectorStyle = styleFor(selectedData);
 			data.allowedTransformModes = ['georef'];
-			data.vectorAttribution = 'MicroStation DGN V7';
 			geoRefData = data;
 			pendingZoneGeoRefData = null;
 			focusBbox = null;

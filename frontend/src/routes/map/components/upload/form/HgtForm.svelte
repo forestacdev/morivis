@@ -94,6 +94,7 @@
 		if (!grid || !file || loading) return;
 		geoRefData = {
 			...createRasterGeoRefData({
+				attribution: 'SRTM HGT',
 				entryId: `hgt_${crypto.randomUUID()}`,
 				entryName: name.trim() || 'SRTM HGT',
 				parsedBands: grid.bands,

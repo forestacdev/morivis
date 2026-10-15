@@ -143,6 +143,7 @@
 				}
 
 				pendingZoneGeoRefData = {
+					attribution: 'GeoParquet',
 					featureCollection: geojson,
 					entryName
 				};

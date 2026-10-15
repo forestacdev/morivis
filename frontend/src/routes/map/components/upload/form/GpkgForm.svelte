@@ -363,6 +363,7 @@
 			closeGpkg();
 			gpkgBuffer = null;
 			pendingZoneGeoRefData = {
+				attribution: 'GeoPackage',
 				featureCollection: filtered as FeatureCollection,
 				entryName
 			};

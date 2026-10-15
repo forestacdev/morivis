@@ -161,6 +161,7 @@
 
 		if (!bbox || !isBboxValid(bbox)) {
 			pendingZoneGeoRefData = {
+				attribution: 'WKT',
 				featureCollection: filtered,
 				entryName
 			};

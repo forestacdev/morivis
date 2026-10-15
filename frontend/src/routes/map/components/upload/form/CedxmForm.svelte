@@ -20,6 +20,7 @@
 		analyzeCedxmFileInWorker,
 		cedxmModelToGlbInWorker
 	} from '$routes/map/utils/formats/cedxm/analyze';
+	import { withUploadAttribution } from '$routes/map/utils/formats/source-attribution';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -168,7 +169,12 @@
 			zoneConfirmedEpsg = null;
 			focusBbox = null;
 			dropFile = [
-				new File([glb], source.name.replace(/\.[^.]+$/, '') + '.glb', { type: 'model/gltf-binary' })
+				withUploadAttribution(
+					new File([glb], source.name.replace(/\.[^.]+$/, '') + '.glb', {
+						type: 'model/gltf-binary'
+					}),
+					'CEDXM'
+				)
 			];
 			showDialogType = 'model';
 		} catch (error) {

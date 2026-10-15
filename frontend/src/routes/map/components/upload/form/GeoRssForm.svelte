@@ -119,6 +119,7 @@
 		const bbox = turfBbox(filtered);
 		if (parseResult?.requiresManualCrsSelection || !bbox || !isBboxValid(bbox)) {
 			pendingZoneGeoRefData = {
+				attribution: 'GeoRSS',
 				featureCollection: filtered,
 				entryName
 			};

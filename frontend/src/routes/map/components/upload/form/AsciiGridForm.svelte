@@ -143,6 +143,7 @@
 	const placeManually = () => {
 		if (!grid || !file || loading) return;
 		geoRefData = createRasterGeoRefData({
+			attribution: 'ASCII Grid',
 			entryId: `ascii_grid_${crypto.randomUUID()}`,
 			entryName: name.trim() || 'ASCII Grid',
 			parsedBands: [grid.band],

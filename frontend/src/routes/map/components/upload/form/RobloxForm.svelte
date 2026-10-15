@@ -2,6 +2,10 @@
 	import { beginUploadProcessing } from '$routes/map/components/upload/processing-guard';
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { robloxFileToGlbInWorker } from '$routes/map/utils/formats/roblox/analyze';
+	import {
+		withUploadAttribution,
+		getUploadAttribution
+	} from '$routes/map/utils/formats/source-attribution';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 
@@ -25,9 +29,12 @@
 			.then((result) => {
 				if (controller.signal.aborted) return;
 				dropFile = [
-					new File([result.glb], input.name.replace(/\.rbxlx?$/i, '') + '.glb', {
-						type: 'model/gltf-binary'
-					})
+					withUploadAttribution(
+						new File([result.glb], input.name.replace(/\.rbxlx?$/i, '') + '.glb', {
+							type: 'model/gltf-binary'
+						}),
+						getUploadAttribution(input)
+					)
 				];
 				showDialogType = 'model';
 				if (result.warnings.length) {

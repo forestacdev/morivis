@@ -163,6 +163,7 @@
 	const openZoneSelection = () => {
 		if (rawGeojson) {
 			pendingZoneGeoRefData = {
+				attribution: 'SIMA',
 				featureCollection: rawGeojson,
 				entryName: simaFile?.name.replace(/\.[^.]+$/, '') ?? 'SIMAデータ'
 			};

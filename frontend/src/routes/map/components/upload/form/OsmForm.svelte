@@ -121,6 +121,7 @@
 
 		if (!bbox || !isBboxValid(bbox)) {
 			pendingZoneGeoRefData = {
+				attribution: 'OpenStreetMap',
 				featureCollection: filtered,
 				entryName
 			};

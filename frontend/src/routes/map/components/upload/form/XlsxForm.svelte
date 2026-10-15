@@ -261,6 +261,7 @@
 							`${entryName} - ${selectedSheet}`
 						)
 					: await featureCollectionToGeoRefData({
+							attribution: 'Excel',
 							featureCollection: drawing.featureCollection,
 							entryName: `${entryName} - ${selectedSheet}`,
 							width: Math.max(1, Math.round(width * scale)),
@@ -311,6 +312,7 @@
 
 				if (!bbox || !isBboxValid(bbox)) {
 					pendingZoneGeoRefData = {
+						attribution: 'Excel',
 						featureCollection: geojson,
 						entryName
 					};

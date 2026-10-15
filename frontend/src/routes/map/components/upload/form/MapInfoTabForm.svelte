@@ -155,12 +155,12 @@
 		error = '';
 		try {
 			const data = await featureCollectionToGeoRefData({
+				attribution: 'MapInfo TAB',
 				featureCollection: filterByGeometryType(result.geojson, selectedGeometry),
 				entryName: name.trim() || 'MapInfo TAB'
 			});
 			if (signal.aborted) return;
 			data.allowedTransformModes = ['georef'];
-			data.vectorAttribution = 'MapInfo TAB';
 			geoRefData = data;
 			focusBbox = null;
 			transformOptionMode = 'georef';

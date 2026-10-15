@@ -577,6 +577,9 @@
 				debugLog.info(
 					`+page finalizeGeoRefEntry 点群生成: id=${pointCloudEntry.id}, bounds=${bbox.join(',')}`
 				);
+				if (data.rasterConfig?.attribution) {
+					pointCloudEntry.metaData.attribution = data.rasterConfig.attribution;
+				}
 				setUploadedDataEntry(pointCloudEntry);
 				closeGeoRefUi();
 				showNotification('点群の位置を設定しました', 'success');
@@ -802,6 +805,7 @@
 			}
 
 			const nextGeoRefData = await featureCollectionToGeoRefData({
+				attribution: pendingData.attribution,
 				featureCollection: transformedGeojson as AppFeatureCollection,
 				entryName: pendingData.entryName
 			});
@@ -809,7 +813,6 @@
 				...nextGeoRefData,
 				vectorStyle: pendingData.vectorStyle,
 				vectorGroups: pendingData.vectorGroups,
-				vectorAttribution: pendingData.attribution,
 				allowedTransformModes: nextAllowedTransformModes
 			};
 			debugLog.info(

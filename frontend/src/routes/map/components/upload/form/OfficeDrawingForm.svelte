@@ -127,6 +127,7 @@
 				readMode === 'image'
 					? await drawingAppearanceToGeoRefData(current, entryName, format)
 					: await featureCollectionToGeoRefData({
+							attribution: format,
 							featureCollection: current.geometry.featureCollection,
 							entryName,
 							width: Math.max(1, Math.round(width * scale)),

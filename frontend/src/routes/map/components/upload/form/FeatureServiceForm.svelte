@@ -413,6 +413,7 @@
 				reason: 'bbox contains non-finite values or invalid ordering'
 			});
 			pendingZoneGeoRefData = {
+				attribution: getServiceAttribution(),
 				featureCollection: geojson,
 				entryName
 			};

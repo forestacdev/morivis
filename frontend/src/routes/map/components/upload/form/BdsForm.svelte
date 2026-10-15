@@ -3,6 +3,7 @@
 
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { analyzeBdsFiles } from '$routes/map/utils/formats/bds/analyze';
+	import { withUploadAttribution } from '$routes/map/utils/formats/source-attribution';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 	import { isProcessing } from '$routes/stores/ui';
@@ -35,9 +36,12 @@
 					? inputs[0].name.replace(/\.bds$/i, '')
 					: `BDS（${inputs.length}ファイル）`;
 			// 変換後は既存のGeoJSONフォームへ渡し、図形種別の選択とentry生成を共通化する。
-			dropFile = new File([JSON.stringify(geojson)], `${name}.geojson`, {
-				type: 'application/geo+json'
-			});
+			dropFile = withUploadAttribution(
+				new File([JSON.stringify(geojson)], `${name}.geojson`, {
+					type: 'application/geo+json'
+				}),
+				'BDS'
+			);
 			showDialogType = 'geojson';
 			if (emptyFiles.length)
 				showNotification(`図形が空のファイル: ${emptyFiles.join('、')}`, 'warning');

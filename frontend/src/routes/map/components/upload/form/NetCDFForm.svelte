@@ -259,6 +259,7 @@
 				}
 
 				geoRefData = createRasterGeoRefData({
+					attribution: 'NetCDF',
 					entryId: id,
 					entryName: entryName || `${longName} 3Dメッシュ`,
 					parsedBands: bands,

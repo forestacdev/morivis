@@ -342,6 +342,7 @@
 
 		if (!bbox || !isBboxValid(bbox)) {
 			pendingZoneGeoRefData = {
+				attribution: 'KML',
 				featureCollection: filtered,
 				entryName
 			};

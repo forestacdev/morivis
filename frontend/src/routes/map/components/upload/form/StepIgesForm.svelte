@@ -2,6 +2,10 @@
 	import { onDestroy } from 'svelte';
 
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
+	import {
+		withUploadAttribution,
+		getUploadAttribution
+	} from '$routes/map/utils/formats/source-attribution';
 	import { cadFileToGlbInWorker } from '$routes/map/utils/formats/step-iges/analyze';
 	import type { CadUpAxis } from '$routes/map/utils/formats/step-iges/types';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
@@ -33,7 +37,12 @@
 			const glb = await cadFileToGlbInWorker(input, upAxis, request.signal);
 			if (request.signal.aborted) return;
 			dropFile = [
-				new File([glb], input.name.replace(/\.[^.]+$/, '') + '.glb', { type: 'model/gltf-binary' })
+				withUploadAttribution(
+					new File([glb], input.name.replace(/\.[^.]+$/, '') + '.glb', {
+						type: 'model/gltf-binary'
+					}),
+					getUploadAttribution(input)
+				)
 			];
 			showDialogType = 'model';
 		} catch (error) {

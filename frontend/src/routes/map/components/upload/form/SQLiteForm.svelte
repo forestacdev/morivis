@@ -311,6 +311,7 @@
 
 	const requestCoordinateSystemSelection = (geojson: FeatureCollection) => {
 		pendingZoneGeoRefData = {
+			attribution: 'SQLite',
 			featureCollection: geojson,
 			entryName
 		};
@@ -405,6 +406,7 @@
 			const { entry, bbox } = await createEntryFromGeojson(geojson, 'Point');
 			if (!entry) {
 				pendingZoneGeoRefData = {
+					attribution: 'SQLite',
 					featureCollection: geojson,
 					entryName
 				};

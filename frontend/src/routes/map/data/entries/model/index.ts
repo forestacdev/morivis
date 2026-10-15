@@ -198,6 +198,7 @@ export const createGlbEntry = (
 		minecraftRegions?: { x: number; z: number; }[];
 		georeference?: ProjectedModelGeoreference;
 		sourceFileName?: string;
+		attribution?: string;
 		initialShadingEnabled?: boolean;
 		initialFaceSide?: MeshStyle['faceSide'];
 	}
@@ -233,7 +234,7 @@ export const createGlbEntry = (
 		},
 		metaData: {
 			...DEFAULT_CUSTOM_META_DATA,
-			attribution: formatType === 'obj'
+			attribution: options?.attribution ?? (formatType === 'obj'
 				? 'OBJ'
 				: formatType === 'vrm'
 				? 'VRM'
@@ -261,7 +262,9 @@ export const createGlbEntry = (
 				? 'PMX'
 				: formatType === 'usd'
 				? 'USD / USDZ'
-				: 'GLB',
+				: /\.gltf(?:[?#]|$)/i.test(options?.sourceFileName ?? url)
+				? 'glTF'
+				: 'GLB'),
 			name,
 			altitude: transform.altitude,
 			bounds: pointToBbox(transform.lng, transform.lat)

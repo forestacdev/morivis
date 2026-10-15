@@ -138,6 +138,7 @@
 
 		if (!bbox || !isBboxValid(bbox)) {
 			pendingZoneGeoRefData = {
+				attribution: 'TopoJSON',
 				featureCollection: filtered,
 				entryName
 			};

@@ -10,6 +10,7 @@ import type { RasterBands } from '$routes/map/utils/formats/geotiff';
 import { generateThumbnail } from './thumbnail';
 
 interface CreateRasterGeoRefDataParams {
+	attribution: string;
 	entryId: string;
 	entryName: string;
 	parsedBands: RasterBands;
@@ -25,6 +26,7 @@ interface CreateRasterGeoRefDataParams {
 }
 
 export const createRasterGeoRefData = ({
+	attribution,
 	entryId,
 	entryName,
 	parsedBands,
@@ -69,6 +71,7 @@ export const createRasterGeoRefData = ({
 		registrationMode,
 		allowedTransformModes,
 		allowRegistrationModeChange,
-		meshConfig
+		rasterConfig: { attribution },
+		meshConfig: { ...meshConfig, attribution: meshConfig?.attribution ?? attribution }
 	};
 };

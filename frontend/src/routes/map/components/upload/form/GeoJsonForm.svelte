@@ -22,7 +22,11 @@
 		geoJsonFileToGeoJson,
 		geoJsonTextToGeoJson
 	} from '$routes/map/utils/formats/geojson';
-	import { GEOJSON_SEQUENCE_EXTENSIONS } from '$routes/map/utils/formats/geojsonseq/files';
+	import {
+		GEOJSON_SEQUENCE_EXTENSIONS,
+		isGeoJsonSequenceFile
+	} from '$routes/map/utils/formats/geojsonseq/files';
+	import { getUploadAttribution } from '$routes/map/utils/formats/source-attribution';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -76,6 +80,14 @@
 
 	const fileExt = $derived(geojsonFile?.name.split('.').pop()?.toLowerCase() ?? '');
 	const isFgb = $derived(fileExt === 'fgb');
+	const sourceAttribution = $derived(
+		sourceMode === 'text' || !geojsonFile
+			? 'GeoJSON'
+			: getUploadAttribution(
+					geojsonFile,
+					isFgb ? 'FlatGeobuf' : isGeoJsonSequenceFile(geojsonFile.name) ? 'GeoJSONSeq' : 'GeoJSON'
+				)
+	);
 	const entryName = $derived(
 		sourceMode === 'text'
 			? manualEntryName.trim() || 'GeoJSONデータ'
@@ -112,7 +124,7 @@
 			geometryType,
 			name: entryName,
 			bbox,
-			attribution: 'GeoJSON',
+			attribution: sourceAttribution,
 			renderMode: renderModeState.selected
 		});
 
@@ -183,6 +195,7 @@
 		const bbox = turfBbox(filtered);
 		if (!bbox || !isBboxValid(bbox)) {
 			pendingZoneGeoRefData = {
+				attribution: sourceAttribution,
 				featureCollection: filtered,
 				entryName
 			};

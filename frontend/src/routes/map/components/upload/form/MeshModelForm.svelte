@@ -23,6 +23,7 @@
 	import { mcaWorldPlacementStore } from '$routes/map/utils/formats/mca/placement-store';
 	import { getInitialMcaWorldPlacement } from '$routes/map/utils/formats/mca/world-placement';
 	import { inspectMtlFile, inspectObjFile } from '$routes/map/utils/formats/obj';
+	import { getUploadAttribution } from '$routes/map/utils/formats/source-attribution';
 	import { inspectVrmlFile } from '$routes/map/utils/formats/vrml';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import type { EpsgCode } from '$routes/map/utils/proj/dict';
@@ -940,6 +941,7 @@
 				...(isLocalFbx ? { preserveSourceOrientation: true } : {}),
 				...(activeFormat === 'stl' ? { upAxis: stlUpAxis } : {}),
 				sourceFileName: glbFile.name,
+				attribution: getUploadAttribution(glbFile),
 				sourceUnit: getUploadedModelSourceUnit(glbFile),
 				minecraftRegion: getUploadedMinecraftRegion(glbFile),
 				minecraftRegions: getUploadedMinecraftRegions(glbFile),

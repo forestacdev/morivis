@@ -5,6 +5,18 @@ import { createGlbEntry } from './index';
 const transform = { lng: 1, lat: 2, altitude: 3 };
 
 describe('createGlbEntry', () => {
+	it.each([
+		['https://example.test/test.gltf?version=1', undefined, 'glTF'],
+		['https://example.test/test.glb', undefined, 'GLB'],
+		['blob:test-model', 'test.gltf', 'glTF'],
+		['blob:test-model', 'test.glb', 'GLB']
+	])('モデルの元ファイルを区別する: %s / %s', (url, sourceFileName, attribution) => {
+		const entry = createGlbEntry('test-model', url, transform, 'gltf', undefined, undefined, {
+			sourceFileName
+		});
+		expect(entry.metaData.attribution).toBe(attribution);
+	});
+
 	it('描画面は元データを既定とし、指定した初期値を保存する', () => {
 		expect(createGlbEntry('test-mesh', 'blob:test-mesh', transform).style.faceSide).toBe(
 			'source'
