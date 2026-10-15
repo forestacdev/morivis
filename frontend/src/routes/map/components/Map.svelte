@@ -264,18 +264,41 @@
 	// 		[bbox[0], bbox[1]]
 	// 	]
 	// });
-	// 非同期の準備を終えてから、確定した入力だけでstyleを生成する。
+	let loadedReferenceStyle: ReferenceStyle | null = null;
+	let referenceStyleLoading = false;
+	const requestReferenceStyle = () => {
+		if (loadedReferenceStyle || referenceStyleLoading || mapDestroyed) return;
+		referenceStyleLoading = true;
+		void loadReferenceStyle()
+			.then((style) => {
+				if (mapDestroyed) return;
+				loadedReferenceStyle = style;
+				// 取得開始時の入力を使わず、最新の表示設定で宣言的に再生成する。
+				if (!isIsolatedPreview && ($showLineLayer || $showLabelLayer)) {
+					setStyleDebounce(layerEntries as MorivisLayerEntry[], 0);
+				}
+			})
+			.catch((error) => {
+				if (mapDestroyed) return;
+				console.error('Failed to load reference style:', error);
+				if (!isIsolatedPreview && ($showLineLayer || $showLabelLayer)) {
+					showNotification('線・地名・POIのスタイルを取得できませんでした', 'error');
+				}
+			})
+			.finally(() => {
+				referenceStyleLoading = false;
+			});
+	};
+
+	// 補助スタイルの通信は背景地図を待たせず、取得完了時に再生成する。
 	const prepareMapStyle = async (input: MapStyleInput, isCurrent: () => boolean) => {
 		if (!isCurrent()) return;
 		let referenceStyle: ReferenceStyle = { layers: [], sources: {} };
 		const referenceVisibility = { line: input.showLine, label: input.showLabel };
 		if (!input.isIsolatedPreview && Object.values(referenceVisibility).some(Boolean)) {
-			try {
-				referenceStyle = selectReferenceStyle(await loadReferenceStyle(), referenceVisibility);
-			} catch (error) {
-				if (!isCurrent()) return;
-				console.error('Failed to load reference style:', error);
-				showNotification('線・地名・POIのスタイルを取得できませんでした', 'error');
+			requestReferenceStyle();
+			if (loadedReferenceStyle) {
+				referenceStyle = selectReferenceStyle(loadedReferenceStyle, referenceVisibility);
 			}
 		}
 		if (!isCurrent()) return;

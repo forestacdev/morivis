@@ -170,6 +170,7 @@
 
 			if (registrationMode === 'mesh') {
 				geoRefData = createRasterGeoRefData({
+					attribution: '基盤地図DEM',
 					entryId: `geotiff_${crypto.randomUUID()}`,
 					entryName: entryName || '基盤地図DEM 3Dメッシュ',
 					parsedBands: bands,

@@ -143,6 +143,7 @@
 	const placeManually = () => {
 		if (!grid || !dataFile || loading) return;
 		geoRefData = createRasterGeoRefData({
+			attribution: 'ENVI／ESRI BIL',
 			entryId: `raw_raster_${crypto.randomUUID()}`,
 			entryName: name.trim() || 'ENVI／ESRI BIL',
 			parsedBands: grid.bands,

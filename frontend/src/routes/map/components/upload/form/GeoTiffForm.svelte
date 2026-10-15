@@ -39,6 +39,7 @@
 		findMatchingWorldFile
 	} from '$routes/map/utils/formats/raster/sidecar';
 	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
+	import { getUploadAttribution } from '$routes/map/utils/formats/source-attribution';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -176,6 +177,7 @@
 		if (!parsedBands) return;
 
 		geoRefData = createRasterGeoRefData({
+			attribution: getUploadAttribution(file),
 			entryId,
 			entryName,
 			parsedBands,
@@ -524,6 +526,7 @@
 					mapImage
 				});
 
+				if (imageFile) entry.metaData.attribution = getUploadAttribution(imageFile);
 				parsedBands = null;
 				showDataEntry = entry;
 				showDialogType = null;
@@ -570,7 +573,7 @@
 				},
 				metaData: {
 					...DEFAULT_CUSTOM_META_DATA,
-					attribution: 'GeoTIFF',
+					attribution: imageFile ? getUploadAttribution(imageFile) : 'GeoTIFF',
 					name: entryName || 'GeoTIFFデータ',
 					tileSize: 256,
 					bounds: resolvedBbox,

@@ -1,3 +1,4 @@
+import { withUploadAttribution } from '../source-attribution';
 import { normalizeRikPath, type RikArchiveFile } from './cabinet';
 
 const TEXTURE_PATTERN = /\.(png|jpe?g|bmp|tga|gif|webp|dds)$/i;
@@ -61,7 +62,7 @@ export const createRikModelFiles = (entries: RikArchiveFile[]): File[] => {
 				type: MIME_TYPES[name.split('.').pop()!.toLowerCase()] ?? ''
 			});
 			Object.defineProperty(file, 'morivisRelativePath', { value: path, configurable: true });
-			return file;
+			return /\.3ds$/i.test(path) ? withUploadAttribution(file, 'RIK') : file;
 		}
 	);
 };

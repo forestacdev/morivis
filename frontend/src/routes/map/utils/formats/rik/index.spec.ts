@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
+import { getUploadAttribution } from '../source-attribution';
 import { createRikModelFiles } from '.';
 import { createTest3ds, createTestCabinet } from './__fixtures__/cabinet';
 import {
@@ -31,6 +32,8 @@ describe('RIK / CAB', () => {
 		const files = createRikModelFiles(extractRikCabinet(createTestCabinet(), runtime));
 		expect(files.map(({ name }) => name)).toEqual(['test-model.3ds', 'test-texture.png']);
 		expect(files[1].type).toBe('image/png');
+		expect(getUploadAttribution(files[0])).toBe('RIK');
+		expect(getUploadAttribution(files[1])).toBe('PNG');
 		expect(new Uint8Array(await files[0].arrayBuffer())).toEqual(createTest3ds());
 	});
 

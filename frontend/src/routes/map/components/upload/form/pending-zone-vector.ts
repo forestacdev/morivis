@@ -13,5 +13,5 @@ export interface PendingZoneGeoRefData {
 	suggestedEpsgCode?: EpsgCode;
 	vectorStyle?: VectorStyle;
 	vectorGroups?: VectorEntryGroup[];
-	attribution?: string;
+	attribution: string;
 }

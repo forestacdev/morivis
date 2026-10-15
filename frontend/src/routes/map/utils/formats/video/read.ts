@@ -58,6 +58,7 @@ export const readVideoFile = async (file: File, signal: AbortSignal): Promise<Ge
 		});
 		return {
 			...createRasterGeoRefData({
+				attribution: '動画',
 				entryId: `video_${crypto.randomUUID()}`,
 				entryName: file.name.replace(/\.[^.]+$/, ''),
 				parsedBands: bands,

@@ -50,6 +50,7 @@
 
 		try {
 			const nextGeoRefData = await featureCollectionToGeoRefData({
+				attribution: 'SVG',
 				featureCollection: geojson,
 				entryName
 			});

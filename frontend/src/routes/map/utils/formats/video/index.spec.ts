@@ -15,6 +15,7 @@ describe('動画エントリー', () => {
 		);
 		expect(entry.format).toEqual({ type: 'video', url: 'blob:test-video' });
 		expect(entry.style.type).toBe('basemap');
+		expect(entry.metaData.attribution).toBe('動画');
 		expect(entry.metaData.imageCorners).toEqual(corners);
 		expect(entry.metaData.imageCorners).not.toBe(corners);
 		const sources = createSourcesItems({
@@ -28,5 +29,17 @@ describe('動画エントリー', () => {
 			urls: ['blob:test-video'],
 			coordinates: corners
 		});
+	});
+	it('GIFから変換した動画では登録時の出典をGIFにする', () => {
+		const entry = createVideoEntry(
+			'test-animation',
+			'blob:test-animation',
+			[0, 0, 1, 1],
+			[[0, 1], [1, 1], [1, 0], [0, 0]],
+			undefined,
+			'GIF'
+		);
+		expect(entry.metaData.attribution).toBe('GIF');
+		expect(entry.format.type).toBe('video');
 	});
 });

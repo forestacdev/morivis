@@ -4,6 +4,10 @@
 	import type { DialogType, UploadFilesInput } from '$routes/map/types';
 	import { hasFormatExtension } from '$routes/map/utils/formats/format-definition';
 	import {
+		withUploadAttribution,
+		getUploadAttribution
+	} from '$routes/map/utils/formats/source-attribution';
+	import {
 		inspectVtkFileInWorker,
 		vtkFileToGlbInWorker
 	} from '$routes/map/utils/formats/vtk/analyze';
@@ -79,7 +83,12 @@
 			);
 			if (request.signal.aborted || file !== input) return;
 			dropFile = [
-				new File([glb], input.name.replace(/\.[^.]+$/, '') + '.glb', { type: 'model/gltf-binary' })
+				withUploadAttribution(
+					new File([glb], input.name.replace(/\.[^.]+$/, '') + '.glb', {
+						type: 'model/gltf-binary'
+					}),
+					getUploadAttribution(input)
+				)
 			];
 			showDialogType = 'model';
 		} catch (error) {

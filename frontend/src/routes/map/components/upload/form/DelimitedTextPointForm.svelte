@@ -183,6 +183,7 @@
 
 				if (!bbox || !isBboxValid(bbox)) {
 					pendingZoneGeoRefData = {
+						attribution,
 						featureCollection: geojson,
 						entryName
 					};

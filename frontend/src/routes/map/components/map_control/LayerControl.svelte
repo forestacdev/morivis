@@ -9,6 +9,8 @@
 </script>
 
 <button
+	aria-label="背景地図・補助レイヤー"
+	aria-expanded={showLayerPane}
 	onclick={(event) => {
 		// 開閉ボタンのクリックをパネル外のクリックとして扱わせない。
 		event.stopPropagation();

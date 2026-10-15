@@ -287,7 +287,7 @@ describe('FITのドロップ', () => {
 });
 
 describe('動画のドロップ', () => {
-	it.each(['mp4', 'MP4', 'webm', 'mov', 'm4v', 'ogv'])(
+	it.each(['mp4', 'MP4', 'webm', 'mov', 'm4v', 'ogv', 'gif', 'GIF'])(
 		'%sを動画フォームへ渡す',
 		async extension => {
 			expect(await resolveDroppedFiles(new File(['test'], `test-video.${extension}`)))
@@ -301,6 +301,18 @@ describe('動画のドロップ', () => {
 		for (const extension of ['.mp4', '.webm', '.mov', '.m4v', '.ogv']) {
 			expect(SUPPORTED_FILE_ACCEPT.split(',')).toContain(extension);
 		}
+	});
+	it('ZIP内のGIFを動画フォームへ渡す', async () => {
+		const zip = new JSZip();
+		zip.file('test-animation.gif', 'test');
+		const file = new File(
+			[await zip.generateAsync({ type: 'arraybuffer' })],
+			'test-animation.zip'
+		);
+		expect(await resolveDroppedFiles(file)).toMatchObject({
+			type: 'dialog',
+			dialogType: 'video'
+		});
 	});
 });
 

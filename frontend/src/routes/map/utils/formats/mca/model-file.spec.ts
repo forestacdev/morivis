@@ -4,6 +4,7 @@ import { getModelUnitMeters, normalizeModelUnitMeters } from '$routes/map/utils/
 import { getUploadedModelSourceUnit } from '$routes/map/utils/three/model-source-unit';
 import { Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
+import { getUploadAttribution } from '../source-attribution';
 import { mcaToGlb } from '.';
 import { regionFixture } from './__fixtures__/region';
 import { createMcaModelFile } from './model-file';
@@ -25,10 +26,12 @@ describe('Minecraftモデルの単位継承', () => {
 			undefined,
 			undefined,
 			{
+				attribution: getUploadAttribution(file),
 				sourceUnit: getUploadedModelSourceUnit(file)
 			}
 		);
 		expect(entry.format.sourceUnit).toBe('minecraft-block');
+		expect(entry.metaData.attribution).toBe('MCA');
 		expect(getModelUnitMeters(entry.style.transform)).toBe(1);
 		expect(JSON.parse(JSON.stringify(entry)).format.sourceUnit).toBe('minecraft-block');
 	});

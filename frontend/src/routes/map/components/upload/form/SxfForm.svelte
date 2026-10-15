@@ -241,6 +241,7 @@
 		const groups = prepareVectorEntryGroups(selectedData, entryName, 'SXF', buildSxfStyle);
 		pending = { data: selectedData, groups };
 		pendingZoneGeoRefData = {
+			attribution: 'SXF',
 			featureCollection: selectedData,
 			entryName,
 			vectorGroups: groups

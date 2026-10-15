@@ -178,6 +178,7 @@
 		const groups = prepareVectorEntryGroups(selectedData, entryName, 'DM', buildDmStyle);
 		pending = { data: selectedData, groups };
 		pendingZoneGeoRefData = {
+			attribution: 'DM',
 			featureCollection: selectedData,
 			entryName,
 			vectorGroups: groups,

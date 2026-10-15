@@ -129,11 +129,13 @@ const drawFeature = (
 };
 
 export const featureCollectionToGeoRefData = async ({
+	attribution,
 	featureCollection,
 	entryName,
 	width = DEFAULT_WIDTH,
 	height = DEFAULT_HEIGHT
 }: {
+	attribution: string;
 	featureCollection: FeatureCollection;
 	entryName: string;
 	width?: number;
@@ -196,6 +198,7 @@ export const featureCollectionToGeoRefData = async ({
 
 	return {
 		sourceType: 'vector',
+		vectorAttribution: attribution,
 		entryId,
 		entryName,
 		parsedBands,

@@ -39,6 +39,10 @@
 	} from '$routes/map/utils/formats/dxf/indexed-mesh';
 	import { convertDxfModelInWorker } from '$routes/map/utils/formats/dxf/mesh-analyze';
 	import { has3dGeometryForType } from '$routes/map/utils/formats/geojson/3d';
+	import {
+		withUploadAttribution,
+		getUploadAttribution
+	} from '$routes/map/utils/formats/source-attribution';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { transformGeoJSONParallel } from '$routes/map/utils/proj';
 	import { getProjContext, type EpsgCode } from '$routes/map/utils/proj/dict';
@@ -339,9 +343,12 @@
 					georeference
 				);
 				if (controller.signal.aborted) return;
-				const modelFile = new File([glb], `${file.name.replace(/\.[^.]+$/, '')}.glb`, {
-					type: 'model/gltf-binary'
-				});
+				const modelFile = withUploadAttribution(
+					new File([glb], `${file.name.replace(/\.[^.]+$/, '')}.glb`, {
+						type: 'model/gltf-binary'
+					}),
+					getUploadAttribution(file)
+				);
 				if (placement) Object.assign(modelFile, { morivisModelPlacement: placement });
 				pendingZoneGeoRefData = null;
 				zoneConfirmedEpsg = null;
@@ -368,6 +375,7 @@
 				);
 				preparedVectorInput = { ...prepared, file };
 				pendingZoneGeoRefData = {
+					attribution: formatLabel,
 					featureCollection: prepared.geojson,
 					entryName: file.name.replace(/\.[^.]+$/, ''),
 					vectorGroups: prepared.groups

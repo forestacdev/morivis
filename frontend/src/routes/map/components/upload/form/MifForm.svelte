@@ -157,6 +157,7 @@
 		const bbox = turfBbox(filtered);
 		if (!bbox || !isBboxValid(bbox)) {
 			pendingZoneGeoRefData = {
+				attribution: 'MapInfo MIF',
 				featureCollection: filtered as FeatureCollection,
 				entryName
 			};

@@ -28,6 +28,7 @@
 		type RasterBands
 	} from '$routes/map/utils/formats/geotiff';
 	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
+	import { getUploadAttribution } from '$routes/map/utils/formats/source-attribution';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import { getFirstUploadFile } from '$routes/map/utils/upload-matchers-common';
@@ -142,6 +143,7 @@
 			GeoTiffCache.setNumBands(id, 3);
 
 			geoRefData = createRasterGeoRefData({
+				attribution: getUploadAttribution(file),
 				entryId: id,
 				entryName,
 				parsedBands: bands,
@@ -290,6 +292,7 @@
 		});
 
 		geoRefData = createRasterGeoRefData({
+			attribution: 'PDF',
 			entryId: id,
 			entryName,
 			parsedBands: bands,

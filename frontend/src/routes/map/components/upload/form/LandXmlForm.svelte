@@ -280,6 +280,7 @@
 			});
 
 			geoRefData = createRasterGeoRefData({
+				attribution: 'LandXML',
 				entryId: `geotiff_${crypto.randomUUID()}`,
 				entryName: `${entryName}_${selectedSurface?.name || 'surface'}_mesh`,
 				parsedBands: bands,
@@ -301,6 +302,7 @@
 			});
 		} else {
 			geoRefData = createRasterGeoRefData({
+				attribution: 'LandXML',
 				entryId: `geotiff_${crypto.randomUUID()}`,
 				entryName: `${entryName}_dem`,
 				parsedBands: bands,

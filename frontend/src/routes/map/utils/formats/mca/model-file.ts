@@ -1,4 +1,5 @@
 import type { UploadedModelFile } from '$routes/map/utils/three/model-source-unit';
+import { withUploadAttribution } from '../source-attribution';
 import { validateMcaFileSet } from './batch';
 
 export const createMcaModelFile = (
@@ -17,5 +18,5 @@ export const createMcaModelFile = (
 	// 地図上の配置は未確定。専用ジオリファレンスメニューで決定する。
 	file.morivisMinecraftRegion = regions[0];
 	file.morivisMinecraftRegions = regions;
-	return file;
+	return withUploadAttribution(file, 'MCA');
 };

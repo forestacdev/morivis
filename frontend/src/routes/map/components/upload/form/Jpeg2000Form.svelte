@@ -148,6 +148,7 @@
 	const placeManually = () => {
 		if (!grid || !dataFile || loading) return;
 		geoRefData = createRasterGeoRefData({
+			attribution: 'JPEG2000／GeoJP2',
 			entryId: `raw_raster_${crypto.randomUUID()}`,
 			entryName: name.trim() || 'JPEG2000／GeoJP2',
 			parsedBands: grid.bands,

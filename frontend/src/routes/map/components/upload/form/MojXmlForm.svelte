@@ -140,6 +140,7 @@
 				confirmOnly: true
 			});
 			pendingZoneGeoRefData = {
+				attribution: '法務局地図XML',
 				featureCollection: filtered,
 				entryName
 			};

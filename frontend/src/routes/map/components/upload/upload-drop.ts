@@ -196,6 +196,7 @@ const SINGLE_FILE_DIALOG_BY_EXTENSION: Record<string, DialogType> = {
 	geojsons: 'geojson',
 	geojsonseq: 'geojson',
 	mp4: 'video',
+	gif: 'video',
 	webm: 'video',
 	mov: 'video',
 	m4v: 'video',

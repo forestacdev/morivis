@@ -146,6 +146,7 @@
 
 		if (!bbox || !isBboxValid(bbox)) {
 			pendingZoneGeoRefData = {
+				attribution: 'GML',
 				featureCollection: filtered,
 				entryName
 			};

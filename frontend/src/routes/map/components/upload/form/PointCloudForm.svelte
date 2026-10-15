@@ -43,6 +43,7 @@
 	import { rasterizePointCloudToDemInWorker } from '$routes/map/utils/formats/pointcloud/rasterize';
 	import { createPointCloudSurfaceEntry } from '$routes/map/utils/formats/pointcloud/surface';
 	import { createRasterGeoRefData } from '$routes/map/utils/formats/raster/georef';
+	import { getUploadAttribution } from '$routes/map/utils/formats/source-attribution';
 	import { parseXyzFile } from '$routes/map/utils/formats/xyz';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
 	import { findCenterTile } from '$routes/map/utils/map/tile';
@@ -120,6 +121,9 @@
 		const file = getFirstUploadFile(dropFile);
 		return file && /\.(las|laz|ply|pcd|e57|xyz|txt|obj)$/i.test(file.name) ? file : null;
 	});
+	const sourceAttribution = $derived(
+		pointCloudFile ? getUploadAttribution(pointCloudFile) : '点群'
+	);
 	const getPointCloudEntryName = (fileName: string) => {
 		const matchedExtension = getMatchedExtension(fileName);
 		return matchedExtension
@@ -511,6 +515,7 @@
 		const ranges: BandDataRange[] = [getMinMax(band, nodata)];
 
 		geoRefData = createRasterGeoRefData({
+			attribution: sourceAttribution,
 			entryId: id,
 			entryName: `${entryName || '点群データ'}_dem`,
 			parsedBands: bands,
@@ -541,6 +546,7 @@
 
 		geoRefData = {
 			...createRasterGeoRefData({
+				attribution: sourceAttribution,
 				entryId: `pointcloud_georef_${crypto.randomUUID()}`,
 				entryName: entryName || '点群データ',
 				parsedBands: [band],
@@ -605,6 +611,7 @@
 						surfaceProgress = message;
 					}
 				);
+				entry.metaData.attribution = sourceAttribution;
 				showDataEntry = entry;
 				showDialogType = null;
 				dropFile = null;
@@ -652,7 +659,7 @@
 					format: { type: 'image', url: '' },
 					metaData: {
 						...DEFAULT_CUSTOM_META_DATA,
-						attribution: 'Point Cloud DEM',
+						attribution: sourceAttribution,
 						name: `${entryName || '点群データ'}_dem`,
 						tileSize: 256,
 						bounds: resolvedBbox,
@@ -733,6 +740,7 @@
 			resolvedBbox
 		);
 
+		entry.metaData.attribution = sourceAttribution;
 		showDataEntry = entry;
 		showDialogType = null;
 		dropFile = null;

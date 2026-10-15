@@ -509,7 +509,10 @@ const createMapStore = () => {
 		const mapPosition = getMapParams();
 
 		scheduleHighlightAnimationWarmup();
-		await warmupGeneratedPoiIconWorker();
+		// アイコン生成側も準備完了を待つため、地図の初期化とは並行してよい。
+		void warmupGeneratedPoiIconWorker().catch((error) => {
+			console.error('Failed to warm up generated POI icon worker:', error);
+		});
 		deckOverlay = null;
 		isDeckOverlayAdded = false;
 
