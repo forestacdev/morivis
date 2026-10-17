@@ -6,9 +6,33 @@ const width = 65;
 const height = 49;
 const word = value => [value & 255, value >> 8];
 const bytes = [
-	...Buffer.from('GIF89a'), ...word(width), ...word(height), 0x81, 0, 0,
-	0, 0, 0, 255, 0, 0, 0, 0, 255, 0, 255, 0,
-	0x21, 0xff, 11, ...Buffer.from('NETSCAPE2.0'), 3, 1, 0, 0, 0
+	...Buffer.from('GIF89a'),
+	...word(width),
+	...word(height),
+	0x81,
+	0,
+	0,
+	0,
+	0,
+	0,
+	255,
+	0,
+	0,
+	0,
+	0,
+	255,
+	0,
+	255,
+	0,
+	0x21,
+	0xff,
+	11,
+	...Buffer.from('NETSCAPE2.0'),
+	3,
+	1,
+	0,
+	0,
+	0
 ];
 for (const [index, delay] of [20, 50, 30].entries()) {
 	bytes.push(0x21, 0xf9, 4, 9, ...word(delay), 0, 0);
