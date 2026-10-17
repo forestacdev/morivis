@@ -1,9 +1,14 @@
 import { VectorTile } from '@mapbox/vector-tile';
-import mlcontour from 'maplibre-contour';
+import { createRequire } from 'node:module';
 import Pbf from 'pbf';
 import { describe, expect, it } from 'vitest';
 import { createContourStyle } from '../layers/contours';
 import { CONTOUR_OPTIONS } from './config';
+
+// Node環境ではパッケージが公開しているrequireエントリを使う。
+const mlcontour = createRequire(import.meta.url)(
+	'maplibre-contour'
+) as typeof import('maplibre-contour').default;
 
 describe('DEMから生成した等高線と表示スタイルの接続', () => {
 	it.each([

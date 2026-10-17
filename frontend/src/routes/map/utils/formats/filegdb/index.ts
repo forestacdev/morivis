@@ -1,4 +1,4 @@
-import fgdbRead from 'fgdb/dist/fgdb.js';
+import fgdbRead from 'fgdb/lib/read';
 
 import type { VectorEntryGeometryType } from '$routes/map/data/types/vector';
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
@@ -79,14 +79,6 @@ const SUPPORTED_GEOMETRY_TYPES = new Set<VectorEntryGeometryType>([
 	'Polygon'
 ]);
 
-type FgdbProcessShim = {
-	browser?: boolean;
-	env?: Record<string, string>;
-	versions?: {
-		node?: string;
-	};
-};
-
 type FileGdbDebugReporter = (message: string, payload?: unknown) => void;
 
 export class FileGdbParseError extends Error {
@@ -131,36 +123,9 @@ const summarizeTableEntry = (entry: FileGdbTableEntry) => ({
 	bytes: getDataByteLength(entry.data)
 });
 
-const ensureFgdbProcessShim = () => {
-	const globalObject = globalThis as {
-		process?: FgdbProcessShim;
-	};
-
-	if (!globalObject.process) {
-		globalObject.process = {
-			browser: true,
-			env: {}
-		};
-		return;
-	}
-
-	// fgdb/lib/read は process.browser を直接参照する。
-	// 実 Node.js 以外で process がある場合は browser フラグだけ補う。
-	if (!globalObject.process.versions?.node) {
-		globalObject.process.browser ??= true;
-		globalObject.process.env ??= {};
-	}
-};
-
-const readFgdbTable = (
-	table: ArrayBuffer | Uint8Array,
-	tablex: ArrayBuffer | Uint8Array
-) => {
-	ensureFgdbProcessShim();
-	// fgdb/lib/read は Vite worker の prebundle で proj4 の CJS 互換が崩れる。
-	// browserify 済みの dist 版を使うと proj4 を内包したまま読める。
-	return fgdbRead(toFgdbArrayBuffer(table), toFgdbArrayBuffer(tablex));
-};
+// ZIPを内包する旧distではなく、パッチ済みのテーブル読み取りだけを使う。
+const readFgdbTable = (table: ArrayBuffer | Uint8Array, tablex: ArrayBuffer | Uint8Array) =>
+	fgdbRead(toFgdbArrayBuffer(table), toFgdbArrayBuffer(tablex));
 
 const getBaseName = (pathLikeName: string): string => {
 	const normalized = pathLikeName.replace(/\\/g, '/');

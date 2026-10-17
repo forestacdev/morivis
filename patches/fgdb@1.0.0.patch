@@ -1,0 +1,104 @@
+diff --git a/lib/fields.js b/lib/fields.js
+index ad7659212456d1e7765aa87978be753ed05e6a0b..9d4b96305d385778f8412c60234d5bac823dd71f 100644
+--- a/lib/fields.js
++++ b/lib/fields.js
+@@ -1,5 +1,6 @@
+ 'use strict';
+-var proj4 = require('proj4');
++var proj4Module = require('proj4');
++var proj4 = proj4Module.default || proj4Module;
+ var fileHeader = require('./table');
+ function get2(offset, data) {
+   var out = {
+diff --git a/lib/fromZip.js b/lib/fromZip.js
+index 78b88d3c84ba507cab15cd93ac85b92b95d61e90..28ed160bf4ddfc0ba3d0978cf402a105090de17a 100644
+--- a/lib/fromZip.js
++++ b/lib/fromZip.js
+@@ -2,43 +2,33 @@
+ var JSZip = require('jszip');
+ var toArray = require('./util').toArray;
+ var read = require('./read');
+-var Promise = require('lie');
+-module.exports = function(buffer) {
+-  return new Promise(function(yes) {
+-    var zip = new JSZip(buffer);
+-    var unzippedFiles = zip.file(/a0{1,7}(?:[^2-8]|[190a-z]|(?:[1-9a-z]+[0-9a-z]+))\.(?:gdbtable|gdbtablx)/);
+-    var tableA = {};
+-    var tablxA = {};
+-    unzippedFiles.forEach(function(file) {
+-      if (file.name.slice(-9) === '.gdbtable' && (parseInt(file.name.slice(-17, -9), 16) === 1 || parseInt(file.name.slice(-17, -9), 16) > 8)) {
+-        tableA[parseInt(file.name.slice(-17, -9), 16)] = file;
+-      } else if (file.name.slice(-9) === '.gdbtablx' && (parseInt(file.name.slice(-17, -9), 16) === 1 || parseInt(file.name.slice(-17, -9), 16) > 8)) {
+-        tablxA[parseInt(file.name.slice(-17, -9), 16)] = file;
+-      }
+-    });
+-    var table = toArray(tableA);
+-    var tablx = toArray(tablxA);
+-    function readFile(num) {
+-      if(process.browser){
+-        return read(table[num].asArrayBuffer(), tablx[num].asArrayBuffer());
+-      }else{
+-        return read(table[num].asNodeBuffer(), tablx[num].asNodeBuffer());
+-      }
+-    }
+-    var files = readFile(0);
+-    var names = {};
+-    var i = 1;
+-    files.forEach(function(name) {
+-      if (name.Name.slice(0, 4) !== 'GDB_') {
+-        names[name.Name] = i++;
+-      }
+-    });
+-    var out = {};
+-    Object.keys(names).forEach(function(key) {
+-      out[key] = readFile(names[key]);
+-    });
+-
+-    yes(out);
+ 
++module.exports = async (buffer) => {
++  const zip = await JSZip.loadAsync(buffer);
++  const files = zip.file(/a0{1,7}(?:[^2-8]|[190a-z]|(?:[1-9a-z]+[0-9a-z]+))\.(?:gdbtable|gdbtablx)/);
++  const tables = {};
++  const indexes = {};
++  files.forEach((file) => {
++    if (file.name.endsWith('.gdbtable')) {
++      const id = parseInt(file.name.slice(-17, -9), 16);
++      if (id === 1 || id > 8) tables[id] = file;
++    } else if (file.name.endsWith('.gdbtablx')) {
++      const id = parseInt(file.name.slice(-17, -9), 16);
++      if (id === 1 || id > 8) indexes[id] = file;
++    }
+   });
++  const tableList = toArray(tables);
++  const indexList = toArray(indexes);
++  const readFile = async (index) => {
++    if (!tableList[index] || !indexList[index]) throw new Error('Missing FileGDB table or index');
++    const [table, tablex] = await Promise.all([
++      tableList[index].async('uint8array'),
++      indexList[index].async('uint8array')
++    ]);
++    return read(table, tablex);
++  };
++  const catalog = await readFile(0);
++  const names = catalog.filter((item) => !item.Name.startsWith('GDB_')).map((item) => item.Name);
++  const layers = await Promise.all(names.map((name, index) => readFile(index + 1)));
++  return Object.fromEntries(names.map((name, index) => [name, layers[index]]));
+ };
+diff --git a/lib/read.js b/lib/read.js
+index b42bff2b6082552cceb41781163e94b16e6e8cfe..c239f9a10a3ddfb5440c732b38b31f896c648516 100644
+--- a/lib/read.js
++++ b/lib/read.js
+@@ -1,10 +1,5 @@
+ 'use strict';
+ var rows = require('./rows');
+ var util = require('./util');
+-module.exports = function(table, tablex){
+-  if(!process.browser){
+-    table = util.toArrayBuffer(table);
+-    tablex = util.toArrayBuffer(tablex);
+-  }
+-  return rows(table, tablex);
+-};
++const toArrayBuffer = (value) => value instanceof ArrayBuffer ? value : util.toArrayBuffer(value);
++module.exports = (table, tablex) => rows(toArrayBuffer(table), toArrayBuffer(tablex));

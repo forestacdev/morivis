@@ -42,19 +42,22 @@ const setupStore = (version: 2 | 3, transpose = false, rootArray = false) => {
 beforeEach(() => {
 	vi.stubGlobal(
 		'ImageData',
-		vi.fn().mockImplementation((width: number, height: number) => ({
-			data: new Uint8ClampedArray(width * height * 4)
-		}))
+		class {
+			data: Uint8ClampedArray;
+			constructor(width: number, height: number) {
+				this.data = new Uint8ClampedArray(width * height * 4);
+			}
+		}
 	);
 	vi.stubGlobal(
 		'OffscreenCanvas',
-		vi.fn().mockImplementation(() => ({
-			getContext: () => ({
+		class {
+			getContext = () => ({
 				putImageData: (image: { data: Uint8ClampedArray; }) => {
 					lastPixels = image.data;
 				}
-			})
-		}))
+			});
+		}
 	);
 });
 afterEach(() => {

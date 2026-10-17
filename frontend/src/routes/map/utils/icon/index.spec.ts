@@ -116,7 +116,16 @@ describe('アイコンWorkerの並行準備', () => {
 			},
 			terminate: vi.fn()
 		};
-		vi.stubGlobal('Worker', vi.fn(() => worker));
+		vi.stubGlobal(
+			'Worker',
+			vi.fn(
+				class {
+					constructor() {
+						return worker;
+					}
+				}
+			)
+		);
 		vi.stubGlobal(
 			'fetch',
 			vi.fn().mockResolvedValue({

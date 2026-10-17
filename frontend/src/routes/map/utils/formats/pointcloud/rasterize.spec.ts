@@ -5,7 +5,15 @@ const worker = vi.hoisted(() => ({
 	terminate: vi.fn(),
 	onmessage: null as ((event: { data: unknown; }) => void) | null
 }));
-vi.mock('./rasterize.worker?worker', () => ({ default: vi.fn(() => worker) }));
+vi.mock('./rasterize.worker?worker', () => ({
+	default: vi.fn(
+		class {
+			constructor() {
+				return worker;
+			}
+		}
+	)
+}));
 
 import { rasterizePointCloudToDemInWorker } from './rasterize';
 

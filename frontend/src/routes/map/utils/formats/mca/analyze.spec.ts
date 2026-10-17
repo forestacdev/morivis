@@ -11,7 +11,15 @@ const worker = vi.hoisted(() => ({
 	onerror: null as ((event: { message: string; }) => void) | null,
 	onmessageerror: null as (() => void) | null
 }));
-vi.mock('./worker?worker', () => ({ default: vi.fn(() => worker) }));
+vi.mock('./worker?worker', () => ({
+	default: vi.fn(
+		class {
+			constructor() {
+				return worker;
+			}
+		}
+	)
+}));
 
 import { mcaFileToGlbInWorker } from './analyze';
 
