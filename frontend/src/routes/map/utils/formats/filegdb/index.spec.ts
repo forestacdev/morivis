@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { FeatureCollection } from '$routes/map/types/geojson';
 
-vi.mock('fgdb/dist/fgdb.js', () => ({
+vi.mock('fgdb/lib/read', () => ({
 	default: vi.fn()
 }));
 
-import fgdbRead from 'fgdb/dist/fgdb.js';
+import fgdbRead from 'fgdb/lib/read';
 
 import {
 	type FileGdbInput,
@@ -38,23 +38,23 @@ const createFeatureCollection = (geometryType: string): FeatureCollection => ({
 			type: 'Feature',
 			properties: { id: geometryType },
 			geometry: geometryType === 'Point'
-				? { type: 'Point', coordinates: [139.7, 35.6] }
+				? { type: 'Point', coordinates: [1.25, 2.5] }
 				: geometryType === 'LineString'
 				? {
 					type: 'LineString',
 					coordinates: [
-						[139.7, 35.6],
-						[139.8, 35.7]
+						[1.25, 2.5],
+						[1.5, 2.75]
 					]
 				}
 				: {
 					type: 'Polygon',
 					coordinates: [
 						[
-							[139.7, 35.6],
-							[139.8, 35.6],
-							[139.8, 35.7],
-							[139.7, 35.6]
+							[1.25, 2.5],
+							[1.5, 2.5],
+							[1.5, 2.75],
+							[1.25, 2.5]
 						]
 					]
 				}
@@ -90,8 +90,8 @@ describe('filegdb format utils', () => {
 	});
 
 	it('カタログと各テーブルからレイヤー一覧を組み立てる', () => {
-		vi.mocked(fgdbRead).mockImplementation((table: ArrayBuffer) => {
-			const id = new Uint8Array(table)[0];
+		vi.mocked(fgdbRead).mockImplementation((table) => {
+			const id = (table instanceof Uint8Array ? table : new Uint8Array(table))[0];
 
 			if (id === 1) {
 				return [
@@ -163,8 +163,8 @@ describe('filegdb format utils', () => {
 	});
 
 	it('日本語名の .gdb でも catalog 失敗時に feature table へフォールバックできる', () => {
-		vi.mocked(fgdbRead).mockImplementation((table: ArrayBuffer) => {
-			const id = new Uint8Array(table)[0];
+		vi.mocked(fgdbRead).mockImplementation((table) => {
+			const id = (table instanceof Uint8Array ? table : new Uint8Array(table))[0];
 
 			if (id === 1) {
 				throw new Error('Start offset 2852126720 is outside the bounds of the buffer');
@@ -215,8 +215,8 @@ describe('filegdb format utils', () => {
 	});
 
 	it('読めない場合に診断情報を保持する', () => {
-		vi.mocked(fgdbRead).mockImplementation((table: ArrayBuffer) => {
-			const id = new Uint8Array(table)[0];
+		vi.mocked(fgdbRead).mockImplementation((table) => {
+			const id = (table instanceof Uint8Array ? table : new Uint8Array(table))[0];
 
 			if (id === 1) {
 				throw new Error('Start offset 2852126720 is outside the bounds of the buffer');

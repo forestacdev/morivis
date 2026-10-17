@@ -3,7 +3,9 @@ import { convertGifToVideo } from '.';
 import { formatGif } from './definition';
 
 const worker = {
-	onmessage: null as ((event: { data: { result?: ArrayBuffer; error?: string; }; }) => void) | null,
+	onmessage: null as
+		| ((event: { data: { result?: ArrayBuffer; error?: string; }; }) => void)
+		| null,
 	onerror: null as (() => void) | null,
 	onmessageerror: null as (() => void) | null,
 	postMessage: vi.fn(),
@@ -13,7 +15,16 @@ const input = new File(['test'], 'test-animation.GIF', { type: 'image/gif' });
 
 beforeEach(() => {
 	vi.clearAllMocks();
-	vi.stubGlobal('Worker', vi.fn(() => worker));
+	vi.stubGlobal(
+		'Worker',
+		vi.fn(
+			class {
+				constructor() {
+					return worker;
+				}
+			}
+		)
+	);
 });
 afterEach(() => {
 	vi.unstubAllGlobals();
@@ -25,7 +36,11 @@ describe('GIF変換Workerのライフサイクル', () => {
 		const pending = convertGifToVideo(input, new AbortController().signal);
 		worker.onmessage?.({ data: { result: new ArrayBuffer(3) } });
 		const result = await pending;
-		expect([result.name, result.type, result.size]).toEqual(['test-animation.mp4', 'video/mp4', 3]);
+		expect([result.name, result.type, result.size]).toEqual([
+			'test-animation.mp4',
+			'video/mp4',
+			3
+		]);
 		expect(worker.terminate).toHaveBeenCalledOnce();
 	});
 	it('変換中のキャンセルでWorkerを即座に終了する', async () => {

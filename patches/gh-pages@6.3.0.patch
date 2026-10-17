@@ -1,0 +1,33 @@
+diff --git a/lib/index.js b/lib/index.js
+index 7b1365b89f96cdb97be12c534215ea390b04ce1a..8fac597d3b8a2d638e0f4bbff1d0e258abdf9524 100644
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -3,7 +3,7 @@ const util = require('util');
+ const filenamify = require('filenamify');
+ const findCacheDir = require('find-cache-dir');
+ const fs = require('fs-extra');
+-const globby = require('globby');
++const {globSync} = require('globby');
+ const Git = require('./git.js');
+ const copy = require('./util.js').copy;
+ const getUser = require('./util.js').getUser;
+@@ -105,8 +105,7 @@ exports.publish = function publish(basePath, config, callback) {
+     return Promise.reject(err);
+   }
+ 
+-  const files = globby
+-    .sync(options.src, {
++  const files = globSync(options.src, {
+       cwd: basePath,
+       dot: options.dotfiles,
+     })
+@@ -179,8 +178,7 @@ exports.publish = function publish(basePath, config, callback) {
+         }
+ 
+         log('Removing files');
+-        const files = globby
+-          .sync(options.remove, {
++        const files = globSync(options.remove, {
+             cwd: path.join(git.cwd, options.dest),
+           })
+           .map((file) => path.join(options.dest, file));

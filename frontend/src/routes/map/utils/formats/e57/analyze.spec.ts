@@ -9,11 +9,15 @@ const state = vi.hoisted(() => ({
 	}>
 }));
 vi.mock('./worker?worker', () => ({
-	default: vi.fn(() => {
-		const worker = { postMessage: vi.fn(), terminate: vi.fn() };
-		state.workers.push(worker);
-		return worker;
-	})
+	default: vi.fn(
+		class {
+			constructor() {
+				const worker = { postMessage: vi.fn(), terminate: vi.fn() };
+				state.workers.push(worker);
+				return worker;
+			}
+		}
+	)
 }));
 import { parseE57File } from './analyze';
 const file = new File([new Uint8Array(48)], 'test-cloud.e57');

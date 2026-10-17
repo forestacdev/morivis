@@ -1,6 +1,6 @@
 # MapLibreの画像ソースのズーム上限
 
-`maplibre-gl@6.4.0.patch` は、画像の範囲から求める内部タイルのズームを `MAX_TILE_ZOOM`（25）までに制限する。小さなDEMや位置合わせ画像では計算結果が26以上となり、`CanonicalTileID` の生成が失敗するため。
+`maplibre-gl@6.4.1.patch` は、画像の範囲から求める内部タイルのズームを `MAX_TILE_ZOOM`（25）までに制限する。小さなDEMや位置合わせ画像では計算結果が26以上となり、`CanonicalTileID` の生成が失敗するため。
 
 画像の四隅、画素、エントリのboundsは変更しない。通常のズーム計算も維持する。TypeScriptの元ソースと、配布されている通常版・開発版のESMに同じ修正を適用する。通常版の差分が大きいのはminifyされた1行を含むためで、変更する式は1箇所のみ。
 
@@ -11,3 +11,11 @@
 ```sh
 pnpm --dir frontend exec vitest run src/routes/map/utils/map/image-source.spec.ts
 ```
+
+## FileGDB
+
+`fgdb@1.0.0.patch` はJSZip 3の非同期API、ArrayBuffer入力、proj4のESM/CJS互換に対応する。アプリは古いJSZipを内包する `dist` を使わず、`fgdb/lib/read` を直接読み込む。`pnpm-workspace.yaml` のJSZip指定とセットで維持する。
+
+## デプロイ
+
+`gh-pages@6.3.0.patch` はファイル列挙をtinyglobbyの `globSync` に切り替える。`pnpm-workspace.yaml` のglobby置き換えとセットで維持する。`frontend/scripts/deploy-dependencies.spec.ts` でローカルGitリポジトリへの更新・削除を検証する。

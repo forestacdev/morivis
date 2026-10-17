@@ -217,7 +217,7 @@
 			layerEntry as RasterImageEntry<RasterTiffStyle>
 		);
 		if (
-			!imageSource ||
+			!imageSource?.url ||
 			requestId !== imageUpdateRequestId ||
 			layerEntry.state?.dimension?.currentIndex !== currentIndex
 		) {

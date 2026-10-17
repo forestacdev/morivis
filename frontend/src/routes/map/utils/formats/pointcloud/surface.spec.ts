@@ -8,7 +8,15 @@ const worker = vi.hoisted(() => ({
 	onmessageerror: null as (() => void) | null
 }));
 
-vi.mock('./surface.worker?worker', () => ({ default: vi.fn(() => worker) }));
+vi.mock('./surface.worker?worker', () => ({
+	default: vi.fn(
+		class {
+			constructor() {
+				return worker;
+			}
+		}
+	)
+}));
 vi.mock('$routes/map/data/entries/model', () => ({ createGlbEntry: vi.fn() }));
 
 import { createPointCloudSurfaceEntry } from './surface';

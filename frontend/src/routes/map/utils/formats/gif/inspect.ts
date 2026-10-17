@@ -3,8 +3,13 @@ import { formatGif, GIF_MAX_DIMENSION } from './definition';
 /** 復号前に構造と処理量を検査する。画素の復号・disposalの合成はFFmpegに任せる。 */
 export const inspectGif = (bytes: Uint8Array) => {
 	const invalid = () => new Error('GIFのデータが不正、または途中で切れています');
-	if (bytes.length > formatGif.limits.maxFileBytes) throw new Error('GIFは32 MiB以下にしてください');
-	if (bytes.length < 13 || !['GIF87a', 'GIF89a'].includes(new TextDecoder().decode(bytes.subarray(0, 6)))) {
+	if (bytes.length > formatGif.limits.maxFileBytes) {
+		throw new Error('GIFは32 MiB以下にしてください');
+	}
+	if (
+		bytes.length < 13
+		|| !['GIF87a', 'GIF89a'].includes(new TextDecoder().decode(bytes.subarray(0, 6)))
+	) {
 		throw invalid();
 	}
 	const word = (offset: number) => bytes[offset] | (bytes[offset + 1] << 8);
@@ -43,12 +48,17 @@ export const inspectGif = (bytes: Uint8Array) => {
 			skip(9);
 			const frameWidth = word(descriptor + 4);
 			const frameHeight = word(descriptor + 6);
-			if (!frameWidth || !frameHeight || word(descriptor) + frameWidth > width || word(descriptor + 2) + frameHeight > height) {
+			if (
+				!frameWidth || !frameHeight || word(descriptor) + frameWidth > width
+				|| word(descriptor + 2) + frameHeight > height
+			) {
 				throw invalid();
 			}
 			frames++;
 			if (frames * width * height > formatGif.limits.maxSamples) {
-				throw new Error('GIFの総画素数が上限を超えています。サイズまたはフレーム数を減らしてください');
+				throw new Error(
+					'GIFの総画素数が上限を超えています。サイズまたはフレーム数を減らしてください'
+				);
 			}
 			const packed = bytes[descriptor + 8];
 			if (packed & 0x80) skip(3 * 2 ** ((packed & 7) + 1));
