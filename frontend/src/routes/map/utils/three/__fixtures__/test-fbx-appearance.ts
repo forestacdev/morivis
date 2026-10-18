@@ -33,7 +33,7 @@ const property = (value: string | number | bigint) => {
 	return result;
 };
 
-export const createTestFbxAppearance = (version = 7700) => {
+export const createTestFbxAppearance = (version = 7700, materialName = 'test-color') => {
 	const width = version >= 7500 ? 8 : 4;
 	const headerLength = width * 3 + 1;
 	const encode = (node: Node, offset: number): Uint8Array => {
@@ -64,7 +64,7 @@ export const createTestFbxAppearance = (version = 7700) => {
 				{ name: 'Model', values: [3n, 'test-untextured-surface', 'Mesh'] },
 				{
 					name: 'Material',
-					values: [10n, 'test-color', ''],
+					values: [10n, materialName, ''],
 					children: [{
 						name: 'Properties70',
 						children: [{

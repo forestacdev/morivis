@@ -55,7 +55,7 @@ flowchart LR
 
 通常のメッシュモデルの描画面は `MeshStyle.faceSide` に保存する。`source`（未指定時も同じ）はローダー・変換処理が作った材質ごとの設定、`double` は両面、`front` は表面のみ。表示用材質へ差し替える前の設定を保持するため、スタイルを変更してから `source` に戻せる。エッジ表示にも同じ設定を適用し、GLB出力は表示時の描画面を引き継ぐ。CADなどの変換処理が両面材質を生成している場合、`source` ではその設定を維持する。
 
-FBXのファイルアップロードでは、Creator、Original/LastSavedのApplicationNameにNavisworksと明記されている場合だけ `double` を初期設定にする。ファイル名からは推測しない。生成ソフトを特定できない入力やURL登録は `source` を使用し、利用者がスタイルの「描画面」で変更できる。選択済みの値は再描画で上書きしない。
+FBXのファイルアップロードでは、Creator、Original/LastSavedのApplicationNameにNavisworksと明記されている場合、またはMaterialノードにNavisworksの既定材質名 `Navisworks material` がある場合は `double` を初期設定にする。生成ソフト名がFBX SDKだけのファイルも、材質名で判定できる。ファイル名からは推測しない。生成ソフトを特定できない入力やURL登録は `source` を使用し、利用者がスタイルの「描画面」で変更できる。選択済みの値は再描画で上書きしない。
 
 バイナリFBXの曲線色は、MaterialのDiffuseColorとConnectionsから復元する。Navisworksの埋め込みDesign Packageは `fbx-package.ts` で読み、ProxyObjectのアセット参照を通して画像をモデルへ対応させる。`fbx-appearance.ts` がローダー直後に画像とUVを補正し、元から接続されたテクスチャは保持する。画像の縦横比に合う実寸UVだけを正規化し、タイリング用UVは維持する。復元した材質と画像はruntimeに置き、表示設定の変更後も切り抜きを保持して、モデル削除時に解放する。範囲解析Workerでは画像を復号しない。
 
