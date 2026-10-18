@@ -1,7 +1,7 @@
 import { Mesh, MeshStandardMaterial } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { describe, expect, it } from 'vitest';
-import { minecraftMaterialState } from '../../three/minecraft-material';
+import { modelMaterialState } from '../../three/model-material-state';
 import { chunkFixture, regionFixture } from './__fixtures__/region';
 import { mcaMeshesToGlb } from './glb';
 import { meshMcaRegion } from './mesh';
@@ -41,7 +41,7 @@ describe.each(['legacy', 'resource'] as const)('Minecraft water: %s', (mode) => 
 		});
 		const water = materials.find((m) => m.transparent)!;
 		expect(water.opacity).toBeCloseTo(0.55);
-		expect(minecraftMaterialState(water, 1)).toMatchObject({
+		expect(modelMaterialState(water, 1)).toMatchObject({
 			sourceOpacity: 0.55,
 			transparent: true,
 			depthWrite: false

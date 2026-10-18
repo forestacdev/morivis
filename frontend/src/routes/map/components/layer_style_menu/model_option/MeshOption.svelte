@@ -368,7 +368,7 @@
 	{/if}
 	<Switch label="ワイヤーフレーム表示" bind:value={layerEntry.style.wireframe} />
 	<div class="my-2">
-		<p class="text-sm">描画面</p>
+		<p class="text-sm text-base">描画面</p>
 		<BaseSelectMenu
 			items={[
 				{ key: 'source', name: '元データに従う' },
@@ -395,9 +395,7 @@
 				}
 			}
 		/>
-		<p class="mb-2 text-xs text-base/70">
-			文字属性が残っている場合、モデル上に3Dテキストとして表示します。
-		</p>
+
 		<Switch
 			label="FBX曲線を表示"
 			bind:value={
@@ -407,9 +405,6 @@
 				}
 			}
 		/>
-		<p class="mb-2 text-xs text-base/70">
-			線分・ポリライン・円や、CAD文字の輪郭として書き出された曲線を切り替えます。
-		</p>
 	{/if}
 	<Switch label="エッジ表示" bind:value={layerEntry.style.edge!.enabled} />
 	{#if layerEntry.style.edge!.enabled}

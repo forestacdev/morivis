@@ -3,6 +3,7 @@ import { takeGaussianSplatData } from '$routes/map/utils/formats/gaussian-splat/
 import { parseGaussianSplatInWorker } from '$routes/map/utils/formats/gaussian-splat/gaussian-splat-parallel';
 import { parseUsdArrayBuffer } from '$routes/map/utils/formats/usd';
 import { resolveStaticAssetPath } from '$routes/map/utils/platform/asset-path';
+import { restoreFbxAppearance } from '$routes/map/utils/three/fbx-appearance';
 import {
 	applyFbxCurveGeometricTransform,
 	parseFbxModelAttributes
@@ -442,6 +443,7 @@ export class ModelLoader {
 
 						const buffer = await response.arrayBuffer();
 						const object = fbxLoader.parse(buffer, resourcePath);
+						const appearanceResult = await restoreFbxAppearance(object, buffer);
 						const fallbackTextureResult = applyFbxTextureFallback(object, resourceUrls);
 						const attributesByModelId = parseFbxModelAttributes(buffer);
 						const geometricTransformCurveCount = applyFbxCurveGeometricTransform(
@@ -463,6 +465,7 @@ export class ModelLoader {
 						});
 						if (!import.meta.env.PROD) {
 							console.info('[FBX属性] 読み込み結果', {
+								...appearanceResult,
 								attributeModelCount: Object.keys(attributesByModelId).length,
 								modelIdCount,
 								matchedAttributeCount,

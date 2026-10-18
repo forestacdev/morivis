@@ -57,6 +57,8 @@ flowchart LR
 
 FBXのファイルアップロードでは、Creator、Original/LastSavedのApplicationNameにNavisworksと明記されている場合だけ `double` を初期設定にする。ファイル名からは推測しない。生成ソフトを特定できない入力やURL登録は `source` を使用し、利用者がスタイルの「描画面」で変更できる。選択済みの値は再描画で上書きしない。
 
+バイナリFBXの曲線色は、MaterialのDiffuseColorとConnectionsから復元する。Navisworksの埋め込みDesign Packageは `fbx-package.ts` で読み、ProxyObjectのアセット参照を通して画像をモデルへ対応させる。`fbx-appearance.ts` がローダー直後に画像とUVを補正し、元から接続されたテクスチャは保持する。画像の縦横比に合う実寸UVだけを正規化し、タイリング用UVは維持する。復元した材質と画像はruntimeに置き、表示設定の変更後も切り抜きを保持して、モデル削除時に解放する。範囲解析Workerでは画像を復号しない。
+
 ## 検証
 
 - `utils/style/map-style.spec.ts`：ストアなしでの生成、背景地図・プレビュー、クリック対象と帰属、source解決。
