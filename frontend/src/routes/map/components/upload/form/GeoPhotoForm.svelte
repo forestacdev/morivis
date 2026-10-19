@@ -201,9 +201,7 @@
 <div class="flex w-full grow flex-col gap-4 overflow-y-auto" aria-live="polite">
 	{#if confirmLocation}
 		<p>{missingPhotoCount}枚の写真に位置情報がありません。端末の現在地を使いますか？</p>
-		<p class="text-sm text-gray-400">
-			位置情報のない写真を、撮影場所ではなく今いる場所に配置します。
-		</p>
+
 		<div class="flex justify-center gap-4">
 			<button onclick={cancel} class="c-btn-sub cursor-pointer p-4">キャンセル</button>
 			<button onclick={() => answerLocation(true)} class="c-btn-confirm cursor-pointer p-4"
