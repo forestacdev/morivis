@@ -1,6 +1,11 @@
 packages:
   - frontend
 
+catalog:
+  prettier: 3.8.4
+  prettier-plugin-svelte: 4.1.0
+  prettier-plugin-tailwindcss: 0.8.0
+
 minimumReleaseAge: 10080
 strictDepBuilds: true
 trustPolicy: no-downgrade

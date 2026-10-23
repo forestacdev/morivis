@@ -8,8 +8,9 @@
         "mobile": "pnpm -F morivis-frontend mobile",
         "build": "pnpm -F morivis-frontend build",
         "preview": "pnpm -F morivis-frontend build && pnpm -F morivis-frontend preview",
-        "deploy": "pnpm -F morivis-frontend build && pnpm -F morivis-frontend deploy",
-        "test": "pnpm --dir frontend test"
+        "deploy": "pnpm -F morivis-frontend deploy",
+        "test": "pnpm --dir frontend test",
+        "preinstall": "node ./frontend/scripts/require-pnpm.mjs"
     },
     "keywords": [],
     "author": "",
@@ -17,8 +18,8 @@
     "packageManager": "pnpm@11.4.0",
     "devDependencies": {
         "gh-pages": "^6.3.0",
-        "prettier": "3.4.2",
-        "prettier-plugin-svelte": "3.3.2",
-        "prettier-plugin-tailwindcss": "0.6.14"
+        "prettier": "catalog:",
+        "prettier-plugin-svelte": "catalog:",
+        "prettier-plugin-tailwindcss": "catalog:"
     }
 }

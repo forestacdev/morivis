@@ -14,6 +14,10 @@ pnpm dev
 
 `pnpm-workspace.yaml` が `frontend` をワークスペースに含める。依存関係はルートの `pnpm-lock.yaml` で管理し、`frontend` に別のlockfileを作らない。
 
+ルートと `frontend` の `preinstall` は、共通の `frontend/scripts/require-pnpm.mjs` で実行元がpnpmかを確認する。確認用パッケージのダウンロードは不要。
+
+Prettier本体とSvelte・Tailwind CSSプラグインのバージョンは、`pnpm-workspace.yaml` の `catalog` で管理する。ルートと `frontend` は同じバージョンを参照する。更新時はcatalogを変更し、ルートで `pnpm install` を実行する。
+
 ## 構成
 
 ```text
@@ -60,6 +64,8 @@ morivis/
 小さな修正のたびにフルチェックを繰り返さず、変更箇所に応じた検証を行う。型、Svelteコンポーネント、共有ユーティリティを変更した場合は、最後に `check` を実行する。
 
 `build` スクリプトは、Node.jsのヒープ不足による停止を避けるため、ヒープ上限を8GiBに設定してViteを起動する。これは上限値であり、起動時に全量を確保するものではない。
+
+ルートの `pnpm deploy` は `frontend` の `deploy` に委譲し、そこで一度だけビルドしてGitHub Pagesへ公開する。`pnpm preview` はビルドしてからプレビューを起動する。既存のビルドを確認する場合は `pnpm --dir frontend preview` を使う。
 
 ESLintのwarningは終了コードを失敗にしない。lintの通過は、警告がないことを意味しない。同梱ライブラリの `static/basis/`、`static/draco/`、`static/vendor/` はESLintの対象外とし、配布ファイルを直接整形しない。
 
