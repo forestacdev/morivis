@@ -7,45 +7,12 @@
 	import PlaybackControl from '../../atoms/PlaybackControl.svelte';
 	import TimeRuler from '../../atoms/TimeRuler.svelte';
 
-	import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
-	import type {
-		MorivisRasterEntry,
-		RasterImageEntry,
-		RasterCategoricalStyle,
-		RasterBaseMapStyle,
-		RasterDemStyle,
-		RasterTiffStyle,
-		RasterCadStyle
-	} from '$routes/map/data/types/raster';
-	import type {
-		MorivisVectorEntry,
-		GeoJsonMetaData,
-		TileMetaData
-	} from '$routes/map/data/types/vector';
-	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
-	import { getTopexCacheKey, getTwiCacheKey } from '$routes/map/utils/formats/geotiff';
 	import {
-		getRasterDimension,
-		getRasterDimensionRuntimeUpdates
-	} from '$routes/map/utils/raster/dimension-runtime';
-	import { getRasterTiffImageSource } from '$routes/map/utils/sources/prepare';
-	import {
-		getVectorDimension,
-		getVectorDimensionRuntimeUpdates
-	} from '$routes/map/utils/vector/dimension-runtime';
-	import { mapStore } from '$routes/stores/map';
+		createDimensionController,
+		getDimension,
+		type DimensionEnabledEntry
+	} from '$routes/map/utils/runtime/temporal-dimension';
 	import { isMobile } from '$routes/stores/ui';
-
-	type DimensionEnabledRasterEntry = MorivisRasterEntry<
-		RasterCategoricalStyle | RasterBaseMapStyle | RasterDemStyle | RasterTiffStyle | RasterCadStyle
-	>;
-
-	type DimensionEnabledVectorEntry = MorivisVectorEntry<GeoJsonMetaData | TileMetaData>;
-
-	type DimensionEnabledEntry =
-		| DimensionEnabledRasterEntry
-		| DimensionEnabledVectorEntry
-		| MeshEntry<MeshStyle>;
 
 	interface Props {
 		layerEntry: DimensionEnabledEntry;
@@ -53,26 +20,6 @@
 	}
 
 	let { layerEntry = $bindable(), showDimensionOption = $bindable() }: Props = $props();
-
-	const isRasterEntry = (entry: DimensionEnabledEntry): entry is DimensionEnabledRasterEntry =>
-		entry.type === 'raster';
-
-	const isSourceTemporalVectorEntry = (
-		entry: DimensionEnabledEntry
-	): entry is DimensionEnabledVectorEntry =>
-		entry.type === 'vector' && Boolean(getVectorDimension(entry));
-
-	const isTemporalMeshEntry = (entry: DimensionEnabledEntry): entry is MeshEntry<MeshStyle> =>
-		entry.type === 'model' &&
-		entry.style.type === 'mesh' &&
-		Boolean(entry.properties?.temporal?.dimension);
-
-	const getDimension = (entry: DimensionEnabledEntry) => {
-		if (isRasterEntry(entry)) return getRasterDimension(entry);
-		if (isSourceTemporalVectorEntry(entry)) return getVectorDimension(entry);
-		if (isTemporalMeshEntry(entry)) return entry.properties?.temporal?.dimension;
-		return undefined;
-	};
 
 	let dimension = $derived(getDimension(layerEntry));
 	let dimensionState = $derived(layerEntry.state?.dimension);
@@ -89,7 +36,8 @@
 		startIndex: 0
 	};
 	let isSyncingInitialScroll = $state(false);
-	let imageUpdateRequestId = 0;
+	const dimensionController = createDimensionController(() => layerEntry);
+	let selectionRequestId = 0;
 	let isUpdatingDimension = $state(false);
 	let playbackSpeed = $state(1200);
 
@@ -105,129 +53,14 @@
 		};
 	});
 
-	// 実際の時刻切り替え本体。
-	// UI から渡された index を entry.state に反映し、必要な runtime 更新だけ流す。
 	const applyDimensionIndex = async (currentIndex: number) => {
-		if (!dimension) return;
-		if (currentIndex === dimensionState?.currentIndex) return;
-		const requestId = ++imageUpdateRequestId;
-
-		// mesh は MapLibre ではなく model runtime 側の時刻更新を使う。
-		if (isTemporalMeshEntry(layerEntry)) {
-			isUpdatingDimension = true;
-			try {
-				await mapStore.setTemporalModelTimeStep(layerEntry, currentIndex);
-			} finally {
-				isUpdatingDimension = false;
-			}
-			return;
+		const request = ++selectionRequestId;
+		isUpdatingDimension = true;
+		try {
+			await dimensionController.select(currentIndex);
+		} finally {
+			if (request === selectionRequestId) isUpdatingDimension = false;
 		}
-
-		// vector / raster は共通で currentIndex を保存してから種別ごとの更新へ進む。
-		layerEntry.state = {
-			...layerEntry.state,
-			dimension: {
-				currentIndex
-			}
-		};
-
-		// source temporal vector は source data の差し替えだけで済む。
-		if (isSourceTemporalVectorEntry(layerEntry)) {
-			const runtimeUpdates = await getVectorDimensionRuntimeUpdates(layerEntry);
-			runtimeUpdates.forEach((update) => {
-				mapStore.setData(update.sourceId, update.data);
-			});
-			return;
-		}
-
-		if (!isRasterEntry(layerEntry)) return;
-
-		// TIFF 系は time step に応じて色レンジも持ち直す必要がある。
-		if (
-			layerEntry.style.type === 'tiff' &&
-			layerEntry.format.type === 'image' &&
-			layerEntry.style.visualization.mode === 'single'
-		) {
-			layerEntry.style.visualization.uniformsData.single.index = 0;
-			const currentRange = GeoTiffCache.getDataRanges(layerEntry.id)?.[0];
-			if (currentRange) {
-				layerEntry.style.visualization.uniformsData.single.min = currentRange.min;
-				layerEntry.style.visualization.uniformsData.single.max = currentRange.max;
-			}
-		}
-
-		if (
-			layerEntry.style.type === 'tiff' &&
-			layerEntry.format.type === 'image' &&
-			layerEntry.style.visualization.mode === 'twi'
-		) {
-			const currentRange = GeoTiffCache.getDataRanges(getTwiCacheKey(layerEntry.id))?.[0];
-			if (currentRange) {
-				layerEntry.style.visualization.uniformsData.twi = {
-					colorMap: layerEntry.style.visualization.uniformsData.twi?.colorMap ?? 'hsv',
-					min: currentRange.min,
-					max: currentRange.max
-				};
-			}
-		}
-
-		if (
-			layerEntry.style.type === 'tiff' &&
-			layerEntry.format.type === 'image' &&
-			(layerEntry.style.visualization.mode === 'slope' ||
-				layerEntry.style.visualization.mode === 'aspect' ||
-				layerEntry.style.visualization.mode === 'tpi' ||
-				layerEntry.style.visualization.mode === 'topex')
-		) {
-			const mode = layerEntry.style.visualization.mode;
-			const currentRange =
-				mode === 'slope'
-					? { min: 0, max: 90 }
-					: mode === 'aspect'
-						? { min: 0, max: 360 }
-						: mode === 'tpi'
-							? { min: -1, max: 1 }
-							: GeoTiffCache.getDataRanges(getTopexCacheKey(layerEntry.id))?.[0];
-			if (currentRange) {
-				layerEntry.style.visualization.uniformsData[mode] = {
-					colorMap:
-						layerEntry.style.visualization.uniformsData[mode]?.colorMap ??
-						(mode === 'slope' ? 'salinity' : mode === 'aspect' ? 'rainbow-soft' : 'rdbu'),
-					min: currentRange.min,
-					max: currentRange.max
-				};
-			}
-		}
-
-		// style 全更新は重いので、差し替え可能な raster source だけを直接更新する。
-		const runtimeUpdates = getRasterDimensionRuntimeUpdates(layerEntry);
-		runtimeUpdates.forEach((update) => {
-			if (update.type === 'tiles') {
-				mapStore.setTiles(update.sourceId, update.tiles);
-				return;
-			}
-
-			mapStore.setData(update.sourceId, update.data);
-		});
-
-		if (layerEntry.style.type !== 'tiff' || layerEntry.format.type !== 'image') return;
-
-		// image source を使う TIFF だけは、最終的に画像自体の差し替えまで行う。
-		const imageSource = await getRasterTiffImageSource(
-			layerEntry as RasterImageEntry<RasterTiffStyle>
-		);
-		if (
-			!imageSource?.url ||
-			requestId !== imageUpdateRequestId ||
-			layerEntry.state?.dimension?.currentIndex !== currentIndex
-		) {
-			return;
-		}
-
-		mapStore.setImage(`${layerEntry.id}_source`, {
-			url: imageSource.url,
-			coordinates: imageSource.coordinates
-		});
 	};
 
 	// PC の Embla 選択変更は、そのまま applyDimensionIndex に流す。
@@ -235,17 +68,6 @@
 		if (!emblaMainCarousel || !dimension || isSyncingInitialScroll) return;
 		await applyDimensionIndex(emblaMainCarousel.selectedScrollSnap());
 	};
-
-	// const onSelect = () => {
-	// 	if (!emblaMainCarousel || !layerEntry.style.dimension) return;
-	// 	const currentIndex = emblaMainCarousel.selectedScrollSnap();
-	// 	const sourceId = `${layerEntry.id}_source`;
-	// 	const timeValue = layerEntry.style.dimension.values[currentIndex];
-	// 	if (timeValue) {
-	// 		const tileUrl = layerEntry.format.url.replace('{morivis:dimension}', timeValue);
-	// 		mapStore.setTiles(sourceId, [tileUrl]);
-	// 	}
-	// };
 
 	const onInitEmblaMainCarousel = (event: CustomEvent<EmblaCarouselType>) => {
 		emblaMainCarousel = event.detail;
@@ -282,8 +104,6 @@
 
 	// ホイールイベント用の変数
 	let carouselElement: HTMLElement | undefined = $state();
-	let wheelTimeout: ReturnType<typeof setTimeout> | null = null;
-	let isWheelScrolling = $state(false);
 
 	// マウスホイールイベントハンドラー
 	const handleWheel = (event: WheelEvent) => {
@@ -305,22 +125,13 @@
 				// 上方向スクロール = 前へ
 				emblaMainCarousel.scrollPrev();
 			}
-
-			// スクロール状態の管理
-			isWheelScrolling = true;
-			if (wheelTimeout) clearTimeout(wheelTimeout);
-			wheelTimeout = setTimeout(() => {
-				isWheelScrolling = false;
-			}, 150);
 		}
 	};
 
 	onDestroy(() => {
+		dimensionController.dispose();
 		if (carouselElement) {
 			carouselElement.removeEventListener('wheel', handleWheel);
-		}
-		if (wheelTimeout) {
-			clearTimeout(wheelTimeout);
 		}
 	});
 

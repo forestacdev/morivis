@@ -1,369 +1,377 @@
-import type { Component } from 'svelte';
-
 import type { DialogType } from '$routes/map/types';
+import type { Component } from 'svelte';
+import type { DialogProfile, DialogPropsByProfile } from './dialog-props';
 
-export type DialogProfile =
-	| 'simple'
-	| 'drop-file'
-	| 'side-panel'
-	| 'model-georef'
-	| 'vector-zone'
-	| 'vector-zone-georef'
-	| 'raster-georef'
-	| 'pointcloud-georef'
-	| 'feature-service'
-	| 'remote-wmts'
-	| 'remote-arcgis'
-	| 'remote-csw'
-	| 'remote-stac'
-	| 'remote-geozarr'
-	| 'tiles'
-	| 'wcs'
-	| 'tile-url-type'
-	| 'vector-georef';
+export type { DialogProfile } from './dialog-props';
 
-export interface DialogDefinition {
-	load: () => Promise<{ default: Component<any>; }>;
-	profile: DialogProfile;
-	fixedHeight?: boolean;
-}
-
-const tileDialog: DialogDefinition = {
-	load: () => import('$routes/map/components/upload/form/TileForm.svelte'),
-	profile: 'tiles'
+type LoadedDialog<P extends DialogProfile> = {
+	profile: P;
+	component: Component<DialogPropsByProfile[P]>;
 };
 
+export type DialogDefinition = {
+	[P in DialogProfile]: {
+		profile: P;
+		load: () => Promise<{ default: LoadedDialog<P>; }>;
+		fixedHeight?: boolean;
+	};
+}[DialogProfile];
+
+export type LoadedUploadDialog = {
+	[P in DialogProfile]: LoadedDialog<P>;
+}[DialogProfile];
+
+export type DialogLoader = () => Promise<{ default: LoadedUploadDialog; }>;
+
+/** profileとフォームのpropsを照合し、その組を遅延ロード後も保持する。 */
+export const defineDialog = <P extends DialogProfile>(definition: {
+	profile: P;
+	load: () => Promise<{ default: Component<DialogPropsByProfile[NoInfer<P>]>; }>;
+	fixedHeight?: boolean;
+}) => ({
+	profile: definition.profile,
+	fixedHeight: definition.fixedHeight,
+	load: async (): Promise<{ default: LoadedDialog<P>; }> => ({
+		default: { profile: definition.profile, component: (await definition.load()).default }
+	})
+});
+
+const tileDialog = defineDialog({
+	load: () => import('$routes/map/components/upload/form/TileForm.svelte'),
+	profile: 'tiles'
+});
+
 export const dialogRegistry: Partial<Record<Exclude<DialogType, null>, DialogDefinition>> = {
-	jpeg2000: {
+	jpeg2000: defineDialog({
 		load: () => import('$routes/map/components/upload/form/Jpeg2000Form.svelte'),
 		profile: 'pointcloud-georef'
-	},
-	video: {
+	}),
+	video: defineDialog({
 		load: () => import('$routes/map/components/upload/form/VideoForm.svelte'),
 		profile: 'raster-georef'
-	},
-	'envi-bil': {
+	}),
+	'envi-bil': defineDialog({
 		load: () => import('$routes/map/components/upload/form/EnviBilForm.svelte'),
 		profile: 'pointcloud-georef'
-	},
-	hgt: {
+	}),
+	hgt: defineDialog({
 		load: () => import('$routes/map/components/upload/form/HgtForm.svelte'),
 		profile: 'raster-georef'
-	},
-	'ascii-grid': {
+	}),
+	'ascii-grid': defineDialog({
 		load: () => import('$routes/map/components/upload/form/AsciiGridForm.svelte'),
 		profile: 'pointcloud-georef'
-	},
-	bds: {
+	}),
+	bds: defineDialog({
 		load: () => import('$routes/map/components/upload/form/BdsForm.svelte'),
 		profile: 'drop-file'
-	},
-	gcd: {
+	}),
+	gcd: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GcdForm.svelte'),
 		profile: 'drop-file'
-	},
-	wmts: {
+	}),
+	wmts: defineDialog({
 		load: () => import('$routes/map/components/upload/form/WmtsForm.svelte'),
 		profile: 'remote-wmts'
-	},
-	wcs: {
+	}),
+	wcs: defineDialog({
 		load: () => import('$routes/map/components/upload/form/WcsForm.svelte'),
 		profile: 'wcs'
-	},
-	geozarr: {
+	}),
+	geozarr: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GeoZarrForm.svelte'),
 		profile: 'remote-geozarr'
-	},
-	featureservice: {
+	}),
+	featureservice: defineDialog({
 		load: () => import('$routes/map/components/upload/form/FeatureServiceForm.svelte'),
 		profile: 'feature-service'
-	},
-	wfs: {
+	}),
+	wfs: defineDialog({
 		load: () => import('$routes/map/components/upload/form/FeatureServiceForm.svelte'),
 		profile: 'feature-service'
-	},
-	ogcapifeatures: {
+	}),
+	ogcapifeatures: defineDialog({
 		load: () => import('$routes/map/components/upload/form/FeatureServiceForm.svelte'),
 		profile: 'feature-service'
-	},
-	csw: {
+	}),
+	csw: defineDialog({
 		load: () => import('$routes/map/components/upload/form/CswForm.svelte'),
 		profile: 'remote-csw',
 		fixedHeight: true
-	},
-	stac: {
+	}),
+	stac: defineDialog({
 		load: () => import('$routes/map/components/upload/form/StacForm.svelte'),
 		profile: 'remote-stac'
-	},
-	arcgis: {
+	}),
+	arcgis: defineDialog({
 		load: () => import('$routes/map/components/upload/form/ArcGisForm.svelte'),
 		profile: 'remote-arcgis'
-	},
-	csv: {
+	}),
+	csv: defineDialog({
 		load: () => import('$routes/map/components/upload/form/CsvForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	tsv: {
+	}),
+	tsv: defineDialog({
 		load: () => import('$routes/map/components/upload/form/TsvForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	xlsx: {
+	}),
+	xlsx: defineDialog({
 		load: () => import('$routes/map/components/upload/form/XlsxForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	pptx: {
+	}),
+	pptx: defineDialog({
 		load: () => import('$routes/map/components/upload/form/OfficeDrawingForm.svelte'),
 		profile: 'raster-georef'
-	},
-	docx: {
+	}),
+	docx: defineDialog({
 		load: () => import('$routes/map/components/upload/form/OfficeDrawingForm.svelte'),
 		profile: 'raster-georef'
-	},
+	}),
 	raster: tileDialog,
-	tileurltype: {
+	tileurltype: defineDialog({
 		load: () => import('$routes/map/components/upload/form/TileUrlTypeForm.svelte'),
 		profile: 'tile-url-type'
-	},
+	}),
 	'3dtiles': tileDialog,
 	'local-3dtiles': tileDialog,
 	'local-mvt': tileDialog,
 	'local-mlt': tileDialog,
 	'local-raster-tiles': tileDialog,
-	pointcloud: {
+	pointcloud: defineDialog({
 		load: () => import('$routes/map/components/upload/form/PointCloudForm.svelte'),
 		profile: 'pointcloud-georef'
-	},
+	}),
 	mbtiles: tileDialog,
-	netcdf: {
+	netcdf: defineDialog({
 		load: () => import('$routes/map/components/upload/form/NetCDFForm.svelte'),
 		profile: 'raster-georef'
-	},
-	grib2: {
+	}),
+	grib2: defineDialog({
 		load: () => import('$routes/map/components/upload/form/Grib2Form.svelte'),
 		profile: 'drop-file'
-	},
-	hrit: {
+	}),
+	hrit: defineDialog({
 		load: () => import('$routes/map/components/upload/form/HritForm.svelte'),
 		profile: 'drop-file'
-	},
-	demxml: {
+	}),
+	demxml: defineDialog({
 		load: () => import('$routes/map/components/upload/form/DemXmlForm.svelte'),
 		profile: 'raster-georef'
-	},
+	}),
 	pmtiles: tileDialog,
-	model: {
+	model: defineDialog({
 		load: () => import('$routes/map/components/upload/form/MeshModelForm.svelte'),
 		profile: 'model-georef'
-	},
-	'step-iges': {
+	}),
+	'step-iges': defineDialog({
 		load: () => import('$routes/map/components/upload/form/StepIgesForm.svelte'),
 		profile: 'drop-file'
-	},
-	opendrive: {
+	}),
+	opendrive: defineDialog({
 		load: () => import('./form/OpenDriveForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	s57: {
+	}),
+	s57: defineDialog({
 		load: () => import('./form/S57Form.svelte'),
 		profile: 'drop-file'
-	},
-	vtk: {
+	}),
+	vtk: defineDialog({
 		load: () => import('$routes/map/components/upload/form/VtkForm.svelte'),
 		profile: 'drop-file'
-	},
-	mca: {
+	}),
+	mca: defineDialog({
 		load: () => import('$routes/map/components/upload/form/McaForm.svelte'),
 		profile: 'drop-file'
-	},
-	roblox: {
+	}),
+	roblox: defineDialog({
 		load: () => import('$routes/map/components/upload/form/RobloxForm.svelte'),
 		profile: 'drop-file'
-	},
-	'gaussian-splat': {
+	}),
+	'gaussian-splat': defineDialog({
 		load: () => import('$routes/map/components/upload/form/GaussianSplatForm.svelte'),
 		profile: 'model-georef'
-	},
-	geophoto: {
+	}),
+	geophoto: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GeoPhotoForm.svelte'),
 		profile: 'drop-file'
-	},
-	geopdf: {
+	}),
+	geopdf: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GeoPdfForm.svelte'),
 		profile: 'raster-georef'
-	},
-	geotiff: {
+	}),
+	geotiff: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GeoTiffForm.svelte'),
 		profile: 'pointcloud-georef'
-	},
-	svg: {
+	}),
+	svg: defineDialog({
 		load: () => import('$routes/map/components/upload/form/SvgForm.svelte'),
 		profile: 'vector-georef'
-	},
+	}),
 	vector: tileDialog,
-	geojson: {
+	geojson: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GeoJsonForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	wkt: {
+	}),
+	wkt: defineDialog({
 		load: () => import('$routes/map/components/upload/form/WktForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	geoparquet: {
+	}),
+	geoparquet: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GeoParquetForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	geoarrow: {
+	}),
+	geoarrow: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GeoArrowForm.svelte'),
 		profile: 'vector-zone'
-	},
-	'mapinfo-tab': {
+	}),
+	'mapinfo-tab': defineDialog({
 		load: () => import('$routes/map/components/upload/form/MapInfoTabForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	mif: {
+	}),
+	mif: defineDialog({
 		load: () => import('$routes/map/components/upload/form/MifForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	mfjson: {
+	}),
+	mfjson: defineDialog({
 		load: () => import('$routes/map/components/upload/form/MfJsonForm.svelte'),
 		profile: 'drop-file'
-	},
-	locationhistory: {
+	}),
+	locationhistory: defineDialog({
 		load: () => import('$routes/map/components/upload/form/LocationHistoryForm.svelte'),
 		profile: 'drop-file'
-	},
-	topojson: {
+	}),
+	topojson: defineDialog({
 		load: () => import('$routes/map/components/upload/form/TopoJsonForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	gml: {
+	}),
+	gml: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GmlForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	cityjson: {
+	}),
+	cityjson: defineDialog({
 		load: () => import('$routes/map/components/upload/form/CityJsonForm.svelte'),
 		profile: 'drop-file'
-	},
-	citygml: {
+	}),
+	citygml: defineDialog({
 		load: () => import('$routes/map/components/upload/form/CityGmlForm.svelte'),
 		profile: 'drop-file'
-	},
-	kml: {
+	}),
+	kml: defineDialog({
 		load: () => import('$routes/map/components/upload/form/KmlForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	landxml: {
+	}),
+	landxml: defineDialog({
 		load: () => import('$routes/map/components/upload/form/LandXmlForm.svelte'),
 		profile: 'pointcloud-georef'
-	},
-	gpx: {
+	}),
+	gpx: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GpxForm.svelte'),
 		profile: 'drop-file'
-	},
-	tcx: {
+	}),
+	tcx: defineDialog({
 		load: () => import('$routes/map/components/upload/form/TcxForm.svelte'),
 		profile: 'drop-file'
-	},
-	ais: {
+	}),
+	ais: defineDialog({
 		load: () => import('$routes/map/components/upload/form/AisForm.svelte'),
 		profile: 'drop-file'
-	},
-	orbit: {
+	}),
+	orbit: defineDialog({
 		load: () => import('$routes/map/components/upload/form/OrbitForm.svelte'),
 		profile: 'drop-file'
-	},
-	czml: {
+	}),
+	czml: defineDialog({
 		load: () => import('$routes/map/components/upload/form/CzmlForm.svelte'),
 		profile: 'drop-file'
-	},
-	nmea: {
+	}),
+	nmea: defineDialog({
 		load: () => import('$routes/map/components/upload/form/NmeaForm.svelte'),
 		profile: 'drop-file'
-	},
-	fit: {
+	}),
+	fit: defineDialog({
 		load: () => import('$routes/map/components/upload/form/FitForm.svelte'),
 		profile: 'drop-file'
-	},
-	filegdb: {
+	}),
+	filegdb: defineDialog({
 		load: () => import('$routes/map/components/upload/form/FileGdbForm.svelte'),
 		profile: 'drop-file'
-	},
-	gdb: {
+	}),
+	gdb: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GarminGDBForm.svelte'),
 		profile: 'drop-file'
-	},
-	osm: {
+	}),
+	osm: defineDialog({
 		load: () => import('$routes/map/components/upload/form/OsmForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	georss: {
+	}),
+	georss: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GeoRssForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	gtfs: {
+	}),
+	gtfs: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GtfsForm.svelte'),
 		profile: 'drop-file'
-	},
-	drm: {
+	}),
+	drm: defineDialog({
 		load: () => import('$routes/map/components/upload/form/DrmForm.svelte'),
 		profile: 'drop-file'
-	},
-	dm: {
+	}),
+	dm: defineDialog({
 		load: () => import('$routes/map/components/upload/form/DmForm.svelte'),
 		profile: 'vector-zone-georef',
 		fixedHeight: true
-	},
-	dwg: {
+	}),
+	dwg: defineDialog({
 		load: () => import('$routes/map/components/upload/form/DwgForm.svelte'),
 		profile: 'vector-zone-georef',
 		fixedHeight: true
-	},
-	dgn: {
+	}),
+	dgn: defineDialog({
 		load: () => import('$routes/map/components/upload/form/DgnForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	dxf: {
+	}),
+	dxf: defineDialog({
 		load: () => import('$routes/map/components/upload/form/DxfForm.svelte'),
 		profile: 'vector-zone-georef',
 		fixedHeight: true
-	},
-	jww: {
+	}),
+	jww: defineDialog({
 		load: () => import('$routes/map/components/upload/form/JwwForm.svelte'),
 		profile: 'vector-zone-georef',
 		fixedHeight: true
-	},
-	cedxm: {
+	}),
+	cedxm: defineDialog({
 		load: () => import('$routes/map/components/upload/form/CedxmForm.svelte'),
 		profile: 'vector-zone-georef',
 		fixedHeight: true
-	},
-	sxf: {
+	}),
+	sxf: defineDialog({
 		load: () => import('$routes/map/components/upload/form/SxfForm.svelte'),
 		profile: 'vector-zone-georef',
 		fixedHeight: true
-	},
-	gpkg: {
+	}),
+	gpkg: defineDialog({
 		load: () => import('$routes/map/components/upload/form/GpkgForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	sqlite: {
+	}),
+	sqlite: defineDialog({
 		load: () => import('$routes/map/components/upload/form/SQLiteForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	hdf5: {
+	}),
+	hdf5: defineDialog({
 		load: () => import('$routes/map/components/upload/form/Hdf5Form.svelte'),
 		profile: 'drop-file'
-	},
-	mojxml: {
+	}),
+	mojxml: defineDialog({
 		load: () => import('$routes/map/components/upload/form/MojXmlForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	sima: {
+	}),
+	sima: defineDialog({
 		load: () => import('$routes/map/components/upload/form/SimaForm.svelte'),
 		profile: 'vector-zone-georef'
-	},
-	bcf: {
+	}),
+	bcf: defineDialog({
 		load: () => import('$routes/map/components/upload/form/BcfForm.svelte'),
 		profile: 'side-panel'
-	}
+	})
 };

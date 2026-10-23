@@ -12,6 +12,7 @@ const TIFF_CONTENT_TYPE_RE = /image\/tiff|geotiff|tif/i;
 
 const wcsObjectUrls = new Map<string, string>();
 const readyWcsViewportEntryIds = new Set<string>();
+let viewportGeneration = 0;
 
 export class WcsViewportTooBroadError extends Error {
 	constructor(message: string) {
@@ -187,6 +188,7 @@ export const clearWcsViewportImage = (entryId: string) => {
 };
 
 export const clearAllWcsViewportImages = () => {
+	viewportGeneration++;
 	Array.from(wcsObjectUrls.keys()).forEach((entryId) => revokeObjectUrl(entryId));
 	readyWcsViewportEntryIds.clear();
 };
@@ -209,6 +211,7 @@ export const fetchWcsViewportImage = async (
 
 	const bbox = getViewportBbox(map);
 	const { width, height } = getViewportSize(map);
+	const generation = viewportGeneration;
 	const requestUrl = buildWcsGetCoverageUrl({
 		serviceUrl: entry.format.serviceUrl,
 		version: entry.format.version,
@@ -261,6 +264,8 @@ export const fetchWcsViewportImage = async (
 		blob = await response.blob();
 	}
 
+	// 画面離脱前の通信が完了しても、破棄済みの画像キャッシュを復活させない。
+	if (generation !== viewportGeneration || !readyWcsViewportEntryIds.has(entry.id)) return null;
 	revokeObjectUrl(entry.id);
 	const objectUrl = URL.createObjectURL(blob);
 	wcsObjectUrls.set(entry.id, objectUrl);

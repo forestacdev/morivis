@@ -114,7 +114,12 @@ import {
 	downloadBlobUrlAsGlb
 } from '$routes/map/utils/formats/export/model';
 
+import {
+	clearAllCogViewportImages,
+	terminateCogViewportRuntime
+} from '$routes/map/utils/formats/geotiff/cog-runtime';
 import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
+import { clearAllWcsViewportImages } from '$routes/map/utils/formats/wcs/runtime';
 import {
 	isGeneratedPoiIconId,
 	resolveMissingStyleImage,
@@ -431,9 +436,10 @@ const createMapStore = () => {
 	let map: maplibregl.Map | null = null;
 	let deckOverlay: MapboxOverlay | null = null;
 	let isDeckOverlayAdded = false;
+	let mapCleanups: (() => void)[] = [];
 	const tiles3dRuntime = createLazyMapLayer<AnyTiles3DEntry, Tiles3DLayerManager>({
 		id: TILES_3D_LAYER_ID,
-		getMap: () => map,
+		getMap: () => map && isMapValid(map) ? map : null,
 		load: async () =>
 			new (await import('$routes/map/utils/tiles3d/layer-manager')).Tiles3DLayerManager(),
 		update: (manager, entries) => manager.setEntries(entries),
@@ -444,7 +450,7 @@ const createMapStore = () => {
 	});
 	const voxelRuntime = createLazyMapLayer<VoxelSpec, GeoZarrVoxelLayerManager>({
 		id: GEOZARR_VOXEL_LAYER_ID,
-		getMap: () => map,
+		getMap: () => map && isMapValid(map) ? map : null,
 		load: async () =>
 			new (await import('$routes/map/utils/voxel/layer-manager')).GeoZarrVoxelLayerManager(),
 		update: (manager, specs) => manager.setSpecs(specs),
@@ -506,6 +512,7 @@ const createMapStore = () => {
 	};
 
 	const init = async (mapContainer: HTMLElement) => {
+		if (map) remove();
 		const mapPosition = getMapParams();
 
 		scheduleHighlightAnimationWarmup();
@@ -517,6 +524,7 @@ const createMapStore = () => {
 		isDeckOverlayAdded = false;
 
 		map = new maplibregl.Map(createMapOptions(mapContainer, mapPosition));
+		const initializedMap = map;
 		configureInertialScrollZoom(map);
 
 		if (get(isDebugMode)) {
@@ -531,6 +539,7 @@ const createMapStore = () => {
 		ensureDeckMapCompatibility(map);
 
 		map.setMissingStyleImageResolver(async (id) => {
+			if (map !== initializedMap || !isMapValid(initializedMap)) return;
 			if (!map) return;
 
 			if (id === 'poi_top') {
@@ -540,8 +549,14 @@ const createMapStore = () => {
 					throw new Error(`Failed to fetch image: ${response.statusText}`);
 				}
 				const image = await createImageBitmap(await response.blob());
-				if (!map || map.hasImage('poi_top')) return;
-				map.addImage('poi_top', image);
+				try {
+					if (map !== initializedMap || !isMapValid(initializedMap)) return;
+					if (!initializedMap.hasImage('poi_top')) {
+						initializedMap.addImage('poi_top', image);
+					}
+				} finally {
+					image.close();
+				}
 				return;
 			}
 
@@ -552,8 +567,14 @@ const createMapStore = () => {
 					throw new Error(`Failed to fetch image: ${response.statusText}`);
 				}
 				const image = await createImageBitmap(await response.blob());
-				if (!map || map.hasImage('marker_png')) return;
-				map.addImage('marker_png', image);
+				try {
+					if (map !== initializedMap || !isMapValid(initializedMap)) return;
+					if (!initializedMap.hasImage('marker_png')) {
+						initializedMap.addImage('marker_png', image);
+					}
+				} finally {
+					image.close();
+				}
 				return;
 			}
 
@@ -648,6 +669,11 @@ const createMapStore = () => {
 			canvas.addEventListener('mousedown', handleMouseDown);
 			window.addEventListener('mousemove', handleMouseMove);
 			window.addEventListener('mouseup', handleMouseUp);
+			mapCleanups.push(() => {
+				canvas.removeEventListener('mousedown', handleMouseDown);
+				window.removeEventListener('mousemove', handleMouseMove);
+				window.removeEventListener('mouseup', handleMouseUp);
+			});
 		}
 
 		// より詳細なエラー情報を取得
@@ -803,6 +829,7 @@ const createMapStore = () => {
 			moveStartEvent.set(e);
 		});
 		map.on('moveend', debounceMapMoveEnd);
+		mapCleanups.push(() => debounceMapMoveEnd.cancel());
 
 		map.on('zoom', () => {
 			if (!map) return;
@@ -948,9 +975,8 @@ const createMapStore = () => {
 	};
 
 	const releaseThreeLayer = () => {
-		if (!map || !isMapValid(map)) return;
 		const layerId = '3d-model-layer';
-		if (map.getLayer(layerId)) {
+		if (map && isMapValid(map) && map.getLayer(layerId)) {
 			map.removeLayer(layerId);
 		}
 		getThreeJsManager()?.dispose();
@@ -1763,24 +1789,49 @@ const createMapStore = () => {
 
 	// インスタンス削除
 	const remove = () => {
-		if (!map || !isMapValid(map)) return;
+		if (!map) return;
 		setMapMovingClass(false);
 		deckUpdateId++;
 		threeUpdateIds.main++;
 		threeUpdateIds.preview++;
+		mapCleanups.forEach((cleanup) => cleanup());
+		mapCleanups = [];
+		if (terrainReloadTimer !== null) {
+			clearTimeout(terrainReloadTimer);
+			terrainReloadTimer = null;
+		}
 		if (deckOverlay) {
-			deckOverlay.finalize();
+			if (isDeckOverlayAdded && isMapValid(map)) {
+				map.removeControl(deckOverlay as maplibregl.IControl);
+			} else {
+				deckOverlay.finalize();
+			}
 			deckOverlay = null;
 		}
+		isDeckOverlayAdded = false;
 		releaseThreeLayer();
-		setTiles3DStyleEntries([]);
+		currentTiles3dEntries.clear();
+		tiles3dRuntime.clear();
 		voxelSpecs = [];
 		voxelRuntime.clear();
 		deckRuntime.get()?.clearPointCloudDataCache();
 		currentDeckPointCloudEntries.clear();
 		currentDeckVectorEntries.clear();
 
-		map.remove();
+		lockOnMarker?.remove();
+		if (isMapValid(map)) map.remove();
+		clearAllCogViewportImages();
+		clearAllWcsViewportImages();
+		terminateCogViewportRuntime();
+		releaseGeojsonProtocol();
+		releaseEsriProtocol();
+		releaseOgcFeatureProtocol();
+		releaseWfsFeatureProtocol();
+		releaseCogProtocol();
+		releaseGeoZarrProtocol();
+		releaseDemProtocol();
+		releaseMbtilesProtocol();
+		releaseTileIndexProtocol();
 		releaseRegionalMeshProtocol();
 		releaseH3Protocol();
 		releasePlaneGridProtocol();
@@ -1788,6 +1839,11 @@ const createMapStore = () => {
 		map = null;
 		set(null);
 
+		clickEvent.set(null);
+		contextMenuEvent.set(null);
+		mousemoveEvent.set(null);
+		mousedownEvent.set(null);
+		mouseupEvent.set(null);
 		mouseoverEvent.set(null);
 		mouseoutEvent.set(null);
 		rotateEvent.set(null);
@@ -1796,10 +1852,14 @@ const createMapStore = () => {
 		isLoadingEvent.set(true);
 		isStyleLoadEvent.set(null);
 		onStyleDataEvent.set(null);
+		moveStartEvent.set(null);
 		moveEndEvent.set(null);
 		resizeEvent.set(null);
 		initEvent.set(null);
 		onLoadEvent.set(null);
+		onTerrainEvent.set(null);
+		state.set({ bbox: [0, 0, 0, 0], zoom: 0, center: [0, 0], pitch: 0, bearing: 0 });
+		HighlightLayerRegistry.clear();
 		lockOnMarker = null;
 	};
 

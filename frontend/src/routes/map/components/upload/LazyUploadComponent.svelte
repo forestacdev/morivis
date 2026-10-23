@@ -1,5 +1,5 @@
-<script lang="ts" generics="T extends Component<any>">
-	import type { Component, Snippet } from 'svelte';
+<script lang="ts" generics="T">
+	import type { Snippet } from 'svelte';
 
 	let {
 		load,

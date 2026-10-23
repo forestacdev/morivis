@@ -19,7 +19,9 @@
 		SearchGeojsonData
 	} from './utils/data/search-result';
 	import { lonLatToTileCoords } from './utils/map/tile-coordinate';
+	import { mountMenuHistory } from './utils/platform/menu-history-browser';
 
+	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { ENTRY_PMTILES_VECTOR_PATH, STREET_VIEW_DATA_PATH } from '$routes/constants';
 	import ContextMenu from '$routes/map/components/ContextMenu.svelte';
@@ -58,12 +60,12 @@
 		PendingZoneGeoRefData,
 		TransformOptionMode
 	} from '$routes/map/components/upload/form/pending-zone-vector';
+	import { createGeoRefEntries } from '$routes/map/components/upload/form/transform/finalize-georef';
 	import type {
 		GeoRefConfirmPayload,
 		GeoRefData,
 		GeoRefPreviewData
 	} from '$routes/map/components/upload/form/transform/georef-types';
-	import { createVectorEntryGroup } from '$routes/map/components/upload/form/vector-entry-group';
 	import LazyUploadComponent from '$routes/map/components/upload/LazyUploadComponent.svelte';
 	import { setUploadPreview } from '$routes/map/components/upload/preview-context';
 	import { getAllowedTransformModesForIssue } from '$routes/map/components/upload/transform-policy';
@@ -78,19 +80,8 @@
 		needsLazyHydration,
 		resolveMorivisLayerEntry
 	} from '$routes/map/data/entries';
-	import { DEFAULT_CUSTOM_META_DATA } from '$routes/map/data/entries/_meta_data';
-	import { createPointCloudEntry } from '$routes/map/data/entries/model';
-	import { createRasterEntry } from '$routes/map/data/entries/raster';
-	import { DEFAULT_RASTER_BASEMAP_INTERACTION } from '$routes/map/data/entries/raster/_interaction';
-	import { createGeoJsonEntry, geometryTypeToEntryType } from '$routes/map/data/entries/vector';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
 	import type { MeshEntry, MeshStyle, ThreeModelEntry } from '$routes/map/data/types/model';
-	import type {
-		MorivisRasterEntry,
-		RasterDemStyle,
-		RasterImageEntry,
-		RasterTiffStyle
-	} from '$routes/map/data/types/raster';
 	import type { GeoJsonMetaData, PointEntry, TileMetaData } from '$routes/map/data/types/vector';
 	import { filterByPopupKeys } from '$routes/map/data/types/vector/properties';
 	import {
@@ -106,22 +97,14 @@
 	import type { FeatureCollection as AppFeatureCollection } from '$routes/map/types/geojson';
 	import type { PolygonGeometry, PointGeometry } from '$routes/map/types/geometry';
 	import { GeoRefVectorSourceCache } from '$routes/map/utils/cache/georef-vector-source-cache';
-	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import { getFgbToGeojson } from '$routes/map/utils/formats/geojson';
-	import { encodeAllBandsToTerrarium } from '$routes/map/utils/formats/geotiff';
-	import { createRasterMeshEntryInWorker } from '$routes/map/utils/formats/geotiff/mesh-parallel';
-	import { NetCDFDataCache } from '$routes/map/utils/formats/netcdf/cache';
-	import { createPointCloudSurfaceEntry } from '$routes/map/utils/formats/pointcloud/surface';
-	import { generateThumbnail } from '$routes/map/utils/formats/raster/thumbnail';
 	import { featureCollectionToGeoRefData } from '$routes/map/utils/formats/vector/rasterize';
-	import { createVideoEntry } from '$routes/map/utils/formats/video';
 	import {
 		getPopupImageFieldKey,
 		resolveGeneratedPoiIconUrl,
 		resolvePopupImageUrl
 	} from '$routes/map/utils/icon';
 	import { isBboxValid } from '$routes/map/utils/map/bbox';
-	import { findCenterTile } from '$routes/map/utils/map/tile';
 	import type { LngLat } from '$routes/map/utils/maplibre';
 	import maplibregl from '$routes/map/utils/maplibre';
 	import { fetchJsonWithDevProxy } from '$routes/map/utils/platform/request';
@@ -137,10 +120,6 @@
 		type EpsgInfoWithCode
 	} from '$routes/map/utils/proj/dict';
 	import type { PickedModelFeature } from '$routes/map/utils/three/layer-manager';
-	import {
-		warpGeoJSONByCornersParallel,
-		warpPointCloudByCornersParallel
-	} from '$routes/map/utils/transform/georef';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import {
 		isStreetView,
@@ -460,317 +439,20 @@
 
 	const finalizeGeoRefEntry = async (payload: GeoRefConfirmPayload) => {
 		if (!geoRefData) return;
-
 		isProcessing.set(true);
 		try {
-			const data = geoRefData;
-			const { bbox, corners } = payload;
-
-			debugLog.info(
-				`+page finalizeGeoRefEntry開始: id=${data.entryId}, mode=${data.registrationMode}, size=${data.imageWidth}x${data.imageHeight}`
-			);
-
-			if (data.sourceType === 'vector' && data.sourceFeatureCollectionId && data.sourceCorners) {
-				const sourceFeatureCollection = GeoRefVectorSourceCache.get(data.sourceFeatureCollectionId);
-				if (!sourceFeatureCollection) {
-					throw new Error('GeoRefベクターの元データが見つかりません');
-				}
-
-				const plainCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
-				const warpedGeojson = await warpGeoJSONByCornersParallel(
-					sourceFeatureCollection,
-					data.sourceCorners,
-					plainCorners
-				);
-				if (data.vectorGroups) {
-					const entries = await createVectorEntryGroup(
-						warpedGeojson as AppFeatureCollection,
-						data.vectorGroups
-					);
-					setUploadedDataEntries(entries);
-					closeGeoRefUi();
-					showNotification('図形の位置を設定しました', 'success');
-					return;
-				}
-				const warpedType = geometryTypeToEntryType(warpedGeojson as AppFeatureCollection);
-				const warpedBbox = turfBbox(warpedGeojson as AppFeatureCollection) as [
-					number,
-					number,
-					number,
-					number
-				];
-
-				if (!warpedType || !isBboxValid(warpedBbox)) {
-					throw new Error('GeoRefベクター変形後のデータが不正です');
-				}
-
-				const warpedEntry = await createGeoJsonEntry(
-					warpedGeojson as AppFeatureCollection,
-					warpedType,
-					data.entryName,
-					warpedBbox,
-					data.vectorStyle,
-					{ attribution: data.vectorAttribution }
-				);
-
-				if (!warpedEntry) {
-					throw new Error('GeoRefベクターのエントリ生成に失敗しました');
-				}
-				// 位置合わせの線は未指定なら1px。入力形式が持つスタイルは優先する。
-				const vectorLineWidth = data.vectorLineWidth ?? (data.vectorStyle ? undefined : 1);
-				if (vectorLineWidth != null && warpedEntry.style.type === 'line') {
-					warpedEntry.style.width = {
-						key: '単一',
-						expressions: [
-							{
-								type: 'single',
-								key: '単一',
-								name: '単一',
-								mapping: { value: vectorLineWidth }
-							}
-						]
-					};
-				}
-
-				debugLog.info(
-					`+page finalizeGeoRefEntry ベクター生成: id=${warpedEntry.id}, bounds=${warpedBbox.join(',')}`
-				);
-				setUploadedDataEntry(warpedEntry);
-				closeGeoRefUi();
-				showNotification('ベクターの位置を設定しました', 'success');
-				return;
+			const result = await createGeoRefEntries(geoRefData, payload);
+			try {
+				if (result.kind === 'group') setUploadedDataEntries(result.entries);
+				else setUploadedDataEntry(result.entry);
+			} catch (error) {
+				result.dispose?.();
+				throw error;
 			}
-
-			if (data.sourceType === 'pointcloud' && data.pointCloudConfig) {
-				const sourceBbox = data.pointCloudConfig.sourceBbox;
-				const sourceCorners = [
-					[sourceBbox[0], sourceBbox[3]],
-					[sourceBbox[2], sourceBbox[3]],
-					[sourceBbox[2], sourceBbox[1]],
-					[sourceBbox[0], sourceBbox[1]]
-				] as typeof corners;
-				const plainCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
-				const warpedPositions = await warpPointCloudByCornersParallel(
-					data.pointCloudConfig.positions,
-					sourceCorners,
-					plainCorners
-				);
-				const pointCloudEntry = data.pointCloudConfig.surface
-					? (
-							await createPointCloudSurfaceEntry(`${data.entryName || '点群データ'}_mesh`, {
-								positions: warpedPositions,
-								colors: data.pointCloudConfig.colors,
-								bounds: bbox,
-								...data.pointCloudConfig.surface
-							})
-						).entry
-					: createPointCloudEntry(
-							data.entryName || '点群データ',
-							{
-								positions: warpedPositions,
-								colors: data.pointCloudConfig.colors,
-								pointCount: data.pointCloudConfig.pointCount
-							},
-							bbox
-						);
-
-				debugLog.info(
-					`+page finalizeGeoRefEntry 点群生成: id=${pointCloudEntry.id}, bounds=${bbox.join(',')}`
-				);
-				if (data.rasterConfig?.attribution) {
-					pointCloudEntry.metaData.attribution = data.rasterConfig.attribution;
-				}
-				setUploadedDataEntry(pointCloudEntry);
-				closeGeoRefUi();
-				showNotification('点群の位置を設定しました', 'success');
-				return;
-			}
-
-			if (data.sourceType === 'video') {
-				const url = URL.createObjectURL(data.imageFile);
-				try {
-					const entry = createVideoEntry(
-						data.entryName,
-						url,
-						bbox,
-						corners,
-						data.previewImageUrl,
-						data.rasterConfig?.attribution
-					);
-					entry.id = data.entryId;
-					setUploadedDataEntry(entry);
-				} catch (cause) {
-					URL.revokeObjectURL(url);
-					throw cause;
-				}
-				closeGeoRefUi();
-				showNotification('動画の位置を設定しました', 'success');
-				return;
-			}
-
-			if (data.sourceType === 'raster' && data.rasterImage) {
-				const entry = createRasterEntry(data.entryName, data.rasterImage.url, { bounds: bbox });
-				entry.id = data.entryId;
-				entry.metaData.imageCorners = corners.map(([lng, lat]) => [lng, lat]) as typeof corners;
-				entry.metaData.attribution = data.rasterImage.attribution;
-				entry.metaData.mapImage = data.previewImageUrl ?? data.rasterImage.url;
-				setUploadedDataEntry(entry);
-				closeGeoRefUi();
-				showNotification('画像の位置を設定しました', 'success');
-				return;
-			}
-
-			GeoTiffCache.setBbox(data.entryId, bbox);
-			GeoTiffCache.setSize(data.entryId, data.imageWidth, data.imageHeight);
-			GeoTiffCache.setNumBands(data.entryId, data.numBands);
-
-			const mapImage = generateThumbnail({
-				bands: data.parsedBands,
-				width: data.imageWidth,
-				height: data.imageHeight
-			});
-
-			if (data.registrationMode === 'mesh' && data.numBands === 1) {
-				const entry = await createRasterMeshEntryInWorker({
-					id: data.entryId,
-					name: data.entryName || 'GeoTIFF 3Dメッシュ',
-					band: data.parsedBands[0],
-					width: data.imageWidth,
-					height: data.imageHeight,
-					nodata: data.parsedNodata,
-					bounds: bbox,
-					corners,
-					mapImage,
-					baseValue: data.meshConfig?.baseValue,
-					heightScale: data.meshConfig?.heightScale,
-					autoHeightScale: data.meshConfig?.autoHeightScale
-				});
-
-				if (data.meshConfig?.attribution) {
-					entry.metaData.attribution = data.meshConfig.attribution;
-				}
-				if (data.meshConfig?.opacity != null) {
-					entry.style.opacity = data.meshConfig.opacity;
-				}
-				if (entry.style.shading && data.meshConfig?.shadingEnabled != null) {
-					entry.style.shading = {
-						...entry.style.shading,
-						enabled: data.meshConfig.shadingEnabled
-					};
-				}
-				if (entry.style.heightColorRamp && data.meshConfig?.heightColorRampEnabled != null) {
-					entry.style.heightColorRamp = {
-						...entry.style.heightColorRamp,
-						enabled: data.meshConfig.heightColorRampEnabled
-					};
-				}
-				if (data.meshConfig?.temporalDimension) {
-					entry.state = {
-						...entry.state,
-						dimension: {
-							currentIndex: data.meshConfig.initialDimensionIndex ?? 0
-						}
-					};
-					entry.properties = {
-						...entry.properties,
-						temporal: {
-							dimension: data.meshConfig.temporalDimension
-						}
-					};
-
-					const cachedEntry = NetCDFDataCache.get(data.entryId);
-					if (cachedEntry && data.meshConfig.heightScale != null) {
-						cachedEntry.meshConfig = {
-							baseValue: data.meshConfig.baseValue ?? 0,
-							heightScale: data.meshConfig.heightScale,
-							maxGridSize: 192
-						};
-					}
-				}
-
-				debugLog.info(`+page finalizeGeoRefEntry メッシュ生成: id=${entry.id}`);
-				setUploadedDataEntry(entry);
-				closeGeoRefUi();
-				showNotification('3Dメッシュを生成しました', 'success');
-				return;
-			}
-
-			await encodeAllBandsToTerrarium(
-				data.entryId,
-				data.parsedBands,
-				data.imageWidth,
-				data.imageHeight,
-				data.parsedNodata,
-				data.dataRanges
-			);
-
-			const isSingleBand = data.numBands === 1;
-			const entry: RasterImageEntry<RasterTiffStyle> = {
-				id: data.entryId,
-				type: 'raster',
-				format: {
-					type: 'image',
-					url: ''
-				},
-				metaData: {
-					...DEFAULT_CUSTOM_META_DATA,
-					attribution: data.rasterConfig?.attribution ?? 'GeoTIFF',
-					name: data.entryName || '画像データ',
-					tileSize: 256,
-					bounds: bbox,
-					imageCorners: corners,
-					xyzImageTile: findCenterTile(bbox),
-					mapImage
-				},
-				properties: {
-					bands: {
-						numBands: data.numBands
-					}
-				},
-				interaction: {
-					...DEFAULT_RASTER_BASEMAP_INTERACTION
-				},
-				style: {
-					type: 'tiff',
-					opacity: 1,
-					visible: true,
-					visualization: {
-						mode: isSingleBand ? 'single' : 'multi',
-						uniformsData: {
-							single: {
-								index: 0,
-								min: data.bandMinMax.min,
-								max: data.bandMinMax.max,
-								colorMap: data.rasterConfig?.singleColorMap ?? 'jet'
-							},
-							multi: {
-								r: { index: 0, min: data.multiBandMinMax.r.min, max: data.multiBandMinMax.r.max },
-								g: {
-									index: data.numBands >= 2 ? 1 : 0,
-									min: data.multiBandMinMax.g.min,
-									max: data.multiBandMinMax.g.max
-								},
-								b: {
-									index: data.numBands >= 3 ? 2 : 0,
-									min: data.multiBandMinMax.b.min,
-									max: data.multiBandMinMax.b.max
-								}
-							}
-						}
-					}
-				}
-			};
-
-			debugLog.info(
-				`+page finalizeGeoRefEntry ラスター生成: id=${entry.id}, bounds=${bbox.join(',')}`
-			);
-			setUploadedDataEntry(entry);
 			closeGeoRefUi();
-			showNotification('画像の位置を設定しました', 'success');
+			showNotification(result.message, 'success');
 		} catch (error) {
-			debugLog.error(
-				`+page finalizeGeoRefEntry失敗: ${error instanceof Error ? error.message : String(error)}`
-			);
+			debugLog.error(`GeoRef確定失敗: ${error instanceof Error ? error.message : String(error)}`);
 			showNotification(
 				error instanceof Error ? error.message : 'エンコードに失敗しました',
 				'error'
@@ -963,6 +645,10 @@
 
 	// 初期化完了のフラグ
 	let isInitialized = $state<boolean>(false);
+	let stopMenuHistory: (() => void) | undefined;
+	afterNavigate(() => {
+		stopMenuHistory ??= mountMenuHistory();
+	});
 
 	onMount(() => {
 		/** レイヤーメニューの表示 */
@@ -1397,6 +1083,7 @@
 	};
 
 	onDestroy(() => {
+		stopMenuHistory?.();
 		// コンポーネントが破棄されるときに実行される処理
 		destroyed = true;
 		unsubscribeStreetView();

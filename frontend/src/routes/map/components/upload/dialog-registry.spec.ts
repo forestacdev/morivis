@@ -44,51 +44,59 @@ vi.mock('./form/DwgForm.svelte', () => {
 	return { default: () => {} };
 });
 
-import { dialogRegistry } from './dialog-registry';
+import type { Component } from 'svelte';
+import type { DialogPropsByProfile } from './dialog-props';
+import { defineDialog, dialogRegistry } from './dialog-registry';
 
 describe('dialog registry loading', () => {
 	it('OpenDRIVEに座標系選択とベクター位置合わせを渡す', async () => {
 		expect(dialogRegistry.opendrive!.profile).toBe('vector-zone-georef');
-		expect((await dialogRegistry.opendrive!.load()).default).toBeTypeOf('function');
+		expect((await dialogRegistry.opendrive!.load()).default.component).toBeTypeOf('function');
 	});
 	it('S-57フォームをファイル入力付きで遅延ロードする', async () => {
 		expect(s57Imports.count).toBe(0);
 		expect(dialogRegistry.s57!.profile).toBe('drop-file');
-		expect((await dialogRegistry.s57!.load()).default).toBeTypeOf('function');
+		expect((await dialogRegistry.s57!.load()).default.component).toBeTypeOf('function');
 		expect(s57Imports.count).toBe(1);
 	});
 	it('VTKフォームをファイル入力付きで遅延ロードする', async () => {
 		expect(vtkImports.count).toBe(0);
 		expect(dialogRegistry.vtk!.profile).toBe('drop-file');
-		expect((await dialogRegistry.vtk!.load()).default).toBeTypeOf('function');
+		expect((await dialogRegistry.vtk!.load()).default.component).toBeTypeOf('function');
 		expect(vtkImports.count).toBe(1);
 	});
 	it('JPEG2000に座標系選択とラスター位置合わせを渡す', async () => {
 		expect(dialogRegistry.jpeg2000!.profile).toBe('pointcloud-georef');
-		expect((await dialogRegistry.jpeg2000!.load()).default).toBeTypeOf('function');
+		expect((await dialogRegistry.jpeg2000!.load()).default.component).toBeTypeOf('function');
 	});
 	it('MapInfo TABにベクターの座標系選択・位置合わせを渡す', async () => {
 		expect(dialogRegistry['mapinfo-tab']!.profile).toBe('vector-zone-georef');
-		expect((await dialogRegistry['mapinfo-tab']!.load()).default).toBeTypeOf('function');
+		expect((await dialogRegistry['mapinfo-tab']!.load()).default.component).toBeTypeOf(
+			'function'
+		);
 	});
 	it('ENVI／ESRI BILに座標系と位置合わせの状態を渡す', async () => {
 		expect(dialogRegistry['envi-bil']!.profile).toBe('pointcloud-georef');
-		expect((await dialogRegistry['envi-bil']!.load()).default).toBeTypeOf('function');
+		expect((await dialogRegistry['envi-bil']!.load()).default.component).toBeTypeOf('function');
 	});
 	it('ASCII Gridに座標系選択とラスター位置合わせの状態を渡す', async () => {
 		expect(dialogRegistry['ascii-grid']!.profile).toBe('pointcloud-georef');
-		expect((await dialogRegistry['ascii-grid']!.load()).default).toBeTypeOf('function');
+		expect((await dialogRegistry['ascii-grid']!.load()).default.component).toBeTypeOf(
+			'function'
+		);
 	});
 	it('STEP／IGES変換フォームを選択時だけ読み込む', async () => {
 		expect(stepIgesImports.count).toBe(0);
 		expect(dialogRegistry['step-iges']!.profile).toBe('drop-file');
-		expect((await dialogRegistry['step-iges']!.load()).default).toBeTypeOf('function');
+		expect((await dialogRegistry['step-iges']!.load()).default.component).toBeTypeOf(
+			'function'
+		);
 		expect(stepIgesImports.count).toBe(1);
 	});
 	it('Minecraftのフォームをファイル入力付きで遅延ロードする', async () => {
 		expect(mcaImports.count).toBe(0);
 		expect(dialogRegistry.mca!.profile).toBe('drop-file');
-		expect((await dialogRegistry.mca!.load()).default).toBeTypeOf('function');
+		expect((await dialogRegistry.mca!.load()).default.component).toBeTypeOf('function');
 		expect(mcaImports.count).toBe(1);
 	});
 	it('JWW/JWC用フォームとCEDXM専用フォームを個別に読み込む', async () => {
@@ -97,16 +105,48 @@ describe('dialog registry loading', () => {
 		expect(cadImports).toEqual({ jww: 1, cedxm: 0 });
 		const cedxm = await dialogRegistry.cedxm!.load();
 		expect(cadImports).toEqual({ jww: 1, cedxm: 1 });
-		expect(cedxm.default).not.toBe(jww.default);
+		expect(cedxm.default.component).not.toBe(jww.default.component);
 		expect(dialogRegistry.jww!.profile).toBe('vector-zone-georef');
 		expect(dialogRegistry.cedxm!.profile).toBe('vector-zone-georef');
 	});
 	it('レジストリ参照時にはフォームを読み込まず、選んだ形式だけを読み込む', async () => {
 		expect(imports).toEqual({ gpx: 0, dwg: 0 });
 		const first = await dialogRegistry.gpx!.load();
-		expect(first.default).toBeTypeOf('function');
+		expect(first.default.component).toBeTypeOf('function');
 		expect(imports).toEqual({ gpx: 1, dwg: 0 });
-		expect((await dialogRegistry.gpx!.load()).default).toBe(first.default);
+		expect((await dialogRegistry.gpx!.load()).default.component).toBe(first.default.component);
 		expect(imports).toEqual({ gpx: 1, dwg: 0 });
 	});
+});
+
+it('ロード失敗後に再試行してもprofileとフォームの対応を保つ', async () => {
+	const component: Component<DialogPropsByProfile['simple']> = () => ({});
+	const load = vi.fn().mockRejectedValueOnce(new Error('test-load-failed')).mockResolvedValueOnce(
+		{ default: component }
+	);
+	const definition = defineDialog({ profile: 'simple', load });
+	expect(load).not.toHaveBeenCalled();
+	await expect(definition.load()).rejects.toThrow('test-load-failed');
+	await expect(definition.load()).resolves.toEqual({ default: { profile: 'simple', component } });
+});
+
+// 実行せず、check時にprops契約が緩んでいないことを検査する。
+const assertDialogContracts = (
+	fileForm: Component<DialogPropsByProfile['drop-file']>,
+	cswForm: Component<DialogPropsByProfile['remote-csw']>
+) => {
+	defineDialog({ profile: 'drop-file', load: async () => ({ default: fileForm }) });
+	defineDialog({
+		profile: 'simple',
+		// @ts-expect-error simpleには必須のdropFileがない
+		load: async () => ({ default: fileForm })
+	});
+	defineDialog({
+		profile: 'remote-stac',
+		// @ts-expect-error STACのpropsではCSWのURLとimportコールバックを満たせない
+		load: async () => ({ default: cswForm })
+	});
+};
+it('フォームpropsの型検査を定義している', () => {
+	expect(assertDialogContracts).toBeTypeOf('function');
 });

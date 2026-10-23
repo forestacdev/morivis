@@ -189,7 +189,11 @@ URL の場合は、配信元のメタデータを読み、データの種類や�
 | フォームの選択 | `components/upload/dialog-registry.ts` |
 | 形式ごとの解析・変換 | `utils/formats/`、`components/upload/form/` |
 | 座標変換・位置合わせ | `utils/proj/`、`utils/transform/`、`components/upload/transform-policy.ts` |
-| 位置合わせ後のレイヤー作成 | `+page.svelte` の `finalizeGeoRefEntry()` |
+| 位置合わせ後のレイヤー作成 | `components/upload/form/transform/finalize-georef.ts`。`+page.svelte` は生成結果のプレビュー登録・通知・画面の終了を扱う |
 
 形式ごとの対応範囲や制限は、`utils/formats/<format>/` の実装・定義・READMEを参照する。
 内部モデルと描画系の境界は [内部レイヤーモデル](./architecture/entry-model.md)、検証方法は [開発・検証](./development.md) を参照する。
+
+### 動的フォームのprops
+
+`components/upload/dialog-props.ts` がフォーム分類ごとの入力を定義し、`dialog-registry.ts` の `defineDialog()` が登録するフォームのpropsと照合する。ロード結果は分類とコンポーネントの組を保持し、`DialogRenderer.svelte` は分類を絞り込んで対応するpropsを渡す。フォームを追加するときは、既存の分類で必要な値を渡せるか確認する。

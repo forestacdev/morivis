@@ -116,3 +116,41 @@ test('複数ログは結合せず選択したファイルのみ表示する', as
 	await dropFixture(page, 'test-track.nmea');
 	await expect(page.getByRole('button', { name: '登録', exact: true })).toBeEnabled();
 });
+
+test('時間フィルターのモードだけを変更しても再表示時に保持する', async ({ page }) => {
+	const errors: string[] = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await dropFixture(page, 'test-track.nmea');
+	await page.getByRole('button', { name: 'ポイント', exact: true }).click();
+	await page.getByRole('button', { name: '登録', exact: true }).click();
+	await page.getByRole('button', { name: '地図に追加', exact: true }).click();
+	const openStyle = async (expand = false) => {
+		const layer = page.getByRole('button', { name: 'レイヤー', exact: true }).filter({
+			hasText: 'test-track'
+		});
+		await layer.hover();
+		await layer.locator('button').last().click();
+		if (expand) await page.getByText('時間フィルター', { exact: true }).click();
+	};
+	await openStyle(true);
+	const enabled = page.getByLabel('時間フィルターを有効化', { exact: true });
+	if (!await enabled.isChecked()) {
+		await page.getByText('時間フィルターを有効化', { exact: true }).click();
+	}
+	// 開始・終了が同じ状態にしてからmodeだけを切り替える。
+	await page.getByRole('slider', { name: '上限値', exact: true }).fill('0');
+	await page.getByText('開始時刻のみで絞る', { exact: true }).click();
+	await expect(page.getByLabel('開始時刻のみで絞る', { exact: true })).toBeChecked();
+	await page.getByTitle('スタイルをリセット', { exact: true }).locator('..').locator('button')
+		.last().click();
+	await expect(page.getByText('時間フィルター', { exact: true })).toBeHidden();
+	await openStyle();
+	await expect(page.getByLabel('開始時刻のみで絞る', { exact: true })).toBeChecked();
+	await page.getByText('カメラ追跡', { exact: true }).click();
+	await page.getByRole('button', { name: 'ルート', exact: true }).click();
+	await expect(page.getByRole('button', { name: 'ルート', exact: true })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
+	expect(errors).toEqual([]);
+});

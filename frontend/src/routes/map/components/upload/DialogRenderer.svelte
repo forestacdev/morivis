@@ -1,46 +1,15 @@
 <script lang="ts">
-	import type { DialogDefinition, DialogProfile } from './dialog-registry';
+	import type { UploadDialogState } from './dialog-props';
+	import type { DialogLoader, LoadedUploadDialog } from './dialog-registry';
 	import LazyUploadComponent from './LazyUploadComponent.svelte';
 	import { loadRemoteUploadFile, resolveUploadUrlInput } from '../data_menu/upload-url';
 
-	import type {
-		PendingZoneGeoRefData,
-		TransformOptionMode
-	} from '$routes/map/components/upload/form/pending-zone-vector';
-	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
-	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DialogType, UploadFiles } from '$routes/map/types';
-	import { type EpsgCode } from '$routes/map/utils/proj/dict';
-
-	interface Props {
-		load: DialogDefinition['load'];
-		profile: DialogProfile;
-		showDataEntry: MorivisLayerEntry | null;
-		showDialogType: DialogType;
-		transformOptionMode: TransformOptionMode;
-		selectedEpsgCode: EpsgCode;
-		dropFile: UploadFiles;
-		remoteGeoZarrUrl: string | null;
-		remotePmtilesUrl: string | null;
-		remoteRasterUrl: string | null;
-		remoteVectorUrl: string | null;
-		remoteTiles3dUrl: string | null;
-		remoteWmtsUrl: string | null;
-		remoteFeatureServiceUrl: string | null;
-		remoteArcGisUrl: string | null;
-		remoteStacUrl: string | null;
-		remoteCswUrl: string | null;
-		pendingTileUrl: string | null;
-		focusBbox: [number, number, number, number] | null;
-		isDragover: boolean;
-		zoneConfirmedEpsg: EpsgCode | null;
-		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
-		geoRefData: GeoRefData | null;
+	interface Props extends UploadDialogState {
+		load: DialogLoader;
 	}
 
 	let {
 		load,
-		profile,
 		showDataEntry = $bindable(),
 		showDialogType = $bindable(),
 		transformOptionMode = $bindable(),
@@ -98,13 +67,13 @@
 		dropFile = null;
 	}}
 >
-	{#snippet children(FormComponent)}
-		{#if profile === 'simple'}
-			<FormComponent bind:showDataEntry bind:showDialogType />
-		{:else if profile === 'drop-file' || profile === 'side-panel'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:dropFile />
-		{:else if profile === 'model-georef'}
-			<FormComponent
+	{#snippet children(form: LoadedUploadDialog)}
+		{#if form.profile === 'simple'}
+			<form.component bind:showDataEntry bind:showDialogType />
+		{:else if form.profile === 'drop-file' || form.profile === 'side-panel'}
+			<form.component bind:showDataEntry bind:showDialogType bind:dropFile />
+		{:else if form.profile === 'model-georef'}
+			<form.component
 				bind:showDataEntry
 				bind:showDialogType
 				bind:dropFile
@@ -113,8 +82,8 @@
 				bind:zoneConfirmedEpsg
 				{selectedEpsgCode}
 			/>
-		{:else if profile === 'vector-zone'}
-			<FormComponent
+		{:else if form.profile === 'vector-zone'}
+			<form.component
 				bind:showDataEntry
 				bind:showDialogType
 				bind:dropFile
@@ -123,8 +92,8 @@
 				bind:zoneConfirmedEpsg
 				{selectedEpsgCode}
 			/>
-		{:else if profile === 'vector-zone-georef'}
-			<FormComponent
+		{:else if form.profile === 'vector-zone-georef'}
+			<form.component
 				bind:geoRefData
 				bind:showDataEntry
 				bind:showDialogType
@@ -136,8 +105,8 @@
 				{selectedEpsgCode}
 				{isDragover}
 			/>
-		{:else if profile === 'vector-georef'}
-			<FormComponent
+		{:else if form.profile === 'vector-georef'}
+			<form.component
 				bind:showDataEntry
 				bind:showDialogType
 				bind:dropFile
@@ -145,16 +114,16 @@
 				bind:focusBbox
 				bind:geoRefData
 			/>
-		{:else if profile === 'raster-georef'}
-			<FormComponent
+		{:else if form.profile === 'raster-georef'}
+			<form.component
 				bind:showDataEntry
 				bind:showDialogType
 				bind:dropFile
 				bind:transformOptionMode
 				bind:geoRefData
 			/>
-		{:else if profile === 'pointcloud-georef'}
-			<FormComponent
+		{:else if form.profile === 'pointcloud-georef'}
+			<form.component
 				bind:showDataEntry
 				bind:showDialogType
 				bind:dropFile
@@ -164,8 +133,8 @@
 				bind:geoRefData
 				{selectedEpsgCode}
 			/>
-		{:else if profile === 'feature-service'}
-			<FormComponent
+		{:else if form.profile === 'feature-service'}
+			<form.component
 				bind:showDataEntry
 				bind:showDialogType
 				bind:remoteFeatureServiceUrl
@@ -175,20 +144,20 @@
 				bind:pendingZoneGeoRefData
 				{selectedEpsgCode}
 			/>
-		{:else if profile === 'remote-csw'}
-			<FormComponent bind:showDialogType bind:remoteCswUrl onimporturl={importCatalogUrl} />
-		{:else if profile === 'remote-stac'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteStacUrl />
-		{:else if profile === 'remote-arcgis'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteArcGisUrl />
-		{:else if profile === 'remote-wmts'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:remoteWmtsUrl />
-		{:else if profile === 'remote-geozarr'}
+		{:else if form.profile === 'remote-csw'}
+			<form.component bind:showDialogType bind:remoteCswUrl onimporturl={importCatalogUrl} />
+		{:else if form.profile === 'remote-stac'}
+			<form.component bind:showDataEntry bind:showDialogType bind:remoteStacUrl />
+		{:else if form.profile === 'remote-arcgis'}
+			<form.component bind:showDataEntry bind:showDialogType bind:remoteArcGisUrl />
+		{:else if form.profile === 'remote-wmts'}
+			<form.component bind:showDataEntry bind:showDialogType bind:remoteWmtsUrl />
+		{:else if form.profile === 'remote-geozarr'}
 			{#key dropFile}
-				<FormComponent bind:showDataEntry bind:showDialogType bind:remoteGeoZarrUrl {dropFile} />
+				<form.component bind:showDataEntry bind:showDialogType bind:remoteGeoZarrUrl {dropFile} />
 			{/key}
-		{:else if profile === 'tiles'}
-			<FormComponent
+		{:else if form.profile === 'tiles'}
+			<form.component
 				bind:showDataEntry
 				bind:showDialogType
 				bind:dropFile
@@ -197,10 +166,10 @@
 				bind:remoteTiles3dUrl
 				bind:remotePmtilesUrl
 			/>
-		{:else if profile === 'wcs'}
-			<FormComponent bind:showDataEntry bind:showDialogType bind:dropFile />
-		{:else if profile === 'tile-url-type'}
-			<FormComponent
+		{:else if form.profile === 'wcs'}
+			<form.component bind:showDataEntry bind:showDialogType bind:dropFile />
+		{:else if form.profile === 'tile-url-type'}
+			<form.component
 				bind:showDialogType
 				bind:pendingTileUrl
 				bind:remoteRasterUrl

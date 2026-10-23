@@ -7,7 +7,9 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		// interface PageData {}
-		// interface PageState {}
+		interface PageState {
+			menuHistory?: import('./routes/map/utils/platform/menu-history').MenuHistoryState;
+		}
 		// interface Platform {}
 	}
 }
