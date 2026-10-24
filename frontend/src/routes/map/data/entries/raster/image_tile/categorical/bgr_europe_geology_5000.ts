@@ -31,7 +31,7 @@ const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	interaction: { clickable: false },
 	style: {
 		...DEFAULT_RASTER_CATEGORICAL_STYLE,
-		resampling: 'nearest',
+		resampling: 'linear',
 		legend
 	}
 };

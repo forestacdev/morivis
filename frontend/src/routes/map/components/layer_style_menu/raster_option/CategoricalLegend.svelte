@@ -27,10 +27,11 @@
 	<span>凡例</span>
 </div>
 <div class="mt-2 flex-1 shrink-0 rounded-lg p-2 mix-blend-normal">
+	<!-- 凡例には同じラベル・記号が複数現れる。表示専用の行は配列順に更新する。 -->
 	{#if style.legend.type === 'category'}
 		<h2 class="mb-2 text-base">{style.legend.name}</h2>
 		<ul class="text-base">
-			{#each style.legend.colors as color, i (`${style.legend.labels[i] ?? color}-${color}`)}
+			{#each style.legend.colors as color, i}
 				<li style="display: flex; align-items: center; margin-bottom: 5px;">
 					<span
 						class="shrink-0 rounded-md border border-black"
@@ -61,10 +62,10 @@
 		</div>
 	{:else if style.legend.type === 'image'}
 		<ul class="flex flex-col gap-2 text-base">
-			{#each style.legend.categories as category (`${category.name}-${category.urls.join('|')}`)}
+			{#each style.legend.categories as category}
 				<h2 class="mt-4 text-base">{category.name}</h2>
 				<div class="flex flex-col gap-2">
-					{#each category.urls as url, j (`${category.labels[j] ?? url}-${url}`)}
+					{#each category.urls as url, j}
 						<li class="flex items-center gap-2">
 							<div
 								class="grid h-20 w-20 shrink-0 place-items-center rounded-lg border border-black bg-white p-2"
