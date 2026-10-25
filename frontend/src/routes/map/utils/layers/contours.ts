@@ -51,7 +51,7 @@ export const createContourStyle = (
 			paint: {
 				'line-color': '#bfbfbf',
 				'line-width': lineWidth,
-				'line-opacity': ['case', ['>', ['get', 'level'], 0], 1, 0.8]
+				'line-opacity': ['case', ['>', ['get', 'level'], 0], 1.5, 0.8]
 			}
 		},
 
@@ -66,7 +66,7 @@ export const createContourStyle = (
 				'symbol-spacing': ['step', ['zoom'], 150, 11, 250],
 				'text-field': ['to-string', ['get', 'ele']],
 				'text-font': textFont,
-				'text-size': 10,
+				'text-size': 12,
 				'text-padding': 1,
 				'text-allow-overlap': false,
 				'text-ignore-placement': false

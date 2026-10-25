@@ -58,6 +58,10 @@ const baseAttributions = {
 		name: '© OpenStreetMap contributors',
 		url: 'https://www.openstreetmap.org/copyright'
 	},
+	OpenTopoMap: {
+		name: '© OpenTopoMap (CC BY-SA 3.0) / © OpenStreetMap contributors / SRTM / Sonny',
+		url: 'https://opentopomap.org/about#verwendung'
+	},
 	OMT: {
 		name: '© OpenMapTiles',
 		url: 'https://openmaptiles.org/'
