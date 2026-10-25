@@ -26,45 +26,35 @@ export const createContourStyle = (
 		attribution: MAPTERHORN_DEM_SOURCE.attribution
 	};
 	const base = { source, 'source-layer': 'contours', minzoom: CONTOUR_MIN_ZOOM };
+	const lineWidth: DataDrivenPropertyValueSpecification<number> = [
+		'case',
+		['>', ['get', 'level'], 0],
+		1,
+		0.5
+	];
 	layers.push(
 		{
 			...base,
 			id: `${source}-casing`,
 			type: 'line',
-			paint: { 'line-color': '#ffffff', 'line-width': 2.5, 'line-opacity': 0.35 }
+			paint: {
+				'line-color': '#ffffff',
+				// 主線の両側に0.5pxずつ白い縁を出す。
+				'line-width': ['+', lineWidth, 1],
+				'line-opacity': 0.35
+			}
 		},
 		{
 			...base,
 			id: `${source}-line`,
 			type: 'line',
 			paint: {
-				'line-color': '#a87532',
-				'line-width': ['case', ['>', ['get', 'level'], 0], 1.4, 0.8],
-				'line-opacity': 0.9
+				'line-color': '#bfbfbf',
+				'line-width': lineWidth,
+				'line-opacity': ['case', ['>', ['get', 'level'], 0], 1, 0.8]
 			}
 		},
-		{
-			...base,
-			id: `${source}-label-overview`,
-			type: 'symbol',
-			maxzoom: 9,
-			filter: ['>', ['get', 'level'], 0],
-			layout: {
-				// 短い等高線も長さ・曲率による除外を受けず、線上の点に水平配置する。
-				'symbol-placement': 'point',
-				'text-field': ['concat', ['to-string', ['get', 'ele']], ' m'],
-				'text-font': textFont,
-				'text-size': 11,
-				'text-padding': 6,
-				'text-allow-overlap': false,
-				'text-ignore-placement': false
-			},
-			paint: {
-				'text-color': '#80551f',
-				'text-halo-color': '#ffffff',
-				'text-halo-width': 1.5
-			}
-		},
+
 		{
 			...base,
 			id: `${source}-label`,
@@ -74,16 +64,15 @@ export const createContourStyle = (
 			layout: {
 				'symbol-placement': 'line',
 				'symbol-spacing': ['step', ['zoom'], 150, 11, 250],
-				'text-field': ['concat', ['to-string', ['get', 'ele']], ' m'],
+				'text-field': ['to-string', ['get', 'ele']],
 				'text-font': textFont,
-				'text-size': 12,
-				'text-max-angle': 90,
+				'text-size': 10,
 				'text-padding': 1,
 				'text-allow-overlap': false,
 				'text-ignore-placement': false
 			},
 			paint: {
-				'text-color': '#80551f',
+				'text-color': '#434343',
 				'text-halo-color': '#ffffff',
 				'text-halo-width': 1.5
 			}

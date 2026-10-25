@@ -1,5 +1,6 @@
 import { WEB_MERCATOR_WORLD_BBOX } from '$routes/map/data/entries/_meta_data/_bounds';
 import { DEFAULT_RASTER_BASEMAP_STYLE } from '$routes/map/data/entries/raster/_style';
+import { IMAGE_TILE_XYZ_SETS } from '$routes/constants';
 import type { RasterBaseMapStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
 const entry: RasterImageEntry<RasterBaseMapStyle> = {
@@ -10,7 +11,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://tile.opentopomap.org/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: 'OpenTopoMap 地形図',
+		name: 'OpenTopoMap',
 		sourceDataName: 'OpenTopoMap / OpenStreetMap / SRTM / Sonny',
 		description:
 			'OpenStreetMapと標高データを基に、等高線や陰影、地名・道路を描いた地形図。地形の起伏や等高線の標高を読む際の背景地図として利用できる。',
@@ -24,7 +25,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		tileSize: 256,
 		bounds: WEB_MERCATOR_WORLD_BBOX,
 		downloadUrl: 'https://opentopomap.org/about',
-		xyzImageTile: { x: 2174, y: 1432, z: 12 }
+		xyzImageTile: IMAGE_TILE_XYZ_SETS['zoom_15']
 	},
 	interaction: { clickable: false },
 	style: {
