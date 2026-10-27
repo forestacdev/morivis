@@ -41,15 +41,21 @@ export const getImagePmtiles = async (
 /** タイル画像のピクセル色を取得 */
 export const getPixelColor = async (
 	url: string,
-	lngLat: LngLat,
+	lngLat: Pick<LngLat, 'lng' | 'lat'>,
 	zoom: ZoomLevel,
 	tileSize: TileSize,
 	type: RasterFormatType
 ): Promise<string | null> => {
 	const { lng, lat } = lngLat;
+	if (!Number.isFinite(lng) || !Number.isFinite(lat) || Math.abs(lat) > 85.0511287798066) {
+		return null;
+	}
 
 	try {
-		const tile = tilebelt.pointToTile(lng, lat, zoom);
+		const [tileX, rawTileY] = tilebelt.pointToTileFraction(lng, lat, zoom);
+		// 極側の境界での丸め誤差をタイル範囲内に収める。
+		const tileY = Math.max(0, Math.min(2 ** zoom, rawTileY));
+		const tile = [Math.floor(tileX), Math.min(2 ** zoom - 1, Math.floor(tileY)), zoom];
 		let src: string | null = null;
 		if (type === 'pmtiles') {
 			src = await getImagePmtiles(url, {
@@ -58,7 +64,7 @@ export const getPixelColor = async (
 				z: tile[2]
 			});
 		} else if (type === 'image') {
-			src = await url
+			src = url
 				.replace('{z}', tile[2].toString())
 				.replace('{x}', tile[0].toString())
 				.replace('{y}', tile[1].toString());
@@ -68,13 +74,12 @@ export const getPixelColor = async (
 			return null;
 		}
 
-		const bbox = tilebelt.tileToBBOX(tile);
-		const [lngMin, latMin, lngMax, latMax] = bbox;
-		const x = Math.floor(((lng - lngMin) / (lngMax - lngMin)) * tileSize);
-		const y = Math.floor(((latMax - lat) / (latMax - latMin)) * tileSize);
+		// 緯度の線形補間ではなく、メルカトル投影上のタイル内位置を使う。
+		const x = Math.min(tileSize - 1, Math.floor((tileX - tile[0]) * tileSize));
+		const y = Math.min(tileSize - 1, Math.floor((tileY - tile[1]) * tileSize));
 
 		const img = new Image();
-		img.src = src;
+		img.crossOrigin = 'anonymous';
 
 		return await new Promise((resolve, reject) => {
 			img.onload = () => {
@@ -106,6 +111,7 @@ export const getPixelColor = async (
 				console.error('画像の読み込みに失敗しました:', error);
 				reject(new Error(`画像の読み込みに失敗しました: ${error}`));
 			};
+			img.src = resolveRequestUrl(src);
 		});
 	} catch (error) {
 		console.error('getPixelColor でエラーが発生しました:', error);

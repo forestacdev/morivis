@@ -7,7 +7,7 @@
 	import { lonLatToAddress } from '$routes/map/api/address';
 	import { getGSIGeology } from '$routes/map/api/gbank';
 	import { getGoogleMapLink, getGoogleStreetViewLink } from '$routes/map/api/google';
-	import { gsiGetElevation } from '$routes/map/api/gsi';
+	import { getMapterhornElevation } from '$routes/map/api/mapterhorn';
 	import { getOsmLink } from '$routes/map/api/osm';
 	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { mapStore } from '$routes/stores/map';
@@ -97,7 +97,7 @@
 
 		const fetchData = async (): Promise<ContextData> => {
 			const [elev, addr] = await Promise.all([
-				withNumberTimeout(gsiGetElevation(lng, lat), CONTEXT_API_TIMEOUT_MS),
+				withNumberTimeout(getMapterhornElevation(lng, lat), CONTEXT_API_TIMEOUT_MS),
 				withStringTimeout(lonLatToAddress(lng, lat), CONTEXT_API_TIMEOUT_MS)
 			]);
 
@@ -204,15 +204,24 @@
 				{/if}
 
 				{#if data.elevation !== null}
+					{@const elevationLabel = `${data.elevation.toFixed(1)} m`}
 					<button
 						onclick={() => {
-							navigator.clipboard.writeText(`${data.elevation} m`);
+							navigator.clipboard.writeText(elevationLabel);
 							showNotification('クリップボードに標高をコピーしました', 'info');
 						}}
 						class="hover:bg-accent cursor-pointer p-2 text-left transition-colors duration-100"
 					>
-						標高: {data.elevation} m
+						標高: {elevationLabel}
 					</button>
+					<a
+						class="px-2 pb-2 text-xs text-gray-400"
+						href="https://mapterhorn.com/attribution"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						© Mapterhorn
+					</a>
 				{/if}
 
 				<a
