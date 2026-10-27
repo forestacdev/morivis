@@ -1431,7 +1431,13 @@
 {/if}
 
 {#if contextMenuState}
-	<ContextMenu bind:contextMenuState />
+	<ContextMenu
+		bind:contextMenuState
+		onclose={() => {
+			selectionMarkerLngLat = null;
+			showSelectionMarker = false;
+		}}
+	/>
 {/if}
 <Tooltip />
 

@@ -2,17 +2,28 @@
 	import { tick } from 'svelte';
 	import { fade, slide } from 'svelte/transition';
 
+	import LocationMenuCard from './mobile/LocationMenuCard.svelte';
 	import type { ContextMenuState } from '../types/ui';
 
 	import { lonLatToAddress } from '$routes/map/api/address';
-	import { getGSIGeology } from '$routes/map/api/gbank';
-	import { getGoogleMapLink, getGoogleStreetViewLink } from '$routes/map/api/google';
+	import { getGoogleMapLink } from '$routes/map/api/google';
 	import { getMapterhornElevation } from '$routes/map/api/mapterhorn';
 	import { getOsmLink } from '$routes/map/api/osm';
-	import { showConfirmDialog } from '$routes/stores/confirmation';
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
-	let { contextMenuState = $bindable() }: { contextMenuState: ContextMenuState | null } = $props();
+	import { isMobile } from '$routes/stores/ui';
+	let {
+		contextMenuState = $bindable(),
+		onclose = () => {}
+	}: {
+		contextMenuState: ContextMenuState | null;
+		onclose?: () => void;
+	} = $props();
+
+	const closeMenu = () => {
+		contextMenuState = null;
+		onclose();
+	};
 
 	let containerRef = $state<HTMLElement>();
 	let menuPosition = $state({
@@ -36,7 +47,7 @@
 			}
 		};
 
-		if (contextMenuState && contextMenuState.show) {
+		if (!$isMobile && contextMenuState && contextMenuState.show) {
 			document.addEventListener('mousedown', handleClickOutside);
 		}
 
@@ -119,7 +130,7 @@
 	});
 
 	const updateMenuPosition = async () => {
-		if (!contextMenuState || !contextMenuState.show || !containerRef) return;
+		if ($isMobile || !contextMenuState || !contextMenuState.show || !containerRef) return;
 
 		await tick();
 
@@ -137,7 +148,7 @@
 	};
 
 	$effect(() => {
-		if (!contextMenuState || !contextMenuState.show || !containerRef) return;
+		if ($isMobile || !contextMenuState || !contextMenuState.show || !containerRef) return;
 
 		void updateMenuPosition();
 
@@ -153,8 +164,87 @@
 	});
 </script>
 
+{#snippet menuItems(data: ContextData)}
+	{#if contextMenuState}
+		{@const coordinates = `${contextMenuState.lngLat.lat.toFixed(6)}, ${contextMenuState.lngLat.lng.toFixed(6)}`}
+		<button
+			onclick={() => {
+				navigator.clipboard.writeText(coordinates);
+				showNotification('クリップボードに座標をコピーしました', 'info');
+			}}
+			class="hover:bg-accent w-full cursor-pointer p-2 text-left transition-colors duration-100"
+		>
+			{coordinates}
+		</button>
+
+		{#if data.address}
+			<button
+				onclick={() => {
+					navigator.clipboard.writeText(data.address ?? '');
+					showNotification('クリップボードに住所をコピーしました', 'info');
+				}}
+				class="hover:bg-accent cursor-pointer p-2 text-left transition-colors duration-100"
+			>
+				{data.address}
+			</button>
+		{/if}
+
+		{#if data.elevation !== null}
+			{@const elevationLabel = `${data.elevation.toFixed(1)} m`}
+			<button
+				onclick={() => {
+					navigator.clipboard.writeText(elevationLabel);
+					showNotification('クリップボードに標高をコピーしました', 'info');
+				}}
+				class="hover:bg-accent cursor-pointer p-2 text-left transition-colors duration-100"
+			>
+				標高: {elevationLabel}
+			</button>
+			<a
+				class="px-2 pb-2 text-xs text-gray-400"
+				href="https://mapterhorn.com/attribution"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				© Mapterhorn
+			</a>
+		{/if}
+
+		<a
+			class="hover:bg-accent cursor-pointer p-2 transition-colors duration-100"
+			href={getGoogleMapLink(contextMenuState.lngLat.lat, contextMenuState.lngLat.lng)}
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			Google Mapsで開く
+		</a>
+		<a
+			class="hover:bg-accent cursor-pointer p-2 transition-colors duration-100"
+			href={getOsmLink(
+				contextMenuState.lngLat.lat,
+				contextMenuState.lngLat.lng,
+				mapStore.getZoom()
+			)}
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			OpenStreetMapで開く
+		</a>
+	{/if}
+{/snippet}
+
 {#if contextMenuState && contextMenuState.show}
-	{#if contextDataPromise}
+	{#if $isMobile}
+		<LocationMenuCard onclose={closeMenu}>
+			{#await contextDataPromise}
+				<p class="p-3 text-sm text-gray-400" role="status">読み込み中...</p>
+			{:then data}
+				{#if data}
+					<div class="location-menu flex flex-col text-base">{@render menuItems(data)}</div>
+				{/if}
+			{/await}
+		</LocationMenuCard>
+	{:else if contextDataPromise}
 		{#await contextDataPromise}
 			<!-- ローディング中 -->
 			<div
@@ -179,72 +269,17 @@
 					? 'visible'
 					: 'hidden'};"
 			>
-				<button
-					onclick={() => {
-						navigator.clipboard.writeText(
-							`${contextMenuState.lngLat.lat.toFixed(6)}, ${contextMenuState.lngLat.lng.toFixed(6)}`
-						);
-						showNotification('クリップボードに座標をコピーしました', 'info');
-					}}
-					class="hover:bg-accent w-full cursor-pointer p-2 text-left transition-colors duration-100"
-				>
-					{contextMenuState.lngLat.lat.toFixed(6)},{' '}{contextMenuState.lngLat.lng.toFixed(6)}
-				</button>
-
-				{#if data.address}
-					<button
-						onclick={() => {
-							navigator.clipboard.writeText(data.address ?? '');
-							showNotification('クリップボードに住所をコピーしました', 'info');
-						}}
-						class="hover:bg-accent cursor-pointer p-2 text-left transition-colors duration-100"
-					>
-						{data.address}
-					</button>
-				{/if}
-
-				{#if data.elevation !== null}
-					{@const elevationLabel = `${data.elevation.toFixed(1)} m`}
-					<button
-						onclick={() => {
-							navigator.clipboard.writeText(elevationLabel);
-							showNotification('クリップボードに標高をコピーしました', 'info');
-						}}
-						class="hover:bg-accent cursor-pointer p-2 text-left transition-colors duration-100"
-					>
-						標高: {elevationLabel}
-					</button>
-					<a
-						class="px-2 pb-2 text-xs text-gray-400"
-						href="https://mapterhorn.com/attribution"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						© Mapterhorn
-					</a>
-				{/if}
-
-				<a
-					class="hover:bg-accent cursor-pointer p-2 transition-colors duration-100"
-					href={getGoogleMapLink(contextMenuState.lngLat.lat, contextMenuState.lngLat.lng)}
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					Google Mapsで開く
-				</a>
-				<a
-					class="hover:bg-accent cursor-pointer p-2 transition-colors duration-100"
-					href={getOsmLink(
-						contextMenuState.lngLat.lat,
-						contextMenuState.lngLat.lng,
-						mapStore.getZoom()
-					)}
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					OpenStreetMapで開く
-				</a>
+				{@render menuItems(data)}
 			</div>
 		{/await}
 	{/if}
 {/if}
+
+<style>
+	.location-menu :global(button),
+	.location-menu :global(a) {
+		min-height: 44px;
+		display: flex;
+		align-items: center;
+	}
+</style>

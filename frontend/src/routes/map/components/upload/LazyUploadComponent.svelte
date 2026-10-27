@@ -14,14 +14,7 @@
 	let componentPromise = $derived(load());
 </script>
 
-{#await componentPromise}
-	<div class="bg-main fixed inset-0 z-40 flex flex-col items-center justify-center gap-4 text-base">
-		<p role="status">読み込み中…</p>
-		<button type="button" class="bg-sub cursor-pointer rounded px-4 py-2" onclick={onclose}>
-			キャンセル
-		</button>
-	</div>
-{:then module}
+{#await componentPromise then module}
 	{@render children(module.default)}
 {:catch}
 	<div class="bg-main fixed inset-0 z-40 flex flex-col items-center justify-center gap-4 text-base">

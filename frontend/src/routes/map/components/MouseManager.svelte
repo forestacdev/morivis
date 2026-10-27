@@ -25,6 +25,7 @@
 	import { getMorivisLayerRole } from '$routes/map/utils/layers/id';
 	import { getPoiLayerInteraction } from '$routes/map/utils/layers/interaction';
 	import { isPointInBbox } from '$routes/map/utils/map/bbox';
+	import { attachLongPress } from '$routes/map/utils/map/long-press';
 	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from '$routes/map/utils/maplibre';
 	import maplibregl from '$routes/map/utils/maplibre';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
@@ -39,6 +40,7 @@
 		type SelectedHighlightData
 	} from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
+	import { isMobile } from '$routes/stores/ui';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -116,6 +118,41 @@
 			lngLat: e.lngLat
 		};
 	};
+
+	const openLocationMenu = (lngLat: LngLat, x: number, y: number) => {
+		if (showDataEntry) return;
+		setSelectedHighlight(null);
+		getThreeJsManager()?.clearModelHighlight();
+		featureMenuData = null;
+		clearSearchHighlight();
+		clickedLayerIds = [];
+		contextMenuState = { show: true, x, y, lngLat };
+		markerLngLat = lngLat;
+		showMarker = true;
+		if ($isMobile) mapStore.panToPoi(lngLat);
+	};
+
+	let longPress: ReturnType<typeof attachLongPress> | undefined;
+	$effect(() => {
+		if (!$isMobile) return;
+		const unsubscribe = mapStore.onInitialized((map) => {
+			longPress?.destroy();
+			const canvas = map.getCanvas();
+			longPress = attachLongPress(canvas, ({ clientX, clientY }) => {
+				const rect = canvas.getBoundingClientRect();
+				const point: [number, number] = [
+					((clientX - rect.left) * canvas.clientWidth) / rect.width,
+					((clientY - rect.top) * canvas.clientHeight) / rect.height
+				];
+				openLocationMenu(map.unproject(point), clientX, clientY);
+			});
+		});
+		return () => {
+			unsubscribe();
+			longPress?.destroy();
+			longPress = undefined;
+		};
+	});
 
 	let stylePoiIds: string[] = [];
 	onMount(() =>
@@ -539,6 +576,8 @@
 	};
 
 	mapStore.onClick(async (e: MapMouseEvent) => {
+		if (longPress?.shouldSuppressClick()) return;
+		if ($isMobile && contextMenuState?.show) clearContextMenuMarker();
 		showMarker = false;
 		// プレブュー中はクリック処理を行わない
 		if (showDataEntry) return;
@@ -694,9 +733,9 @@
 
 				featureMenuData = geojsonFeature;
 
-				// mapStore.panTo(e.lngLat, {
-				// 	duration: 1000
-				// });
+				if (feature.geometry.type === 'Point' || $isMobile) {
+					mapStore.panToPoi(clickLngLat);
+				}
 			}
 			// 検索マーカー
 
@@ -733,21 +772,12 @@
 		}
 	});
 
-	mapStore.onContextMenu(async (e: MapMouseEvent) => {
-		// ウィンドウの座標を取得
-		const windowX = e.originalEvent.clientX;
-		const windowY = e.originalEvent.clientY;
-
-		contextMenuState = {
-			show: true,
-			x: windowX,
-			y: windowY,
-			lngLat: e.lngLat
-		};
-
-		markerLngLat = e.lngLat;
-		showMarker = true;
-	});
+	onMount(() =>
+		mapStore.onContextMenu((e: MapMouseEvent) => {
+			if (longPress?.shouldSuppressClick()) return;
+			openLocationMenu(e.lngLat, e.originalEvent.clientX, e.originalEvent.clientY);
+		})
+	);
 
 	let isDragging = false;
 
