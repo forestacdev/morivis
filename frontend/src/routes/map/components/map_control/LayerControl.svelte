@@ -18,5 +18,5 @@
 	}}
 	class="pointer-events-auto grid shrink-0 cursor-pointer place-items-center p-2 drop-shadow-lg"
 >
-	<GisLayerAltIcon class="h-8 w-8 {showLayerPane ? 'text-accent' : 'text-base'}" />
+	<GisLayerAltIcon class="h-7 w-7 {showLayerPane ? 'text-accent' : 'text-base'}" />
 </button>
