@@ -1075,9 +1075,9 @@
 		"angle_z": 9.02
 	},
 	"R0010064": {
-		"angle_x": 0.0,
+		"angle_x": 10.95,
 		"angle_y": 293.4,
-		"angle_z": 0.0
+		"angle_z": 351.76
 	},
 	"R0010070": {
 		"angle_x": 6.12,
@@ -1165,9 +1165,9 @@
 		"angle_z": 0.0
 	},
 	"R0010065": {
-		"angle_x": 353.88,
-		"angle_y": 0.0,
-		"angle_z": 8.28
+		"angle_x": 11.8,
+		"angle_y": 0,
+		"angle_z": 3.1
 	},
 	"R0011353": {
 		"angle_x": 0.0,
@@ -1525,9 +1525,9 @@
 		"angle_z": 1.92
 	},
 	"R0010067": {
-		"angle_x": 0.0,
+		"angle_x": 9.46,
 		"angle_y": 347.76,
-		"angle_z": 0.0
+		"angle_z": 1.49
 	},
 	"R0011379": {
 		"angle_x": 0,
@@ -1595,9 +1595,9 @@
 		"angle_z": 0
 	},
 	"R0010066": {
-		"angle_x": 351.72,
-		"angle_y": 0.0,
-		"angle_z": 8.28
+		"angle_x": 9.57,
+		"angle_y": 0,
+		"angle_z": 0
 	},
 	"R0010700": {
 		"angle_x": 0,
