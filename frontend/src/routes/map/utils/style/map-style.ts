@@ -8,6 +8,7 @@ import type { MorivisLayerEntry } from '$routes/map/data/types';
 import { MAPTERHORN_DEM_SOURCE } from '$routes/map/utils/contours/config';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { createContourStyle } from '$routes/map/utils/layers/contours';
+import { drawLayers } from '$routes/map/utils/layers/draw';
 import { createH3Style } from '$routes/map/utils/layers/h3';
 import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 import { createPlaneGridStyle } from '$routes/map/utils/layers/plane-grid';
@@ -348,6 +349,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 			...planeGridStyle.layers,
 			...previewLayers,
 			...mcaGridLayers,
+			...drawLayers,
 			{
 				id: 'deck-reference-layer',
 				type: 'background' as const,

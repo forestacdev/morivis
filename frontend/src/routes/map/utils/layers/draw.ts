@@ -1,4 +1,6 @@
-export const drawLayers = [
+import type { LayerSpecification } from '$routes/map/utils/maplibre';
+
+export const drawLayers: LayerSpecification[] = [
 	{
 		id: '@draw_fill_layer',
 		type: 'fill',

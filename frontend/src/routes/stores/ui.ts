@@ -12,6 +12,9 @@ export const isBlocked = writable<boolean>(false);
 /** サイドメニューの表示状態 */
 export const showOtherMenu = writable<boolean>(false);
 
+/** 地図上の図形を作成・編集するモード */
+export const isDrawMode = writable<boolean>(false);
+
 /** レイヤーメニューの表示 */
 export const showLayerMenu = writable<boolean>(checkPc() ? true : false);
 

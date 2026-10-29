@@ -289,3 +289,30 @@ it('複数プレビューをすべて同じstyleへ含め、選択カードだ�
 		'test-preview-b'
 	]);
 });
+
+describe('確定済みの描画データ', () => {
+	it('描画モード終了後も点・線・面を通常のstyleから描画する', () => {
+		const drawing = {
+			...input(),
+			drawGeojsonData: {
+				type: 'FeatureCollection' as const,
+				features: [{
+					type: 'Feature' as const,
+					geometry: { type: 'Point' as const, coordinates: [1, 2] },
+					properties: { id: 'test-point', color: '#ff0000', opacity: 1 }
+				}]
+			}
+		};
+		const result = createMapStyle(drawing, resources());
+		expect(result.style.sources.draw_source).toMatchObject({
+			type: 'geojson',
+			data: drawing.drawGeojsonData
+		});
+		expect(
+			result.style.layers.filter(layer => layer.id.startsWith('@draw_')).map(layer =>
+				layer.type
+			)
+		)
+			.toEqual(['fill', 'line', 'circle']);
+	});
+});

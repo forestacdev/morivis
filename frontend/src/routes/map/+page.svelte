@@ -28,6 +28,7 @@
 	import DataMenu from '$routes/map/components/data_menu/DataMenu.svelte';
 	import ConfirmationDialog from '$routes/map/components/dialog/ConfirmationDialog.svelte';
 	import ImagePreviewDialog from '$routes/map/components/dialog/ImagePreviewDialog.svelte';
+	import DrawMenu from '$routes/map/components/draw_menu/DrawMenu.svelte';
 	import {
 		getLayerFeaturePanelSummary,
 		hasFeaturePanelSummaryContent
@@ -136,6 +137,7 @@
 	import { showNotification } from '$routes/stores/notification';
 	import { themeMode } from '$routes/stores/theme';
 	import {
+		isDrawMode,
 		isBlocked,
 		showDataMenu,
 		showLayerMenu,
@@ -243,6 +245,12 @@
 	let drawGeojsonData = $state.raw<DrawGeojsonData>({
 		type: 'FeatureCollection',
 		features: []
+	});
+
+	$effect(() => {
+		if (showDataEntry || transformOptionMode || $isStreetView || $showModelView || $showDataMenu) {
+			isDrawMode.set(false);
+		}
 	});
 
 	// ストリートビューのデータ
@@ -1083,6 +1091,7 @@
 	};
 
 	onDestroy(() => {
+		isDrawMode.set(false);
 		stopMenuHistory?.();
 		// コンポーネントが破棄されるときに実行される処理
 		destroyed = true;
@@ -1173,7 +1182,9 @@
 					<OtherMenu bind:imagePreviewUrl bind:imageBounds />
 				</div>
 
-				<!-- <DrawMenu bind:layerEntries bind:drawGeojsonData /> -->
+				{#if map && $isDrawMode}
+					<DrawMenu {map} bind:drawGeojsonData onclose={() => isDrawMode.set(false)} />
+				{/if}
 				<div class="flex w-full flex-1 flex-col overflow-hidden">
 					<!-- 上部余白 -->
 					<!-- <div class="bg-main w-full p-2 max-lg:hidden"></div> -->

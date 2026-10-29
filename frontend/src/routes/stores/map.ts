@@ -5,6 +5,7 @@ import {
 } from '$routes/map/protocol/vector/plane-grid';
 import type { CSSCursor } from '$routes/map/types';
 import { ensureContourProtocol, releaseContourProtocol } from '$routes/map/utils/contours/runtime';
+import { preserveDrawStyle } from '$routes/map/utils/draw/style';
 import maplibregl from '$routes/map/utils/maplibre';
 import type {
 	AllLayoutProperties,
@@ -894,12 +895,7 @@ const createMapStore = () => {
 		void voxelRuntime.set(voxelSpecs).catch(reportRuntimeError);
 		map.setStyle(style, {
 			// preserveDrawingBuffer: true, // スタイル変更後も描画バッファを保持
-			transformStyle: (previous, next) => {
-				return {
-					...next,
-					layers: [...next.layers]
-				};
-			}
+			transformStyle: preserveDrawStyle
 		});
 		ensureTiles3DLayer();
 		ensureVoxelLayer();

@@ -4,6 +4,7 @@
 
 	import { goto } from '$app/navigation';
 	import FacLogo from '$lib/components/svgs/FacLogo.svelte';
+	import Icon from '$lib/components/svgs/Icon.svelte';
 	import AkarIconsInfoFillIcon from '$lib/components/svgs/icons/akar-icons/InfoFillIcon.svelte';
 	import BxExportIcon from '$lib/components/svgs/icons/bx/ExportIcon.svelte';
 	import GrommetIconsInstallOptionIcon from '$lib/components/svgs/icons/grommet-icons/InstallOptionIcon.svelte';
@@ -28,6 +29,7 @@
 	import { mapStore } from '$routes/stores/map';
 	import { showNotification } from '$routes/stores/notification';
 	import {
+		isDrawMode,
 		showOtherMenu,
 		showDataMenu,
 		showInfoDialog,
@@ -138,12 +140,17 @@
 			</button> -->
 
 				<!-- <button
-				class="hover:text-accent transition-text flex w-full items-center justify-start gap-2 p-2 duration-150"
-				onclick={() => mapMode.set('analysis')}
-			>
-				<Icon icon="streamline:code-analysis-solid" class="h-8 w-8" />
-				<span class="select-none">地図の解析</span>
-			</button> -->
+					type="button"
+					class="hover:text-accent flex w-full cursor-pointer items-center justify-start gap-2 p-2"
+					onclick={() => {
+						showDataMenu.set(false);
+						showOtherMenu.set(false);
+						isDrawMode.set(true);
+					}}
+				>
+					<Icon icon="majesticons:edit-pen-4" class="h-8 w-8" />
+					<span>ドローモード</span>
+				</button> -->
 				<button
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
 					onclick={toggleDataMenu}

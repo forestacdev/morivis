@@ -40,7 +40,7 @@
 		type SelectedHighlightData
 	} from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
-	import { isMobile } from '$routes/stores/ui';
+	import { isDrawMode, isMobile } from '$routes/stores/ui';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -139,6 +139,7 @@
 			longPress?.destroy();
 			const canvas = map.getCanvas();
 			longPress = attachLongPress(canvas, ({ clientX, clientY }) => {
+				if ($isDrawMode) return;
 				const rect = canvas.getBoundingClientRect();
 				const point: [number, number] = [
 					((clientX - rect.left) * canvas.clientWidth) / rect.width,
@@ -576,6 +577,7 @@
 	};
 
 	mapStore.onClick(async (e: MapMouseEvent) => {
+		if ($isDrawMode) return;
 		if (longPress?.shouldSuppressClick()) return;
 		if ($isMobile && contextMenuState?.show) clearContextMenuMarker();
 		showMarker = false;
@@ -774,6 +776,7 @@
 
 	onMount(() =>
 		mapStore.onContextMenu((e: MapMouseEvent) => {
+			if ($isDrawMode) return;
 			if (longPress?.shouldSuppressClick()) return;
 			openLocationMenu(e.lngLat, e.originalEvent.clientX, e.originalEvent.clientY);
 		})
@@ -793,6 +796,7 @@
 
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 	mapStore.onMousemove((e) => {
+		if ($isDrawMode) return;
 		if (isDragging) return;
 
 		const clickLayerIds = getClickableTargetLayerIds();

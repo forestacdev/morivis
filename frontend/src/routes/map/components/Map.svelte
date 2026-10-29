@@ -94,7 +94,7 @@
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showLayerAddedNotification, showNotification } from '$routes/stores/notification';
-	import { showDataMenu, showModelView } from '$routes/stores/ui';
+	import { isDrawMode, showDataMenu, showModelView } from '$routes/stores/ui';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -469,7 +469,7 @@
 			isTerrain3d: $isTerrain3d,
 			streetViewPointData,
 			streetViewLineData,
-			drawGeojsonData: drawGeojsonData as FeatureCollection,
+			drawGeojsonData: $isDrawMode ? { type: 'FeatureCollection', features: [] } : drawGeojsonData,
 			zoneBboxGeojsonData,
 			searchGeojsonData
 		};
@@ -862,7 +862,11 @@
 		})
 	);
 
-	// 検索結果の更新
+	// 編集中はruntimeが表示を担当し、終了時に確定済みの図形を通常styleへ戻す。
+	$effect(() => {
+		requestStyleUpdateByDependency($isDrawMode ? null : drawGeojsonData, 0);
+	});
+
 	$effect(() => {
 		// 引数として渡すことで、このeffectを検索結果GeoJSONの変更に反応させる。
 		requestStyleUpdateByDependency(searchGeojsonData);

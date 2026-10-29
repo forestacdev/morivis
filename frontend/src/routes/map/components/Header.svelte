@@ -312,6 +312,7 @@
 			<!-- ハンバーガーメニュー -->
 			<button
 				class="hover:text-accent cursor-pointer rounded-full p-2 text-left text-base drop-shadow-lg duration-100"
+				aria-label="その他のメニュー"
 				onclick={() => showOtherMenu.set(true)}
 			>
 				<UiMenuIcon class="h-8 w-8" />
