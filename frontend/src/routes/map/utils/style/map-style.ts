@@ -15,6 +15,7 @@ import { createPlaneGridStyle } from '$routes/map/utils/layers/plane-grid';
 import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 import type { ReferenceStyle } from '$routes/map/utils/layers/reference-style';
 import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
+import { createS2Style } from '$routes/map/utils/layers/s2';
 import type {
 	LayerSpecification,
 	SourceSpecification,
@@ -48,6 +49,7 @@ export interface MapStyleInput {
 	showPlaneGrid: boolean;
 	planeGridZone: number;
 	showH3: boolean;
+	showS2: boolean;
 	showContour: boolean;
 	isGlobe: boolean;
 	showModelView: boolean;
@@ -85,6 +87,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		showPlaneGrid,
 		planeGridZone,
 		showH3,
+		showS2,
 		isGlobe,
 		showModelView,
 		isTerrain3d,
@@ -292,6 +295,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		planeGridZone,
 		DEFAULT_SYMBOL_TEXT_FONT
 	);
+	const s2Style = createS2Style(showS2, DEFAULT_SYMBOL_TEXT_FONT);
 	const h3Style = createH3Style(showH3, DEFAULT_SYMBOL_TEXT_FONT);
 	const contourStyle = createContourStyle(contourDem?.contourTiles, DEFAULT_SYMBOL_TEXT_FONT);
 	const mapStyle: StyleSpecification = {
@@ -310,6 +314,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 			...xyzTileSources,
 			...regionalMeshStyle.sources,
 			...h3Style.sources,
+			...s2Style.sources,
 			...planeGridStyle.sources,
 			...contourStyle.sources,
 			...sources,
@@ -346,6 +351,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 			...xyzTileLayer,
 			...regionalMeshStyle.layers,
 			...h3Style.layers,
+			...s2Style.layers,
 			...planeGridStyle.layers,
 			...previewLayers,
 			...mcaGridLayers,

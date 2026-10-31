@@ -57,3 +57,21 @@ test('重複する凡例を省略せず表示し、内容や形式を切り替�
 	await expect(page.getByRole('img', { name: 'test-label', exact: true })).toHaveCount(4);
 	expect(errors).toEqual([]);
 });
+
+test('dimension 切替に応じて凡例を更新し、未定義の値では既定の凡例へ戻る', async ({ page }) => {
+	const errors: string[] = [];
+	page.on('pageerror', error => errors.push(error.message));
+	await page.setContent('<html><body></body></html>');
+	await page.addScriptTag({ content: script });
+	await page.getByRole('button', { name: 'test-select-image', exact: true }).click();
+	await expect(page.getByRole('img', { name: 'test-depth-label', exact: true })).toHaveCount(1);
+	await expect(page.getByRole('img', { name: 'test-label', exact: true })).toHaveCount(0);
+	await page.getByRole('button', { name: 'test-select-gradient', exact: true }).click();
+	await expect(page.getByRole('heading', { name: 'test-range', exact: true })).toBeVisible();
+	await expect(page.getByText('2 test-unit', { exact: true })).toBeVisible();
+	await expect(page.getByText('9 test-unit', { exact: true })).toBeVisible();
+	await expect(page.getByRole('img')).toHaveCount(0);
+	await page.getByRole('button', { name: 'test-select-unmapped', exact: true }).click();
+	await expect(page.getByRole('img', { name: 'test-label', exact: true })).toHaveCount(4);
+	expect(errors).toEqual([]);
+});

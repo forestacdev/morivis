@@ -13,6 +13,7 @@
 		showXYZTileLayer,
 		showRegionalMeshLayer,
 		showH3Layer,
+		showS2Layer,
 		showPlaneGridLayer,
 		showContourLayer,
 		showLineLayer,
@@ -117,6 +118,12 @@
 			icon: 'mdi:hexagon-multiple-outline',
 			value: $showH3Layer,
 			setValue: showH3Layer.set
+		},
+		{
+			label: 'S2',
+			icon: 'material-symbols:grid-on',
+			value: $showS2Layer,
+			setValue: showS2Layer.set
 		}
 		// {
 		// 	label: '平面直角座標',
@@ -136,12 +143,16 @@
 		<div class="flex flex-col gap-2">
 			<div class="flex w-full justify-between">
 				<span>ベースマップ</span>
-				<button onclick={() => (showMenu = false)} class="cursor-pointer text-base">
+				<button
+					aria-label="背景地図・補助レイヤーを閉じる"
+					onclick={() => (showMenu = false)}
+					class="cursor-pointer text-base"
+				>
 					<MaterialSymbolsCloseRoundedIcon class="h-6 w-6" />
 				</button>
 			</div>
 			<div class="grid w-full grid-cols-3 items-center justify-center gap-x-2">
-				{#each baseMapList as baseMap}
+				{#each baseMapList as baseMap (baseMap.type)}
 					<button
 						onclick={() => {
 							if ($selectedBaseMap === baseMap.type) return;

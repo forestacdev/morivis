@@ -3,6 +3,7 @@ import {
 	planeGridProtocol,
 	terminatePlaneGridWorker
 } from '$routes/map/protocol/vector/plane-grid';
+import { s2Protocol, terminateS2Worker } from '$routes/map/protocol/vector/s2';
 import type { CSSCursor } from '$routes/map/types';
 import { ensureContourProtocol, releaseContourProtocol } from '$routes/map/utils/contours/runtime';
 import { preserveDrawStyle } from '$routes/map/utils/draw/style';
@@ -362,6 +363,21 @@ const releaseH3Protocol = () => {
 	maplibregl.removeProtocol(h3Protocol.protocolName);
 	terminateH3Worker();
 	h3ProtocolRegistered = false;
+};
+
+let s2ProtocolRegistered = false;
+
+const ensureS2Protocol = () => {
+	if (s2ProtocolRegistered) return;
+	maplibregl.addProtocol(s2Protocol.protocolName, s2Protocol.request);
+	s2ProtocolRegistered = true;
+};
+
+const releaseS2Protocol = () => {
+	if (!s2ProtocolRegistered) return;
+	maplibregl.removeProtocol(s2Protocol.protocolName);
+	terminateS2Worker();
+	s2ProtocolRegistered = false;
 };
 
 let planeGridProtocolRegistered = false;
@@ -1830,6 +1846,7 @@ const createMapStore = () => {
 		releaseTileIndexProtocol();
 		releaseRegionalMeshProtocol();
 		releaseH3Protocol();
+		releaseS2Protocol();
 		releasePlaneGridProtocol();
 		releaseContourProtocol(maplibregl);
 		map = null;
@@ -2049,6 +2066,8 @@ const createMapStore = () => {
 		releaseTileIndexProtocol,
 		ensureRegionalMeshProtocol,
 		releaseRegionalMeshProtocol,
+		ensureS2Protocol,
+		releaseS2Protocol,
 		ensureH3Protocol,
 		releaseH3Protocol,
 		ensurePlaneGridProtocol,

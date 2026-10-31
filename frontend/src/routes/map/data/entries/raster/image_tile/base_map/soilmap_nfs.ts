@@ -12,9 +12,11 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 	},
 	metaData: {
 		name: '国有林 林野土壌図',
-		attribution: '森林総合研究所',
+		description:
+			'国有林の森林土壌調査で作成された土壌図を画像タイルとして配信した地図。土壌の分布を把握する際に、図幅ごとの凡例・説明書を森林土壌デジタルマップで参照して利用できる。',
+		attribution: '森林総研・森林土壌デジタルマップ',
 		tags: ['土壌図', '国有林'],
-		downloadUrl: 'https://www2.ffpri.go.jp/soilmap/data-src2.html',
+		downloadUrl: 'https://www2.ffpri.go.jp/soilmap/data-src.html',
 		location: '全国',
 		minZoom: 1,
 		maxZoom: 16,

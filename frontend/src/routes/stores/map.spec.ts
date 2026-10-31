@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => {
 			'tile_index',
 			'regional-mesh',
 			'h3',
+			's2',
 			'plane-grid'
 		].map(name => [name, protocol(name)])),
 		addProtocol: vi.fn(),
@@ -79,6 +80,10 @@ vi.mock('$routes/map/protocol/vector/tileindex', () => ({
 vi.mock('$routes/map/protocol/vector/regional-mesh', () => ({
 	regionalMeshProtocol: mocks.protocols['regional-mesh'],
 	terminateRegionalMeshWorker: mocks.terminate
+}));
+vi.mock('$routes/map/protocol/vector/s2', () => ({
+	s2Protocol: mocks.protocols.s2,
+	terminateS2Worker: mocks.terminate
 }));
 vi.mock('$routes/map/protocol/vector/h3', () => ({
 	h3Protocol: mocks.protocols.h3,
@@ -273,6 +278,7 @@ describe('地図ストアの破棄と再初期化', () => {
 			store.ensureTileIndexProtocol,
 			store.ensureRegionalMeshProtocol,
 			store.ensureH3Protocol,
+			store.ensureS2Protocol,
 			store.ensurePlaneGridProtocol
 		].forEach(ensure => ensure());
 		mocks.threeLoaded = true;

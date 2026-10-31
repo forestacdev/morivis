@@ -56,6 +56,7 @@ const input = (): MapStyleInput => ({
 	showPlaneGrid: false,
 	planeGridZone: 1,
 	showH3: false,
+	showS2: false,
 	showContour: false,
 	isGlobe: false,
 	showModelView: false,

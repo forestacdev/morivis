@@ -48,7 +48,7 @@
 				case 'curvature':
 					return uniformsData.curvature !== undefined;
 				case 'shadow':
-					return true;
+					return uniformsData.shadow !== undefined;
 				// case 'default':
 				//     return true; // defaultは常に利用可能
 				default:

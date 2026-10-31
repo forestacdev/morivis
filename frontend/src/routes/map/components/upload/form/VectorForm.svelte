@@ -31,12 +31,7 @@
 			.test('半角英数のみ', 'タイルURLは半角英数です。', (value) => {
 				return !/[^a-zA-Z0-9!-/:-@¥[-`{-~]+/.test(value);
 			}),
-		source: yup
-			.string()
-			.required('ソースレイヤーを入力してください。')
-			.test('半角英数のみ', 'ソースレイヤーは半角英数です。', (value) => {
-				return !/[^a-zA-Z0-9!-/:-@¥[-`{-~]+/.test(value);
-			})
+		source: yup.string().trim().required('ソースレイヤーを入力してください。')
 	});
 
 	const geojsonValidation = yup.object().shape({

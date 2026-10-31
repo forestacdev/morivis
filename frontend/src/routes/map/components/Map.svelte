@@ -85,6 +85,7 @@
 		showXYZTileLayer,
 		showRegionalMeshLayer,
 		showH3Layer,
+		showS2Layer,
 		showPlaneGridLayer,
 		showContourLayer,
 		planeGridZone,
@@ -463,6 +464,7 @@
 			showPlaneGrid: $showPlaneGridLayer,
 			planeGridZone: $planeGridZone,
 			showH3: $showH3Layer,
+			showS2: $showS2Layer,
 			showContour: $showContourLayer,
 			isGlobe: $isGlobe,
 			showModelView: $showModelView,
@@ -625,6 +627,12 @@
 			mapStore.ensureH3Protocol();
 		} else {
 			mapStore.releaseH3Protocol();
+		}
+
+		if ($showS2Layer) {
+			mapStore.ensureS2Protocol();
+		} else {
+			mapStore.releaseS2Protocol();
 		}
 
 		if ($showPlaneGridLayer) {
@@ -824,6 +832,9 @@
 		}),
 		planeGridZone.subscribe(() => {
 			if ($showPlaneGridLayer) setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showS2Layer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showH3Layer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);

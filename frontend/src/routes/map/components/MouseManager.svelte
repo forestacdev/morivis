@@ -11,6 +11,7 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import type { ResultData } from '$routes/map/utils/data/search-result';
+	import { replaceDimensionPlaceholder } from '$routes/map/utils/dimension';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/formats/geojson';
 	import {
 		isGeneratedPoiIconLayout,
@@ -30,6 +31,8 @@
 	import maplibregl from '$routes/map/utils/maplibre';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
+	import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
+	import { getRasterLegend } from '$routes/map/utils/raster/legend';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster/tile-query';
 	import { getThreeJsManager } from '$routes/map/utils/three/lazy-manager';
 	import { getHighDetailLodZoom } from '$routes/map/utils/three/model-lod';
@@ -402,7 +405,11 @@
 
 		const targetEntry = layerEntries.find((entry) => entry.id === targetId);
 		if (!targetEntry || targetEntry.type !== 'raster') return;
-		const url = targetEntry.format.url;
+		const url = replaceDimensionPlaceholder(
+			targetEntry.format.url,
+			getRasterDimensionValue(targetEntry)
+		);
+		const legend = getRasterLegend(targetEntry);
 
 		const tileSize = targetEntry.metaData.tileSize;
 		const zoomOffset = tileSize === 512 ? 0.5 : tileSize === 256 ? +1.5 : 1;
@@ -418,14 +425,10 @@
 			return;
 		}
 
-		if (targetEntry.style.type === 'categorical') {
-			const legend = targetEntry.style.legend;
+		if (legend?.type === 'category') {
+			const data = getGuide(pixelColor, legend);
 
-			if (legend.type === 'category') {
-				const data = getGuide(pixelColor, legend);
-
-				// TODO: ラステーの凡例ポップアップ表示
-			}
+			// TODO: ラスターの凡例ポップアップ表示
 		}
 	};
 

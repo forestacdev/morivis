@@ -19,8 +19,23 @@
 	};
 	let style = $state<RasterCategoricalStyle>({
 		...DEFAULT_RASTER_CATEGORICAL_STYLE,
-		legend: imageLegend
+		legend: imageLegend,
+		legendByDimension: {
+			'test-depth-image': {
+				type: 'image',
+				categories: [{ name: 'test-depth', urls: [image], labels: ['test-depth-label'] }]
+			},
+			'test-depth-gradient': {
+				type: 'gradient',
+				name: 'test-range',
+				colors: ['#112233', '#445566'],
+				ranges: [2, 9],
+				unit: 'test-unit'
+			}
+		}
 	});
+
+	let dimensionValue = $state<string | undefined>();
 
 	const showCategory = () => {
 		style.legend = {
@@ -41,4 +56,7 @@
 <button onclick={showCategory}>test-category</button>
 <button onclick={replaceImages}>test-replace</button>
 <button onclick={() => (style.legend = imageLegend)}>test-images</button>
-<CategoricalLegend {style} />
+<button onclick={() => (dimensionValue = 'test-depth-image')}>test-select-image</button>
+<button onclick={() => (dimensionValue = 'test-depth-gradient')}>test-select-gradient</button>
+<button onclick={() => (dimensionValue = 'test-unmapped')}>test-select-unmapped</button>
+<CategoricalLegend {style} {dimensionValue} />

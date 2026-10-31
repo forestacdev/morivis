@@ -19,7 +19,10 @@
 		RasterCadStyle
 	} from '$routes/map/data/types/raster';
 	import { getLayerImage } from '$routes/map/utils/image';
-	import { getRasterDimension } from '$routes/map/utils/raster/dimension-runtime';
+	import {
+		getRasterDimension,
+		getRasterDimensionValue
+	} from '$routes/map/utils/raster/dimension-runtime';
 	import {
 		getRasterStylePreset,
 		type RasterStylePreset
@@ -133,7 +136,7 @@
 			</div>
 		</Accordion> -->
 	{:else if style.type === 'categorical'}
-		<CategoricalLegend {style} />
+		<CategoricalLegend {style} dimensionValue={getRasterDimensionValue(layerEntry)} />
 	{:else if style.type === 'dem'}
 		<DemOption bind:layerEntry={layerEntry as DemRasterEntry} bind:showColorOption />
 	{:else if style.type === 'tiff'}

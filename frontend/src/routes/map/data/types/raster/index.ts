@@ -110,10 +110,15 @@ export interface RasterBaseMapStyle extends BaseRasterStyle {
 	contrast: number;
 }
 
+export type RasterLegend = CategoryLegend | GradientLegend | ImageLegend;
+
 export interface RasterCategoricalStyle extends BaseRasterStyle {
 	type: 'categorical';
 	resampling?: 'nearest' | 'linear';
-	legend: CategoryLegend | GradientLegend | ImageLegend;
+	/** dimension に対応する凡例がない場合にも使う既定の凡例。 */
+	legend: RasterLegend;
+	/** dimension.values の値をキーにした凡例。選択時に legend 自体は変更しない。 */
+	legendByDimension?: Partial<Record<string, RasterLegend>>;
 }
 
 export interface RasterCadStyle extends BaseRasterStyle {

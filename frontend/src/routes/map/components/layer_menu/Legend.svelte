@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
+	import { getRasterLegend } from '$routes/map/utils/raster/legend';
 	import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
 
 	interface Props {
@@ -8,7 +9,7 @@
 
 	let { layerEntry }: Props = $props();
 
-	let style = $derived(layerEntry.style);
+	let legend = $derived(getRasterLegend(layerEntry));
 	let layerType = $derived(layerEntry.type);
 	let setColorExpression = $derived.by(() => {
 		if (!layerEntry || layerEntry.type !== 'vector') return;
@@ -25,35 +26,35 @@
 	});
 </script>
 
-{#if layerType === 'raster' && style.type === 'categorical'}
-	{#if style.legend.type === 'category'}
-		<h2 class="text-gray-100">{style.legend.name}</h2>
+{#if legend}
+	{#if legend.type === 'category'}
+		<h2 class="text-gray-100">{legend.name}</h2>
 		<ul class="text-gray-100">
-			{#each style.legend.colors as color, i}
+			{#each legend.colors as color, i}
 				<li style="display: flex; align-items: center; margin-bottom: 5px;">
 					<span
 						style="width: 20px; height: 20px; background-color: {color}; margin-right: 10px; display: inline-block;"
 					>
 					</span>
-					<span>{style.legend.labels[i]}</span>
+					<span>{legend.labels[i]}</span>
 				</li>
 			{/each}
 		</ul>
 	{/if}
-	{#if style.legend.type === 'gradient'}
-		<h2 class="text-gray-100">{style.legend.name}</h2>
+	{#if legend.type === 'gradient'}
+		<h2 class="text-gray-100">{legend.name}</h2>
 		<div class="flex w-full flex-col gap-2 text-gray-100">
 			<div class="w-full">
 				<div
 					class="h-[25px] w-full rounded-md"
-					style="background: linear-gradient(90deg, {style.legend.colors[0]} 0%, {style.legend
+					style="background: linear-gradient(90deg, {legend.colors[0]} 0%, {legend
 						.colors[1]} 100%);"
 				></div>
 			</div>
 
 			<div class="flex w-full justify-between">
-				{#each style.legend.ranges.slice() as value}
-					<span>{value} {style.legend.unit}</span>
+				{#each legend.ranges.slice() as value}
+					<span>{value} {legend.unit}</span>
 				{/each}
 			</div>
 		</div>

@@ -12,6 +12,7 @@
 		showXYZTileLayer,
 		showRegionalMeshLayer,
 		showH3Layer,
+		showS2Layer,
 		showPlaneGridLayer,
 		showContourLayer,
 		showLineLayer,
@@ -69,6 +70,7 @@
 						<Checkbox label="道路・線路・境界線" bind:value={$showLineLayer} disabled={isOsm} />
 						<Checkbox label="陰影" bind:value={$showHillshadeLayer} disabled={isNotHillshade} />
 						<Checkbox label="3D地形" bind:value={$isTerrain3d} />
+						<Checkbox label="S2" bind:value={$showS2Layer} />
 						{#if $isMobile}
 							<Checkbox label="ストリートビュー" bind:value={$showStreetViewLayer} />
 						{/if}
@@ -84,7 +86,7 @@
 				<div class="flex flex-col gap-2">
 					<div>ベースマップ</div>
 					<div class="grid w-full grid-cols-3 items-center justify-center gap-x-2">
-						{#each baseMapList as baseMap}
+						{#each baseMapList as baseMap (baseMap.type)}
 							<button
 								onclick={() => {
 									if ($selectedBaseMap === baseMap.type) return;
