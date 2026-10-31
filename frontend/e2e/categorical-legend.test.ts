@@ -70,6 +70,10 @@ test('dimension 切替に応じて凡例を更新し、未定義の値では既�
 	await expect(page.getByRole('heading', { name: 'test-range', exact: true })).toBeVisible();
 	await expect(page.getByText('2 test-unit', { exact: true })).toBeVisible();
 	await expect(page.getByText('9 test-unit', { exact: true })).toBeVisible();
+	await expect(page.locator('[style*="linear-gradient"]')).toHaveCSS(
+		'background-image',
+		'linear-gradient(90deg, rgb(17, 34, 51) 0%, rgb(68, 85, 102) 50%, rgb(119, 136, 153) 100%)'
+	);
 	await expect(page.getByRole('img')).toHaveCount(0);
 	await page.getByRole('button', { name: 'test-select-unmapped', exact: true }).click();
 	await expect(page.getByRole('img', { name: 'test-label', exact: true })).toHaveCount(4);

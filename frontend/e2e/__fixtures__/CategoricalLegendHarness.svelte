@@ -28,7 +28,7 @@
 			'test-depth-gradient': {
 				type: 'gradient',
 				name: 'test-range',
-				colors: ['#112233', '#445566'],
+				colors: ['#112233', '#445566', '#778899'],
 				ranges: [2, 9],
 				unit: 'test-unit'
 			}

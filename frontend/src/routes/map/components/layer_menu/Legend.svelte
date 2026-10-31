@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import { getRasterLegend } from '$routes/map/utils/raster/legend';
+	import { createGradientStops, getRasterLegend } from '$routes/map/utils/raster/legend';
 	import { generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
 
 	interface Props {
@@ -47,8 +47,7 @@
 			<div class="w-full">
 				<div
 					class="h-[25px] w-full rounded-md"
-					style="background: linear-gradient(90deg, {legend.colors[0]} 0%, {legend
-						.colors[1]} 100%);"
+					style="background: linear-gradient(90deg, {createGradientStops(legend.colors)});"
 				></div>
 			</div>
 

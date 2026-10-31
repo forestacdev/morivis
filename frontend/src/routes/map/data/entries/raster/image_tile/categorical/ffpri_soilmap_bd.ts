@@ -1,30 +1,9 @@
-import { LEGEND_DATA_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import type {
-	ImageLegend,
-	RasterCategoricalStyle,
-	RasterImageEntry
-} from '$routes/map/data/types/raster';
+import { FFPRI_SOIL_LEGENDS } from '$routes/map/data/entries/_meta_data/ffpri-soil-legends';
+import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
-const IMG = LEGEND_DATA_PATH + '/ffpri_soilmap_bd';
-
-const aggregateLegend: ImageLegend = {
-	type: 'image',
-	categories: [{
-		name: '容積重（定積細土重）（Mg/m³）',
-		urls: [`${IMG}/BD30.webp`],
-		labels: ['深さ 0–30cm：0.2–0.8 Mg/m³']
-	}]
-};
-
-const depthLegend: ImageLegend = {
-	type: 'image',
-	categories: [{
-		name: '容積重（定積細土重）（Mg/m³）',
-		urls: [`${IMG}/BD.webp`],
-		labels: ['深さ 0–5cm・5–15cm・15–30cm：0.2–0.9 Mg/m³']
-	}]
-};
+const aggregateLegend = FFPRI_SOIL_LEGENDS.BD30;
+const depthLegend = FFPRI_SOIL_LEGENDS.BD;
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'ffpri_soilmap_bd',

@@ -11,7 +11,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		url: 'https://www2.ffpri.go.jp/soilmap/tile/cs_okayama/{z}/{x}/{y}.png'
 	},
 	metaData: {
-		name: '岡山県 CS立体図（森林総研）',
+		name: '岡山県 CS立体図',
 		sourceDataName: '林野庁航空レーザ計測成果・0.5m DEM',
 		description:
 			'2018年9月～2019年1月に取得された航空レーザ計測データの0.5m DEMから作成した、岡山県のCS立体図。計測範囲内の尾根や谷などの地形判読に利用できる。',
@@ -21,7 +21,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 1,
 		maxZoom: 17,
 		tileSize: 256,
-		bounds: OKAYAMA_BBOX,
+		bounds: [133.16755295392784, 34.40173245021177, 134.05131253502083, 35.23651460032377],
 		downloadUrl: 'https://www2.ffpri.go.jp/soilmap/data-src.html',
 		xyzImageTile: { x: 891, y: 406, z: 10 }
 	},

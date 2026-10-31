@@ -1,7 +1,7 @@
 <script lang="ts">
 	import LsiconDataFilledIcon from '$lib/components/svgs/icons/lsicon/DataFilledIcon.svelte';
 	import type { RasterCategoricalStyle } from '$routes/map/data/types/raster';
-	import { resolveRasterLegend } from '$routes/map/utils/raster/legend';
+	import { createGradientStops, resolveRasterLegend } from '$routes/map/utils/raster/legend';
 
 	interface Props {
 		style: RasterCategoricalStyle;
@@ -10,19 +10,6 @@
 
 	let { style, dimensionValue }: Props = $props();
 	let legend = $derived(resolveRasterLegend(style, dimensionValue));
-
-	const createGradientStops = (colors: string[]): string => {
-		if (colors.length <= 1) {
-			return colors[0] ?? '';
-		}
-
-		return colors
-			.map((color, index) => {
-				const position = (index / (colors.length - 1)) * 100;
-				return `${color} ${position.toFixed(1)}%`;
-			})
-			.join(', ');
-	};
 </script>
 
 <div class="mt-8 flex items-center gap-1 text-base text-lg">

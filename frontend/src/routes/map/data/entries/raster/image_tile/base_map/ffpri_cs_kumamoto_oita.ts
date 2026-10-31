@@ -21,12 +21,7 @@ const entry: RasterImageEntry<RasterBaseMapStyle> = {
 		minZoom: 1,
 		maxZoom: 17,
 		tileSize: 256,
-		bounds: [
-			Math.min(KUMAMOTO_BBOX[0], OITA_BBOX[0]),
-			Math.min(KUMAMOTO_BBOX[1], OITA_BBOX[1]),
-			Math.max(KUMAMOTO_BBOX[2], OITA_BBOX[2]),
-			Math.max(KUMAMOTO_BBOX[3], OITA_BBOX[3])
-		],
+		bounds: [134.02479908184284, 33.53003111653415, 134.69190445855838, 33.94442877211324],
 		downloadUrl: 'https://www2.ffpri.go.jp/soilmap/data-src.html',
 		xyzImageTile: { x: 886, y: 411, z: 10 }
 	},

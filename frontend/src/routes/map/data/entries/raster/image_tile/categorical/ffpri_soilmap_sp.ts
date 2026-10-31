@@ -1,30 +1,9 @@
-import { LEGEND_DATA_PATH } from '$routes/constants';
 import { WEB_MERCATOR_JAPAN_BOUNDS } from '$routes/map/data/entries/_meta_data/_bounds';
-import type {
-	ImageLegend,
-	RasterCategoricalStyle,
-	RasterImageEntry
-} from '$routes/map/data/types/raster';
+import { FFPRI_SOIL_LEGENDS } from '$routes/map/data/entries/_meta_data/ffpri-soil-legends';
+import type { RasterCategoricalStyle, RasterImageEntry } from '$routes/map/data/types/raster';
 
-const IMG = LEGEND_DATA_PATH + '/ffpri_soilmap_sp';
-
-const aggregateLegend: ImageLegend = {
-	type: 'image',
-	categories: [{
-		name: '有機炭素蓄積量（tC/ha）',
-		urls: [`${IMG}/OCS30.webp`],
-		labels: ['深さ 0–30cm：20–140 tC/ha']
-	}]
-};
-
-const depthLegend: ImageLegend = {
-	type: 'image',
-	categories: [{
-		name: '有機炭素蓄積量（tC/ha）',
-		urls: [`${IMG}/OCS.webp`],
-		labels: ['深さ 0–5cm・5–15cm・15–30cm：10–40 tC/ha']
-	}]
-};
+const aggregateLegend = FFPRI_SOIL_LEGENDS.OCS30;
+const depthLegend = FFPRI_SOIL_LEGENDS.OCS;
 
 const entry: RasterImageEntry<RasterCategoricalStyle> = {
 	id: 'ffpri_soilmap_sp',
