@@ -184,6 +184,7 @@ export const showRegionalMeshLayer = writable<boolean>(false);
 
 /** S2グリッド */
 export const showS2Layer = writable<boolean>(false);
+export const showTopographicSheetsLayer = writable<boolean>(false);
 
 /** H3グリッド */
 export const showH3Layer = writable<boolean>(false);

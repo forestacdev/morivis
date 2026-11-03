@@ -16,6 +16,7 @@ import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 import type { ReferenceStyle } from '$routes/map/utils/layers/reference-style';
 import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
 import { createS2Style } from '$routes/map/utils/layers/s2';
+import { createTopographicSheetsStyle } from '$routes/map/utils/layers/topographic-sheets';
 import type {
 	LayerSpecification,
 	SourceSpecification,
@@ -50,6 +51,7 @@ export interface MapStyleInput {
 	planeGridZone: number;
 	showH3: boolean;
 	showS2: boolean;
+	showTopographicSheets: boolean;
 	showContour: boolean;
 	isGlobe: boolean;
 	showModelView: boolean;
@@ -88,6 +90,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		planeGridZone,
 		showH3,
 		showS2,
+		showTopographicSheets,
 		isGlobe,
 		showModelView,
 		isTerrain3d,
@@ -295,6 +298,10 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		planeGridZone,
 		DEFAULT_SYMBOL_TEXT_FONT
 	);
+	const topographicSheetsStyle = createTopographicSheetsStyle(
+		showTopographicSheets,
+		DEFAULT_SYMBOL_TEXT_FONT
+	);
 	const s2Style = createS2Style(showS2, DEFAULT_SYMBOL_TEXT_FONT);
 	const h3Style = createH3Style(showH3, DEFAULT_SYMBOL_TEXT_FONT);
 	const contourStyle = createContourStyle(contourDem?.contourTiles, DEFAULT_SYMBOL_TEXT_FONT);
@@ -315,6 +322,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 			...regionalMeshStyle.sources,
 			...h3Style.sources,
 			...s2Style.sources,
+			...topographicSheetsStyle.sources,
 			...planeGridStyle.sources,
 			...contourStyle.sources,
 			...sources,
@@ -352,6 +360,7 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 			...regionalMeshStyle.layers,
 			...h3Style.layers,
 			...s2Style.layers,
+			...topographicSheetsStyle.layers,
 			...planeGridStyle.layers,
 			...previewLayers,
 			...mcaGridLayers,
@@ -425,7 +434,13 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		metadata: {
 			clickableVectorIds: mainResult.clickableVectorIds,
 			clickableRasterIds: mainResult.clickableRasterIds,
-			attributions: [...new Set([...mainResult.attributions, ...previewResult.attributions])]
+			attributions: [
+				...new Set([
+					...mainResult.attributions,
+					...previewResult.attributions,
+					...(showTopographicSheets ? ['国土地理院' as const] : [])
+				])
+			]
 		}
 	};
 };

@@ -86,6 +86,7 @@
 		showRegionalMeshLayer,
 		showH3Layer,
 		showS2Layer,
+		showTopographicSheetsLayer,
 		showPlaneGridLayer,
 		showContourLayer,
 		planeGridZone,
@@ -465,6 +466,7 @@
 			planeGridZone: $planeGridZone,
 			showH3: $showH3Layer,
 			showS2: $showS2Layer,
+			showTopographicSheets: $showTopographicSheetsLayer,
 			showContour: $showContourLayer,
 			isGlobe: $isGlobe,
 			showModelView: $showModelView,
@@ -497,7 +499,7 @@
 		const hasGeojsonTileLayer =
 			entries.some(isGeojsonTileEntry) || effectivePreviewEntries.some(isGeojsonTileEntry);
 
-		if (hasGeojsonTileLayer) {
+		if (hasGeojsonTileLayer || $showTopographicSheetsLayer) {
 			mapStore.ensureGeojsonProtocol();
 		} else {
 			mapStore.releaseGeojsonProtocol();
@@ -832,6 +834,9 @@
 		}),
 		planeGridZone.subscribe(() => {
 			if ($showPlaneGridLayer) setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showTopographicSheetsLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
 		showS2Layer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);

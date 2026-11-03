@@ -57,6 +57,7 @@ const input = (): MapStyleInput => ({
 	planeGridZone: 1,
 	showH3: false,
 	showS2: false,
+	showTopographicSheets: false,
 	showContour: false,
 	isGlobe: false,
 	showModelView: false,
@@ -74,6 +75,19 @@ const resources = (): PreparedMapStyle => ({
 });
 
 describe('明示的入力による地図style生成', () => {
+	it('図郭のオン・オフに合わせて描画仕様と出典を更新する', () => {
+		const enabled = createMapStyle({ ...input(), showTopographicSheets: true }, resources());
+		expect(enabled.style.sources['topographic-sheets-25000']).toBeDefined();
+		expect(enabled.style.layers.some(layer => layer.id === 'topographic-sheets-25000-line'))
+			.toBe(true);
+		expect(enabled.metadata.attributions).toContain('国土地理院');
+		const disabled = createMapStyle(input(), resources());
+		expect(disabled.style.sources['topographic-sheets-25000']).toBeUndefined();
+		expect(disabled.style.layers.some(layer => layer.id.startsWith('topographic-sheets-')))
+			.toBe(false);
+		expect(disabled.metadata.attributions).not.toContain('国土地理院');
+	});
+
 	it('位置合わせ済みの図面画像は四隅を保持し、通常のタイル画像と区別する', () => {
 		const entry = rasterEntry('test-drawing');
 		if (entry.type !== 'raster' || entry.format.type !== 'image') throw new Error('test-type');

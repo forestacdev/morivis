@@ -14,6 +14,7 @@
 		showRegionalMeshLayer,
 		showH3Layer,
 		showS2Layer,
+		showTopographicSheetsLayer,
 		showPlaneGridLayer,
 		showContourLayer,
 		showLineLayer,
@@ -99,6 +100,12 @@
 			icon: 'mdi:terrain',
 			value: $showContourLayer,
 			setValue: showContourLayer.set
+		},
+		{
+			label: '地形図図郭',
+			icon: 'material-symbols:grid-on',
+			value: $showTopographicSheetsLayer,
+			setValue: showTopographicSheetsLayer.set
 		},
 		{
 			label: '地域メッシュ',
