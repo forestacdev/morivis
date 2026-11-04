@@ -306,7 +306,7 @@ it('複数プレビューをすべて同じstyleへ含め、選択カードだ�
 });
 
 describe('確定済みの描画データ', () => {
-	it('描画モード終了後も点・線・面を通常のstyleから描画する', () => {
+	it('描画モード終了後も地物に対応するレイヤーを通常のstyleから描画する', () => {
 		const drawing = {
 			...input(),
 			drawGeojsonData: {
@@ -328,6 +328,6 @@ describe('確定済みの描画データ', () => {
 				layer.type
 			)
 		)
-			.toEqual(['fill', 'line', 'circle']);
+			.toEqual(['circle']);
 	});
 });

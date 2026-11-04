@@ -139,7 +139,7 @@
 				<span class="select-none">レイヤー</span>
 			</button> -->
 
-				<!-- <button
+				<button
 					type="button"
 					class="hover:text-accent flex w-full cursor-pointer items-center justify-start gap-2 p-2"
 					onclick={() => {
@@ -150,7 +150,7 @@
 				>
 					<Icon icon="majesticons:edit-pen-4" class="h-8 w-8" />
 					<span>ドローモード</span>
-				</button> -->
+				</button>
 				<button
 					class="hover:text-accent transition-text flex w-full cursor-pointer items-center justify-start gap-2 p-2 duration-150 max-lg:hidden"
 					onclick={toggleDataMenu}

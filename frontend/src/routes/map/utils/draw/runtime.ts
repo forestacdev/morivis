@@ -13,8 +13,7 @@ import {
 	TerraDrawSectorMode,
 	TerraDrawSelectMode
 } from 'terra-draw';
-import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
-import { DRAW_RUNTIME_PREFIX } from './style';
+import { OrderedDrawAdapter } from './adapter';
 
 export const createDrawRuntime = (options: {
 	map: Map;
@@ -37,10 +36,7 @@ export const createDrawRuntime = (options: {
 		}
 	};
 	const draw = new TerraDraw({
-		adapter: new TerraDrawMapLibreGLAdapter({
-			map: options.map,
-			prefixId: DRAW_RUNTIME_PREFIX
-		}),
+		adapter: new OrderedDrawAdapter(options.map, [...committedIds]),
 		modes: [
 			new TerraDrawSelectMode({
 				keyEvents: null,
@@ -69,12 +65,16 @@ export const createDrawRuntime = (options: {
 	const publish = () => {
 		if (disposed || !draw.enabled) return;
 		// 確定済みのIDだけを保存し、描画途中の図形や編集ハンドルを含めない。
-		const features = draw.getSnapshot().filter(feature => committedIds.has(feature.id!)).map(
-			feature => {
-				const { selected: _selected, ...properties } = feature.properties;
-				return { ...feature, properties } as DrawGeojsonFeature;
-			}
+		const snapshot = new globalThis.Map(
+			draw.getSnapshot().map(feature => [feature.id, feature])
 		);
+		// スナップショットの更新順に依存せず、作成順を保存する。
+		const features = [...committedIds].flatMap(id => {
+			const feature = snapshot.get(id);
+			if (!feature) return [];
+			const { selected: _selected, ...properties } = feature.properties;
+			return [{ ...feature, properties } as DrawGeojsonFeature];
+		});
 		options.onchange({ type: 'FeatureCollection', features });
 	};
 	draw.on('finish', (id, context) => {
