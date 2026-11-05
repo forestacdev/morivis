@@ -7,6 +7,7 @@ export interface PmxMorphOption {
 	index: number;
 	name: string;
 	trackNames: string[];
+	affectsBones: boolean;
 }
 export interface PmxMorphCatalog {
 	options: PmxMorphOption[];
@@ -22,15 +23,22 @@ interface RuntimeMorph {
 export const getPmxMorphCatalog = (model: Pick<ThreeMmdModel, 'mesh'>): PmxMorphCatalog => {
 	const morphs: RuntimeMorph[] = model.mesh.userData.mmdMorphs ?? [];
 	const dictionary = model.mesh.morphTargetDictionary ?? {};
-	const supported = (index: number, ancestors = new Set<number>()): boolean => {
+	const morphKind = (
+		index: number,
+		ancestors = new Set<number>()
+	): 'vertex' | 'bone' | undefined => {
 		const morph = morphs[index];
-		if (!morph || ancestors.has(index)) return false;
-		if (morph.type === 'vertex' || morph.type === 'bone') return true;
-		if (morph.type !== 'group' || !morph.groupOffsets?.length) return false;
+		if (!morph || ancestors.has(index)) return;
+		if (morph.type === 'vertex' || morph.type === 'bone') return morph.type;
+		if (morph.type !== 'group' || !morph.groupOffsets?.length) return;
 		const visited = new Set(ancestors).add(index);
-		return morph.groupOffsets.every(offset =>
-			Number.isFinite(offset.weight) && supported(offset.morphIndex, visited)
-		);
+		let kind: 'vertex' | 'bone' = 'vertex';
+		for (const offset of morph.groupOffsets) {
+			const child = morphKind(offset.morphIndex, visited);
+			if (!child || !Number.isFinite(offset.weight)) return;
+			if (child === 'bone' && offset.weight !== 0) kind = 'bone';
+		}
+		return kind;
 	};
 	const namesByIndex = new Map<number, string[]>();
 	for (const [name, index] of Object.entries(dictionary)) {
@@ -42,11 +50,17 @@ export const getPmxMorphCatalog = (model: Pick<ThreeMmdModel, 'mesh'>): PmxMorph
 	const options: PmxMorphOption[] = [];
 	let unsupportedCount = 0;
 	for (const [index, trackNames] of namesByIndex) {
-		if (!supported(index)) {
+		const kind = morphKind(index);
+		if (!kind) {
 			unsupportedCount++;
 			continue;
 		}
-		options.push({ index, name: morphs[index].name || trackNames[0], trackNames });
+		options.push({
+			index,
+			name: morphs[index].name || trackNames[0],
+			trackNames,
+			affectsBones: kind === 'bone'
+		});
 	}
 	return { options: options.sort((a, b) => a.index - b.index), unsupportedCount };
 };
@@ -130,8 +144,9 @@ export const applyPmxMorphState = (
 	// バインド時に現在のポーズが基準姿勢として累積しないよう戻す。
 	model.runtime.resetPose();
 	model.setAnimation(composed);
-	model.update(
-		seconds,
-		isPose || !animation ? { physics: false, ik: animation ? ik : false } : undefined
-	);
+	// 静止中でもボーンモーフは腕・袖などの補助IKを使って変形する。
+	const poseIk = animation
+		? ik
+		: options.some(option => option.affectsBones && (weights?.[option.index] ?? 0) > 0);
+	model.update(seconds, isPose || !animation ? { physics: false, ik: poseIk } : undefined);
 };

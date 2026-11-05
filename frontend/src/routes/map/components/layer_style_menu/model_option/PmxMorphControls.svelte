@@ -89,6 +89,8 @@
 		</div>
 	{/if}
 	{#if catalog?.unsupportedCount}
-		<p class="pt-3 text-xs">材質・UVなど、この操作に対応していないモーフは表示していません。</p>
+		<p class="pt-3 text-xs text-base">
+			材質・UVなど、この操作に対応していないモーフは表示していません。
+		</p>
 	{/if}
 </Accordion>

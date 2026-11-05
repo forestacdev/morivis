@@ -23,6 +23,21 @@ export interface LoadedPmxModel {
 	model: ThreeMmdModel;
 }
 
+/** loader 0.8.2 の手捩IK判定が参照する名前を、PMXのIKゴールに合わせる。 */
+export const preparePmxIkGoalNames = (mesh: ThreeMmdModel['mesh']) => {
+	for (const { goalBoneIndex } of mesh.userData.mmdIkChains ?? []) {
+		const bone = mesh.skeleton.bones[goalBoneIndex];
+		if (!bone) continue;
+		const { mmdBoneName, mmdEnglishBoneName } = bone.userData;
+		if (mmdEnglishBoneName?.includes('lwr-arm-twistIK')) {
+			// ローダーとランタイムで英語名の格納キーが異なる。
+			bone.userData.mmdEnglishName = mmdEnglishBoneName;
+		} else if (mmdBoneName?.includes('手捩IK')) {
+			bone.name = mmdBoneName;
+		}
+	}
+};
+
 /** PMX の輪郭・モーフ分割は生成せず、表情に必要なモーフ属性は保持する。 */
 export const loadPmxModel = async (
 	source: ModelSource,
@@ -46,6 +61,7 @@ export const loadPmxModel = async (
 		morphSplit: false,
 		morphAttributes: true
 	});
+	preparePmxIkGoalNames(model.mesh);
 	return { loader, model };
 };
 
