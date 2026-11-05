@@ -141,7 +141,7 @@
 
 				<button
 					type="button"
-					class="hover:text-accent flex w-full cursor-pointer items-center justify-start gap-2 p-2"
+					class="hover:text-accent flex w-full cursor-pointer items-center justify-start gap-2 p-2 max-lg:hidden"
 					onclick={() => {
 						showDataMenu.set(false);
 						showOtherMenu.set(false);
