@@ -5,6 +5,7 @@
 	import { pmxMorphCatalogs } from '$routes/stores/pmx-morphs';
 
 	let { layerEntry = $bindable() }: { layerEntry: MeshEntry<MeshStyle> } = $props();
+	const controlId = $props.id();
 	let open = $state(false);
 	let search = $state('');
 	const catalog = $derived($pmxMorphCatalogs[layerEntry.id]);
@@ -52,36 +53,36 @@
 			/>
 			<div class="c-scroll flex max-h-80 flex-col gap-4 overflow-y-auto p-1">
 				{#each filtered as option (option.index)}
-					<div class="flex flex-col gap-1">
-						<label class="flex flex-col gap-2">
-							<span class="flex justify-between gap-2 text-sm"
-								><span class="break-all">{option.name}</span><span class="shrink-0"
-									>{weights[option.index] === undefined
-										? '自動'
-										: `${Math.round(weights[option.index] * 100)}%`}</span
-								></span
+					{@const weight = weights[option.index]}
+					{@const sliderId = `${controlId}-${option.index}`}
+					<div class="flex flex-col gap-2">
+						<div class="flex items-center gap-2 text-sm">
+							<label for={sliderId} class="min-w-0 flex-1 truncate" title={option.name}
+								>{option.name}</label
 							>
-							<input
-								type="range"
-								class="w-full"
-								style:accent-color="var(--color-main-accent)"
-								min="0"
-								max="100"
-								step="1"
-								aria-label={option.name}
-								value={Math.round((weights[option.index] ?? 0) * 100)}
-								oninput={(event) =>
-									setWeight(option.index, Number(event.currentTarget.value) / 100)}
-							/>
-						</label>
-						{#if weights[option.index] !== undefined}
-							<button
-								type="button"
-								class="self-end text-xs underline"
-								aria-label={`${option.name}を自動に戻す`}
-								onclick={() => setWeight(option.index, undefined)}>自動に戻す</button
+							<span class="shrink-0 tabular-nums"
+								>{weight === undefined ? '自動' : `${Math.round(weight * 100)}%`}</span
 							>
-						{/if}
+							{#if weight !== undefined}
+								<button
+									type="button"
+									class="shrink-0 text-xs underline"
+									aria-label={`${option.name}を自動に戻す`}
+									onclick={() => setWeight(option.index, undefined)}>自動に戻す</button
+								>
+							{/if}
+						</div>
+						<input
+							id={sliderId}
+							type="range"
+							class="w-full"
+							style:accent-color="var(--color-main-accent)"
+							min="0"
+							max="100"
+							step="1"
+							value={Math.round((weight ?? 0) * 100)}
+							oninput={(event) => setWeight(option.index, Number(event.currentTarget.value) / 100)}
+						/>
 					</div>
 				{:else}<p class="text-sm">一致する表情がありません。</p>{/each}
 			</div>

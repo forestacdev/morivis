@@ -149,7 +149,9 @@
 	{#if selectionError && selectionErrorFiles === files}<p role="alert" class="text-red-300">
 			{selectionError}
 		</p>{/if}
-	<McaRegionGrid {files} bind:excludedFiles disabled={busy} />
+	{#if files.length > 0}
+		<McaRegionGrid {files} bind:excludedFiles disabled={busy} />
+	{/if}
 	{#if fileSetError}<p role="alert" class="text-red-300">{fileSetError}</p>{/if}
 	{#if errorMessage && activeFiles === files}<p role="alert" class="text-red-300">
 			{errorMessage}
