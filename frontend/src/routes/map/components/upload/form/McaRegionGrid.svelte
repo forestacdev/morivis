@@ -2,7 +2,9 @@
 	import { onDestroy, untrack } from 'svelte';
 	import { cubicOut } from 'svelte/easing';
 	import { prefersReducedMotion, Tween } from 'svelte/motion';
+	import { SvelteMap } from 'svelte/reactivity';
 
+	import { loadMcaPreviewTiles } from '$routes/map/utils/formats/mca/preview-tiles';
 	import type { McaRegionPosition } from '$routes/map/utils/formats/mca/types';
 	import {
 		createMcaUploadGrid,
@@ -21,17 +23,54 @@
 		excludedFiles = $bindable([]),
 		disabled = false
 	}: Props = $props();
-	const grid = $derived(createMcaUploadGrid(files, center, { excludedFiles }));
+	let zoomed = $state(false);
+	const columns = $derived(zoomed ? 3 : 9);
+	const rows = $derived(zoomed ? 3 : 7);
+	const grid = $derived(createMcaUploadGrid(files, center, { columns, rows, excludedFiles }));
+	const byName = $derived(new Map(files.map((file) => [file.name, file])));
+	const centerX = $derived(grid.center.x);
+	const centerZ = $derived(grid.center.z);
+	const visibleFiles = $derived.by(() => {
+		const visible = createMcaUploadGrid(files, { x: centerX, z: centerZ }, { columns, rows });
+		return visible.cells.flatMap((cell) =>
+			cell.files.length === 1 ? [byName.get(cell.files[0])!] : []
+		);
+	});
+	const previews = new SvelteMap<File, { url: string } | { error: string }>();
+	const removePreview = (file: File) => {
+		const preview = previews.get(file);
+		if (preview && 'url' in preview) URL.revokeObjectURL(preview.url);
+		previews.delete(file);
+	};
+	$effect(() => {
+		const visible = visibleFiles;
+		const paused = disabled;
+		return untrack(() => {
+			const wanted = new Set(visible);
+			for (const file of previews.keys()) {
+				if (!wanted.has(file)) removePreview(file);
+			}
+			if (paused) return;
+			return loadMcaPreviewTiles(
+				visible.filter((file) => !previews.has(file)),
+				(file, result) => {
+					previews.set(
+						file,
+						'image' in result ? { url: URL.createObjectURL(result.image) } : result
+					);
+				}
+			);
+		});
+	});
 	const viewport = new Tween(
 		untrack(() => grid.center),
 		{ duration: 240, easing: cubicOut }
 	);
-	const rowHeight = 46.5;
 	const anchorX = $derived(Math.floor(viewport.current.x));
 	const anchorZ = $derived(Math.floor(viewport.current.z));
 	const anchor = $derived({ x: anchorX, z: anchorZ });
 	const bufferedGrid = $derived(
-		createMcaUploadGrid(files, anchor, { columns: 11, rows: 9, excludedFiles })
+		createMcaUploadGrid(files, anchor, { columns: columns + 2, rows: rows + 2, excludedFiles })
 	);
 	const offset = $derived({ x: viewport.current.x - anchor.x, z: viewport.current.z - anchor.z });
 	const origin = $derived.by(() => {
@@ -64,6 +103,7 @@
 		}
 	});
 	onDestroy(() => {
+		for (const file of previews.keys()) removePreview(file);
 		void viewport.set(viewport.current, { duration: 0 });
 	});
 </script>
@@ -71,9 +111,16 @@
 <section class="flex flex-col gap-2" aria-label="選択した地形リージョンの配置図">
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<h3 class="font-bold">リージョン配置図</h3>
-		<p class="text-xs">クリックで選択・解除</p>
+		<p class="text-xs">
+			{!disabled && visibleFiles.some((file) => !previews.has(file))
+				? '地表画像を生成中…'
+				: 'クリックで選択・解除'}
+		</p>
 	</div>
 	<div class="flex justify-end gap-2 text-xs">
+		<button type="button" class="c-btn-sub mr-auto px-3 py-2" onclick={() => (zoomed = !zoomed)}>
+			{zoomed ? '縮小' : '拡大'}
+		</button>
 		<button
 			type="button"
 			class="c-btn-sub px-3 py-2"
@@ -91,29 +138,34 @@
 		<button
 			type="button"
 			class="c-btn-sub col-start-2 row-start-1 min-h-9 min-w-16 justify-self-center px-2 text-xs"
-			aria-label="北へ3リージョン移動"
-			onclick={() => move(0, -3)}>↑ 北</button
+			aria-label={`北へ${zoomed ? 1 : 3}リージョン移動`}
+			onclick={() => move(0, zoomed ? -1 : -3)}>↑ 北</button
 		>
 		<button
 			type="button"
 			class="c-btn-sub col-start-1 row-start-2 flex min-h-12 w-9 flex-col items-center justify-center text-xs"
-			aria-label="西へ4リージョン移動"
-			onclick={() => move(-4, 0)}><span aria-hidden="true">←</span><span>西</span></button
+			aria-label={`西へ${zoomed ? 1 : 4}リージョン移動`}
+			onclick={() => move(zoomed ? -1 : -4, 0)}
+			><span aria-hidden="true">←</span><span>西</span></button
 		>
 		<div class="relative col-start-2 row-start-2 min-w-0">
 			<div
 				class="overflow-hidden rounded ring-1 ring-white/20 ring-inset"
-				style:height={`${grid.rows * rowHeight}px`}
+				style:aspect-ratio={`${columns} / ${rows}`}
 			>
 				<div
-					class="grid grid-cols-11 grid-rows-9"
-					style:height={`${bufferedGrid.rows * rowHeight}px`}
+					class="grid"
+					style:grid-template-columns={`repeat(${bufferedGrid.columns}, minmax(0, 1fr))`}
+					style:grid-template-rows={`repeat(${bufferedGrid.rows}, minmax(0, 1fr))`}
+					style:height={`${(bufferedGrid.rows / rows) * 100}%`}
 					style:width={`${(bufferedGrid.columns / grid.columns) * 100}%`}
 					style:transform={`translate(${(-(1 + offset.x) / bufferedGrid.columns) * 100}%, ${(-(1 + offset.z) / bufferedGrid.rows) * 100}%)`}
 					role="list"
-					aria-label="9列7行のリージョン一覧"
+					aria-label={`${columns}列${rows}行のリージョン一覧`}
 				>
 					{#each bufferedGrid.cells as cell (cell.name)}
+						{@const file = cell.files.length === 1 && byName.get(cell.files[0])}
+						{@const preview = file && previews.get(file)}
 						<div role="listitem" class="min-w-0">
 							<button
 								type="button"
@@ -122,11 +174,11 @@
 								Math.abs(cell.z - viewport.current.z) <= Math.floor(grid.rows / 2)
 									? 0
 									: -1}
-								title={`${cell.name}\n${cell.loaded ? (cell.selected ? '読み込み対象（クリックで解除）' : '対象外（クリックで選択）') : '未追加'}`}
+								title={`${cell.name}${preview && 'error' in preview ? `\n${preview.error}` : ''}\n${cell.loaded ? (cell.selected ? '読み込み対象（クリックで解除）' : '対象外（クリックで選択）') : '未追加'}`}
 								aria-label={cell.loaded ? cell.name : `${cell.name} 未追加`}
 								aria-pressed={cell.loaded ? cell.selected : undefined}
 								class={[
-									'flex h-full w-full min-w-0 flex-col items-center justify-center border-r border-b border-white/20 px-0.5 py-1 text-[10px] leading-tight focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white',
+									'relative isolate flex h-full w-full min-w-0 overflow-hidden flex-col items-center justify-center border-r border-b border-white/20 px-0.5 py-1 text-[10px] leading-tight focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white',
 									cell.selected
 										? 'bg-cyan-700 text-white'
 										: cell.loaded
@@ -139,9 +191,32 @@
 									excludedFiles = toggleMcaUploadRegion(files, excludedFiles, cell);
 								}}
 							>
-								<span class="w-full truncate text-center">X {cell.x}</span>
-								<span class="w-full truncate text-center">Z {cell.z}</span>
-								<span aria-hidden="true">{cell.selected ? '●' : cell.loaded ? '○' : '·'}</span>
+								{#if preview && 'url' in preview}
+									<img
+										src={preview.url}
+										alt=""
+										class={['absolute inset-0 h-full w-full', !cell.selected && 'opacity-45']}
+									/>
+									<span
+										aria-hidden="true"
+										class={[
+											'absolute right-0 bottom-0 rounded-tl px-1 text-white',
+											cell.selected ? 'bg-cyan-800' : 'bg-gray-800'
+										]}>{cell.selected ? '●' : '○'}</span
+									>
+								{:else}
+									<span class="w-full truncate text-center">X {cell.x}</span>
+									<span class="w-full truncate text-center">Z {cell.z}</span>
+									<span aria-hidden="true"
+										>{preview && 'error' in preview
+											? '画像なし'
+											: cell.selected
+												? '●'
+												: cell.loaded
+													? '○'
+													: '·'}</span
+									>
+								{/if}
 							</button>
 						</div>
 					{/each}
@@ -161,14 +236,15 @@
 		<button
 			type="button"
 			class="c-btn-sub col-start-3 row-start-2 flex min-h-12 w-9 flex-col items-center justify-center text-xs"
-			aria-label="東へ4リージョン移動"
-			onclick={() => move(4, 0)}><span aria-hidden="true">→</span><span>東</span></button
+			aria-label={`東へ${zoomed ? 1 : 4}リージョン移動`}
+			onclick={() => move(zoomed ? 1 : 4, 0)}
+			><span aria-hidden="true">→</span><span>東</span></button
 		>
 		<button
 			type="button"
 			class="c-btn-sub col-start-2 row-start-3 min-h-9 min-w-16 justify-self-center px-2 text-xs"
-			aria-label="南へ3リージョン移動"
-			onclick={() => move(0, 3)}>↓ 南</button
+			aria-label={`南へ${zoomed ? 1 : 3}リージョン移動`}
+			onclick={() => move(0, zoomed ? 1 : 3)}>↓ 南</button
 		>
 	</div>
 	<div class="flex flex-wrap items-center justify-between gap-2 text-xs">
