@@ -145,13 +145,23 @@
 				{@const region = parseMcaRegionFileName(file.name)}
 				{@const excluded = excludedFiles.includes(file)}
 				<li class="flex items-center gap-2 py-1">
+					<input
+						type="checkbox"
+						checked={!excluded}
+						disabled={busy}
+						aria-label={`${file.name}を読み込み対象にする`}
+						onchange={() =>
+							(excludedFiles = excluded
+								? excludedFiles.filter((candidate) => candidate !== file)
+								: [...excludedFiles, file])}
+					/>
 					<button
 						type="button"
 						class={['min-w-0 flex-1 text-left underline', excluded && 'text-gray-400']}
 						disabled={!region}
 						title="配置図で表示"
 						onclick={() => {
-							if (region) gridCenter = region;
+							if (region) gridCenter = { ...region };
 						}}>{file.name}</button
 					>
 					{#if excluded}<span class="shrink-0 text-gray-400">対象外</span>{/if}
