@@ -3,6 +3,7 @@ import {
 	indexPreviewRegions,
 	MCA_PREVIEW_ZOOM,
 	previewLngLat,
+	previewMapStyle,
 	previewRegion,
 	previewTile
 } from './preview-map';
@@ -22,4 +23,25 @@ it('基準タイルから東は+X、南は+Zで、負座標の区画もクリッ
 		...tile,
 		files: files.slice(0, 2)
 	}]);
+});
+
+it('選択を解除しても、区画の中心に元のファイル名を表示する', () => {
+	const anchor = { x: 3, z: -4 };
+	const file = new File([], 'r.-1.2.MCA');
+	const regions = indexPreviewRegions([file], anchor);
+	const { x, y } = previewTile({ x: -1, z: 2 }, anchor);
+	const style = previewMapStyle('test', regions, anchor, [file]);
+	expect(style.sources.regionLabels).toMatchObject({
+		data: {
+			features: [{
+				properties: { name: file.name },
+				geometry: { type: 'Point', coordinates: previewLngLat(x + 0.5, y + 0.5) }
+			}]
+		}
+	});
+	expect(style.layers).toContainEqual(expect.objectContaining({
+		type: 'symbol',
+		source: 'regionLabels',
+		layout: expect.objectContaining({ 'text-field': ['get', 'name'] })
+	}));
 });

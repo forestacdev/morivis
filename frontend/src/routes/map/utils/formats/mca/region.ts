@@ -1,5 +1,6 @@
 import { formatMca } from './definition';
 
+import { createLegacySectionDecoder } from './legacy-section';
 import { resolveMcaMaxFaces } from './limits';
 import { asCompound, MAX_NBT_BYTES, type NbtLongArray, type NbtValue, readNbt } from './nbt';
 import { type McaOptions, type McaProgress, type McaRegion, sectionKey } from './types';
@@ -160,6 +161,49 @@ export const readMcaRegion = async (
 		'minecraft:void_air',
 		0
 	]]);
+	const registerBlock = (block: NbtValue) => {
+		// NBTの混在リストでは、文字列を空のキーのcompoundで包む。
+		const wrapper = asCompound(block);
+		const value = wrapper && Object.keys(wrapper).length === 1 && Object.hasOwn(wrapper, '')
+			? wrapper['']
+			: block;
+		const state = asCompound(value);
+		const name = typeof value === 'string' ? value : state?.id ?? state?.Name;
+		if (typeof name !== 'string' || !/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(name)) {
+			throw new Error('ブロック名が不正です');
+		}
+		const stateProperties = asCompound(state?.properties ?? state?.Properties);
+		const slabType = name.startsWith('minecraft:') && name.endsWith('_slab')
+			? stateProperties?.type
+			: undefined;
+		const shape = slabType === 'bottom'
+			? 'slab-bottom'
+			: slabType === 'top'
+			? 'slab-top'
+			: 'cube';
+		const properties = Object.fromEntries(
+			Object.entries(stateProperties ?? {})
+				.filter((entry): entry is [string, string] => typeof entry[1] === 'string')
+				.sort(([a], [b]) => a.localeCompare(b))
+		);
+		if (ids.get(name) === 0) return 0;
+		const key = Object.keys(properties).length
+			? `${name}${JSON.stringify(properties)}`
+			: name;
+		let id = ids.get(key);
+		if (id === undefined) {
+			if (region.palette.length >= 65536) {
+				throw new Error('ブロックの種類が多すぎます');
+			}
+			id = region.palette.length;
+			ids.set(key, id);
+			region.palette.push(name);
+			shapes.push(shape);
+			paletteStates.push(properties);
+		}
+		return id;
+	};
+	const decodeLegacySection = createLegacySectionDecoder(registerBlock);
 	const versions = new Set<number>();
 	let regionX: number | undefined;
 	let regionZ: number | undefined;
@@ -175,10 +219,20 @@ export const readMcaRegion = async (
 				compression
 			);
 			const root = readNbt(bytes);
-			const level = asCompound(root.Level) ?? root;
+			const wrapped = asCompound(root.Level);
+			const level = wrapped ?? root;
 			const version = root.DataVersion;
-			if (typeof version !== 'number' || !Number.isInteger(version) || version < 1519) {
-				throw new Error('Java版1.13以降のブロックパレット形式に対応しています');
+			const legacy = wrapped !== undefined && Array.isArray(level.Sections)
+				&& (version === undefined
+					|| (typeof version === 'number' && Number.isInteger(version)
+						&& version < 1519));
+			if (
+				!legacy
+				&& (typeof version !== 'number' || !Number.isInteger(version) || version < 1519)
+			) {
+				throw new Error(
+					'このチャンクの保存形式には対応していません。バージョン情報と地形データから形式を特定できませんでした。'
+				);
 			}
 			const sections = level.sections ?? level.Sections;
 			if (!Array.isArray(sections)) {
@@ -228,55 +282,18 @@ export const readMcaRegion = async (
 					palette === undefined && !states && section.BlockStates === undefined
 					&& section.Blocks === undefined
 				) continue;
-				if (!Array.isArray(palette) || !palette.length || palette.length > 4096) {
-					throw new Error('ブロックパレットが不正です');
-				}
-				const mapped = palette.map((block) => {
-					// NBTの混在リストでは、文字列を空のキーのcompoundで包む。
-					const wrapper = asCompound(block);
-					const value =
-						wrapper && Object.keys(wrapper).length === 1 && Object.hasOwn(wrapper, '')
-							? wrapper['']
-							: block;
-					const state = asCompound(value);
-					const name = typeof value === 'string' ? value : state?.id ?? state?.Name;
-					if (typeof name !== 'string' || !/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(name)) {
-						throw new Error('ブロック名が不正です');
+				let blocks: number | Uint16Array;
+				if (legacy) {
+					blocks = decodeLegacySection(section);
+				} else {
+					if (!Array.isArray(palette) || !palette.length || palette.length > 4096) {
+						throw new Error('ブロックパレットが不正です');
 					}
-					const stateProperties = asCompound(state?.properties ?? state?.Properties);
-					const slabType = name.startsWith('minecraft:') && name.endsWith('_slab')
-						? stateProperties?.type
-						: undefined;
-					const shape = slabType === 'bottom'
-						? 'slab-bottom'
-						: slabType === 'top'
-						? 'slab-top'
-						: 'cube';
-					const properties = Object.fromEntries(
-						Object.entries(stateProperties ?? {})
-							.filter((entry): entry is [string, string] =>
-								typeof entry[1] === 'string'
-							)
-							.sort(([a], [b]) => a.localeCompare(b))
+					blocks = decodeBlockStates(
+						states?.data ?? section.BlockStates,
+						palette.map(registerBlock)
 					);
-					if (ids.get(name) === 0) return 0;
-					const key = Object.keys(properties).length
-						? `${name}${JSON.stringify(properties)}`
-						: name;
-					let id = ids.get(key);
-					if (id === undefined) {
-						if (region.palette.length >= 65536) {
-							throw new Error('ブロックの種類が多すぎます');
-						}
-						id = region.palette.length;
-						ids.set(key, id);
-						region.palette.push(name);
-						shapes.push(shape);
-						paletteStates.push(properties);
-					}
-					return id;
-				});
-				const blocks = decodeBlockStates(states?.data ?? section.BlockStates, mapped);
+				}
 				if (blocks === 0) continue;
 				if (region.sections.size >= MAX_SECTION_COUNT) {
 					throw new Error('ブロック数が多すぎます。チャンク範囲を狭めてください');
@@ -286,7 +303,7 @@ export const readMcaRegion = async (
 					? 4096
 					: blocks.reduce((n, id) => n + Number(id !== 0), 0);
 			}
-			versions.add(version);
+			if (typeof version === 'number') versions.add(version);
 			region.chunkCount++;
 			onProgress?.({ stage: 'read', completed: region.chunkCount, total: chunks.length });
 		} catch (error) {

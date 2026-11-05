@@ -9,8 +9,8 @@ test('負座標のMCAをプレビュー地図で拡大・選択し、差し替�
 	const name = 'r.-1.-1.mca';
 	const bytes = [
 		...new Uint8Array(regionFixture([{
-			index: 16 * 32 + 16,
-			nbt: chunkFixture({ x: -16, z: -16, palette: ['minecraft:water'] })
+			index: 20 * 32 + 16,
+			nbt: chunkFixture({ x: -16, z: -12, palette: ['minecraft:water'] })
 		}]))
 	];
 	await page.locator('canvas.maplibregl-canvas:visible').first().evaluate(
@@ -24,7 +24,7 @@ test('負座標のMCAをプレビュー地図で拡大・選択し、差し替�
 	const preview = page.getByRole('region', { name: 'リージョン配置図' });
 	const canvas = preview.locator('canvas');
 	await expect(canvas).toBeVisible();
-	const waterPixels = async () => {
+	const previewPixels = async () => {
 		const png = (await canvas.screenshot()).toString('base64');
 		return page.evaluate(async png => {
 			const image = new Image();
@@ -40,9 +40,14 @@ test('負座標のMCAをプレビュー地図で拡大・選択し、差し替�
 			for (let i = 0; i < data.length; i += 4) {
 				if (data[i] === 63 && data[i + 1] === 118 && data[i + 2] === 196) count++;
 			}
-			return count;
+			const middle =
+				(Math.floor(image.height / 2) * image.width + Math.floor(image.width / 2)) * 4;
+			return { water: count, center: [...data.slice(middle, middle + 3)] };
 		}, png);
 	};
+	await expect.poll(async () => (await previewPixels()).center).toEqual([251, 191, 36]);
+	await page.getByRole('button', { name, exact: true }).click();
+	const waterPixels = async () => (await previewPixels()).water;
 	await expect.poll(waterPixels).toBeGreaterThan(0);
 	const initial = await waterPixels();
 	await preview.getByRole('button', { name: '拡大' }).click();
@@ -56,7 +61,9 @@ test('負座標のMCAをプレビュー地図で拡大・選択し、差し替�
 		mimeType: 'application/octet-stream',
 		buffer: Buffer.from('test-invalid')
 	});
-	await expect(preview.getByRole('status')).toContainText(name + ' の画像なし');
+	await expect(preview.getByRole('status')).toContainText(
+		name + ' のプレビューを生成できませんでした'
+	);
 	await expect.poll(waterPixels).toBe(0);
 	await expect(page.getByRole('checkbox', { name: name + 'を読み込み対象にする' })).toBeChecked();
 });

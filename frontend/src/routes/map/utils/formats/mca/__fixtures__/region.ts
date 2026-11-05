@@ -18,6 +18,10 @@ const str = (value: string) => {
 const payload = ({ type, value }: TestTag): Buffer => {
 	if (type === 1) return int(value as number, 1);
 	if (type === 3) return int(value as number);
+	if (type === 7) {
+		const bytes = Buffer.from(value as Uint8Array);
+		return Buffer.concat([int(bytes.length), bytes]);
+	}
 	if (type === 8) return str(value as string);
 	if (type === 9) {
 		const list = value as { type: number; values: unknown[]; };

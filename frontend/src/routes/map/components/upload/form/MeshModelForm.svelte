@@ -52,6 +52,7 @@
 		getUploadedMinecraftRegions,
 		getUploadedModelSourceUnit
 	} from '$routes/map/utils/three/model-source-unit';
+	import { MODEL_PLACEMENT_PREVIEW_OPACITY } from '$routes/map/utils/three/placement-preview';
 	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
@@ -86,8 +87,6 @@
 		altitude: number;
 		scale?: number;
 	}
-
-	const ZONE_MODEL_PREVIEW_OPACITY = 0.3;
 
 	const getPathLikeName = (file: File) => {
 		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
@@ -1193,7 +1192,7 @@
 			const previewEntry = await createProjectedModelEntryForEpsg(
 				entry,
 				epsg,
-				ZONE_MODEL_PREVIEW_OPACITY
+				MODEL_PLACEMENT_PREVIEW_OPACITY
 			);
 			if (syncId !== zoneModelPreviewSyncId || transformOptionMode !== 'zone' || !glbFile) return;
 

@@ -108,38 +108,46 @@
 <div class="shrink-0 pb-4 text-2xl font-bold">Minecraftの地形を読み込む</div>
 <div class="c-scroll flex grow flex-col gap-4 overflow-y-auto p-2 text-sm">
 	<p>同じワールドの .mca を追加してください。</p>
-	<label class="flex flex-col gap-2">
-		<span>地形リージョンを追加（.mca）</span>
-		<input
-			type="file"
-			accept=".mca"
-			multiple
-			disabled={busy}
-			onchange={(event) => {
-				const incoming = Array.from(event.currentTarget.files ?? []);
-				event.currentTarget.value = '';
-				if (!incoming.length) return;
-				selectionError = '';
-				try {
-					const merged = mergeMcaUploadFiles(files, incoming);
-					cancelConversion();
-					dropFile = merged;
-					gridCenter = undefined;
-				} catch (error) {
-					selectionErrorFiles = files;
-					selectionError =
-						error instanceof Error ? error.message : 'ファイルを追加できませんでした。';
-				}
-			}}
-		/>
-	</label>
+	<div class="flex flex-wrap items-center gap-3">
+		<label
+			class={[
+				'c-btn-sub relative px-3 py-2 focus-within:outline-2',
+				busy ? 'opacity-50' : 'cursor-pointer'
+			]}
+		>
+			<span>地形リージョンを追加（.mca）</span>
+			<input
+				type="file"
+				class="sr-only"
+				accept=".mca"
+				multiple
+				disabled={busy}
+				onchange={(event) => {
+					const incoming = Array.from(event.currentTarget.files ?? []);
+					event.currentTarget.value = '';
+					if (!incoming.length) return;
+					selectionError = '';
+					try {
+						const merged = mergeMcaUploadFiles(files, incoming);
+						cancelConversion();
+						dropFile = merged;
+						gridCenter = undefined;
+					} catch (error) {
+						selectionErrorFiles = files;
+						selectionError =
+							error instanceof Error ? error.message : 'ファイルを追加できませんでした。';
+					}
+				}}
+			/>
+		</label>
+		<p aria-live="polite">追加済み {files.length}件（読み込み対象 {selectedFiles.length}件）</p>
+	</div>
 	<p>ドロップでも追加できます。同じ区画は上書き。</p>
 	{#if selectionError && selectionErrorFiles === files}<p role="alert" class="text-red-300">
 			{selectionError}
 		</p>{/if}
 	<McaRegionGrid {files} bind:center={gridCenter} bind:excludedFiles disabled={busy} />
 	{#if files.length}
-		<p>{selectedFiles.length} / {files.length}ファイルを読み込み</p>
 		<ul class="max-h-40 overflow-y-auto break-all">
 			{#each files as file (file)}
 				{@const region = parseMcaRegionFileName(file.name)}

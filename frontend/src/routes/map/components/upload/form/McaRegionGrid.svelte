@@ -34,11 +34,10 @@
 	let map = $state.raw<PreviewMap>();
 	let protocol = $state('');
 	let mapError = $state('');
-	let hovered = $state('');
 	const cache = new Map<File, Blob>();
 	const errors = new SvelteMap<File, string>();
-	const grid = $derived(createMcaUploadGrid(files, center));
-	const anchor = $derived(grid.center);
+	const worldOrigin = { x: 0, z: 0 };
+	const anchor = $derived(center ?? worldOrigin);
 	const regions = $derived(indexPreviewRegions(files, anchor));
 
 	onMount(() => {
@@ -64,19 +63,8 @@
 		preview.touchZoomRotate.disableRotation();
 		preview.keyboard.disableRotation();
 		preview.doubleClickZoom.disable();
-		const regionAt = ({ lng, lat }: { lng: number; lat: number }) =>
-			previewRegion(lng, lat, anchor);
-		preview.on('mousemove', ({ lngLat }) => {
-			const region = regionAt(lngLat);
-			const tile = previewTile(region, anchor);
-			hovered = regions.get(`${tile.x}/${tile.y}`)?.files[0]?.name ?? '';
-			preview.getCanvas().style.cursor = hovered && !disabled ? 'pointer' : '';
-		});
-		preview.on('mouseout', () => {
-			hovered = '';
-		});
 		preview.on('click', ({ lngLat }) => {
-			const region = regionAt(lngLat);
+			const region = previewRegion(lngLat.lng, lngLat.lat, anchor);
 			const { x, y } = previewTile(region, anchor);
 			if (!disabled && regions.has(`${x}/${y}`))
 				excludedFiles = toggleMcaUploadRegion(files, excludedFiles, region);
@@ -105,12 +93,26 @@
 	});
 	$effect(() => {
 		if (!map) return;
-		const cells = center ? [center] : grid.cells.filter((cell) => cell.loaded);
-		const tiles = (cells.length ? cells : [anchor]).map((region) => previewTile(region, anchor));
-		const west = Math.min(...tiles.map((tile) => tile.x));
-		const north = Math.min(...tiles.map((tile) => tile.y));
-		const east = Math.max(...tiles.map((tile) => tile.x)) + 1;
-		const south = Math.max(...tiles.map((tile) => tile.y)) + 1;
+		const { x, y } = previewTile(anchor, anchor);
+		let west = x,
+			north = y,
+			east = x + 1,
+			south = y + 1;
+		if (!center) {
+			// 原点は r.0.0 の北西角。初期表示だけ周囲の区画数に縮尺を合わせる。
+			const cells = untrack(() => createMcaUploadGrid(files, worldOrigin).cells);
+			let radiusX = 1,
+				radiusZ = 1;
+			for (const cell of cells) {
+				if (!cell.loaded) continue;
+				radiusX = Math.max(radiusX, -cell.x, cell.x + 1);
+				radiusZ = Math.max(radiusZ, -cell.z, cell.z + 1);
+			}
+			west = x - radiusX;
+			east = x + radiusX;
+			north = y - radiusZ;
+			south = y + radiusZ;
+		}
 		map.fitBounds([previewLngLat(west, south), previewLngLat(east, north)], {
 			padding: 16,
 			maxZoom: MCA_PREVIEW_ZOOM - 1,
@@ -127,10 +129,7 @@
 </script>
 
 <section class="flex flex-col gap-2" aria-label="リージョン配置図">
-	<div class="flex flex-wrap items-center justify-between gap-2">
-		<h3 class="font-bold">リージョン配置図</h3>
-		<p class="text-xs">{hovered || 'クリックで選択・解除'}</p>
-	</div>
+	<p class="text-xs">クリックで選択・解除</p>
 	<div class="relative">
 		<div bind:this={container} class="h-72 w-full overflow-hidden rounded bg-gray-800"></div>
 		{#if map}
@@ -152,10 +151,9 @@
 	</div>
 	{#if mapError}<p role="status">{mapError}</p>{/if}
 	{#each errors as [file, error] (file)}
-		<p class="text-xs" role="status">{file.name} の画像なし — {error}</p>
+		<p class="text-xs" role="status">{file.name} のプレビューを生成できませんでした。{error}</p>
 	{/each}
 	<div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-		<p><span class="text-cyan-300">青枠：読み込み対象</span>・黄点：ワールド原点</p>
 		<div class="flex gap-2">
 			<button
 				type="button"

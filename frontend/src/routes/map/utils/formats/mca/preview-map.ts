@@ -78,6 +78,18 @@ export const previewMapStyle = (
 					}))
 				}
 			},
+			regionLabels: {
+				type: 'geojson',
+				maxzoom: MCA_PREVIEW_ZOOM,
+				data: {
+					type: 'FeatureCollection',
+					features: [...regions.values()].map(({ x, y, files }) => ({
+						type: 'Feature',
+						properties: { name: files[0].name },
+						geometry: { type: 'Point', coordinates: previewLngLat(x + 0.5, y + 0.5) }
+					}))
+				}
+			},
 			origin: {
 				type: 'geojson',
 				data: {
@@ -117,6 +129,31 @@ export const previewMapStyle = (
 				paint: {
 					'line-color': ['case', ['get', 'selected'], '#67e8f9', '#94a3b8'],
 					'line-width': 2
+				}
+			},
+			{
+				id: 'region-labels',
+				type: 'symbol',
+				source: 'regionLabels',
+				layout: {
+					'text-field': ['get', 'name'],
+					'text-font': ['sans-serif'],
+					'text-size': [
+						'interpolate',
+						['linear'],
+						['zoom'],
+						MCA_PREVIEW_ZOOM - 4,
+						9,
+						MCA_PREVIEW_ZOOM - 2,
+						12
+					],
+					'text-variable-anchor': ['center', 'top', 'bottom'],
+					'text-padding': 1
+				},
+				paint: {
+					'text-color': '#ffffff',
+					'text-halo-color': '#111827',
+					'text-halo-width': 1.5
 				}
 			},
 			{
