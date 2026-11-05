@@ -4,7 +4,9 @@ import { createSheetDataLoader } from './loader';
 afterEach(() => vi.unstubAllGlobals());
 describe('図郭タイルの取得', () => {
 	it('同時要求と拡大後の要求で配信タイルを再取得しない', async () => {
-		const fetch = vi.fn(async () => new Response(JSON.stringify({ type: 'FeatureCollection', features: [] })));
+		const fetch = vi.fn(async () =>
+			new Response(JSON.stringify({ type: 'FeatureCollection', features: [] }))
+		);
 		vi.stubGlobal('fetch', fetch);
 		const load = createSheetDataLoader(new AbortController().signal);
 		const tile = { scale: 25000 as const, z: 11, x: 1024, y: 1024 };

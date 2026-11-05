@@ -1,4 +1,4 @@
-import { TOPOGRAPHIC_SHEET_SCALES, type SheetScale } from './config';
+import { type SheetScale, TOPOGRAPHIC_SHEET_SCALES } from './config';
 
 export interface TopographicSheetTile {
 	scale: SheetScale;
@@ -12,9 +12,11 @@ export const parseTopographicSheetTileUrl = (url: string): TopographicSheetTile 
 	if (!match) throw new Error('Invalid topographic sheet tile URL');
 	const [scale, z, x, y] = match.slice(1).map(Number);
 	const config = TOPOGRAPHIC_SHEET_SCALES.find(item => item.scale === scale);
-	if (!config || z < config.minzoom || z > config.tileMaxZoom
+	if (
+		!config || z < config.minzoom || z > config.tileMaxZoom
 		|| !Number.isSafeInteger(x) || !Number.isSafeInteger(y)
-		|| x >= 2 ** z || y >= 2 ** z) {
+		|| x >= 2 ** z || y >= 2 ** z
+	) {
 		throw new Error('Invalid topographic sheet tile coordinates');
 	}
 	return { scale: config.scale, z, x, y };

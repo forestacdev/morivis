@@ -11,14 +11,19 @@ class TestWorker extends EventTarget {
 		super();
 		workers.push(this);
 	}
-	respond = (id: number, buffer: Uint8Array) => this.dispatchEvent(new MessageEvent('message', { data: { id, buffer } }));
+	respond = (id: number, buffer: Uint8Array) =>
+		this.dispatchEvent(new MessageEvent('message', { data: { id, buffer } }));
 }
 
 const protocol = geojsonProtocol('geojson');
-const request = (entryId: string) => ({ url: `geojson://https://test.invalid/${entryId}/11/1029/1018.geojson?z=11&x=1029&y=1018&entryId=${entryId}` });
+const request = (entryId: string) => ({
+	url: `geojson://https://test.invalid/${entryId}/11/1029/1018.geojson?z=11&x=1029&y=1018&entryId=${entryId}`
+});
 const fixture = {
-	type: 'FeatureCollection', features: [{
-		type: 'Feature', properties: { code: 'test-code', name: 'test-point' },
+	type: 'FeatureCollection',
+	features: [{
+		type: 'Feature',
+		properties: { code: 'test-code', name: 'test-point' },
 		geometry: { type: 'Point', coordinates: [1, 1] }
 	}]
 };
@@ -39,7 +44,9 @@ describe('共通GeoJSONプロトコル', () => {
 		JoinDataCache.set('test-a', { 'test-code': { value: 7 } });
 		const first = protocol.request(request('test-a'), new AbortController());
 		const second = protocol.request(request('test-b'), new AbortController());
-		const sheet = protocol.request({ url: 'geojson://https://maps.gsi.go.jp/xyz/zk25000/11/1029/1018.geojson?z=11&x=1029&y=1018&transform=topographic-sheets' }, new AbortController());
+		const sheet = protocol.request({
+			url: 'geojson://https://maps.gsi.go.jp/xyz/zk25000/11/1029/1018.geojson?z=11&x=1029&y=1018&transform=topographic-sheets'
+		}, new AbortController());
 		const worker = workers[0];
 		await vi.waitFor(() => expect(worker.postMessage).toHaveBeenCalledTimes(3));
 		const messages = worker.postMessage.mock.calls.map(([message]) => message);

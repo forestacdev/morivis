@@ -6,6 +6,8 @@ const isPnpm = userAgent
 	: /^pnpm(?:\.[cm]?js)?$/u.test(executable);
 
 if (!isPnpm) {
-	console.error('依存関係はリポジトリのルートで pnpm install を実行してインストールしてください。');
+	console.error(
+		'依存関係はリポジトリのルートで pnpm install を実行してインストールしてください。'
+	);
 	process.exitCode = 1;
 }

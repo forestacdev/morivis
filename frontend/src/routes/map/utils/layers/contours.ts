@@ -54,7 +54,6 @@ export const createContourStyle = (
 				'line-opacity': ['case', ['>', ['get', 'level'], 0], 1.5, 0.8]
 			}
 		},
-
 		{
 			...base,
 			id: `${source}-label`,

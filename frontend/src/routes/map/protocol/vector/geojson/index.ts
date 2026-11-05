@@ -42,8 +42,13 @@ export class WorkerProtocol {
 		// 複数ソースが同じz/x/yを要求しても応答を取り違えない。
 		const id = ++this.nextRequestId;
 		return new Promise((resolve, reject) => {
-			const abort = () => this.reject(id, new DOMException('GeoJSON request aborted', 'AbortError'));
-			this.pendingRequests.set(id, { resolve, reject, cleanup: () => signal.removeEventListener('abort', abort) });
+			const abort = () =>
+				this.reject(id, new DOMException('GeoJSON request aborted', 'AbortError'));
+			this.pendingRequests.set(id, {
+				resolve,
+				reject,
+				cleanup: () => signal.removeEventListener('abort', abort)
+			});
 			signal.addEventListener('abort', abort, { once: true });
 			void this.load(url, AbortSignal.any([signal, this.lifetime.signal])).then(request => {
 				if (!this.pendingRequests.has(id)) return;
@@ -52,24 +57,31 @@ export class WorkerProtocol {
 		});
 	};
 
-	private load = async (url: URL, signal: AbortSignal): Promise<Omit<GeojsonTileRequest, 'id'>> => {
+	private load = async (
+		url: URL,
+		signal: AbortSignal
+	): Promise<Omit<GeojsonTileRequest, 'id'>> => {
 		const x = parseInt(url.searchParams.get('x') || '0', 10);
 		const y = parseInt(url.searchParams.get('y') || '0', 10);
 		const z = parseInt(url.searchParams.get('z') || '0', 10);
 		const entryId = url.searchParams.get('entryId') || '';
 		const baseUrl = url.origin + url.pathname;
-		const transform = url.searchParams.get('transform') === 'topographic-sheets' ? 'topographic-sheets' : undefined;
+		const transform = url.searchParams.get('transform') === 'topographic-sheets'
+			? 'topographic-sheets'
+			: undefined;
 		const geojson = transform
 			? await this.loadSheets(parseTopographicSheetTileUrl(baseUrl))
 			: await loadGeoJSON(baseUrl, signal);
 		signal.throwIfAborted();
 		const joinData = JoinDataCache.get(entryId);
-		const features = joinData ? geojson.features.map(feature => {
-			const code = feature.properties?.code;
-			return code !== undefined && joinData[code]
-				? { ...feature, properties: { ...feature.properties, ...joinData[code] } }
-				: feature;
-		}) : geojson.features;
+		const features = joinData
+			? geojson.features.map(feature => {
+				const code = feature.properties?.code;
+				return code !== undefined && joinData[code]
+					? { ...feature, properties: { ...feature.properties, ...joinData[code] } }
+					: feature;
+			})
+			: geojson.features;
 		return { x, y, z, transform, geojson: { ...geojson, features } };
 	};
 
@@ -81,7 +93,9 @@ export class WorkerProtocol {
 		request.reject(error);
 	};
 
-	private handleMessage = (event: MessageEvent<{ id: number; buffer?: Uint8Array; error?: string; }>) => {
+	private handleMessage = (
+		event: MessageEvent<{ id: number; buffer?: Uint8Array; error?: string; }>
+	) => {
 		const { id, buffer, error } = event.data;
 		if (error || !buffer) {
 			this.reject(id, new Error(error ?? 'Invalid GeoJSON worker response'));
@@ -94,7 +108,8 @@ export class WorkerProtocol {
 		request.resolve({ data: buffer });
 	};
 
-	private handleError = (event: ErrorEvent) => this.dispose(new Error(event.message || 'GeoJSON worker error'));
+	private handleError = (event: ErrorEvent) =>
+		this.dispose(new Error(event.message || 'GeoJSON worker error'));
 	private handleMessageError = () => this.dispose(new Error('Invalid GeoJSON worker message'));
 
 	dispose = (reason: Error = new DOMException('GeoJSON stopped', 'AbortError')) => {
@@ -110,7 +125,9 @@ export class WorkerProtocol {
 let workerProtocol: WorkerProtocol | null = null;
 const getWorkerProtocol = (): WorkerProtocol => {
 	if (!workerProtocol || workerProtocol.isDisposed()) {
-		workerProtocol = new WorkerProtocol(new Worker(new URL('./protocol_geojson.worker.ts', import.meta.url), { type: 'module' }));
+		workerProtocol = new WorkerProtocol(
+			new Worker(new URL('./protocol_geojson.worker.ts', import.meta.url), { type: 'module' })
+		);
 	}
 	return workerProtocol;
 };

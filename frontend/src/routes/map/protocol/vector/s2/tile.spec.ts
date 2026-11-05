@@ -28,7 +28,8 @@ describe('S2のタイル生成', () => {
 	it.each([-180, 180])('日付変更線%s度の両側に境界を生成する', longitude => {
 		const z = 10;
 		const x = longitude < 0 ? 0 : 2 ** z - 1;
-		const layer = new VectorTile(new Pbf(createS2Tile({ level: z, z, x, y: 2 ** (z - 1) }))).layers.s2;
+		const layer =
+			new VectorTile(new Pbf(createS2Tile({ level: z, z, x, y: 2 ** (z - 1) }))).layers.s2;
 		expect(layer.length).toBeGreaterThan(0);
 	});
 
@@ -38,11 +39,14 @@ describe('S2のタイル生成', () => {
 			const z = 10;
 			const bounds = tileToBBOX(pointToTile(longitude, latitude, z));
 			const [west, south, east, north] = bounds;
-			const codes = new Set(createS2Grid(z, [west, south, east, north]).features.map(f => f.properties.code));
+			const codes = new Set(
+				createS2Grid(z, [west, south, east, north]).features.map(f => f.properties.code)
+			);
 			for (let i = 0; i <= 8; i++) {
 				for (let j = 0; j <= 8; j++) {
 					const leaf = s2.cellid.fromLatLng(s2.LatLng.fromDegrees(
-						south + (north - south) * i / 8, west + (east - west) * j / 8
+						south + (north - south) * i / 8,
+						west + (east - west) * j / 8
 					));
 					expect(codes.has(s2.cellid.toToken(s2.cellid.parent(leaf, z)))).toBe(true);
 				}
@@ -54,28 +58,41 @@ describe('S2のタイル生成', () => {
 		const grid = createS2Grid(level, [-180, -85, 180, 85]);
 		for (const { geometry } of grid.features) {
 			if (geometry.type !== 'LineString') continue;
-			for (const coordinate of geometry.coordinates) expect(Math.abs(coordinate[1])).toBeLessThanOrEqual(85.05112878);
+			for (const coordinate of geometry.coordinates) {
+				expect(Math.abs(coordinate[1])).toBeLessThanOrEqual(85.05112878);
+			}
 			for (let i = 1; i < geometry.coordinates.length; i++) {
-				expect(Math.abs(geometry.coordinates[i][0] - geometry.coordinates[i - 1][0])).toBeLessThanOrEqual(180);
+				expect(Math.abs(geometry.coordinates[i][0] - geometry.coordinates[i - 1][0]))
+					.toBeLessThanOrEqual(180);
 			}
 		}
 	});
 
 	it('レベル0では6面の境界と16進トークンを生成する', () => {
 		const grid = createS2Grid(0, [-180, -85, 180, 85]);
-		expect(new Set(grid.features.map(f => f.properties.code))).toEqual(new Set(['1', '3', '5', '7', '9', 'b']));
+		expect(new Set(grid.features.map(f => f.properties.code))).toEqual(
+			new Set(['1', '3', '5', '7', '9', 'b'])
+		);
 		const lines = grid.features.filter(f => f.geometry.type === 'LineString');
 		expect(lines).toHaveLength(24);
-		expect(lines.some(f => f.geometry.type === 'LineString' && f.geometry.coordinates.length > 2)).toBe(true);
+		expect(
+			lines.some(f => f.geometry.type === 'LineString' && f.geometry.coordinates.length > 2)
+		).toBe(true);
 	});
 
 	it('過大な範囲と不正な要求を拒否する', () => {
 		expect(() => createS2Grid(30, [-1, -1, 1, 1])).toThrow('too large');
-		for (const level of [-1, 31, 0.5, NaN]) expect(() => createS2Grid(level, [-1, -1, 1, 1])).toThrow();
-		for (const url of [
-			's2_grid://tile/10/0/0/0.pbf', 's2_grid://tile/24/24/0/0.pbf',
-			's2_grid://tile/1/1/2/0.pbf', 's2_grid://tile/1/1/-1/0.pbf',
-			's2_grid://tile/1/1/0/9007199254740992.pbf'
-		]) expect(() => parseS2TileUrl(url)).toThrow();
+		for (const level of [-1, 31, 0.5, NaN]) {
+			expect(() => createS2Grid(level, [-1, -1, 1, 1])).toThrow();
+		}
+		for (
+			const url of [
+				's2_grid://tile/10/0/0/0.pbf',
+				's2_grid://tile/24/24/0/0.pbf',
+				's2_grid://tile/1/1/2/0.pbf',
+				's2_grid://tile/1/1/-1/0.pbf',
+				's2_grid://tile/1/1/0/9007199254740992.pbf'
+			]
+		) expect(() => parseS2TileUrl(url)).toThrow();
 	});
 });

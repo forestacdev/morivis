@@ -15,7 +15,9 @@ export interface GeojsonTileRequest {
 // 生成側と出力側で同じ座標範囲を使う。値が違うと描画位置がずれる。
 const TILE_EXTENT = 4096;
 
-export const createGeojsonTile = ({ geojson, z, x, y, transform }: Omit<GeojsonTileRequest, 'id'>): Uint8Array => {
+export const createGeojsonTile = (
+	{ geojson, z, x, y, transform }: Omit<GeojsonTileRequest, 'id'>
+): Uint8Array => {
 	const data = transform === 'topographic-sheets' ? normalizeSheetFeatures([geojson]) : geojson;
 	const tile = geojsonvt(data, {
 		maxZoom: 22,
@@ -25,6 +27,7 @@ export const createGeojsonTile = ({ geojson, z, x, y, transform }: Omit<GeojsonT
 	}).getTile(z, x, y);
 	if (!tile) return new Uint8Array();
 	return vtpbf.fromGeojsonVt({ geojsonLayer: tile as unknown as ReturnType<typeof geojsonvt> }, {
-		version: 2, extent: TILE_EXTENT
+		version: 2,
+		extent: TILE_EXTENT
 	});
 };
