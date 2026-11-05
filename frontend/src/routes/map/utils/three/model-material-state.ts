@@ -6,7 +6,8 @@ export const modelMaterialState = (source: Material, opacity: number) => {
 		|| source.userData.morivisFbxPackageMaterial === true;
 	return {
 		enabled,
-		sourceOpacity: enabled ? source.opacity : 1,
+		// PMXの表情用材質には初期状態で完全に透明なものがある。
+		sourceOpacity: enabled || source.userData.mmdMaterial != null ? source.opacity : 1,
 		alphaTest: enabled ? source.alphaTest : 0,
 		transparent: enabled ? source.transparent || opacity < 1 : true,
 		depthWrite: enabled ? !source.transparent && opacity >= 1 : true

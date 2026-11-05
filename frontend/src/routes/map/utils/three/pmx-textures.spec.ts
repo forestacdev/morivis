@@ -1,11 +1,13 @@
 import { disposeMmdModel, type ThreeMmdModel } from '@yohawing/three-mmd-loader/three';
-import { MeshToonMaterial } from 'three';
+import { MeshToonMaterial, ShaderMaterial } from 'three';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { createTestModel } from './__fixtures__/test-model-runtime';
+import { ModelMaterials } from './model-materials';
 import { applyPmxAnimationClip, clearPmxAnimationClip, loadPmxModel } from './pmx-loader';
 
 /** テクスチャ付きの三角形と、存在しないスフィアマップを参照する架空の PMX。 */
-const createTestPmx = () => {
+const createTestPmx = (materialOpacity = 1) => {
 	const bytes: number[] = [];
 	const u8 = (...values: number[]) => bytes.push(...values);
 	const i32 = (value: number) => {
@@ -43,7 +45,7 @@ const createTestPmx = () => {
 	i32(1);
 	text('test-material');
 	text('');
-	f32(1, 1, 1, 1, 0, 0, 0, 1, 0.5, 0.5, 0.5);
+	f32(1, 1, 1, materialOpacity, 0, 0, 0, 1, 0.5, 0.5, 0.5);
 	u8(0);
 	f32(0, 0, 0, 1, 1);
 	u8(0, 1, 1, 0, 255); // diffuse 0、sphere 1、multiply、toon なし
@@ -83,6 +85,29 @@ const getMaterial = (model: ThreeMmdModel) => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('PMX texture loading', () => {
+	it.each([0, 0.25, 1])('スタイル適用と更新後もPMXの材質不透明度 %s を保つ', async opacity => {
+		const { model } = await loadPmxModel(createTestPmx(opacity));
+		const materials = new ModelMaterials();
+		const { entry } = createTestModel();
+		try {
+			for (const layerOpacity of [1, 0.5] as const) {
+				materials.applyStyleToObject(
+					model.root,
+					{ ...entry.style, opacity: layerOpacity },
+					'pmx'
+				);
+				const [shader] = Array.isArray(model.mesh.material)
+					? model.mesh.material
+					: [model.mesh.material];
+				expect(shader).toBeInstanceOf(ShaderMaterial);
+				expect((shader as ShaderMaterial).uniforms.uSourceOpacity.value).toBe(opacity);
+				expect((shader as ShaderMaterial).uniforms.uOpacity.value).toBe(layerOpacity);
+			}
+		} finally {
+			disposeMmdModel(model);
+		}
+	});
+
 	it('restores a loaded PMX to its original pose after clearing a VPD', async () => {
 		const { loader, model } = await loadPmxModel(createTestPmx());
 		try {

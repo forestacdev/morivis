@@ -964,24 +964,7 @@
 				];
 			});
 			if (clips.length > 0) {
-				entry.properties = {
-					...entry.properties,
-					animation: {
-						clips,
-						defaultClipIndex: 0,
-						autoPlay: clips[0].type !== 'vpd',
-						defaultLoop: true
-					}
-				};
-				entry.state = {
-					...entry.state,
-					animation: {
-						currentClipIndex: 0,
-						playing: clips[0].type !== 'vpd',
-						speed: 1,
-						loop: true
-					}
-				};
+				entry.properties = { ...entry.properties, animation: { clips } };
 			}
 		}
 		if (activeFormat === 'vrm' && resourceUrls && vrmaFiles.length > 0) {
@@ -1116,11 +1099,16 @@
 		}
 
 		if (entry.format.type === 'pmx') {
-			const animation = withDefaultPmxPoses(entry.properties?.animation);
+			const animation = withDefaultPmxPoses({
+				...entry.properties?.animation,
+				clips: entry.properties?.animation?.clips ?? [],
+				defaultClipIndex: -1,
+				autoPlay: false
+			});
 			entry.properties = { ...entry.properties, animation };
 			entry.state = {
 				...entry.state,
-				animation: entry.state?.animation ?? getInitialModelAnimationState(animation)
+				animation: getInitialModelAnimationState(animation)
 			};
 		}
 		return entry;
@@ -1555,14 +1543,14 @@
 				<p class="mt-2">画像なしのまま登録することもできます。</p>
 			{:else if activeFormat === 'pmx' && vpdFiles.length > 0}
 				<p class="mt-2">
-					VPDポーズを{vpdFiles.length}件追加します。先頭のポーズを適用します。
+					VPDポーズを{vpdFiles.length}件追加します。
 				</p>
 				{#if vmdFiles.length > 0}
 					<p class="mt-2">VMDモーションを{vmdFiles.length}件追加します。</p>
 				{/if}
 			{:else if activeFormat === 'pmx' && vmdFiles.length > 0}
 				<p class="mt-2">
-					VMDモーションを{vmdFiles.length}件追加します。先頭のモーションを既定で再生します。
+					VMDモーションを{vmdFiles.length}件追加します。
 				</p>
 			{:else if activeFormat === 'vrm' && vrmaFiles.length > 0}
 				<p class="mt-2">
