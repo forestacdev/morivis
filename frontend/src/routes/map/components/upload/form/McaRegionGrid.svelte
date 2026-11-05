@@ -11,7 +11,6 @@
 		previewTile
 	} from '$routes/map/utils/formats/mca/preview-map';
 	import { registerPreviewTiles } from '$routes/map/utils/formats/mca/preview-tiles';
-	import type { McaRegionPosition } from '$routes/map/utils/formats/mca/types';
 	import {
 		createMcaUploadGrid,
 		toggleMcaUploadRegion
@@ -20,16 +19,10 @@
 
 	interface Props {
 		files: File[];
-		center?: McaRegionPosition;
 		excludedFiles?: File[];
 		disabled?: boolean;
 	}
-	let {
-		files,
-		center = $bindable(),
-		excludedFiles = $bindable([]),
-		disabled = false
-	}: Props = $props();
+	let { files, excludedFiles = $bindable([]), disabled = false }: Props = $props();
 	let container: HTMLDivElement;
 	let map = $state.raw<PreviewMap>();
 	let protocol = $state('');
@@ -37,8 +30,7 @@
 	const cache = new Map<File, Blob>();
 	const errors = new SvelteMap<File, string>();
 	const worldOrigin = { x: 0, z: 0 };
-	const anchor = $derived(center ?? worldOrigin);
-	const regions = $derived(indexPreviewRegions(files, anchor));
+	const regions = $derived(indexPreviewRegions(files, worldOrigin));
 
 	onMount(() => {
 		let preview: PreviewMap;
@@ -57,15 +49,15 @@
 				canvasContextAttributes: { antialias: false }
 			});
 		} catch {
-			mapError = '地図を表示できません。下の一覧から区画を選択できます。';
+			mapError = 'プレビュー地図を表示できませんでした。';
 			return;
 		}
 		preview.touchZoomRotate.disableRotation();
 		preview.keyboard.disableRotation();
 		preview.doubleClickZoom.disable();
 		preview.on('click', ({ lngLat }) => {
-			const region = previewRegion(lngLat.lng, lngLat.lat, anchor);
-			const { x, y } = previewTile(region, anchor);
+			const region = previewRegion(lngLat.lng, lngLat.lat, worldOrigin);
+			const { x, y } = previewTile(region, worldOrigin);
 			if (!disabled && regions.has(`${x}/${y}`))
 				excludedFiles = toggleMcaUploadRegion(files, excludedFiles, region);
 		});
@@ -89,35 +81,25 @@
 		};
 	});
 	$effect(() => {
-		if (map && protocol) map.setStyle(previewMapStyle(protocol, regions, anchor, excludedFiles));
+		if (map && protocol)
+			map.setStyle(previewMapStyle(protocol, regions, worldOrigin, excludedFiles));
 	});
 	$effect(() => {
 		if (!map) return;
-		const { x, y } = previewTile(anchor, anchor);
-		let west = x,
-			north = y,
-			east = x + 1,
-			south = y + 1;
-		if (!center) {
-			// 原点は r.0.0 の北西角。初期表示だけ周囲の区画数に縮尺を合わせる。
-			const cells = untrack(() => createMcaUploadGrid(files, worldOrigin).cells);
-			let radiusX = 1,
-				radiusZ = 1;
-			for (const cell of cells) {
-				if (!cell.loaded) continue;
-				radiusX = Math.max(radiusX, -cell.x, cell.x + 1);
-				radiusZ = Math.max(radiusZ, -cell.z, cell.z + 1);
-			}
-			west = x - radiusX;
-			east = x + radiusX;
-			north = y - radiusZ;
-			south = y + radiusZ;
+		const { x, y } = previewTile(worldOrigin, worldOrigin);
+		// 原点は r.0.0 の北西角。初期表示だけ周囲の区画数に縮尺を合わせる。
+		const cells = untrack(() => createMcaUploadGrid(files, worldOrigin).cells);
+		let radiusX = 1,
+			radiusZ = 1;
+		for (const cell of cells) {
+			if (!cell.loaded) continue;
+			radiusX = Math.max(radiusX, -cell.x, cell.x + 1);
+			radiusZ = Math.max(radiusZ, -cell.z, cell.z + 1);
 		}
-		map.fitBounds([previewLngLat(west, south), previewLngLat(east, north)], {
-			padding: 16,
-			maxZoom: MCA_PREVIEW_ZOOM - 1,
-			duration: 0
-		});
+		map.fitBounds(
+			[previewLngLat(x - radiusX, y + radiusZ), previewLngLat(x + radiusX, y - radiusZ)],
+			{ padding: 16, maxZoom: MCA_PREVIEW_ZOOM - 1, duration: 0 }
+		);
 	});
 	$effect(() => {
 		const current = new Set(files);
@@ -129,32 +111,9 @@
 </script>
 
 <section class="flex flex-col gap-2" aria-label="リージョン配置図">
-	<p class="text-xs">クリックで選択・解除</p>
-	<div class="relative">
-		<div bind:this={container} class="h-72 w-full overflow-hidden rounded bg-gray-800"></div>
-		{#if map}
-			<div class="absolute top-2 right-2 flex flex-col gap-px">
-				<button
-					type="button"
-					class="c-btn-sub h-8 w-8"
-					aria-label="拡大"
-					onclick={() => map?.zoomIn()}>＋</button
-				>
-				<button
-					type="button"
-					class="c-btn-sub h-8 w-8"
-					aria-label="縮小"
-					onclick={() => map?.zoomOut()}>−</button
-				>
-			</div>
-		{/if}
-	</div>
-	{#if mapError}<p role="status">{mapError}</p>{/if}
-	{#each errors as [file, error] (file)}
-		<p class="text-xs" role="status">{file.name} のプレビューを生成できませんでした。{error}</p>
-	{/each}
-	<div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-		<div class="flex gap-2">
+	<div class="flex items-center justify-between gap-2 text-xs">
+		<p>クリックで選択・解除</p>
+		<div class="flex shrink-0 gap-2">
 			<button
 				type="button"
 				class="c-btn-sub px-3 py-2"
@@ -169,4 +128,35 @@
 			>
 		</div>
 	</div>
+	<div class="relative">
+		<div bind:this={container} class="h-72 w-full overflow-hidden rounded bg-gray-800"></div>
+		{#if map}
+			<div class="absolute top-2 right-2 flex flex-col gap-px">
+				<button
+					type="button"
+					class="c-btn-sub grid size-8 place-items-center p-0"
+					aria-label="拡大"
+					onclick={() => map?.zoomIn()}
+				>
+					<svg aria-hidden="true" class="size-4" viewBox="0 0 16 16">
+						<path d="M2 8h12M8 2v12" stroke="currentColor" stroke-width="2" />
+					</svg>
+				</button>
+				<button
+					type="button"
+					class="c-btn-sub grid size-8 place-items-center p-0"
+					aria-label="縮小"
+					onclick={() => map?.zoomOut()}
+				>
+					<svg aria-hidden="true" class="size-4" viewBox="0 0 16 16">
+						<path d="M2 8h12" stroke="currentColor" stroke-width="2" />
+					</svg>
+				</button>
+			</div>
+		{/if}
+	</div>
+	{#if mapError}<p role="status">{mapError}</p>{/if}
+	{#each errors as [file, error] (file)}
+		<p class="text-xs" role="status">{file.name} のプレビューを生成できませんでした。{error}</p>
+	{/each}
 </section>

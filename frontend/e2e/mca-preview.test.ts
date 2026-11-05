@@ -46,15 +46,18 @@ test('負座標のMCAをプレビュー地図で拡大・選択し、差し替�
 		}, png);
 	};
 	await expect.poll(async () => (await previewPixels()).center).toEqual([251, 191, 36]);
-	await page.getByRole('button', { name, exact: true }).click();
 	const waterPixels = async () => (await previewPixels()).water;
 	await expect.poll(waterPixels).toBeGreaterThan(0);
 	const initial = await waterPixels();
 	await preview.getByRole('button', { name: '拡大' }).click();
 	await expect.poll(waterPixels).toBeGreaterThan(initial * 2);
-	await canvas.click();
-	await expect(page.getByRole('checkbox', { name: name + 'を読み込み対象にする' })).not
-		.toBeChecked();
+	// 原点の北西にある r.-1.-1 を地図上で選択解除する。
+	const position = await canvas.evaluate(({ clientWidth, clientHeight }) => ({
+		x: clientWidth / 2 - 16,
+		y: clientHeight / 2 - 16
+	}));
+	await canvas.click({ position });
+	await expect(page.getByText('追加済み 1件（読み込み対象 0件）')).toBeVisible();
 	await expect(page.getByRole('button', { name: '読み込む', exact: true })).toBeDisabled();
 	await page.getByLabel('地形リージョンを追加（.mca）').setInputFiles({
 		name,
@@ -65,5 +68,5 @@ test('負座標のMCAをプレビュー地図で拡大・選択し、差し替�
 		name + ' のプレビューを生成できませんでした'
 	);
 	await expect.poll(waterPixels).toBe(0);
-	await expect(page.getByRole('checkbox', { name: name + 'を読み込み対象にする' })).toBeChecked();
+	await expect(page.getByText('追加済み 1件（読み込み対象 1件）')).toBeVisible();
 });

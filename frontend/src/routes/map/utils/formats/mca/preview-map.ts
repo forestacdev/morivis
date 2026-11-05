@@ -120,7 +120,7 @@ export const previewMapStyle = (
 				type: 'fill',
 				source: 'regions',
 				filter: ['==', ['get', 'selected'], false],
-				paint: { 'fill-color': '#111827', 'fill-opacity': 0.65 }
+				paint: { 'fill-color': '#111827', 'fill-opacity': 0.55 }
 			},
 			{
 				id: 'bounds',

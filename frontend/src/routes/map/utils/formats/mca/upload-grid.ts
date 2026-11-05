@@ -3,7 +3,13 @@ import { isMcaRegionPositionValid, parseMcaRegionFileName } from './world-placem
 
 const regionKey = ({ x, z }: McaRegionPosition) => `${x},${z}`;
 
-/** 除外はファイル単位で保持し、新規追加・差し替えファイルは最初から選択する。 */
+/** 原点は r.0.0 の北西角。そこに接する4区画だけを読み込み対象にする。 */
+export const getInitialMcaExclusions = <T extends Pick<File, 'name'>>(files: T[]): T[] =>
+	files.filter(file => {
+		const region = parseMcaRegionFileName(file.name);
+		return !region || region.x < -1 || region.x > 0 || region.z < -1 || region.z > 0;
+	});
+
 export const getSelectedMcaUploadFiles = <T extends Pick<File, 'name'>>(
 	files: T[],
 	excludedFiles: readonly T[]
@@ -60,13 +66,13 @@ export const createMcaUploadGrid = (
 	options: { columns?: number; rows?: number; excludedFiles?: readonly Pick<File, 'name'>[]; } =
 		{}
 ) => {
-	const { columns = 9, rows = 7, excludedFiles = [] } = options;
+	const { columns = 9, rows = 7 } = options;
 	if (![columns, rows].every(value => Number.isSafeInteger(value) && value > 0)) {
 		throw new Error('グリッドの行列数は1以上の整数で指定してください');
 	}
 	const regions = new Map<string, { position: McaRegionPosition; files: string[]; }>();
 	const selectedRegions = new Set(
-		getSelectedMcaUploadFiles(files, excludedFiles)
+		getSelectedMcaUploadFiles(files, options.excludedFiles ?? getInitialMcaExclusions(files))
 			.map(file => parseMcaRegionFileName(file.name))
 			.filter((position): position is McaRegionPosition => position !== null)
 			.map(regionKey)
