@@ -9,8 +9,8 @@ test('負座標のMCAをプレビュー地図で拡大・選択し、差し替�
 	const name = 'r.-1.-1.mca';
 	const bytes = [
 		...new Uint8Array(regionFixture([{
-			index: 20 * 32 + 16,
-			nbt: chunkFixture({ x: -16, z: -12, palette: ['minecraft:water'] })
+			index: 28 * 32 + 26,
+			nbt: chunkFixture({ x: -6, z: -4, palette: ['minecraft:water'] })
 		}]))
 	];
 	await page.locator('canvas.maplibregl-canvas:visible').first().evaluate(

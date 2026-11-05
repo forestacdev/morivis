@@ -11,10 +11,7 @@
 		previewTile
 	} from '$routes/map/utils/formats/mca/preview-map';
 	import { registerPreviewTiles } from '$routes/map/utils/formats/mca/preview-tiles';
-	import {
-		createMcaUploadGrid,
-		toggleMcaUploadRegion
-	} from '$routes/map/utils/formats/mca/upload-grid';
+	import { toggleMcaUploadRegion } from '$routes/map/utils/formats/mca/upload-grid';
 	import { Map as PreviewMap } from '$routes/map/utils/maplibre';
 
 	interface Props {
@@ -33,6 +30,7 @@
 	const regions = $derived(indexPreviewRegions(files, worldOrigin));
 
 	onMount(() => {
+		const { x, y } = previewTile(worldOrigin, worldOrigin);
 		let preview: PreviewMap;
 		try {
 			preview = new PreviewMap({
@@ -40,7 +38,8 @@
 				style: { version: 8, sources: {}, layers: [] },
 				minZoom: MCA_PREVIEW_ZOOM - 4,
 				maxZoom: MCA_PREVIEW_ZOOM + 3,
-				zoom: MCA_PREVIEW_ZOOM - 1,
+				// 原点を中央に、横幅に4区画分が収まる縮尺で開く。
+				bounds: [previewLngLat(x - 2, y), previewLngLat(x + 2, y)],
 				renderWorldCopies: false,
 				attributionControl: false,
 				dragRotate: false,
@@ -83,23 +82,6 @@
 	$effect(() => {
 		if (map && protocol)
 			map.setStyle(previewMapStyle(protocol, regions, worldOrigin, excludedFiles));
-	});
-	$effect(() => {
-		if (!map) return;
-		const { x, y } = previewTile(worldOrigin, worldOrigin);
-		// 原点は r.0.0 の北西角。初期表示だけ周囲の区画数に縮尺を合わせる。
-		const cells = untrack(() => createMcaUploadGrid(files, worldOrigin).cells);
-		let radiusX = 1,
-			radiusZ = 1;
-		for (const cell of cells) {
-			if (!cell.loaded) continue;
-			radiusX = Math.max(radiusX, -cell.x, cell.x + 1);
-			radiusZ = Math.max(radiusZ, -cell.z, cell.z + 1);
-		}
-		map.fitBounds(
-			[previewLngLat(x - radiusX, y + radiusZ), previewLngLat(x + radiusX, y - radiusZ)],
-			{ padding: 16, maxZoom: MCA_PREVIEW_ZOOM - 1, duration: 0 }
-		);
 	});
 	$effect(() => {
 		const current = new Set(files);
