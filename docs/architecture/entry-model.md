@@ -115,6 +115,30 @@ type MorivisLayerEntry =
 
 現状の例外として、`StyleJsonEntry` と、一部のvector/raster entryが持つ `auxiliaryLayers` はMapLibreの生定義に依存する。`AuxiliaryLayersData` は `SourceSpecification` と `LayerSpecification` を保持する。この依存を一般の入力処理・UIへ広げないことが設計上の方針であり、すべてのentryが描画ライブラリから独立しているわけではない。
 
+### dimension ごとのラスター凡例
+
+`RasterCategoricalStyle.legend` は既定の凡例、任意の `legendByDimension` は
+`properties.temporal.dimension.values` の値と凡例の対応表を保持する。
+キーには配列のindexや表示ラベルではなく、タイルURLの置換に使う値を指定する。
+画像・カテゴリ・グラデーションの各凡例を指定できる。
+
+```ts
+style: {
+    type: 'categorical',
+    opacity: 0.7,
+    legend: defaultLegend,
+    legendByDimension: {
+        'test-shallow': shallowLegend,
+        'test-deep': deepLegend
+    }
+}
+```
+
+`getRasterLegend(entry)` はタイルと同じ `getRasterDimensionValue(entry)` で選択値を求め、
+対応する凡例を返す。dimension・選択状態・対応する凡例がない場合は `legend` に戻る。
+表示コンポーネントはこの結果をリアクティブに導出し、選択時に `style.legend` を書き換えない。
+対応表は保存対象の宣言的な設定で、選択済みの凡例を別のstateに複製しない。
+
 ## 6. entry に持たせないもの
 
 `MorivisLayerEntry` に何でも載せると、内部モデルが便利箱になる。  

@@ -5,12 +5,11 @@
 	import { mcaFilesToGlbInWorker } from '$routes/map/utils/formats/mca/analyze';
 	import { validateMcaFileSet } from '$routes/map/utils/formats/mca/batch';
 	import { createMcaModelFile } from '$routes/map/utils/formats/mca/model-file';
-	import type { McaRegionPosition } from '$routes/map/utils/formats/mca/types';
 	import {
+		getInitialMcaExclusions,
 		getSelectedMcaUploadFiles,
 		mergeMcaUploadFiles
 	} from '$routes/map/utils/formats/mca/upload-grid';
-	import { parseMcaRegionFileName } from '$routes/map/utils/formats/mca/world-placement';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { showNotification } from '$routes/stores/notification';
 
@@ -21,6 +20,12 @@
 	let { showDialogType = $bindable(), dropFile = $bindable() }: Props = $props();
 	const files = $derived(toUploadFiles(dropFile));
 	let excludedFiles = $state.raw<File[]>([]);
+	let initialSelectionApplied = false;
+	$effect.pre(() => {
+		if (initialSelectionApplied || !files.length) return;
+		excludedFiles = getInitialMcaExclusions(files);
+		initialSelectionApplied = true;
+	});
 	const selectedFiles = $derived(getSelectedMcaUploadFiles(files, excludedFiles));
 	const fileSetError = $derived.by(() => {
 		if (!selectedFiles.length) return null;
@@ -38,7 +43,6 @@
 	let progress = $state('');
 	let selectionError = $state('');
 	let selectionErrorFiles = $state.raw<File[] | null>(null);
-	let gridCenter = $state<McaRegionPosition | undefined>();
 	let conversion: AbortController | null = null;
 
 	const cancelConversion = () => {
@@ -108,68 +112,45 @@
 <div class="shrink-0 pb-4 text-2xl font-bold">Minecraftの地形を読み込む</div>
 <div class="c-scroll flex grow flex-col gap-4 overflow-y-auto p-2 text-sm">
 	<p>同じワールドの .mca を追加してください。</p>
-	<label class="flex flex-col gap-2">
-		<span>地形リージョンを追加（.mca）</span>
-		<input
-			type="file"
-			accept=".mca"
-			multiple
-			disabled={busy}
-			onchange={(event) => {
-				const incoming = Array.from(event.currentTarget.files ?? []);
-				event.currentTarget.value = '';
-				if (!incoming.length) return;
-				selectionError = '';
-				try {
-					const merged = mergeMcaUploadFiles(files, incoming);
-					cancelConversion();
-					dropFile = merged;
-					gridCenter = undefined;
-				} catch (error) {
-					selectionErrorFiles = files;
-					selectionError =
-						error instanceof Error ? error.message : 'ファイルを追加できませんでした。';
-				}
-			}}
-		/>
-	</label>
+	<div class="flex flex-wrap items-center gap-3">
+		<label
+			class={[
+				'c-btn-sub relative px-3 py-2 focus-within:outline-2',
+				busy ? 'opacity-50' : 'cursor-pointer'
+			]}
+		>
+			<span>地形リージョンを追加（.mca）</span>
+			<input
+				type="file"
+				class="sr-only"
+				accept=".mca"
+				multiple
+				disabled={busy}
+				onchange={(event) => {
+					const incoming = Array.from(event.currentTarget.files ?? []);
+					event.currentTarget.value = '';
+					if (!incoming.length) return;
+					selectionError = '';
+					try {
+						const merged = mergeMcaUploadFiles(files, incoming);
+						cancelConversion();
+						dropFile = merged;
+					} catch (error) {
+						selectionErrorFiles = files;
+						selectionError =
+							error instanceof Error ? error.message : 'ファイルを追加できませんでした。';
+					}
+				}}
+			/>
+		</label>
+		<p aria-live="polite">追加済み {files.length}件（読み込み対象 {selectedFiles.length}件）</p>
+	</div>
 	<p>ドロップでも追加できます。同じ区画は上書き。</p>
 	{#if selectionError && selectionErrorFiles === files}<p role="alert" class="text-red-300">
 			{selectionError}
 		</p>{/if}
-	<McaRegionGrid {files} bind:center={gridCenter} bind:excludedFiles disabled={busy} />
-	{#if files.length}
-		<p>{selectedFiles.length} / {files.length}ファイルを読み込み</p>
-		<ul class="max-h-40 overflow-y-auto break-all">
-			{#each files as file (file)}
-				{@const region = parseMcaRegionFileName(file.name)}
-				{@const excluded = excludedFiles.includes(file)}
-				<li class="flex items-center gap-2 py-1">
-					<button
-						type="button"
-						class={['min-w-0 flex-1 text-left underline', excluded && 'text-gray-400']}
-						disabled={!region}
-						title="配置図で表示"
-						onclick={() => {
-							if (region) gridCenter = region;
-						}}>{file.name}</button
-					>
-					{#if excluded}<span class="shrink-0 text-gray-400">対象外</span>{/if}
-					<button
-						type="button"
-						class="c-btn-sub shrink-0 px-2 py-1"
-						disabled={busy}
-						aria-label={`${file.name}を取り除く`}
-						onclick={() => {
-							cancelConversion();
-							selectionError = '';
-							dropFile = files.filter((candidate) => candidate !== file);
-							excludedFiles = excludedFiles.filter((candidate) => candidate !== file);
-						}}>削除</button
-					>
-				</li>
-			{/each}
-		</ul>
+	{#if files.length > 0}
+		<McaRegionGrid {files} bind:excludedFiles disabled={busy} />
 	{/if}
 	{#if fileSetError}<p role="alert" class="text-red-300">{fileSetError}</p>{/if}
 	{#if errorMessage && activeFiles === files}<p role="alert" class="text-red-300">

@@ -24,6 +24,7 @@ import {
 	getRasterDimension,
 	getRasterDimensionValue
 } from '$routes/map/utils/raster/dimension-runtime';
+import { getRasterLegend } from '$routes/map/utils/raster/legend';
 import { getDemStyleRange, isDemStepColorStyle } from '$routes/map/utils/style/color-mapping';
 import { normalizeDemShadowStyle } from '$routes/map/utils/style/dem-shadow';
 import { getDemSlopeRangeMode } from '$routes/map/utils/style/dem-slope';
@@ -351,10 +352,11 @@ export const createSourcesItems = ({
 					}&bbox=${encodeURIComponent(format.bbox?.join(',') ?? '')}&gpmMode=${
 						entry.state?.vertical?.mode ?? 'max'
 					}&gpmHeight=${entry.state?.vertical?.height ?? 0}`;
-					if (style.type === 'categorical' && style.legend.type === 'category') {
+					const legend = getRasterLegend(entry);
+					if (legend?.type === 'category') {
 						const categoricalValues = entry.properties?.categories?.values.join('|')
-							?? style.legend.labels.map((_, index) => index).join('|');
-						const categoricalColors = style.legend.colors.join('|');
+							?? legend.labels.map((_, index) => index).join('|');
+						const categoricalColors = legend.colors.join('|');
 						const tileUrl = `geozarr://tile?entryId=${
 							encodeURIComponent(entry.id)
 						}&${sourceQuery}&mode=categorical&bandIndex=0&values=${

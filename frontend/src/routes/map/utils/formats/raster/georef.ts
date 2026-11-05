@@ -1,7 +1,7 @@
 import type { ActiveTransformOptionMode } from '$routes/map/components/upload/form/pending-zone-vector';
 import type {
-	GeoRefData,
 	GeoRefMeshConfig,
+	GeoRefRasterData,
 	RasterRegistrationMode
 } from '$routes/map/components/upload/form/transform/georef-types';
 import type { BandDataRange } from '$routes/map/utils/cache/raster/geotiff-cache';
@@ -39,7 +39,7 @@ export const createRasterGeoRefData = ({
 	allowedTransformModes,
 	allowRegistrationModeChange,
 	meshConfig
-}: CreateRasterGeoRefDataParams): GeoRefData => {
+}: CreateRasterGeoRefDataParams): GeoRefRasterData => {
 	const firstRange = dataRanges[0] ?? { min: 0, max: 255 };
 	const secondRange = dataRanges[1] ?? firstRange;
 	const thirdRange = dataRanges[2] ?? secondRange;

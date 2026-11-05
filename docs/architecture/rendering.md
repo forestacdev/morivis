@@ -28,7 +28,17 @@ flowchart LR
 
 プロトコルの登録・解放、3Dモデルの同期、NetCDF内部のWorker処理は実行時処理として残る。`createMapStyle` 自体からは呼び出さない。準備処理を失効させても、開始済みWorkerの計算そのものを中断するわけではない。
 
+地図の破棄は `mapStore.remove()` に集約する。`Map.svelte` は自身の購読・スタイル更新予約を解除してから呼び出し、MapLibreを直接破棄しない。ストアは3D描画資源、viewport画像とCOG描画Worker、動的プロトコル、DOMイベント、移動・地形更新のタイマー、イベントストアを後片付けする。初期化済みの地図を置き換える場合も同じ経路を通る。破棄前の画像取得結果は、再訪問後の地図や画像キャッシュへ反映しない。常設のPMTiles・ローカルタイル用プロトコルはアプリ全体で共有し、地図ごとには登録し直さない。
+
 道路・地名・POIの補助スタイル取得は背景地図の反映を待たせない。取得後は最新の表示設定からスタイルを再生成し、取得中に非表示へ切り替えたレイヤーや破棄済みの地図へは反映しない。取得失敗は通知し、次のスタイル更新で再試行できる。アイコンWorkerの準備も地図初期化と並行し、準備完了を待つのはアイコン生成処理だけにする。
+
+## 時系列の操作
+
+`DimensionSelector.svelte` は選択時刻と再生UIを扱い、sourceやモデルの更新を `utils/runtime/temporal-dimension.ts` へ渡す。TIFFの画像・バンド範囲は通常のスタイル生成と同じ準備関数を使う。後続の時刻選択、エントリーの切替、UIの破棄、地図の置換で失効した応答はsourceやGeoJSONキャッシュへ反映しない。
+
+`TemporalFilterControl.svelte` は時間範囲とモードを `entry.state.temporalFilter` へ保存する。`utils/runtime/temporal-filter.ts` は通常のスタイル生成と共通の `getTemporalFilter()` を使い、再生中の既存レイヤーとハイライトへ即時反映する。時刻ごとの全スタイル再生成は行わない。
+
+カメラ追跡は `utils/runtime/temporal-camera.ts` が担当する。軌跡のキャッシュ・補間状態はUIごとに持ち、GeoJSONの変更でキャッシュを更新する。停止時に補間状態と地形カメラを戻し、画面の破棄時にはUIの再生タイマーも解除する。
 
 ## Three.jsモデル
 
@@ -55,7 +65,9 @@ flowchart LR
 
 通常のメッシュモデルの描画面は `MeshStyle.faceSide` に保存する。`source`（未指定時も同じ）はローダー・変換処理が作った材質ごとの設定、`double` は両面、`front` は表面のみ。表示用材質へ差し替える前の設定を保持するため、スタイルを変更してから `source` に戻せる。エッジ表示にも同じ設定を適用し、GLB出力は表示時の描画面を引き継ぐ。CADなどの変換処理が両面材質を生成している場合、`source` ではその設定を維持する。
 
-FBXのファイルアップロードでは、Creator、Original/LastSavedのApplicationNameにNavisworksと明記されている場合だけ `double` を初期設定にする。ファイル名からは推測しない。生成ソフトを特定できない入力やURL登録は `source` を使用し、利用者がスタイルの「描画面」で変更できる。選択済みの値は再描画で上書きしない。
+FBXのファイルアップロードでは、Creator、Original/LastSavedのApplicationNameにNavisworksと明記されている場合、またはMaterialノードにNavisworksの既定材質名 `Navisworks material` がある場合は `double` を初期設定にする。生成ソフト名がFBX SDKだけのファイルも、材質名で判定できる。ファイル名からは推測しない。生成ソフトを特定できない入力やURL登録は `source` を使用し、利用者がスタイルの「描画面」で変更できる。選択済みの値は再描画で上書きしない。
+
+バイナリFBXの曲線色は、MaterialのDiffuseColorとConnectionsから復元する。Navisworksの埋め込みDesign Packageは `fbx-package.ts` で読み、ProxyObjectのアセット参照を通して画像をモデルへ対応させる。`fbx-appearance.ts` がローダー直後に画像とUVを補正し、元から接続されたテクスチャは保持する。画像の縦横比に合う実寸UVだけを正規化し、タイリング用UVは維持する。復元した材質と画像はruntimeに置き、表示設定の変更後も切り抜きを保持して、モデル削除時に解放する。範囲解析Workerでは画像を復号しない。
 
 ## 検証
 

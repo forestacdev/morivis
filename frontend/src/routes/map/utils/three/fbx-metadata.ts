@@ -25,6 +25,7 @@ export interface FbxAxisMetadata {
 
 export interface FbxFileMetadata {
 	encoding: 'ascii' | 'binary';
+	hasNavisworksMaterials?: boolean;
 	version?: number;
 	creator?: string;
 	originalApplication?: ModelSourceApplication;
@@ -54,6 +55,7 @@ export interface FbxFileMetadata {
 
 interface ParsedFbxMetadata {
 	encoding: FbxFileMetadata['encoding'];
+	hasNavisworksMaterials: boolean;
 	version?: number;
 	creator?: string;
 	properties: FbxPropertyMap;
@@ -61,10 +63,16 @@ interface ParsedFbxMetadata {
 	geometryTypes: Record<string, number>;
 }
 
-/** ファイル名やCAD属性では推測せず、生成ソフトの明示情報だけで判定する。 */
+/** 生成ソフト名、またはNavisworksが出力する既定の材質名で判定する。 */
 export const isNavisworksFbx = (metadata: FbxFileMetadata): boolean =>
-	[metadata.creator, metadata.originalApplication?.name, metadata.lastSavedApplication?.name]
+	metadata.hasNavisworksMaterials === true
+	|| [metadata.creator, metadata.originalApplication?.name, metadata.lastSavedApplication?.name]
 		.some((value) => value != null && /\bnavisworks\b/i.test(value));
+
+// CreatorがFBX SDK名だけの場合もある。ファイル名や任意の説明文には適用しない。
+const isNavisworksMaterialName = (value: FbxScalar | null | undefined) =>
+	typeof value === 'string'
+	&& /^Navisworks material$/i.test(value.split('\0')[0].replace(/^Material::/, '').trim());
 
 const hasPropertyValue = (value: FbxScalar | FbxScalar[]) => {
 	const values = Array.isArray(value) ? value : [value];
@@ -141,6 +149,7 @@ const createMetadata = (parsed: ParsedFbxMetadata): FbxFileMetadata => {
 	const geometryTypes = parsed.geometryTypes;
 	return {
 		encoding: parsed.encoding,
+		hasNavisworksMaterials: parsed.hasNavisworksMaterials,
 		version: parsed.version,
 		creator: parsed.creator,
 		originalApplication: getApplication(properties, 'Original'),
@@ -174,6 +183,7 @@ const parseBinaryMetadata = (buffer: ArrayBuffer): ParsedFbxMetadata => {
 	const contentCounts: Record<string, number> = {};
 	const geometryTypes: Record<string, number> = {};
 	let creator: string | undefined;
+	let hasNavisworksMaterials = false;
 	const hasBytes = (offset: number, length: number, limit: number) =>
 		Number.isSafeInteger(offset)
 		&& Number.isSafeInteger(length)
@@ -228,7 +238,7 @@ const parseBinaryMetadata = (buffer: ArrayBuffer): ParsedFbxMetadata => {
 		}
 		return [null, limit];
 	};
-	const parseNode = (offset: number): number => {
+	const parseNode = (offset: number, parentName?: string): number => {
 		if (!hasBytes(offset, nodeHeaderLength, buffer.byteLength)) return buffer.byteLength;
 		const end = version >= 7500
 			? Number(view.getBigUint64(offset, true))
@@ -256,6 +266,11 @@ const parseBinaryMetadata = (buffer: ArrayBuffer): ParsedFbxMetadata => {
 		if (CONTENT_NODE_NAMES.has(name)) {
 			contentCounts[name] = (contentCounts[name] ?? 0) + 1;
 		}
+		if (
+			parentName === 'Objects' && name === 'Material' && isNavisworksMaterialName(values[1])
+		) {
+			hasNavisworksMaterials = true;
+		}
 		if (name === 'Geometry' && typeof values[2] === 'string') {
 			geometryTypes[values[2]] = (geometryTypes[values[2]] ?? 0) + 1;
 		}
@@ -276,7 +291,7 @@ const parseBinaryMetadata = (buffer: ArrayBuffer): ParsedFbxMetadata => {
 		}
 
 		while (cursor + nodeHeaderLength <= end) {
-			const nextOffset = parseNode(cursor);
+			const nextOffset = parseNode(cursor, name);
 			if (nextOffset <= cursor) break;
 			cursor = nextOffset;
 		}
@@ -289,7 +304,15 @@ const parseBinaryMetadata = (buffer: ArrayBuffer): ParsedFbxMetadata => {
 		if (nextOffset <= offset) break;
 		offset = nextOffset;
 	}
-	return { encoding: 'binary', version, creator, properties, contentCounts, geometryTypes };
+	return {
+		encoding: 'binary',
+		version,
+		creator,
+		properties,
+		contentCounts,
+		geometryTypes,
+		hasNavisworksMaterials
+	};
 };
 
 interface AsciiToken {
@@ -326,6 +349,7 @@ const parseAsciiTokens = (source: string): AsciiToken[] => {
 };
 
 const parseAsciiMetadata = (text: string): ParsedFbxMetadata => {
+	let hasNavisworksMaterials = false;
 	const properties: FbxPropertyMap = new Map();
 	const contentCounts: Record<string, number> = {};
 	const geometryTypes: Record<string, number> = {};
@@ -338,6 +362,10 @@ const parseAsciiMetadata = (text: string): ParsedFbxMetadata => {
 	) {
 		const name = match[1];
 		contentCounts[name] = (contentCounts[name] ?? 0) + 1;
+		if (name === 'Material') {
+			const values = parseAsciiTokens((match[2] ?? '').replace(/\s*\{\s*$/, ''));
+			if (isNavisworksMaterialName(values[1]?.value)) hasNavisworksMaterials = true;
+		}
 		if (name === 'Geometry') {
 			const values = parseAsciiTokens((match[2] ?? '').replace(/\s*\{\s*$/, ''));
 			const geometryType = values[2]?.value;
@@ -361,6 +389,7 @@ const parseAsciiMetadata = (text: string): ParsedFbxMetadata => {
 	}
 	return {
 		encoding: 'ascii',
+		hasNavisworksMaterials,
 		version: Number.isFinite(version) ? version : undefined,
 		creator,
 		properties,

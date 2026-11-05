@@ -52,6 +52,7 @@
 		getUploadedMinecraftRegions,
 		getUploadedModelSourceUnit
 	} from '$routes/map/utils/three/model-source-unit';
+	import { MODEL_PLACEMENT_PREVIEW_OPACITY } from '$routes/map/utils/three/placement-preview';
 	import { withDefaultPmxPoses } from '$routes/map/utils/three/pmx-pose-presets';
 	import { toUploadFiles } from '$routes/map/utils/upload-matchers-common';
 	import { mapStore } from '$routes/stores/map';
@@ -86,8 +87,6 @@
 		altitude: number;
 		scale?: number;
 	}
-
-	const ZONE_MODEL_PREVIEW_OPACITY = 0.3;
 
 	const getPathLikeName = (file: File) => {
 		const relativePath = (file as File & { morivisRelativePath?: string }).morivisRelativePath;
@@ -965,24 +964,7 @@
 				];
 			});
 			if (clips.length > 0) {
-				entry.properties = {
-					...entry.properties,
-					animation: {
-						clips,
-						defaultClipIndex: 0,
-						autoPlay: clips[0].type !== 'vpd',
-						defaultLoop: true
-					}
-				};
-				entry.state = {
-					...entry.state,
-					animation: {
-						currentClipIndex: 0,
-						playing: clips[0].type !== 'vpd',
-						speed: 1,
-						loop: true
-					}
-				};
+				entry.properties = { ...entry.properties, animation: { clips } };
 			}
 		}
 		if (activeFormat === 'vrm' && resourceUrls && vrmaFiles.length > 0) {
@@ -1117,11 +1099,16 @@
 		}
 
 		if (entry.format.type === 'pmx') {
-			const animation = withDefaultPmxPoses(entry.properties?.animation);
+			const animation = withDefaultPmxPoses({
+				...entry.properties?.animation,
+				clips: entry.properties?.animation?.clips ?? [],
+				defaultClipIndex: -1,
+				autoPlay: false
+			});
 			entry.properties = { ...entry.properties, animation };
 			entry.state = {
 				...entry.state,
-				animation: entry.state?.animation ?? getInitialModelAnimationState(animation)
+				animation: getInitialModelAnimationState(animation)
 			};
 		}
 		return entry;
@@ -1193,7 +1180,7 @@
 			const previewEntry = await createProjectedModelEntryForEpsg(
 				entry,
 				epsg,
-				ZONE_MODEL_PREVIEW_OPACITY
+				MODEL_PLACEMENT_PREVIEW_OPACITY
 			);
 			if (syncId !== zoneModelPreviewSyncId || transformOptionMode !== 'zone' || !glbFile) return;
 
@@ -1556,14 +1543,14 @@
 				<p class="mt-2">画像なしのまま登録することもできます。</p>
 			{:else if activeFormat === 'pmx' && vpdFiles.length > 0}
 				<p class="mt-2">
-					VPDポーズを{vpdFiles.length}件追加します。先頭のポーズを適用します。
+					VPDポーズを{vpdFiles.length}件追加します。
 				</p>
 				{#if vmdFiles.length > 0}
 					<p class="mt-2">VMDモーションを{vmdFiles.length}件追加します。</p>
 				{/if}
 			{:else if activeFormat === 'pmx' && vmdFiles.length > 0}
 				<p class="mt-2">
-					VMDモーションを{vmdFiles.length}件追加します。先頭のモーションを既定で再生します。
+					VMDモーションを{vmdFiles.length}件追加します。
 				</p>
 			{:else if activeFormat === 'vrm' && vrmaFiles.length > 0}
 				<p class="mt-2">

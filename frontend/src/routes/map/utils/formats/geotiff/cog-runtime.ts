@@ -10,6 +10,7 @@ const MAX_COG_IMAGE_SIZE = 768;
 
 const cogObjectUrls = new Map<string, string>();
 const readyCogViewportEntryIds = new Set<string>();
+let viewportGeneration = 0;
 
 const getViewportSize = (map: maplibregl.Map) => {
 	const canvas = map.getCanvas();
@@ -63,6 +64,7 @@ class CogViewportRenderer {
 		}
 	>();
 	private requestCounter = 0;
+	private terminated = false;
 
 	constructor() {
 		this.worker = new Worker(
@@ -83,7 +85,7 @@ class CogViewportRenderer {
 		bbox: [number, number, number, number]
 	): Promise<Blob | null> => {
 		const tileData = await CogTileManager.readViewport(entry.id, bbox, width, height);
-		if (!tileData) return null;
+		if (!tileData || this.terminated) return null;
 
 		const metadata = CogTileManager.getMetadata(entry.id);
 		const nodata = metadata?.nodata ?? null;
@@ -210,6 +212,7 @@ class CogViewportRenderer {
 	};
 
 	terminate = () => {
+		this.terminated = true;
 		this.pending.forEach(({ reject }) => {
 			reject(new Error('COG viewport worker terminated'));
 		});
@@ -233,6 +236,7 @@ export const clearCogViewportImage = (entryId: string) => {
 };
 
 export const clearAllCogViewportImages = () => {
+	viewportGeneration++;
 	Array.from(cogObjectUrls.keys()).forEach((entryId) => revokeObjectUrl(entryId));
 	readyCogViewportEntryIds.clear();
 };
@@ -255,8 +259,11 @@ export const fetchCogViewportImage = async (
 
 	const bbox = getViewportBbox(map);
 	const { width, height } = getViewportSize(map);
+	const generation = viewportGeneration;
 	const blob = await getRenderer().render(entry, width, height, bbox);
-	if (!blob) return null;
+	if (!blob || generation !== viewportGeneration || !readyCogViewportEntryIds.has(entry.id)) {
+		return null;
+	}
 
 	revokeObjectUrl(entry.id);
 	const objectUrl = URL.createObjectURL(blob);

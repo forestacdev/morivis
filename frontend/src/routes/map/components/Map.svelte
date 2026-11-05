@@ -47,17 +47,14 @@
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import { GeoTiffCache } from '$routes/map/utils/cache/raster/geotiff-cache';
 	import {
-		clearAllCogViewportImages,
 		fetchCogViewportImage,
-		markCogViewportReady,
-		terminateCogViewportRuntime
+		markCogViewportReady
 	} from '$routes/map/utils/formats/geotiff/cog-runtime';
 	import { CogTileManager } from '$routes/map/utils/formats/geotiff/cog_tile_manager';
 	import { mcaGridPreviewStore } from '$routes/map/utils/formats/mca/placement-store';
 	import type { createMcaRegionGridController } from '$routes/map/utils/formats/mca/region-grid';
 	import {
 		fetchWcsViewportImage,
-		clearAllWcsViewportImages,
 		markWcsViewportReady,
 		WcsViewportTooBroadError
 	} from '$routes/map/utils/formats/wcs/runtime';
@@ -88,6 +85,8 @@
 		showXYZTileLayer,
 		showRegionalMeshLayer,
 		showH3Layer,
+		showS2Layer,
+		showTopographicSheetsLayer,
 		showPlaneGridLayer,
 		showContourLayer,
 		planeGridZone,
@@ -97,7 +96,7 @@
 	} from '$routes/stores/layers';
 	import { isGlobe, isTerrain3d, mapStore } from '$routes/stores/map';
 	import { showLayerAddedNotification, showNotification } from '$routes/stores/notification';
-	import { showDataMenu, showModelView } from '$routes/stores/ui';
+	import { isDrawMode, showDataMenu, showModelView } from '$routes/stores/ui';
 
 	interface Props {
 		maplibreMap: maplibregl.Map | null; // MapLibre GL JSのマップインスタンス
@@ -353,17 +352,9 @@
 		mcaRegionGridController?.clear();
 		// Svelte storeの購読は明示的に解除しないと、画面破棄後もcallbackが残る。
 		styleUpdateUnsubscribers.forEach((unsubscribe) => unsubscribe());
-		clearAllCogViewportImages();
-		clearAllWcsViewportImages();
-		terminateCogViewportRuntime();
-		if (maplibreMap) {
-			maplibreMap.remove();
-			maplibreMap = null;
-		}
-		mapStore.releaseRegionalMeshProtocol();
-		mapStore.releaseH3Protocol();
-		mapStore.releasePlaneGridProtocol();
-		mapStore.releaseContourProtocol();
+		Object.values(setStyleDebounceHandlers).forEach((handler) => handler.cancel());
+		mapStore.remove();
+		maplibreMap = null;
 	});
 
 	// マップのスタイルの更新
@@ -387,17 +378,18 @@
 
 	const refreshWcsEntries = async (entries: MorivisLayerEntry[]) => {
 		const map = mapStore.getMap();
-		if (!map) return;
+		if (!map || mapDestroyed) return;
 
 		const wcsEntries = entries.filter(isWcsEntry);
 		await Promise.all(
 			wcsEntries.map(async (entry) => {
 				try {
 					const image = await fetchWcsViewportImage(entry, map);
-					if (!image) return;
+					if (!image || mapDestroyed || mapStore.getMap() !== map) return;
 					mapStore.setImage(`${entry.id}_source`, image);
 					wcsTooBroadEntryIds.delete(entry.id);
 				} catch (error) {
+					if (mapDestroyed || mapStore.getMap() !== map) return;
 					if (error instanceof WcsViewportTooBroadError) {
 						if (!wcsTooBroadEntryIds.has(entry.id)) {
 							showNotification(
@@ -416,16 +408,17 @@
 
 	const refreshCogEntries = async (entries: MorivisLayerEntry[]) => {
 		const map = mapStore.getMap();
-		if (!map) return;
+		if (!map || mapDestroyed) return;
 
 		const cogEntries = entries.filter(isViewportCogEntry);
 		await Promise.all(
 			cogEntries.map(async (entry) => {
 				try {
 					const image = await fetchCogViewportImage(entry, map);
-					if (!image) return;
+					if (!image || mapDestroyed || mapStore.getMap() !== map) return;
 					mapStore.setImage(`${entry.id}_source`, image);
 				} catch (error) {
+					if (mapDestroyed || mapStore.getMap() !== map) return;
 					console.error(error);
 				}
 			})
@@ -433,7 +426,10 @@
 	};
 
 	const DEFAULT_SET_STYLE_DEBOUNCE_MS = 100;
-	const setStyleDebounceHandlers: Record<number, (entries: MorivisLayerEntry[]) => void> = {};
+	const setStyleDebounceHandlers: Record<
+		number,
+		ReturnType<typeof debounce<(entries: MorivisLayerEntry[]) => void>>
+	> = {};
 
 	const setStyle = async (entries: MorivisLayerEntry[]) => {
 		if (mapDestroyed) return;
@@ -469,13 +465,15 @@
 			showPlaneGrid: $showPlaneGridLayer,
 			planeGridZone: $planeGridZone,
 			showH3: $showH3Layer,
+			showS2: $showS2Layer,
+			showTopographicSheets: $showTopographicSheetsLayer,
 			showContour: $showContourLayer,
 			isGlobe: $isGlobe,
 			showModelView: $showModelView,
 			isTerrain3d: $isTerrain3d,
 			streetViewPointData,
 			streetViewLineData,
-			drawGeojsonData: drawGeojsonData as FeatureCollection,
+			drawGeojsonData: $isDrawMode ? { type: 'FeatureCollection', features: [] } : drawGeojsonData,
 			zoneBboxGeojsonData,
 			searchGeojsonData
 		};
@@ -501,7 +499,7 @@
 		const hasGeojsonTileLayer =
 			entries.some(isGeojsonTileEntry) || effectivePreviewEntries.some(isGeojsonTileEntry);
 
-		if (hasGeojsonTileLayer) {
+		if (hasGeojsonTileLayer || $showTopographicSheetsLayer) {
 			mapStore.ensureGeojsonProtocol();
 		} else {
 			mapStore.releaseGeojsonProtocol();
@@ -584,11 +582,13 @@
 					const cogEntry = e as { id: string; format: { url: string } };
 					if (!CogTileManager.has(cogEntry.id)) {
 						const { metadata } = await CogTileManager.register(cogEntry.id, cogEntry.format.url);
+						if (!isCurrent()) return;
 						GeoTiffCache.setDataRanges(cogEntry.id, metadata.sampleRanges);
 					}
 				})
 			);
 		}
+		if (!isCurrent()) return;
 
 		const isMbtilesEntry = (e: MorivisLayerEntry) =>
 			'format' in e && (e as { format: { type: string } }).format.type === 'mbtiles';
@@ -629,6 +629,12 @@
 			mapStore.ensureH3Protocol();
 		} else {
 			mapStore.releaseH3Protocol();
+		}
+
+		if ($showS2Layer) {
+			mapStore.ensureS2Protocol();
+		} else {
+			mapStore.releaseS2Protocol();
 		}
 
 		if ($showPlaneGridLayer) {
@@ -829,6 +835,12 @@
 		planeGridZone.subscribe(() => {
 			if ($showPlaneGridLayer) setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
+		showTopographicSheetsLayer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
+		showS2Layer.subscribe(() => {
+			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
+		}),
 		showH3Layer.subscribe(() => {
 			setStyleDebounce(layerEntries as MorivisLayerEntry[]);
 		}),
@@ -866,7 +878,11 @@
 		})
 	);
 
-	// 検索結果の更新
+	// 編集中はruntimeが表示を担当し、終了時に確定済みの図形を通常styleへ戻す。
+	$effect(() => {
+		requestStyleUpdateByDependency($isDrawMode ? null : drawGeojsonData, 0);
+	});
+
 	$effect(() => {
 		// 引数として渡すことで、このeffectを検索結果GeoJSONの変更に反応させる。
 		requestStyleUpdateByDependency(searchGeojsonData);
@@ -914,9 +930,11 @@
 		}
 	});
 
-	mapStore.onInitialized((map) => {
-		maplibreMap = map;
-	});
+	styleUpdateUnsubscribers.push(
+		mapStore.onInitialized((map) => {
+			maplibreMap = map;
+		})
+	);
 
 	// ドラッグ中のイベント
 	const dragover: (e: DragEvent) => void = (e) => {

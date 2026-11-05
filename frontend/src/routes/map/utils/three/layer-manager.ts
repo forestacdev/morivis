@@ -526,7 +526,7 @@ export class ThreeJsLayerManager {
 			return new THREE.MeshStandardMaterial({
 				color: baseColor,
 				map,
-				transparent: material.userData.morivisMinecraftMaterial
+				transparent: material.userData.morivisSourceMaterial
 					? material.transparent
 					: opacity < 1,
 				alphaTest: material.uniforms.uSourceAlphaTest?.value ?? 0,

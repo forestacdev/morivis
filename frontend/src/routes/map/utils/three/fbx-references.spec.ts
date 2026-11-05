@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { createTestFbxAppearance } from './__fixtures__/test-fbx-appearance';
 import { inspectFbxFile, inspectFbxTextureReferences } from './fbx-references';
 
 const createBinaryFbxWithStringProperty = (propertyName: string, valueText: string) => {
@@ -65,6 +66,31 @@ describe('inspectFbxTextureReferences', () => {
 		for (const text of ['', 'Creator: "test-exporter"', 'Creator: "test-notnavisworks"']) {
 			const file = new File([text], 'test-navisworks.fbx');
 			expect((await inspectFbxFile(file)).initialFaceSide).toBe('source');
+		}
+	});
+
+	it.each([7400, 7700])(
+		'生成ソフト名がないBinary FBX %iでも既定材質名から両面にする',
+		async (version) => {
+			const file = new File([
+				createTestFbxAppearance(version, 'Navisworks material\0\x01Material')
+			], 'test-model.fbx');
+			expect((await inspectFbxFile(file)).initialFaceSide).toBe('double');
+		}
+	);
+
+	it('ASCII FBXの既定材質名も認識し、モデル名や説明文は判定に使わない', async () => {
+		for (
+			const [text, expected] of [
+				['Material: 1, "Material::Navisworks material", "" {\n}', 'double'],
+				['Model: 1, "Model::Navisworks material", "Mesh" {\n}', 'source'],
+				['P: "test-description", "KString", "", "", "Navisworks material"', 'source'],
+				['Material: 1, "Material::test-navisworks-material", "" {\n}', 'source']
+			]
+		) {
+			expect((await inspectFbxFile(new File([text], 'test-model.fbx'))).initialFaceSide).toBe(
+				expected
+			);
 		}
 	});
 });

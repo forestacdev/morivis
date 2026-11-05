@@ -11,6 +11,7 @@
 	import type { StreetViewPointGeoJson } from '$routes/map/types/street-view';
 	import type { ContextMenuState } from '$routes/map/types/ui';
 	import type { ResultData } from '$routes/map/utils/data/search-result';
+	import { replaceDimensionPlaceholder } from '$routes/map/utils/dimension';
 	import { mapGeoJSONFeatureToSidePopupData } from '$routes/map/utils/formats/geojson';
 	import {
 		isGeneratedPoiIconLayout,
@@ -25,10 +26,13 @@
 	import { getMorivisLayerRole } from '$routes/map/utils/layers/id';
 	import { getPoiLayerInteraction } from '$routes/map/utils/layers/interaction';
 	import { isPointInBbox } from '$routes/map/utils/map/bbox';
+	import { attachLongPress } from '$routes/map/utils/map/long-press';
 	import type { LngLat, MapMouseEvent, MapGeoJSONFeature } from '$routes/map/utils/maplibre';
 	import maplibregl from '$routes/map/utils/maplibre';
 	import { setStreetViewParams } from '$routes/map/utils/platform/url-params';
 	import { checkMobile } from '$routes/map/utils/platform/viewport';
+	import { getRasterDimensionValue } from '$routes/map/utils/raster/dimension-runtime';
+	import { getRasterLegend } from '$routes/map/utils/raster/legend';
 	import { getPixelColor, getGuide } from '$routes/map/utils/raster/tile-query';
 	import { getThreeJsManager } from '$routes/map/utils/three/lazy-manager';
 	import { getHighDetailLodZoom } from '$routes/map/utils/three/model-lod';
@@ -39,6 +43,7 @@
 		type SelectedHighlightData
 	} from '$routes/stores';
 	import { mapStore } from '$routes/stores/map';
+	import { isDrawMode, isMobile } from '$routes/stores/ui';
 
 	interface Props {
 		markerLngLat: maplibregl.LngLat | null;
@@ -116,6 +121,42 @@
 			lngLat: e.lngLat
 		};
 	};
+
+	const openLocationMenu = (lngLat: LngLat, x: number, y: number) => {
+		if (showDataEntry) return;
+		setSelectedHighlight(null);
+		getThreeJsManager()?.clearModelHighlight();
+		featureMenuData = null;
+		clearSearchHighlight();
+		clickedLayerIds = [];
+		contextMenuState = { show: true, x, y, lngLat };
+		markerLngLat = lngLat;
+		showMarker = true;
+		if ($isMobile) mapStore.panToPoi(lngLat);
+	};
+
+	let longPress: ReturnType<typeof attachLongPress> | undefined;
+	$effect(() => {
+		if (!$isMobile) return;
+		const unsubscribe = mapStore.onInitialized((map) => {
+			longPress?.destroy();
+			const canvas = map.getCanvas();
+			longPress = attachLongPress(canvas, ({ clientX, clientY }) => {
+				if ($isDrawMode) return;
+				const rect = canvas.getBoundingClientRect();
+				const point: [number, number] = [
+					((clientX - rect.left) * canvas.clientWidth) / rect.width,
+					((clientY - rect.top) * canvas.clientHeight) / rect.height
+				];
+				openLocationMenu(map.unproject(point), clientX, clientY);
+			});
+		});
+		return () => {
+			unsubscribe();
+			longPress?.destroy();
+			longPress = undefined;
+		};
+	});
 
 	let stylePoiIds: string[] = [];
 	onMount(() =>
@@ -364,7 +405,11 @@
 
 		const targetEntry = layerEntries.find((entry) => entry.id === targetId);
 		if (!targetEntry || targetEntry.type !== 'raster') return;
-		const url = targetEntry.format.url;
+		const url = replaceDimensionPlaceholder(
+			targetEntry.format.url,
+			getRasterDimensionValue(targetEntry)
+		);
+		const legend = getRasterLegend(targetEntry);
 
 		const tileSize = targetEntry.metaData.tileSize;
 		const zoomOffset = tileSize === 512 ? 0.5 : tileSize === 256 ? +1.5 : 1;
@@ -380,14 +425,10 @@
 			return;
 		}
 
-		if (targetEntry.style.type === 'categorical') {
-			const legend = targetEntry.style.legend;
+		if (legend?.type === 'category') {
+			const data = getGuide(pixelColor, legend);
 
-			if (legend.type === 'category') {
-				const data = getGuide(pixelColor, legend);
-
-				// TODO: ラステーの凡例ポップアップ表示
-			}
+			// TODO: ラスターの凡例ポップアップ表示
 		}
 	};
 
@@ -539,6 +580,9 @@
 	};
 
 	mapStore.onClick(async (e: MapMouseEvent) => {
+		if ($isDrawMode) return;
+		if (longPress?.shouldSuppressClick()) return;
+		if ($isMobile && contextMenuState?.show) clearContextMenuMarker();
 		showMarker = false;
 		// プレブュー中はクリック処理を行わない
 		if (showDataEntry) return;
@@ -694,9 +738,9 @@
 
 				featureMenuData = geojsonFeature;
 
-				// mapStore.panTo(e.lngLat, {
-				// 	duration: 1000
-				// });
+				if (feature.geometry.type === 'Point' || $isMobile) {
+					mapStore.panToPoi(clickLngLat);
+				}
 			}
 			// 検索マーカー
 
@@ -733,21 +777,13 @@
 		}
 	});
 
-	mapStore.onContextMenu(async (e: MapMouseEvent) => {
-		// ウィンドウの座標を取得
-		const windowX = e.originalEvent.clientX;
-		const windowY = e.originalEvent.clientY;
-
-		contextMenuState = {
-			show: true,
-			x: windowX,
-			y: windowY,
-			lngLat: e.lngLat
-		};
-
-		markerLngLat = e.lngLat;
-		showMarker = true;
-	});
+	onMount(() =>
+		mapStore.onContextMenu((e: MapMouseEvent) => {
+			if ($isDrawMode) return;
+			if (longPress?.shouldSuppressClick()) return;
+			openLocationMenu(e.lngLat, e.originalEvent.clientX, e.originalEvent.clientY);
+		})
+	);
 
 	let isDragging = false;
 
@@ -763,6 +799,7 @@
 
 	// NOTE: 初期読み込み時のエラーを防ぐため、レイヤーが読み込まれるまで待つ
 	mapStore.onMousemove((e) => {
+		if ($isDrawMode) return;
 		if (isDragging) return;
 
 		const clickLayerIds = getClickableTargetLayerIds();

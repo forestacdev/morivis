@@ -1,19 +1,33 @@
-export interface DrawProp {
-	id: string;
-	color: string;
-	opacity: number;
-}
-export interface DrawGeojsonFeature {
-	type: 'Feature';
-	id: string;
-	properties: DrawProp;
-	geometry: {
-		type: 'Point' | 'LineString' | 'Polygon';
-		coordinates: number[][] | [number, number] | [number, number][];
-	};
-}
+import type { Feature, FeatureCollection, LineString, Point, Polygon } from 'geojson';
+import type { GeoJSONStoreFeatures } from 'terra-draw';
 
-export interface DrawGeojsonData {
-	type: 'FeatureCollection';
-	features: DrawGeojsonFeature[];
-}
+export type DrawMode =
+	| 'point'
+	| 'linestring'
+	| 'polygon'
+	| 'circle'
+	| 'sector'
+	| 'rectangle'
+	| 'freehand'
+	| 'select';
+
+export type DrawGeojsonFeature =
+	& Feature<
+		Point | LineString | Polygon,
+		GeoJSONStoreFeatures['properties'] & {
+			id: string | number;
+			color: string;
+			opacity: number;
+			mode: Exclude<DrawMode, 'select'>;
+		}
+	>
+	& { id: string | number; };
+
+export type DrawGeojsonData =
+	& Omit<
+		FeatureCollection<DrawGeojsonFeature['geometry'], DrawGeojsonFeature['properties']>,
+		'features'
+	>
+	& {
+		features: DrawGeojsonFeature[];
+	};

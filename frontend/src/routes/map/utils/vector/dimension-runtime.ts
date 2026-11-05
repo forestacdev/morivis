@@ -39,14 +39,16 @@ export const canApplyVectorDimensionRuntimeUpdate = (entry: MorivisLayerEntry) =
 };
 
 export const getVectorDimensionRuntimeUpdates = async (
-	entry: MorivisLayerEntry
+	entry: MorivisLayerEntry,
+	{ isCurrent = () => true }: { isCurrent?: () => boolean; } = {}
 ): Promise<VectorRuntimeDimensionUpdate[]> => {
-	if (!canApplyVectorDimensionRuntimeUpdate(entry)) return [];
+	if (!isCurrent() || !canApplyVectorDimensionRuntimeUpdate(entry)) return [];
 
 	const dimensionValue = getVectorDimensionValue(entry);
 	if (!dimensionValue || entry.type !== 'vector' || entry.format.type !== 'geojson') return [];
 
 	const data = await entry.format.runtimeSource!.resolveData(dimensionValue);
+	if (!isCurrent()) return [];
 	GeojsonCache.set(entry.id, data);
 
 	return [

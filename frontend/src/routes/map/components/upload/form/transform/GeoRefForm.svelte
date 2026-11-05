@@ -63,7 +63,10 @@
 		normalizeModelTransformScale,
 		normalizeModelUnitMeters
 	} from '$routes/map/utils/three/model-scale';
-	import { getPlacementPreviewBounds } from '$routes/map/utils/three/placement-preview';
+	import {
+		getPlacementPreviewBounds,
+		MODEL_PLACEMENT_PREVIEW_OPACITY
+	} from '$routes/map/utils/three/placement-preview';
 	import {
 		applyAspectLockedGeoRefDrag,
 		getGeoRefAspectRatio,
@@ -345,6 +348,15 @@
 		threeJsManager.setPlacementPreview(entry, getCurrentModelPlacementStyle(entry), {
 			showTransformHandles: !isMinecraftPlacementMode
 		});
+	});
+
+	$effect(() => {
+		if (!isModelPlacementActive || !modelPlacementInitialized || !minecraftRegion) return;
+		if (showDataEntry?.type !== 'model' || showDataEntry.style.type !== 'mesh') return;
+		const { id, style } = showDataEntry;
+		const opacity = style.opacity;
+		untrack(() => threeJsManager.setModelOpacity(id, MODEL_PLACEMENT_PREVIEW_OPACITY));
+		return () => threeJsManager.setModelOpacity(id, opacity);
 	});
 
 	$effect(() => {

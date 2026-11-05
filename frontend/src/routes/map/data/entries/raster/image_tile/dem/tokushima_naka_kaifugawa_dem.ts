@@ -20,7 +20,7 @@ const entry: RasterImageEntry<RasterDemStyle> = {
 		minZoom: 8,
 		maxZoom: 18,
 		tileSize: 256,
-		bounds: TOKUSHIMA_BBOX,
+		bounds: [134.02479908184284, 33.53003111653415, 134.69190445855838, 33.94442877211324],
 		downloadUrl: 'https://www.geospatial.jp/ckan/dataset/tokushima_aerial_laser',
 		xyzImageTile: { x: 28604, y: 13114, z: 15 }
 	},

@@ -72,10 +72,12 @@ const EMPTY_TILE = new Uint8Array([
 	96,
 	130
 ]);
+export const emptyRasterTile = () => EMPTY_TILE.slice().buffer;
+
 const registry = createLocalTileRegistry(
 	LOCAL_RASTER_TILE_PROTOCOL,
 	file => file.arrayBuffer(),
-	() => EMPTY_TILE.slice().buffer
+	emptyRasterTile
 );
 export const registerLocalRasterTiles = registry.register;
 export const retainLocalRasterTileEntry = registry.retain;

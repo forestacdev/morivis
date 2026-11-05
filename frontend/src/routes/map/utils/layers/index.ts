@@ -167,9 +167,12 @@ export const createLayersItems = ({
 
 				case 'raster': {
 					if (
-						entry.format.type === 'geozarr' && style.type === 'tiff'
+						entry.format.type === 'geozarr'
+						&& style.type === 'tiff'
 						&& (style.volume?.type === 'voxel' || style.volume?.type === 'volume')
-					) break;
+					) {
+						break;
+					}
 					if (interaction.clickable) clickableRaster.push(layerId);
 
 					if (style.type === 'basemap') {
@@ -520,10 +523,11 @@ export const createLayersItems = ({
 		clickableRasterIds: clickableRaster,
 		layers: [
 			...baseMapLayerItems,
-			...referenceLineItems,
+
 			...hillshadeLayerItems,
 
 			...rasterLayerItems,
+			...referenceLineItems,
 			...fillLayerItems,
 			...lineLayerItems,
 			...fillExtrusionLayerItems,

@@ -113,9 +113,9 @@ describe('MCA region parser', () => {
 		await expect(readMcaRegion(regionFixture([{ nbt }]))).rejects.toThrow('regionフォルダー');
 	});
 
-	it('1.12以前、LZ4、外部チャンクを明示的に拒否する', async () => {
+	it('保存形式に合わないバージョン、LZ4、外部チャンクを明示的に拒否する', async () => {
 		await expect(readMcaRegion(regionFixture([{ nbt: chunkFixture({ version: 1343 }) }])))
-			.rejects.toThrow('1.13');
+			.rejects.toThrow('このチャンクの保存形式には対応していません');
 		await expect(readMcaRegion(regionFixture([{ nbt: chunkFixture(), compression: 4 }])))
 			.rejects.toThrow('LZ4');
 		await expect(readMcaRegion(regionFixture([{ nbt: chunkFixture(), compression: 130 }])))

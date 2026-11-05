@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { fade, fly, scale } from 'svelte/transition';
 
+	import type { UploadDialogState } from './dialog-props';
 	import LazyUploadComponent from './LazyUploadComponent.svelte';
 	import { applyUploadDropDecision, checkLargeDroppedFiles } from './upload-drop-actions';
 
@@ -8,43 +9,15 @@
 	import { resolveOpenDialogDrop } from '$routes/map/components/upload/dialog-drop-policy';
 	import { dialogRegistry } from '$routes/map/components/upload/dialog-registry';
 	import DialogRenderer from '$routes/map/components/upload/DialogRenderer.svelte';
-	import type {
-		PendingZoneGeoRefData,
-		TransformOptionMode
-	} from '$routes/map/components/upload/form/pending-zone-vector';
-	import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
 	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DialogType, UploadFiles } from '$routes/map/types';
 	import type maplibregl from '$routes/map/utils/maplibre';
-	import { type EpsgCode } from '$routes/map/utils/proj/dict';
 	import { isMobile, isProcessing } from '$routes/stores/ui';
 
 	const loadShapeFileForm = () => import('./form/ShapeFileForm.svelte');
 
-	interface Props {
+	interface Props extends UploadDialogState {
 		map: maplibregl.Map | null;
-		showDialogType: DialogType;
 		tempLayerEntries: MorivisLayerEntry[];
-		showDataEntry: MorivisLayerEntry | null;
-		transformOptionMode: TransformOptionMode;
-		selectedEpsgCode: EpsgCode;
-		dropFile: UploadFiles;
-		remoteGeoZarrUrl: string | null;
-		remotePmtilesUrl: string | null;
-		remoteRasterUrl: string | null;
-		remoteVectorUrl: string | null;
-		remoteTiles3dUrl: string | null;
-		remoteWmtsUrl: string | null;
-		remoteFeatureServiceUrl: string | null;
-		remoteArcGisUrl: string | null;
-		remoteStacUrl: string | null;
-		remoteCswUrl: string | null;
-		pendingTileUrl: string | null;
-		focusBbox: [number, number, number, number] | null;
-		isDragover: boolean;
-		zoneConfirmedEpsg: EpsgCode | null;
-		pendingZoneGeoRefData: PendingZoneGeoRefData | null;
-		geoRefData: GeoRefData | null;
 	}
 
 	let {
@@ -121,7 +94,6 @@
 			>
 				<DialogRenderer
 					load={activeDialogDefinition.load}
-					profile={activeDialogDefinition.profile}
 					bind:showDataEntry
 					bind:showDialogType
 					bind:transformOptionMode
@@ -169,7 +141,6 @@
 				>
 					<DialogRenderer
 						load={activeDialogDefinition.load}
-						profile={activeDialogDefinition.profile}
 						bind:showDataEntry
 						bind:showDialogType
 						bind:transformOptionMode

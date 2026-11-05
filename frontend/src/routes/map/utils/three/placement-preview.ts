@@ -7,6 +7,8 @@ const PATTERN_SIZE = 64;
 const PATTERN_SPACING = 16;
 const PATTERN_STRIPE_WIDTH = 4;
 
+export const MODEL_PLACEMENT_PREVIEW_OPACITY = 0.3;
+
 export const DEFAULT_PLACEMENT_PREVIEW_BOUNDS: ModelLocalBounds = [-10, -10, 0, 10, 10, 12];
 
 export const getPlacementPreviewBounds = (entry: {

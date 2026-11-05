@@ -32,8 +32,7 @@ export interface GeoRefPointCloudConfig {
 	sourceBbox: [number, number, number, number];
 }
 
-export interface GeoRefData {
-	sourceType: GeoRefSourceType;
+interface GeoRefDataBase {
 	entryId: string;
 	entryName: string;
 	parsedBands: RasterBands;
@@ -66,6 +65,31 @@ export interface GeoRefData {
 	meshConfig?: GeoRefMeshConfig;
 	pointCloudConfig?: GeoRefPointCloudConfig;
 }
+
+export interface GeoRefRasterData extends GeoRefDataBase {
+	sourceType: 'raster';
+}
+
+export interface GeoRefVectorData extends GeoRefDataBase {
+	sourceType: 'vector';
+	sourceCorners: GeoRefCorners;
+	sourceFeatureCollectionId: string;
+}
+
+export interface GeoRefPointCloudData extends GeoRefDataBase {
+	sourceType: 'pointcloud';
+	pointCloudConfig: GeoRefPointCloudConfig;
+}
+
+export interface GeoRefVideoData extends GeoRefDataBase {
+	sourceType: 'video';
+}
+
+export type GeoRefData =
+	| GeoRefRasterData
+	| GeoRefVectorData
+	| GeoRefPointCloudData
+	| GeoRefVideoData;
 
 export interface GeoRefPreviewData {
 	url: string;

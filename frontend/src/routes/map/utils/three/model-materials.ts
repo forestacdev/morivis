@@ -3,7 +3,6 @@ import type { MeshEntry, MeshStyle } from '$routes/map/data/types/model';
 import { ColorMapManager, generateNumberAndColorMap } from '$routes/map/utils/style/color-mapping';
 import { setFbxCurveVisibility } from '$routes/map/utils/three/fbx-attributes';
 import { isGeneratedFbxTextTexture, setFbxTextStyle } from '$routes/map/utils/three/fbx-text';
-import { minecraftMaterialState } from '$routes/map/utils/three/minecraft-material';
 import {
 	getModelObjectAttributes,
 	type ModelAttributes
@@ -11,6 +10,7 @@ import {
 import { resolveMeshEdgeUniforms } from '$routes/map/utils/three/model-edge';
 import { createEdgeUvGeometry } from '$routes/map/utils/three/model-edge-uv';
 import { resolveModelFaceSide } from '$routes/map/utils/three/model-face-side';
+import { modelMaterialState } from '$routes/map/utils/three/model-material-state';
 import { getModelPartColor } from '$routes/map/utils/three/model-part-style';
 import { resolveMeshShadingUniforms } from '$routes/map/utils/three/model-shading';
 import { buildVectorTileColorExpressions } from '$routes/map/utils/vector/tile-style';
@@ -228,7 +228,7 @@ export class ModelMaterials {
 		useIndexedPartColors = false
 	): THREE.ShaderMaterial => {
 		const shadingUniforms = resolveMeshShadingUniforms(style);
-		const sourceAlpha = minecraftMaterialState(sourceMaterial, style.opacity);
+		const sourceAlpha = modelMaterialState(sourceMaterial, style.opacity);
 		const objectPartIsTransparent = objectPartColor === 'transparent';
 		const baseColor = new THREE.Color(
 			objectPartIsTransparent ? style.color : objectPartColor ?? style.color
@@ -428,7 +428,9 @@ export class ModelMaterials {
 			side: resolveModelFaceSide(sourceMaterial.side, style.faceSide)
 		});
 		material.userData.morivisShaderShading = true;
-		material.userData.morivisMinecraftMaterial = sourceAlpha.enabled;
+		material.userData.morivisSourceMaterial = sourceAlpha.enabled;
+		material.userData.morivisMinecraftMaterial =
+			sourceMaterial.userData.morivisMinecraftMaterial === true;
 		material.userData.colorRampTexture = colorRampTexture;
 		material.userData.morivisPartColorPalette = partColorTexture;
 		return material;
@@ -515,7 +517,7 @@ export class ModelMaterials {
 			: null;
 		material.uniforms.uBaseColor.value.copy(baseColor);
 		material.uniforms.uOpacity.value = style.opacity;
-		const sourceAlpha = minecraftMaterialState(sourceMaterial, style.opacity);
+		const sourceAlpha = modelMaterialState(sourceMaterial, style.opacity);
 		material.uniforms.uSourceOpacity.value = sourceAlpha.sourceOpacity;
 		material.uniforms.uSourceAlphaTest.value = sourceAlpha.alphaTest;
 		material.transparent = sourceAlpha.transparent;
@@ -737,8 +739,19 @@ export class ModelMaterials {
 
 	disposeModelObject = (object: THREE.Object3D) => {
 		const disposedTextures = new Set<THREE.Texture>();
+		const disposeTexture = (map: THREE.Texture | undefined | null) => {
+			if (!map || disposedTextures.has(map)) return;
+			if (!isGeneratedFbxTextTexture(map) && map.userData.morivisFbxPackageTexture !== true) {
+				return;
+			}
+			map.dispose();
+			disposedTextures.add(map);
+		};
 		object.traverse((child) => {
-			if (!(child as THREE.Mesh).isMesh && !(child as THREE.Points).isPoints) return;
+			if (
+				!(child as THREE.Mesh).isMesh && !(child as THREE.Points).isPoints
+				&& !(child as THREE.Line).isLine
+			) return;
 
 			const drawable = child as THREE.Mesh | THREE.Points;
 			if (
@@ -752,18 +765,16 @@ export class ModelMaterials {
 				: [drawable.material];
 			materials.forEach((material) => {
 				const map = (material as THREE.MeshBasicMaterial).map;
-				if (
-					map && isGeneratedFbxTextTexture(map) && !disposedTextures.has(map)
-				) {
-					map.dispose();
-					disposedTextures.add(map);
-				}
+				disposeTexture(map);
 				material.dispose();
 			});
 			const originalMaterials = drawable.userData.originalMaterials as
 				| THREE.Material[]
 				| undefined;
-			originalMaterials?.forEach((material) => material.dispose());
+			originalMaterials?.forEach((material) => {
+				disposeTexture((material as THREE.MeshBasicMaterial).map);
+				material.dispose();
+			});
 		});
 	};
 }

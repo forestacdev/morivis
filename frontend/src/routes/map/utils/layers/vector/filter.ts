@@ -18,7 +18,6 @@ export const combineFilters = (
 
 export const getTemporalFilter = (entry: MorivisLayerEntry): FilterSpecification | undefined => {
 	if (entry.type !== 'vector') return undefined;
-	if (entry.format.type !== 'geojson') return undefined;
 
 	const temporalFilterState = entry.state?.temporalFilter;
 	if (!temporalFilterState?.enabled) return undefined;

@@ -1,6 +1,6 @@
 import turfBbox from '@turf/bbox';
 
-import type { GeoRefData } from '$routes/map/components/upload/form/transform/georef-types';
+import type { GeoRefVectorData } from '$routes/map/components/upload/form/transform/georef-types';
 import type { Feature, FeatureCollection } from '$routes/map/types/geojson';
 import { GeoRefVectorSourceCache } from '$routes/map/utils/cache/georef-vector-source-cache';
 import { getMinMax, type RasterBands } from '$routes/map/utils/formats/geotiff';
@@ -140,7 +140,7 @@ export const featureCollectionToGeoRefData = async ({
 	entryName: string;
 	width?: number;
 	height?: number;
-}): Promise<GeoRefData> => {
+}): Promise<GeoRefVectorData> => {
 	const bbox = turfBbox(featureCollection) as [number, number, number, number];
 	const entryId = `georef_vector_${crypto.randomUUID()}`;
 	const canvas = document.createElement('canvas');

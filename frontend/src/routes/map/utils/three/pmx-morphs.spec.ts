@@ -4,10 +4,10 @@ import {
 	type ThreeMmdAnimation,
 	ThreeMmdLoader
 } from '@yohawing/three-mmd-loader/three';
-import { SkinnedMesh, Vector3 } from 'three';
+import { Bone, Skeleton, SkinnedMesh, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { createTestPmxMorphs } from './__fixtures__/test-pmx-morphs';
-import { loadPmxModel } from './pmx-loader';
+import { loadPmxModel, preparePmxIkGoalNames } from './pmx-loader';
 import {
 	applyPmxMorphState,
 	createPmxMorphAnimation,
@@ -21,6 +21,68 @@ const poseBytes = (translation: number) =>
 	);
 
 describe('PMXの手動表情', () => {
+	it('英語名付きの手捩IKをグループモーフで動かし、連動する両方の関節が目標に届く', () => {
+		const mesh = new SkinnedMesh();
+		const addBone = (x: number, y: number, parent: Bone | SkinnedMesh = mesh) => {
+			const bone = new Bone();
+			bone.position.set(x, y, 0);
+			parent.add(bone);
+			return bone;
+		};
+		const arm = addBone(0, 0);
+		const elbow = addBone(1, 0, arm);
+		const armGoal = addBone(1, 0);
+		armGoal.name = 'test-twist-en';
+		armGoal.userData.mmdBoneName = 'test-手捩IK';
+		const follower = addBone(0, 0);
+		follower.userData.mmdFlags = { appendRotate: true };
+		follower.userData.mmdAppendTransform = { parentIndex: 0, weight: 1 };
+		const wrist = addBone(1, 0, follower);
+		const hand = addBone(1, 0, wrist);
+		const wristGoal = addBone(1, 1);
+		mesh.updateMatrixWorld(true);
+		mesh.bind(new Skeleton([arm, elbow, armGoal, follower, wrist, hand, wristGoal]));
+		mesh.userData.mmdIkChains = [[2, 1, 0], [6, 5, 4]].map(
+			([goalBoneIndex, effectorBoneIndex, boneIndex]) => ({
+				goalBoneIndex,
+				effectorBoneIndex,
+				links: [{ boneIndex, enabled: true }],
+				iterationCount: 16,
+				maxAnglePerIteration: 1
+			})
+		);
+		mesh.userData.mmdMorphs = [
+			{
+				type: 'bone',
+				groupOffsets: [],
+				boneOffsets: [{ boneIndex: 2, translation: [-1, 1, 0], rotation: [0, 0, 0, 1] }]
+			},
+			{ type: 'group', groupOffsets: [{ morphIndex: 0, weight: 1 }] }
+		];
+		mesh.morphTargetDictionary = { 'test-bone': 0, 'test-pose': 1 };
+		mesh.morphTargetInfluences = [0, 0];
+		preparePmxIkGoalNames(mesh);
+		const runtime = new DefaultMmdRuntime();
+		const model = {
+			runtime,
+			setAnimation: (clip: ThreeMmdAnimation) => runtime.setAnimation(clip.animation, mesh),
+			update: runtime.evaluate.bind(runtime)
+		};
+		applyPmxMorphState(
+			model,
+			getPmxMorphCatalog({ mesh }).options,
+			{ '1': 1 },
+			undefined,
+			0,
+			false
+		);
+		for (const [end, goal] of [[elbow, armGoal], [hand, wristGoal]]) {
+			const error = end.getWorldPosition(new Vector3()).distanceTo(
+				goal.getWorldPosition(new Vector3())
+			);
+			expect(error).toBeLessThan(0.001);
+		}
+	});
 	it('JSランタイムでもグループモーフを解除して頂点を元へ戻す', async () => {
 		const loader = new ThreeMmdLoader({ runtimeFactory: () => new DefaultMmdRuntime() });
 		const model = await loader.loadModel(createTestPmxMorphs(), {
@@ -142,7 +204,8 @@ describe('PMXの手動表情', () => {
 		expect(catalog.options).toEqual([{
 			index: 0,
 			name: 'test-face',
-			trackNames: ['test-face', 'test-alias']
+			trackNames: ['test-face', 'test-alias'],
+			affectsBones: false
 		}]);
 		expect(catalog.unsupportedCount).toBe(3);
 		const animation = createPmxMorphAnimation(undefined, { '0': 0.5 }, catalog.options);
@@ -152,7 +215,8 @@ describe('PMXの手動表情', () => {
 		const options = [0, 1, 2, 3].map(index => ({
 			index,
 			name: `test-${index}`,
-			trackNames: [`test-${index}`]
+			trackNames: [`test-${index}`],
+			affectsBones: false
 		}));
 		expect(normalizePmxMorphWeights({ '0': 0, '1': 2, '2': -1, '3': NaN, '99': 1 }, options))
 			.toEqual({ '0': 0, '1': 1, '2': 0 });

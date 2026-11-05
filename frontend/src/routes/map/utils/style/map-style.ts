@@ -8,12 +8,15 @@ import type { MorivisLayerEntry } from '$routes/map/data/types';
 import { MAPTERHORN_DEM_SOURCE } from '$routes/map/utils/contours/config';
 import { createLayersItems } from '$routes/map/utils/layers';
 import { createContourStyle } from '$routes/map/utils/layers/contours';
+import { createDrawLayers } from '$routes/map/utils/layers/draw';
 import { createH3Style } from '$routes/map/utils/layers/h3';
 import { ZONE_BBOX_FILL_PATTERN_ID } from '$routes/map/utils/layers/highlight';
 import { createPlaneGridStyle } from '$routes/map/utils/layers/plane-grid';
 import { previewBaseLayers } from '$routes/map/utils/layers/preview';
 import type { ReferenceStyle } from '$routes/map/utils/layers/reference-style';
 import { createRegionalMeshStyle } from '$routes/map/utils/layers/regional-mesh';
+import { createS2Style } from '$routes/map/utils/layers/s2';
+import { createTopographicSheetsStyle } from '$routes/map/utils/layers/topographic-sheets';
 import type {
 	LayerSpecification,
 	SourceSpecification,
@@ -47,6 +50,8 @@ export interface MapStyleInput {
 	showPlaneGrid: boolean;
 	planeGridZone: number;
 	showH3: boolean;
+	showS2: boolean;
+	showTopographicSheets: boolean;
 	showContour: boolean;
 	isGlobe: boolean;
 	showModelView: boolean;
@@ -84,6 +89,8 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		showPlaneGrid,
 		planeGridZone,
 		showH3,
+		showS2,
+		showTopographicSheets,
 		isGlobe,
 		showModelView,
 		isTerrain3d,
@@ -291,6 +298,11 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		planeGridZone,
 		DEFAULT_SYMBOL_TEXT_FONT
 	);
+	const topographicSheetsStyle = createTopographicSheetsStyle(
+		showTopographicSheets,
+		DEFAULT_SYMBOL_TEXT_FONT
+	);
+	const s2Style = createS2Style(showS2, DEFAULT_SYMBOL_TEXT_FONT);
 	const h3Style = createH3Style(showH3, DEFAULT_SYMBOL_TEXT_FONT);
 	const contourStyle = createContourStyle(contourDem?.contourTiles, DEFAULT_SYMBOL_TEXT_FONT);
 	const mapStyle: StyleSpecification = {
@@ -309,6 +321,8 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 			...xyzTileSources,
 			...regionalMeshStyle.sources,
 			...h3Style.sources,
+			...s2Style.sources,
+			...topographicSheetsStyle.sources,
 			...planeGridStyle.sources,
 			...contourStyle.sources,
 			...sources,
@@ -345,9 +359,12 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 			...xyzTileLayer,
 			...regionalMeshStyle.layers,
 			...h3Style.layers,
+			...s2Style.layers,
+			...topographicSheetsStyle.layers,
 			...planeGridStyle.layers,
 			...previewLayers,
 			...mcaGridLayers,
+			...createDrawLayers(drawGeojsonData),
 			{
 				id: 'deck-reference-layer',
 				type: 'background' as const,
@@ -417,7 +434,13 @@ export const createMapStyle = (input: MapStyleInput, resources: PreparedMapStyle
 		metadata: {
 			clickableVectorIds: mainResult.clickableVectorIds,
 			clickableRasterIds: mainResult.clickableRasterIds,
-			attributions: [...new Set([...mainResult.attributions, ...previewResult.attributions])]
+			attributions: [
+				...new Set([
+					...mainResult.attributions,
+					...previewResult.attributions,
+					...(showTopographicSheets ? ['国土地理院' as const] : [])
+				])
+			]
 		}
 	};
 };

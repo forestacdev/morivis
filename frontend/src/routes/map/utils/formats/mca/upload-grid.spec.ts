@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
 	createMcaUploadGrid,
+	getInitialMcaExclusions,
 	getSelectedMcaUploadFiles,
 	mergeMcaUploadFiles,
 	toggleMcaUploadRegion
@@ -9,14 +10,16 @@ import {
 const file = (name: string) => new File(['test'], name);
 
 describe('MCAダイアログのリージョングリッド', () => {
-	it('初期状態は全区画を選択し、未追加の区画は選択しない', () => {
-		const files = [file('r.-1.0.mca'), file('r.0.0.mca')];
-		const grid = createMcaUploadGrid(files);
-		expect(grid.selectedCount).toBe(2);
-		expect(grid.cells.filter(cell => cell.selected)).toEqual(
-			grid.cells.filter(cell => cell.loaded)
-		);
-		expect(getSelectedMcaUploadFiles(files, [])).toEqual(files);
+	it('読み込み時は原点に接する4区画のうち追加済みのものだけを選択する', () => {
+		const central = ['r.-1.-1.mca', 'r.0.-1.mca', 'r.-1.0.mca', 'r.0.0.MCA'].map(file);
+		const outer = ['r.-2.0.mca', 'r.1.0.mca', 'r.0.-2.mca', 'r.0.1.mca'].map(file);
+		for (const loaded of [central, central.slice(1), []]) {
+			const files = [...outer, ...loaded];
+			expect(getSelectedMcaUploadFiles(files, getInitialMcaExclusions(files))).toEqual(
+				loaded
+			);
+			expect(createMcaUploadGrid(files).selectedCount).toBe(loaded.length);
+		}
 	});
 	it('クリックで対象外にしても区画を残し、再クリックで読み込み対象に戻す', () => {
 		const files = [file('r.-1.0.mca'), file('r.0.0.mca')];
@@ -40,15 +43,16 @@ describe('MCAダイアログのリージョングリッド', () => {
 			.toBe(0);
 		expect(toggleMcaUploadRegion(files, excluded, { x: 2, z: 3 })).toEqual(excluded);
 	});
-	it('追加時は既存の解除を保持し、新規・差し替えファイルは選択する', () => {
+	it('追加読み込みでは手動の選択解除を保ち、原点から離れた追加区画も選択する', () => {
 		const files = [file('r.0.0.mca'), file('r.1.0.mca')];
-		const excluded = toggleMcaUploadRegion(files, [], { x: 0, z: 0 });
-		const added = file('r.2.0.mca');
-		const merged = mergeMcaUploadFiles(files, [added]);
-		expect(getSelectedMcaUploadFiles(merged, excluded)).toEqual([files[1], added]);
-		const replacement = file('r.00.0.MCA');
-		const replaced = mergeMcaUploadFiles(merged, [replacement]);
-		expect(getSelectedMcaUploadFiles(replaced, excluded)).toEqual(replaced);
+		const excluded = toggleMcaUploadRegion(files, getInitialMcaExclusions(files), {
+			x: 0,
+			z: 0
+		});
+		expect(getSelectedMcaUploadFiles(files, excluded)).toEqual([]);
+		const added = [file('r.-1.-1.mca'), file('r.2.0.mca')];
+		const merged = mergeMcaUploadFiles(files, added);
+		expect(getSelectedMcaUploadFiles(merged, excluded)).toEqual(added);
 	});
 	it('表示位置を移動しても選択は維持し、同一区画の表記違いも一緒に切り替える', () => {
 		const files = [file('r.0.0.mca'), file('r.00.0.MCA'), file('r.20.0.mca')];

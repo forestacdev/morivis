@@ -1,44 +1,23 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
+	import { onMount } from 'svelte';
 	import ColorPicker, { ChromeVariant } from 'svelte-awesome-color-picker';
-	import {
-		TerraDraw,
-		TerraDrawCircleMode,
-		TerraDrawFreehandMode,
-		TerraDrawLineStringMode,
-		TerraDrawPointMode,
-		TerraDrawPolygonMode,
-		TerraDrawRectangleMode,
-		TerraDrawSectorMode,
-		TerraDrawSelectMode
-	} from 'terra-draw';
-	import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
 	import Icon from '$lib/components/svgs/Icon.svelte';
 	import MaterialSymbolsDownloadRoundedIcon from '$lib/components/svgs/icons/material-symbols/DownloadRoundedIcon.svelte';
-	import type { MorivisLayerEntry } from '$routes/map/data/types';
-	import type { DrawGeojsonData, DrawGeojsonFeature } from '$routes/map/types/draw';
+	import type { DrawGeojsonData, DrawMode } from '$routes/map/types/draw';
+	import { createDrawRuntime } from '$routes/map/utils/draw/runtime';
 	import { downloadGeojson } from '$routes/map/utils/formats/geojson';
-	import { mapStore } from '$routes/stores/map';
+	import type { Map } from '$routes/map/utils/maplibre';
 
-	interface Props {
-		layerEntries: MorivisLayerEntry[];
+	let {
+		map,
+		drawGeojsonData = $bindable(),
+		onclose
+	}: {
+		map: Map;
 		drawGeojsonData: DrawGeojsonData;
-	}
-
-	let { layerEntries = $bindable(), drawGeojsonData = $bindable() }: Props = $props();
-
-	export const TERRA_DRAW_DEFAULT_SELECT_FLAGS = {
-		feature: {
-			draggable: true,
-			coordinates: {
-				deletable: true,
-				midpoints: true,
-				draggable: true
-			}
-		}
-	};
-
+		onclose: () => void;
+	} = $props();
 	const DRAW_MODE_TYPE = [
 		{
 			type: 'point',
@@ -82,213 +61,113 @@
 			name: '選択',
 			icon: 'grommet-icons:select'
 		}
-
-		// {
-		// 	type: 'angled-rectangle',
-		// 	name: '角度付き矩形',
-		// 	icon: 'healthicons:polygon'
-		// },
-		// {
-		// 	type: 'sensor',
-		// 	name: 'センサー'
-		// }
 	] as const;
 
-	type DrawMode = (typeof DRAW_MODE_TYPE)[number]['type'];
+	let runtime: ReturnType<typeof createDrawRuntime> | undefined;
+	let mode = $state<DrawMode>('select');
+	let ready = $state(false);
+	let hasSelection = $state(false);
+	let color = $state('#ff0000');
 
-	let terraDraw = $state<TerraDraw | null>(null);
-	let isDrawMode = $state<DrawMode>('select');
-	let selectedFeatureId = $state<string | null>(null);
-	let selectedFeature = $state<DrawGeojsonFeature | null>(null);
-	let color = $state<string>('#ff0000');
-
-	$effect(() => {
-		if (isDrawMode) {
-			if (!terraDraw) return;
-			if (terraDraw.enabled) {
-				terraDraw.clear();
-				terraDraw.setMode(isDrawMode);
+	onMount(() => {
+		runtime = createDrawRuntime({
+			map,
+			data: drawGeojsonData,
+			onchange: (data) => {
+				drawGeojsonData = data;
+			},
+			onselect: (feature) => {
+				hasSelection = feature !== null;
+				if (feature) color = feature.properties.color;
+			},
+			onready: () => {
+				ready = true;
 			}
-		}
+		});
+		return () => runtime?.destroy();
 	});
 
-	const setColor = (newColor: string) => {
-		if (isDrawMode === 'select') {
-			if (!terraDraw) return;
-			if (terraDraw.enabled && selectedFeatureId && terraDraw.hasFeature(selectedFeatureId)) {
-				console.log('newColor', newColor);
-				console.log('selectedFeature', selectedFeatureId);
-				// 対象のフィーチャーの色を変更
-				if (drawGeojsonData.features) {
-					const newFeatures = drawGeojsonData.features.map((f) => {
-						if (f.properties.id === selectedFeatureId) {
-							f.properties.color = newColor;
-						}
-						return f;
-					});
-				}
-			}
-		}
+	const setMode = (value: DrawMode) => {
+		mode = value;
+		runtime?.setMode(value);
 	};
-
-	$effect(() => {
-		if (color) {
-			setColor(color);
+	const setColor = (value: string) => {
+		color = value;
+		runtime?.setColor(value);
+	};
+	const handleKeydown = (event: KeyboardEvent) => {
+		if (
+			event.target instanceof HTMLElement &&
+			event.target.closest('input, textarea, select, [contenteditable="true"]')
+		)
+			return;
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			setMode('select');
 		}
-	});
-
-	mapStore.onStyleLoad((_map) => {
-		if (!_map) return;
-		const adapter = new TerraDrawMapLibreGLAdapter({
-			map: _map
-		});
-
-		terraDraw = new TerraDraw({
-			adapter: adapter,
-			modes: [
-				new TerraDrawSelectMode({
-					flags: {
-						point: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
-						linestring: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
-						polygon: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
-						freehand: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
-						circle: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
-						rectangle: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
-						sector: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
-						sensor: TERRA_DRAW_DEFAULT_SELECT_FLAGS,
-						'angled-rectangle': TERRA_DRAW_DEFAULT_SELECT_FLAGS
-					}
-				}),
-				new TerraDrawPointMode(),
-				new TerraDrawLineStringMode(),
-				new TerraDrawPolygonMode(),
-				new TerraDrawCircleMode(),
-				new TerraDrawSectorMode(),
-				new TerraDrawRectangleMode(),
-				new TerraDrawFreehandMode()
-				// new TerraDrawAngledRectangleMode()// 角度付き矩形
-				// new TerraDrawSensorMode() // センサー
-				// new TerraDrawRenderMode()
-			]
-		});
-
-		terraDraw.on('finish', (id, context) => {
-			if (terraDraw && terraDraw.enabled) {
-				if (context.action === 'draw') {
-					// const newFeature = terraDraw.selectFeature(id);
-					const newFeatures = terraDraw.getSnapshot();
-					const copyFeature = JSON.parse(JSON.stringify(newFeatures[0]));
-					const feature = {
-						type: 'Feature',
-						id: copyFeature.id,
-						geometry: copyFeature.geometry,
-						properties: {
-							id: copyFeature.id,
-							color,
-							opacity: 1,
-							mode: context.mode
-						}
-					};
-					drawGeojsonData.features.push(feature as DrawGeojsonFeature);
-					terraDraw.clear();
-				}
-			}
-			// if (context.action === 'draw') {
-			// 	// Do something for draw finish event
-			// } else if (context.action === 'dragFeature') {
-			// 	// Do something for a drag finish event
-			// } else if (context.action === 'dragCoordinate') {
-			// 	//
-			// } else if (context.action === 'dragCoordinateResize') {
-			// 	//
-			// }
-		});
-
-		// _map.on('click', (e) => {
-		// 	if (isDrawMode !== 'select') return;
-		// 	if (terraDraw && terraDraw.enabled) {
-		// 		terraDraw.clear();
-		// 		selectedFeatureId = null;
-		// 	}
-		// 	const feature = _map.queryRenderedFeatures(e.point, {
-		// 		layers: ['@draw_fill_layer', '@draw_line_layer', '@draw_circle_layer']
-		// 	});
-
-		// 	if (feature.length > 0) {
-		// 		const clickedFeature = feature[0];
-		// 		const clickedFeatureId = clickedFeature.properties.id;
-
-		// 		const targetFeature = drawGeojsonData.features.find(
-		// 			(f) => f.properties.id === clickedFeatureId
-		// 		) as DrawGeojsonFeature;
-
-		// 		terraDraw?.addFeatures([targetFeature]);
-		// 		color = targetFeature.properties.color;
-		// 		selectedFeatureId = clickedFeatureId;
-		// 	}
-		// });
-	});
-
-	const handleKeydown = (e: KeyboardEvent) => {
-		if (e.key === 'Escape') {
-			if (terraDraw && terraDraw.enabled) {
-				terraDraw.clear();
-			}
-		}
-		if (e.key === 'Delete') {
-			if (terraDraw && terraDraw.enabled) {
-				const newFeatures = terraDraw.getSnapshot();
-				const copyFeature = newFeatures[0];
-				const id = copyFeature.id;
-				drawGeojsonData.features = drawGeojsonData.features.filter((f) => f.properties.id !== id);
-				terraDraw.clear();
-			}
+		if ((event.key === 'Delete' || event.key === 'Backspace') && hasSelection) {
+			event.preventDefault();
+			runtime?.deleteSelected();
 		}
 	};
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
-<div
-	transition:fly={{ duration: 300, y: 100, opacity: 0, delay: 100 }}
-	class="w-side-menu absolute z-10 flex h-full flex-col gap-2 pt-[70px]"
+<section
+	aria-label="ドローモード"
+	class="bg-main absolute right-2 top-16 z-20 flex max-h-[calc(100dvh-150px)] w-72 max-w-[calc(100vw-16px)] flex-col gap-3 overflow-y-auto rounded-xl border border-white/30 p-3 text-white shadow-lg"
 >
+	<div class="flex items-center justify-between gap-2">
+		<h2 class="font-bold">ドローモード</h2>
+		<button type="button" class="cursor-pointer rounded border px-3 py-1 text-sm" onclick={onclose}
+			>終了</button
+		>
+	</div>
 	<div class="c-color-picker [&_label]:w-full">
 		<ColorPicker
 			label="色の選択"
-			bind:hex={color}
+			isAlpha={false}
+			bind:hex={() => color, setColor}
 			components={ChromeVariant}
 			sliderDirection="horizontal"
 			isDialog={true}
 		/>
 	</div>
-	<div class="grid grid-cols-3 gap-4 p-2">
-		{#each DRAW_MODE_TYPE as { type, name, icon }}
-			<label
-				class="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-md p-2 drop-shadow-[0_0_2px_rgba(220,220,220,0.8)] transition-colors duration-150 {isDrawMode ===
+	<div class="grid grid-cols-3 gap-2">
+		{#each DRAW_MODE_TYPE as { type, name, icon } (type)}
+			<button
+				type="button"
+				disabled={!ready}
+				aria-pressed={mode === type}
+				onclick={() => setMode(type)}
+				class="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md p-2 disabled:opacity-40 {mode ===
 				type
 					? 'bg-base text-black'
 					: 'bg-main text-white'}"
 			>
 				<Icon {icon} class="h-6 w-6" />
 				<span class="text-sm">{name}</span>
-				<input type="radio" name="draw-mode" bind:group={isDrawMode} value={type} class="hidden" />
-			</label>
+			</button>
 		{/each}
 	</div>
-
-	<div class="p-2">
-		{#if drawGeojsonData.features.length > 0}
-			<button
-				onclick={() => (drawGeojsonData ? downloadGeojson(drawGeojsonData) : null)}
-				class="c-btn-confirm max-w-[300px]"
-			>
-				<MaterialSymbolsDownloadRoundedIcon class="h-8 w-8" />
-				<span class="text-sm">エクスポート</span>
-			</button>
-		{/if}
-	</div>
-</div>
+	<p class="text-xs leading-relaxed">
+		図形を選んで地図上に描画します。線・面は最後の頂点をもう一度クリックして確定します。選択後はドラッグで編集できます。Escで描画を取り消します。
+	</p>
+	<p class="text-xs">作成済み: {drawGeojsonData.features.length}件</p>
+	<button
+		type="button"
+		disabled={!hasSelection}
+		onclick={() => runtime?.deleteSelected()}
+		class="cursor-pointer rounded border p-2 text-sm disabled:cursor-default disabled:opacity-40"
+		>選択した図形を削除</button
+	>
+	{#if drawGeojsonData.features.length > 0}
+		<button type="button" onclick={() => downloadGeojson(drawGeojsonData)} class="c-btn-confirm">
+			<span class="text-sm">GeoJSONをエクスポート</span>
+		</button>
+	{/if}
+</section>
 
 <style>
 	.c-color-picker {
