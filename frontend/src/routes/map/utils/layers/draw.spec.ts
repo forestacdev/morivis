@@ -29,7 +29,9 @@ describe('描画地物のレイヤー', () => {
 		const layers = createDrawLayers(data);
 		expect(layers.map(layer => layer.type)).toEqual(['circle', 'fill', 'line']);
 		expect(layers.map(layer => 'filter' in layer && layer.filter)).toEqual(
-			data.features.map(feature => ['==', ['id'], feature.properties!.id])
+			data.features.map(
+				feature => ['==', ['coalesce', ['get', 'id'], ['id']], feature.properties!.id]
+			)
 		);
 	});
 	it('編集でIDと順番が変わらず、削除した地物のレイヤーは残らない', () => {

@@ -22,7 +22,17 @@ export class OrderedDrawAdapter extends TerraDrawMapLibreGLAdapter<Map> {
 	}
 
 	override render = (changes: TerraDrawChanges, styling: TerraDrawStylingFunction): void => {
-		super.render(changes, styling);
+		// タイル内のfeature.idは数値化される。編集中の頂点にも文字列IDを属性として渡す。
+		const withDrawId = (feature: GeoJSONStoreFeatures): GeoJSONStoreFeatures => ({
+			...feature,
+			properties: { ...feature.properties, id: feature.id! }
+		});
+		super.render({
+			created: changes.created.map(withDrawId),
+			updated: changes.updated.map(withDrawId),
+			unchanged: changes.unchanged.map(withDrawId),
+			deletedIds: changes.deletedIds
+		}, styling);
 		const features = [...changes.created, ...changes.updated, ...changes.unchanged];
 		const shapes = new globalThis.Map(
 			features.filter(feature => !isHandle(feature)).map(feature => [feature.id!, feature])
@@ -41,7 +51,7 @@ export class OrderedDrawAdapter extends TerraDrawMapLibreGLAdapter<Map> {
 			const anchor = templates[0]?.id;
 			if (!anchor) return;
 			const handleIds = features.filter(isHandle).map(feature => feature.id!);
-			const handleFilter: FilterSpecification = ['in', ['id'], ['literal', handleIds]];
+			const handleFilter: FilterSpecification = ['in', ['get', 'id'], ['literal', handleIds]];
 			// 種類別レイヤーは編集ハンドル専用にし、地物より上に残す。
 			for (const template of templates) {
 				this.drawMap.setFilter(
@@ -65,7 +75,7 @@ export class OrderedDrawAdapter extends TerraDrawMapLibreGLAdapter<Map> {
 					nextLayers.push({
 						...template,
 						id: `${DRAW_RUNTIME_PREFIX}-feature-${drawFeatureKey(id)}-${template.type}`,
-						filter: ['==', ['id'], id]
+						filter: ['==', ['get', 'id'], id]
 					});
 				}
 			}

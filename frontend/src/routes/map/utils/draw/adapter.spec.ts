@@ -107,7 +107,7 @@ describe('編集中の地物の重ね順', () => {
 		adapter.unregister();
 	});
 	it('新しい点を面より上に置き、編集ハンドルはすべての地物より上に残す', () => {
-		const { adapter, flush, layers, featureLayers } = setup();
+		const { adapter, flush, layers, featureLayers, sources } = setup();
 		adapter.render(
 			{ created: [point(), area()], updated: [], unchanged: [], deletedIds: [] },
 			styling
@@ -136,7 +136,18 @@ describe('編集中の地物の重ね順', () => {
 		const handles = layers.findIndex(layer => layer.id === 'morivis-draw-point');
 		expect(featureLayers().every(layer => layers.indexOf(layer) < handles)).toBe(true);
 		expect(layers[handles]).toMatchObject({
-			filter: ['in', ['id'], ['literal', ['test-handle']]]
+			filter: ['in', ['get', 'id'], ['literal', ['test-handle']]]
+		});
+		expect(sources.get('morivis-draw-point')?.setData.mock.lastCall?.[0].features)
+			.toEqual(
+				expect.arrayContaining([nextPoint, handle].map(feature =>
+					expect.objectContaining({
+						properties: expect.objectContaining({ id: feature.id })
+					})
+				))
+			);
+		expect(featureLayers().at(-1)).toMatchObject({
+			filter: ['==', ['get', 'id'], nextPoint.id]
 		});
 		adapter.unregister();
 	});

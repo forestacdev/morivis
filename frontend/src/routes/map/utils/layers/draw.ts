@@ -12,7 +12,7 @@ export const createDrawLayers = (data: FeatureCollection): LayerSpecification[] 
 		const common = {
 			id: `@draw_${drawFeatureKey(featureId)}`,
 			source: 'draw_source',
-			filter: ['==', ['id'], featureId] as FilterSpecification
+			filter: ['==', ['coalesce', ['get', 'id'], ['id']], featureId] as FilterSpecification
 		};
 		switch (feature.geometry.type) {
 			case 'Polygon':

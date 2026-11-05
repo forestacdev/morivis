@@ -119,6 +119,10 @@ test('後から描いた面・線が点より上に重なり、終了・再入�
 	await page.getByRole('button', { name: 'ポイント', exact: true }).click();
 	await page.mouse.click(point.x, point.y);
 	await expect(page.getByText('作成済み: 1件')).toBeVisible();
+	await expect.poll(async () => {
+		const [r, g, b] = await drawingPixel(page, x, y);
+		return r > 220 && g < 30 && b < 30;
+	}).toBe(true);
 	await page.getByRole('button', { name: '矩形', exact: true }).click();
 	await setDrawingColor(page, '#0000ff');
 	await page.mouse.click(point.x - 40, point.y - 40);
@@ -141,15 +145,16 @@ test('後から描いた面・線が点より上に重なり、終了・再入�
 	await setDrawingColor(page, '#00ff00');
 	await page.mouse.click(point.x - 60, point.y);
 	await page.mouse.move(point.x + 60, point.y);
-	await page.mouse.dblclick(point.x + 60, point.y);
-	await expect(page.getByText('作成済み: 3件')).toBeVisible();
-	await page.keyboard.press('Escape');
 	const expectGreen = async () => {
 		await expect.poll(async () => {
 			const [r, g, b] = await drawingPixel(page, x, y);
 			return r < 30 && g > 220 && b < 30;
 		}, { timeout: 15_000 }).toBe(true);
 	};
+	await expectGreen();
+	await page.mouse.dblclick(point.x + 60, point.y);
+	await expect(page.getByText('作成済み: 3件')).toBeVisible();
+	await page.keyboard.press('Escape');
 	await expectGreen();
 	await page.getByRole('button', { name: '終了', exact: true }).click();
 	await expectGreen();
