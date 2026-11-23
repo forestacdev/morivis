@@ -89,7 +89,7 @@ This project is in alpha.
 
 ## Development
 
-See [development and verification](docs/development.md) for workspace setup, local checks, and CI. Dependencies are installed from the repository root using the root `pnpm-lock.yaml`. PR checks run type checking, lint, build, Vitest, and Chromium browser tests.
+Dependencies are installed from the repository root using the root `pnpm-lock.yaml`. PR checks run type checking, lint, build, Vitest, and Chromium browser tests.
 
 ## Author
 

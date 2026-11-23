@@ -9,5 +9,3 @@ pnpm dev
 ```
 
 既存の `.env` は上書きしない。依存関係はルートの `pnpm-lock.yaml` で管理する。
-
-チェック・単体テスト・Playwright・CIの手順は [開発・検証](../docs/development.md) を参照。

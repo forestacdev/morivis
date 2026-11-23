@@ -49,7 +49,6 @@ LZ4圧縮、外部 `.mcc` はエラーで案内する。
 `PUBLIC_MINECRAFT_RESOURCE_URL` の素材をWorkerから自動取得する。利用者は `.mca` だけを選ぶ。
 環境変数が空なら `frontend/static/minecraft/` を使用する。素材はGit管理対象外。
 空の `manifest.json` では従来の色付きメッシュを生成する。
-配置コマンドとCloudFront設定は [素材配置の説明](../../../../../../../docs/minecraft-resources.md) を参照。
 
 - `blockstates` の `variants` / `multipart`、状態条件（OR / AND）、重み付き候補
 - モデルの親継承、テクスチャの `#` 参照、要素の寸法・単軸／Euler回転・rescale

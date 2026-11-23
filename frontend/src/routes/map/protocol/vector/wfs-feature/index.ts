@@ -36,6 +36,7 @@ const isGeoJsonContent = (contentType: string, text: string, outputFormat: strin
 
 class WorkerProtocol {
 	private worker: Worker;
+	private nextRequestId = 0;
 	private pendingRequests: Map<
 		string,
 		{
@@ -120,7 +121,7 @@ class WorkerProtocol {
 				return { data: empty };
 			}
 
-			const id = `${z}/${x}/${y}_wfs_feature`;
+			const id = `feature_${this.nextRequestId++}`;
 
 			return new Promise((resolve, reject) => {
 				this.pendingRequests.set(id, {

@@ -35,6 +35,7 @@ export default defineConfig(({ mode }) => {
 		// reloads the page on discovery and discards the user's uploaded point cloud.
 		optimizeDeps: {
 			include: [
+				'@ml2drender/wasm',
 				'satellite.js',
 				'ais-stream-decoder/dist/ais-bitfield',
 				'ais-stream-decoder/dist/messages/ais-message-123',

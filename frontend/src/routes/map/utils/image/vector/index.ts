@@ -14,6 +14,7 @@ import { prepareSourceData } from '$routes/map/utils/sources/prepare';
 import * as tilebelt from '@mapbox/tilebelt';
 import { Protocol } from 'pmtiles';
 import { CoverImageManager } from '../index';
+import { generateVectorThumbnail } from './thumbnail-client';
 
 export interface MapImageOptions {
 	name: string;
@@ -183,8 +184,9 @@ class ParallelQueue {
 }
 
 // インスタンスプールとキューを初期化
-const mapPool = new MapInstancePool(1); // 2つのMapインスタンス
-const parallelQueue = new ParallelQueue(1); // 最大2つの並列処理
+// 独自プロトコルやMLTの画像が必要になるまでWebGLコンテキストを作らない。
+let mapPool: MapInstancePool | undefined;
+const parallelQueue = new ParallelQueue(1);
 
 /**
  * 並列処理対応のMapLibre画像生成関数（内部実装）
@@ -210,7 +212,8 @@ async function _generateMapImageParallel(
 	} = options;
 
 	// プールからMapインスタンスを取得
-	const map = await mapPool.acquireInstance();
+	const pool = mapPool ??= new MapInstancePool(1);
+	const map = await pool.acquireInstance();
 
 	return new Promise((resolve, reject) => {
 		const mapBounds = xyz
@@ -231,7 +234,7 @@ async function _generateMapImageParallel(
 		// エラーハンドリング
 		const errorHandler = (error: any) => {
 			cleanup();
-			mapPool.releaseInstance(map); // インスタンスを解放
+			pool.releaseInstance(map); // インスタンスを解放
 			reject(new Error(`Map error: ${error.error?.message || 'Unknown error'}`));
 		};
 
@@ -252,7 +255,7 @@ async function _generateMapImageParallel(
 				canvas.toBlob(
 					(blob) => {
 						cleanup();
-						mapPool.releaseInstance(map); // インスタンスを解放
+						pool.releaseInstance(map); // インスタンスを解放
 
 						if (!blob) {
 							reject(new Error('Failed to generate blob'));
@@ -279,7 +282,7 @@ async function _generateMapImageParallel(
 				);
 			} catch (error) {
 				cleanup();
-				mapPool.releaseInstance(map); // インスタンスを解放
+				pool.releaseInstance(map); // インスタンスを解放
 				reject(error);
 			}
 		};
@@ -297,7 +300,7 @@ async function _generateMapImageParallel(
 				map.on('idle', generateImage);
 			} catch (error) {
 				cleanup();
-				mapPool.releaseInstance(map); // インスタンスを解放
+				pool.releaseInstance(map); // インスタンスを解放
 				reject(error);
 			}
 		};
@@ -319,54 +322,9 @@ export async function generateMapImageDOM(
 	return parallelQueue.add(() => _generateMapImageParallel(style, options));
 }
 
-export const generateVectorImageUrl = async (_layerEntry: MorivisLayerEntry) => {
-	const url = CoverImageManager.get(_layerEntry.id);
-	if (url) return url;
+const pendingImages = new Map<string, Promise<string>>();
 
-	const formatUrl = 'url' in _layerEntry.format
-		? (_layerEntry.format as { url: string; }).url
-		: '';
-	if (
-		_layerEntry.metaData.xyzImageTile
-		&& _layerEntry.format.type === 'mvt'
-		&& formatUrl.startsWith('http')
-	) {
-		const checkUrl = formatUrl
-			.replace('{z}', _layerEntry.metaData.xyzImageTile.z.toString())
-			.replace('{x}', _layerEntry.metaData.xyzImageTile.x.toString())
-			.replace('{y}', _layerEntry.metaData.xyzImageTile.y.toString());
-
-		try {
-			if (checkUrl) {
-				const response = await fetch(resolveRequestUrl(checkUrl), {
-					method: 'HEAD',
-					mode: 'cors', // 明示的にCORSモードを指定
-					headers: {
-						Accept: '*/*'
-					}
-				});
-
-				if (!response.ok) {
-					throw new Error(`Tile URL fetch failed: ${response.status} - ${checkUrl}`);
-				}
-			} else {
-				throw new Error('Invalid tile URL');
-			}
-		} catch (error) {
-			if (error instanceof Error) {
-				console.error('Tile URL fetch failed:', error);
-				// CORSエラーの場合は、タイルが存在すると仮定するか、
-				// 別の検証方法を使用することを検討
-				if (error.name === 'TypeError' && error.message.includes('CORS')) {
-					console.warn('CORS error detected, skipping tile validation');
-					// 必要に応じてここで代替処理
-				} else {
-					throw new Error(`Tile URL fetch failed: ${checkUrl} - ${error.message}`);
-				}
-			}
-		}
-	}
-
+const renderVectorImage = async (_layerEntry: MorivisLayerEntry): Promise<string> => {
 	const minimumEntry = {
 		..._layerEntry,
 		style: {
@@ -377,7 +335,11 @@ export const generateVectorImageUrl = async (_layerEntry: MorivisLayerEntry) => 
 			..._layerEntry.metaData,
 			bounds: _layerEntry.metaData.xyzImageTile
 				? tilebelt.tileToBBOX(
-					Object.values(_layerEntry.metaData.xyzImageTile) as [number, number, number]
+					[
+						_layerEntry.metaData.xyzImageTile.x,
+						_layerEntry.metaData.xyzImageTile.y,
+						_layerEntry.metaData.xyzImageTile.z
+					]
 				)
 				: _layerEntry.metaData.bounds,
 			maxZoom: _layerEntry.metaData.xyzImageTile?.z ?? _layerEntry.metaData.maxZoom
@@ -399,31 +361,26 @@ export const generateVectorImageUrl = async (_layerEntry: MorivisLayerEntry) => 
 		version: 8,
 		sprite: resolveAbsoluteRequestUrl(MAP_SPRITE_DATA_PATH),
 		glyphs: resolveAbsoluteRequestUrl(MAP_FONT_DATA_PATH),
-		sources: {
-			// TODO 背景地図のみ処理を分離
-			// mierune_mono: {
-			// 	type: 'raster',
-			// 	tiles: ['https://tile.mierune.co.jp/mierune_mono/{z}/{x}/{y}.png'],
-			// 	tileSize: 256,
-			// 	minzoom: 0,
-			// 	maxzoom: minimumEntry.metaData.maxZoom ?? 18,
-			// 	bounds: _layerEntry.metaData.xyzImageTile
-			// 		? minimumEntry.metaData.bounds
-			// 		: WEB_MERCATOR_WORLD_BBOX,
-			// 	attribution:
-			// 		'<a href="https://mierune.co.jp">MIERUNE Inc.</a> <a href="https://www.openmaptiles.org/" target="_blank">&copy; OpenStreetMap contributors</a>'
-			// },
-			...sources
-		},
-		layers: [
-			// {
-			// 	id: 'mierune_mono',
-			// 	type: 'raster',
-			// 	source: 'mierune_mono'
-			// },
-			...layers.filter((layer) => layer.type !== 'symbol')
-		]
+		sources,
+		layers: layers.filter((layer) => layer.type !== 'symbol')
 	};
+
+	if (
+		[
+			'geojson',
+			'fgb',
+			'mvt',
+			'mlt',
+			'pmtiles',
+			'mbtiles',
+			'geojsontile',
+			'wfs-feature',
+			'ogc-feature',
+			'esri-feature'
+		].includes(_layerEntry.format.type)
+	) {
+		return generateVectorThumbnail(style, minimumEntry.metaData.bounds);
+	}
 
 	const options: MapImageOptions = {
 		name: _layerEntry.id,
@@ -441,14 +398,27 @@ export const generateVectorImageUrl = async (_layerEntry: MorivisLayerEntry) => 
 
 	const result = await generateMapImageDOM(style, options);
 
-	CoverImageManager.add(_layerEntry.id, result.blobUrl);
-
 	return result.blobUrl;
+};
+
+export const generateVectorImageUrl = (_layerEntry: MorivisLayerEntry): Promise<string> => {
+	const cachedUrl = CoverImageManager.get(_layerEntry.id);
+	if (cachedUrl) return Promise.resolve(cachedUrl);
+	const pending = pendingImages.get(_layerEntry.id);
+	if (pending) return pending;
+
+	const result = renderVectorImage(_layerEntry).then(url => {
+		CoverImageManager.add(_layerEntry.id, url);
+		return url;
+	}).finally(() => pendingImages.delete(_layerEntry.id));
+	pendingImages.set(_layerEntry.id, result);
+	return result;
 };
 
 /** クリーンアップ関数（必要に応じて呼び出す） */
 export const destroyMapPool = () => {
-	mapPool.destroy();
+	mapPool?.destroy();
+	mapPool = undefined;
 };
 
 /** 背景用画像のURLを取得 */

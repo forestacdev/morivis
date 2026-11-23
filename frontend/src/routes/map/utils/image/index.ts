@@ -171,7 +171,7 @@ export const getLayerImage = async (
 		if (_layerEntry.metaData.mapImage) {
 			const url = getMapImageUrl(_layerEntry);
 			return url ? { url } : undefined;
-		} else if ('format' in _layerEntry && _layerEntry.format.type === 'mbtiles') {
+		} else if (_layerEntry.type !== 'vector' && _layerEntry.format.type === 'mbtiles') {
 			return {
 				url: generatePlaceholderImage(getMbtilesPreviewLabel(_layerEntry), '#3d5a4f')
 			};

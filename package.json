@@ -21,5 +21,12 @@
         "prettier": "catalog:",
         "prettier-plugin-svelte": "catalog:",
         "prettier-plugin-tailwindcss": "catalog:"
+    },
+    "devEngines": {
+        "runtime": {
+            "name": "node",
+            "version": "24.22.1",
+            "onFail": "download"
+        }
     }
 }

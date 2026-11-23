@@ -2,23 +2,17 @@ docker:
     @docker compose up -d
 
 # 開発サーバーの起動
-dev:
-    @echo "Checking if port 5173 is in use..."
-    @lsof -ti:5173 && echo "Port 5173 is in use, killing process..." && npx kill-port 5173 || echo "Port 5173 is free"
-    pnpm dev
+dev: (_free-port "5173")
+    pnpm dev --port 5173 --strictPort
 
 # 開発サーバーを起動して Chrome のシークレットを開く
-dev-chrome:
-    @echo "Checking if port 5173 is in use..."
-    @lsof -ti:5173 && echo "Port 5173 is in use, killing process..." && npx kill-port 5173 || echo "Port 5173 is free"
+dev-chrome: (_free-port "5173")
     @(sleep 5; open -na "Google Chrome" --args --incognito http://localhost:5173) &
-    pnpm dev
+    pnpm dev --port 5173 --strictPort
 
 # スマホのサーバーの起動
-mobile:
-    @echo "Checking ports..."
-    @lsof -ti:5173 && echo "Port 5173 is in use, killing process..." && npx kill-port 5173 || echo "Port 5173 is free"
-    pnpm mobile
+mobile: (_free-port "5173")
+    pnpm mobile --port 5173 --strictPort
 
 # ビルド
 build:
@@ -29,10 +23,32 @@ deploy:
     pnpm run deploy
 
 # プレビュー
-preview:
-    @echo "Checking if port 4173 is in use..."
-    @lsof -ti:4173 && echo "Port 4173 is in use, killing process..." && npx kill-port 4173 || echo "Port 4173 is free"
-    pnpm run preview
+preview: (_free-port "4173")
+    pnpm run preview --port 4173 --strictPort
+
+_free-port port:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo "Checking if port {{port}} is in use..."
+    for attempt in {0..50}; do
+        port_status=0
+        port_pids=$(lsof -nP -tiTCP:{{port}} -sTCP:LISTEN) || port_status=$?
+        if [ "$port_status" -gt 1 ]; then
+            echo "Failed to check port {{port}}" >&2
+            exit "$port_status"
+        fi
+        if [ -z "$port_pids" ]; then
+            echo "Port {{port}} is free"
+            exit 0
+        fi
+        if [ "$attempt" -eq 0 ]; then
+            echo "Port {{port}} is in use, stopping process..."
+            kill $port_pids
+        fi
+        sleep 0.1
+    done
+    echo "Port {{port}} is still in use" >&2
+    exit 1
 
 # テスト
 test:
