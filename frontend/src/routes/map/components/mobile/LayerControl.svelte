@@ -71,8 +71,6 @@
 						<Checkbox label="道路・線路・境界線" bind:value={$showLineLayer} disabled={isOsm} />
 						<Checkbox label="陰影" bind:value={$showHillshadeLayer} disabled={isNotHillshade} />
 						<Checkbox label="3D地形" bind:value={$isTerrain3d} />
-						<Checkbox label="地形図図郭" bind:value={$showTopographicSheetsLayer} />
-						<Checkbox label="S2" bind:value={$showS2Layer} />
 						{#if $isMobile}
 							<Checkbox label="ストリートビュー" bind:value={$showStreetViewLayer} />
 						{/if}
